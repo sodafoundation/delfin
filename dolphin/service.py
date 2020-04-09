@@ -31,7 +31,7 @@ service_opts = [
                        help='IP address for Dolphin API to listen '
                             'on.'),
     cfg.PortOpt('dolphin_listen_port',
-                default=8786,
+                default=8188,
                 help='Port for Dolphin API to listen on.'),
     cfg.IntOpt('dolphin_workers',
                default=1,
