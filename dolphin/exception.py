@@ -103,7 +103,7 @@ class DolphinException(Exception):
         elif isinstance(message, Exception):
             message = six.text_type(message)
 
-        if re.match('.*[^\.]\.\.$', message):
+        if re.match(r'.*[^\.]\.\.$', message):
             message = message[:-1]
         self.msg = message
         super(DolphinException, self).__init__(message)
@@ -224,14 +224,6 @@ class AvailabilityZoneNotFound(NotFound):
     message = _("Availability zone %(id)s could not be found.")
 
 
-class ServiceIPNotFound(DolphinException):
-    message = _("Service IP for instance not found: %(reason)s")
-
-
-class AdminIPNotFound(DolphinException):
-    message = _("Admin port IP for service instance not found: %(reason)s")
-
-
 class ServiceNotFound(NotFound):
     message = _("Service %(service_id)s could not be found.")
 
@@ -242,10 +234,6 @@ class ServiceIsDown(Invalid):
 
 class HostNotFound(NotFound):
     message = _("Host %(host)s could not be found.")
-
-
-class HostBinaryNotFound(NotFound):
-    message = _("Could not find binary %(binary)s on host %(host)s.")
 
 
 class FileNotFound(NotFound):
@@ -268,30 +256,6 @@ class NoValidHost(DolphinException):
     message = _("No valid host was found. %(reason)s.")
 
 
-class SecurityServiceNotFound(NotFound):
-    message = _("Security service %(security_service_id)s could not be found.")
-
-
-class InvalidExtraSpec(Invalid):
-    message = _("Invalid extra_spec: %(reason)s.")
-
-
-class IPAddressInUse(InUse):
-    message = _("IP address %(ip)s is already used.")
-
-
-class InstanceNotFound(NotFound):
-    message = _("Instance %(instance_id)s could not be found.")
-
-
-class ServiceInstanceException(DolphinException):
-    message = _("Exception in service instance manager occurred.")
-
-
-class ServiceInstanceUnavailable(ServiceInstanceException):
-    message = _("Service instance is not available.")
-
-
 class InvalidSqliteDB(Invalid):
     message = _("Invalid Sqlite database.")
 
@@ -302,6 +266,4 @@ class SSHException(DolphinException):
 
 class SSHInjectionThreat(DolphinException):
     message = _("SSH command injection detected: %(command)s")
-
-
 

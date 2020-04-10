@@ -20,7 +20,6 @@ from oslo_config import cfg
 
 from dolphin.api import extensions
 from dolphin.api import common
-from dolphin.api.common import api_version_request
 from dolphin.api.common import wsgi
 from dolphin.api.views import versions as views_versions
 
@@ -40,19 +39,10 @@ _MEDIA_TYPES = [{
 _KNOWN_VERSIONS = {
     'v1.0': {
         'id': 'v1.0',
-        'status': 'DEPRECATED',
+        'status': 'CUREENT',
         'version': '',
         'min_version': '',
-        'updated': '2015-08-27T11:33:21Z',
-        'links': _LINKS,
-        'media-types': _MEDIA_TYPES,
-    },
-    'v2.0': {
-        'id': 'v2.0',
-        'status': 'CURRENT',
-        'version': api_version_request._MAX_API_VERSION,
-        'min_version': api_version_request._MIN_API_VERSION,
-        'updated': '2015-08-27T11:33:21Z',
+        'updated': '202004-10T11:33:21Z',
         'links': _LINKS,
         'media-types': _MEDIA_TYPES,
     },

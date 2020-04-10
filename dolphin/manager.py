@@ -56,7 +56,6 @@ from oslo_log import log
 from oslo_service import periodic_task
 
 from dolphin.db import base
-# from manila.scheduler import rpcapi as scheduler_rpcapi
 from dolphin import version
 
 CONF = cfg.CONF

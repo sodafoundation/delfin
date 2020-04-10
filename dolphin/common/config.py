@@ -30,11 +30,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_middleware import cors
 from oslo_utils import netutils
-import six
 
-from dolphin.common import constants
-from dolphin import exception
-from dolphin.i18n import _
 
 CONF = cfg.CONF
 log.register_options(CONF)
@@ -45,12 +41,6 @@ core_opts = [
                default='/var/lib/dolphin',
                help="Top-level directory for maintaining dolphin's state."),
 ]
-
-debug_opts = [
-]
-
-CONF.register_cli_opts(core_opts)
-CONF.register_cli_opts(debug_opts)
 
 global_opts = [
     cfg.HostAddressOpt('my_ip',
@@ -63,16 +53,13 @@ global_opts = [
                        help='Name of this node.  This can be an opaque '
                             'identifier. It is not necessarily a hostname, '
                             'FQDN, or IP address.'),
-    cfg.BoolOpt('api_rate_limit',
-                default=True,
-                help='Whether to rate limit the API.'),
     cfg.ListOpt('dolphin_api_ext_list',
                 default=[],
                 help='Specify list of extensions to load when using dolphin_api_extension'
                      'option with dolphin.api.contrib.select_extensions.'),
     cfg.ListOpt('dolphin_api_extension',
                 default=['dolphin.api.contrib.standard_extensions'],
-                help='The dolphin extensions to load.'),
+                help='The dolphin api extensions to load.'),
     cfg.BoolOpt('monkey_patch',
                 default=False,
                 help='Whether to log monkey patching.'),

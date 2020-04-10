@@ -22,7 +22,6 @@ from oslo_utils import importutils
 import webob.dec
 import webob.exc
 
-# import dolphin.api.common
 from dolphin.api.common import wsgi
 from dolphin import exception
 
