@@ -44,7 +44,7 @@ class TaskAPI(object):
     def say_hello(self, context, request_spec=None,
                   filter_properties=None):
         request_spec_p = jsonutils.to_primitive(request_spec)
-        call_context = self.client.prepare(version='1.2')
+        call_context = self.client.prepare(version='1.0')
         return call_context.cast(context,
                                  'say_hello',
                                  request_spec=request_spec_p,

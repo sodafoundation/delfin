@@ -41,5 +41,12 @@ class TaskManager(manager.Manager):
 
     @periodic_task.periodic_task(spacing=2, run_immediately=True)
     def _task_example(self, context):
-        LOG.debug("task example ...")
-        self.task_rpcapi.say_hello()
+        LOG.info("Produce task, say hello ...")
+        self.task_rpcapi.say_hello(context)
+
+    def say_hello(self, context, request_spec=None,
+                  filter_properties=None):
+        try:
+            LOG.info("Consume say hello task ...")
+        except Exception as ex:
+            pass
