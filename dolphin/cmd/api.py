@@ -28,7 +28,7 @@ from oslo_log import log
 # from oslo_reports import guru_meditation_report as gmr
 # from oslo_reports import opts as gmr_opts
 
-from dolphin.common import config  # Need to register global_opts  # noqa
+from dolphin.common import config  # Need to register global_opts
 from dolphin import service
 from dolphin import utils
 from dolphin import version
@@ -41,14 +41,16 @@ def main():
     # gmr_opts.set_defaults(CONF)
     CONF(sys.argv[1:], project='dolphin',
          version=version.version_string())
-    # config.verify_share_protocols()
     log.setup(CONF, "dolphin")
     utils.monkey_patch()
 
     # gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
     launcher = service.process_launcher()
-    server = service.WSGIService('dolphin')
-    launcher.launch_service(server, workers=server.workers or 1)
+    api_server = service.WSGIService('dolphin')
+    task_server = service.Service.create(binary='dolphin-task', coordination=True)
+    launcher.launch_service(api_server, workers=api_server.workers or 1)
+    launcher.launch_service(task_server)
+
     launcher.wait()
 
 

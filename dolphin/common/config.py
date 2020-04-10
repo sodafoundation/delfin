@@ -53,6 +53,16 @@ CONF.register_cli_opts(core_opts)
 CONF.register_cli_opts(debug_opts)
 
 global_opts = [
+    cfg.HostAddressOpt('my_ip',
+                       default=netutils.get_my_ipv4(),
+                       sample_default='<your_ip>',
+                       help='IP address of this host.'),
+    cfg.HostAddressOpt('host',
+                       default=socket.gethostname(),
+                       sample_default='<your_hostname>',
+                       help='Name of this node.  This can be an opaque '
+                            'identifier. It is not necessarily a hostname, '
+                            'FQDN, or IP address.'),
     cfg.BoolOpt('api_rate_limit',
                 default=True,
                 help='Whether to rate limit the API.'),
@@ -73,8 +83,11 @@ global_opts = [
                default=60,
                help='Maximum time since last check-in for up service.'),
     cfg.StrOpt('task_manager',
-               default='',
+               default='dolphin.task_manager.manager.TaskManager',
                help='Full class name for the task manager.'),
+    cfg.StrOpt('dolphin_task_topic',
+               default='dolphin-task',
+               help='The topic task manager nodes listen on.'),
 ]
 
 CONF.register_opts(global_opts)
