@@ -33,6 +33,7 @@ import oslo_messaging as messaging
 from dolphin import context
 from dolphin import exception
 from dolphin import rpc
+from dolphin import coordination
 
 LOG = log.getLogger(__name__)
 
@@ -98,6 +99,9 @@ class Service(service.Service):
         self.coordinator = coordination
 
     def start(self):
+        if self.coordinator:
+            coordination.LOCK_COORDINATOR.start()
+
         LOG.info('Starting %(topic)s node.', {'topic': self.topic})
         LOG.debug("Creating RPC server for service %s.", self.topic)
 
@@ -181,6 +185,12 @@ class Service(service.Service):
                 x.stop()
             except Exception:
                 pass
+        if self.coordinator:
+            try:
+                coordination.LOCK_COORDINATOR.stop()
+            except Exception:
+                LOG.exception("Unable to stop the Tooz Locking "
+                              "Coordinator.")
 
         self.timers = []
 

@@ -42,6 +42,8 @@ core_opts = [
                help="Top-level directory for maintaining dolphin's state."),
 ]
 
+CONF.register_cli_opts(core_opts)
+
 global_opts = [
     cfg.HostAddressOpt('my_ip',
                        default=netutils.get_my_ipv4(),

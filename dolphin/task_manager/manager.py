@@ -24,6 +24,8 @@ from oslo_service import periodic_task
 
 from dolphin import manager
 from dolphin.task_manager import rpcapi as task_rpcapi
+from dolphin import coordination
+from dolphin import context
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -39,7 +41,9 @@ class TaskManager(manager.Manager):
         super(TaskManager, self).__init__(*args, **kwargs)
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
+    """Periodical task, this task will use coordination for distribute synchronization."""
     @periodic_task.periodic_task(spacing=2, run_immediately=True)
+    @coordination.synchronized('lock-task-example')
     def _task_example(self, context):
         LOG.info("Produce task, say hello ...")
         self.task_rpcapi.say_hello(context)
