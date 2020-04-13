@@ -16,5 +16,4 @@
 """
 DB abstraction for Dolphin
 """
-
-# from dolphin.db.api import *  # noqa
+from dolphin.db.api import *  # noqa
