@@ -33,13 +33,14 @@ import oslo_messaging as messaging
 from dolphin import context
 from dolphin import exception
 from dolphin import rpc
+from dolphin import coordination
 
 LOG = log.getLogger(__name__)
 
 service_opts = [
-    cfg.IntOpt('report_interval',
-               default=10,
-               help='Seconds between nodes reporting state to datastore.'),
+    cfg.BoolOpt('periodic_enable',
+                default=True,
+                help='If enable periodic task.'),
     cfg.IntOpt('periodic_interval',
                default=60,
                help='Seconds between running periodic tasks.'),
@@ -53,7 +54,7 @@ service_opts = [
                        help='IP address for Dolphin API to listen '
                             'on.'),
     cfg.PortOpt('dolphin_listen_port',
-                default=8188,
+                default=8190,
                 help='Port for Dolphin API to listen on.'),
     cfg.IntOpt('dolphin_workers',
                default=1,
@@ -76,7 +77,7 @@ class Service(service.Service):
     it state to the database services table.
     """
 
-    def __init__(self, host, binary, topic, manager, report_interval=None,
+    def __init__(self, host, binary, topic, manager, periodic_enable=None,
                  periodic_interval=None, periodic_fuzzy_delay=None,
                  service_name=None, coordination=False, *args, **kwargs):
         super(Service, self).__init__()
@@ -90,7 +91,7 @@ class Service(service.Service):
         self.manager = manager_class(host=self.host,
                                      service_name=service_name,
                                      *args, **kwargs)
-        self.report_interval = report_interval
+        self.periodic_enable = periodic_enable
         self.periodic_interval = periodic_interval
         self.periodic_fuzzy_delay = periodic_fuzzy_delay
         self.saved_args, self.saved_kwargs = args, kwargs
@@ -98,22 +99,10 @@ class Service(service.Service):
         self.coordinator = coordination
 
     def start(self):
-        # version_string = version.version_string()
+        if self.coordinator:
+            coordination.LOCK_COORDINATOR.start()
+
         LOG.info('Starting %(topic)s node.', {'topic': self.topic})
-        # self.model_disconnected = False
-        # ctxt = context.get_admin_context()
-
-        # if self.coordinator:
-        #     coordination.LOCK_COORDINATOR.start()
-        #
-        # try:
-        #     service_ref = db.service_get_by_args(ctxt,
-        #                                          self.host,
-        #                                          self.binary)
-        #     self.service_id = service_ref['id']
-        # except exception.NotFound:
-        #     self._create_service_ref(ctxt)
-
         LOG.debug("Creating RPC server for service %s.", self.topic)
 
         target = messaging.Target(topic=self.topic, server=self.host)
@@ -123,11 +112,6 @@ class Service(service.Service):
         self.rpcserver.start()
 
         self.manager.init_host()
-        # if self.report_interval:
-        #     pulse = loopingcall.FixedIntervalLoopingCall(self.report_state)
-        #     pulse.start(interval=self.report_interval,
-        #                 initial_delay=self.report_interval)
-        #     self.timers.append(pulse)
 
         if self.periodic_interval:
             if self.periodic_fuzzy_delay:
@@ -141,24 +125,13 @@ class Service(service.Service):
                            initial_delay=initial_delay)
             self.timers.append(periodic)
 
-    # def _create_service_ref(self, context):
-    #     service_args = {
-    #         'host': self.host,
-    #         'binary': self.binary,
-    #         'topic': self.topic,
-    #         'report_count': 0,
-    #         'availability_zone': self.availability_zone
-    #     }
-    #     service_ref = db.service_create(context, service_args)
-    #     self.service_id = service_ref['id']
-
     def __getattr__(self, key):
         manager = self.__dict__.get('manager', None)
         return getattr(manager, key)
 
     @classmethod
     def create(cls, host=None, binary=None, topic=None, manager=None,
-               report_interval=None, periodic_interval=None,
+               periodic_enable=None, periodic_interval=None,
                periodic_fuzzy_delay=None, service_name=None,
                coordination=False):
         """Instantiates class and passes back application object.
@@ -167,7 +140,7 @@ class Service(service.Service):
         :param binary: defaults to basename of executable
         :param topic: defaults to bin_name - 'dolphin-' part
         :param manager: defaults to CONF.<topic>_manager
-        :param report_interval: defaults to CONF.report_interval
+        :param periodic_enable: defaults to CONF.periodic_enable
         :param periodic_interval: defaults to CONF.periodic_interval
         :param periodic_fuzzy_delay: defaults to CONF.periodic_fuzzy_delay
 
@@ -181,14 +154,14 @@ class Service(service.Service):
         if not manager:
             subtopic = topic.rpartition('dolphin-')[2]
             manager = CONF.get('%s_manager' % subtopic, None)
-        if report_interval is None:
-            report_interval = CONF.report_interval
+        if periodic_enable is None:
+            periodic_enable = CONF.periodic_enable
         if periodic_interval is None:
             periodic_interval = CONF.periodic_interval
         if periodic_fuzzy_delay is None:
             periodic_fuzzy_delay = CONF.periodic_fuzzy_delay
         service_obj = cls(host, binary, topic, manager,
-                          report_interval=report_interval,
+                          periodic_enable=periodic_enable,
                           periodic_interval=periodic_interval,
                           periodic_fuzzy_delay=periodic_fuzzy_delay,
                           service_name=service_name,
@@ -199,10 +172,6 @@ class Service(service.Service):
     def kill(self):
         """Destroy the service object in the datastore."""
         self.stop()
-        # try:
-        #     db.service_destroy(context.get_admin_context(), self.service_id)
-        # except exception.NotFound:
-        #     LOG.warning('Service killed that has no database entry.')
 
     def stop(self):
         # Try to shut the connection down, but if we get any sort of
@@ -216,12 +185,12 @@ class Service(service.Service):
                 x.stop()
             except Exception:
                 pass
-        # if self.coordinator:
-        #     try:
-        #         coordination.LOCK_COORDINATOR.stop()
-        #     except Exception:
-        #         LOG.exception("Unable to stop the Tooz Locking "
-        #                       "Coordinator.")
+        if self.coordinator:
+            try:
+                coordination.LOCK_COORDINATOR.stop()
+            except Exception:
+                LOG.exception("Unable to stop the Tooz Locking "
+                              "Coordinator.")
 
         self.timers = []
 
@@ -254,8 +223,8 @@ class WSGIService(service.ServiceBase):
         self.name = name
         self.manager = self._get_manager()
         self.loader = loader or wsgi.Loader(CONF)
-        # if not rpc.initialized():
-        #     rpc.init(CONF)
+        if not rpc.initialized():
+            rpc.init(CONF)
         self.app = self.loader.load_app(name)
         self.host = getattr(CONF, '%s_listen' % name, "0.0.0.0")
         self.port = getattr(CONF, '%s_listen_port' % name, 0)
@@ -337,27 +306,26 @@ class WSGIService(service.ServiceBase):
 
 def process_launcher():
     # return service.ProcessLauncher(CONF, restart_method='mutate')
-    return service.ServiceLauncher(CONF, restart_method='mutate')
+    return service.ServiceLauncher(CONF, restart_method='reload')
 
-
-# NOTE(vish): the global launcher is to maintain the existing
-#             functionality of calling service.serve +
-#             service.wait
-_launcher = None
-
-
-def serve(server, workers=None):
-    global _launcher
-    if _launcher:
-        raise RuntimeError('serve() can only be called once')
-    _launcher = service.launch(CONF, server, workers=workers,
-                               restart_method='mutate')
-
-
-def wait():
-    CONF.log_opt_values(LOG, log.DEBUG)
-    try:
-        _launcher.wait()
-    except KeyboardInterrupt:
-        _launcher.stop()
-    rpc.cleanup()
+# # NOTE(vish): the global launcher is to maintain the existing
+# #             functionality of calling service.serve +
+# #             service.wait
+# _launcher = None
+#
+#
+# def serve(server, workers=None):
+#     global _launcher
+#     if _launcher:
+#         raise RuntimeError('serve() can only be called once')
+#     _launcher = service.launch(CONF, server, workers=workers,
+#                                restart_method='mutate')
+#
+#
+# def wait():
+#     CONF.log_opt_values(LOG, log.DEBUG)
+#     try:
+#         _launcher.wait()
+#     except KeyboardInterrupt:
+#         _launcher.stop()
+#     rpc.cleanup()

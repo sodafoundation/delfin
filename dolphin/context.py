@@ -15,7 +15,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""RequestContext: context for requests that persist through all of manila."""
+"""RequestContext: context for requests that persist through all of dolphin."""
 
 import copy
 
@@ -70,10 +70,6 @@ class RequestContext(context.RequestContext):
         self.user_id = self.user
         self.project_id = self.tenant
 
-        # if self.is_admin is None:
-        #     self.is_admin = policy.check_is_admin(self)
-        # elif self.is_admin and 'admin' not in self.roles:
-        #     self.roles.append('admin')
         self.read_deleted = read_deleted
         self.remote_address = remote_address
         if not timestamp:
@@ -133,11 +129,6 @@ class RequestContext(context.RequestContext):
             ctx.read_deleted = read_deleted
 
         return ctx
-
-    # def to_policy_values(self):
-    #     policy = super(RequestContext, self).to_policy_values()
-    #     policy['is_admin'] = self.is_admin
-    #     return policy
 
 
 def get_admin_context(read_deleted="no"):

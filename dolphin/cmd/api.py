@@ -25,8 +25,6 @@ import sys
 
 from oslo_config import cfg
 from oslo_log import log
-# from oslo_reports import guru_meditation_report as gmr
-# from oslo_reports import opts as gmr_opts
 
 from dolphin.common import config  # Need to register global_opts
 from dolphin import service
@@ -38,18 +36,17 @@ CONF = cfg.CONF
 
 def main():
     log.register_options(CONF)
-    # gmr_opts.set_defaults(CONF)
     CONF(sys.argv[1:], project='dolphin',
          version=version.version_string())
     log.setup(CONF, "dolphin")
     utils.monkey_patch()
 
-    # gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
     launcher = service.process_launcher()
     api_server = service.WSGIService('dolphin')
     task_server = service.Service.create(binary='dolphin-task', coordination=True)
     launcher.launch_service(api_server, workers=api_server.workers or 1)
     launcher.launch_service(task_server)
+    # TODO: add snmp server and launch it
 
     launcher.wait()
 

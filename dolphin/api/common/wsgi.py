@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# import functools
 import inspect
 import math
 import time
@@ -23,7 +22,6 @@ from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import strutils
 import six
-# from six.moves import http_client
 import webob
 import webob.exc
 
