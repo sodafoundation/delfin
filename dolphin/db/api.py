@@ -57,8 +57,6 @@ _BACKEND_MAPPING = {'sqlalchemy': 'dolphin.db.sqlalchemy.api'}
 IMPL = db_api.DBAPI.from_config(cfg.CONF, backend_mapping=_BACKEND_MAPPING,
                                 lazy=True)
 
-def storage_create(storage,register_info):
-    IMPL.storage_create(storage, register_info)
 
 def register_db():
     IMPL.register_db()
@@ -68,13 +66,33 @@ def storage_get(storage_id):
     return IMPL.storage_get(storage_id)
 
 
-def backend_info_get(context, host):
-    """Get hash info for given host."""
-    return IMPL.backend_info_get(context, host)
+def storage_create(storage, register_info):
+    IMPL.storage_create(storage, register_info)
 
 
-def backend_info_update(context, host, value=None,
-                        delete_existing=False):
-    """Update hash info for host."""
-    return IMPL.backend_info_update(context, host=host, value=value,
-                                    delete_existing=delete_existing)
+def volume_create(volume, storage_id):
+    IMPL.volume_create(volume)
+
+
+def volume_get(volume_id, storage_id):
+    IMPL.volume_get(volume_id, storage_id)
+
+
+def volume_get_all(storage_id):
+    IMPL.volume_get_all(storage_id)
+
+
+def pool_create(pool, storage_id):
+    IMPL.pool_create(pool)
+
+
+def pool_get(pool_id, storage_id):
+    IMPL.pool_get(pool_id, storage_id)
+
+
+def pool_get_all(storage_id):
+    IMPL.pool_get_all(storage_id)
+
+
+def connection_info_get(storage_id):
+    IMPL.connection_info_get(storage_id)

@@ -21,7 +21,7 @@ SQLAlchemy models for Dolphin  data.
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
-from sqlalchemy import Column, Integer, String, schema
+from sqlalchemy import Column, Integer, String, schema, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import orm
 from sqlalchemy import ForeignKey, DateTime, Boolean, Enum
@@ -34,26 +34,11 @@ BASE = declarative_base()
 
 
 class DolphinBase(models.ModelBase,
-                 models.TimestampMixin,
-                 models.SoftDeleteMixin):
+                  models.TimestampMixin):
     """Base class for Dolphin Models."""
     __table_args__ = {'mysql_engine': 'InnoDB'}
     metadata = None
 
-    def to_dict(self):
-        model_dict = {}
-        for k, v in self.items():
-            if not issubclass(type(v), DolphinBase):
-                model_dict[k] = v
-        return model_dict
-
-    def soft_delete(self, session, update_status=False,
-                    status_field_name='status'):
-        """Mark this object as deleted."""
-        if update_status:
-            setattr(self, status_field_name, constants.STATUS_DELETED)
-
-        return super(DolphinBase, self).soft_delete(session)
 
 class ConnectionParams(BASE, DolphinBase):
     """Represent registration parameters required for storage object."""
@@ -62,6 +47,7 @@ class ConnectionParams(BASE, DolphinBase):
     hostname = Column(String(36), default='False')
     username = Column(String(255))
     password = Column(String(255))
+
 
 class Storage(BASE, DolphinBase):
     """Represents a storage object."""
@@ -83,3 +69,42 @@ class Storage(BASE, DolphinBase):
                     "Storage.id=="
                     "ConnectionParams.storage_id)")
 
+
+class Volume(BASE, DolphinBase):
+    """Represents a volume object."""
+    __tablename__ = 'volumes'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(255))
+    description = Column(String(255))
+    status = Column(String(255))
+    total_capacity = Column(Numeric)
+    used_capacity = Column(Numeric)
+    free_capacity = Column(Numeric)
+    storage = orm.relationship(
+        Storage,
+        backref="volumes",
+        foreign_keys=storage_id,
+        primaryjoin="and_("
+                    "Volume.storage_id=="
+                    "Storage.id)")
+
+
+class Pool(BASE, DolphinBase):
+    """Represents a pool object."""
+    __tablename__ = 'pools'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(255))
+    description = Column(String(255))
+    status = Column(String(255))
+    total_capacity = Column(Numeric)
+    used_capacity = Column(Numeric)
+    free_capacity = Column(Numeric)
+    storage = orm.relationship(
+        Storage,
+        backref="pools",
+        foreign_keys=storage_id,
+        primaryjoin="and_("
+                    "Pool.storage_id=="
+                    "Storage.id)")
