@@ -54,16 +54,6 @@ def _create_facade_lazily():
     return _FACADE
 
 
-def get_engine():
-    facade = _create_facade_lazily()
-    return facade.get_engine()
-
-
-def get_session(**kwargs):
-    facade = _create_facade_lazily()
-    return facade.get_session(**kwargs)
-
-
 def get_backend():
     """The backend is this module itself."""
     return sys.modules[__name__]
@@ -77,7 +67,6 @@ def register_db():
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)
-    print(get_backend())
 
 
 def storage_get(storage_id):
@@ -86,7 +75,6 @@ def storage_get(storage_id):
     storage_by_id = this_session.query(Storage) \
         .filter(Storage.id == storage_id) \
         .first()
-    print(storage_by_id)
 
 
 def register_info_create(register_info):
