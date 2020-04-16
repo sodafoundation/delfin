@@ -66,8 +66,8 @@ def storage_get(storage_id):
     return IMPL.storage_get(storage_id)
 
 
-def storage_create(storage, register_info):
-    IMPL.storage_create(storage, register_info)
+def storage_create(storage):
+    IMPL.storage_create(storage)
 
 
 def volume_create(volume, storage_id):
@@ -94,5 +94,13 @@ def pool_get_all(storage_id):
     IMPL.pool_get_all(storage_id)
 
 
-def connection_info_get(storage_id):
-    IMPL.connection_info_get(storage_id)
+def registry_context_create(register_info):
+    return IMPL.registry_context_create(register_info)
+
+
+def registry_context_get(storage_id):
+    return IMPL.registry_context_get(storage_id)
+
+
+def registry_context_get_all():
+    return IMPL.registry_context_get_all()

@@ -24,9 +24,9 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_log import log
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy import  create_engine
 from dolphin.db.sqlalchemy import models
-from dolphin.db.sqlalchemy.models import Storage, ConnectionParams
+from dolphin.db.sqlalchemy.models import Storage, RegistryContext
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -62,11 +62,56 @@ def get_backend():
 def register_db():
     engine = create_engine(_DEFAULT_SQL_CONNECTION, echo=False)
     models = (Storage,
-              ConnectionParams
+              RegistryContext
               )
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)
+
+
+def registry_context_create(register_info):
+    register_ref = models.RegistryContext()
+    register_ref.storage_id = register_info.storage_id
+    register_ref.username = register_info.username
+    register_ref.hostname = register_info.hostname
+    register_ref.password = register_info.password
+    register_ref.extra_attributes = register_info.extra_attributes
+    this_session = get_session()
+    this_session.begin()
+    this_session.add(register_ref)
+    this_session.commit()
+    return register_ref
+
+
+def registry_context_get(storage_id):
+    this_session = get_session()
+    this_session.begin()
+    registry_context = this_session.query(RegistryContext) \
+        .filter(RegistryContext.storage_id == storage_id) \
+        .first()
+    return registry_context
+
+
+def registry_context_get_all():
+    this_session = get_session()
+    this_session.begin()
+    registry_context = this_session.query(RegistryContext).all()
+    return registry_context
+
+
+def storage_create(storage):
+    storage_ref = models.Storage()
+    storage_ref.id = storage.id
+    storage_ref.name = storage.name
+    storage_ref.model = storage.model
+    storage_ref.vendor = storage.vendor
+    storage_ref.description = storage.description
+    storage_ref.location = storage.location
+    this_session = get_session()
+    this_session.begin()
+    this_session.add(storage_ref)
+    this_session.commit()
+    return storage_ref
 
 
 def storage_get(storage_id):
@@ -75,27 +120,4 @@ def storage_get(storage_id):
     storage_by_id = this_session.query(Storage) \
         .filter(Storage.id == storage_id) \
         .first()
-
-
-def register_info_create(register_info):
-    register_ref = models.ConnectionParams()
-    register_ref.storage_id = register_info.storage_id
-    register_ref.hostname = register_info.hostname
-    register_ref.password = register_info.password
-    return register_ref
-
-
-def storage_create(storage, register_info):
-    storage_ref = models.Storage()
-    storage_ref.id = storage.id
-    storage_ref.name = storage.name
-    storage_ref.model = storage.model
-    storage_ref.vendor = storage.vendor
-    storage_ref.description = storage.description
-    storage_ref.location = storage.location
-    storage_ref.connection_param = register_info_create(register_info)
-    this_session = get_session()
-    this_session.begin()
-    this_session.add(storage_ref)
-    this_session.commit()
-    return storage_ref
+    return storage_by_id
