@@ -41,11 +41,26 @@ class ExportManager(object):
         return ExportManager._instance
 
 
-class BaseResourceExporter(object):
-    """Base class for resource exporter."""
+def _dispatch_example(ext, data):
+    ext.obj.dispatch_data(data)
 
-    def report_data(self, data):
-        """Report data to north bound platform.
+
+# Task can call this function to report example data.
+def dispatch_example_data(data):
+    """
+        :param data: Resource data.
+        :type data: dict
+        Redefine this in child classes.
+    """
+    export_manager = ExportManager().export_manager
+    export_manager.map(_dispatch_example, data)
+
+
+class BaseExampleExporter(object):
+    """Base class for example exporter."""
+
+    def dispatch_data(self, data):
+        """Dispatch data to north bound platforms.
             :param data: Resource data.
             :type data: dict
             Redefine this in child classes.

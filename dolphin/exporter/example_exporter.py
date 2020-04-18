@@ -18,38 +18,23 @@ from dolphin.exporter import base_exporter
 LOG = log.getLogger(__name__)
 
 
-def _report_example(ext, data):
-    ext.obj.report_data(data)
-
-
-# Task can call this function to report example data.
-def report_example_data(data):
-    """
-        :param data: Resource data.
-        :type data: dict
-        Redefine this in child classes.
-    """
-    export_manager = base_exporter.ExportManager().export_manager
-    export_manager.map(_report_example, data)
-
-
-class Example1Exporter(base_exporter.BaseResourceExporter):
+class Example1Exporter(base_exporter.BaseExampleExporter):
     def __init__(self):
         """Do some initialization"""
         LOG.info("Init Example1Exporter ...")
 
-    def report_data(self, data):
+    def dispatch_data(self, data):
         LOG.info("Example1: report data ...")
         for name, value in sorted(data.items()):
             LOG.info("example1: %s = %s" % (name, value))
 
 
-class Example2Exporter(base_exporter.BaseResourceExporter):
+class Example2Exporter(base_exporter.BaseExampleExporter):
     def __init__(self):
         """Do some initialization"""
         LOG.info("Init Example2Exporter ...")
 
-    def report_data(self, data):
+    def dispatch_data(self, data):
         LOG.info("Example2: report data ...")
         for name, value in sorted(data.items()):
             LOG.info("example2: %s = %s" % (name, value))

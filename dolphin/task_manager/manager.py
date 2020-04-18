@@ -25,7 +25,7 @@ from oslo_service import periodic_task
 from dolphin import manager
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import coordination
-from dolphin.exporter import example_exporter
+from dolphin.exporter import base_exporter
 from dolphin import context
 
 LOG = log.getLogger(__name__)
@@ -59,7 +59,7 @@ class TaskManager(manager.Manager):
                 'pool_num': '4',
             }
             # report data to northbound platform
-            example_exporter.report_example_data(data)
+            base_exporter.dispatch_example_data(data)
 
         except Exception as ex:
             pass
