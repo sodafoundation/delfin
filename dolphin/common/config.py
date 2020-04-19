@@ -77,6 +77,9 @@ global_opts = [
     cfg.StrOpt('dolphin_task_topic',
                default='dolphin-task',
                help='The topic task manager nodes listen on.'),
+    cfg.StrOpt('alert_manager',
+               default='dolphin.alert_manager.trap_receiver.TrapReceiver',
+               help='Full class name for the alert manager.'),
 ]
 
 CONF.register_opts(global_opts)

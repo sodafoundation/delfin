@@ -34,6 +34,8 @@ from dolphin import context
 from dolphin import exception
 from dolphin import rpc
 from dolphin import coordination
+from dolphin import alert_manager
+from dolphin.alert_manager import constants
 
 LOG = log.getLogger(__name__)
 
@@ -63,6 +65,12 @@ service_opts = [
                 default=False,
                 help='Wraps the socket in a SSL context if True is set. '
                      'A certificate file and key file must be specified.'),
+    cfg.HostAddressOpt('trap_receiver_addr',
+                       default="0.0.0.0",
+                       help='IP address at which trap receiver listens.'),
+    cfg.PortOpt('trap_receiver_port',
+                default=162,
+                help='Port at which trap receiver listens.'),
 ]
 
 CONF = cfg.CONF
@@ -208,6 +216,42 @@ class Service(service.Service):
         ctxt = context.get_admin_context()
         self.manager.periodic_tasks(ctxt, raise_on_error=raise_on_error)
 
+class AlertMngrService(service.Service):
+    """Service object for triggering trap receiver functionalities.
+    """
+
+    def __init__(self, host=None, manager=None, service_name=None, receiverIpAddr=None, receiverPort=None,  coordination=False,
+                 *args, **kwargs):
+        super(AlertMngrService, self).__init__()
+        if not rpc.initialized():
+            rpc.init(CONF)
+        if not host:
+            host = CONF.host
+        if not manager:
+            manager = constants.TRAP_RECEIVER_CLASS
+        self.host = host
+        self.snmpEngine = None
+        self.manager_class_name = manager
+        self.service_name = service_name
+        self.receiverIpAddr = getattr(CONF, 'trap_receiver_addr', constants.DEF_TRAP_RECV_ADDR)
+        self.receiverPort = getattr(CONF, 'trap_receiver_port', constants.DEF_TRAP_RECV_PORT)
+
+        manager_class = importutils.import_class(self.manager_class_name)
+        self.manager = manager_class(host=self.host,
+                                     receiverIpAddr=self.receiverIpAddr,
+                                     *args, **kwargs)
+    def start(self):
+        """Trigger trap receiver creation"""
+        self.manager.start_trap_receiver()
+
+    def kill(self):
+        """Destroy the service object in the datastore."""
+        self.stop()
+
+    def stop(self):
+        # Try to shut the connection down, but if we get any sort of
+        # errors, go ahead and ignore them.. as we're shutting down anyway
+        self.manager.stop_trap_receiver()
 
 class WSGIService(service.ServiceBase):
     """Provides ability to launch API from a 'paste' configuration."""
