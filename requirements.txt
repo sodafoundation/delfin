@@ -43,3 +43,4 @@ tooz>=1.58.0 # Apache-2.0
 python-cinderclient!=4.0.0,>=3.3.0 # Apache-2.0
 python-novaclient>=9.1.0 # Apache-2.0
 WebOb>=1.7.1 # MIT
+redis==3.3.8

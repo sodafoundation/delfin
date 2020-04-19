@@ -24,15 +24,15 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_log import log
-from sqlalchemy import  create_engine
+from sqlalchemy import create_engine
 from dolphin.db.sqlalchemy import models
-from dolphin.db.sqlalchemy.models import Storage, RegistryContext
+from dolphin.db.sqlalchemy.models import Storage, RegistryContext, RegisteredDeviceList
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 _FACADE = None
 
-_DEFAULT_SQL_CONNECTION = 'sqlite:///'
+_DEFAULT_SQL_CONNECTION = 'sqlite:////var/lib/dolphin'
 db_options.set_defaults(cfg.CONF,
                         connection=_DEFAULT_SQL_CONNECTION)
 
@@ -114,6 +114,17 @@ def storage_create(storage):
     return storage_ref
 
 
+def registered_device_list(storage):
+    storage_ref = models.RegisteredDeviceList()
+    storage_ref.id = storage.id
+    storage_ref.name = storage.name
+    this_session = get_session()
+    this_session.begin()
+    this_session.add(storage_ref)
+    this_session.commit()
+    return storage_ref
+
+
 def storage_get(storage_id):
     this_session = get_session()
     this_session.begin()
@@ -121,3 +132,10 @@ def storage_get(storage_id):
         .filter(Storage.id == storage_id) \
         .first()
     return storage_by_id
+
+
+def get_registered_device_list():
+    this_session = get_session()
+    this_session.begin()
+    device_list = this_session.query(RegisteredDeviceList.name).all()
+    return device_list

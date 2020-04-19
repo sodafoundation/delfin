@@ -35,6 +35,7 @@ from oslo_utils import netutils
 CONF = cfg.CONF
 log.register_options(CONF)
 
+device_list = []
 
 core_opts = [
     cfg.StrOpt('state_path',

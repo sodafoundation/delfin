@@ -22,13 +22,14 @@ from dolphin.api import extensions
 from dolphin.api import common
 from dolphin.api.common import wsgi
 from dolphin.api.views import versions as views_versions
+from dolphin.resource_manager import registration  ## need to remove. just for testing
 
 CONF = cfg.CONF
 
 _LINKS = [{
     'rel': 'describedby',
     'type': 'text/html',
-    'href': 'http://docs.openstack.org/',
+    'href': 'https://sodafoundation.io',
 }]
 
 _MEDIA_TYPES = [{

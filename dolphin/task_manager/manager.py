@@ -26,6 +26,8 @@ from dolphin import manager
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import coordination
 from dolphin import context
+from dolphin.db.sqlalchemy import api
+from dolphin.driver_manager import manager as dm
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -42,6 +44,7 @@ class TaskManager(manager.Manager):
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
     """Periodical task, this task will use coordination for distribute synchronization."""
+
     @periodic_task.periodic_task(spacing=2, run_immediately=True)
     @coordination.synchronized('lock-task-example')
     def _task_example(self, context):
@@ -54,3 +57,43 @@ class TaskManager(manager.Manager):
             LOG.info("Consume say hello task ...")
         except Exception as ex:
             pass
+
+    @periodic_task.periodic_task(spacing=15, run_immediately=True)
+    @coordination.synchronized('lock-task-example')
+    def periodic_pool_task(self, context):
+        if api.get_registered_device_list():
+            device_list = api.get_registered_device_list()
+            for device in device_list:
+                self.task_rpcapi.pool_storage(context, device)
+
+    @periodic_task.periodic_task(spacing=5, run_immediately=True)
+    @coordination.synchronized('lock-task-example')
+    def periodic_volume_task(self, context):
+        if api.get_registered_device_list():
+            device_list = api.get_registered_device_list()
+            for device in device_list:
+                self.task_rpcapi.volume_storage(context, device)
+
+    def volume_storage(self, context, request_spec=None, filter_properties=None):
+        # 1. Call the list volumes
+        try:
+            obj = dm.Driver()
+            obj.list_volumes(context, request_spec)
+            LOG.info("%s Volume", request_spec)
+        except Exception as ex:
+            print "In volume exception. Please handle it"
+            pass
+
+        # 2. Update the data to DB
+
+    def pool_storage(self, context, request_spec=None, filter_properties=None):
+        # 1. call the list pool
+        try:
+            obj = dm.Driver()
+            obj.list_pools(context, request_spec)
+            LOG.info("%s pool", request_spec)
+        except Exception as ex:
+            print "In pool exception. Please handle it"
+            pass
+
+        # 2. Update to the DB

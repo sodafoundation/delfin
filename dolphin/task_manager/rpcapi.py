@@ -49,3 +49,19 @@ class TaskAPI(object):
                                  'say_hello',
                                  request_spec=request_spec_p,
                                  filter_properties=filter_properties)
+
+    def volume_storage(self, context, request_spec=None, filter_properties=None):
+        request_spec_p = jsonutils.to_primitive(request_spec)
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(context, 'volume_storage',
+                                 request_spec=request_spec_p,
+                                 filter_properties=filter_properties
+                                 )
+
+    def pool_storage(self, context, request_spec=None, filter_properties=None):
+        request_spec_p = jsonutils.to_primitive(request_spec)
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(context, 'pool_storage',
+                                 request_spec=request_spec_p,
+                                 filter_properties=filter_properties
+                                 )

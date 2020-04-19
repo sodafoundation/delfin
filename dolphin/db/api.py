@@ -70,7 +70,11 @@ def storage_create(storage):
     IMPL.storage_create(storage)
 
 
-def volume_create(volume, storage_id):
+def update_device_list(storage):
+    IMPL.update_device_list(storage)
+
+
+def volume_create(volume):
     IMPL.volume_create(volume)
 
 

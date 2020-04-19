@@ -66,6 +66,13 @@ class Storage(BASE, DolphinBase):
     free_capacity = Column(Numeric)
 
 
+class RegisteredDeviceList(BASE, DolphinBase):
+    """Represents a storage object."""
+
+    __tablename__ = 'registered_device_list'
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+
 
 class Volume(BASE, DolphinBase):
     """Represents a volume object."""

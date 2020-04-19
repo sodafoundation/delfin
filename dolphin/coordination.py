@@ -31,7 +31,7 @@ LOG = log.getLogger(__name__)
 
 coordination_opts = [
     cfg.StrOpt('backend_url',
-               default='redis://127.0.0.1:6379',
+               default='redis://localhost:6379',
                help='The back end URL to use for distributed coordination.')
 ]
 
