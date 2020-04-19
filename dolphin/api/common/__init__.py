@@ -48,7 +48,7 @@ class APIMapper(routes.Mapper):
 class ProjectMapper(APIMapper):
     def resource(self, member_name, collection_name, **kwargs):
         if 'parent_resource' not in kwargs:
-            kwargs['path_prefix'] = '{project_id}/'
+            kwargs['path_prefix'] = '/'
         else:
             parent_resource = kwargs['parent_resource']
             p_collection = parent_resource['collection_name']

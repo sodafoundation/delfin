@@ -1,4 +1,4 @@
-# Copyright 2010 OpenStack LLC.
+    # Copyright 2010 OpenStack LLC.
 # Copyright 2015 Clinton Knight
 # All Rights Reserved.
 #
