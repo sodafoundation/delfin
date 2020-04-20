@@ -1,11 +1,15 @@
 import shlex
 import subprocess
 from oslo_log import log
+from oslo_utils import uuidutils
+
 LOG = log.getLogger(__name__)
 
 DEVICE_INFO = {
-    'id': 'string',
-    'name': 'string',
+    'storage_id': uuidutils.generate_uuid(),
+    'hostname': 'string',
+    'username': 'string',
+    'password': 'string',
     'description': 'string',
     'status': 'string',
     'total_capacity': 'double',

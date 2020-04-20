@@ -26,7 +26,7 @@ from dolphin import manager
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import coordination
 from dolphin import context
-from dolphin.db.sqlalchemy import api
+from dolphin.db.sqlalchemy import api as sqldb
 from dolphin.driver_manager import manager as dm
 
 LOG = log.getLogger(__name__)
@@ -61,16 +61,16 @@ class TaskManager(manager.Manager):
     @periodic_task.periodic_task(spacing=15, run_immediately=True)
     @coordination.synchronized('lock-task-example')
     def periodic_pool_task(self, context):
-        if api.get_registered_device_list():
-            device_list = api.get_registered_device_list()
+        if sqldb.registry_context_get_all():
+            device_list = sqldb.registry_context_get_all('hostname')
             for device in device_list:
                 self.task_rpcapi.pool_storage(context, device)
 
     @periodic_task.periodic_task(spacing=5, run_immediately=True)
     @coordination.synchronized('lock-task-example')
     def periodic_volume_task(self, context):
-        if api.get_registered_device_list():
-            device_list = api.get_registered_device_list()
+        if sqldb.registry_context_get_all():
+            device_list = sqldb.registry_context_get_all('hostname')
             for device in device_list:
                 self.task_rpcapi.volume_storage(context, device)
 

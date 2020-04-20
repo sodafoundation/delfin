@@ -92,10 +92,13 @@ def registry_context_get(storage_id):
     return registry_context
 
 
-def registry_context_get_all():
+def registry_context_get_all(filter=None):
     this_session = get_session()
     this_session.begin()
-    registry_context = this_session.query(RegistryContext).all()
+    if filter == 'hostname':
+        registry_context = this_session.query(RegistryContext.hostname).all()
+    else:
+        registry_context = this_session.query(RegistryContext).all()
     return registry_context
 
 
@@ -114,17 +117,6 @@ def storage_create(storage):
     return storage_ref
 
 
-def registered_device_list(storage):
-    storage_ref = models.RegisteredDeviceList()
-    storage_ref.id = storage.id
-    storage_ref.name = storage.name
-    this_session = get_session()
-    this_session.begin()
-    this_session.add(storage_ref)
-    this_session.commit()
-    return storage_ref
-
-
 def storage_get(storage_id):
     this_session = get_session()
     this_session.begin()
@@ -132,10 +124,3 @@ def storage_get(storage_id):
         .filter(Storage.id == storage_id) \
         .first()
     return storage_by_id
-
-
-def get_registered_device_list():
-    this_session = get_session()
-    this_session.begin()
-    device_list = this_session.query(RegisteredDeviceList.name).all()
-    return device_list
