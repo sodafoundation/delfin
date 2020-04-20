@@ -220,26 +220,13 @@ class AlertMngrService(service.Service):
     """Service object for triggering trap receiver functionalities.
     """
 
-    def __init__(self, host=None, manager=None, service_name=None, receiverIpAddr=None, receiverPort=None,  coordination=False,
-                 *args, **kwargs):
+    def __init__(self):
         super(AlertMngrService, self).__init__()
-        if not rpc.initialized():
-            rpc.init(CONF)
-        if not host:
-            host = CONF.host
-        if not manager:
-            manager = constants.TRAP_RECEIVER_CLASS
-        self.host = host
-        self.snmpEngine = None
-        self.manager_class_name = manager
-        self.service_name = service_name
-        self.receiverIpAddr = getattr(CONF, 'trap_receiver_addr', constants.DEF_TRAP_RECV_ADDR)
-        self.receiverPort = getattr(CONF, 'trap_receiver_port', constants.DEF_TRAP_RECV_PORT)
 
-        manager_class = importutils.import_class(self.manager_class_name)
-        self.manager = manager_class(host=self.host,
-                                     receiverIpAddr=self.receiverIpAddr,
-                                     *args, **kwargs)
+        self.manager_class_name = constants.TRAP_RECEIVER_CLASS
+        manager_class = importutils.import_class(constants.TRAP_RECEIVER_CLASS)
+        self.manager = manager_class()
+
     def start(self):
         """Trigger trap receiver creation"""
         self.manager.start_trap_receiver()

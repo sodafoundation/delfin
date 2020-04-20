@@ -1,21 +1,19 @@
-# Copyright (c) 2014 NetApp Inc.
-# All Rights Reserved.
+# Copyright 2018 The OpenSDS Authors.
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+#   http:#www.apache.org/licenses/LICENSE-2.0
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
-
 **trap receiver**
-
 """
 from oslo_log import log
 
@@ -25,35 +23,35 @@ from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.proto.api import v2c
 from pysnmp.smi import builder, view, rfc1902, error
 
-from dolphin import manager
 from dolphin.alert_manager import constants
 
 LOG = log.getLogger(__name__)
 
-#Currently one mib file is loaded, All files to be loaded
-LOAD_MIB_MODULE = 'SNMPv2-MIB'
+# Currently static mib file list is loaded, logic to be changed to load all mib file
+MIB_LOAD_LIST = ['SNMPv2-MIB','IF_MIB']
 
-class TrapReceiver(manager.Manager):
+class TrapReceiver(object):
+
     """Trap receiver functions"""
+    def __init__(self, mibViewController=None, snmpEngine=None):
+        self.mibViewController = mibViewController
+        self.snmpEngine = snmpEngine
 
-    def __init__(self,receiverIpAddr=None, *args, **kwargs):
-        super(TrapReceiver, self).__init__(*args, **kwargs)
-
-    def _mib_builder(self, load_mibs_list):
+    # Loads the list of mib files provided
+    def _mib_builder(self):
         mibBuilder = builder.MibBuilder()
         try:
-            global mibViewController
-            mibViewController = view.MibViewController(mibBuilder)
-            if load_mibs_list:
-                _mibs = LOAD_MIB_MODULE.split(",")
-                mibBuilder.loadModules(*_mibs)
-        except error.MibNotFoundError as excep:
-            LOG.info(" {} Mib Not Found!".format(excep))
+            self.mibViewController = view.MibViewController(mibBuilder)
 
+            mib_list = MIB_LOAD_LIST
+            if (len(mib_list) > 0):
+                mibBuilder.loadModules_new(*mib_list)
+
+        except error.MibNotFoundError as excep:
+            LOG.exception("Mib load failed")
+
+    # Configures the transport parameters for the snmp engine
     def _add_transport(self):
-        """
-        :return:
-        """
         try:
             config.addTransport(
                 self.snmpEngine,
@@ -61,11 +59,11 @@ class TrapReceiver(manager.Manager):
                 udp.UdpTransport().openServerMode((constants.DEF_TRAP_RECV_ADDR, int(constants.DEF_TRAP_RECV_PORT)))
             )
         except Exception as e:
-            LOG.info("{} Port Binding Failed the Provided Port {} is in Use".format(e, self.receiverPort))
+            LOG.exception("Port binding failed the provided port is in use")
 
+    # Callback function to process the incoming trap
     def _cbFun(self, stateReference, contextEngineId, contextName,
               varBinds, cbCtx):
-        global mibViewController
         LOG.info("####################### NEW Notification #######################")
         execContext = self.snmpEngine.observer.getExecutionContext('rfc3412.receiveMessage:request')
         LOG.info(
@@ -74,16 +72,13 @@ class TrapReceiver(manager.Manager):
             contextName.prettyPrint(), execContext['securityModel'], execContext['securityName']))
         for oid, val in varBinds:
             output = rfc1902.ObjectType(rfc1902.ObjectIdentity(oid), val).resolveWithMib(
-                mibViewController).prettyPrint()
+                self.mibViewController).prettyPrint()
             LOG.info(output)
 
-    def _configure_snmp_userpara(self):
-        """
-        :return:
-        """
-
-        COMMUNITYSTRING = constants.SNMP_COMMUNITY_STR
-        config.addV1System(self.snmpEngine, COMMUNITYSTRING, COMMUNITYSTRING)
+    # Configures snmp v2 and v3 user parameters
+    def _snmp_v2v3_config(self):
+        community_str = constants.SNMP_COMMUNITY_STR
+        config.addV1System(self.snmpEngine, community_str, community_str)
         __authProtocol = {
             'usmHMACMD5AuthProtocol': config.usmHMACMD5AuthProtocol,
             'usmHMACSHAAuthProtocol': config.usmHMACSHAAuthProtocol,
@@ -94,8 +89,6 @@ class TrapReceiver(manager.Manager):
             'usmNoAuthProtocol': config.usmNoAuthProtocol,
             'usmNoPrivProtocol': config.usmNoPrivProtocol
         }
-
-
         config.addV3User(
             self.snmpEngine, userName=constants.SNMP_USM_USER,
             authKey=constants.SNMP_V3_AUTHKEY, privKey=constants.SNMP_V3_PRIVKEY,
@@ -108,14 +101,15 @@ class TrapReceiver(manager.Manager):
 
         return
 
+    # Triggers the snmp trap receiver
     def start_trap_receiver(self):
         snmpEngine = engine.SnmpEngine()
         self.snmpEngine = snmpEngine
 
-        # Load all the mibs
-        self._mib_builder(LOAD_MIB_MODULE)
+        # Load all the mibs and do snmp config
+        self._mib_builder()
 
-        self._configure_snmp_userpara()
+        self._snmp_v2v3_config()
 
         # Register callback for notification receiver
         ntfrcv.NotificationReceiver(snmpEngine, self._cbFun)
@@ -131,6 +125,7 @@ class TrapReceiver(manager.Manager):
             snmpEngine.transportDispatcher.closeDispatcher()
             raise
 
+    # Stops the snmp trap receiver
     def stop_trap_receiver(self):
         if self.snmpEngine:
             self.snmpEngine.transportDispatcher.closeDispatcher()
