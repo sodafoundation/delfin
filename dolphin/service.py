@@ -34,7 +34,6 @@ from dolphin import context
 from dolphin import exception
 from dolphin import rpc
 from dolphin import coordination
-from dolphin import alert_manager
 from dolphin.alert_manager import constants
 
 LOG = log.getLogger(__name__)
@@ -65,12 +64,15 @@ service_opts = [
                 default=False,
                 help='Wraps the socket in a SSL context if True is set. '
                      'A certificate file and key file must be specified.'),
-    cfg.HostAddressOpt('trap_receiver_addr',
-                       default="0.0.0.0",
+    cfg.HostAddressOpt('trap_receiver_address',
+                       default=constants.DEF_TRAP_RECV_ADDR,
                        help='IP address at which trap receiver listens.'),
     cfg.PortOpt('trap_receiver_port',
-                default=162,
+                default=constants.DEF_TRAP_RECV_PORT,
                 help='Port at which trap receiver listens.'),
+    cfg.StrOpt('snmp_mib_path',
+               default=constants.SNMP_MIB_PATH,
+               help='Path at which mib files to be loaded are placed.'),
 ]
 
 CONF = cfg.CONF
@@ -220,12 +222,21 @@ class AlertMngrService(service.Service):
     """Service object for triggering trap receiver functionalities.
     """
 
-    def __init__(self):
+    def __init__(self, trap_receiver_address=None,
+                 trap_receiver_port=None, snmp_mib_path=None, trap_receiver_class=None):
         super(AlertMngrService, self).__init__()
 
-        self.manager_class_name = constants.TRAP_RECEIVER_CLASS
-        manager_class = importutils.import_class(constants.TRAP_RECEIVER_CLASS)
-        self.manager = manager_class()
+        if not trap_receiver_address:
+            trap_receiver_address = CONF.trap_receiver_address
+        if not trap_receiver_port:
+            trap_receiver_port = CONF.trap_receiver_port
+        if not snmp_mib_path:
+            snmp_mib_path = CONF.snmp_mib_path
+        if not trap_receiver_class:
+            trap_receiver_class = CONF.trap_receiver_class
+        manager_class = importutils.import_class(trap_receiver_class)
+        self.manager = manager_class(trap_receiver_address,
+                                     trap_receiver_port, snmp_mib_path)
 
     def start(self):
         """Trigger trap receiver creation"""

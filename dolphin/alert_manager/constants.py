@@ -1,4 +1,4 @@
-# Copyright 2018 The OpenSDS Authors.
+# Copyright 2020 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,4 +28,7 @@ SNMP_V3_PRIV_PROTOCOL="usmDESPrivProtocol"
 SNMP_ENGINE_ID="800000d30300000e112245"
 
 # Temporary mib lod dir. This mechanism to be changed later
-MIB_DIR_PATH = '/usr/local/lib/python3.6/dist-packages/pysnmp/smi/mibs'
+SNMP_MIB_PATH = '/usr/local/lib/python3.6/dist-packages/pysnmp/smi/mibs'
+
+# SNMP dispatcher job id (static identifier)
+SNMP_DISPATCHER_JOB_ID = 1
