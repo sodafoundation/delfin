@@ -24,7 +24,7 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_log import log
-from sqlalchemy import  create_engine
+from sqlalchemy import create_engine
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, RegistryContext
 
@@ -32,7 +32,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 _FACADE = None
 
-_DEFAULT_SQL_CONNECTION = 'sqlite:///'
+_DEFAULT_SQL_CONNECTION = 'sqlite:////var/lib/dolphin'
 db_options.set_defaults(cfg.CONF,
                         connection=_DEFAULT_SQL_CONNECTION)
 
@@ -92,10 +92,13 @@ def registry_context_get(storage_id):
     return registry_context
 
 
-def registry_context_get_all():
+def registry_context_get_all(filter=None):
     this_session = get_session()
     this_session.begin()
-    registry_context = this_session.query(RegistryContext).all()
+    if filter == 'hostname':
+        registry_context = this_session.query(RegistryContext.hostname).all()
+    else:
+        registry_context = this_session.query(RegistryContext).all()
     return registry_context
 
 
@@ -105,8 +108,13 @@ def storage_create(storage):
     storage_ref.name = storage.name
     storage_ref.model = storage.model
     storage_ref.vendor = storage.vendor
+    storage_ref.status = storage.status
     storage_ref.description = storage.description
     storage_ref.location = storage.location
+    storage_ref.serial_number = storage.serial_number
+    storage_ref.total_capacity = storage.total_capacity
+    storage_ref.used_capacity = storage.used_capacity
+    storage_ref.free_capacity = storage.free_capacity
     this_session = get_session()
     this_session.begin()
     this_session.add(storage_ref)
@@ -121,3 +129,10 @@ def storage_get(storage_id):
         .filter(Storage.id == storage_id) \
         .first()
     return storage_by_id
+
+
+def storage_get_all():
+    this_session = get_session()
+    this_session.begin()
+    all_storages = this_session.query(Storage).all()
+    return all_storages

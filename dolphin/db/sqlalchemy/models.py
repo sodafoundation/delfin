@@ -61,10 +61,9 @@ class Storage(BASE, DolphinBase):
     status = Column(String(255))
     serial_number = Column(String(255))
     location = Column(String(255))
-    total_capacity = Column(Numeric)
-    used_capacity = Column(Numeric)
-    free_capacity = Column(Numeric)
-
+    total_capacity = Column(Integer)
+    used_capacity = Column(Integer)
+    free_capacity = Column(Integer)
 
 
 class Volume(BASE, DolphinBase):
