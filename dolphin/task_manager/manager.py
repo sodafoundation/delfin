@@ -24,8 +24,8 @@ from oslo_service import periodic_task
 
 from dolphin import manager
 from dolphin.task_manager import rpcapi as task_rpcapi
-from dolphin import coordination
-from dolphin import context
+from dolphin.db.sqlalchemy import api as sqldb
+from dolphin.driver_manager import manager as dm
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -41,16 +41,45 @@ class TaskManager(manager.Manager):
         super(TaskManager, self).__init__(*args, **kwargs)
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
-    """Periodical task, this task will use coordination for distribute synchronization."""
-    @periodic_task.periodic_task(spacing=2, run_immediately=True)
-    @coordination.synchronized('lock-task-example')
-    def _task_example(self, context):
-        LOG.info("Produce task, say hello ...")
-        self.task_rpcapi.say_hello(context)
-
-    def say_hello(self, context, request_spec=None,
-                  filter_properties=None):
+    def get_volumes(self, context, request_spec=None, filter_properties=None):
+        # 1. Call the list volumes
         try:
-            LOG.info("Consume say hello task ...")
-        except Exception as ex:
-            pass
+            driver = dm.Driver()
+            driver.list_volumes(context, request_spec)
+        except:
+            LOG.error("Volume retreival failed in driver")
+
+        # 2. Update the data to DB
+
+    def get_pools(self, context, request_spec=None, filter_properties=None):
+        try:
+            driver = dm.Driver()
+            driver.list_pools(context, request_spec)
+        except:
+            LOG.error("Pool retreival failed in driver")
+
+    def storage_device_details(self, context, req):
+        """
+         :param context:
+         :param req:
+         :return:
+        """
+        LOG.info("Produce task, say hello ...")
+
+        if sqldb.registry_context_get_all():
+            device_list = sqldb.registry_context_get_all()
+            for device in device_list:
+                try:
+                    self.task_rpcapi.get_pools(context, device)
+                except:
+                    LOG.error('Pools retreival failed!!')
+                    raise Exception
+
+                try:
+                    self.task_rpcapi.get_volumes(context, device)
+                except:
+                    LOG.error('Volumes retreival failed!!')
+                    raise Exception
+        else:
+            return LOG.info('There is no registered device available')
+        return

@@ -21,6 +21,7 @@ import oslo_messaging as messaging
 from oslo_serialization import jsonutils
 
 from dolphin import rpc
+from dolphin.coordination import LOG
 
 CONF = cfg.CONF
 
@@ -41,11 +42,18 @@ class TaskAPI(object):
                                   version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap=self.RPC_API_VERSION)
 
-    def say_hello(self, context, request_spec=None,
-                  filter_properties=None):
+    def get_volumes(self, context, request_spec=None, filter_properties=None):
         request_spec_p = jsonutils.to_primitive(request_spec)
         call_context = self.client.prepare(version='1.0')
-        return call_context.cast(context,
-                                 'say_hello',
+        return call_context.cast(context, 'get_volumes',
                                  request_spec=request_spec_p,
-                                 filter_properties=filter_properties)
+                                 filter_properties=filter_properties
+                                 )
+
+    def get_pools(self, context, request_spec=None, filter_properties=None):
+        request_spec_p = jsonutils.to_primitive(request_spec)
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(context, 'get_pools',
+                                 request_spec=request_spec_p,
+                                 filter_properties=filter_properties
+                                 )
