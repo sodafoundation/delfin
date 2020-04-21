@@ -22,7 +22,7 @@ from dolphin.resource_manager import storages
 class StorageController(wsgi.Controller):
 
     def index(self, req):
-        return storages.get_all()
+        return storages.get_all(req)
 
     def show(self, req, id):
         return dict(name="Storage 2")

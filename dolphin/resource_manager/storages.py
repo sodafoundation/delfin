@@ -37,6 +37,18 @@ def build_storage(storage):
     return view
 
 
-def get_all():
+def get_all(req):
     storage_all = db.storage_get_all()
+    search_opts = [
+        'name',
+        'vendor',
+        'model',
+        'status',
+    ]
+    for search_opt in search_opts:
+        if search_opt in req.GET:
+            value = req.GET[search_opt]
+            storage_all = [s for s in storage_all if s[search_opt] == value]
+        if len(storage_all) == 0:
+            break
     return build_storages(storage_all)
