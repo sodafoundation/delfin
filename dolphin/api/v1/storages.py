@@ -16,12 +16,13 @@ from six.moves import http_client
 import webob
 
 from dolphin.api.common import wsgi
+from dolphin.resource_manager import storages
 
 
 class StorageController(wsgi.Controller):
 
     def index(self, req):
-        return dict(name="Storage 1")
+        return storages.get_all()
 
     def show(self, req, id):
         return dict(name="Storage 2")

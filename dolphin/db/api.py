@@ -65,12 +65,18 @@ def register_db():
 def storage_get(storage_id):
     return IMPL.storage_get(storage_id)
 
+def storage_get_all():
+    return IMPL.storage_get_all()
 
 def storage_create(storage):
     IMPL.storage_create(storage)
 
 
-def volume_create(volume, storage_id):
+def update_device_list(storage):
+    IMPL.update_device_list(storage)
+
+
+def volume_create(volume):
     IMPL.volume_create(volume)
 
 
