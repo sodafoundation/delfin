@@ -103,7 +103,7 @@ def registry_context_create(values):
 
 
 def registry_context_update(values):
-    return IMPL.registry_context_update(register_info)
+    return IMPL.registry_context_update(values)
 
 
 def registry_context_get(storage_id):
