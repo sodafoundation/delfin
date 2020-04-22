@@ -39,7 +39,6 @@ class APIRouter(common.APIRouter):
                         member={'sync': 'POST'})
         mapper.resource("storage", "storages",
                         controller=self.resources["storages"],
-                        collection={"detail": "GET"},
                         member={"action": "POST"})
 
         self.resources['pools'] = pools.create_resource()
