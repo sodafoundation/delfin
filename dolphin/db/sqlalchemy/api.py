@@ -24,7 +24,8 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_log import log
-from sqlalchemy import create_engine
+from oslo_utils import uuidutils
+from sqlalchemy import create_engine, update
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, RegistryContext
 
