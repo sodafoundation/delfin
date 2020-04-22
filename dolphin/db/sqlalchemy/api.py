@@ -33,7 +33,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 _FACADE = None
 
-_DEFAULT_SQL_CONNECTION = 'sqlite:////var/lib/dolphin'
+_DEFAULT_SQL_CONNECTION = 'sqlite:///'
 db_options.set_defaults(cfg.CONF,
                         connection=_DEFAULT_SQL_CONNECTION)
 

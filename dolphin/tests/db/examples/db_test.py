@@ -27,6 +27,9 @@ storage = {'name':'Array1','id':storage_id,'vendor':'EMC','model':'VMAX','descri
 
 def main():
     # Initialize DB Connection
+    # Add below section in dolphin.conf for DB connection
+    # [database]
+    # connection = sqlite:////var/lib/dolphin/dolphin.sqlite
     CONF(sys.argv[1:], project='dolphin',
          version='v1')
     db.register_db()
