@@ -35,6 +35,12 @@ class DolphinBase(models.ModelBase,
     """Base class for Dolphin Models."""
     __table_args__ = {'mysql_engine': 'InnoDB'}
     metadata = None
+    def to_dict(self):
+        model_dict = {}
+        for k, v in self.items():
+            if not issubclass(type(v), DolphinBase):
+                model_dict[k] = v
+        return model_dict
 
 
 class RegistryContext(BASE, DolphinBase):
