@@ -55,11 +55,11 @@ def get_all(req):
 
 def register(self, req, body):
     """
-            This is create function for registering the new storage device
-            :param req:
-            :param body: "It contains the all input parameters"
-            :return:
-            """
+    This is create function for registering the new storage device
+    :param req:
+    :param body: "It contains the all input parameters"
+    :return:
+    """
     # Check if body is valid
     if not self.is_valid_body(body, 'storages'):
         msg = "Storage entity not found in request body"
