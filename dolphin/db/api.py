@@ -65,43 +65,45 @@ def register_db():
 def storage_get(storage_id):
     return IMPL.storage_get(storage_id)
 
+
 def storage_get_all():
     return IMPL.storage_get_all()
 
-def storage_create(storage):
-    IMPL.storage_create(storage)
+
+def storage_create(values):
+    return IMPL.storage_create(values)
 
 
-def update_device_list(storage):
-    IMPL.update_device_list(storage)
+def volume_create(values):
+    return IMPL.volume_create(values)
 
 
-def volume_create(volume):
-    IMPL.volume_create(volume)
-
-
-def volume_get(volume_id, storage_id):
-    IMPL.volume_get(volume_id, storage_id)
+def volume_get(volume_id):
+    return IMPL.volume_get(volume_id)
 
 
 def volume_get_all(storage_id):
-    IMPL.volume_get_all(storage_id)
+    return IMPL.volume_get_all(storage_id)
 
 
-def pool_create(pool, storage_id):
-    IMPL.pool_create(pool)
+def pool_create(values):
+    return IMPL.pool_create(values)
 
 
-def pool_get(pool_id, storage_id):
-    IMPL.pool_get(pool_id, storage_id)
+def pool_get(pool_id):
+    return IMPL.pool_get(pool_id)
 
 
 def pool_get_all(storage_id):
-    IMPL.pool_get_all(storage_id)
+    return IMPL.pool_get_all(storage_id)
 
 
-def registry_context_create(register_info):
-    return IMPL.registry_context_create(register_info)
+def registry_context_create(values):
+    return IMPL.registry_context_create(values)
+
+
+def registry_context_update(values):
+    return IMPL.registry_context_update(register_info)
 
 
 def registry_context_get(storage_id):

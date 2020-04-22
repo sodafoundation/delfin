@@ -32,7 +32,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 _FACADE = None
 
-_DEFAULT_SQL_CONNECTION = 'sqlite:////var/lib/dolphin'
+_DEFAULT_SQL_CONNECTION = 'sqlite:///'
 db_options.set_defaults(cfg.CONF,
                         connection=_DEFAULT_SQL_CONNECTION)
 
@@ -69,15 +69,11 @@ def register_db():
         model.metadata.create_all(engine)
 
 
-def registry_context_create(register_info):
+def registry_context_create(values):
     register_ref = models.RegistryContext()
-    register_ref.storage_id = register_info.storage_id
-    register_ref.username = register_info.username
-    register_ref.hostname = register_info.hostname
-    register_ref.password = register_info.password
-    register_ref.extra_attributes = register_info.extra_attributes
     this_session = get_session()
     this_session.begin()
+    register_ref.update(values)
     this_session.add(register_ref)
     this_session.commit()
     return register_ref
@@ -102,21 +98,11 @@ def registry_context_get_all(filter=None):
     return registry_context
 
 
-def storage_create(storage):
+def storage_create(values):
     storage_ref = models.Storage()
-    storage_ref.id = storage.id
-    storage_ref.name = storage.name
-    storage_ref.model = storage.model
-    storage_ref.vendor = storage.vendor
-    storage_ref.status = storage.status
-    storage_ref.description = storage.description
-    storage_ref.location = storage.location
-    storage_ref.serial_number = storage.serial_number
-    storage_ref.total_capacity = storage.total_capacity
-    storage_ref.used_capacity = storage.used_capacity
-    storage_ref.free_capacity = storage.free_capacity
     this_session = get_session()
     this_session.begin()
+    storage_ref.update(values)
     this_session.add(storage_ref)
     this_session.commit()
     return storage_ref
