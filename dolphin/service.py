@@ -240,16 +240,15 @@ class AlertMngrService(service.Service):
 
     def start(self):
         """Trigger trap receiver creation"""
-        self.manager.start_trap_receiver()
+        self.manager.start()
 
     def kill(self):
         """Destroy the service object in the datastore."""
         self.stop()
 
     def stop(self):
-        # Try to shut the connection down, but if we get any sort of
-        # errors, go ahead and ignore them.. as we're shutting down anyway
-        self.manager.stop_trap_receiver()
+        """Calls the shutdown flow of the service."""
+        self.manager.stop()
 
 class WSGIService(service.ServiceBase):
     """Provides ability to launch API from a 'paste' configuration."""

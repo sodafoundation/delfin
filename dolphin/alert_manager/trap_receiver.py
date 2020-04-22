@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-**trap receiver**
-"""
 from oslo_log import log
 
 from pysnmp.entity import engine, config
@@ -31,7 +28,7 @@ LOG = log.getLogger(__name__)
 MIB_LOAD_LIST = ['SNMPv2-MIB','IF_MIB']
 
 class TrapReceiver(object):
-    """Trap receiver functions."""
+    """Trap listening and processing functions"""
 
     def __init__(self, trap_receiver_address, trap_receiver_port,
                  snmp_mib_path, mib_view_controller=None, snmp_engine=None):
@@ -41,8 +38,8 @@ class TrapReceiver(object):
         self.trap_receiver_port = trap_receiver_port
         self.snmp_mib_path = snmp_mib_path
 
-    # Loads the list of mib files provided
     def _mib_builder(self):
+        """Loads given set of mib files from given path."""
         mib_builder = builder.MibBuilder()
         try:
             self.mib_view_controller = view.MibViewController(mib_builder)
@@ -50,15 +47,13 @@ class TrapReceiver(object):
             # set mib path to mib_builder object and load mibs
             mib_path = builder.DirMibSource(self.snmp_mib_path),
             mib_builder.setMibSources(*mib_path)
-            mib_list = MIB_LOAD_LIST
-            if len(mib_list) > 0:
-                mib_builder.loadModules_new(*mib_list)
-
+            if len(MIB_LOAD_LIST) > 0:
+                mib_builder.loadModules(*MIB_LOAD_LIST)
         except error.MibNotFoundError:
-            LOG.exception("Mib load failed")
+            LOG.error("Mib load failed.")
 
-    # Configures the transport parameters for the snmp engine
     def _add_transport(self):
+        """Configures the transport parameters for the snmp engine."""
         try:
             config.addTransport(
                 self.snmp_engine,
@@ -66,26 +61,26 @@ class TrapReceiver(object):
                 udp.UdpTransport().openServerMode((self.trap_receiver_address, int(self.trap_receiver_port)))
             )
         except Exception:
-            LOG.exception("Port binding failed the provided port is in use")
+            LOG.error("Port binding failed the provided port is in use.")
 
-    # Callback function to process the incoming trap
-    def _cbFun(self, state_reference, context_engine_id, context_name,
+    def _cb_fun(self, state_reference, context_engine_id, context_name,
               var_binds, cb_ctx):
-        execContext = self.snmp_engine.observer.getExecutionContext('rfc3412.receiveMessage:request')
+        """Callback function to process the incoming trap."""
+        exec_context = self.snmp_engine.observer.getExecutionContext('rfc3412.receiveMessage:request')
         LOG.info(
             '#Notification from %s \n#ContextEngineId: "%s" \n#ContextName: "%s" \n#SNMPVER "%s" \n#SecurityName "%s"' % (
-            '@'.join([str(x) for x in execContext['transportAddress']]), context_engine_id.prettyPrint(),
-            context_name.prettyPrint(), execContext['securityModel'], execContext['securityName']))
+            '@'.join([str(x) for x in exec_context['transportAddress']]), context_engine_id.prettyPrint(),
+            context_name.prettyPrint(), exec_context['securityModel'], exec_context['securityName']))
         for oid, val in var_binds:
             output = rfc1902.ObjectType(rfc1902.ObjectIdentity(oid), val).resolveWithMib(
                 self.mib_view_controller).prettyPrint()
             LOG.info(output)
 
-    # Configures snmp v2 and v3 user parameters
     def _snmp_v2v3_config(self):
+        """Configures snmp v2 and v3 user parameters."""
         community_str = constants.SNMP_COMMUNITY_STR
         config.addV1System(self.snmp_engine, community_str, community_str)
-        __authProtocol = {
+        auth_priv_protocols = {
             'usmHMACMD5AuthProtocol': config.usmHMACMD5AuthProtocol,
             'usmHMACSHAAuthProtocol': config.usmHMACSHAAuthProtocol,
             'usmAesCfb128Protocol': config.usmAesCfb128Protocol,
@@ -98,17 +93,17 @@ class TrapReceiver(object):
         config.addV3User(
             self.snmp_engine, userName=constants.SNMP_USM_USER,
             authKey=constants.SNMP_V3_AUTHKEY, privKey=constants.SNMP_V3_PRIVKEY,
-            authProtocol=__authProtocol.get(
+            authProtocol=auth_priv_protocols.get(
                 constants.SNMP_V3_AUTH_PROTOCOL, config.usmNoAuthProtocol),
-            privProtocol=__authProtocol.get(
+            privProtocol=auth_priv_protocols.get(
                 constants.SNMP_V3_PRIV_PROTOCOL, config.usmNoPrivProtocol),
             securityEngineId=v2c.OctetString(
                 hexValue=constants.SNMP_ENGINE_ID))
 
         return
 
-    # Triggers the snmp trap receiver
-    def start_trap_receiver(self):
+    def start(self):
+        """Starts the snmp trap receiver with necessary prerequisites."""
         snmp_engine = engine.SnmpEngine()
         self.snmp_engine = snmp_engine
 
@@ -118,20 +113,23 @@ class TrapReceiver(object):
         self._snmp_v2v3_config()
 
         # Register callback for notification receiver
-        ntfrcv.NotificationReceiver(snmp_engine, self._cbFun)
+        ntfrcv.NotificationReceiver(snmp_engine, self._cb_fun)
 
         # Add transport info(ip, port) and start the listener
         self._add_transport()
 
         snmp_engine.transportDispatcher.jobStarted(constants.SNMP_DISPATCHER_JOB_ID)
         try:
-            LOG.info("Trap Listener started .....")
+            LOG.info("Starting trap receiver.")
             snmp_engine.transportDispatcher.runDispatcher()
-        except Exception as e:
+
+        except Exception:
+            LOG.error("Failed to start trap listener.")
             snmp_engine.transportDispatcher.closeDispatcher()
 
-    # Stops the snmp trap receiver
-    def stop_trap_receiver(self):
+    def stop(self):
+        """Brings down the snmp trap receiver."""
+        # Go ahead with shutdown, ignore if any errors happening during the process as it is shutdown
         if self.snmp_engine:
             self.snmp_engine.transportDispatcher.closeDispatcher()
-        LOG.info("Trap Listener stopped .....")
+        LOG.info("Trap receiver stopped.")
