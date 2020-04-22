@@ -15,14 +15,19 @@
 
 from setuptools import setup, find_packages
 
+
 setup(
     name="dolphin",
     version="1.0",
     author="SODA Authors",
     author_email="Opensds-tech-discuss@lists.opensds.io",
-    homepage="https://opensds.io",
     license="Apache 2.0",
-    maintanier="sfzeng",
     packages=find_packages(exclude=("tests", "tests.*")),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+    entry_points={
+        'resource.exporter': [
+            'example1 = dolphin.exporter.example_exporter:Example1Exporter',
+            'example2 = dolphin.exporter.example_exporter:Example2Exporter'
+        ],
+    },
 )
