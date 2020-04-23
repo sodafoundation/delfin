@@ -19,11 +19,11 @@ class FakeStorageDriver(driver.StorageDriver):
     """FakeStorageDriver shows how to implement the StorageDriver,
     it also plays a role as faker to fake data for being tested by clients"""
 
-    def __init__(self, storage):
-        super().__init__(storage)
-
     @staticmethod
     def get_storage_registry():
+        pass
+
+    def register_storage(self, context, register_info):
         pass
 
     def get_storage(self, context):
@@ -40,3 +40,6 @@ class FakeStorageDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
+
+    def __init__(self, storage):
+        super().__init__(storage)

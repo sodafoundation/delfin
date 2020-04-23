@@ -25,30 +25,40 @@ DRIVER_MAPPING = {
 class DriverManager(object):
 
     def __init__(self):
+        # The driver_factory will keep the driver instance for
+        # each of storage systems so that the session between driver
+        # and storage system is effectively used.
         self.driver_factory = dict()
 
     @staticmethod
     def get_storage_registry():
+        """Show register parameters which the driver needs."""
         pass
 
     def register_storage(self, context, register_info):
+        """Discovery a storage system with register parameters."""
         pass
 
-    def remove_storage(self, context, storage_info):
-        """Needs to clear driver from driver factory"""
+    def remove_storage(self, context, storage_id):
+        """Clear driver instance from driver factory."""
+        self.driver_factory.pop(storage_id, None)
+
+    def get_storage(self, context, storage_id):
+        """Get storage device information from storage system"""
         pass
 
-    def get_storage(self, context, storage_info):
+    def list_pools(self, context, storage_id):
+        """List all storage pools from storage system."""
         pass
 
-    def list_pools(self, context, storage_info):
+    def list_volumes(self, context, storage_id):
+        """List all storage volumes from storage system."""
         pass
 
-    def list_volumes(self, context, storage_info):
+    def parse_alert(self, context, storage_id, alert):
+        """Parse alert data got from snmp trap server."""
         pass
 
-    def parse_alert(self, context, storage_info, alert):
-        pass
-
-    def clear_alert(self, context, storage_info, alert):
+    def clear_alert(self, context, storage_id, alert):
+        """Clear alert from storage system."""
         pass
