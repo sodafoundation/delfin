@@ -77,6 +77,9 @@ global_opts = [
     cfg.StrOpt('dolphin_task_topic',
                default='dolphin-task',
                help='The topic task manager nodes listen on.'),
+    cfg.StrOpt('dolphin_cryptor',
+               default='base64',
+               help='cryptor type'),
 ]
 
 CONF.register_opts(global_opts)
