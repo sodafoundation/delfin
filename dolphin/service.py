@@ -240,7 +240,10 @@ class AlertMngrService(service.Service):
 
     def start(self):
         """Trigger trap receiver creation"""
-        self.manager.start()
+        try:
+            self.manager.start()
+        except Exception:
+            LOG.exception("Failed to start alert manager service.")
 
     def kill(self):
         """Destroy the service object in the datastore."""

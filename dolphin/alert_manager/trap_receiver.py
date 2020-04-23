@@ -49,8 +49,8 @@ class TrapReceiver(object):
             mib_builder.setMibSources(*mib_path)
             if len(MIB_LOAD_LIST) > 0:
                 mib_builder.loadModules(*MIB_LOAD_LIST)
-        except error.MibNotFoundError:
-            LOG.error("Mib load failed.")
+        except Exception:
+            raise ValueError("Mib load failed.")
 
     def _add_transport(self):
         """Configures the transport parameters for the snmp engine."""
@@ -61,7 +61,7 @@ class TrapReceiver(object):
                 udp.UdpTransport().openServerMode((self.trap_receiver_address, int(self.trap_receiver_port)))
             )
         except Exception:
-            LOG.error("Port binding failed the provided port is in use.")
+            raise ValueError("Port binding failed the provided port is in use.")
 
     def _cb_fun(self, state_reference, context_engine_id, context_name,
               var_binds, cb_ctx):
@@ -107,25 +107,28 @@ class TrapReceiver(object):
         snmp_engine = engine.SnmpEngine()
         self.snmp_engine = snmp_engine
 
-        # Load all the mibs and do snmp config
-        self._mib_builder()
+        try:
+            # Load all the mibs and do snmp config
+            self._mib_builder()
 
-        self._snmp_v2v3_config()
+            self._snmp_v2v3_config()
 
-        # Register callback for notification receiver
-        ntfrcv.NotificationReceiver(snmp_engine, self._cb_fun)
+            # Register callback for notification receiver
+            ntfrcv.NotificationReceiver(snmp_engine, self._cb_fun)
 
-        # Add transport info(ip, port) and start the listener
-        self._add_transport()
+            # Add transport info(ip, port) and start the listener
+            self._add_transport()
 
-        snmp_engine.transportDispatcher.jobStarted(constants.SNMP_DISPATCHER_JOB_ID)
+            snmp_engine.transportDispatcher.jobStarted(constants.SNMP_DISPATCHER_JOB_ID)
+        except Exception:
+            raise ValueError("Failed to setup for trap listener.")
+
         try:
             LOG.info("Starting trap receiver.")
             snmp_engine.transportDispatcher.runDispatcher()
-
         except Exception:
-            LOG.error("Failed to start trap listener.")
             snmp_engine.transportDispatcher.closeDispatcher()
+            raise ValueError("Failed to start trap listener.")
 
     def stop(self):
         """Brings down the snmp trap receiver."""
