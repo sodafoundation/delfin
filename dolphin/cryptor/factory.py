@@ -12,15 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo_config import cfg
+
 from dolphin.cryptor import descryptor, base64cryptor, aescryptor
+
+CONF = cfg.CONF
 
 
 class CryptorFactory(object):
     cryptors = {'base64': base64cryptor.Base64, 'aes': aescryptor.Aes, 'des': descryptor.Des}
 
     @staticmethod
-    def get(cryptor_type='base64'):
+    def get(cryptor_type=None):
+        if cryptor_type is None:
+            cryptor_type = CONF.dolphin_cryptor
         if cryptor_type in CryptorFactory.cryptors.keys():
             return CryptorFactory.cryptors[cryptor_type.lower()]
         else:
-            return None
+            # Treat base64 as the default cryptor
+            return CryptorFactory.cryptors['base64']
