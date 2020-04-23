@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The storages api implementation."""
+"""The storages api implementation"""
 
 import copy
 
