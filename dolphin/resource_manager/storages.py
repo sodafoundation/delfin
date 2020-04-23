@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""The storages api implementation."""
 
 import copy
 
-from webob import exc
 from oslo_log import log
-
 from dolphin import db
 from dolphin.db.sqlalchemy import api as db
+from webob import exc
 from dolphin.driver_manager import manager as drivermanager
+from dolphin.api.common import wsgi
 
 LOG = log.getLogger(__name__)
 
@@ -61,7 +62,7 @@ def register(self, req, body):
     :return:
     """
     # Check if body is valid
-    if not self.is_valid_body(body, 'storages'):
+    if not wsgi.Controller.is_valid_body(body, 'storages'):
         msg = "Storage entity not found in request body"
         raise exc.HTTPUnprocessableEntity(explanation=msg)
 
