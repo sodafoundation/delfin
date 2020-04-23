@@ -55,6 +55,14 @@ class DriverManager(object):
         """List all storage volumes from storage system."""
         pass
 
+    def add_trap_config(self, context, storage_id, trap_config):
+        """Config the trap receiver in storage system."""
+        pass
+
+    def remove_trap_config(self, context, storage_id, trap_config):
+        """Remove trap receiver configuration from storage system."""
+        pass
+
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
         pass

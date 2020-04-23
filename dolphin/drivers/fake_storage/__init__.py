@@ -17,7 +17,11 @@ from dolphin.drivers import driver
 
 class FakeStorageDriver(driver.StorageDriver):
     """FakeStorageDriver shows how to implement the StorageDriver,
-    it also plays a role as faker to fake data for being tested by clients"""
+    it also plays a role as faker to fake data for being tested by clients.
+    """
+
+    def __init__(self, storage_id):
+        super().__init__(storage_id)
 
     @staticmethod
     def get_storage_registry():
@@ -35,11 +39,14 @@ class FakeStorageDriver(driver.StorageDriver):
     def list_volumes(self, context):
         pass
 
+    def add_trap_config(self, context, trap_config):
+        pass
+
+    def remove_trap_config(self, context, trap_config):
+        pass
+
     def parse_alert(self, context, alert):
         pass
 
     def clear_alert(self, context, alert):
         pass
-
-    def __init__(self, storage):
-        super().__init__(storage)
