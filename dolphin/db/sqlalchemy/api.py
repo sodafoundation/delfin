@@ -70,9 +70,9 @@ def register_db():
         model.metadata.create_all(engine)
 
 
-def registry_context_create(context, values):
-    """Create a registry context."""
-    register_ref = models.RegistryContext()
+def storage_access_create(context, values):
+    """Create a storage access."""
+    register_ref = models.StorageAccess()
     this_session = get_session()
     this_session.begin()
     register_ref.update(values)
@@ -81,31 +81,31 @@ def registry_context_create(context, values):
     return register_ref
 
 
-def registry_context_update(context, registry_context_id, values):
-    """Update a registry context with the values dictionary."""
+def storage_access_update(context, storage_access_id, values):
+    """Update a storage access with the values dictionary."""
     return NotImplemented
 
 
-def registry_context_get(context, storage_id):
-    """Get a registry context."""
+def storage_access_get(context, storage_id):
+    """Get a storage access."""
     this_session = get_session()
     this_session.begin()
-    registry_context = this_session.query(RegistryContext) \
-        .filter(RegistryContext.storage_id == storage_id) \
+    storage_access = this_session.query(StorageAccess) \
+        .filter(StorageAccess.storage_id == storage_id) \
         .first()
-    return registry_context
+    return storage_access
 
 
-def registry_context_get_all(context, marker=None, limit=None, sort_keys=None,
+def storage_access_get_all(context, marker=None, limit=None, sort_keys=None,
                              sort_dirs=None, filters=None, offset=None):
-    """Retrieves all registry contexts."""
+    """Retrieves all storage accesses."""
     this_session = get_session()
     this_session.begin()
     if filters.get('hostname', False):
-        registry_context = this_session.query(RegistryContext.hostname).all()
+        storage_access = this_session.query(StorageAccess.hostname).all()
     else:
-        registry_context = this_session.query(RegistryContext).all()
-    return registry_context
+        storage_access = this_session.query(StorageAccess).all()
+    return storage_access
 
 
 def storage_create(context, values):
