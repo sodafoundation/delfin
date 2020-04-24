@@ -14,8 +14,32 @@
 
 from six.moves import http_client
 import webob
+from webob import exc
+from oslo_log import log
 
 from dolphin.api.common import wsgi
+from dolphin.drivers import manager as drivermanager
+from dolphin.db.sqlalchemy import api as db
+from dolphin import exception
+from dolphin import utils
+
+LOG = log.getLogger(__name__)
+
+
+def validate_parameters(data, required_parameters,
+                        fix_response=False):
+    if fix_response:
+        exc_response = exc.HTTPBadRequest
+    else:
+        exc_response = exc.HTTPUnprocessableEntity
+
+    for parameter in required_parameters:
+        if parameter not in data:
+            msg = ("Required parameter %s not found.") % parameter
+            raise exc_response(explanation=msg)
+        if not data.get(parameter):
+            msg = ("Required parameter %s is empty.") % parameter
+            raise exc_response(explanation=msg)
 
 
 class StorageController(wsgi.Controller):
@@ -27,7 +51,53 @@ class StorageController(wsgi.Controller):
         return dict(name="Storage 2")
 
     def create(self, req, body):
-        return dict(name="Storage 3")
+        """
+        This function for registering the new storage device
+        :param req:
+        :param body: "It contains the all input parameters"
+        :return:
+        """
+        # Check if body is valid
+        if not self.is_valid_body(body, 'storages'):
+            msg = ("Storage entity not found in request body")
+            raise exc.HTTPUnprocessableEntity(explanation=msg)
+
+        storage = body['storages']
+
+        # validate the body has all required parameters
+        required_parameters = ('hostip', 'vendor', 'model', 'username', 'password')
+        validate_parameters(storage, required_parameters)
+
+        # validate the hostip
+        if not utils.is_valid_ip_address(storage['hostip'], ip_version='4'):
+            msg = ("Invalid hostip. Please provide a valid hostip")
+            LOG.error(msg)
+            raise exception.InvalidHost(msg)
+
+        # get dolphin.context. Later may be validated context parameters
+        context = req.environ.get('dolphin.context')
+
+        driver = drivermanager.DriverManager()
+        device_info = driver.register_storage(context, storage)
+        if device_info.get('status') == 'available':
+            try:
+                storage['storage_id'] = device_info.get('id')
+                db.storage_access_create(context, storage)
+            except Exception:
+                msg = ('Exception during registry context creation')
+                LOG.exception(msg)
+                raise exception.DolphinException(msg)
+
+            try:
+                db.storage_create(context, device_info)
+            except Exception:
+                msg = ('Exception during storage creation')
+                LOG.exception(msg)
+                raise exception.DolphinException(msg)
+        else:
+            LOG.error('Device registration failed')
+
+        return storage
 
     def update(self, req, id, body):
         return dict(name="Storage 4")
@@ -44,5 +114,3 @@ class StorageController(wsgi.Controller):
 
 def create_resource():
     return wsgi.Resource(StorageController())
-
-
