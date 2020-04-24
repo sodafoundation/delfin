@@ -61,7 +61,7 @@ def get_backend():
 
 
 def register_db():
-    engine = create_engine(_DEFAULT_SQL_CONNECTION, echo=False)
+    """Create database and tables."""
     models = (Storage,
               RegistryContext
               )
@@ -70,7 +70,8 @@ def register_db():
         model.metadata.create_all(engine)
 
 
-def registry_context_create(values):
+def registry_context_create(context, values):
+    """Create a registry context."""
     register_ref = models.RegistryContext()
     this_session = get_session()
     this_session.begin()
@@ -80,7 +81,13 @@ def registry_context_create(values):
     return register_ref
 
 
-def registry_context_get(storage_id):
+def registry_context_update(context, registry_context_id, values):
+    """Update a registry context with the values dictionary."""
+    return NotImplemented
+
+
+def registry_context_get(context, storage_id):
+    """Get a registry context."""
     this_session = get_session()
     this_session.begin()
     registry_context = this_session.query(RegistryContext) \
@@ -89,17 +96,20 @@ def registry_context_get(storage_id):
     return registry_context
 
 
-def registry_context_get_all(filter=None):
+def registry_context_get_all(context, marker=None, limit=None, sort_keys=None,
+                             sort_dirs=None, filters=None, offset=None):
+    """Retrieves all registry contexts."""
     this_session = get_session()
     this_session.begin()
-    if filter == 'hostname':
+    if filters.get('hostname', False):
         registry_context = this_session.query(RegistryContext.hostname).all()
     else:
         registry_context = this_session.query(RegistryContext).all()
     return registry_context
 
 
-def storage_create(values):
+def storage_create(context, values):
+    """Add a storage device from the values dictionary."""
     storage_ref = models.Storage()
     this_session = get_session()
     this_session.begin()
@@ -109,7 +119,13 @@ def storage_create(values):
     return storage_ref
 
 
-def storage_get(storage_id):
+def storage_update(context, storage_id, values):
+    """Update a storage device with the values dictionary."""
+    return NotImplemented
+
+
+def storage_get(context, storage_id):
+    """Retrieve a storage device."""
     this_session = get_session()
     this_session.begin()
     storage_by_id = this_session.query(Storage) \
@@ -118,8 +134,75 @@ def storage_get(storage_id):
     return storage_by_id
 
 
-def storage_get_all():
+def storage_get_all(context, marker=None, limit=None, sort_keys=None,
+                    sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage devices."""
+
     this_session = get_session()
     this_session.begin()
+    # TODO: need to handle all input parameters
     all_storages = this_session.query(Storage).all()
     return all_storages
+
+
+def volume_create(context, values):
+    """Create a volume from the values dictionary."""
+    return NotImplemented
+
+
+def volume_update(context, volume_id, values):
+    """Update a volume with the values dictionary."""
+    return NotImplemented
+
+
+def volume_get(context, volume_id):
+    """Get a volume or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def volume_get_all(context, marker=None, limit=None, sort_keys=None,
+                   sort_dirs=None, filters=None, offset=None):
+    """Retrieves all volumes."""
+    return NotImplemented
+
+
+def pool_create(context, values):
+    """Create a pool from the values dictionary."""
+    return NotImplemented
+
+
+def pool_update(context, pool_id, values):
+    """Update a pool withe the values dictionary."""
+    return NotImplemented
+
+
+def pool_get(context, pool_id):
+    """Get a pool or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def pool_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage pools."""
+    return NotImplemented
+
+
+def disk_create(context, values):
+    """Create a disk from the values dictionary."""
+    return NotImplemented
+
+
+def disk_update(context, disk_id, values):
+    """Update a disk withe the values dictionary."""
+    return NotImplemented
+
+
+def disk_get(context, disk_id):
+    """Get a disk or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def disk_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all disks."""
+    return NotImplemented
