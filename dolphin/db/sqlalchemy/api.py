@@ -27,7 +27,7 @@ from oslo_log import log
 from oslo_utils import uuidutils
 from sqlalchemy import create_engine, update
 from dolphin.db.sqlalchemy import models
-from dolphin.db.sqlalchemy.models import Storage, RegistryContext
+from dolphin.db.sqlalchemy.models import Storage, StorageAccess
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -63,7 +63,7 @@ def get_backend():
 def register_db():
     """Create database and tables."""
     models = (Storage,
-              RegistryContext
+              StorageAccess
               )
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
