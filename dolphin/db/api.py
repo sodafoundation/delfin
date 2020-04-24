@@ -50,11 +50,11 @@ db_opts = [
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(db_opts)
+CONF.register_opts(db_opts, "database")
 
 _BACKEND_MAPPING = {'sqlalchemy': 'dolphin.db.sqlalchemy.api'}
-IMPL = db_api.DBAPI.from_config(cfg.CONF, backend_mapping=_BACKEND_MAPPING,
-                                lazy=True)
+IMPL = db_api.DBAPI(CONF.database.db_backend, backend_mapping=_BACKEND_MAPPING,
+                    lazy=True)
 
 
 def register_db():
