@@ -14,10 +14,8 @@
 
 from six.moves import http_client
 import webob
-from webob import exc
 
 from dolphin.api.common import wsgi
-from dolphin.resource_manager import storages
 
 
 class StorageController(wsgi.Controller):
@@ -29,17 +27,7 @@ class StorageController(wsgi.Controller):
         return dict(name="Storage 2")
 
     def create(self, req, body):
-        """
-        :param req:
-        :param body:
-        :return:
-        """
-        # Check if body is valid
-        if not self.is_valid_body(body, 'storages'):
-            msg = "Storage entity not found in request body"
-            raise exc.HTTPUnprocessableEntity(explanation=msg)
-
-        return storages.register(self, req, body)
+        return dict(name="Storage 3")
 
     def update(self, req, id, body):
         return dict(name="Storage 4")
