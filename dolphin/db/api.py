@@ -222,26 +222,26 @@ def disk_get_all(context, marker=None, limit=None, sort_keys=None,
                              filters, offset)
 
 
-def registry_context_create(context, values):
-    """Create a registry context that used to connect
+def storage_access_create(context, values):
+    """Create a storage access that used to connect
     to a specific storage device.
     """
-    return IMPL.registry_context_create(context, values)
+    return IMPL.storage_access_create(context, values)
 
 
-def registry_context_update(context, registry_context_id, values):
-    """Update a registry context with the values dictionary."""
-    return IMPL.registry_context_update(context, registry_context_id, values)
+def storage_access_update(context, storage_access_id, values):
+    """Update a storage access with the values dictionary."""
+    return IMPL.storage_access_update(context, storage_access_id, values)
 
 
-def registry_context_get(context, storage_id):
-    """Get a registry context."""
-    return IMPL.registry_context_get(context, storage_id)
+def storage_access_get(context, storage_id):
+    """Get a storage access."""
+    return IMPL.storage_access_get(context, storage_id)
 
 
-def registry_context_get_all(context, marker=None, limit=None, sort_keys=None,
-                             sort_dirs=None, filters=None, offset=None):
-    """Retrieves all registry contexts.
+def storage_access_get_all(context, marker=None, limit=None, sort_keys=None,
+                           sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage accesses.
 
     If no sort parameters are specified then the returned volumes are sorted
     first by the 'created_at' key and then by the 'id' key in descending
@@ -258,7 +258,7 @@ def registry_context_get_all(context, marker=None, limit=None, sort_keys=None,
                       'desc' for descending order
     :param filters: dictionary of filters
     :param offset: number of items to skip
-    :returns: list of registry contexts
+    :returns: list of storage accesses
     """
-    return IMPL.registry_context_get_all(context, marker, limit, sort_keys, sort_dirs,
+    return IMPL.storage_access_get_all(context, marker, limit, sort_keys, sort_dirs,
                                          filters, offset)
