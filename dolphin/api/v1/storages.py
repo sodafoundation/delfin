@@ -13,12 +13,15 @@
 # limitations under the License.
 import copy
 
+from oslo_log import log
 from six.moves import http_client
 import webob
+from webob import exc
 
-from dolphin import db
+from dolphin import db, context
 from dolphin.api.common import wsgi
 
+LOG = log.getLogger(__name__)
 
 def build_storages(storages):
     views = [build_storage(storage)
@@ -30,23 +33,50 @@ def build_storage(storage):
     view = copy.deepcopy(storage)
     return view
 
+
 class StorageController(wsgi.Controller):
 
     def index(self, req):
-        storage_all = db.storage_get_all()
-        search_opts = [
+
+        supported_filters = [
             'name',
             'vendor',
             'model',
             'status',
         ]
-        for search_opt in search_opts:
-            if search_opt in req.GET:
-                value = req.GET[search_opt]
-                storage_all = [s for s in storage_all if s[search_opt] == value]
-            if len(storage_all) == 0:
-                break
-        return build_storages(storage_all)
+        filters = {}
+        filters.update(req.GET)
+        # update options  other than filters
+        if 'sort_key' in filters:
+            sort_key = filters['sort_key']
+        else:
+            sort_key = None
+        if 'sort_dir' in filters:
+            sort_dir = filters['sort_dir']
+        else:
+            sort_dir = None
+        if 'limit' in filters:
+            limit = filters['limit']
+        else:
+            limit = None
+        if 'offset' in filters:
+            offset = filters['offset']
+        else:
+            offset = None
+        # strip out options except supported filter options
+        unknown_options = [opt for opt in filters
+                           if opt not in supported_filters]
+        bad_options = ", ".join(unknown_options)
+        LOG.debug("Removing options '%(bad_options)s' from query",
+                  {"bad_options": bad_options})
+        for opt in unknown_options:
+            del filters[opt]
+        try:
+            storages = db.storage_get_all(context, None, limit, sort_key, sort_dir, filters, offset)
+        except:
+            msg = "Error in storage_get_all query from DB "
+            raise exc.HTTPNotFound(explanation=msg)
+        return build_storages(storages)
 
     def show(self, req, id):
         return dict(name="Storage 2")

@@ -66,8 +66,9 @@ def storage_get(storage_id):
     return IMPL.storage_get(storage_id)
 
 
-def storage_get_all():
-    return IMPL.storage_get_all()
+def storage_get_all(context, marker=None, limit=None, sort_key=None,
+                    sort_dir=None, filters=None, offset=None):
+    return IMPL.storage_get_all(context,marker,limit,sort_key,sort_dir,filters,offset)
 
 
 def storage_create(values):

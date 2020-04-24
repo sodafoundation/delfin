@@ -26,6 +26,8 @@ from oslo_db.sqlalchemy import session
 from oslo_log import log
 from oslo_utils import uuidutils
 from sqlalchemy import create_engine, update
+
+from dolphin import exception
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, RegistryContext
 
@@ -36,6 +38,18 @@ _FACADE = None
 _DEFAULT_SQL_CONNECTION = 'sqlite:///'
 db_options.set_defaults(cfg.CONF,
                         connection=_DEFAULT_SQL_CONNECTION)
+
+
+def apply_sorting(model, query, sort_key, sort_dir):
+    if sort_dir.lower() not in ('desc', 'asc'):
+        msg = _("Wrong sorting data provided: sort key is '%(sort_key)s' "
+                "and sort direction is '%(sort_dir)s'.") % {
+                  "sort_key": sort_key, "sort_dir": sort_dir}
+        raise exception.InvalidInput(reason=msg)
+
+    sort_attr = getattr(model, sort_key)
+    sort_method = getattr(sort_attr, sort_dir.lower())
+    return query.order_by(sort_method())
 
 
 def get_engine():
@@ -118,8 +132,34 @@ def storage_get(storage_id):
     return storage_by_id
 
 
-def storage_get_all():
+def storage_get_all(context, marker=None, limit=None, sort_key=None,
+                    sort_dir=None, filters=None, offset=None):
     this_session = get_session()
     this_session.begin()
-    all_storages = this_session.query(Storage).all()
-    return all_storages
+    if not sort_key:
+        sort_key = 'created_at'
+    if not sort_dir:
+        sort_dir = 'desc'
+    this_session = get_session()
+    this_session.begin()
+    query = this_session.query(models.Storage)
+    if limit:
+        offset = filters.get('offset', 0)
+        query = query.limit(limit).offset(offset)
+
+    if filters:
+
+        for attr, value in filters.items():
+            query = query.filter(getattr(models.Storage, attr).like("%%%s%%" % value))
+    try:
+        query = apply_sorting(models.Storage, query, sort_key, sort_dir)
+    except AttributeError:
+        msg = "Wrong sorting key provided - '%s'." % sort_key
+        raise exception.InvalidInput(reason=msg)
+
+    # Returns list of storages  that satisfy filters.
+    storages_all = query.all()
+    if storages_all:
+        return storages_all
+    else:
+        raise exception.NotFound()
