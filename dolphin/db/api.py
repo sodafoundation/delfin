@@ -222,26 +222,26 @@ def disk_get_all(context, marker=None, limit=None, sort_keys=None,
                              filters, offset)
 
 
-def storage_access_create(context, values):
-    """Create a storage access that used to connect
+def access_info_create(context, values):
+    """Create a storage access information that used to connect
     to a specific storage device.
     """
-    return IMPL.storage_access_create(context, values)
+    return IMPL.access_info_create(context, values)
 
 
-def storage_access_update(context, storage_access_id, values):
-    """Update a storage access with the values dictionary."""
-    return IMPL.storage_access_update(context, storage_access_id, values)
+def access_info_update(context, access_info_id, values):
+    """Update a storage access information with the values dictionary."""
+    return IMPL.access_info_update(context, access_info_id, values)
 
 
-def storage_access_get(context, storage_id):
-    """Get a storage access."""
-    return IMPL.storage_access_get(context, storage_id)
+def access_info_get(context, storage_id):
+    """Get a storage access information."""
+    return IMPL.access_info_get(context, storage_id)
 
 
-def storage_access_get_all(context, marker=None, limit=None, sort_keys=None,
+def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
                            sort_dirs=None, filters=None, offset=None):
-    """Retrieves all storage accesses.
+    """Retrieves all storage access information.
 
     If no sort parameters are specified then the returned volumes are sorted
     first by the 'created_at' key and then by the 'id' key in descending
@@ -260,5 +260,5 @@ def storage_access_get_all(context, marker=None, limit=None, sort_keys=None,
     :param offset: number of items to skip
     :returns: list of storage accesses
     """
-    return IMPL.storage_access_get_all(context, marker, limit, sort_keys, sort_dirs,
+    return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
                                          filters, offset)

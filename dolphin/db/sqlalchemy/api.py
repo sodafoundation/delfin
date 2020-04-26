@@ -27,7 +27,7 @@ from oslo_log import log
 from oslo_utils import uuidutils
 from sqlalchemy import create_engine, update
 from dolphin.db.sqlalchemy import models
-from dolphin.db.sqlalchemy.models import Storage, StorageAccess
+from dolphin.db.sqlalchemy.models import Storage, AccessInfo
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -63,16 +63,16 @@ def get_backend():
 def register_db():
     """Create database and tables."""
     models = (Storage,
-              StorageAccess
+              AccessInfo
               )
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)
 
 
-def storage_access_create(context, values):
-    """Create a storage access."""
-    register_ref = models.StorageAccess()
+def access_info_create(context, values):
+    """Create a storage access information."""
+    register_ref = models.AccessInfo()
     this_session = get_session()
     this_session.begin()
     register_ref.update(values)
@@ -81,31 +81,31 @@ def storage_access_create(context, values):
     return register_ref
 
 
-def storage_access_update(context, storage_access_id, values):
-    """Update a storage access with the values dictionary."""
+def access_info_update(context, access_info_id, values):
+    """Update a storage access information with the values dictionary."""
     return NotImplemented
 
 
-def storage_access_get(context, storage_id):
-    """Get a storage access."""
+def access_info_get(context, storage_id):
+    """Get a storage access information."""
     this_session = get_session()
     this_session.begin()
-    storage_access = this_session.query(StorageAccess) \
-        .filter(StorageAccess.storage_id == storage_id) \
+    access_info = this_session.query(AccessInfo) \
+        .filter(AccessInfo.storage_id == storage_id) \
         .first()
-    return storage_access
+    return access_info
 
 
-def storage_access_get_all(context, marker=None, limit=None, sort_keys=None,
+def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
                              sort_dirs=None, filters=None, offset=None):
-    """Retrieves all storage accesses."""
+    """Retrieves all storage access information."""
     this_session = get_session()
     this_session.begin()
     if filters.get('hostname', False):
-        storage_access = this_session.query(StorageAccess.hostname).all()
+        access_info = this_session.query(AccessInfo.hostname).all()
     else:
-        storage_access = this_session.query(StorageAccess).all()
-    return storage_access
+        access_info = this_session.query(AccessInfo).all()
+    return access_info
 
 
 def storage_create(context, values):

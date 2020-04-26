@@ -23,7 +23,7 @@ import json
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_db.sqlalchemy.types import JsonEncodedDict
-from sqlalchemy import Column, Integer, String, Numeric
+from sqlalchemy import Column, Integer, String, Numeric, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 CONF = cfg.CONF
@@ -35,6 +35,7 @@ class DolphinBase(models.ModelBase,
     """Base class for Dolphin Models."""
     __table_args__ = {'mysql_engine': 'InnoDB'}
     metadata = None
+
     def to_dict(self):
         model_dict = {}
         for k, v in self.items():
@@ -43,15 +44,14 @@ class DolphinBase(models.ModelBase,
         return model_dict
 
 
-class RegistryContext(BASE, DolphinBase):
-    """Represent registration parameters required for storage object."""
-    __tablename__ = "registry_contexts"
-    storage_id = Column(String(36), primary_key=True)
-    hostname = Column(String(36), default='False')
-    username = Column(String(255))
-    password = Column(String(255))
-    vendor = Column(String(255))
-    model = Column(String(255))
+class AccessInfo(BASE, DolphinBase):
+    """Represent access info required for storage accessing."""
+    __tablename__ = "access_info"
+    storage_id = Column(String(128), primary_key=True)
+    hostname = Column(String(128))
+    username = Column(String(128))
+    password = Column(String(128))
+    connect_protocol = Column(String(32))
     extra_attributes = Column(JsonEncodedDict)
 
 
@@ -59,41 +59,63 @@ class Storage(BASE, DolphinBase):
     """Represents a storage object."""
 
     __tablename__ = 'storages'
-    id = Column(String(36), primary_key=True)
-    name = Column(String(255))
-    vendor = Column(String(255))
-    description = Column(String(255))
-    model = Column(String(255))
-    status = Column(String(255))
-    serial_number = Column(String(255))
-    location = Column(String(255))
-    total_capacity = Column(Integer)
-    used_capacity = Column(Integer)
-    free_capacity = Column(Integer)
+    id = Column(String(128), primary_key=True)
+    name = Column(String(128))
+    vendor = Column(String(128))
+    description = Column(String(256))
+    model = Column(String(128))
+    status = Column(String(32))
+    serial_number = Column(String(128))
+    firmware_version = Column(String(128))
+    location = Column(String(128))
+    total_capacity = Column(Numeric)
+    used_capacity = Column(Numeric)
+    free_capacity = Column(Numeric)
 
 
 class Volume(BASE, DolphinBase):
     """Represents a volume object."""
     __tablename__ = 'volumes'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255))
-    storage_id = Column(String(255))
-    pool_id = Column(String(255))
-    description = Column(String(255))
-    status = Column(String(255))
+    id = Column(String(128), primary_key=True)
+    name = Column(String(128))
+    storage_id = Column(String(128))
+    pool_id = Column(String(128))
+    description = Column(String(128))
+    status = Column(String(32))
+    original_id = Column(String(128))
+    wwn = Column(String(128))
+    provisioning_policy = Column(String(32))
     total_capacity = Column(Numeric)
     used_capacity = Column(Numeric)
     free_capacity = Column(Numeric)
+    compressed = Column(Boolean)
+    deduplicated = Column(Boolean)
 
 
 class Pool(BASE, DolphinBase):
     """Represents a pool object."""
     __tablename__ = 'pools'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255))
-    storage_id = Column(String(255))
-    description = Column(String(255))
-    status = Column(String(255))
+    id = Column(String(128), primary_key=True)
+    name = Column(String(128))
+    storage_id = Column(String(128))
+    original_id = Column(String(128))
+    description = Column(String(256))
+    status = Column(String(32))
+    storage_type = Column(String(32))
     total_capacity = Column(Numeric)
     used_capacity = Column(Numeric)
     free_capacity = Column(Numeric)
+
+
+class Disk(BASE, DolphinBase):
+    """Represents a disk object."""
+    __tablename__ = 'disks'
+    id = Column(String(128), primary_key=True)
+    name = Column(String(128))
+    status = Column(String(32))
+    vendor = Column(String(128))
+    original_id = Column(String(128))
+    serial_number = Column(String(128))
+    model = Column(String(128))
+    media_type = Column(String(32))
+    capacity = Column(Numeric)
