@@ -254,6 +254,8 @@ class StorageNotFound(NotFound):
 class StorageDriverNotFound(NotFound):
     message = _("Storage driver could not be found.")
 
+class StorageBackendException(DolphinException):
+    message = _("Exception from Storage Backend: %(reason)s.")
 
 class ServiceIsDown(Invalid):
     message = _("Service %(service)s is down.")
