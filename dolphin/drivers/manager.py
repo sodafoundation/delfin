@@ -25,7 +25,6 @@ from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
-
 class DriverManager(metaclass=utils.Singleton):
     _instance_lock = threading.Lock()
     NAMESPACE = 'dolphin.storage.drivers'
