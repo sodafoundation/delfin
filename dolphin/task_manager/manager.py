@@ -25,6 +25,7 @@ from oslo_service import periodic_task
 from dolphin import manager
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import coordination
+from dolphin.exporter import base_exporter
 from dolphin import context
 
 LOG = log.getLogger(__name__)
@@ -52,5 +53,13 @@ class TaskManager(manager.Manager):
                   filter_properties=None):
         try:
             LOG.info("Consume say hello task ...")
+            # get resource data, use static data for example here
+            data = {
+                'device_id': '123456',
+                'pool_num': '4',
+            }
+            # report data to northbound platform
+            base_exporter.dispatch_example_data(data)
+
         except Exception as ex:
             pass

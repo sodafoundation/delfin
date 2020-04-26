@@ -24,7 +24,8 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_log import log
-from sqlalchemy import  create_engine
+from oslo_utils import uuidutils
+from sqlalchemy import create_engine, update
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, RegistryContext
 
@@ -69,15 +70,11 @@ def register_db():
         model.metadata.create_all(engine)
 
 
-def registry_context_create(register_info):
+def registry_context_create(values):
     register_ref = models.RegistryContext()
-    register_ref.storage_id = register_info.storage_id
-    register_ref.username = register_info.username
-    register_ref.hostname = register_info.hostname
-    register_ref.password = register_info.password
-    register_ref.extra_attributes = register_info.extra_attributes
     this_session = get_session()
     this_session.begin()
+    register_ref.update(values)
     this_session.add(register_ref)
     this_session.commit()
     return register_ref
@@ -92,23 +89,21 @@ def registry_context_get(storage_id):
     return registry_context
 
 
-def registry_context_get_all():
+def registry_context_get_all(filter=None):
     this_session = get_session()
     this_session.begin()
-    registry_context = this_session.query(RegistryContext).all()
+    if filter == 'hostname':
+        registry_context = this_session.query(RegistryContext.hostname).all()
+    else:
+        registry_context = this_session.query(RegistryContext).all()
     return registry_context
 
 
-def storage_create(storage):
+def storage_create(values):
     storage_ref = models.Storage()
-    storage_ref.id = storage.id
-    storage_ref.name = storage.name
-    storage_ref.model = storage.model
-    storage_ref.vendor = storage.vendor
-    storage_ref.description = storage.description
-    storage_ref.location = storage.location
     this_session = get_session()
     this_session.begin()
+    storage_ref.update(values)
     this_session.add(storage_ref)
     this_session.commit()
     return storage_ref
@@ -121,3 +116,10 @@ def storage_get(storage_id):
         .filter(Storage.id == storage_id) \
         .first()
     return storage_by_id
+
+
+def storage_get_all():
+    this_session = get_session()
+    this_session.begin()
+    all_storages = this_session.query(Storage).all()
+    return all_storages
