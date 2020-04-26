@@ -22,6 +22,7 @@ from dolphin.drivers import manager as drivermanager
 from dolphin.db.sqlalchemy import api as db
 from dolphin import exception
 from dolphin import utils
+from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -35,10 +36,10 @@ def validate_parameters(data, required_parameters,
 
     for parameter in required_parameters:
         if parameter not in data:
-            msg = ("Required parameter %s not found.") % parameter
+            msg = _("Required parameter %s not found.") % parameter
             raise exc_response(explanation=msg)
         if not data.get(parameter):
-            msg = ("Required parameter %s is empty.") % parameter
+            msg = _("Required parameter %s is empty.") % parameter
             raise exc_response(explanation=msg)
 
 
@@ -59,18 +60,20 @@ class StorageController(wsgi.Controller):
         """
         # Check if body is valid
         if not self.is_valid_body(body, 'storages'):
-            msg = ("Storage entity not found in request body")
+            msg = _("Storage entity not found in request body")
             raise exc.HTTPUnprocessableEntity(explanation=msg)
 
         storage = body['storages']
 
         # validate the body has all required parameters
-        required_parameters = ('hostip', 'vendor', 'model', 'username', 'password')
+        required_parameters = ('hostip', 'vendor', 'model', 'username',
+                               'password')
         validate_parameters(storage, required_parameters)
 
         # validate the hostip
         if not utils.is_valid_ip_address(storage['hostip'], ip_version='4'):
-            msg = ("Invalid hostip. Please provide a valid hostip")
+            msg = _("Invalid hostip: {0}. Please provide a "
+                    "valid hostip".format(storage['hostip']))
             LOG.error(msg)
             raise exception.InvalidHost(msg)
 
@@ -78,26 +81,41 @@ class StorageController(wsgi.Controller):
         context = req.environ.get('dolphin.context')
 
         driver = drivermanager.DriverManager()
-        device_info = driver.register_storage(context, storage)
-        if device_info.get('status') == 'available':
+        try:
+            device_info = driver.register_storage(context, storage)
+            status = ''
+            if device_info.get('status') == 'available':
+                status = device_info.get('status')
+        except AttributeError as e:
+            LOG.error(e)
+            raise exception.DolphinException(e)
+        except Exception as e:
+            msg = _('Failed to register device in driver :{0}'.format(e))
+            LOG.error(e)
+            raise exception.DolphinException(msg)
+
+        if status == 'available':
             try:
                 storage['storage_id'] = device_info.get('id')
                 db.storage_access_create(context, storage)
-            except Exception:
-                msg = ('Exception during registry context creation')
-                LOG.exception(msg)
-                raise exception.DolphinException(msg)
 
-            try:
                 db.storage_create(context, device_info)
-            except Exception:
-                msg = ('Exception during storage creation')
+            except AttributeError as e:
+                LOG.error(e)
+                raise exception.DolphinException(e)
+            except Exception as e:
+                msg = _('Failed to create device entry in DB: {0}'
+                        .format(e))
                 LOG.exception(msg)
                 raise exception.DolphinException(msg)
-        else:
-            LOG.error('Device registration failed')
 
-        return storage
+        else:
+            msg = _('Device registration failed with status: {0}'
+                    .format(status))
+            LOG.error(msg)
+            raise exception.DolphinException(msg)
+
+        return device_info
 
     def update(self, req, id, body):
         return dict(name="Storage 4")
