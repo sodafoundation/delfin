@@ -19,6 +19,7 @@ LOG = log.getLogger(__name__)
 
 DRIVER_MAPPING = {
     "fake_storage": "dolphin.drivers.fake_storage.FakeStorageDriver"
+    "vmax_storage": "dolphin.drivers.fake_storage.VMAXStorageDriver"
 }
 
 
