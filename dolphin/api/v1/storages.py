@@ -48,11 +48,11 @@ class StorageController(wsgi.Controller):
         filters.update(req.GET)
         # update options  other than filters
         if 'sort_key' in filters:
-            sort_key = filters['sort_key']
+            sort_key = [filters['sort_key']]
         else:
             sort_key = None
         if 'sort_dir' in filters:
-            sort_dir = filters['sort_dir']
+            sort_dir = [filters['sort_dir']]
         else:
             sort_dir = None
         if 'limit' in filters:

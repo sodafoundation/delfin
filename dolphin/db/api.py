@@ -152,8 +152,9 @@ def pool_update(context, pool_id, values):
     return IMPL.pool_update(context, pool_id, values)
 
 
-def storage_get_all():
-    return IMPL.storage_get_all()
+def pool_get(context, pool_id):
+    """Get a pool or raise an exception if it does not exist."""
+    return IMPL.pool_get(context, pool_id)
 
 
 def pool_get_all(context, marker=None, limit=None, sort_keys=None,

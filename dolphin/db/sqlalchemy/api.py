@@ -26,6 +26,8 @@ from oslo_db.sqlalchemy import session
 from oslo_log import log
 from oslo_utils import uuidutils
 from sqlalchemy import create_engine, update
+
+from dolphin import exception
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, AccessInfo
 
@@ -40,7 +42,7 @@ db_options.set_defaults(cfg.CONF,
 
 def apply_sorting(model, query, sort_key, sort_dir):
     if sort_dir.lower() not in ('desc', 'asc'):
-        msg = _("Wrong sorting data provided: sort key is '%(sort_key)s' "
+        msg = ("Wrong sorting data provided: sort key is '%(sort_key)s' "
                 "and sort direction is '%(sort_dir)s'.") % {
                   "sort_key": sort_key, "sort_dir": sort_dir}
         raise exception.InvalidInput(reason=msg)
@@ -148,22 +150,37 @@ def storage_get(context, storage_id):
 
 def storage_get_all(context, marker=None, limit=None, sort_keys=None,
                     sort_dirs=None, filters=None, offset=None):
-    """Retrieves all storage devices."""
-
     this_session = get_session()
     this_session.begin()
-    all_storages = this_session.query(Storage).all()
-    return all_storages
+    if not sort_keys:
+        sort_keys= ['created_at']
+    if not sort_dirs:
+        sort_dirs = ['desc']
+    this_session = get_session()
+    this_session.begin()
+    query = this_session.query(models.Storage)
 
+    if filters:
 
-def volume_create(context, values):
-    """Create a volume from the values dictionary."""
-    return NotImplemented
+        for attr, value in filters.items():
+            query = query.filter(getattr(models.Storage, attr).like("%%%s%%" % value))
+    try:
+        for (sort_key,sort_dir) in zip(sort_keys,sort_dirs ):
+            query = apply_sorting(models.Storage, query, sort_key, sort_dir)
+    except AttributeError:
+        msg = "Wrong sorting keys provided - '%s'." % sort_keys
+        raise exception.InvalidInput(reason=msg)
 
+    if limit:
+        query = query.limit(limit)
 
-def volume_update(context, volume_id, values):
-    """Update a volume with the values dictionary."""
-    return NotImplemented
+    # Returns list of storages  that satisfy filters.
+    storages_all = query.all()
+    if storages_all:
+        return storages_all
+    else:
+        raise exception.NotFound()
+
 
 
 def volume_get(context, volume_id):
