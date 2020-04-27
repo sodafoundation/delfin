@@ -97,7 +97,8 @@ class StorageController(wsgi.Controller):
         if status == 'available':
             try:
                 storage['storage_id'] = device_info.get('id')
-                db.storage_access_create(context, storage)
+
+                db.access_info_create(context, storage)
 
                 db.storage_create(context, device_info)
             except AttributeError as e:
@@ -127,6 +128,19 @@ class StorageController(wsgi.Controller):
         return dict(name="Sync all storages")
 
     def sync(self, req, id):
+        """
+        :param req:
+        :param id:
+        :return:
+        """
+        # validate the id
+        context = req.environ.get('dolphin.context')
+
+        try:
+            device = db.access_info_get(context, id)
+        except exception.NotFound as e:
+            LOG.error(e)
+            raise exception.DolphinException(e)
         return dict(name="Sync storage 1")
 
 
