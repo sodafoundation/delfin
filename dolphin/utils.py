@@ -46,8 +46,6 @@ import retrying
 import six
 from webob import exc
 
-from dolphin.common import constants
-# from dolphin.db import api as db_api
 from dolphin import exception
 from dolphin.i18n import _
 
@@ -619,37 +617,6 @@ def translate_string_size_to_float(string, multiplier='G'):
             value = float(matched.groups()[0].replace(",", "."))
             multiplier = mapping[matched.groups()[1]] / mapping[multiplier]
             return value * multiplier
-
-
-def wait_for_access_update(context, db, share_instance,
-                           migration_wait_access_rules_timeout):
-    starttime = time.time()
-    deadline = starttime + migration_wait_access_rules_timeout
-    tries = 0
-
-    while True:
-        instance = db.share_instance_get(context, share_instance['id'])
-
-        if instance['access_rules_status'] == constants.STATUS_ACTIVE:
-            break
-
-        tries += 1
-        now = time.time()
-        if (instance['access_rules_status'] ==
-                constants.SHARE_INSTANCE_RULES_ERROR):
-            msg = _("Failed to update access rules"
-                    " on share instance %s") % share_instance['id']
-            raise exception.ShareMigrationFailed(reason=msg)
-        elif now > deadline:
-            msg = _("Timeout trying to update access rules"
-                    " on share instance %(share_id)s. Timeout "
-                    "was %(timeout)s seconds.") % {
-                'share_id': share_instance['id'],
-                'timeout': migration_wait_access_rules_timeout}
-            raise exception.ShareMigrationFailed(reason=msg)
-        else:
-            # 1.414 = square-root of 2
-            time.sleep(1.414 ** tries)
 
 
 class DoNothing(str):
