@@ -47,68 +47,218 @@ db_opts = [
     cfg.StrOpt('db_backend',
                default='sqlalchemy',
                help='The backend to use for database.'),
-
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(db_opts)
+CONF.register_opts(db_opts, "database")
 
 _BACKEND_MAPPING = {'sqlalchemy': 'dolphin.db.sqlalchemy.api'}
-IMPL = db_api.DBAPI.from_config(cfg.CONF, backend_mapping=_BACKEND_MAPPING,
-                                lazy=True)
+IMPL = db_api.DBAPI(CONF.database.db_backend, backend_mapping=_BACKEND_MAPPING,
+                    lazy=True)
 
 
 def register_db():
+    """Create database and tables."""
     IMPL.register_db()
 
 
-def storage_get(storage_id):
-    return IMPL.storage_get(storage_id)
+def storage_get(context, storage_id):
+    """Retrieve a storage device."""
+    return IMPL.storage_get(context, storage_id)
 
 
-def storage_get_all():
-    return IMPL.storage_get_all()
+def storage_get_all(context, marker=None, limit=None, sort_keys=None,
+                    sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage devices.
+
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage
+    """
+    return IMPL.storage_get_all(context, marker, limit, sort_keys, sort_dirs,
+                                filters, offset)
 
 
-def storage_create(values):
-    return IMPL.storage_create(values)
+def storage_create(context, values):
+    """Add a storage device from the values dictionary."""
+    return IMPL.storage_create(context, values)
 
 
-def volume_create(values):
-    return IMPL.volume_create(values)
+def storage_update(context, storage_id, values):
+    """Update a storage device with the values dictionary."""
+    return IMPL.storage_update(context, storage_id, values)
 
 
-def volume_get(volume_id):
-    return IMPL.volume_get(volume_id)
+def volume_create(context, values):
+    """Create a volume from the values dictionary."""
+    return IMPL.volume_create(context, values)
 
 
-def volume_get_all(storage_id):
-    return IMPL.volume_get_all(storage_id)
+def volume_update(context, volume_id, values):
+    """Update a volume with the values dictionary."""
+    return IMPL.volume_update(context, volume_id, values)
 
 
-def pool_create(values):
-    return IMPL.pool_create(values)
+def volume_get(context, volume_id):
+    """Get a volume or raise an exception if it does not exist."""
+    return IMPL.volume_get(context, volume_id)
 
 
-def pool_get(pool_id):
-    return IMPL.pool_get(pool_id)
+def volume_get_all(context, marker=None, limit=None, sort_keys=None,
+                   sort_dirs=None, filters=None, offset=None):
+    """Retrieves all volumes.
+
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of volumes
+    """
+    return IMPL.volume_get_all(context, marker, limit, sort_keys,
+                               sort_dirs, filters, offset)
 
 
-def pool_get_all(storage_id):
-    return IMPL.pool_get_all(storage_id)
+def pool_create(context, values):
+    """Create a pool from the values dictionary."""
+    return IMPL.pool_create(context, values)
 
 
-def registry_context_create(values):
-    return IMPL.registry_context_create(values)
+def pool_update(context, pool_id, values):
+    """Update a pool withe the values dictionary."""
+    return IMPL.pool_update(context, pool_id, values)
 
 
-def registry_context_update(values):
-    return IMPL.registry_context_update(values)
+def pool_get(context, pool_id):
+    """Get a pool or raise an exception if it does not exist."""
+    return IMPL.pool_get(context, pool_id)
 
 
-def registry_context_get(storage_id):
-    return IMPL.registry_context_get(storage_id)
+def pool_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage pools.
+
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage pools
+    """
+    return IMPL.pool_get_all(context, marker, limit, sort_keys, sort_dirs,
+                             filters, offset)
 
 
-def registry_context_get_all():
-    return IMPL.registry_context_get_all()
+def disk_create(context, values):
+    """Create a disk from the values dictionary."""
+    return IMPL.disk_create(context, values)
+
+
+def disk_update(context, disk_id, values):
+    """Update a disk withe the values dictionary."""
+    return IMPL.disk_create(context, disk_id, values)
+
+
+def disk_get(context, disk_id):
+    """Get a disk or raise an exception if it does not exist."""
+    return IMPL.disk_get(context, disk_id)
+
+
+def disk_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all disks.
+
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of disks
+    """
+    return IMPL.disk_get_all(context, marker, limit, sort_keys, sort_dirs,
+                             filters, offset)
+
+
+def access_info_create(context, values):
+    """Create a storage access information that used to connect
+    to a specific storage device.
+    """
+    return IMPL.access_info_create(context, values)
+
+
+def access_info_update(context, access_info_id, values):
+    """Update a storage access information with the values dictionary."""
+    return IMPL.access_info_update(context, access_info_id, values)
+
+
+def access_info_get(context, storage_id):
+    """Get a storage access information."""
+    return IMPL.access_info_get(context, storage_id)
+
+
+def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
+                           sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage access information.
+
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage accesses
+    """
+    return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
+                                         filters, offset)
