@@ -82,7 +82,7 @@ global_opts = [
                default=constants.TRAP_RECEIVER_CLASS,
                help='Full class name for the trap receiver.'),
     cfg.StrOpt('dolphin_cryptor',
-               default='base64',
+               default='dolphin.cryptor._Base64',
                help='cryptor type'),
 ]
 
