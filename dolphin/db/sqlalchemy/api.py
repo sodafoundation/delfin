@@ -44,7 +44,7 @@ db_options.set_defaults(cfg.CONF,
 def apply_sorting(model, query, sort_key, sort_ord):
     if sort_ord.lower() not in ('desc', 'asc'):
         msg = ("Wrong sorting data provided: sort key is '%(sort_key)s' "
-                "and sort order is '%(sort_dir)s'.") % {
+               "and sort order is '%(sort_dir)s'.") % {
                   "sort_key": sort_key, "sort_dir": sort_ord}
         raise exception.InvalidInput(reason=msg)
 
@@ -112,7 +112,7 @@ def access_info_get(context, storage_id):
 
 
 def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
-                             sort_dirs=None, filters=None, offset=None):
+                        sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage access information."""
     this_session = get_session()
     this_session.begin()
@@ -154,7 +154,7 @@ def storage_get_all(context, marker=None, limit=None, sort_keys=None,
     this_session = get_session()
     this_session.begin()
     if not sort_keys:
-        sort_keys= ['created_at']
+        sort_keys = ['created_at']
     if not sort_dirs:
         sort_dirs = ['desc']
     this_session = get_session()
@@ -166,7 +166,7 @@ def storage_get_all(context, marker=None, limit=None, sort_keys=None,
         for attr, value in filters.items():
             query = query.filter(getattr(models.Storage, attr).like("%%%s%%" % value))
     try:
-        for (sort_key,sort_dir) in zip(sort_keys,sort_dirs ):
+        for (sort_key, sort_dir) in zip(sort_keys, sort_dirs):
             query = apply_sorting(models.Storage, query, sort_key, sort_dir)
     except AttributeError:
         msg = "Wrong sorting keys provided - '%s'." % sort_keys
@@ -176,12 +176,7 @@ def storage_get_all(context, marker=None, limit=None, sort_keys=None,
         query = query.limit(limit)
 
     # Returns list of storages  that satisfy filters.
-    storages_all = query.all()
-    if storages_all:
-        return storages_all
-    else:
-        raise exception.NotFound()
-
+    return query.all()
 
 
 def volume_get(context, volume_id):
