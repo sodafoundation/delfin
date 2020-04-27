@@ -26,10 +26,8 @@ from oslo_db.sqlalchemy import session
 from oslo_log import log
 from oslo_utils import uuidutils
 from sqlalchemy import create_engine, update
-
-from dolphin import exception
 from dolphin.db.sqlalchemy import models
-from dolphin.db.sqlalchemy.models import Storage, RegistryContext
+from dolphin.db.sqlalchemy.models import Storage, AccessInfo
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -75,17 +73,18 @@ def get_backend():
 
 
 def register_db():
-    engine = create_engine(_DEFAULT_SQL_CONNECTION, echo=False)
+    """Create database and tables."""
     models = (Storage,
-              RegistryContext
+              AccessInfo
               )
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)
 
 
-def registry_context_create(values):
-    register_ref = models.RegistryContext()
+def access_info_create(context, values):
+    """Create a storage access information."""
+    register_ref = models.AccessInfo()
     this_session = get_session()
     this_session.begin()
     register_ref.update(values)
@@ -94,26 +93,35 @@ def registry_context_create(values):
     return register_ref
 
 
-def registry_context_get(storage_id):
+def access_info_update(context, access_info_id, values):
+    """Update a storage access information with the values dictionary."""
+    return NotImplemented
+
+
+def access_info_get(context, storage_id):
+    """Get a storage access information."""
     this_session = get_session()
     this_session.begin()
-    registry_context = this_session.query(RegistryContext) \
-        .filter(RegistryContext.storage_id == storage_id) \
+    access_info = this_session.query(AccessInfo) \
+        .filter(AccessInfo.storage_id == storage_id) \
         .first()
-    return registry_context
+    return access_info
 
 
-def registry_context_get_all(filter=None):
+def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
+                             sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage access information."""
     this_session = get_session()
     this_session.begin()
-    if filter == 'hostname':
-        registry_context = this_session.query(RegistryContext.hostname).all()
+    if filters.get('hostname', False):
+        access_info = this_session.query(AccessInfo.hostname).all()
     else:
-        registry_context = this_session.query(RegistryContext).all()
-    return registry_context
+        access_info = this_session.query(AccessInfo).all()
+    return access_info
 
 
-def storage_create(values):
+def storage_create(context, values):
+    """Add a storage device from the values dictionary."""
     storage_ref = models.Storage()
     this_session = get_session()
     this_session.begin()
@@ -123,7 +131,13 @@ def storage_create(values):
     return storage_ref
 
 
-def storage_get(storage_id):
+def storage_update(context, storage_id, values):
+    """Update a storage device with the values dictionary."""
+    return NotImplemented
+
+
+def storage_get(context, storage_id):
+    """Retrieve a storage device."""
     this_session = get_session()
     this_session.begin()
     storage_by_id = this_session.query(Storage) \
@@ -132,34 +146,74 @@ def storage_get(storage_id):
     return storage_by_id
 
 
-def storage_get_all(context, marker=None, limit=None, sort_key=None,
-                    sort_dir=None, filters=None, offset=None):
+def storage_get_all(context, marker=None, limit=None, sort_keys=None,
+                    sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage devices."""
+
     this_session = get_session()
     this_session.begin()
-    if not sort_key:
-        sort_key = 'created_at'
-    if not sort_dir:
-        sort_dir = 'desc'
-    this_session = get_session()
-    this_session.begin()
-    query = this_session.query(models.Storage)
-    if limit:
-        offset = filters.get('offset', 0)
-        query = query.limit(limit).offset(offset)
+    all_storages = this_session.query(Storage).all()
+    return all_storages
 
-    if filters:
 
-        for attr, value in filters.items():
-            query = query.filter(getattr(models.Storage, attr).like("%%%s%%" % value))
-    try:
-        query = apply_sorting(models.Storage, query, sort_key, sort_dir)
-    except AttributeError:
-        msg = "Wrong sorting key provided - '%s'." % sort_key
-        raise exception.InvalidInput(reason=msg)
+def volume_create(context, values):
+    """Create a volume from the values dictionary."""
+    return NotImplemented
 
-    # Returns list of storages  that satisfy filters.
-    storages_all = query.all()
-    if storages_all:
-        return storages_all
-    else:
-        raise exception.NotFound()
+
+def volume_update(context, volume_id, values):
+    """Update a volume with the values dictionary."""
+    return NotImplemented
+
+
+def volume_get(context, volume_id):
+    """Get a volume or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def volume_get_all(context, marker=None, limit=None, sort_keys=None,
+                   sort_dirs=None, filters=None, offset=None):
+    """Retrieves all volumes."""
+    return NotImplemented
+
+
+def pool_create(context, values):
+    """Create a pool from the values dictionary."""
+    return NotImplemented
+
+
+def pool_update(context, pool_id, values):
+    """Update a pool withe the values dictionary."""
+    return NotImplemented
+
+
+def pool_get(context, pool_id):
+    """Get a pool or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def pool_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage pools."""
+    return NotImplemented
+
+
+def disk_create(context, values):
+    """Create a disk from the values dictionary."""
+    return NotImplemented
+
+
+def disk_update(context, disk_id, values):
+    """Update a disk withe the values dictionary."""
+    return NotImplemented
+
+
+def disk_get(context, disk_id):
+    """Get a disk or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def disk_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all disks."""
+    return NotImplemented
