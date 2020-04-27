@@ -23,10 +23,12 @@ from dolphin.api.common import wsgi
 
 LOG = log.getLogger(__name__)
 
+
 def build_storages(storages):
+    # Build list of storages
     views = [build_storage(storage)
              for storage in storages]
-    return dict(storage=views)
+    return dict(storages=views)
 
 
 def build_storage(storage):
@@ -99,5 +101,3 @@ class StorageController(wsgi.Controller):
 
 def create_resource():
     return wsgi.Resource(StorageController())
-
-
