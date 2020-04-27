@@ -13,12 +13,13 @@
 # limitations under the License.
 import copy
 
+import six
 from oslo_log import log
 from six.moves import http_client
 import webob
 from webob import exc
 
-from dolphin import db, context
+from dolphin import db, context, exception
 from dolphin.api.common import wsgi
 
 LOG = log.getLogger(__name__)
@@ -46,26 +47,15 @@ class StorageController(wsgi.Controller):
             'model',
             'status',
         ]
-        filters = {}
-        filters.update(req.GET)
+        query_params = {}
+        query_params.update(req.GET)
         # update options  other than filters
-        if 'sort_key' in filters:
-            sort_key = [filters['sort_key']]
-        else:
-            sort_key = None
-        if 'sort_dir' in filters:
-            sort_dir = [filters['sort_dir']]
-        else:
-            sort_dir = None
-        if 'limit' in filters:
-            limit = filters['limit']
-        else:
-            limit = None
-        if 'offset' in filters:
-            offset = filters['offset']
-        else:
-            offset = None
+        sort_keys = (lambda x: [x] if x is not None else x)(query_params.get('sort_key'))
+        sort_dirs = (lambda x: [x] if x is not None else x)(query_params.get('sort_dir'))
+        limit = query_params.get('limit', None)
+        offset = query_params.get('offset', None)
         # strip out options except supported filter options
+        filters = query_params
         unknown_options = [opt for opt in filters
                            if opt not in supported_filters]
         bad_options = ", ".join(unknown_options)
@@ -74,9 +64,11 @@ class StorageController(wsgi.Controller):
         for opt in unknown_options:
             del filters[opt]
         try:
-            storages = db.storage_get_all(context, None, limit, sort_key, sort_dir, filters, offset)
-        except:
-            msg = "Error in storage_get_all query from DB "
+            storages = db.storage_get_all(context, None, limit, sort_keys, sort_dirs, filters, offset)
+        except  exception.InvalidInput as e:
+            raise exc.HTTPBadRequest(explanation=six.text_type(e))
+        except Exception as e:
+            msg = "Error in storage_get_all query from DB + %s", e.message
             raise exc.HTTPNotFound(explanation=msg)
         return build_storages(storages)
 
