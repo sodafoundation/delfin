@@ -22,11 +22,12 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_service import periodic_task
 
-from dolphin import manager
+from dolphin import manager, exception
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import coordination
 from dolphin.exporter import base_exporter
 from dolphin import context
+from dolphin.task_manager import resources
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -43,6 +44,7 @@ class TaskManager(manager.Manager):
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
     """Periodical task, this task will use coordination for distribute synchronization."""
+
     @periodic_task.periodic_task(spacing=2, run_immediately=True)
     @coordination.synchronized('lock-task-example')
     def _task_example(self, context):
@@ -63,3 +65,35 @@ class TaskManager(manager.Manager):
 
         except Exception as ex:
             pass
+
+    def sync_storage_resource(self, context, storage_id, resource_task):
+        """
+        :param context:
+        :param storage_id:
+        :param resource_task:
+        :return:
+        """
+        try:
+            vol_task = resources.StorageVolumeTask(context, storage_id)
+            pol_task = resources.StoragePoolTask(context, storage_id)
+            [pol_task if resource_task == 'pool_task' else vol_task]\
+                .pop().sync()
+        except Exception as e:
+            LOG.erro(e)
+            raise exception.DolphinException(e)
+
+    def remove_storage_resource(self, context, storage_id, resource_task):
+        """
+        :param context:
+        :param storage_id:
+        :param resource_task:
+        :return:
+        """
+        try:
+            vol_task = resources.StorageVolumeTask(context, storage_id)
+            pol_task = resources.StoragePoolTask(context, storage_id)
+            [pol_task if resource_task == 'pool_task' else vol_task] \
+                .pop().remove()
+        except Exception as e:
+            LOG.erro(e)
+            raise exception.DolphinException(e)

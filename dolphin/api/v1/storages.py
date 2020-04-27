@@ -23,6 +23,8 @@ from dolphin.db.sqlalchemy import api as db
 from dolphin import exception
 from dolphin import utils
 from dolphin.i18n import _
+from dolphin import context
+from dolphin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
@@ -44,6 +46,8 @@ def validate_parameters(data, required_parameters,
 
 
 class StorageController(wsgi.Controller):
+    def __init__(self):
+        self.task_rpcapi = task_rpcapi.TaskAPI()
 
     def index(self, req):
         return dict(name="Storage 1")
@@ -135,12 +139,20 @@ class StorageController(wsgi.Controller):
         """
         # validate the id
         context = req.environ.get('dolphin.context')
-
+        # admin_context = context.RequestContext('admin', 'fake', True)
         try:
             device = db.access_info_get(context, id)
         except exception.NotFound as e:
             LOG.error(e)
             raise exception.DolphinException(e)
+
+        tasks = (
+            'pool_task',
+            'volume_task'
+        )
+        for task in tasks:
+            self.task_rpcapi.sync_storage_resource(context, id, task)
+
         return dict(name="Sync storage 1")
 
 
