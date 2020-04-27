@@ -41,7 +41,7 @@ db_options.set_defaults(cfg.CONF,
 
 
 def apply_sorting(model, query, sort_key, sort_dir):
-    if sort_dir.lower() not in ('desc', 'asc'):
+    if sort_ord.lower() not in ('desc', 'asc'):
         msg = ("Wrong sorting data provided: sort key is '%(sort_key)s' "
                 "and sort order is '%(sort_dir)s'.") % {
                   "sort_key": sort_key, "sort_dir": sort_dir}
