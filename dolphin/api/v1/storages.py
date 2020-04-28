@@ -20,7 +20,7 @@ from webob import exc
 from oslo_log import log
 
 from dolphin import db, context
-from dolphin.api import views
+from dolphin.api.views import storages as storage_view
 from dolphin.api.common import wsgi
 from dolphin.drivers import manager as drivermanager
 from dolphin.db.sqlalchemy import api as db
@@ -47,14 +47,11 @@ def validate_parameters(data, required_parameters,
             raise exc_response(explanation=msg)
 
 
-
-
-
 class StorageController(wsgi.Controller):
 
     def index(self, req):
 
-        supported_filters = ['name','vendor','model','status']
+        supported_filters = ['name', 'vendor', 'model', 'status']
         query_params = {}
         query_params.update(req.GET)
         # update options  other than filters
@@ -79,7 +76,7 @@ class StorageController(wsgi.Controller):
         except Exception as e:
             msg = "Error in storage_get_all query from DB "
             raise exc.HTTPNotFound(explanation=msg)
-        return views.build_storages(storages)
+        return storage_view.build_storages(storages)
 
     def show(self, req, id):
         return dict(name="Storage 2")
