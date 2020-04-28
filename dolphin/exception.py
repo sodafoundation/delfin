@@ -159,6 +159,14 @@ class InvalidInput(Invalid):
     message = _("Invalid input received: %(reason)s.")
 
 
+class InvalidName(Invalid):
+    message = _("An invalid 'name' value was provided. %(reason)s")
+
+
+class ValidationError(Invalid):
+    message = "%(detail)s"
+
+
 class InvalidContentType(Invalid):
     message = _("Invalid content type %(content_type)s.")
 
