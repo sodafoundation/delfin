@@ -14,13 +14,11 @@
 import copy
 
 import six
-from oslo_log import log
 from six.moves import http_client
 import webob
 from webob import exc
 
 from oslo_log import log
-
 
 from dolphin import db, context
 from dolphin.api.common import wsgi
@@ -47,8 +45,6 @@ def validate_parameters(data, required_parameters,
         if not data.get(parameter):
             msg = _("Required parameter %s is empty.") % parameter
             raise exc_response(explanation=msg)
-
-LOG = log.getLogger(__name__)
 
 
 def build_storages(storages):
