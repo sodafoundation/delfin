@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
 from six.moves import http_client
 import webob
 from webob import exc
+
 from oslo_log import log
 
+from dolphin import db, context
+from dolphin.api.views import storages as storage_view
 from dolphin.api.common import wsgi
 from dolphin.drivers import manager as drivermanager
 from dolphin.db.sqlalchemy import api as db
@@ -50,7 +54,33 @@ class StorageController(wsgi.Controller):
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
     def index(self, req):
-        return dict(name="Storage 1")
+
+        supported_filters = ['name', 'vendor', 'model', 'status']
+        query_params = {}
+        query_params.update(req.GET)
+        # update options  other than filters
+        sort_keys = (lambda x: [x] if x is not None else x)(query_params.get('sort_key'))
+        sort_dirs = (lambda x: [x] if x is not None else x)(query_params.get('sort_dir'))
+        limit = query_params.get('limit', None)
+        offset = query_params.get('offset', None)
+        marker = query_params.get('marker', None)
+        # strip out options except supported filter options
+        filters = query_params
+        unknown_options = [opt for opt in filters
+                           if opt not in supported_filters]
+        bad_options = ", ".join(unknown_options)
+        LOG.debug("Removing options '%(bad_options)s' from query",
+                  {"bad_options": bad_options})
+        for opt in unknown_options:
+            del filters[opt]
+        try:
+            storages = db.storage_get_all(context, marker, limit, sort_keys, sort_dirs, filters, offset)
+        except  exception.InvalidInput as e:
+            raise exc.HTTPBadRequest(explanation=six.text_type(e))
+        except Exception as e:
+            msg = "Error in storage_get_all query from DB "
+            raise exc.HTTPNotFound(explanation=msg)
+        return storage_view.build_storages(storages)
 
     def show(self, req, id):
         return dict(name="Storage 2")
