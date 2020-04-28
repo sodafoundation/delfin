@@ -41,15 +41,15 @@ db_options.set_defaults(cfg.CONF,
                         connection=_DEFAULT_SQL_CONNECTION)
 
 
-def apply_sorting(model, query, sort_key, sort_ord):
-    if sort_ord.lower() not in ('desc', 'asc'):
+def apply_sorting(model, query, sort_key, sort_dir):
+    if sort_dir.lower() not in ('desc', 'asc'):
         msg = ("Wrong sorting data provided: sort key is '%(sort_key)s' "
                "and sort order is '%(sort_dir)s'.") % {
-                  "sort_key": sort_key, "sort_dir": sort_ord}
+                  "sort_key": sort_key, "sort_dir": sort_dir}
         raise exception.InvalidInput(reason=msg)
 
     sort_attr = getattr(model, sort_key)
-    sort_method = getattr(sort_attr, sort_ord.lower())
+    sort_method = getattr(sort_attr, sort_dir.lower())
     return query.order_by(sort_method())
 
 
