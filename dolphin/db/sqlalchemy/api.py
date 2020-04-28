@@ -26,6 +26,8 @@ from oslo_db.sqlalchemy import session
 from oslo_log import log
 from oslo_utils import uuidutils
 from sqlalchemy import create_engine, update
+
+from dolphin import exception
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, AccessInfo
 
@@ -93,6 +95,8 @@ def access_info_get(context, storage_id):
     access_info = this_session.query(AccessInfo) \
         .filter(AccessInfo.storage_id == storage_id) \
         .first()
+    if not access_info:
+        raise exception.AccessInfoNotFound(storage_id=storage_id)
     return access_info
 
 
