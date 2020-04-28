@@ -96,7 +96,7 @@ def access_info_get(context, storage_id):
         .filter(AccessInfo.storage_id == storage_id) \
         .first()
     if not access_info:
-        raise exception.ResourceNotFound(storage_id=storage_id)
+        raise exception.AccessInfoNotFound(storage_id=storage_id)
     return access_info
 
 

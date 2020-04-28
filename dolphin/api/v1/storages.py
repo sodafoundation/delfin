@@ -142,9 +142,9 @@ class StorageController(wsgi.Controller):
         # admin_context = context.RequestContext('admin', 'fake', True)
         try:
             device = db.access_info_get(context, id)
-        except exception.NotFound as e:
+        except Exception as e:
             LOG.error(e)
-            raise exception.DolphinException(e)
+            raise exception.AccessInfoNotFound(e)
 
         tasks = (
             'pool_task',
