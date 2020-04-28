@@ -19,16 +19,17 @@ from webob import exc
 
 from oslo_log import log
 
-from dolphin import db, context
-from dolphin.api.views import storages as storage_view
 from dolphin.api.common import wsgi
-from dolphin.drivers import manager as drivermanager
-from dolphin.db.sqlalchemy import api as db
-from dolphin import exception
-from dolphin import utils
-from dolphin.i18n import _
+from dolphin.api.schemas import storages as schema_storages
+from dolphin.api import validation
+from dolphin.api.views import storages as storage_view
 from dolphin import context
+from dolphin import db
+from dolphin.drivers import manager as drivermanager
+from dolphin import exception
+from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
+from dolphin import utils
 
 LOG = log.getLogger(__name__)
 
@@ -51,6 +52,7 @@ def validate_parameters(data, required_parameters,
 
 class StorageController(wsgi.Controller):
     def __init__(self):
+        super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
     def index(self, req):
@@ -85,72 +87,22 @@ class StorageController(wsgi.Controller):
     def show(self, req, id):
         return dict(name="Storage 2")
 
+    @validation.schema(schema_storages.create)
     def create(self, req, body):
-        """
-        This function for registering the new storage device
-        :param req:
-        :param body: "It contains the all input parameters"
-        :return:
-        """
-        # Check if body is valid
-        if not self.is_valid_body(body, 'storages'):
-            msg = _("Storage entity not found in request body")
-            raise exc.HTTPUnprocessableEntity(explanation=msg)
-
-        storage = body['storages']
-
-        # validate the body has all required parameters
-        required_parameters = ('hostip', 'vendor', 'model', 'username',
-                               'password')
-        validate_parameters(storage, required_parameters)
-
-        # validate the hostip
-        if not utils.is_valid_ip_address(storage['hostip'], ip_version='4'):
-            msg = _("Invalid hostip: {0}. Please provide a "
-                    "valid hostip".format(storage['hostip']))
-            LOG.error(msg)
-            raise exception.InvalidHost(msg)
-
-        # get dolphin.context. Later may be validated context parameters
-        context = req.environ.get('dolphin.context')
-
+        """Register a new storage device."""
+        # ctxt = req.environ['dolphin.context']
+        ctxt = context.get_admin_context()
         driver = drivermanager.DriverManager()
         try:
-            device_info = driver.register_storage(context, storage)
-            status = ''
-            if device_info.get('status') == 'available':
-                status = device_info.get('status')
-        except AttributeError as e:
+            storage = driver.register_storage(ctxt, body)
+        except exception.DolphinException as e:
             LOG.error(e)
-            raise exception.DolphinException(e)
-        except Exception as e:
-            msg = _('Failed to register device in driver :{0}'.format(e))
-            LOG.error(e)
-            raise exception.DolphinException(msg)
-
-        if status == 'available':
-            try:
-                storage['storage_id'] = device_info.get('id')
-
-                db.access_info_create(context, storage)
-
-                db.storage_create(context, device_info)
-            except AttributeError as e:
-                LOG.error(e)
-                raise exception.DolphinException(e)
-            except Exception as e:
-                msg = _('Failed to create device entry in DB: {0}'
-                        .format(e))
-                LOG.exception(msg)
-                raise exception.DolphinException(msg)
-
-        else:
-            msg = _('Device registration failed with status: {0}'
-                    .format(status))
-            LOG.error(msg)
-            raise exception.DolphinException(msg)
-
-        return device_info
+            raise e
+        # except Exception as e:
+        #     msg = _('Failed to register device in driver :{0}'.format(e))
+        #     LOG.error(e)
+        #     raise exception.DolphinException(msg)
+        return storage_view.build_storage(storage)
 
     def update(self, req, id, body):
         return dict(name="Storage 4")

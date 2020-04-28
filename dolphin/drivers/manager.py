@@ -12,18 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
+import six
+import stevedore
+
 from oslo_log import log
+from oslo_utils import uuidutils
 
 from dolphin import utils
+from dolphin import coordination
+from dolphin import db
+# from dolphin import cryptor
+from dolphin import exception
+from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
-DRIVER_MAPPING = {
-    "fake_storage": "dolphin.drivers.fake_storage.FakeStorageDriver"
-}
-
 
 class DriverManager(metaclass=utils.Singleton):
+    NAMESPACE = 'dolphin.storage.drivers'
 
     def __init__(self):
         # The driver_factory will keep the driver instance for
@@ -36,9 +43,45 @@ class DriverManager(metaclass=utils.Singleton):
         """Show register parameters which the driver needs."""
         pass
 
+    @coordination.synchronized('driver-{register_info[vendor]}-'
+                               '{register_info[model]}')
     def register_storage(self, context, register_info):
-        """Discovery a storage system with register parameters."""
-        pass
+        """Discovery a storage system with access information."""
+        # Check same access info from DB
+        access_info = copy.deepcopy(register_info)
+        vendor, model = access_info.pop('vendor'), access_info.pop('model')
+        db_access_info = db.access_info_get_all(context, sort_keys=['host'],
+                                                filters=access_info)
+        if db_access_info:
+            msg = _("Storage device has been registered.")
+            raise exception.Conflict(msg)
+
+        # Load and initialize a driver
+        # todo: add exception handler
+        driver = stevedore.driver.DriverManager(
+            namespace=self.NAMESPACE,
+            name='%s %s' % (vendor, model),
+            invoke_on_load=True
+        ).driver
+
+        storage = driver.register_storage(context,
+                                          register_info)
+        if storage:
+            storage_id = six.text_type(uuidutils.generate_uuid())
+            access_info['storage_id'] = storage_id
+            # todo
+            # access_info['password'] = cryptor.encode(
+            #     access_info['password'])
+            db.access_info_create(context, access_info)
+
+            storage['id'] = storage_id
+            storage = db.storage_create(context, storage)
+
+            driver.storage_id = storage_id
+            self.driver_factory[storage_id] = driver
+
+        LOG.info("Storage was registered successfully.")
+        return storage
 
     def remove_storage(self, context, storage_id):
         """Clear driver instance from driver factory."""

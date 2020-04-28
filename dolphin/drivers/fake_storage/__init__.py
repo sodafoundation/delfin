@@ -20,7 +20,7 @@ class FakeStorageDriver(driver.StorageDriver):
     it also plays a role as faker to fake data for being tested by clients.
     """
 
-    def __init__(self, storage_id):
+    def __init__(self, storage_id=None):
         super().__init__(storage_id)
 
     @staticmethod
@@ -28,7 +28,20 @@ class FakeStorageDriver(driver.StorageDriver):
         pass
 
     def register_storage(self, context, register_info):
-        pass
+        # Do something here
+        return {
+            'name': 'fake_driver',
+            'description': 'it is a fake driver.',
+            'vendor': register_info['vendor'],
+            'model': register_info['model'],
+            'status': 'normal',
+            'serial_number': '2102453JPN12KA000011',
+            'firmware_version': '1.0.0',
+            'location': 'HK',
+            'total_capacity': 1024 * 1024,
+            'used_capacity': 3126,
+            'free_capacity': 1045449,
+        }
 
     def get_storage(self, context):
         pass

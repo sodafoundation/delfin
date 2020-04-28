@@ -47,10 +47,11 @@ class DolphinBase(models.ModelBase,
 class AccessInfo(BASE, DolphinBase):
     """Represent access info required for storage accessing."""
     __tablename__ = "access_info"
-    storage_id = Column(String(128), primary_key=True)
-    hostname = Column(String(128))
-    username = Column(String(128))
-    password = Column(String(128))
+    storage_id = Column(String(36), primary_key=True)
+    host = Column(String(255))
+    port = Column(String(255))
+    username = Column(String(255))
+    password = Column(String(255))
     extra_attributes = Column(JsonEncodedDict)
 
 

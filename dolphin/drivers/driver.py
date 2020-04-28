@@ -19,7 +19,7 @@ import abc
 @six.add_metaclass(abc.ABCMeta)
 class StorageDriver(object):
 
-    def __init__(self, storage_id):
+    def __init__(self, storage_id=None):
         self.storage_id = storage_id
 
     @staticmethod

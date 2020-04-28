@@ -19,18 +19,25 @@
 """Implementation of SQLAlchemy backend."""
 
 from functools import wraps
+import six
 import sys
+
+import sqlalchemy
+from sqlalchemy import create_engine, update
+
 from oslo_config import cfg
 from oslo_db import options as db_options
+from oslo_db.sqlalchemy import utils as db_utils
 from oslo_db.sqlalchemy import session
 from oslo_log import log
 from oslo_utils import uuidutils
-from sqlalchemy import create_engine, update
 
-from dolphin import exception
+from dolphin.common import sqlalchemyutils
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, AccessInfo
-from dolphin.exception import InvalidInput
+from dolphin import exception
+from dolphin.i18n import _
+
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -85,15 +92,84 @@ def register_db():
         model.metadata.create_all(engine)
 
 
+def _process_model_like_filter(model, query, filters):
+    """Applies regex expression filtering to a query.
+
+    :param model: model to apply filters to
+    :param query: query to apply filters to
+    :param filters: dictionary of filters with regex values
+    :returns: the updated query.
+    """
+    if query is None:
+        return query
+
+    for key in sorted(filters):
+        column_attr = getattr(model, key)
+        if 'property' == type(column_attr).__name__:
+            continue
+        value = filters[key]
+        if not (isinstance(value, (six.string_types, int))):
+            continue
+        query = query.filter(
+            column_attr.op('LIKE')(u'%%%s%%' % value))
+    return query
+
+
+def apply_like_filters(model):
+    def decorator_filters(process_exact_filters):
+        def _decorator(query, filters):
+            exact_filters = filters.copy()
+            regex_filters = {}
+            for key, value in filters.items():
+                # NOTE(tommylikehu): For inexact match, the filter keys
+                # are in the format of 'key~=value'
+                if key.endswith('~'):
+                    exact_filters.pop(key)
+                    regex_filters[key.rstrip('~')] = value
+            query = process_exact_filters(query, exact_filters)
+            return _process_model_like_filter(model, query, regex_filters)
+        return _decorator
+    return decorator_filters
+
+
+def is_valid_model_filters(model, filters, exclude_list=None):
+    """Return True if filter values exist on the model
+
+    :param model: a Dolphin model
+    :param filters: dictionary of filters
+    """
+    for key in filters.keys():
+        if exclude_list and key in exclude_list:
+            continue
+        if key == 'metadata':
+            if not isinstance(filters[key], dict):
+                LOG.debug("Metadata filter value is not valid dictionary")
+                return False
+            continue
+        try:
+            key = key.rstrip('~')
+            getattr(model, key)
+        except AttributeError:
+            LOG.debug("'%s' filter key is not valid.", key)
+            return False
+    return True
+
+
 def access_info_create(context, values):
     """Create a storage access information."""
-    register_ref = models.AccessInfo()
-    this_session = get_session()
-    this_session.begin()
-    register_ref.update(values)
-    this_session.add(register_ref)
-    this_session.commit()
-    return register_ref
+    if not values.get('storage_id'):
+        values['storage_id'] = uuidutils.generate_uuid()
+
+    access_info_ref = models.AccessInfo()
+    access_info_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(access_info_ref)
+
+    return _access_info_get(context,
+                            access_info_ref['storage_id'],
+                            session=session)
 
 
 def access_info_update(context, access_info_id, values):
@@ -103,36 +179,60 @@ def access_info_update(context, access_info_id, values):
 
 def access_info_get(context, storage_id):
     """Get a storage access information."""
-    this_session = get_session()
-    this_session.begin()
-    access_info = this_session.query(AccessInfo) \
-        .filter(AccessInfo.storage_id == storage_id) \
-        .first()
-    if not access_info:
+    return _access_info_get(context, storage_id)
+
+
+def _access_info_get(context, storage_id, session=None):
+    result = (_access_info_get_query(context, session=session)
+              .filter_by(storage_id=storage_id)
+              .first())
+
+    if not result:
         raise exception.AccessInfoNotFound(storage_id=storage_id)
-    return access_info
+
+    return result
+
+
+def _access_info_get_query(context, session=None):
+    return model_query(context, models.AccessInfo, session=session)
 
 
 def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
                         sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage access information."""
-    this_session = get_session()
-    this_session.begin()
-    if filters.get('hostname', False):
-        access_info = this_session.query(AccessInfo.hostname).all()
-    else:
-        access_info = this_session.query(AccessInfo).all()
-    return access_info
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(context, session, marker, limit,
+                                         sort_keys, sort_dirs, filters, offset,
+                                         paginate_type=models.AccessInfo)
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.AccessInfo)
+def _process_access_info_filters(query, filters):
+    """Common filter processing for AccessInfo queries."""
+    if filters:
+        if not is_valid_model_filters(models.AccessInfo, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
 
 
 def storage_create(context, values):
     """Add a storage device from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
     storage_ref = models.Storage()
-    this_session = get_session()
-    this_session.begin()
     storage_ref.update(values)
-    this_session.add(storage_ref)
-    this_session.commit()
+
+    session = get_session()
+    with session.begin():
+        session.add(storage_ref)
+
     return storage_ref
 
 
@@ -143,12 +243,22 @@ def storage_update(context, storage_id, values):
 
 def storage_get(context, storage_id):
     """Retrieve a storage device."""
-    this_session = get_session()
-    this_session.begin()
-    storage_by_id = this_session.query(Storage) \
-        .filter(Storage.id == storage_id) \
-        .first()
-    return storage_by_id
+    return _storage_get_get(context, storage_id)
+
+
+def _storage_get_get(context, storage_id, session=None):
+    result = (_storage_get_get_query(context, session=session)
+              .filter_by(id=storage_id)
+              .first())
+
+    if not result:
+        raise exception.StorageNotFound(id=storage_id)
+
+    return result
+
+
+def _storage_get_get_query(context, session=None):
+    return model_query(context, models.Storage, session=session)
 
 
 def storage_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -232,3 +342,145 @@ def disk_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
     """Retrieves all disks."""
     return NotImplemented
+
+
+def is_orm_value(obj):
+    """Check if object is an ORM field or expression."""
+    return isinstance(obj, (sqlalchemy.orm.attributes.InstrumentedAttribute,
+                            sqlalchemy.sql.expression.ColumnElement))
+
+
+def model_query(context, model, *args, **kwargs):
+    """Query helper for model query.
+
+    :param context: context to query under
+    :param model: model to query. Must be a subclass of ModelBase.
+    :param session: if present, the session to use
+    """
+    session = kwargs.pop('session') or get_session()
+    return db_utils.model_query(
+        model=model, session=session, args=args, **kwargs)
+
+
+PAGINATION_HELPERS = {
+    models.AccessInfo: (_access_info_get_query, _process_access_info_filters, _access_info_get),
+}
+
+
+def process_sort_params(sort_keys, sort_dirs, default_keys=None,
+                        default_dir='asc'):
+    """Process the sort parameters to include default keys.
+
+    Creates a list of sort keys and a list of sort directions. Adds the default
+    keys to the end of the list if they are not already included.
+
+    When adding the default keys to the sort keys list, the associated
+    direction is:
+    1) The first element in the 'sort_dirs' list (if specified), else
+    2) 'default_dir' value (Note that 'asc' is the default value since this is
+    the default in sqlalchemy.utils.paginate_query)
+
+    :param sort_keys: List of sort keys to include in the processed list
+    :param sort_dirs: List of sort directions to include in the processed list
+    :param default_keys: List of sort keys that need to be included in the
+                         processed list, they are added at the end of the list
+                         if not already specified.
+    :param default_dir: Sort direction associated with each of the default
+                        keys that are not supplied, used when they are added
+                        to the processed list
+    :returns: list of sort keys, list of sort directions
+    :raise exception.InvalidInput: If more sort directions than sort keys
+                                   are specified or if an invalid sort
+                                   direction is specified
+    """
+    if default_keys is None:
+        default_keys = ['created_at', 'id']
+
+    # Determine direction to use for when adding default keys
+    if sort_dirs and len(sort_dirs):
+        default_dir_value = sort_dirs[0]
+    else:
+        default_dir_value = default_dir
+
+    # Create list of keys (do not modify the input list)
+    if sort_keys:
+        result_keys = list(sort_keys)
+    else:
+        result_keys = []
+
+    # If a list of directions is not provided, use the default sort direction
+    # for all provided keys.
+    if sort_dirs:
+        result_dirs = []
+        # Verify sort direction
+        for sort_dir in sort_dirs:
+            if sort_dir not in ('asc', 'desc'):
+                msg = _("Unknown sort direction, must be 'desc' or 'asc'.")
+                raise exception.InvalidInput(reason=msg)
+            result_dirs.append(sort_dir)
+    else:
+        result_dirs = [default_dir_value for _sort_key in result_keys]
+
+    # Ensure that the key and direction length match
+    while len(result_dirs) < len(result_keys):
+        result_dirs.append(default_dir_value)
+    # Unless more direction are specified, which is an error
+    if len(result_dirs) > len(result_keys):
+        msg = _("Sort direction array size exceeds sort key array size.")
+        raise exception.InvalidInput(reason=msg)
+
+    # Ensure defaults are included
+    for key in default_keys:
+        if key not in result_keys:
+            result_keys.append(key)
+            result_dirs.append(default_dir_value)
+
+    return result_keys, result_dirs
+
+
+def _generate_paginate_query(context, session, marker, limit, sort_keys,
+                             sort_dirs, filters, offset=None,
+                             paginate_type=models.Volume):
+    """Generate the query to include the filters and the paginate options.
+
+    Returns a query with sorting / pagination criteria added or None
+    if the given filters will not yield any results.
+
+    :param context: context to query under
+    :param session: the session to use
+    :param marker: the last item of the previous page; we returns the next
+                    results after this value.
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys
+    :param filters: dictionary of filters; values that are in lists, tuples,
+                    or sets cause an 'IN' operation, while exact matching
+                    is used for other values, see _process_volume_filters
+                    function for more information
+    :param offset: number of items to skip
+    :param paginate_type: type of pagination to generate
+    :returns: updated query or None
+    """
+    get_query, process_filters, get = PAGINATION_HELPERS[paginate_type]
+
+    sort_keys, sort_dirs = process_sort_params(sort_keys,
+                                               sort_dirs,
+                                               default_dir='desc')
+    query = get_query(context, session=session)
+
+    if filters:
+        query = process_filters(query, filters)
+        if query is None:
+            return None
+
+    marker_object = None
+    if marker is not None:
+        marker_object = get(context, marker, session)
+
+    return sqlalchemyutils.paginate_query(query, paginate_type, limit,
+                                          sort_keys,
+                                          marker=marker_object,
+                                          sort_dirs=sort_dirs,
+                                          offset=offset)
