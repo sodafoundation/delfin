@@ -240,7 +240,7 @@ def access_info_get(context, storage_id):
 
 
 def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
-                        sort_dirs=None, filters=None, offset=None):
+                           sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage access information.
 
     If no sort parameters are specified then the returned volumes are sorted
@@ -261,4 +261,4 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     :returns: list of storage accesses
     """
     return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
-                                    filters, offset)
+                                         filters, offset)
