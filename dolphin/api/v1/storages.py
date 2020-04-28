@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 
 import six
 from six.moves import http_client
@@ -21,6 +20,7 @@ from webob import exc
 from oslo_log import log
 
 from dolphin import db, context
+from dolphin.api import views
 from dolphin.api.common import wsgi
 from dolphin.drivers import manager as drivermanager
 from dolphin.db.sqlalchemy import api as db
@@ -47,28 +47,14 @@ def validate_parameters(data, required_parameters,
             raise exc_response(explanation=msg)
 
 
-def build_storages(storages):
-    # Build list of storages
-    views = [build_storage(storage)
-             for storage in storages]
-    return dict(storages=views)
 
-
-def build_storage(storage):
-    view = copy.deepcopy(storage)
-    return view
 
 
 class StorageController(wsgi.Controller):
 
     def index(self, req):
 
-        supported_filters = [
-            'name',
-            'vendor',
-            'model',
-            'status',
-        ]
+        supported_filters = ['name','vendor','model','status']
         query_params = {}
         query_params.update(req.GET)
         # update options  other than filters
@@ -76,6 +62,7 @@ class StorageController(wsgi.Controller):
         sort_dirs = (lambda x: [x] if x is not None else x)(query_params.get('sort_dir'))
         limit = query_params.get('limit', None)
         offset = query_params.get('offset', None)
+        marker = query_params.get('marker', None)
         # strip out options except supported filter options
         filters = query_params
         unknown_options = [opt for opt in filters
@@ -86,13 +73,13 @@ class StorageController(wsgi.Controller):
         for opt in unknown_options:
             del filters[opt]
         try:
-            storages = db.storage_get_all(context, None, limit, sort_keys, sort_dirs, filters, offset)
+            storages = db.storage_get_all(context, marker, limit, sort_keys, sort_dirs, filters, offset)
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         except Exception as e:
             msg = "Error in storage_get_all query from DB "
             raise exc.HTTPNotFound(explanation=msg)
-        return build_storages(storages)
+        return views.build_storages(storages)
 
     def show(self, req, id):
         return dict(name="Storage 2")
