@@ -49,3 +49,17 @@ class TaskAPI(object):
                                  'say_hello',
                                  request_spec=request_spec_p,
                                  filter_properties=filter_properties)
+
+    def sync_storage_resource(self, context, storage_id, resource_task):
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(context,
+                                 'sync_storage_resource',
+                                 storage_id=storage_id,
+                                 resource_task=resource_task)
+
+    def remove_storage_resource(self, context, storage_id, resource_task):
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(context,
+                                 'remove_storage_resource',
+                                 storage_id=storage_id,
+                                 resource_task=resource_task)

@@ -24,9 +24,13 @@ from oslo_config import cfg
 from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_log import log
-from sqlalchemy import  create_engine
+from oslo_utils import uuidutils
+from sqlalchemy import create_engine, update
+
+from dolphin import exception
 from dolphin.db.sqlalchemy import models
-from dolphin.db.sqlalchemy.models import Storage, RegistryContext
+from dolphin.db.sqlalchemy.models import Storage, AccessInfo
+from dolphin.exception import InvalidInput
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -35,6 +39,18 @@ _FACADE = None
 _DEFAULT_SQL_CONNECTION = 'sqlite:///'
 db_options.set_defaults(cfg.CONF,
                         connection=_DEFAULT_SQL_CONNECTION)
+
+
+def apply_sorting(model, query, sort_key, sort_dir):
+    if sort_dir.lower() not in ('desc', 'asc'):
+        msg = ("Wrong sorting data provided: sort key is '%(sort_key)s' "
+               "and sort order is '%(sort_dir)s'.") % {
+                  "sort_key": sort_key, "sort_dir": sort_dir}
+        raise exception.InvalidInput(reason=msg)
+
+    sort_attr = getattr(model, sort_key)
+    sort_method = getattr(sort_attr, sort_dir.lower())
+    return query.order_by(sort_method())
 
 
 def get_engine():
@@ -60,64 +76,159 @@ def get_backend():
 
 
 def register_db():
-    engine = create_engine(_DEFAULT_SQL_CONNECTION, echo=False)
+    """Create database and tables."""
     models = (Storage,
-              RegistryContext
+              AccessInfo
               )
     engine = create_engine(CONF.database.connection, echo=False)
     for model in models:
         model.metadata.create_all(engine)
 
 
-def registry_context_create(register_info):
-    register_ref = models.RegistryContext()
-    register_ref.storage_id = register_info.storage_id
-    register_ref.username = register_info.username
-    register_ref.hostname = register_info.hostname
-    register_ref.password = register_info.password
-    register_ref.extra_attributes = register_info.extra_attributes
+def access_info_create(context, values):
+    """Create a storage access information."""
+    register_ref = models.AccessInfo()
     this_session = get_session()
     this_session.begin()
+    register_ref.update(values)
     this_session.add(register_ref)
     this_session.commit()
     return register_ref
 
 
-def registry_context_get(storage_id):
+def access_info_update(context, access_info_id, values):
+    """Update a storage access information with the values dictionary."""
+    return NotImplemented
+
+
+def access_info_get(context, storage_id):
+    """Get a storage access information."""
     this_session = get_session()
     this_session.begin()
-    registry_context = this_session.query(RegistryContext) \
-        .filter(RegistryContext.storage_id == storage_id) \
+    access_info = this_session.query(AccessInfo) \
+        .filter(AccessInfo.storage_id == storage_id) \
         .first()
-    return registry_context
+    if not access_info:
+        raise exception.AccessInfoNotFound(storage_id=storage_id)
+    return access_info
 
 
-def registry_context_get_all():
+def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage access information."""
     this_session = get_session()
     this_session.begin()
-    registry_context = this_session.query(RegistryContext).all()
-    return registry_context
+    if filters.get('hostname', False):
+        access_info = this_session.query(AccessInfo.hostname).all()
+    else:
+        access_info = this_session.query(AccessInfo).all()
+    return access_info
 
 
-def storage_create(storage):
+def storage_create(context, values):
+    """Add a storage device from the values dictionary."""
     storage_ref = models.Storage()
-    storage_ref.id = storage.id
-    storage_ref.name = storage.name
-    storage_ref.model = storage.model
-    storage_ref.vendor = storage.vendor
-    storage_ref.description = storage.description
-    storage_ref.location = storage.location
     this_session = get_session()
     this_session.begin()
+    storage_ref.update(values)
     this_session.add(storage_ref)
     this_session.commit()
     return storage_ref
 
 
-def storage_get(storage_id):
+def storage_update(context, storage_id, values):
+    """Update a storage device with the values dictionary."""
+    return NotImplemented
+
+
+def storage_get(context, storage_id):
+    """Retrieve a storage device."""
     this_session = get_session()
     this_session.begin()
     storage_by_id = this_session.query(Storage) \
         .filter(Storage.id == storage_id) \
         .first()
     return storage_by_id
+
+
+def storage_get_all(context, marker=None, limit=None, sort_keys=None,
+                    sort_dirs=None, filters=None, offset=None):
+    this_session = get_session()
+    this_session.begin()
+    if not sort_keys:
+        sort_keys = ['created_at']
+    if not sort_dirs:
+        sort_dirs = ['desc']
+    this_session = get_session()
+    this_session.begin()
+    query = this_session.query(models.Storage)
+
+    if filters:
+
+        for attr, value in filters.items():
+            query = query.filter(getattr(models.Storage, attr).like("%%%s%%" % value))
+    try:
+        for (sort_key, sort_dir) in zip(sort_keys, sort_dirs):
+            query = apply_sorting(models.Storage, query, sort_key, sort_dir)
+    except AttributeError:
+        msg = "Wrong sorting keys provided - '%s'." % sort_keys
+        raise exception.InvalidInput(reason=msg)
+
+    if limit:
+        query = query.limit(limit)
+
+    # Returns list of storages  that satisfy filters.
+    return query.all()
+
+
+def volume_get(context, volume_id):
+    """Get a volume or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def volume_get_all(context, marker=None, limit=None, sort_keys=None,
+                   sort_dirs=None, filters=None, offset=None):
+    """Retrieves all volumes."""
+    return NotImplemented
+
+
+def pool_create(context, values):
+    """Create a pool from the values dictionary."""
+    return NotImplemented
+
+
+def pool_update(context, pool_id, values):
+    """Update a pool withe the values dictionary."""
+    return NotImplemented
+
+
+def pool_get(context, pool_id):
+    """Get a pool or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def pool_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage pools."""
+    return NotImplemented
+
+
+def disk_create(context, values):
+    """Create a disk from the values dictionary."""
+    return NotImplemented
+
+
+def disk_update(context, disk_id, values):
+    """Update a disk withe the values dictionary."""
+    return NotImplemented
+
+
+def disk_get(context, disk_id):
+    """Get a disk or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def disk_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all disks."""
+    return NotImplemented
