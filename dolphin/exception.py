@@ -42,7 +42,6 @@ exc_log_opts = [
 CONF = cfg.CONF
 CONF.register_opts(exc_log_opts)
 
-
 ProcessExecutionError = processutils.ProcessExecutionError
 
 
@@ -160,6 +159,14 @@ class InvalidInput(Invalid):
     message = _("Invalid input received: %(reason)s.")
 
 
+class InvalidName(Invalid):
+    message = _("An invalid 'name' value was provided. %(reason)s")
+
+
+class ValidationError(Invalid):
+    message = "%(detail)s"
+
+
 class InvalidContentType(Invalid):
     message = _("Invalid content type %(content_type)s.")
 
@@ -228,6 +235,14 @@ class ServiceNotFound(NotFound):
     message = _("Service %(service_id)s could not be found.")
 
 
+class ResourceNotFound(NotFound):
+    message = _("Resource %(storage_id)s could not be found.")
+
+
+class AccessInfoNotFound(NotFound):
+    message = _("Storage access info %(storage_id)s could not be found.")
+
+
 class ServiceIsDown(Invalid):
     message = _("Service %(service)s is down.")
 
@@ -266,4 +281,3 @@ class SSHException(DolphinException):
 
 class SSHInjectionThreat(DolphinException):
     message = _("SSH command injection detected: %(command)s")
-

@@ -27,6 +27,8 @@ from dolphin.db.sqlalchemy import api as db
 from dolphin import exception
 from dolphin import utils
 from dolphin.i18n import _
+from dolphin import context
+from dolphin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
@@ -48,6 +50,8 @@ def validate_parameters(data, required_parameters,
 
 
 class StorageController(wsgi.Controller):
+    def __init__(self):
+        self.task_rpcapi = task_rpcapi.TaskAPI()
 
     def index(self, req):
 
@@ -127,7 +131,8 @@ class StorageController(wsgi.Controller):
         if status == 'available':
             try:
                 storage['storage_id'] = device_info.get('id')
-                db.storage_access_create(context, storage)
+
+                db.access_info_create(context, storage)
 
                 db.storage_create(context, device_info)
             except AttributeError as e:
@@ -157,6 +162,27 @@ class StorageController(wsgi.Controller):
         return dict(name="Sync all storages")
 
     def sync(self, req, id):
+        """
+        :param req:
+        :param id:
+        :return:
+        """
+        # validate the id
+        context = req.environ.get('dolphin.context')
+        # admin_context = context.RequestContext('admin', 'fake', True)
+        try:
+            device = db.access_info_get(context, id)
+        except Exception as e:
+            LOG.error(e)
+            raise exception.AccessInfoNotFound(e)
+
+        tasks = (
+            'pool_task',
+            'volume_task'
+        )
+        for task in tasks:
+            self.task_rpcapi.sync_storage_resource(context, id, task)
+
         return dict(name="Sync storage 1")
 
 

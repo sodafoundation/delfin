@@ -311,6 +311,27 @@ def file_open(*args, **kwargs):
     return open(*args, **kwargs)
 
 
+def check_string_length(value, name, min_length=0, max_length=None,
+                        allow_all_spaces=True):
+    """Check the length of specified string.
+
+    :param value: the value of the string
+    :param name: the name of the string
+    :param min_length: the min_length of the string
+    :param max_length: the max_length of the string
+    """
+    try:
+        strutils.check_string_length(value, name=name,
+                                     min_length=min_length,
+                                     max_length=max_length)
+    except(ValueError, TypeError) as exc:
+        raise exception.InvalidInput(reason=exc)
+
+    if not allow_all_spaces and value.isspace():
+        msg = _('%(name)s cannot be all spaces.')
+        raise exception.InvalidInput(reason=msg)
+
+
 def service_is_up(service):
     """Check whether a service is up based on last heartbeat."""
     last_heartbeat = service['updated_at'] or service['created_at']
