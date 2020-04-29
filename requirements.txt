@@ -41,4 +41,4 @@ tooz>=1.58.0 # Apache-2.0
 WebOb>=1.7.1 # MIT
 pysnmp>=4.4.11 # BSD
 redis>=3.3.8
-PyU4V>=9.1.3
+PyU4V>=3.1.7

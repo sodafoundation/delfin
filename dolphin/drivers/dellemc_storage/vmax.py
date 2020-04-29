@@ -28,34 +28,64 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def __init__(self, storage_id):
         super().__init__(storage_id)
+        # Initialize with defaults
         self.storage_id = storage_id
+        self.univmax_version = '90'
+        self.server_ip = '127.0.0.1'
+        self.port = '8443'
+        self.verify = False  # Valid values are True/False/<path to certificatefile>
+        self.username = ''
+        self.password = ''
+        self.symmetrix_id = ''
 
     @staticmethod
     def get_storage_registry():
-        register_info = {
-            "server_ip": "192.168.20.158",
-            "port": 8443,
-            "username": "unisphere-user",
-            "password": "secret-pass",
-            "u4v_version":'90',
-            "verify": "unisphere-ssl-cakey-file"
+        # register_info dict
+        extra_attributes = {
+            'symmetrix_id':self.symmetrix_id,
+            'univmax_version': self.univmax_version,
+            'server_ip': self.server_ip,
+            'port': self.port,
+            'verify': self.verify
         }
-        LOG.info('get_storage_registry()')
+        register_info = {
+            'storage_id':self.storage_id,
+            'username':'',
+            'password':'',
+            'hostname':'',
+            'extra_attributes': extra_attributes
+        }
+        LOG.info('get_storage_registry(), typical input dictionary is', register_info)
         return register_info
 
     def register_storage(self, context, register_info):
-        try:
-            u4v_version = register_info['u4v_version']
-            server_ip = register_info['server_ip']
-            port = register_info['port']
-            verify = register_info['verify']
-            username = register_info['username']
-            password = register_info['password']
+        # Check if the storage is already registered
+        if self.storage_id in VMAXStorageDriver.storage_ids:
+            LOG.info('Storage is already registered!')
+            return VMAXStorageDriver.storage_ids
 
+        # Verify input parameters for registration exists
+        try:
+            self.symmetrix_id = register_info['extra_attributes']['symmetrix_id']
+            self.univmax_version = register_info['extra_attributes']['univmax_version']
+            self.server_ip = register_info['extra_attributes']['server_ip']
+            self.port = register_info['extra_attributes']['port']
+            self.verify = register_info['extra_attributes']['verify']
+            self.username = register_info['username']
+            self.password = register_info['password']
+        except KeyError as err:
+            LOG.error('ERROR: Invalid input register_info[' + str(err) + ']')
+            return []
+
+        try:
             # Initialise PyU4V connection to Unisphere
             conn = PyU4V.U4VConn(
-                u4v_version=u4v_version, server_ip=server_ip, port=port,
-                verify=verify, username=username, password=password)
+                univmax_version=self.univmax_version,
+                server_ip=self.server_ip,
+                port=self.port,
+                verify=self.verify,
+                username=self.username,
+                password=self.password)
 
             # Get the Unisphere version
             version = conn.common.get_uni_version()
@@ -66,68 +96,82 @@ class VMAXStorageDriver(driver.StorageDriver):
             # Close the session
             conn.close_session()
 
-        except:
-            print('Failed to connect to storage')
+            if (version != self.univmax_version):
+                LOG.error('Storage version is different from input version')
 
+            if (self.symmetrix_id not in array_list):
+                LOG.error('ERROR: Array list do not contain storage id')
+                return []
+
+        except:
+            LOG.error('ERROR: Failed to connect to VMAX storage')
+            return []
+
+        # Update storage_id's that this driver manages
+        if VMAXStorageDriver.storage_ids:
+            VMAXStorageDriver.storage_ids.append(self.storage_id)
         else:
-            # Update storage_id's that this driver manages
-            if VMAXStorageDriver.storage_ids:
-                if self.storage_id in VMAXStorageDriver.storage_ids:
-                    LOG.info('Storage is already registered!')
-                else:
-                    VMAXStorageDriver.storage_ids.append(self.storage_id)
-            else:
-                VMAXStorageDriver.storage_ids = [self.storage_id]
+            VMAXStorageDriver.storage_ids = [self.storage_id]
         
-        print('register_storage()')
+        # Return all the storage ids this driver manage
+        LOG.info('register_storage(), driver successfully registered')
         return VMAXStorageDriver.storage_ids
 
     def get_storage(self, context):
-        try:
-            u4v_version = register_info['u4v_version']
-            server_ip = register_info['server_ip']
-            port = register_info['port']
-            verify = register_info['verify']
-            username = register_info['username']
-            password = register_info['password']
+        Storage = {
+            'id': self.storage_id,
+            'name': 'VMAX',
+            'vendor': 'Dell EMC',
+            'description': '',
+            'model': '',
+            'status': '',
+            'serial_number': self.symmetrix_id,
+            'location': '',
+            'total_capacity': 0,
+            'used_capacity': 0,
+            'free_capacity': 0
+        }
 
+        try:
             # Initialise PyU4V connection to Unisphere
             conn = PyU4V.U4VConn(
-                u4v_version=u4v_version, server_ip=server_ip, port=port,
-                verify=verify, username=username, password=password)
+                univmax_version=self.univmax_version,
+                server_ip=self.server_ip,
+                port=self.port,
+                verify=self.verify,
+                username=self.username,
+                password=self.password)
 
+            LOG.info('Successfully connected storage')
+            Storage.status = 'Available'
 
-            # Get the Unisphere version
-            version = conn.common.get_uni_version()
+            # Get the Unisphere model
+            uri = '/system/symmetrix/' + self.symmetrix_id
+            model = conn.common.get_request(uri, '')
+            Storage.model = model['symmetrix'][0]['model']
+            LOG.info('Successfully retrieved storage model')
 
-            # Retrieve a list of arrays managed by your instance of Unisphere
-            array_list = conn.common.get_array_list()
+            # Get first SRP
+            uri = '/sloprovisioning/symmetrix/' + self.symmetrix_id + '/srp'
+            srp = conn.common.get_request(uri, '')
+            srp_id = srp['srpId'][0]
 
-            # Output results to screen
-            LOG.info('version is: {ver}'.format(ver=version[0]))
-            LOG.info('This instance of Unisphere instance manages the following arrays: '
-                '{arr_list}'.format(arr_list=array_list))
-
-            # GET those arrays which are local to this instance of Unisphere
-            local_array_list = list()
-            for array_id in array_list:
-                array_details = conn.common.get_array(array_id)
-                if array_details['local']:
-                    local_array_list.append(array_id)
-
-            # Output results to screen
-            LOG.info('The following arrays are local to this Unisphere instance: '
-                '{arr_list}'.format(arr_list=local_array_list))
+            # Get first SRP details for capacity info
+            uri = '/sloprovisioning/symmetrix/' + self.symmetrix_id + '/srp/' + srp_id
+            srp_info = conn.common.get_request(uri, '')
+            Storage.total_capacity = srp_info['srp'][0]['total_usable_cap_gb']
+            Storage.used_capacity = srp_info['srp'][0]['total_allocated_cap_gb']
+            LOG.info('Successfully retrieved storage capacity')
 
             # Close the session
             conn.close_session()
 
         except:
-            print('Failed to connect to storage')
+            LOG.error('ERROR: Failed to get storage details')
+            return Storage
 
-        else:
-            print('get_storage()')
-            return array_list
+        LOG.info('get_storage(), successfully retrieved storage details')
+        return Storage
 
     def list_pools(self, context):
         pass
