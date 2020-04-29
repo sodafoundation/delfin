@@ -21,6 +21,7 @@ from pysnmp.proto.api import v2c
 from pysnmp.smi import builder, view, rfc1902, error
 
 from dolphin.alert_manager import constants
+from dolphin.alert_manager import alert_processor
 
 LOG = log.getLogger(__name__)
 
@@ -63,18 +64,50 @@ class TrapReceiver(object):
         except Exception:
             raise ValueError("Port binding failed the provided port is in use.")
 
+    def _extract_oid_value(self, var_bind):
+        """Extracts oid and value from var binds.
+        ex: varbind =  (SNMPv2-MIB::snmpTrapOID.0 = SNMPv2-MIB::authenticationFailure)
+        oid = snmpTrapOID
+        val = authenticationFailure
+        """
+        var_bind_info = var_bind.prettyPrint()
+        var_bind_info = var_bind_info.split("=", 1)
+        oid = var_bind_info[0]
+        val = var_bind_info[1]
+
+        oid = oid.split("::", 1)
+        oid = oid[1].split(".", 1)
+        oid = oid[0]
+
+        if "::" in val:
+            val = val.split("::", 1)
+            val = val[1]
+
+        return oid, val
+
     def _cb_fun(self, state_reference, context_engine_id, context_name,
               var_binds, cb_ctx):
         """Callback function to process the incoming trap."""
-        exec_context = self.snmp_engine.observer.getExecutionContext('rfc3412.receiveMessage:request')
+        additional_info = self.snmp_engine.observer.getExecutionContext('rfc3412.receiveMessage:request')
         LOG.info(
             '#Notification from %s \n#ContextEngineId: "%s" \n#ContextName: "%s" \n#SNMPVER "%s" \n#SecurityName "%s"' % (
-            '@'.join([str(x) for x in exec_context['transportAddress']]), context_engine_id.prettyPrint(),
-            context_name.prettyPrint(), exec_context['securityModel'], exec_context['securityName']))
-        for oid, val in var_binds:
-            output = rfc1902.ObjectType(rfc1902.ObjectIdentity(oid), val).resolveWithMib(
-                self.mib_view_controller).prettyPrint()
-            LOG.info(output)
+            '@'.join([str(x) for x in additional_info['transportAddress']]), context_engine_id.prettyPrint(),
+            context_name.prettyPrint(), additional_info['securityModel'], additional_info['securityName']))
+
+        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(self.mib_view_controller) for x in
+                    var_binds]
+        alert = {}
+
+        for var_bind in var_binds:
+            oid, value = self._extract_oid_value(var_bind)
+            alert[oid] = value
+
+        # Fill additional info to alert_info
+        # transportAddress contains both ip and port, extract ip addr
+        alert['transport_address'] = additional_info['transportAddress'][0]
+
+        # Handover trap info to alert processor for model translation and export
+        alert_processor.AlertProcessor().process_alert_info(alert)
 
     def _snmp_v2v3_config(self):
         """Configures snmp v2 and v3 user parameters."""

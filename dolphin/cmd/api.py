@@ -47,7 +47,7 @@ def main():
     launcher.launch_service(api_server, workers=api_server.workers or 1)
     launcher.launch_service(task_server)
 
-    #Launch alert manager service
+    # Launch alert manager service
     alert_manager = service.AlertMngrService()
     launcher.launch_service(alert_manager)
 

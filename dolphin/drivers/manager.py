@@ -65,6 +65,7 @@ class DriverManager(object):
 
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
+        # TBD: Identify driver and driver instance and invoke parse_alert
         pass
 
     def clear_alert(self, context, storage_id, alert):
