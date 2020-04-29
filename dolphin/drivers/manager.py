@@ -11,18 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import threading
 
 from oslo_log import log
 
 
 LOG = log.getLogger(__name__)
+lock = threading.Lock()
 
 DRIVER_MAPPING = {
     "fake_storage": "dolphin.drivers.fake_storage.FakeStorageDriver"
 }
 
 
-class DriverManager(object):
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            with lock:
+                if cls not in cls._instances:
+                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class DriverManager(metaclass=Singleton):
 
     def __init__(self):
         # The driver_factory will keep the driver instance for
