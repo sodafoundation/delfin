@@ -27,7 +27,7 @@ from oslo_config import cfg
 from oslo_log import log
 
 from dolphin.common import config  # Need to register global_opts
-from dolphin import service
+from dolphin import service, db
 from dolphin import utils
 from dolphin import version
 
@@ -46,6 +46,9 @@ def main():
     task_server = service.Service.create(binary='dolphin-task', coordination=True)
     launcher.launch_service(api_server, workers=api_server.workers or 1)
     launcher.launch_service(task_server)
+
+    # Register DB
+    db.register_db()
 
     #Launch alert manager service
     alert_manager = service.AlertMngrService()
