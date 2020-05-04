@@ -91,19 +91,11 @@ class StorageController(wsgi.Controller):
     def show(self, req, id):
         try:
             storage = db.storage_get(context, id)
-        except AttributeError as e:
-            LOG.error(e)
-            raise exception.DolphinException(e)
-        except exception.StorageNotFound as e:
+        except (AttributeError, exception.StorageNotFound, Exception) as e:
             msg = _('Failed to get  Storage  from  DB: {0}'
                     .format(e))
             LOG.exception(msg)
             raise exc.HTTPNotFound(explanation=msg)
-        except Exception as e:
-            msg = _('Failed to get  Storage  from  DB: {0}'
-                    .format(e))
-            LOG.exception(msg)
-            raise exception.DolphinException(msg)
         view = storage_view.build_storage(storage)
         return dict(view)
 
