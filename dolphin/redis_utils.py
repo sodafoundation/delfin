@@ -48,7 +48,7 @@ class RedisClient(metaclass=utils.Singleton):
                 LOG.error("connect to redis failed")
                 raise err
 
-    def has_key(self, key_name):
+    def contains_key(self, key_name):
         """Check whether the key is in redis
 
         :param key_name: Key name
