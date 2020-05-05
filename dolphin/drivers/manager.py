@@ -14,6 +14,7 @@
 
 from oslo_log import log
 
+from dolphin import utils
 
 LOG = log.getLogger(__name__)
 
@@ -22,7 +23,7 @@ DRIVER_MAPPING = {
 }
 
 
-class DriverManager(object):
+class DriverManager(metaclass=utils.Singleton):
 
     def __init__(self):
         # The driver_factory will keep the driver instance for
