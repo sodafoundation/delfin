@@ -28,6 +28,7 @@ import shutil
 import sys
 import tempfile
 import time
+import threading
 
 from eventlet import pools
 import logging
@@ -51,6 +52,7 @@ from dolphin.i18n import _
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
+lock = threading.Lock()
 if hasattr('CONF', 'debug') and CONF.debug:
     logging.getLogger("paramiko").setLevel(logging.DEBUG)
 
@@ -696,3 +698,14 @@ def write_remote_file(ssh, filename, contents, as_root=False):
     stdin.close()
     stdin.channel.shutdown_write()
     ssh.exec_command(cmd2)
+
+
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            with lock:
+                if cls not in cls._instances:
+                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
