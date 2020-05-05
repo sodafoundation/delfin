@@ -88,6 +88,17 @@ global_opts = [
 
 CONF.register_opts(global_opts)
 
+redis_opts = [
+    cfg.StrOpt('db_name', default=''),
+    cfg.StrOpt('user', default=''),
+    cfg.StrOpt('password', secret=True),
+    cfg.StrOpt('redis_ip', default='127.0.0.1'),
+    cfg.IntOpt('redis_port', default=6379)
+]
+redis_group = cfg.OptGroup('redis')
+CONF.register_group(redis_group)
+CONF.register_opts(redis_opts, group=redis_group)
+
 
 def set_middleware_defaults():
     """Update default configuration options for oslo.middleware."""
