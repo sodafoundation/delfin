@@ -21,8 +21,22 @@ LOG = log.getLogger(__name__)
 
 class AlertHandler(object):
     """Alert handling functions for vmax driver"""
-
-    VMAX_MANUFACTURER = 'VMAX_MANUFACTURER'
+    default_category = 'New'
+    necessary_alert_attr = [
+        'storage_id',
+        'name',
+        'location',
+        'vendor',
+        'model',
+        'emcAsyncEventComponentType',
+        'emcAsyncEventComponentName',
+        'connUnitEventType',
+        'emcAsyncEventCode',
+        'connUnitEventSeverity',
+        'requestId',
+        'connUnitEventDescr',
+        'connUnitType',
+    ]
 
     def __init__(self):
         pass
@@ -37,36 +51,44 @@ class AlertHandler(object):
 
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model attributes."""
-        alert_model = {}
-        alert_model['alarm_name'] = alert['snmpTrapOID']
-        alert_model['manufacturer'] = self.VMAX_MANUFACTURER
 
-        today = date.today()
-        alert_model['received_time'] = today.strftime("%b-%d-%Y")
+        for attr in self.necessary_alert_attr:
+            if not alert.get(attr):
+                raise ValueError("Necessary attributes missing in alert input.")
 
         # Fill all the alert model fields
-        '''
-        self.category=
-        self.serial_no=
-        self.occur_time=
+        alert_model = {}
+        if alert.get('category'):
+            alert_model['category'] = alert['category']
+        else:
+            alert_model['category'] = self.default_category
 
-        self.match_key=
-        self.me_name=
-        self.me_dn=
-        self.moi=
-        self.event_type=
-        self.alarm_name=
-        self.alarm_id
-        self.severity=
-        self.device_alert_sn=
-        self.manufacturer=
-        self.product_name=
-        self.probable_cause=
-        self.clear_type=
-        self.native_me_dn=
-        self.me_category=
-        self.me_type=
-        '''
+        # trap info do not contain occur time
+        today = date.today()
+        alert_model['occur_time'] = today.strftime("%b-%d-%Y")
+
+        # These information are sourced from device registration info
+        alert_model['me_dn'] = alert['storage_id']
+        alert_model['me_name'] = alert['name']
+        alert_model['location_info'] = alert['location']
+        alert_model['manufacturer'] = alert['vendor']
+        alert_model['product_name'] = alert['model']
+
+        alert_model['native_me_dn'] = alert['emcAsyncEventComponentType'] + ' ' + alert['emcAsyncEventComponentName']
+        alert_model['event_type'] = alert['connUnitEventType']
+        alert_model['alarm_id'] = alert['emcAsyncEventCode']
+
+        # No alert name as part of trap info, duplicating from id
+        alert_model['alarm_name'] = alert['emcAsyncEventCode']
+
+        alert_model['severity'] = alert['connUnitEventSeverity']
+        alert_model['deviceAlertSn'] = alert['requestId']
+        alert_model['probable_cause'] = alert['connUnitEventDescr']
+
+        # trap info does not have clear_type value
+        alert_model['clear_type'] = ""
+        alert_model['me_category'] = alert['connUnitType']
+
         return alert_model
 
     def clear_alert(self, context, storage_id, alert):
