@@ -28,7 +28,7 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
-    def register_storage(self, context, register_info):
+    def register_storage(self, context, access_info):
         """Discovery a storage system with register parameters."""
         pass
 

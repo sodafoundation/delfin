@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import six
 from six.moves import http_client
 import webob
@@ -24,6 +25,8 @@ from dolphin.api.schemas import storages as schema_storages
 from dolphin.api import validation
 from dolphin.api.views import storages as storage_view
 from dolphin import context
+from dolphin import coordination
+from dolphin import cryptor
 from dolphin import db
 from dolphin.drivers import manager as drivermanager
 from dolphin import exception
@@ -54,6 +57,7 @@ class StorageController(wsgi.Controller):
     def __init__(self):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
+        self.driver_manager = drivermanager.DriverManager()
 
     def index(self, req):
 
@@ -87,21 +91,36 @@ class StorageController(wsgi.Controller):
     def show(self, req, id):
         return dict(name="Storage 2")
 
+    @wsgi.response(201)
     @validation.schema(schema_storages.create)
+    @coordination.synchronized('storage-create-{body[host]}-{body[port]}')
     def create(self, req, body):
         """Register a new storage device."""
-        # ctxt = req.environ['dolphin.context']
-        ctxt = context.get_admin_context()
-        driver = drivermanager.DriverManager()
+        ctxt = req.environ['dolphin.context']
+        access_info_dict = body
+
+        if self._is_registered(ctxt, access_info_dict):
+            msg = _("Storage has been registered.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
         try:
-            storage = driver.register_storage(ctxt, body)
-        except exception.DolphinException as e:
-            LOG.error(e)
-            raise e
-        # except Exception as e:
-        #     msg = _('Failed to register device in driver :{0}'.format(e))
-        #     LOG.error(e)
-        #     raise exception.DolphinException(msg)
+            storage = self.driver_manager.register_storage(ctxt, access_info_dict)
+            storage = db.storage_create(context, storage)
+
+            # Need to encode the password before saving.
+            access_info_dict['storage_id'] = storage['id']
+            access_info_dict['password'] = cryptor.encode(access_info_dict['password'])
+            db.access_info_create(context, access_info_dict)
+        except (exception.InvalidCredential,
+                exception.StorageDriverNotFound,
+                exception.AccessInfoNotFound,
+                exception.StorageNotFound) as e:
+            raise exc.HTTPBadRequest(explanation=e.message)
+        except Exception as e:
+            msg = _('Failed to register storage: {0}'.format(e))
+            LOG.error(msg)
+            raise exc.HTTPBadRequest(explanation=msg)
+
         return storage_view.build_storage(storage)
 
     def update(self, req, id, body):
@@ -136,6 +155,21 @@ class StorageController(wsgi.Controller):
             self.task_rpcapi.sync_storage_resource(context, id, task)
 
         return dict(name="Sync storage 1")
+
+    def _is_registered(self, context, access_info):
+        access_info_dict = copy.deepcopy(access_info)
+
+        # Remove unrelated query fields
+        access_info_dict.pop('username', None)
+        access_info_dict.pop('password', None)
+        access_info_dict.pop('vendor', None)
+        access_info_dict.pop('model', None)
+
+        # Check if storage is registered
+        if db.access_info_get_all(context,
+                                  filters=access_info_dict):
+            return True
+        return False
 
 
 def create_resource():

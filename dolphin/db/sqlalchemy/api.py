@@ -18,12 +18,11 @@
 
 """Implementation of SQLAlchemy backend."""
 
-from functools import wraps
 import six
 import sys
 
 import sqlalchemy
-from sqlalchemy import create_engine, update
+from sqlalchemy import create_engine
 
 from oslo_config import cfg
 from oslo_db import options as db_options
@@ -233,7 +232,9 @@ def storage_create(context, values):
     with session.begin():
         session.add(storage_ref)
 
-    return storage_ref
+    return _storage_get(context,
+                        storage_ref['id'],
+                        session=session)
 
 
 def storage_update(context, storage_id, values):
@@ -243,11 +244,11 @@ def storage_update(context, storage_id, values):
 
 def storage_get(context, storage_id):
     """Retrieve a storage device."""
-    return _storage_get_get(context, storage_id)
+    return _storage_get(context, storage_id)
 
 
-def _storage_get_get(context, storage_id, session=None):
-    result = (_storage_get_get_query(context, session=session)
+def _storage_get(context, storage_id, session=None):
+    result = (_storage_get_query(context, session=session)
               .filter_by(id=storage_id)
               .first())
 
@@ -257,7 +258,7 @@ def _storage_get_get(context, storage_id, session=None):
     return result
 
 
-def _storage_get_get_query(context, session=None):
+def _storage_get_query(context, session=None):
     return model_query(context, models.Storage, session=session)
 
 
@@ -394,7 +395,7 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
                                    direction is specified
     """
     if default_keys is None:
-        default_keys = ['created_at', 'id']
+        default_keys = ['created_at']
 
     # Determine direction to use for when adding default keys
     if sort_dirs and len(sort_dirs):
