@@ -17,6 +17,7 @@
 #    under the License.
 
 """Implementation of SQLAlchemy backend."""
+import copy
 
 import six
 import sys
@@ -36,7 +37,6 @@ from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, AccessInfo
 from dolphin import exception
 from dolphin.i18n import _
-
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -127,7 +127,9 @@ def apply_like_filters(model):
                     regex_filters[key.rstrip('~')] = value
             query = process_exact_filters(query, exact_filters)
             return _process_model_like_filter(model, query, regex_filters)
+
         return _decorator
+
     return decorator_filters
 
 
@@ -168,6 +170,7 @@ def access_info_create(context, values):
 
     return _access_info_get(context,
                             access_info_ref['storage_id'],
+                            models.AccessInfo,
                             session=session)
 
 
@@ -178,11 +181,11 @@ def access_info_update(context, access_info_id, values):
 
 def access_info_get(context, storage_id):
     """Get a storage access information."""
-    return _access_info_get(context, storage_id)
+    return _access_info_get(context, storage_id, models.AccessInfo)
 
 
-def _access_info_get(context, storage_id, session=None):
-    result = (_access_info_get_query(context, session=session)
+def _access_info_get(context, storage_id, model, session=None):
+    result = (_access_info_get_query(context, model, session=session)
               .filter_by(storage_id=storage_id)
               .first())
 
@@ -192,8 +195,8 @@ def _access_info_get(context, storage_id, session=None):
     return result
 
 
-def _access_info_get_query(context, session=None):
-    return model_query(context, models.AccessInfo, session=session)
+def _access_info_get_query(context, model, session=None):
+    return model_query(context, model, session=session)
 
 
 def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -201,9 +204,10 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     """Retrieves all storage access information."""
     session = get_session()
     with session.begin():
-        query = _generate_paginate_query(context, session, marker, limit,
-                                         sort_keys, sort_dirs, filters, offset,
-                                         paginate_type=models.AccessInfo)
+        query = _generate_paginate_query(context, session, models.AccessInfo,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset
+                                         )
         if query is None:
             return []
         return query.all()
@@ -232,34 +236,49 @@ def storage_create(context, values):
     with session.begin():
         session.add(storage_ref)
 
-    return _storage_get(context,
-                        storage_ref['id'],
-                        session=session)
+    return _resource_get(context,
+                         storage_ref['id'],
+                         models.Storage,
+                         session=session)
 
 
 def storage_update(context, storage_id, values):
     """Update a storage device with the values dictionary."""
-    return NotImplemented
+    model = models.Storage
+    session = get_session()
+    with session.begin():
+        query = storage_get(context, storage_id)
+        query.update(values)
+        query.save(session=session)
+    return
 
 
 def storage_get(context, storage_id):
     """Retrieve a storage device."""
-    return _storage_get(context, storage_id)
+    return _resource_get(context, storage_id, models.Storage)
 
 
-def _storage_get(context, storage_id, session=None):
-    result = (_storage_get_query(context, session=session)
-              .filter_by(id=storage_id)
-              .first())
-
+def _resource_get_all(context, model, session=None):
+    result = (_resource_get_query(context, model, session=session)
+              .all())
     if not result:
-        raise exception.StorageNotFound(id=storage_id)
+        raise exception.StorageNotFound()
 
     return result
 
 
-def _storage_get_query(context, session=None):
-    return model_query(context, models.Storage, session=session)
+def _resource_get(context, resource_id, model, session=None):
+    result = (_resource_get_query(context, model, session=session)
+              .filter_by(id=resource_id)
+              .first())
+    if not result:
+        raise exception.StorageNotFound(id=resource_id)
+
+    return result
+
+
+def _resource_get_query(context, model, session=None):
+    return model_query(context, model, session=session)
 
 
 def storage_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -303,25 +322,67 @@ def volume_get_all(context, marker=None, limit=None, sort_keys=None,
     return NotImplemented
 
 
-def pool_create(context, values):
+def pool_create(context, values, session=None):
     """Create a pool from the values dictionary."""
     return NotImplemented
 
 
-def pool_update(context, pool_id, values):
+def pool_update(context, pools):
     """Update a pool withe the values dictionary."""
-    return NotImplemented
+    pool_ref = models.Pool()
+    session = get_session()
+    with session.begin():
+        query = pool_get_all(context)
+        delete_list = copy.copy(query)
+        [delete_list.remove(item) for pool in pools
+         for item in query if pool.get('id') == item.get('id')]
+        for pool in delete_list:
+            session.delete(pool)
+        for pool in pools:
+            found = False
+            for item in query:
+                if pool.get('id') == item.get('id'):
+                    item.update(pool)
+                    item.save(session)
+                    found = True
+
+            if not found:
+                pool_ref = models.Pool()
+                pool_ref.update(pool)
+                session.add(pool_ref)
+    return
 
 
 def pool_get(context, pool_id):
     """Get a pool or raise an exception if it does not exist."""
-    return NotImplemented
+    return _resource_get(context, pool_id, models.Pool)
 
 
 def pool_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage pools."""
-    return NotImplemented
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Pool,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No pool would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Pool)
+def _process_pool_info_filters(query, filters):
+    """Common filter processing for Pools queries."""
+    if filters:
+        if not is_valid_model_filters(models.Pool, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
 
 
 def disk_create(context, values):
@@ -364,7 +425,10 @@ def model_query(context, model, *args, **kwargs):
 
 
 PAGINATION_HELPERS = {
-    models.AccessInfo: (_access_info_get_query, _process_access_info_filters, _access_info_get),
+    models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
+                        _access_info_get),
+    models.Pool: (_resource_get_query, _process_pool_info_filters,
+                  _resource_get_all),
 }
 
 
@@ -439,9 +503,10 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
     return result_keys, result_dirs
 
 
-def _generate_paginate_query(context, session, marker, limit, sort_keys,
-                             sort_dirs, filters, offset=None,
-                             paginate_type=models.Volume):
+def _generate_paginate_query(context, session, paginate_type, marker,
+                             limit, sort_keys, sort_dirs, filters,
+                             offset=None
+                             ):
     """Generate the query to include the filters and the paginate options.
 
     Returns a query with sorting / pagination criteria added or None
@@ -469,7 +534,7 @@ def _generate_paginate_query(context, session, marker, limit, sort_keys,
     sort_keys, sort_dirs = process_sort_params(sort_keys,
                                                sort_dirs,
                                                default_dir='desc')
-    query = get_query(context, session=session)
+    query = get_query(context, paginate_type, session=session)
 
     if filters:
         query = process_filters(query, filters)

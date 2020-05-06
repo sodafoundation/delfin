@@ -33,6 +33,7 @@ from dolphin import exception
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import utils
+from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
 
@@ -96,6 +97,7 @@ class StorageController(wsgi.Controller):
     @coordination.synchronized('storage-create-{body[host]}-{body[port]}')
     def create(self, req, body):
         """Register a new storage device."""
+        db.register_db()
         ctxt = req.environ['dolphin.context']
         access_info_dict = body
 
@@ -106,7 +108,6 @@ class StorageController(wsgi.Controller):
         try:
             storage = self.driver_manager.register_storage(ctxt, access_info_dict)
             storage = db.storage_create(context, storage)
-
             # Need to encode the password before saving.
             access_info_dict['storage_id'] = storage['id']
             access_info_dict['password'] = cryptor.encode(access_info_dict['password'])
@@ -121,6 +122,7 @@ class StorageController(wsgi.Controller):
             LOG.error(msg)
             raise exc.HTTPBadRequest(explanation=msg)
 
+        LOG.info("Storage is registered successfully!")
         return storage_view.build_storage(storage)
 
     def update(self, req, id, body):
@@ -139,20 +141,21 @@ class StorageController(wsgi.Controller):
         :return:
         """
         # validate the id
-        context = req.environ.get('dolphin.context')
-        # admin_context = context.RequestContext('admin', 'fake', True)
+        # context = req.environ.get('dolphin.context')
+        ctxt = req.environ['dolphin.context']
+        admin_context = context.RequestContext('admin', 'fake', True)
         try:
-            device = db.access_info_get(context, id)
+            device = db.access_info_get(ctxt, id)
         except Exception as e:
             LOG.error(e)
             raise exception.AccessInfoNotFound(e)
 
-        tasks = (
-            'pool_task',
-            'volume_task'
-        )
-        for task in tasks:
-            self.task_rpcapi.sync_storage_resource(context, id, task)
+        for subclass in task.StorageResourceTask.__subclasses__():
+            self.task_rpcapi.sync_storage_resource(
+                admin_context,
+                id,  # its storage_id
+                subclass.__module__ + '.' + subclass.__name__
+            )
 
         return dict(name="Sync storage 1")
 
