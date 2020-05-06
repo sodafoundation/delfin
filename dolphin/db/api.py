@@ -262,3 +262,8 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     """
     return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
                                     filters, offset)
+
+
+def is_orm_value(obj):
+    """Check if object is an ORM field."""
+    return IMPL.is_orm_value(obj)
