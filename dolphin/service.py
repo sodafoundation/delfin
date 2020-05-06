@@ -34,7 +34,7 @@ from dolphin import context
 from dolphin import exception
 from dolphin import rpc
 from dolphin import coordination
-from dolphin.alert_manager import constants
+from dolphin.common import constants
 
 LOG = log.getLogger(__name__)
 

@@ -30,7 +30,8 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_middleware import cors
 from oslo_utils import netutils
-from dolphin.alert_manager import constants
+
+from dolphin.common import constants
 
 
 CONF = cfg.CONF
@@ -92,8 +93,8 @@ redis_opts = [
     cfg.StrOpt('db_name', default=''),
     cfg.StrOpt('user', default=''),
     cfg.StrOpt('password', secret=True),
-    cfg.StrOpt('redis_ip', default='127.0.0.1'),
-    cfg.IntOpt('redis_port', default=6379)
+    cfg.StrOpt('redis_ip', default=constants.REDIS_DEFAULT_IP),
+    cfg.IntOpt('redis_port', default=constants.REDIS_DEFAULT_PORT)
 ]
 redis_group = cfg.OptGroup('redis')
 CONF.register_group(redis_group)

@@ -20,7 +20,7 @@ from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.proto.api import v2c
 from pysnmp.smi import builder, view, rfc1902, error
 
-from dolphin.alert_manager import constants
+from dolphin.common import constants
 
 LOG = log.getLogger(__name__)
 
