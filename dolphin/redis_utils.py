@@ -66,11 +66,17 @@ class RedisClient(metaclass=utils.Singleton):
         :param value: The value of the key
         :param expire: The time to expire in seconds
         """
-        self.redis_client.set(key_name, value, ex=expire)
+        try:
+            self.redis_client.set(key_name, value, ex=expire)
+        except Exception as err:
+            LOG.error("Redis set key failed, err is %s", err)
 
     def remove_key(self, key_name):
         """Remove a key-value pair from redis
 
         :param key_name: Key name
         """
-        self.redis_client.delete(key_name)
+        try:
+            self.redis_client.delete(key_name)
+        except Exception as err:
+            LOG.error("Redis delete key failed, err is %s", err)
