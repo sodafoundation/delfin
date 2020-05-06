@@ -255,6 +255,10 @@ class StorageDriverNotFound(NotFound):
     message = _("Storage driver could not be found.")
 
 
+class StorageDriverNotFound(NotFound):
+    message = _("Storage driver could not be found.")
+
+
 class ServiceIsDown(Invalid):
     message = _("Service %(service)s is down.")
 
