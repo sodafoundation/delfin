@@ -145,10 +145,10 @@ class StorageController(wsgi.Controller):
         ctxt = req.environ['dolphin.context']
         admin_context = context.RequestContext('admin', 'fake', True)
         try:
-            device = db.access_info_get(ctxt, id)
+            storage = db.storage_get(ctxt, id)
         except Exception as e:
             LOG.error(e)
-            raise exception.AccessInfoNotFound(e)
+            raise exception.StorageNotFound(e)
 
         for subclass in task.StorageResourceTask.__subclasses__():
             self.task_rpcapi.sync_storage_resource(
