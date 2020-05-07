@@ -23,7 +23,7 @@ import json
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_db.sqlalchemy.types import JsonEncodedDict
-from sqlalchemy import Column, Integer, String, Numeric, Boolean
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 CONF = cfg.CONF
@@ -68,9 +68,9 @@ class Storage(BASE, DolphinBase):
     serial_number = Column(String(255))
     firmware_version = Column(String(255))
     location = Column(String(255))
-    total_capacity = Column(Numeric)
-    used_capacity = Column(Numeric)
-    free_capacity = Column(Numeric)
+    total_capacity = Column(Integer)
+    used_capacity = Column(Integer)
+    free_capacity = Column(Integer)
 
 
 class Volume(BASE, DolphinBase):
@@ -85,9 +85,9 @@ class Volume(BASE, DolphinBase):
     original_id = Column(String(255))
     wwn = Column(String(255))
     provisioning_policy = Column(String(255))
-    total_capacity = Column(Numeric)
-    used_capacity = Column(Numeric)
-    free_capacity = Column(Numeric)
+    total_capacity = Column(Integer)
+    used_capacity = Column(Integer)
+    free_capacity = Column(Integer)
     compressed = Column(Boolean)
     deduplicated = Column(Boolean)
 
@@ -102,9 +102,9 @@ class Pool(BASE, DolphinBase):
     description = Column(String(255))
     status = Column(String(255))
     storage_type = Column(String(255))
-    total_capacity = Column(Numeric)
-    used_capacity = Column(Numeric)
-    free_capacity = Column(Numeric)
+    total_capacity = Column(Integer)
+    used_capacity = Column(Integer)
+    free_capacity = Column(Integer)
 
 
 class Disk(BASE, DolphinBase):
@@ -118,4 +118,4 @@ class Disk(BASE, DolphinBase):
     serial_number = Column(String(255))
     model = Column(String(255))
     media_type = Column(String(255))
-    capacity = Column(Numeric)
+    capacity = Column(Integer)

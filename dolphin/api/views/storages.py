@@ -13,8 +13,6 @@
 # limitations under the License.
 import copy
 
-from dolphin.api.views import common
-
 
 def build_storages(storages):
     # Build list of storages
@@ -25,9 +23,4 @@ def build_storages(storages):
 
 def build_storage(storage):
     view = copy.deepcopy(storage)
-
-    # Sql Numeric(Decimal) type is not able to be serialized directly into JSON , Need to convert all numeric fields
-    # to float
-    numeric_keys = ['total_capacity', 'used_capacity', 'free_capacity']
-    common.convert_numeric_to_float(numeric_keys, view)
     return dict(view)

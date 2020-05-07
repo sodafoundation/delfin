@@ -94,8 +94,8 @@ class StorageController(wsgi.Controller):
         except exception.StorageNotFound as e:
             msg = _('Failed to get  Storage  from  DB: {0}'
                     .format(e))
-            LOG.exception(msg)
-            raise exc.HTTPNotFound(explanation=msg)
+            LOG.error(msg)
+            raise exc.HTTPNotFound(explanation=e.message)
         return storage_view.build_storage(storage)
 
 
