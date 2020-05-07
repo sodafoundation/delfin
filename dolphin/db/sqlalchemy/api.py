@@ -327,11 +327,25 @@ def pool_create(context, values, session=None):
     return NotImplemented
 
 
+def handle_db_data_error(f):
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except exception.InvalidRequest:
+            msg = _('Error writing field to database')
+            LOG.exception(msg)
+            raise exception.Invalid(msg)
+
+    return wrapper
+
+
+@handle_db_data_error
 def pool_update(context, pools):
     """Update a pool withe the values dictionary."""
     pool_ref = models.Pool()
     session = get_session()
     with session.begin():
+        pool_refs = []
         query = pool_get_all(context)
         delete_list = copy.copy(query)
         [delete_list.remove(item) for pool in pools
@@ -339,18 +353,15 @@ def pool_update(context, pools):
         for pool in delete_list:
             session.delete(pool)
         for pool in pools:
-            found = False
-            for item in query:
-                if pool.get('id') == item.get('id'):
-                    item.update(pool)
-                    item.save(session)
-                    found = True
-
-            if not found:
+            try:
+                pool_query = pool_get(context, pool.get('id'))
+                pool_query.update(pool)
+                pool_query.save(session)
+            except exception.StorageNotFound:
                 pool_ref = models.Pool()
                 pool_ref.update(pool)
                 session.add(pool_ref)
-    return
+    return pool_refs
 
 
 def pool_get(context, pool_id):
