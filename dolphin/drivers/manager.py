@@ -12,20 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
+import copy
 import stevedore
+import threading
 
 from oslo_log import log
-from oslo_utils import uuidutils
-
 from dolphin import exception
 from dolphin.i18n import _
 from dolphin import utils
+from dolphin.drivers import helper
 
 LOG = log.getLogger(__name__)
 
 
 class DriverManager(metaclass=utils.Singleton):
+    _instance_lock = threading.Lock()
     NAMESPACE = 'dolphin.storage.drivers'
 
     def __init__(self):
@@ -34,63 +35,59 @@ class DriverManager(metaclass=utils.Singleton):
         # and storage system is effectively used.
         self.driver_factory = dict()
 
-    @staticmethod
-    def get_storage_registry():
-        """Show register parameters which the driver needs."""
-        pass
+    def _create_driver(self, context, **kwargs):
+        vendor = kwargs.get('vendor', None)
+        model = kwargs.get('model', None)
 
-    def register_storage(self, context, access_info):
-        """Discovery a storage system with access information."""
         try:
+            if not vendor or not model:
+                access_info = helper.get_access_info(context, kwargs['storage_id'])
+                kwargs = copy.deepcopy(access_info)
+
             driver = stevedore.driver.DriverManager(
                 namespace=self.NAMESPACE,
-                name='%s %s' % (access_info['vendor'],
-                                access_info['model']),
-                invoke_on_load=True
+                name='%s %s' % (kwargs['vendor'], kwargs['model']),
+                invoke_on_load=True,
+                invoke_kwds=kwargs
             ).driver
         except Exception as e:
-            msg = (_("Storage driver '%s %s' could not be found.") % (access_info['vendor'],
-                                                                      access_info['model']))
-            LOG.error(msg)
+            msg = (_("Storage driver '%s %s' could not be found.") % (kwargs['vendor'],
+                                                                      kwargs['model']))
+            LOG.error(e)
             raise exception.StorageDriverNotFound(message=msg)
 
-        storage = driver.register_storage(context,
-                                          access_info)
-        if storage:
-            storage['id'] = six.text_type(uuidutils.generate_uuid())
-            self.driver_factory[storage['id']] = driver
+        return driver
 
-        LOG.info("Storage was found successfully.")
-        return storage
+    def get_driver(self, context, **kwargs):
+        """
+        Caller can get driver with storage_id or vendor&model
+        :param context:
+        :param kwargs: A dictionary, only storage_id is necessary, for the first
+            time to register storage, storage_id is newly created, nothing can be found
+            from database with this storage_id, so other access information should be
+            included in access_info, otherwise, storage_id can be used to get access
+            information from database.
+        :return: A driver object.
+        """
+        storage_id = kwargs.get('storage_id', None)
+        if not storage_id:
+            raise exception.StorageDriverNotFound(message="storage_id is missed")
 
-    def remove_storage(self, context, storage_id):
+        driver = self.driver_factory.get(storage_id, None)
+        if not driver:
+            with self._instance_lock:
+                driver = self.driver_factory.get(storage_id, None)
+                if not driver:
+                    driver = self._create_driver(context, **kwargs)
+
+        self.driver_factory[storage_id] = driver
+        return driver
+
+    def remove_driver(self, context, storage_id):
         """Clear driver instance from driver factory."""
         self.driver_factory.pop(storage_id, None)
 
-    def get_storage(self, context, storage_id):
-        """Get storage device information from storage system"""
-        pass
-
-    def list_pools(self, context, storage_id):
-        """List all storage pools from storage system."""
-        pass
-
-    def list_volumes(self, context, storage_id):
-        """List all storage volumes from storage system."""
-        pass
-
-    def add_trap_config(self, context, storage_id, trap_config):
-        """Config the trap receiver in storage system."""
-        pass
-
-    def remove_trap_config(self, context, storage_id, trap_config):
-        """Remove trap receiver configuration from storage system."""
-        pass
-
-    def parse_alert(self, context, storage_id, alert):
-        """Parse alert data got from snmp trap server."""
-        pass
-
-    def clear_alert(self, context, storage_id, alert):
-        """Clear alert from storage system."""
+    @staticmethod
+    def get_storage_registry():
+        """Show register parameters which the driver needs."""
         pass

@@ -30,7 +30,8 @@ setup(
             'example2 = dolphin.exporter.example_exporter:Example2Exporter'
         ],
         'dolphin.storage.drivers': [
-            'fake_storage fake_driver = dolphin.drivers.fake_storage:FakeStorageDriver'
+            'fake_storage fake_driver = dolphin.drivers.fake_storage:FakeStorageDriver',
+            'DellEMC Vmax = dolphin.drivers.vmax_storage:VmaxStorageDriver'
         ]
     },
 )
