@@ -14,18 +14,21 @@
 
 import six
 import stevedore
+import threading
 
 from oslo_log import log
 from oslo_utils import uuidutils
-
+from dolphin.drivers.vmax_storage import VmaxStorageDriver
 from dolphin import exception
 from dolphin.i18n import _
 from dolphin import utils
+from dolphin import db
 
 LOG = log.getLogger(__name__)
 
 
 class DriverManager(metaclass=utils.Singleton):
+    _instance_lock = threading.Lock()
     NAMESPACE = 'dolphin.storage.drivers'
 
     def __init__(self):
@@ -39,8 +42,45 @@ class DriverManager(metaclass=utils.Singleton):
         """Show register parameters which the driver needs."""
         pass
 
+    @staticmethod
+    def get_device_model(context, storage_id):
+        # This is fake value for test.
+        print("get_device_model", storage_id)
+        return "DellEMC", "Vmax"
+        """
+        storage = db.storage_get(context, storage_id)
+        if not storage:
+            LOG.error("get device model failed, storage_id = %s" % storage_id)
+
+        storage = storage.to_dict()
+        return storage.get('vendor', None), storage.get('model', None)
+        """
+
+    def get_driver_instance(self, context, storage_id=None, vendor=None, model=None):
+        driver = self.driver_factory.get(storage_id, None)
+        print("get_driver_instance storage_id", storage_id)
+        if not driver:
+            with self._instance_lock:
+                driver = self.driver_factory.get(storage_id, None)
+                if not driver:
+                    try:
+                        if not vendor or not model:
+                            print("get_driver_instance storage_id", storage_id)
+                            vendor, model = self.get_device_model(context, storage_id)
+                        print("get_driver_instance vendor model ", vendor, model)
+                        driver = stevedore.driver.DriverManager(
+                            namespace=self.NAMESPACE,
+                            name='%s %s' % (vendor, model),
+                            invoke_on_load=True
+                        ).driver
+                    except Exception as e:
+                        msg = (_("Storage driver '%s %s' could not be found.") % (vendor, model))
+                        LOG.error(e)
+                        raise exception.StorageDriverNotFound(message=msg)
+        return driver
+
     def register_storage(self, context, access_info):
-        """Discovery a storage system with access information."""
+        """Discovery a storage system with access information.
         try:
             driver = stevedore.driver.DriverManager(
                 namespace=self.NAMESPACE,
@@ -53,6 +93,12 @@ class DriverManager(metaclass=utils.Singleton):
                                                                       access_info['model']))
             LOG.error(msg)
             raise exception.StorageDriverNotFound(message=msg)
+		"""
+
+        print("register_storage")
+
+        driver = self.get_driver_instance(context, "", access_info['vendor'],
+                                          access_info['model'])
 
         storage = driver.register_storage(context,
                                           access_info)
@@ -90,7 +136,11 @@ class DriverManager(metaclass=utils.Singleton):
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
         # TBD: Identify driver and driver instance and invoke parse_alert
-        pass
+        # VmaxStorageDriver1 = VmaxStorageDriver(storage_id)
+        # return VmaxStorageDriver1.parse_alert(context, alert)
+        print("parse_alert storage_id", storage_id)
+        driver = self.get_driver_instance(context, storage_id)
+        return driver.parse_alert(context, alert)
 
     def clear_alert(self, context, storage_id, alert):
         """Clear alert from storage system."""

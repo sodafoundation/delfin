@@ -21,15 +21,28 @@ class VmaxStorageDriver(driver.StorageDriver):
     it also plays a role as faker to fake data for being tested by clients.
     """
 
-    def __init__(self, storage_id):
+    def __init__(self, storage_id=None):
         super().__init__(storage_id)
 
     @staticmethod
     def get_storage_registry():
         pass
 
-    def register_storage(self, context, register_info):
-        pass
+    def register_storage(self, context, access_info):
+        # Do something here
+        return {
+            'name': 'DellEMC',
+            'description': 'DellEMC Vmax driver.',
+            'vendor': access_info['vendor'],
+            'model': access_info['model'],
+            'status': 'normal',
+            'serial_number': '2102453JPN12KA000011',
+            'firmware_version': '1.0.0',
+            'location': 'HK',
+            'total_capacity': 1024 * 1024,
+            'used_capacity': 3126,
+            'free_capacity': 1045449,
+        }
 
     def get_storage(self, context):
         pass
@@ -47,7 +60,8 @@ class VmaxStorageDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        return alert_handler.AlertHandler.parse_alert(context, alert)
+        alert_handler1 = alert_handler.AlertHandler()
+        return alert_handler1.parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
         pass

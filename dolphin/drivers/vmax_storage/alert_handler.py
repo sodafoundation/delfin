@@ -24,7 +24,7 @@ class AlertHandler(object):
     default_category = 'New'
     necessary_alert_attr = [
         'storage_id',
-        'name',
+        'storage_name',
         'location',
         'vendor',
         'model',
@@ -51,7 +51,14 @@ class AlertHandler(object):
 
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model attributes."""
+        alert_model = {}
 
+        alert_model['me_dn'] = alert['storage_id']
+        alert_model['me_name'] = alert['storage_name']
+        alert_model['location_info'] = alert['location']
+        alert_model['manufacturer'] = alert['vendor']
+        alert_model['product_name'] = alert['model']
+        """
         for attr in self.necessary_alert_attr:
             if not alert.get(attr):
                 raise ValueError("Necessary attributes missing in alert input.")
@@ -69,7 +76,7 @@ class AlertHandler(object):
 
         # These information are sourced from device registration info
         alert_model['me_dn'] = alert['storage_id']
-        alert_model['me_name'] = alert['name']
+        alert_model['me_name'] = alert['storage_name']
         alert_model['location_info'] = alert['location']
         alert_model['manufacturer'] = alert['vendor']
         alert_model['product_name'] = alert['model']
@@ -88,6 +95,7 @@ class AlertHandler(object):
         # trap info does not have clear_type value
         alert_model['clear_type'] = ""
         alert_model['me_category'] = alert['connUnitType']
+        """
 
         return alert_model
 
