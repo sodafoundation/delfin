@@ -147,6 +147,10 @@ class Invalid(DolphinException):
     code = 400
 
 
+class InvalidCredential(Invalid):
+    message = _("The credentials are invalid.")
+
+
 class InvalidRequest(Invalid):
     message = _("The request is invalid.")
 
@@ -241,6 +245,14 @@ class ResourceNotFound(NotFound):
 
 class AccessInfoNotFound(NotFound):
     message = _("Storage access info %(storage_id)s could not be found.")
+
+
+class StorageNotFound(NotFound):
+    message = _("Storage %(id)s could not be found.")
+
+
+class StorageDriverNotFound(NotFound):
+    message = _("Storage driver could not be found.")
 
 
 class ServiceIsDown(Invalid):
