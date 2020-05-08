@@ -269,6 +269,11 @@ def access_info_get(context, storage_id):
     return IMPL.access_info_get(context, storage_id)
 
 
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    return IMPL.access_info_delete(context, storage_id)
+
+
 def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
                         sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage access information.

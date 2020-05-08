@@ -17,6 +17,7 @@ import six
 from oslo_log import log
 from oslo_utils import uuidutils
 
+from dolphin.drivers import helper
 from dolphin.drivers import manager
 
 LOG = log.getLogger(__name__)
@@ -26,35 +27,50 @@ class API(object):
     def __init__(self):
         self.driver_manager = manager.DriverManager()
 
-    @staticmethod
-    def get_storage_registry():
-        """Show register parameters which the driver needs."""
-        pass
-
     def discover_storage(self, context, access_info):
-        """Discover a storage system with access information and create driver instance ."""
-
+        """Discover a storage system with access information."""
         if 'storage_id' not in access_info:
             access_info['storage_id'] = six.text_type(uuidutils.generate_uuid())
-        else:
-            # Already registered storage , remove driver and create driver instance \
-            # again with new access_info
-            self.driver_manager.remove_driver(context,access_info['storage_id'])
 
-        driver = self.driver_manager.create_driver(context, **access_info)
+        driver = self.driver_manager.get_driver(context,
+                                                cache_on_load=False,
+                                                **access_info)
         storage = driver.get_storage(context)
-        if storage:
-            storage['id'] = access_info['storage_id']
-        else:
-            self.driver_manager.remove_driver(context, access_info['storage_id'])
 
-        LOG.info("Storage was found successfully.")
+        # Need to validate storage response from driver
+        helper.check_storage_exist(context, storage)
+
+        access_info = helper.create_access_info(context, access_info)
+        storage['id'] = access_info['storage_id']
+        storage = helper.create_storage(context, storage)
+        self.driver_manager.update_driver(storage['id'], driver)
+
+        LOG.info("Storage found successfully.")
         return storage
+
+    def update_access_info(self, context, access_info):
+        """Validate and update access information."""
+        driver = self.driver_manager.get_driver(context,
+                                                cache_on_load=False,
+                                                **access_info)
+        storage_new = driver.get_storage(context)
+
+        # Need to validate storage response from driver
+        storage_id = access_info['storage_id']
+        helper.check_storage_with_access_info(context,
+                                              storage_id,
+                                              storage_new)
+
+        access_info = helper.update_access_info(context, storage_id, access_info)
+        helper.update_storage(context, storage_id, storage_new)
+        self.driver_manager.update_driver(storage_id, driver)
+
+        LOG.info("Access information updated successfully.")
+        return access_info
 
     def remove_storage(self, context, storage_id):
         """Clear driver instance from driver factory."""
-        driver = self.driver_manager.get_driver()
-        driver.remove_driver(context, storage_id)
+        self.driver_manager.remove_driver(storage_id)
 
     def get_storage(self, context, storage_id):
         """Get storage device information from storage system"""
@@ -86,3 +102,5 @@ class API(object):
     def clear_alert(self, context, storage_id, alert):
         """Clear alert from storage system."""
         pass
+
+

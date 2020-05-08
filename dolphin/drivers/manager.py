@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import copy
+import six
+import stevedore
 import threading
 
-import stevedore
 from oslo_log import log
 
 from dolphin import exception
@@ -26,57 +27,76 @@ from dolphin.i18n import _
 LOG = log.getLogger(__name__)
 
 
-class DriverManager(metaclass=utils.Singleton):
+@six.add_metaclass(utils.Singleton)
+class DriverManager(stevedore.ExtensionManager):
     _instance_lock = threading.Lock()
     NAMESPACE = 'dolphin.storage.drivers'
 
     def __init__(self):
+        super(DriverManager, self).__init__(self.NAMESPACE)
         # The driver_factory will keep the driver instance for
         # each of storage systems so that the session between driver
         # and storage system is effectively used.
         self.driver_factory = dict()
 
-    def _init_driver(self, context, **kwargs):
-        """
-        Create a storage driver with vendor and model.
-        :param context:
-        :param kwargs: A dictionary, include access information.
-        :return: A driver object.
-        """
-        try:
-            driver = stevedore.driver.DriverManager(
-                namespace=self.NAMESPACE,
-                name='%s %s' % (kwargs['vendor'], kwargs['model']),
-                invoke_on_load=True,
-                invoke_kwds=kwargs
-            ).driver
-        except Exception as e:
-            msg = (_("Storage driver '%s %s' could not be found.") % (kwargs['vendor'],
-                                                                      kwargs['model']))
-            LOG.error(e)
-            raise exception.StorageDriverNotFound(message=msg)
+    def get_driver(self, context, invoke_on_load=True,
+                   cache_on_load=True, **kwargs):
+        """Get a driver from manager.
 
-        return driver
+        :param context: The context of dolphin.
+        :type context: dolphin.context.RequestContext
+        :param invoke_on_load: Boolean to decide whether to return the
+            driver object.
+        :type invoke_on_load: bool
+        :param cache_on_load: Boolean to decide whether save driver object
+            in driver_factory when generating a new driver object.
+            It takes effect when invoke_on_load is True.
+        :type invoke_on_load: bool
+        :param kwargs: Parameters from access_info.
+        """
+        if not invoke_on_load:
+            return self._get_driver_cls(**kwargs)
+        else:
+            return self._get_driver_obj(context, cache_on_load, **kwargs)
 
-    def create_driver(self, context, **kwargs):
-        storage_id = kwargs.get('storage_id', None)
-        driver = self._init_driver(context, **kwargs)
+    def update_driver(self, storage_id, driver):
         self.driver_factory[storage_id] = driver
 
-        return driver
-
-    def get_driver(self, context, storage_id):
-        driver = self.driver_factory.get(storage_id, None)
-        if not driver:
-            with self._instance_lock:
-                driver = self.driver_factory.get(storage_id, None)
-                if not driver:
-                    access_info = helper.get_access_info(context, storage_id)
-                    driver = self._init_driver(context, **access_info)
-                    self.driver_factory[storage_id] = driver
-
-        return driver
-
-    def remove_driver(self, context, storage_id):
+    def remove_driver(self, storage_id):
         """Clear driver instance from driver factory."""
         self.driver_factory.pop(storage_id, None)
+
+    def _get_driver_obj(self, context, cache_on_load=True, **kwargs):
+        if not cache_on_load or not kwargs.get('storage_id'):
+            cls = self._get_driver_cls(**kwargs)
+            return cls(**kwargs)
+
+        if kwargs['storage_id'] in self.driver_factory:
+            return self.driver_factory[kwargs['storage_id']]
+
+        with self._instance_lock:
+            if kwargs['storage_id'] in self.driver_factory:
+                return self.driver_factory[kwargs['storage_id']]
+
+            access_info = copy.deepcopy(kwargs)
+            storage_id = access_info.pop('storage_id')
+            if access_info:
+                cls = self._get_driver_cls(**kwargs)
+                driver = cls(**kwargs)
+            else:
+                access_info = helper.get_access_info(context, storage_id)
+                cls = self._get_driver_cls(**access_info)
+                driver = cls(**access_info)
+
+            self.driver_factory[storage_id] = driver
+            return driver
+
+    def _get_driver_cls(self, **kwargs):
+        """Get driver class from entry points."""
+        name = '%s %s' % (kwargs.get('vendor'), kwargs.get('model'))
+        if name in self.names():
+            return self[name].plugin
+        else:
+            msg = (_("Storage driver '%s' could not be found.") % name)
+            LOG.error(msg)
+            raise exception.StorageDriverNotFound(message=msg)

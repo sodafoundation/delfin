@@ -175,8 +175,14 @@ def access_info_update(context, access_info_id, values):
     """Update a storage access information with the values dictionary."""
     session = get_session()
     with session.begin():
-        result = _access_info_get(context, access_info_id, session).update(values)
-        return result
+        _access_info_get(context, access_info_id, session).update(values)
+        return _access_info_get(context, access_info_id, session)
+
+
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    _access_info_get_query(context).\
+        filter_by(storage_id=storage_id).delete()
 
 
 def access_info_get(context, storage_id):
