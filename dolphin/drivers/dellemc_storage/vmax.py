@@ -17,6 +17,7 @@ from PyU4V import U4VConn
 
 from oslo_log import log
 from dolphin.drivers import driver
+from dolphin import exception
 
 SUPPORTED_VERSION='90'
 
@@ -30,123 +31,59 @@ class VMAXStorageDriver(driver.StorageDriver):
         super().__init__(storage_id)
         # Initialize with defaults
         self.storage_id = storage_id
-        self.univmax_version = SUPPORTED_VERSION
-        self.server_ip = ''
-        self.port = ''
-        self.verify = False  # Valid values are True/False/<path to certificatefile>
-        self.username = ''
-        self.password = ''
-        self.symmetrix_id = ''
+        self.conn = None
+        self.symmetrix_id = None
+
+    def __del__(self):
+        # De-initialize session
+        self.close_session()
 
     @staticmethod
     def get_storage_registry():
-        # register_info dict
+        required_register_attributes = super.get_storage_registry()
         extra_attributes = {
-            'univmax_ver': self.univmax_version,
-            'array_id': self.symmetrix_id,
-            'verify': self.verify
+            'array_id': "The storage id in unisphere system.",
         }
-        access_info = {
-            'storage_id':self.storage_id,
-            'username':'',
-            'password':'',
-            'host':self.server_ip,
-            'port':self.port,
-            'extra_attributes': extra_attributes
-        }
-        LOG.info("get_storage_registry(), success")
-        return access_info
+        required_register_attributes['extra_attributes'] = extra_attributes
+
+        return  required_register_attributes
 
     def register_storage(self, context, access_info):
         """ Connect to storage backend and register using access_info.
-
-        Typical content of the access_info for connecting/registering to VMAX
-
-        access_info = {
-            "storage_id": "",           # Not used in this function
-            "host": "127.0.0.1",        # IP Address of VMAX Storage
-            "port": "8443",             # PORT of VMAX Storage
-            "username": "user",         # Username for VMAX Storage
-            "password": "pass",         # Username for VMAX Storage
-            "extra_attributes" = {
-                "array_id": "00012345", # Array ID
-                "univmax_ver": "90",    # Version of Unishare of VMAX
-                "verify": False         # True/False/Key file path for SSL verify
-            }
-        }
         """
 
-        # Verify input parameters for registration exists
-        try:
-            self.username = access_info['username']
-            self.password = access_info['password']
-            self.server_ip = access_info['host']
-            self.port = access_info['port']
+        array_id = access_info.get('extra_attributes', {}).\
+                                get('array_id', None)
+        if not array_id:
+            raise exception.InvalidInput(reason='Invalid array_id')
 
-        except KeyError as err:
-            LOG.error("Invalid input access_info[" + str(err) + "]")
-            return None
-
-        try:
-            # Get optional inputs
-            if 'extra_attributes' in access_info:
-                extra_attr = access_info['extra_attributes']
-
-                if 'verify' in extra_attr:
-                    self.verify = extra_attr['verify']
-                if 'univmax_ver' in extra_attr:
-                    self.univmax_version = extra_attr['univmax_ver']
-                if 'array_id' in extra_attr:
-                    self.symmetrix_id = extra_attr['array_id']
-
-        except KeyError as err:
-            LOG.info("Invalid input access_info[" + str(err) + "]")
-
-        description = 'Unispere array with version '
         try:
             # Initialise PyU4V connection to Unisphere
-            conn = PyU4V.U4VConn(
-                u4v_version=self.univmax_version,
-                server_ip=self.server_ip,
-                port=self.port,
+            self.conn = PyU4V.U4VConn(
+                u4v_version=SUPPORTED_VERSION,
+                server_ip=access_info['host'],
+                port=access_info['port'],
                 verify=False,
-                username=self.username,
-                password=self.password)
+                array_id=array_id,
+                username=access_info['username'],
+                password=access_info['password'])
 
+        except Exception as err:
+            LOG.error("Failed to connect to Unisphere: {}".format(err))
+            self.conn = None
+            raise
+
+        try:
             # Get the Unisphere version
-            version = conn.common.get_uni_version()
-            description = description + version[0]
+            version = self.conn.common.get_uni_version()
 
-            if self.symmetrix_id == "":
-                # Retrieve a list of arrays managed by Unisphere
-                array_list = conn.common.get_array_list()
-
-                if len(array_list) == 0:
-                    LOG.error("Array list from Storage backend is empty")
-                    conn.close_session()
-                    return None
-
-                if len(array_list) > 1:
-                    LOG.info("More than one Storage Array, first one selected")
-
-                self.symmetrix_id = array_list[0]
-
-            # Close the session
-            conn.close_session()
-
-        except:
-            LOG.error("Failed to connect to VMAX storage")
-            return None
+        except Exception as err:
+            LOG.error("Failed to get version from vmax: {}".format(err))
+            raise
 
         # Get storage details
-        storage = self.get_storage(context)
-        if storage:
-            storage['description'] = description
-            storage['serial_number'] = self.symmetrix_id
-
-        # Return all the storage ids this driver manage
-        LOG.info("register_storage(), driver successfully registered")
-        return storage
+        self.symmetrix_id = array_id
+        return self.get_storage(context)
 
     def get_storage(self, context):
 
@@ -157,49 +94,38 @@ class VMAXStorageDriver(driver.StorageDriver):
 
         try:
             # Initialise PyU4V connection to Unisphere
-            conn = PyU4V.U4VConn(
-                u4v_version=self.univmax_version,
-                server_ip=self.server_ip,
-                port=self.port,
-                verify=False,
-                username=self.username,
-                password=self.password)
-
-            LOG.info("Successfully connected storage")
             status = "Available"
 
             # Get the Unisphere model
             uri = "/system/symmetrix/" + self.symmetrix_id
-            model = conn.common.get_request(uri, "")
+            model = self.conn.common.get_request(uri, "")
             model_symmetrix = model['symmetrix'][0]['model']
             LOG.info("Successfully retrieved storage model")
 
             # Get Storage details for capacity info
-            uri = "/sloprovisioning/symmetrix/" + self.symmetrix_id
-            storg_info = conn.common.get_request(uri, "")
-            total_cap = storg_info['symmetrix'][0]['virtualCapacity']['total_capacity_gb']
-            used_cap = storg_info['symmetrix'][0]['virtualCapacity']['used_capacity_gb']
+            uri = "/" + SUPPORTED_VERSION + "/sloprovisioning/symmetrix/" + self.symmetrix_id
+            storg_info = self.conn.common.get_request(uri, "")
+            total_cap = storg_info['system_capacity']['usable_total_tb']
+            used_cap = storg_info['system_capacity']['usable_used_tb']
             LOG.info("Successfully retrieved storage capacity")
 
-            # Close the session
-            conn.close_session()
+        except Exception as err:
+            LOG.error("Failed to get storage details: {}".format(err))
+            raise
 
-        except:
-            LOG.error("Failed to get storage details")
-            return None
-
+        tera_bytes = 1000 * 1000 * 1000 * 1000          # Rounded TB to bytes 1024 * 1024 * 1024 * 1024
         storage = {
             'id': self.storage_id,
             'name': '',
-            'vendor': '',
+            'vendor': 'Dell EMC',
             'description': '',
             'model': model_symmetrix,
             'status': status,
-            'serial_number': '',
+            'serial_number': self.symmetrix_id,
             'location': '',
-            'total_capacity': total_cap,
-            'used_capacity': used_cap,
-            'free_capacity': 0
+            'total_capacity': int(total_cap * tera_bytes),
+            'used_capacity': int(used_cap * tera_bytes),
+            'free_capacity': int((total_cap - used_cap) * tera_bytes)
         }
         LOG.info("get_storage(), successfully retrieved storage details")
         return storage
@@ -221,3 +147,8 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
+
+    def close_session(self):
+        if self.conn:
+            self.conn.close_session()
+            self.conn = None

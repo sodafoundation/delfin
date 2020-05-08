@@ -59,8 +59,7 @@ class DriverManager(metaclass=utils.Singleton):
         if storage:
             storage['id'] = six.text_type(uuidutils.generate_uuid())
             self.driver_factory[storage['id']] = driver
-
-        LOG.info("Storage was found successfully.")
+            LOG.info("Storage was found successfully.")
         return storage
 
     def remove_storage(self, context, storage_id):

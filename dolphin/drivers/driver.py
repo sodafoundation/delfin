@@ -66,3 +66,14 @@ class StorageDriver(object):
     def clear_alert(self, context, alert):
         """Clear alert from storage system."""
         pass
+
+    @staticmethod
+    def get_storage_registry():
+        required_register_info = {
+            "host": "IP Address of VMAX Storage",
+            "port": "PORT number of VMAX Storage",
+            "username": "Username for VMAX Storage",
+            "password": "Password for VMAX Storage",
+            "extra_attributes": None
+        }
+        return required_register_info
