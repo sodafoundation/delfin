@@ -97,7 +97,6 @@ class StorageController(wsgi.Controller):
     @coordination.synchronized('storage-create-{body[host]}-{body[port]}')
     def create(self, req, body):
         """Register a new storage device."""
-        db.register_db()
         ctxt = req.environ['dolphin.context']
         access_info_dict = body
 
@@ -141,23 +140,22 @@ class StorageController(wsgi.Controller):
         :return:
         """
         # validate the id
-        # context = req.environ.get('dolphin.context')
         ctxt = req.environ['dolphin.context']
-        admin_context = context.RequestContext('admin', 'fake', True)
+        # admin_context = context.RequestContext('admin', 'fake', True)
         try:
             storage = db.storage_get(ctxt, id)
         except Exception as e:
             LOG.error(e)
-            raise exception.StorageNotFound(e)
+            raise exc.HTTPBadRequest(explanation=e.message)
 
         for subclass in task.StorageResourceTask.__subclasses__():
             self.task_rpcapi.sync_storage_resource(
-                admin_context,
+                ctxt,
                 id,  # its storage_id
                 subclass.__module__ + '.' + subclass.__name__
             )
 
-        return dict(name="Sync storage 1")
+        return storage
 
     def _is_registered(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)
