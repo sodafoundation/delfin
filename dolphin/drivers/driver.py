@@ -19,7 +19,7 @@ import abc
 @six.add_metaclass(abc.ABCMeta)
 class StorageDriver(object):
 
-    def __init__(self, storage_id):
+    def __init__(self, storage_id=None):
         self.storage_id = storage_id
 
     @staticmethod
@@ -28,7 +28,7 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
-    def register_storage(self, context, register_info):
+    def register_storage(self, context, access_info):
         """Discovery a storage system with register parameters."""
         pass
 

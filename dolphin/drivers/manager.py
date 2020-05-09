@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo_log import log
+import six
+import stevedore
 
+from oslo_log import log
+from oslo_utils import uuidutils
+
+from dolphin import exception
+from dolphin.i18n import _
 from dolphin import utils
 
 LOG = log.getLogger(__name__)
 
-DRIVER_MAPPING = {
-    "fake_storage": "dolphin.drivers.fake_storage.FakeStorageDriver"
-}
-
 
 class DriverManager(metaclass=utils.Singleton):
+    NAMESPACE = 'dolphin.storage.drivers'
 
     def __init__(self):
         # The driver_factory will keep the driver instance for
@@ -36,9 +39,29 @@ class DriverManager(metaclass=utils.Singleton):
         """Show register parameters which the driver needs."""
         pass
 
-    def register_storage(self, context, register_info):
-        """Discovery a storage system with register parameters."""
-        pass
+    def register_storage(self, context, access_info):
+        """Discovery a storage system with access information."""
+        try:
+            driver = stevedore.driver.DriverManager(
+                namespace=self.NAMESPACE,
+                name='%s %s' % (access_info['vendor'],
+                                access_info['model']),
+                invoke_on_load=True
+            ).driver
+        except Exception as e:
+            msg = (_("Storage driver '%s %s' could not be found.") % (access_info['vendor'],
+                                                                      access_info['model']))
+            LOG.error(msg)
+            raise exception.StorageDriverNotFound(message=msg)
+
+        storage = driver.register_storage(context,
+                                          access_info)
+        if storage:
+            storage['id'] = six.text_type(uuidutils.generate_uuid())
+            self.driver_factory[storage['id']] = driver
+
+        LOG.info("Storage was found successfully.")
+        return storage
 
     def remove_storage(self, context, storage_id):
         """Clear driver instance from driver factory."""
