@@ -27,13 +27,13 @@ class FakeStorageDriver(driver.StorageDriver):
     def get_storage_registry():
         pass
 
-    def register_storage(self, context, access_info):
+    def register_storage(self, context):
         # Do something here
         return {
             'name': 'fake_driver',
             'description': 'it is a fake driver.',
-            'vendor': access_info['vendor'],
-            'model': access_info['model'],
+            'vendor': 'fake_vendor',
+            'model': 'fake_model',
             'status': 'normal',
             'serial_number': '2102453JPN12KA000011',
             'firmware_version': '1.0.0',

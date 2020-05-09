@@ -12,25 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import abc
 from oslo_log import log
 
-from dolphin import exception
 from dolphin import db
 
 LOG = log.getLogger(__name__)
 
 
 def get_access_info(context, storage_id):
-    if not storage_id:
-        msg = "No storage_id provided."
-        LOG.error(msg)
-        raise exception.AccessInfoNotFound(message=msg)
-
     access_info = db.access_info_get(context, storage_id)
-    if not access_info:
-        msg = (_("Access information of storage '%s' could not be found.") % storage_id)
-        LOG.error(msg)
-        raise exception.AccessInfoNotFound(message=msg)
-
     return access_info.to_dict()

@@ -26,14 +26,19 @@ class API(object):
     def __init__(self):
         self.driver_manager = manager.DriverManager()
 
+    @staticmethod
+    def get_storage_registry():
+        """Show register parameters which the driver needs."""
+        pass
+
     def register_storage(self, context, access_info):
         """Discovery a storage system with access information."""
         access_info['storage_id'] = six.text_type(uuidutils.generate_uuid())
-        driver = self.driver_manager.get_driver(context, **access_info)
+        driver = self.driver_manager.create_driver(context, **access_info)
 
-        storage = driver.register_storage(context, access_info)
+        storage = driver.register_storage(context)
         if storage:
-            storage['id'] = six.text_type(access_info['storage_id'])
+            storage['id'] = access_info['storage_id']
         else:
             self.driver_manager.remove_driver(context, access_info['storage_id'])
 

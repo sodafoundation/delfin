@@ -13,14 +13,15 @@
 # limitations under the License.
 
 import copy
-import stevedore
 import threading
 
+import stevedore
 from oslo_log import log
+
 from dolphin import exception
-from dolphin.i18n import _
 from dolphin import utils
 from dolphin.drivers import helper
+from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -35,15 +36,14 @@ class DriverManager(metaclass=utils.Singleton):
         # and storage system is effectively used.
         self.driver_factory = dict()
 
-    def _create_driver(self, context, **kwargs):
-        vendor = kwargs.get('vendor', None)
-        model = kwargs.get('model', None)
-
+    def _init_driver(self, context, **kwargs):
+        """
+        Create a storage driver with vendor and model.
+        :param context:
+        :param kwargs: A dictionary, include access information.
+        :return: A driver object.
+        """
         try:
-            if not vendor or not model:
-                access_info = helper.get_access_info(context, kwargs['storage_id'])
-                kwargs = copy.deepcopy(access_info)
-
             driver = stevedore.driver.DriverManager(
                 namespace=self.NAMESPACE,
                 name='%s %s' % (kwargs['vendor'], kwargs['model']),
@@ -58,36 +58,26 @@ class DriverManager(metaclass=utils.Singleton):
 
         return driver
 
-    def get_driver(self, context, **kwargs):
-        """
-        Caller can get driver with storage_id or vendor&model
-        :param context:
-        :param kwargs: A dictionary, only storage_id is necessary, for the first
-            time to register storage, storage_id is newly created, nothing can be found
-            from database with this storage_id, so other access information should be
-            included in access_info, otherwise, storage_id can be used to get access
-            information from database.
-        :return: A driver object.
-        """
-        storage_id = kwargs.get('storage_id', None)
-        if not storage_id:
-            raise exception.StorageDriverNotFound(message="storage_id is missed")
+    def create_driver(self, context, **kwargs):
+        storage_id = kwargs.get('model', None)
+        driver = self._init_driver(context, **kwargs)
+        self.driver_factory[storage_id] = driver
 
+        return driver
+
+    def get_driver(self, context, storage_id):
         driver = self.driver_factory.get(storage_id, None)
         if not driver:
             with self._instance_lock:
                 driver = self.driver_factory.get(storage_id, None)
                 if not driver:
-                    driver = self._create_driver(context, **kwargs)
+                    access_info = helper.get_access_info(context, storage_id)
+                    kwargs = copy.deepcopy(access_info)
+                    driver = self._init_driver(context, **kwargs)
+                    self.driver_factory[storage_id] = driver
 
-        self.driver_factory[storage_id] = driver
         return driver
 
     def remove_driver(self, context, storage_id):
         """Clear driver instance from driver factory."""
         self.driver_factory.pop(storage_id, None)
-
-    @staticmethod
-    def get_storage_registry():
-        """Show register parameters which the driver needs."""
-        pass
