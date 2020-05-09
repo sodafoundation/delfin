@@ -322,9 +322,36 @@ def volume_get_all(context, marker=None, limit=None, sort_keys=None,
     return NotImplemented
 
 
-def pool_create(context, values, session=None):
+def _pool_get_by_original_id(context, original_id, model, session=None):
+    result = (_resource_get_query(context, model, session=session)
+              .filter_by(original_id=original_id)
+              .first())
+    if not result:
+        raise exception.PoolNotFound(original_id=original_id)
+
+    return result
+
+
+def _pool_get(context, pool_id, model, session=None):
+    result = (_resource_get_query(context, model, session=session)
+              .filter_by(id=pool_id)
+              .first())
+    if not result:
+        raise exception.PoolNotFound(id=pool_id)
+
+    return result
+
+
+def pool_create(context, pool):
     """Create a pool from the values dictionary."""
-    return NotImplemented
+    pool_ref = models.Pool()
+    session = get_session()
+    with session.begin():
+        if not pool.get('id'):
+            pool['id'] = uuidutils.generate_uuid()
+        pool_ref.update(pool)
+        session.add(pool_ref)
+    return
 
 
 def handle_db_data_error(f):
@@ -340,33 +367,52 @@ def handle_db_data_error(f):
 
 
 @handle_db_data_error
-def pool_update(context, pools):
+def pools_update_all(context, pools):
     """Update a pool withe the values dictionary."""
-    pool_ref = models.Pool()
     session = get_session()
     with session.begin():
         pool_refs = []
-        query = pool_get_all(context)
-        delete_list = copy.copy(query)
-        [delete_list.remove(item) for pool in pools
-         for item in query if pool.get('id') == item.get('id')]
-        for pool in delete_list:
-            session.delete(pool)
         for pool in pools:
-            try:
-                pool_query = pool_get(context, pool.get('id'))
-                pool_query.update(pool)
-                pool_query.save(session)
-            except exception.StorageNotFound:
-                pool_ref = models.Pool()
-                pool_ref.update(pool)
-                session.add(pool_ref)
-    return pool_refs
+            LOG.debug('updating pool {0}:'.format(pool.get('original_id')))
+            pool_query = pool_get_by_original_id(context,
+                                                 pool.get('original_id'))
+            pool_query.update(pool)
+            pool_query.save(session)
+    return
+
+
+def pool_get_by_original_id(context, original_id):
+    """Get a pool or raise an exception if it does not exist."""
+    return _pool_get_by_original_id(context, original_id, models.Pool)
 
 
 def pool_get(context, pool_id):
     """Get a pool or raise an exception if it does not exist."""
-    return _resource_get(context, pool_id, models.Pool)
+    return _pool_get(context, pool_id, models.Pool)
+
+
+def pools_create_all(context, pools):
+    """Add a storage device from the values dictionary."""
+    session = get_session()
+    with session.begin():
+        for pool in pools:
+            LOG.debug('adding new pool {0}:'.format(pool.get('original_id')))
+            pool_ref = models.Pool()
+            if not pool.get('id'):
+                pool['id'] = uuidutils.generate_uuid()
+            pool_ref.update(pool)
+            session.add(pool_ref)
+    return
+
+
+def pools_delete(context, pools):
+    """Update a storage device with the values dictionary."""
+    session = get_session()
+    with session.begin():
+        for pool in pools:
+            LOG.debug('deleting pool {0}:'.format(pool.get('original_id')))
+            session.delete(pool)
+    return
 
 
 def pool_get_all(context, marker=None, limit=None, sort_keys=None,
