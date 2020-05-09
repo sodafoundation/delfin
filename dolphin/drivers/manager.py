@@ -72,8 +72,7 @@ class DriverManager(metaclass=utils.Singleton):
                 driver = self.driver_factory.get(storage_id, None)
                 if not driver:
                     access_info = helper.get_access_info(context, storage_id)
-                    kwargs = copy.deepcopy(access_info)
-                    driver = self._init_driver(context, **kwargs)
+                    driver = self._init_driver(context, **access_info)
                     self.driver_factory[storage_id] = driver
 
         return driver
