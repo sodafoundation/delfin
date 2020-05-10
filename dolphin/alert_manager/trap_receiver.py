@@ -13,15 +13,15 @@
 # limitations under the License.
 
 from oslo_log import log
-
-from pysnmp.entity import engine, config
 from pysnmp.carrier.asyncore.dgram import udp
+from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.proto.api import v2c
-from pysnmp.smi import builder, view, rfc1902, error
+from pysnmp.smi import builder, view, rfc1902
 
-from dolphin.alert_manager import constants
+from dolphin import exception
 from dolphin.alert_manager import alert_processor
+from dolphin.alert_manager import constants
 
 LOG = log.getLogger(__name__)
 
@@ -70,32 +70,39 @@ class TrapReceiver(object):
         oid = snmpTrapOID
         val = authenticationFailure
         """
+
+        # Separate out oid and value strings
         var_bind_info = var_bind.prettyPrint()
         var_bind_info = var_bind_info.split("=", 1)
         oid = var_bind_info[0]
         val = var_bind_info[1]
 
+        # Extract oid from oid string
+        # Example: get snmpTrapOID from SNMPv2-MIB::snmpTrapOID.0)
         oid = oid.split("::", 1)
         oid = oid[1].split(".", 1)
         oid = oid[0]
 
+        # Value can contain mib name also, if so, extract value from it
+        # Example: get authenticationFailure from SNMPv2-MIB::authenticationFailure)
         if "::" in val:
             val = val.split("::", 1)
             val = val[1]
+        val = val.strip()
 
         return oid, val
 
     def _cb_fun(self, state_reference, context_engine_id, context_name,
-              var_binds, cb_ctx):
+                var_binds, cb_ctx):
         """Callback function to process the incoming trap."""
         exec_context = self.snmp_engine.observer.getExecutionContext('rfc3412.receiveMessage:request')
         LOG.info(
-            '#Notification from %s \n#ContextEngineId: "%s" \n#ContextName: "%s" \n#SNMPVER "%s" \n#SecurityName "%s"' % (
-            '@'.join([str(x) for x in exec_context['transportAddress']]), context_engine_id.prettyPrint(),
-            context_name.prettyPrint(), exec_context['securityModel'], exec_context['securityName']))
+            '#Notification from %s \n#ContextEngineId: "%s" \n#ContextName: "%s" \n#SNMPVER "%s" \n#SecurityName "%s"'
+            % ('@'.join([str(x) for x in exec_context['transportAddress']]), context_engine_id.prettyPrint(),
+               context_name.prettyPrint(), exec_context['securityModel'], exec_context['securityName']))
 
-        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(self.mib_view_controller) for x in
-                    var_binds]
+        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(self.mib_view_controller)
+                     for x in var_binds]
         alert = {}
 
         for var_bind in var_binds:
@@ -109,8 +116,11 @@ class TrapReceiver(object):
         # Handover trap info to alert processor for model translation and export
         try:
             alert_processor.AlertProcessor().process_alert_info(alert)
-        except Exception:
-            raise ValueError("Alert processing failed.")
+        except (exception.AccessInfoNotFound,
+                exception.StorageNotFound,
+                exception.InvalidResults) as e:
+            # Log and end the trap processing error flow
+            LOG.error(e)
 
     def _snmp_v2v3_config(self):
         """Configures snmp v2 and v3 user parameters."""
