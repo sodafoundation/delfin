@@ -244,7 +244,6 @@ def storage_create(context, values):
 
 def storage_update(context, storage_id, values):
     """Update a storage device with the values dictionary."""
-    model = models.Storage
     session = get_session()
     with session.begin():
         query = storage_get(context, storage_id)

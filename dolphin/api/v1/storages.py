@@ -141,21 +141,22 @@ class StorageController(wsgi.Controller):
         """
         # validate the id
         ctxt = req.environ['dolphin.context']
-        # admin_context = context.RequestContext('admin', 'fake', True)
         try:
             storage = db.storage_get(ctxt, id)
-        except Exception as e:
+        except exception.StorageNotFound as e:
             LOG.error(e)
             raise exc.HTTPBadRequest(explanation=e.message)
 
+        # make id as storage_id for better understanding
+        storage_id = id
         for subclass in task.StorageResourceTask.__subclasses__():
             self.task_rpcapi.sync_storage_resource(
                 ctxt,
-                id,  # its storage_id
+                storage_id,
                 subclass.__module__ + '.' + subclass.__name__
             )
 
-        return storage
+        return
 
     def _is_registered(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)

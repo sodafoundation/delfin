@@ -42,16 +42,14 @@ class StorageDeviceTask(StorageResourceTask):
         LOG.info('Syncing storage device for storage id:{0}'.format(self.storage_id))
         try:
             storage = self.driver.get_storage(self.context, self.storage_id)
-            storage['id'] = self.storage_id  # it is for fake testing
+
             db.storage_update(self.context, self.storage_id, storage)
         except AttributeError as e:
             LOG.error(e)
-            raise exception.DolphinException(e)
         except Exception as e:
             msg = _('Failed to update storage entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
-            raise exception.DolphinException(msg)
         LOG.info("Syncing storage successful!!!")
 
     def remove(self):
@@ -122,12 +120,10 @@ class StoragePoolTask(StorageResourceTask):
                 storage_pools, db_pools))
         except AttributeError as e:
             LOG.error(e)
-            raise exception.DolphinException(e)
         except Exception as e:
             msg = _('Failed to update pool entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
-            raise exception.DolphinException(msg)
 
     def remove(self):
         pass
