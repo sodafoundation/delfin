@@ -59,7 +59,7 @@ class DriverManager(metaclass=utils.Singleton):
         return driver
 
     def create_driver(self, context, **kwargs):
-        storage_id = kwargs.get('model', None)
+        storage_id = kwargs.get('storage_id', None)
         driver = self._init_driver(context, **kwargs)
         self.driver_factory[storage_id] = driver
 
