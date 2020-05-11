@@ -89,7 +89,12 @@ class StorageController(wsgi.Controller):
         return storage_view.build_storages(storages)
 
     def show(self, req, id):
-        return dict(name="Storage 2")
+        try:
+            storage = db.storage_get(context, id)
+        except exception.StorageNotFound as e:
+            raise exc.HTTPNotFound(explanation=e.message)
+        return storage_view.build_storage(storage)
+
 
     @wsgi.response(201)
     @validation.schema(schema_storages.create)

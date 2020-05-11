@@ -23,4 +23,4 @@ def build_storages(storages):
 
 def build_storage(storage):
     view = copy.deepcopy(storage)
-    return view
+    return dict(view)
