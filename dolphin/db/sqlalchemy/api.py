@@ -241,10 +241,11 @@ def storage_update(context, storage_id, values):
     """Update a storage device with the values dictionary."""
     session = get_session()
     with session.begin():
-        query = storage_get(context, storage_id)
-        query.update(values)
-        query.save(session=session)
-    return
+        query = _storage_get_query(context, session)
+        result = query.filter_by(id=storage_id).update(values)
+        if not result:
+            raise exception.StorageNotFound(id=storage_id)
+    return result
 
 
 def storage_get(context, storage_id):

@@ -28,7 +28,7 @@ from dolphin import context
 from dolphin import coordination
 from dolphin import cryptor
 from dolphin import db
-from dolphin.drivers import manager as drivermanager
+from dolphin.drivers import api as driverapi
 from dolphin import exception
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
@@ -58,7 +58,7 @@ class StorageController(wsgi.Controller):
     def __init__(self):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
-        self.driver_manager = drivermanager.DriverManager()
+        self.driver_api = driverapi.API()
 
     def index(self, req):
 
@@ -105,7 +105,7 @@ class StorageController(wsgi.Controller):
             raise exc.HTTPBadRequest(explanation=msg)
 
         try:
-            storage = self.driver_manager.register_storage(ctxt, access_info_dict)
+            storage = self.driver_api.register_storage(ctxt, access_info_dict)
             storage = db.storage_create(context, storage)
 
             # Need to encode the password before saving.
@@ -145,14 +145,13 @@ class StorageController(wsgi.Controller):
             storage = db.storage_get(ctxt, id)
         except exception.StorageNotFound as e:
             LOG.error(e)
-            raise exc.HTTPBadRequest(explanation=e.message)
+            raise exc.HTTPBadRequest(explanation=e.msg)
         else:
             # make id as storage_id for better understanding
-            storage_id = id
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,
-                    storage_id,
+                    storage['id'],
                     subclass.__module__ + '.' + subclass.__name__
                 )
 

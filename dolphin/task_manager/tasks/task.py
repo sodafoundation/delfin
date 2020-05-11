@@ -16,7 +16,7 @@ import copy
 from oslo_log import log
 
 from dolphin import exception
-from dolphin.drivers import manager as drivermanager
+from dolphin.drivers import api as driverapi
 from dolphin.db.sqlalchemy import api as db
 from dolphin.i18n import _
 
@@ -28,7 +28,7 @@ class StorageResourceTask(object):
     def __init__(self, context, storage_id):
         self.storage_id = storage_id
         self.context = context
-        self.driver = drivermanager.DriverManager()
+        self.driver_api = driverapi.API()
 
 
 class StorageDeviceTask(StorageResourceTask):
@@ -41,7 +41,7 @@ class StorageDeviceTask(StorageResourceTask):
         """
         LOG.info('Syncing storage device for storage id:{0}'.format(self.storage_id))
         try:
-            storage = self.driver.get_storage(self.context, self.storage_id)
+            storage = self.driver_api.get_storage(self.context, self.storage_id)
 
             db.storage_update(self.context, self.storage_id, storage)
         except AttributeError as e:
@@ -50,7 +50,8 @@ class StorageDeviceTask(StorageResourceTask):
             msg = _('Failed to update storage entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
-        LOG.info("Syncing storage successful!!!")
+        else:
+            LOG.info("Syncing storage successful!!!")
 
     def remove(self):
         pass
