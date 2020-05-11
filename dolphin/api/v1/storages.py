@@ -33,6 +33,7 @@ from dolphin import exception
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import utils
+from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
 
@@ -139,22 +140,23 @@ class StorageController(wsgi.Controller):
         :return:
         """
         # validate the id
-        context = req.environ.get('dolphin.context')
-        # admin_context = context.RequestContext('admin', 'fake', True)
+        ctxt = req.environ['dolphin.context']
         try:
-            device = db.access_info_get(context, id)
-        except Exception as e:
+            storage = db.storage_get(ctxt, id)
+        except exception.StorageNotFound as e:
             LOG.error(e)
-            raise exception.AccessInfoNotFound(e)
+            raise exc.HTTPBadRequest(explanation=e.message)
+        else:
+            # make id as storage_id for better understanding
+            storage_id = id
+            for subclass in task.StorageResourceTask.__subclasses__():
+                self.task_rpcapi.sync_storage_resource(
+                    ctxt,
+                    storage_id,
+                    subclass.__module__ + '.' + subclass.__name__
+                )
 
-        tasks = (
-            'pool_task',
-            'volume_task'
-        )
-        for task in tasks:
-            self.task_rpcapi.sync_storage_resource(context, id, task)
-
-        return dict(name="Sync storage 1")
+        return
 
     def _is_registered(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)

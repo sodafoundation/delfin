@@ -239,7 +239,12 @@ def storage_create(context, values):
 
 def storage_update(context, storage_id, values):
     """Update a storage device with the values dictionary."""
-    return NotImplemented
+    session = get_session()
+    with session.begin():
+        query = storage_get(context, storage_id)
+        query.update(values)
+        query.save(session=session)
+    return
 
 
 def storage_get(context, storage_id):
