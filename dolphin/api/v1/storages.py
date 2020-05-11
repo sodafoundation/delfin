@@ -120,7 +120,7 @@ class StorageController(wsgi.Controller):
         except Exception as e:
             msg = _('Failed to register storage: {0}'.format(e))
             LOG.error(msg)
-            raise exc.HTTPNotFound(explanation=msg)
+            raise exc.HTTPBadRequest(explanation=msg)
 
         return storage_view.build_storage(storage)
 
