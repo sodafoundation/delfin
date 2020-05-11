@@ -145,7 +145,7 @@ class StorageController(wsgi.Controller):
             storage = db.storage_get(ctxt, id)
         except exception.StorageNotFound as e:
             LOG.error(e)
-            raise exc.HTTPBadRequest(explanation=e.msg)
+            raise exc.HTTPNotFound(explanation=e.msg)
         else:
             # make id as storage_id for better understanding
             for subclass in task.StorageResourceTask.__subclasses__():
