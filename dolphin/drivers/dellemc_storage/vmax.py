@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import PyU4V
-from PyU4V import U4VConn
-
 from oslo_log import log
 from dolphin.drivers import driver
+from dolphin.drivers import helper
+from dolphin.drivers.dellemc_storage import client
 from dolphin import exception
-
-SUPPORTED_VERSION='90'
 
 LOG = log.getLogger(__name__)
 
@@ -27,16 +24,31 @@ class VMAXStorageDriver(driver.StorageDriver):
     """VMAXStorageDriver implement the DELL EMC Storage driver,
     """
 
-    def __init__(self, storage_id=None):
-        super().__init__(storage_id)
-        # Initialize with defaults
-        self.storage_id = storage_id
-        self.conn = None
-        self.symmetrix_id = None
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._init_vmax(kwargs)
 
     def __del__(self):
         # De-initialize session
         self.close_session()
+
+    def _init_vmax(self, access_info):
+        self.conn = client.get_connection(access_info)
+
+        # Get the Unisphere version to check connection
+        version = client.get_version(self.conn)
+
+        # Get storage details
+        self.symmetrix_id = access_info.get('extra_attributes', {}).\
+                                get('array_id', None)
+
+    def _check_connection(self):
+        if not self.storage_id:
+            raise exception.InvalidDriverMode(driver_mode='Driver is not initialized')
+
+        if not self.conn:
+            access_info = helper.get_access_info(self.storage_id)
+            self._init_vmax(access_info)
 
     @staticmethod
     def get_storage_registry():
@@ -48,70 +60,21 @@ class VMAXStorageDriver(driver.StorageDriver):
 
         return  required_register_attributes
 
-    def register_storage(self, context, access_info):
-        """ Connect to storage backend and register using access_info.
+    def register_storage(self, context):
+        """ Connect to storage backend and register.
         """
-
-        array_id = access_info.get('extra_attributes', {}).\
-                                get('array_id', None)
-        if not array_id:
-            raise exception.InvalidInput(reason='Invalid array_id')
-
-        try:
-            # Initialise PyU4V connection to Unisphere
-            self.conn = PyU4V.U4VConn(
-                u4v_version=SUPPORTED_VERSION,
-                server_ip=access_info['host'],
-                port=access_info['port'],
-                verify=False,
-                array_id=array_id,
-                username=access_info['username'],
-                password=access_info['password'])
-
-        except Exception as err:
-            LOG.error("Failed to connect to Unisphere: {}".format(err))
-            self.conn = None
-            raise
-
-        try:
-            # Get the Unisphere version
-            version = self.conn.common.get_uni_version()
-
-        except Exception as err:
-            LOG.error("Failed to get version from vmax: {}".format(err))
-            raise
-
-        # Get storage details
-        self.symmetrix_id = array_id
         return self.get_storage(context)
 
     def get_storage(self, context):
 
-        status = "Error"
-        model_symmetrix = ""
-        total_cap = 0
-        used_cap = 0
+        self._check_connection()
+        # Get the Unisphere model
+        model = client.get_model(self.conn, self.symmetrix_id)
 
-        try:
-            # Initialise PyU4V connection to Unisphere
-            status = "Available"
-
-            # Get the Unisphere model
-            uri = "/system/symmetrix/" + self.symmetrix_id
-            model = self.conn.common.get_request(uri, "")
-            model_symmetrix = model['symmetrix'][0]['model']
-            LOG.info("Successfully retrieved storage model")
-
-            # Get Storage details for capacity info
-            uri = "/" + SUPPORTED_VERSION + "/sloprovisioning/symmetrix/" + self.symmetrix_id
-            storg_info = self.conn.common.get_request(uri, "")
-            total_cap = storg_info['system_capacity']['usable_total_tb']
-            used_cap = storg_info['system_capacity']['usable_used_tb']
-            LOG.info("Successfully retrieved storage capacity")
-
-        except Exception as err:
-            LOG.error("Failed to get storage details: {}".format(err))
-            raise
+        # Get Storage details for capacity info
+        storg_info = client.get_storage_capacity(self.conn, self.symmetrix_id)
+        total_cap = storg_info['usable_total_tb']
+        used_cap = storg_info['usable_used_tb']
 
         tera_bytes = 1000 * 1000 * 1000 * 1000          # Rounded TB to bytes 1024 * 1024 * 1024 * 1024
         storage = {
@@ -119,8 +82,8 @@ class VMAXStorageDriver(driver.StorageDriver):
             'name': '',
             'vendor': 'Dell EMC',
             'description': '',
-            'model': model_symmetrix,
-            'status': status,
+            'model': model,
+            'status': 'Available',
             'serial_number': self.symmetrix_id,
             'location': '',
             'total_capacity': int(total_cap * tera_bytes),
