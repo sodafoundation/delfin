@@ -16,6 +16,7 @@ from dolphin.api import extensions
 from dolphin.api import common
 from dolphin.api import versions
 from dolphin.api.v1 import storages
+from dolphin.api.v1 import access_info
 from dolphin.api.v1 import pools
 from dolphin.api.v1 import volumes
 
@@ -37,6 +38,12 @@ class APIRouter(common.APIRouter):
                         controller=self.resources['storages'],
                         collection={'sync_all': 'POST'},
                         member={'sync': 'POST'})
+
+        self.resources['access_info'] = access_info.create_resource()
+        mapper.connect("storages", "/storages/{id}/access-info",
+                       controller=self.resources['access_info'],
+                       action="show",
+                       conditions={"method": ["GET"]})
 
         self.resources['pools'] = pools.create_resource()
         mapper.resource("pool", "pools",
