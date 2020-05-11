@@ -19,8 +19,14 @@ import abc
 @six.add_metaclass(abc.ABCMeta)
 class StorageDriver(object):
 
-    def __init__(self, storage_id=None):
-        self.storage_id = storage_id
+    def __init__(self, **kwargs):
+        """
+        :param kwargs:  A dictionary, include access information. Pay
+            attention that it's not safe to save username and password
+            in memory, so suggest each driver use them to get session
+            instead of save them in memory directly.
+        """
+        self.storage_id = kwargs.get('storage_id', None)
 
     @staticmethod
     def get_storage_registry():
@@ -28,7 +34,7 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
-    def register_storage(self, context, access_info):
+    def register_storage(self, context):
         """Discovery a storage system with register parameters."""
         pass
 
