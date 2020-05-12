@@ -7,7 +7,7 @@ from dolphin import exception
 
 sys.modules['dolphin.cryptor'] = unittest.mock.MagicMock()
 from dolphin.api.v1.storages import StorageController
-from dolphin.task_manager import resources
+from dolphin.task_manager.tasks import task
 
 
 class Request:
@@ -32,7 +32,7 @@ class TestStorageController:
         mocker.patch('dolphin.db.storage_get')
         sc.delete(req, 1)
         expected_count = 0
-        for _ in resources.StorageResourceTask.__subclasses__():
+        for _ in task.StorageResourceTask.__subclasses__():
             expected_count += 1
         assert expected_count == mock_remove_storage_resource.call_count
 
