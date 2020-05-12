@@ -132,8 +132,21 @@ class StorageController(wsgi.Controller):
     def update(self, req, id, body):
         return dict(name="Storage 4")
 
+    @wsgi.response(202)
     def delete(self, req, id):
-        return webob.Response(status_int=http_client.ACCEPTED)
+        ctxt = req.environ['dolphin.context']
+        try:
+            device = db.storage_get(ctxt, id)
+        except Exception as e:
+            LOG.error(e)
+            raise exc.HTTPBadRequest(explanation=e.msg)
+        else:
+            for subclass in task.StorageResourceTask.__subclasses__():
+                self.task_rpcapi.remove_storage_resource(
+                    ctxt,
+                    id,
+                    subclass.__module__ + '.' + subclass.__name__
+                )
 
     def sync_all(self, req):
         return dict(name="Sync all storages")

@@ -71,3 +71,8 @@ class TaskManager(manager.Manager):
         cls = importutils.import_class(resource_task)
         device_obj = cls(context, storage_id)
         device_obj.sync()
+
+    def remove_storage_resource(self, context, storage_id, resource_task):
+        cls = importutils.import_class(resource_task)
+        device_obj = cls(context, storage_id)
+        device_obj.remove()

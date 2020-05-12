@@ -298,15 +298,40 @@ def storage_get_all(context, marker=None, limit=None, sort_keys=None,
     return query.all()
 
 
+def storage_delete(context, storage_id):
+    """Delete a storage device."""
+    _storage_get_query(context).filter_by(id=storage_id).delete()
+
+
 def volume_get(context, volume_id):
     """Get a volume or raise an exception if it does not exist."""
     return NotImplemented
+
+
+def _volume_get(context, storage_id, session=None):
+    result = (_volume_get_query(context, session=session)
+              .filter_by(storage_id=storage_id)
+              .first())
+
+    if not result:
+        raise exception.NotFound()
+
+    return result
+
+
+def _volume_get_query(context, session=None):
+    return model_query(context, models.Volume, session=session)
 
 
 def volume_get_all(context, marker=None, limit=None, sort_keys=None,
                    sort_dirs=None, filters=None, offset=None):
     """Retrieves all volumes."""
     return NotImplemented
+
+
+def volume_delete(context, storage_id):
+    """Delete all the volumes of a device"""
+    _volume_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 def pool_create(context, values):
@@ -324,10 +349,30 @@ def pool_get(context, pool_id):
     return NotImplemented
 
 
+def _pool_get(context, storage_id, session=None):
+    result = (_pool_get_query(context, session=session)
+              .filter_by(storage_id=storage_id)
+              .first())
+
+    if not result:
+        raise exception.NotFound()
+
+    return result
+
+
+def _pool_get_query(context, session=None):
+    return model_query(context, models.Pool, session=session)
+
+
 def pool_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage pools."""
     return NotImplemented
+
+
+def pool_delete(context, storage_id):
+    """Delete all the pools of a storage device"""
+    _pool_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 def disk_create(context, values):

@@ -54,4 +54,32 @@ class StorageDeviceTask(StorageResourceTask):
             LOG.info("Syncing storage successful!!!")
 
     def remove(self):
+        LOG.info('Remove storage device for storage id:{0}'.format(self.storage_id))
+        try:
+            db.storage_delete(self.context, self.storage_id)
+        except Exception as e:
+            LOG.error('Failed to update storage entry in DB: {0}'.format(e))
+
+
+class StoragePoolTask(StorageResourceTask):
+    def sync(self):
         pass
+
+    def remove(self):
+        LOG.info('Remove pools for storage id:{0}'.format(self.storage_id))
+        try:
+            db.pool_delete(self.context, self.storage_id)
+        except Exception as e:
+            LOG.error('Failed to update storage entry in DB: {0}'.format(e))
+
+
+class StorageVolumeTask(StorageResourceTask):
+    def sync(self):
+        pass
+
+    def remove(self):
+        LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
+        try:
+            db.volume_delete(self.context, self.storage_id)
+        except Exception as e:
+            LOG.error('Failed to update storage entry in DB: {0}'.format(e))
