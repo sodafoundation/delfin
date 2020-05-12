@@ -33,40 +33,47 @@ class AlertProcessor(object):
 
         ctxt = context.get_admin_context()
 
-        # Trap source ip should be configured as part of alert source configuration.
-        # Incoming source ip will be mapped with Trap source ip in db and
-        # storage id will be obtained
-        # As config flow not exists now Currently source ip is mapped with access_info ip address
+        # Trap source ip should be configured as part of alert source
+        # configuration. Incoming source ip will be mapped with Trap source
+        # ip in db and storage id will be obtained As config flow not exists
+        # now Currently source ip is mapped with access_info ip address
 
-        # First retrieve access_info from source ip and get storage info using storage id
+        # First retrieve access_info from source ip and get storage info
+        # using storage id
+        # This is a temporary mechanism till the alert config flow is handled
         filters = {'host': alert['transport_address']}
-        access_info = db.access_info_get_all(ctxt, filters=filters)
-        if not access_info:
-            msg = "Access information could not be found with host %s." % alert['transport_address']
+
+        try:
+            access_info = db.access_info_get_all(ctxt, filters=filters)
+        except Exception:
+            msg = "Access information could not be found with host %s." \
+                    % alert['transport_address']
             raise exception.AccessInfoNotFound(message=msg)
 
         # For given source ip, there should be unique access_info
         if len(access_info) != 1:
-            msg = "Failed to get unique access information with host %s." % alert['transport_address']
+            msg = "Failed to get unique access information with host %s." \
+                    % alert['transport_address']
             raise exception.InvalidResults(message=msg)
 
-        filters = {'id': access_info[0]['storage_id']}
-        storages = db.storage_get_all(context, filters=filters)
-        if not storages:
+        try:
+            storage = db.storage_get(context, access_info[0]['storage_id'])
+        except Exception:
             raise exception.StorageNotFound(id=access_info[0]['storage_id'])
 
         # Fill storage specific info
-        alert['storage_id'] = storages[0]['id']
-        alert['storage_name'] = storages[0]['name']
-        alert['vendor'] = storages[0]['vendor']
-        alert['model'] = storages[0]['model']
-        alert['location'] = storages[0]['location']
+        alert['storage_id'] = storage['id']
+        alert['storage_name'] = storage['name']
+        alert['vendor'] = storage['vendor']
+        alert['model'] = storage['model']
 
         try:
-            alert_model = self.driver_manager.parse_alert(context, storages[0]['id'], alert)
+            alert_model = self.driver_manager.parse_alert(context,
+                                                          storage['id'], alert)
         except Exception as e:
             LOG.error(e)
-            raise exception.InvalidResults(message="Failed to fill the alert model from driver.")
+            raise exception.InvalidResults(
+                message="Failed to fill the alert model from driver.")
 
         self._export_alert_model(alert_model)
 

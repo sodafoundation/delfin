@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 from oslo_log import log
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
@@ -25,8 +27,10 @@ from dolphin.alert_manager import constants
 
 LOG = log.getLogger(__name__)
 
-# Currently static mib file list is loaded, logic to be changed to load all mib file
+# Currently static mib file list is loaded
+# Mechanism to be changed to load all mib file
 MIB_LOAD_LIST = ['SNMPv2-MIB','IF_MIB']
+
 
 class TrapReceiver(object):
     """Trap listening and processing functions"""
@@ -59,16 +63,18 @@ class TrapReceiver(object):
             config.addTransport(
                 self.snmp_engine,
                 udp.domainName,
-                udp.UdpTransport().openServerMode((self.trap_receiver_address, int(self.trap_receiver_port)))
+                udp.UdpTransport().openServerMode(
+                    (self.trap_receiver_address, int(self.trap_receiver_port)))
             )
         except Exception:
             raise ValueError("Port binding failed the provided port is in use.")
 
-    def _extract_oid_value(self, var_bind):
+    @staticmethod
+    def _extract_oid_value(var_bind):
         """Extracts oid and value from var binds.
-        ex: varbind =  (SNMPv2-MIB::snmpTrapOID.0 = SNMPv2-MIB::authenticationFailure)
+        ex: varbind = (SNMPv2-MIB::snmpTrapOID.0 = SNMPv2-MIB::coldStart)
         oid = snmpTrapOID
-        val = authenticationFailure
+        val = coldStart
         """
 
         # Separate out oid and value strings
@@ -78,16 +84,13 @@ class TrapReceiver(object):
         val = var_bind_info[1]
 
         # Extract oid from oid string
-        # Example: get snmpTrapOID from SNMPv2-MIB::snmpTrapOID.0)
-        oid = oid.split("::", 1)
-        oid = oid[1].split(".", 1)
-        oid = oid[0]
+        # Example: get snmpTrapOID from SNMPv2-MIB::snmpTrapOID.0
+        oid = re.split('[::.]', oid)[2]
 
         # Value can contain mib name also, if so, extract value from it
-        # Example: get authenticationFailure from SNMPv2-MIB::authenticationFailure)
+        # Ex: get coldStart from SNMPv2-MIB::coldStart
         if "::" in val:
-            val = val.split("::", 1)
-            val = val[1]
+            val = re.split('[::]', val)[2]
         val = val.strip()
 
         return oid, val
@@ -95,13 +98,19 @@ class TrapReceiver(object):
     def _cb_fun(self, state_reference, context_engine_id, context_name,
                 var_binds, cb_ctx):
         """Callback function to process the incoming trap."""
-        exec_context = self.snmp_engine.observer.getExecutionContext('rfc3412.receiveMessage:request')
-        LOG.info(
-            '#Notification from %s \n#ContextEngineId: "%s" \n#ContextName: "%s" \n#SNMPVER "%s" \n#SecurityName "%s"'
-            % ('@'.join([str(x) for x in exec_context['transportAddress']]), context_engine_id.prettyPrint(),
-               context_name.prettyPrint(), exec_context['securityModel'], exec_context['securityName']))
+        exec_context = self.snmp_engine.observer.getExecutionContext(
+            'rfc3412.receiveMessage:request')
+        LOG.info('#Notification from %s \n#ContextEngineId: "%s" '
+                 '\n#ContextName: ''"%s" \n#SNMPVER "%s" \n#SecurityName "%s" '
+                 % (
+                     '@'.join(
+                         [str(x) for x in exec_context['transportAddress']]),
+                     context_engine_id.prettyPrint(),
+                     context_name.prettyPrint(), exec_context['securityModel'],
+                     exec_context['securityName']))
 
-        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(self.mib_view_controller)
+        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1])
+                         .resolveWithMib(self.mib_view_controller)
                      for x in var_binds]
         alert = {}
 
@@ -138,7 +147,8 @@ class TrapReceiver(object):
         }
         config.addV3User(
             self.snmp_engine, userName=constants.SNMP_USM_USER,
-            authKey=constants.SNMP_V3_AUTHKEY, privKey=constants.SNMP_V3_PRIVKEY,
+            authKey=constants.SNMP_V3_AUTHKEY,
+            privKey=constants.SNMP_V3_PRIVKEY,
             authProtocol=auth_priv_protocols.get(
                 constants.SNMP_V3_AUTH_PROTOCOL, config.usmNoAuthProtocol),
             privProtocol=auth_priv_protocols.get(
@@ -165,7 +175,8 @@ class TrapReceiver(object):
             # Add transport info(ip, port) and start the listener
             self._add_transport()
 
-            snmp_engine.transportDispatcher.jobStarted(constants.SNMP_DISPATCHER_JOB_ID)
+            snmp_engine.transportDispatcher.jobStarted(
+                constants.SNMP_DISPATCHER_JOB_ID)
         except Exception:
             raise ValueError("Failed to setup for trap listener.")
 
@@ -178,7 +189,8 @@ class TrapReceiver(object):
 
     def stop(self):
         """Brings down the snmp trap receiver."""
-        # Go ahead with shutdown, ignore if any errors happening during the process as it is shutdown
+        # Go ahead with shutdown, ignore if any errors happening during the
+        # process as it is shutdown
         if self.snmp_engine:
             self.snmp_engine.transportDispatcher.closeDispatcher()
         LOG.info("Trap receiver stopped.")
