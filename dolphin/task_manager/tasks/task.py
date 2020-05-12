@@ -111,8 +111,8 @@ class StoragePoolTask(StorageResourceTask):
                                                        self.storage_id)
             db_pools = db.pool_get_all(self.context)
 
-            db.pools_delete(self.context, self._get_delete_list(storage_pools,
-                                                                db_pools))
+            db.pools_delete(self.context, self._get_delete_list(
+                storage_pools, db_pools))
 
             db.pools_update(self.context, self._get_update_list(
                 storage_pools, db_pools))
