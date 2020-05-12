@@ -255,10 +255,6 @@ class PoolNotFound(NotFound):
     message = _("Pool %(id)s could not be found.")
 
 
-class PoolNotFoundByOriginalId(NotFound):
-    message = _("Pool %(original_id)s could not be found by original_id.")
-
-
 class StorageDriverNotFound(NotFound):
     message = _("Storage driver could not be found.")
 

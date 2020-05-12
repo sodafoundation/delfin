@@ -503,8 +503,7 @@ def model_query(context, model, *args, **kwargs):
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
-    models.Pool: (_pool_get_query, _process_pool_info_filters,
-                  _pool_get),
+    models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
 }
 
 
