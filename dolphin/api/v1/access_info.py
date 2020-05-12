@@ -55,12 +55,12 @@ class AccessInfoController(wsgi.Controller):
             # Discover storage with new access info
             storage = self.driver_api.discover_storage(ctxt, access_info_updated_dict)
             if storage['serial_number'] != storage_present.serial_number:
-                reason = (_("Existing storage serial Number is not matching with th new storage serial number: '%s'  "
-                            ) %
-                          storage['serial_number'])
+                reason = (_("Existing storage serial Number is not matching \
+                with th new storage serial number: '%s'  ") % storage['serial_number'])
                 raise exception.StorageSerialNumberMismatch(reason=reason)
             db.storage_update(ctxt, id, storage)
-            access_info_updated_dict['password'] = cryptor.encode(access_info_updated_dict['password'])
+            access_info_updated_dict['password'] = cryptor.encode(
+                access_info_updated_dict['password'])
             db.access_info_update(ctxt, id, access_info_updated_dict)
         except (exception.InvalidCredential,
                 exception.StorageDriverNotFound,

@@ -37,7 +37,8 @@ class API(object):
         if 'storage_id' not in access_info:
             access_info['storage_id'] = six.text_type(uuidutils.generate_uuid())
         else:
-            # Already registered storage , remove driver and create driver instance again with new access_info
+            # Already registered storage , remove driver and create driver instance \
+            # again with new access_info
             self.driver_manager.remove_driver(context,access_info['storage_id'])
 
         driver = self.driver_manager.create_driver(context, **access_info)
