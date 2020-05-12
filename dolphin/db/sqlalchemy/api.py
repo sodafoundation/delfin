@@ -321,7 +321,7 @@ def _pool_get(context, pool_id, session=None):
               .first())
 
     if not result:
-        raise exception.PoolNotFound(id=pool_id)
+        LOG.error(exception.PoolNotFound(id=pool_id))
 
     return result
 
@@ -338,9 +338,9 @@ def pool_create(context, values):
     with session.begin():
         session.add(pool_ref)
 
-    return _storage_get(context,
-                        pool_ref['id'],
-                        session=session)
+    return _pool_get(context,
+                     pool_ref['id'],
+                     session=session)
 
 
 def pools_create(context, pools):
@@ -350,7 +350,8 @@ def pools_create(context, pools):
     with session.begin():
 
         for pool in pools:
-            LOG.debug('adding new pool {0}:'.format(pool.get('original_id')))
+            LOG.debug('adding new pool for original_id {0}:'
+                      .format(pool.get('original_id')))
             if not pool.get('id'):
                 pool['id'] = uuidutils.generate_uuid()
 
@@ -369,14 +370,14 @@ def pools_delete(context, pools):
     pool_refs = []
     with session.begin():
         for pool in pools:
-            LOG.debug('deleting pool {0}:'.format(pool.get('original_id')))
+            LOG.debug('deleting pool {0}:'.format(pool.get('id')))
             query = _pool_get_query(context, session)
-            result = query.filter_by(original_id=pool.get('original_id')
+            result = query.filter_by(id=pool.get('id')
                                      ).delete()
 
             if not result:
-                raise exception.PoolNotFound(original_id=pool.get(
-                    'original_id'))
+                LOG.error(exception.PoolNotFound(id=pool.get(
+                    'id')))
 
             pool_refs.append(pool)
 
@@ -392,7 +393,7 @@ def pool_update(context, pool_id, values):
         result = query.filter_by(id=pool_id).update(values)
 
         if not result:
-            raise exception.PoolNotFound(id=pool_id)
+            LOG.error(exception.PoolNotFound(id=pool_id))
 
     return result
 
@@ -405,14 +406,14 @@ def pools_update(context, pools):
         pool_refs = []
 
         for pool in pools:
-            LOG.debug('updating pool {0}:'.format(pool.get('original_id')))
+            LOG.debug('updating pool {0}:'.format(pool.get('id')))
             query = _pool_get_query(context, session)
-            result = query.filter_by(original_id=pool.get('original_id')
+            result = query.filter_by(id=pool.get('id')
                                      ).update(pool)
 
             if not result:
-                raise exception.PoolNotFoundByOriginalId(original_id=pool.get(
-                    'original_id'))
+                LOG.error(exception.PoolNotFound(id=pool.get(
+                    'id')))
 
             pool_refs.append(pool)
 
@@ -503,7 +504,7 @@ PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
     models.Pool: (_pool_get_query, _process_pool_info_filters,
-                  _pool_get_all),
+                  _pool_get),
 }
 
 

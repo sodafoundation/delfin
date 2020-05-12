@@ -153,7 +153,6 @@ class StorageController(wsgi.Controller):
             LOG.error(e)
             raise exc.HTTPNotFound(explanation=e.msg)
         else:
-            # make id as storage_id for better understanding
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,
