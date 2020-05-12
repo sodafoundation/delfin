@@ -411,7 +411,7 @@ def pools_update(context, pools):
                                      ).update(pool)
 
             if not result:
-                raise exception.PoolNotFound(original_id=pool.get(
+                raise exception.PoolNotFoundByOriginalId(original_id=pool.get(
                     'original_id'))
 
             pool_refs.append(pool)
