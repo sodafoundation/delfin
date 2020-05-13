@@ -74,3 +74,42 @@ def get_storage_capacity(conn, symmetrix_id):
         LOG.error("Failed to get model from vmax: {}".format(err))
         raise exception.StorageBackendException(
             reason='Failed to get capacity from VMAX')
+
+def list_volumes(conn, symmetrix_id):
+    # List all volumes
+    uri = '/' + SUPPORTED_VERSION + '/sloprovisioning/symmetrix/' + \
+        symmetrix_id + '/volume'
+
+    try:
+        volume_info = conn.common.get_request(uri, "")
+        volumes = volume_info['resultList']['result']
+
+        volume_list = []
+        for volume in volumes:
+            # Get volume details
+            uri_v = uri + '/' + vol['volumeId']
+            vol = conn.common.get_request(uri_v, "")
+            v = {
+                "id":"",
+                "name": vol['volumeId'],
+                "storage_id": symmetrix_id,
+                "original_pool_id": "",
+                "description":vol['type'],
+                "status": vol['status'],
+                "original_id": "",
+                "wwn": vol['wwn'],
+                "storage_type": "",
+                "total_capacity": vol['cap_mb'] * 1000 * 1000, # MB
+                "used_capacity": 0,
+                "free_capacity": 0,
+                "compressed": "",
+                "deduplicated": "",
+            }
+            volume_list.append(v)
+
+        return volume_list
+
+    except Exception as err:
+        LOG.error("Failed to get list volumes from vmax: {}".format(err))
+        raise exception.StorageBackendException(
+            reason='Failed to get list volumes from VMAX')
