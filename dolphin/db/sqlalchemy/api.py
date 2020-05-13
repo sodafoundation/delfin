@@ -368,13 +368,13 @@ def pools_delete(context, pools_id_list):
     """Delete multiple pools with the pools dictionary."""
     session = get_session()
     with session.begin():
-        for id in pools_id_list:
-            LOG.debug('deleting pool {0}:'.format(id))
+        for pool_id in pools_id_list:
+            LOG.debug('deleting pool {0}:'.format(pool_id))
             query = _pool_get_query(context, session)
-            result = query.filter_by(id=id).delete()
+            result = query.filter_by(id=pool_id).delete()
 
             if not result:
-                LOG.error(exception.PoolNotFound(id=id))
+                LOG.error(exception.PoolNotFound(id=pool_id))
 
     return
 
