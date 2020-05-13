@@ -48,20 +48,18 @@ class AccessInfoController(wsgi.Controller):
         ctxt = req.environ.get('dolphin.context')
         # Get existing access_info and storage from DB
         try:
-            access_info_present = db.access_info_get(ctxt, id)
+            access_info = db.access_info_get(ctxt, id)
+            access_info.update(body)
+            storage = self.driver_api.discover_storage(ctxt, access_info)
             storage_present = db.storage_get(ctxt, id)
-            access_info_updated_dict = access_info_present.to_dict()
-            access_info_updated_dict.update(body)
-            # Discover storage with new access info
-            storage = self.driver_api.discover_storage(ctxt, access_info_updated_dict)
             if storage['serial_number'] != storage_present.serial_number:
                 reason = (_("Existing storage serial Number is not matching \
                 with th new storage serial number: '%s'  ") % storage['serial_number'])
                 raise exception.StorageSerialNumberMismatch(reason=reason)
             db.storage_update(ctxt, id, storage)
-            access_info_updated_dict['password'] = cryptor.encode(
-                access_info_updated_dict['password'])
-            db.access_info_update(ctxt, id, access_info_updated_dict)
+            access_info['password'] = cryptor.encode(
+                access_info['password'])
+            db.access_info_update(ctxt, id, access_info)
         except (exception.InvalidCredential,
                 exception.StorageDriverNotFound,
                 exception.AccessInfoNotFound,
