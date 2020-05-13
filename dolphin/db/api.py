@@ -102,6 +102,21 @@ def storage_update(context, storage_id, values):
     return IMPL.storage_update(context, storage_id, values)
 
 
+def pool_create(context, pool):
+    """Add a pool."""
+    return IMPL.pool_create(context, pool)
+
+
+def pools_create(context, pools):
+    """Add pool from the pools dictionary."""
+    return IMPL.pools_create(context, pools)
+
+
+def pools_delete(context, pools):
+    """Delete pools."""
+    return IMPL.pools_delete(context, pools)
+
+
 def volume_create(context, values):
     """Create a volume from the values dictionary."""
     return IMPL.volume_create(context, values)

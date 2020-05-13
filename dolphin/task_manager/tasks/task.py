@@ -61,44 +61,30 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
-    def _get_delete_list(self, storage_pools, db_pools):
+    def _classify_pools(self, storage_pools, db_pools):
         """
         :param storage_pools:
         :param db_pools:
-        :return: prepare the delete_list. It will contain only those pool id
-        which is present in db but NOT in current list of storage pools
+        :return: it will return three list add_list: the items present in
+        storage but not in current_db. update_list:the items present in
+        storage and in current_db. delete_id_list:the items present not in
+        storage but present in current_db.
         """
-        delete_list = copy.copy(db_pools)
-        [delete_list.remove(d_pool) for s_pool in storage_pools
-         for d_pool in db_pools if s_pool.get('original_id') == d_pool.get(
-            'original_id')]
-        return delete_list
-
-    def _get_add_list(self, storage_pools, db_pools):
-        """
-        :param storage_pools:
-        :param db_pools:
-        :return: prepare the add_list. It will contain only those pool id
-        which is NOT present in db but in current list of storage pools
-        """
-        add_list = copy.copy(storage_pools)
-        [add_list.remove(s_pool) for s_pool in storage_pools
-         for d_pool in db_pools if s_pool.get('original_id') == d_pool.get(
-            'original_id')]
-        return add_list
-
-    def _get_update_list(self, storage_pools, db_pools):
-        """
-        :param storage_pools:
-        :param db_pools:
-        :return: prepare the update_list. It will contain only those pool id
-        which is present in db and current list of storage pools
-        """
+        original_ids_in_db = [pool['original_id'] for pool in db_pools]
+        delete_id_list = [pool['id'] for pool in db_pools]
+        add_list = []
         update_list = []
-        [update_list.append(s_pool) for s_pool in storage_pools
-         for d_pool in db_pools if s_pool.get('original_id') == d_pool.get(
-            'original_id')]
-        return update_list
+
+        for pool in storage_pools:
+            if pool['original_id'] in original_ids_in_db:
+                pool['id'] = db_pools[original_ids_in_db.index(
+                    pool['original_id'])]['id']
+                delete_id_list.remove(pool['id'])
+                update_list.append(pool)
+            else:
+                add_list.append(pool)
+
+        return add_list, update_list, delete_id_list
 
     def sync(self):
         """
@@ -111,14 +97,14 @@ class StoragePoolTask(StorageResourceTask):
                                                        self.storage_id)
             db_pools = db.pool_get_all(self.context)
 
-            db.pools_delete(self.context, self._get_delete_list(
-                storage_pools, db_pools))
+            add_list, update_list, delete_id_list = self._classify_pools(
+                storage_pools, db_pools
+            )
+            db.pools_delete(self.context, delete_id_list)
 
-            db.pools_update(self.context, self._get_update_list(
-                storage_pools, db_pools))
+            db.pools_update(self.context, update_list)
 
-            db.pools_create(self.context, self._get_add_list(
-                storage_pools, db_pools))
+            db.pools_create(self.context, add_list)
         except AttributeError as e:
             LOG.error(e)
         except Exception as e:
