@@ -17,8 +17,10 @@ from oslo_log import log
 
 from dolphin import exception
 from dolphin.drivers import api as driverapi
+from dolphin.drivers import manager as driver_manager
 from dolphin.db.sqlalchemy import api as db
 from dolphin.i18n import _
+from dolphin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
@@ -59,6 +61,13 @@ class StorageDeviceTask(StorageResourceTask):
             db.storage_delete(self.context, self.storage_id)
         except Exception as e:
             LOG.error('Failed to update storage entry in DB: {0}'.format(e))
+        else:
+            for subclass in StorageResourceInMemoryTask.__subclasses__():
+                task_rpcapi.TaskAPI().remove_storage_resource(
+                    self.context,
+                    self.storage_id,
+                    subclass.__module__ + '.' + subclass.__name__
+                )
 
 
 class StoragePoolTask(StorageResourceTask):
@@ -83,3 +92,20 @@ class StorageVolumeTask(StorageResourceTask):
             db.volume_delete(self.context, self.storage_id)
         except Exception as e:
             LOG.error('Failed to update storage entry in DB: {0}'.format(e))
+
+
+class StorageResourceInMemoryTask(object):
+
+    def __init__(self, context, storage_id):
+        self.storage_id = storage_id
+        self.context = context
+
+
+class StorageDeviceInMemoryTask(StorageResourceInMemoryTask):
+    def sync(self):
+        pass
+
+    def remove(self):
+        LOG.info('Remove storage device in memory for storage id:{0}'.format(self.storage_id))
+        drivers = driver_manager.DriverManager()
+        drivers.remove_driver(self.context, self.storage_id)

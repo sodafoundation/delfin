@@ -63,3 +63,10 @@ class TaskAPI(object):
                                  'remove_storage_resource',
                                  storage_id=storage_id,
                                  resource_task=resource_task)
+
+    def remove_storage_in_memory(self, context, storage_id, resource_task):
+        call_context = self.client.prepare(version='1.0', fanout=True)
+        return call_context.cast(context,
+                                 'remove_storage_in_memory',
+                                 storage_id=storage_id,
+                                 resource_task=resource_task)

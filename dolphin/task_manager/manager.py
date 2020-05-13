@@ -76,3 +76,8 @@ class TaskManager(manager.Manager):
         cls = importutils.import_class(resource_task)
         device_obj = cls(context, storage_id)
         device_obj.remove()
+
+    def remove_storage_in_memory(self, context, storage_id, resource_task):
+        cls = importutils.import_class(resource_task)
+        device_obj = cls(context, storage_id)
+        device_obj.remove()
