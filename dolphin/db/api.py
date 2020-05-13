@@ -108,8 +108,18 @@ def pool_create(context, pool):
 
 
 def pools_create(context, pools):
-    """Add pool from the pools dictionary."""
+    """Add multiple pools."""
     return IMPL.pools_create(context, pools)
+
+
+def pool_update(context, pool_id, pool):
+    """Update a pool."""
+    return IMPL.pool_update(context, pool_id, pool)
+
+
+def pools_update(context, pools):
+    """Update multiple pools"""
+    return IMPL.pool_update(context, pools)
 
 
 def pools_delete(context, pools):
