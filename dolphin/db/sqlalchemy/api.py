@@ -175,10 +175,8 @@ def access_info_update(context, access_info_id, values):
     """Update a storage access information with the values dictionary."""
     session = get_session()
     with session.begin():
-        result = session.query(AccessInfo) \
-            .filter(AccessInfo.storage_id == access_info_id) \
-            .first().update(values)
-    return result
+        result = _access_info_get(context, access_info_id, session).update(values)
+        return result
 
 
 def access_info_get(context, storage_id):
