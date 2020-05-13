@@ -30,7 +30,7 @@ def get_connection(access_info):
         raise exception.InvalidInput(reason='Input array_id is missing')
 
     try:
-        # Initialise PyU4V connection to Unisphere
+        # Initialise PyU4V connection to VMAX
         return PyU4V.U4VConn(
             u4v_version=SUPPORTED_VERSION,
             server_ip=access_info['host'],
@@ -41,12 +41,12 @@ def get_connection(access_info):
             password=access_info['password'])
 
     except Exception as err:
-        LOG.error("Failed to connect to Unisphere: {}".format(err))
+        LOG.error("Failed to connect to VMAX: {}".format(err))
         raise exception.InvalidInput(reason='Invalid credentials for VMAX storage')
 
 def get_version(conn):
     try:
-        # Get the Unisphere version
+        # Get the VMAX version
         return conn.common.get_uni_version()
 
     except Exception as err:
@@ -56,7 +56,7 @@ def get_version(conn):
 
 def get_model(conn, symmetrix_id):
     try:
-        # Get the Unisphere model
+        # Get the VMAX model
         uri = "/system/symmetrix/" + symmetrix_id
         model = conn.common.get_request(uri, "")
         return model['symmetrix'][0]['model']

@@ -15,8 +15,10 @@
 from oslo_log import log
 from dolphin.drivers import driver
 from dolphin.drivers import helper
-from dolphin.drivers.dellemc_storage import client
+from dolphin.drivers.dellemc_storage.vmax import client
 from dolphin import exception
+
+_TB_TO_BYTES_MULTIPLIER = 1000000000000
 
 LOG = log.getLogger(__name__)
 
@@ -35,7 +37,7 @@ class VMAXStorageDriver(driver.StorageDriver):
     def _init_vmax(self, access_info):
         self.conn = client.get_connection(access_info)
 
-        # Get the Unisphere version to check connection
+        # Get the VMAX version to check connection
         version = client.get_version(self.conn)
 
         # Get storage details
@@ -60,15 +62,10 @@ class VMAXStorageDriver(driver.StorageDriver):
 
         return  required_register_attributes
 
-    def register_storage(self, context):
-        """ Connect to storage backend and register.
-        """
-        return self.get_storage(context)
-
     def get_storage(self, context):
 
         self._check_connection()
-        # Get the Unisphere model
+        # Get the VMAX model
         model = client.get_model(self.conn, self.symmetrix_id)
 
         # Get Storage details for capacity info
@@ -76,7 +73,6 @@ class VMAXStorageDriver(driver.StorageDriver):
         total_cap = storg_info['usable_total_tb']
         used_cap = storg_info['usable_used_tb']
 
-        tera_bytes = 1000 * 1000 * 1000 * 1000          # Rounded TB to bytes 1024 * 1024 * 1024 * 1024
         storage = {
             'id': self.storage_id,
             'name': '',
@@ -86,9 +82,9 @@ class VMAXStorageDriver(driver.StorageDriver):
             'status': 'Available',
             'serial_number': self.symmetrix_id,
             'location': '',
-            'total_capacity': int(total_cap * tera_bytes),
-            'used_capacity': int(used_cap * tera_bytes),
-            'free_capacity': int((total_cap - used_cap) * tera_bytes)
+            'total_capacity': int(total_cap * _TB_TO_BYTES_MULTIPLIER),
+            'used_capacity': int(used_cap * _TB_TO_BYTES_MULTIPLIER),
+            'free_capacity': int((total_cap - used_cap) * _TB_TO_BYTES_MULTIPLIER)
         }
         LOG.info("get_storage(), successfully retrieved storage details")
         return storage

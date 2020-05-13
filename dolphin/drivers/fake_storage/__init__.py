@@ -27,7 +27,7 @@ class FakeStorageDriver(driver.StorageDriver):
     def get_storage_registry():
         pass
 
-    def register_storage(self, context):
+    def get_storage(self, context):
         # Do something here
         return {
             'name': 'fake_driver',
@@ -42,9 +42,6 @@ class FakeStorageDriver(driver.StorageDriver):
             'used_capacity': 3126,
             'free_capacity': 1045449,
         }
-
-    def get_storage(self, context):
-        pass
 
     def list_pools(self, context):
         pass
