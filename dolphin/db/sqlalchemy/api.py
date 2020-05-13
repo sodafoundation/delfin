@@ -367,7 +367,6 @@ def pools_create(context, pools):
 def pools_delete(context, pools):
     """Delete multiple pools with the pools dictionary."""
     session = get_session()
-    pool_refs = []
     with session.begin():
         for pool in pools:
             LOG.debug('deleting pool {0}:'.format(pool.get('id')))
@@ -379,9 +378,7 @@ def pools_delete(context, pools):
                 LOG.error(exception.PoolNotFound(id=pool.get(
                     'id')))
 
-            pool_refs.append(pool)
-
-    return pool_refs
+    return
 
 
 def pool_update(context, pool_id, values):
@@ -393,7 +390,7 @@ def pool_update(context, pool_id, values):
         result = query.filter_by(id=pool_id).update(values)
 
         if not result:
-            LOG.error(exception.PoolNotFound(id=pool_id))
+            raise exception.PoolNotFound(id=pool_id)
 
     return result
 
@@ -414,8 +411,8 @@ def pools_update(context, pools):
             if not result:
                 LOG.error(exception.PoolNotFound(id=pool.get(
                     'id')))
-
-            pool_refs.append(pool)
+            else:
+                pool_refs.append(result)
 
     return pool_refs
 
@@ -439,15 +436,6 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
         if query is None:
             return []
         return query.all()
-
-
-def _pool_get_all(context, session=None):
-    result = (_pool_get_query(context, session=session)
-              .all())
-    if not result:
-        raise exception.PoolNotFound()
-
-    return result
 
 
 @apply_like_filters(model=models.Pool)
