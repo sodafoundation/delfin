@@ -107,9 +107,24 @@ def volume_create(context, values):
     return IMPL.volume_create(context, values)
 
 
+def volumes_create(context, values):
+    """Create multiple volumes."""
+    return IMPL.volumes_create(context, values)
+
+
 def volume_update(context, volume_id, values):
     """Update a volume with the values dictionary."""
     return IMPL.volume_update(context, volume_id, values)
+
+
+def volumes_update(context, values):
+    """Update multiple volumes."""
+    return IMPL.volumes_update(context, values)
+
+
+def volumes_delete(context, values):
+    """Delete multiple volumes."""
+    return IMPL.volumes_delete(context, values)
 
 
 def volume_get(context, volume_id):
@@ -159,7 +174,7 @@ def pool_update(context, pool_id, pool):
 
 def pools_update(context, pools):
     """Update multiple pools"""
-    return IMPL.pool_update(context, pools)
+    return IMPL.pools_update(context, pools)
 
 
 def pools_delete(context, pools):
