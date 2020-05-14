@@ -130,6 +130,9 @@ class TrapReceiver(object):
                 exception.InvalidResults) as e:
             # Log and end the trap processing error flow
             LOG.error(e)
+        except Exception as e:
+            # Unexpected exception occurred
+            LOG.error(e)
 
     def _snmp_v2v3_config(self):
         """Configures snmp v2 and v3 user parameters."""
