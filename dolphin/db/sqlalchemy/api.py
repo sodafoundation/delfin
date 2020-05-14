@@ -308,17 +308,6 @@ def volume_get(context, volume_id):
     return NotImplemented
 
 
-def _volume_get(context, storage_id, session=None):
-    result = (_volume_get_query(context, session=session)
-              .filter_by(storage_id=storage_id)
-              .first())
-
-    if not result:
-        raise exception.VolumeNotFound(id=storage_id)
-
-    return result
-
-
 def _volume_get_query(context, session=None):
     return model_query(context, models.Volume, session=session)
 
@@ -347,17 +336,6 @@ def pool_update(context, pool_id, values):
 def pool_get(context, pool_id):
     """Get a pool or raise an exception if it does not exist."""
     return NotImplemented
-
-
-def _pool_get(context, storage_id, session=None):
-    result = (_pool_get_query(context, session=session)
-              .filter_by(storage_id=storage_id)
-              .first())
-
-    if not result:
-        raise exception.PoolNotFound(id=storage_id)
-
-    return result
 
 
 def _pool_get_query(context, session=None):
