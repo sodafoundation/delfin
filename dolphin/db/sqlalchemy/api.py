@@ -275,7 +275,6 @@ def storage_get_all(context, marker=None, limit=None, sort_keys=None,
     session = get_session()
     with session.begin():
         # Generate the query
-        print(filters)
         query = _generate_paginate_query(context, session, models.Storage,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset,
