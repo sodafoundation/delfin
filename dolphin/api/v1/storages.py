@@ -137,7 +137,8 @@ class StorageController(wsgi.Controller):
 
     def sync_all(self, req):
         return dict(name="Sync all storages")
-
+    def list_pools(self, id ):
+        return dict(name="pools")
     @wsgi.response(202)
     def sync(self, req, id):
         """

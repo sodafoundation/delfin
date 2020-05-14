@@ -40,6 +40,7 @@ class APIRouter(common.APIRouter):
                         collection={'sync_all': 'POST'},
                         member={'sync': 'POST'})
 
+
         self.resources['access_info'] = access_info.create_resource()
         mapper.connect("storages", "/storages/{id}/access-info",
                        controller=self.resources['access_info'],
@@ -68,7 +69,14 @@ class APIRouter(common.APIRouter):
         self.resources['pools'] = pools.create_resource()
         mapper.resource("pool", "pools",
                         controller=self.resources['pools'])
-
+        mapper.connect("storages", "/storages/{id}/pools",
+                       controller=self.resources['pools'],
+                       action="list_pool",
+                       conditions={"method": ["GET"]})
+        mapper.connect("storages", "/storages/{storage_id}/pools/{id}",
+                       controller=self.resources['pools'],
+                       action="show_pool",
+                       conditions={"method": ["GET"]})
         self.resources['volumes'] = volumes.create_resource()
         mapper.resource("volume", "volumes",
                         controller=self.resources['volumes'])

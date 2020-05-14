@@ -20,11 +20,32 @@ from dolphin import db, exception
 from dolphin.api import common_utils as common
 from dolphin.api.common import wsgi
 from dolphin.api.views import pools as pool_view
+from dolphin.i18n import _
 
 
 class PoolController(wsgi.Controller):
+    def _verify_storage(self, context, storage_id):
+        try:
+            db.storage_get(context, storage_id)
+        except exception.StorageNotFound:
+            msg = _("storage  '%s' not found.") % storage_id
+            raise exc.HTTPNotFound(explanation=msg)
 
-    def index(self, req):
+    def _get_pools_search_options(self):
+        """Return pools search options allowed ."""
+        return ('name', 'status', 'id', 'storage_id')
+
+    def _show(self, req, pool_id, storage_id=None):
+        ctxt = req.environ['dolphin.context']
+        if storage_id:
+            self._verify_storage(ctxt,storage_id)
+        try:
+            pool = db.pool_get(ctxt, pool_id)
+        except exception.StorageNotFound as e:
+            raise exc.HTTPNotFound(explanation=e.message)
+        return pool_view.build_pool(pool)
+
+    def _index(self, req, storage_id=None):
         ctxt = req.environ['dolphin.context']
         query_params = {}
         query_params.update(req.GET)
@@ -35,9 +56,13 @@ class PoolController(wsgi.Controller):
         offset = query_params.get('offset', None)
         marker = query_params.get('marker', None)
         # strip out options except supported search  options
-        common.remove_invalid_options(ctxt,query_params, self._get_pools_search_options())
+        common.remove_invalid_options(ctxt, query_params,
+                                      self._get_pools_search_options())
+        if storage_id:
+            query_params['storage_id'] = storage_id
         try:
-            pools = db.pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs, query_params, offset)
+            pools = db.pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
+                                    query_params, offset)
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         except Exception as e:
@@ -45,14 +70,21 @@ class PoolController(wsgi.Controller):
             raise exc.HTTPNotFound(explanation=msg)
         return pool_view.build_pools(pools)
 
-    def show(self, req, id):
-        return dict(name="Storage pool 2")
+    def list_pool(self, req, storage_id):
+        """Return a list of pools for storage."""
+        return self._index(req, storage_id)
 
-    def _get_pools_search_options(self):
-        """Return pools search options allowed ."""
-        return ('name', 'status', 'id', 'storage_id')
+    def show_pool(self, req, id, storage_id):
+        return self._show(req, id,storage_id)
+
+    def index(self, req):
+        return self._index(req)
+
+    def show(self, req, id):
+        return self._show(req, id)
+
+
+
 
 def create_resource():
     return wsgi.Resource(PoolController())
-
-
