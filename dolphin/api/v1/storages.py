@@ -137,7 +137,7 @@ class StorageController(wsgi.Controller):
         ctxt = req.environ['dolphin.context']
         try:
             device = db.storage_get(ctxt, id)
-        except Exception as e:
+        except exception.StorageNotFound as e:
             LOG.error(e)
             raise exc.HTTPBadRequest(explanation=e.msg)
         else:

@@ -314,7 +314,7 @@ def _volume_get(context, storage_id, session=None):
               .first())
 
     if not result:
-        raise exception.NotFound()
+        raise exception.VolumeNotFound(id=storage_id)
 
     return result
 
@@ -355,7 +355,7 @@ def _pool_get(context, storage_id, session=None):
               .first())
 
     if not result:
-        raise exception.NotFound()
+        raise exception.PoolNotFound(id=storage_id)
 
     return result
 

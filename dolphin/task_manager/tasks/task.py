@@ -78,8 +78,8 @@ class StoragePoolTask(StorageResourceTask):
         LOG.info('Remove pools for storage id:{0}'.format(self.storage_id))
         try:
             db.pool_delete(self.context, self.storage_id)
-        except Exception as e:
-            LOG.error('Failed to update storage entry in DB: {0}'.format(e))
+        except exception.PoolNotFound as e:
+            LOG.info('No pool need to be removed for storage {0}'.format(self.storage_id))
 
 
 class StorageVolumeTask(StorageResourceTask):
@@ -90,8 +90,8 @@ class StorageVolumeTask(StorageResourceTask):
         LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
         try:
             db.volume_delete(self.context, self.storage_id)
-        except Exception as e:
-            LOG.error('Failed to update storage entry in DB: {0}'.format(e))
+        except exception.VolumeNotFound as e:
+            LOG.info('No volume need to be removed for storage {0}'.format(self.storage_id))
 
 
 class StorageResourceInMemoryTask(object):
