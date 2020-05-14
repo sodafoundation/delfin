@@ -247,8 +247,8 @@ class AccessInfoNotFound(NotFound):
     message = _("Storage access info %(storage_id)s could not be found.")
 
 
-class PoolNotFound(NotFound):
-    message = _("Pool of storage %(id)s could not be found.")
+class StorageNotFound(NotFound):
+    message = _("Storage %(id)s could not be found.")
 
 
 class StorageDriverNotFound(NotFound):
