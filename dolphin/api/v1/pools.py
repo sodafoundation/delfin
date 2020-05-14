@@ -41,7 +41,7 @@ class PoolController(wsgi.Controller):
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         except Exception as e:
-            msg = "Error in list Poll Query "
+            msg = "Error in list pool Query "
             raise exc.HTTPNotFound(explanation=msg)
         return pool_view.build_pools(pools)
 
@@ -50,7 +50,7 @@ class PoolController(wsgi.Controller):
 
     def _get_pools_search_options(self):
         """Return pools search options allowed ."""
-        return ('name', 'status', 'id', 'status')
+        return ('name', 'status', 'id', 'storage_id')
 
 def create_resource():
     return wsgi.Resource(PoolController())
