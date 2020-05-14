@@ -22,6 +22,7 @@ from oslo_log import log
 LOG = log.getLogger(__name__)
 
 SUPPORTED_VERSION='90'
+_TB_TO_BYTES = 1000000000000
 
 def get_connection(access_info):
     array_id = access_info.get('extra_attributes', {}).\
@@ -75,61 +76,31 @@ def get_storage_capacity(conn, symmetrix_id):
         raise exception.StorageBackendException(
             reason='Failed to get capacity from VMAX')
 
-def get_pool_metrics(conn, symmetrix_id, start, end, pool):
-    # Get pool metrics
-    uri = "/performance/ThinPool/metrics"
-    payload = {
-        "startDate": start,
-        "endDate": end,
-        "symmetrixId": symmetrix_id,
-        "poolId": pool,
-        "dataFormat": "Average",
-        "metrics": [
-            "TotalPoolCapacity",
-            "UsedPoolCapacity"
-        ]
-    }
-    try:
-        pools = conn.request(uri, "POST", request_object=payload)
-        return pools[0]['resultList']['result'][0]
-    except Exception as err:
-        LOG.error("Failed to get pool metrics from vmax: {}".format(err))
-        raise exception.StorageBackendException(
-            reason='Failed to get pool metrics from VMAX')
-
 def list_pools(conn, symmetrix_id):
-    # Get list of pool names
-    payload = {
-        "symmetrixId": symmetrix_id
-    }
-    uri = "/performance/ThinPool/keys"
+
     try:
-        pools_info = conn.request(uri, "POST", request_object=payload)
+        # Get list of SRP pool names
+        pools = conn.provisioning.get_srp_list()
 
         pool_list = []
-        pools = pools_info[0].get('poolInfo')
         for pool in pools:
-            capacity = get_pool_metrics(
-                conn,
-                symmetrix_id,
-                pool["lastAvailableDate"],
-                pool["lastAvailableDate"],
-                pool["poolId"]
-            )
-            # Capacity from GB to Bytes
-            total_capacity = capacity['TotalPoolCapacity'] * 1000 * 1000 * 1000
-            used_capacity = capacity['UsedPoolCapacity'] * 1000 * 1000 * 1000
+            pool_info = conn.provisioning.get_srp(pool)
+
+            srp_cap = pool_info['srp_capacity']
+            total_cap = srp_cap['usable_total_tb'] * _TB_TO_BYTES
+            used_cap = srp_cap['usable_used_tb'] * _TB_TO_BYTES
+
             p = {
                 "id":"",
-                "name": pool["poolId"],
+                "name": pool,
                 "storage_id": symmetrix_id,
-                "original_id": "",
+                "original_id": pool_info["srpId"],
                 "description":"",
                 "status": "",
                 "storage_type": "",
-                "total_capacity": total_capacity,
-                "used_capacity": used_capacity,
-                "free_capacity": total_capacity - used_capacity,
+                "total_capacity": total_cap,
+                "used_capacity": used_cap,
+                "free_capacity": total_cap - used_cap,
             }
             pool_list.append(p)
 
