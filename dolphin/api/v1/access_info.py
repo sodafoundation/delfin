@@ -70,7 +70,7 @@ class AccessInfoController(wsgi.Controller):
             msg = _('Failed to to update  access info: {0}'.format(e))
             LOG.error(msg)
             raise exc.HTTPBadRequest(explanation=msg)
-        return storage_view.build_storage(storage)
+        return self._view_builder.show(access_info)
 
 
 def create_resource():
