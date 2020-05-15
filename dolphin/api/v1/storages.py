@@ -96,7 +96,6 @@ class StorageController(wsgi.Controller):
             raise exc.HTTPNotFound(explanation=e.message)
         return storage_view.build_storage(storage)
 
-
     @wsgi.response(201)
     @validation.schema(schema_storages.create)
     @coordination.synchronized('storage-create-{body[host]}-{body[port]}')
@@ -135,8 +134,35 @@ class StorageController(wsgi.Controller):
     def delete(self, req, id):
         return webob.Response(status_int=http_client.ACCEPTED)
 
+    @wsgi.response(202)
     def sync_all(self, req):
-        return dict(name="Sync all storages")
+        """
+        :param req:
+        :return: it's a Asynchronous call. so return 202 on success. sync_all
+        api performs the storage device info, pool, volume etc. tasks on each
+        registered storage device.
+        """
+        # validate the id
+        ctxt = req.environ['dolphin.context']
+        try:
+            storages = db.storage_get_all(ctxt)
+            if not storages:
+                msg = _("No registered storage found in database")
+                raise exception.DolphinException(msg)
+            LOG.debug("Total {0} registered storages found in database".
+                      format(len(storages)))
+        except Exception as e:
+            LOG.error(e)
+            raise exc.HTTPNotFound(explanation=msg)
+        else:
+            for storage in storages:
+                for subclass in task.StorageResourceTask.__subclasses__():
+                    self.task_rpcapi.sync_storage_resource(
+                        ctxt,
+                        storage['id'],
+                        subclass.__module__ + '.' + subclass.__name__
+                    )
+        return
 
     @wsgi.response(202)
     def sync(self, req, id):
