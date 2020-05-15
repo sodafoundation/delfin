@@ -37,7 +37,6 @@ from dolphin.db.sqlalchemy.models import Storage, AccessInfo
 from dolphin import exception
 from dolphin.i18n import _
 
-
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 _FACADE = None
@@ -127,7 +126,9 @@ def apply_like_filters(model):
                     regex_filters[key.rstrip('~')] = value
             query = process_exact_filters(query, exact_filters)
             return _process_model_like_filter(model, query, regex_filters)
+
         return _decorator
+
     return decorator_filters
 
 
@@ -201,9 +202,10 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     """Retrieves all storage access information."""
     session = get_session()
     with session.begin():
-        query = _generate_paginate_query(context, session, marker, limit,
-                                         sort_keys, sort_dirs, filters, offset,
-                                         paginate_type=models.AccessInfo)
+        query = _generate_paginate_query(context, session, models.AccessInfo,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
         if query is None:
             return []
         return query.all()
@@ -323,34 +325,145 @@ def volume_delete(context, storage_id):
     _volume_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
+def _pool_get_query(context, session=None):
+    return model_query(context, models.Pool, session=session)
+
+
+def _pool_get(context, pool_id, session=None):
+    result = (_pool_get_query(context, session=session)
+              .filter_by(id=pool_id)
+              .first())
+
+    if not result:
+        LOG.error(exception.PoolNotFound(id=pool_id))
+
+    return result
+
+
 def pool_create(context, values):
     """Create a pool from the values dictionary."""
-    return NotImplemented
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    pool_ref = models.Pool()
+    pool_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(pool_ref)
+
+    return _pool_get(context,
+                     pool_ref['id'],
+                     session=session)
+
+
+def pools_create(context, pools):
+    """Create a pool from the values dictionary."""
+    session = get_session()
+    pool_refs = []
+    with session.begin():
+
+        for pool in pools:
+            LOG.debug('adding new pool for original_id {0}:'
+                      .format(pool.get('original_id')))
+            if not pool.get('id'):
+                pool['id'] = uuidutils.generate_uuid()
+
+            pool_ref = models.Pool()
+            pool_ref.update(pool)
+            pool_refs.append(pool_ref)
+
+        session.add_all(pool_refs)
+
+    return pool_refs
+
+
+def pools_delete(context, pools_id_list):
+    """Delete multiple pools with the pools dictionary."""
+    session = get_session()
+    with session.begin():
+        for pool_id in pools_id_list:
+            LOG.debug('deleting pool {0}:'.format(pool_id))
+            query = _pool_get_query(context, session)
+            result = query.filter_by(id=pool_id).delete()
+
+            if not result:
+                LOG.error(exception.PoolNotFound(id=pool_id))
+
+    return
 
 
 def pool_update(context, pool_id, values):
     """Update a pool withe the values dictionary."""
-    return NotImplemented
+    session = get_session()
+
+    with session.begin():
+        query = _pool_get_query(context, session)
+        result = query.filter_by(id=pool_id).update(values)
+
+        if not result:
+            raise exception.PoolNotFound(id=pool_id)
+
+    return result
+
+
+def pools_update(context, pools):
+    """Update multiple pools withe the pools dictionary."""
+    session = get_session()
+
+    with session.begin():
+        pool_refs = []
+
+        for pool in pools:
+            LOG.debug('updating pool {0}:'.format(pool.get('id')))
+            query = _pool_get_query(context, session)
+            result = query.filter_by(id=pool.get('id')
+                                     ).update(pool)
+
+            if not result:
+                LOG.error(exception.PoolNotFound(id=pool.get(
+                    'id')))
+            else:
+                pool_refs.append(result)
+
+    return pool_refs
 
 
 def pool_get(context, pool_id):
     """Get a pool or raise an exception if it does not exist."""
-    return NotImplemented
-
-
-def _pool_get_query(context, session=None):
-    return model_query(context, models.Pool, session=session)
+    return _pool_get(context, pool_id)
 
 
 def pool_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage pools."""
-    return NotImplemented
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Pool,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No pool would match, return empty list
+        if query is None:
+            return []
+        return query.all()
 
 
 def pool_delete(context, storage_id):
     """Delete all the pools of a storage device"""
     _pool_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+@apply_like_filters(model=models.Pool)
+def _process_pool_info_filters(query, filters):
+    """Common filter processing for Pools queries."""
+    if filters:
+        if not is_valid_model_filters(models.Pool, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
 
 
 def disk_create(context, values):
@@ -393,7 +506,9 @@ def model_query(context, model, *args, **kwargs):
 
 
 PAGINATION_HELPERS = {
-    models.AccessInfo: (_access_info_get_query, _process_access_info_filters, _access_info_get),
+    models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
+                        _access_info_get),
+    models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
 }
 
 
@@ -468,9 +583,10 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
     return result_keys, result_dirs
 
 
-def _generate_paginate_query(context, session, marker, limit, sort_keys,
-                             sort_dirs, filters, offset=None,
-                             paginate_type=models.Volume):
+def _generate_paginate_query(context, session, paginate_type, marker,
+                             limit, sort_keys, sort_dirs, filters,
+                             offset=None,
+                             ):
     """Generate the query to include the filters and the paginate options.
 
     Returns a query with sorting / pagination criteria added or None

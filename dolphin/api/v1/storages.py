@@ -151,6 +151,7 @@ class StorageController(wsgi.Controller):
     def sync_all(self, req):
         return dict(name="Sync all storages")
 
+    @wsgi.response(202)
     def sync(self, req, id):
         """
         :param req:
@@ -165,7 +166,6 @@ class StorageController(wsgi.Controller):
             LOG.error(e)
             raise exc.HTTPNotFound(explanation=e.msg)
         else:
-            # make id as storage_id for better understanding
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,
