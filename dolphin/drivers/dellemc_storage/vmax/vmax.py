@@ -44,12 +44,12 @@ class VMAXStorageDriver(driver.StorageDriver):
         self.symmetrix_id = access_info.get('extra_attributes', {}).\
                                 get('array_id', None)
 
-    def _check_connection(self):
+    def _check_connection(self, context):
         if not self.storage_id:
             raise exception.InvalidDriverMode(driver_mode='Driver is not initialized')
 
         if not self.conn:
-            access_info = helper.get_access_info(self.storage_id)
+            access_info = helper.get_access_info(context, self.storage_id)
             self._init_vmax(access_info)
 
     @staticmethod
@@ -64,7 +64,7 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def get_storage(self, context):
 
-        self._check_connection()
+        self._check_connection(context)
         # Get the VMAX model
         model = client.get_model(self.conn, self.symmetrix_id)
 
