@@ -44,7 +44,20 @@ class FakeStorageDriver(driver.StorageDriver):
         }
 
     def get_storage(self, context):
-        pass
+        # Do something here
+        return {
+            'name': 'fake_driver',
+            'description': 'it is a fake driver.',
+            'vendor': 'fake_storage',
+            'model': 'fake_driver',
+            'status': 'normal',
+            'serial_number': '2102453JPN12KA000011',
+            'firmware_version': '1.0.0',
+            'location': 'HK',
+            'total_capacity': 1024 * 1024,
+            'used_capacity': 3126,
+            'free_capacity': 1045449,
+        }
 
     def list_pools(self, context):
         pass

@@ -174,7 +174,10 @@ def access_info_create(context, values):
 
 def access_info_update(context, access_info_id, values):
     """Update a storage access information with the values dictionary."""
-    return NotImplemented
+    session = get_session()
+    with session.begin():
+        result = _access_info_get(context, access_info_id, session).update(values)
+        return result
 
 
 def access_info_get(context, storage_id):
@@ -243,11 +246,8 @@ def storage_update(context, storage_id, values):
     """Update a storage device with the values dictionary."""
     session = get_session()
     with session.begin():
-        query = _storage_get_query(context, session)
-        result = query.filter_by(id=storage_id).update(values)
-        if not result:
-            raise exception.StorageNotFound(id=storage_id)
-    return result
+        result = _access_info_get(context, storage_id, session).update(values)
+        return result
 
 
 def storage_get(context, storage_id):

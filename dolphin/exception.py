@@ -259,6 +259,11 @@ class StorageDriverNotFound(NotFound):
     message = _("Storage driver could not be found.")
 
 
+class StorageSerialNumberMismatch(DolphinException):
+    message = _("Storage  serial number  mismatch: "
+                "%(reason)s")
+
+
 class ServiceIsDown(Invalid):
     message = _("Service %(service)s is down.")
 

@@ -45,6 +45,10 @@ class APIRouter(common.APIRouter):
                        action="show",
                        conditions={"method": ["GET"]})
 
+        mapper.connect("storages", "/storages/{id}/access-info",
+                       controller=self.resources['access_info'],
+                       action="update",
+                       conditions={"method": ["PUT"]})
         self.resources['pools'] = pools.create_resource()
         mapper.resource("pool", "pools",
                         controller=self.resources['pools'])
