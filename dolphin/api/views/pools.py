@@ -15,7 +15,7 @@ import copy
 
 
 def build_pools(pools):
-    # Build list of storages
+    # Build list of pools
     views = [build_pool(pool)
              for pool in pools]
     return dict(pools=views)

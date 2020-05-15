@@ -11,21 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
+
 
 import six
 from webob import exc
 
 from dolphin import db, exception
-from dolphin.api import common_utils as common
+from dolphin.api import api_utils
 from dolphin.api.common import wsgi
 from dolphin.api.views import pools as pool_view
 from dolphin.i18n import _
 
 
 class PoolController(wsgi.Controller):
-    def _verify_storage(self, context, storage_id):
+    def __init__(self):
+        super(PoolController, self).__init__()
+        self.search_options = ['name', 'status', 'id', 'storage_id']
+
+    def _is_storage_valid(self, context, pool, storage_id):
+        """verify the storage and pool association  ."""
         try:
+            if pool.storage_id != storage_id:
+                return False
             db.storage_get(context, storage_id)
         except exception.StorageNotFound:
             msg = _("storage  '%s' not found.") % storage_id
@@ -33,16 +40,20 @@ class PoolController(wsgi.Controller):
 
     def _get_pools_search_options(self):
         """Return pools search options allowed ."""
-        return ('name', 'status', 'id', 'storage_id')
+        return self.search_options
 
     def _show(self, req, pool_id, storage_id=None):
         ctxt = req.environ['dolphin.context']
-        if storage_id:
-            self._verify_storage(ctxt,storage_id)
         try:
             pool = db.pool_get(ctxt, pool_id)
-        except exception.StorageNotFound as e:
-            raise exc.HTTPNotFound(explanation=e.message)
+            if storage_id and not self._is_storage_valid(ctxt, pool, storage_id):
+                err_msg = _('Given pool %s does not have a valid '
+                            'storage.') % pool_id
+                raise exception.InvalidStorage(reason=err_msg)
+        except exception.PoolNotFound as e:
+            raise exc.HTTPNotFound(explanation=e.msg)
+        except exception.InvalidStorage as e:
+            raise exc.HTTPConflict(explanation=e.msg)
         return pool_view.build_pool(pool)
 
     def _index(self, req, storage_id=None):
@@ -50,14 +61,11 @@ class PoolController(wsgi.Controller):
         query_params = {}
         query_params.update(req.GET)
         # update options  other than filters
-        sort_keys = (lambda x: [x] if x is not None else x)(query_params.get('sort_key'))
-        sort_dirs = (lambda x: [x] if x is not None else x)(query_params.get('sort_dir'))
-        limit = query_params.get('limit', None)
-        offset = query_params.get('offset', None)
-        marker = query_params.get('marker', None)
+        sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
+        limit, offset, marker = api_utils.get_pagination_params(query_params)
         # strip out options except supported search  options
-        common.remove_invalid_options(ctxt, query_params,
-                                      self._get_pools_search_options())
+        api_utils.remove_invalid_options(ctxt, query_params,
+                                         self._get_pools_search_options())
         if storage_id:
             query_params['storage_id'] = storage_id
         try:
@@ -66,24 +74,23 @@ class PoolController(wsgi.Controller):
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         except Exception as e:
-            msg = "Error in list pool Query "
+            msg = "Error in list pool query "
             raise exc.HTTPNotFound(explanation=msg)
         return pool_view.build_pools(pools)
 
-    def list_pool(self, req, storage_id):
+    def list_pools(self, req, storage_id):
         """Return a list of pools for storage."""
         return self._index(req, storage_id)
 
     def show_pool(self, req, id, storage_id):
-        return self._show(req, id,storage_id)
+        """Return a detail of a pool associated with storage."""
+        return self._show(req, id, storage_id)
 
     def index(self, req):
         return self._index(req)
 
     def show(self, req, id):
         return self._show(req, id)
-
-
 
 
 def create_resource():
