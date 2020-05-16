@@ -18,23 +18,22 @@
 
 """Implementation of SQLAlchemy backend."""
 
-import six
 import sys
 
+import six
 import sqlalchemy
-from sqlalchemy import create_engine
-
 from oslo_config import cfg
 from oslo_db import options as db_options
-from oslo_db.sqlalchemy import utils as db_utils
 from oslo_db.sqlalchemy import session
+from oslo_db.sqlalchemy import utils as db_utils
 from oslo_log import log
 from oslo_utils import uuidutils
+from sqlalchemy import create_engine
 
+from dolphin import exception
 from dolphin.common import sqlalchemyutils
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, AccessInfo
-from dolphin import exception
 from dolphin.i18n import _
 
 CONF = cfg.CONF
@@ -484,6 +483,60 @@ def model_query(context, model, *args, **kwargs):
     session = kwargs.pop('session') or get_session()
     return db_utils.model_query(
         model=model, session=session, args=args, **kwargs)
+
+
+def alert_source_get(context, storage_id):
+    """Get an alert source or raise an exception if it does not exist."""
+    return _alert_source_get(context, storage_id)
+
+
+def _alert_source_get(context, storage_id, session=None):
+    result = (_alert_source_get_query(context, session=session)
+              .filter_by(storage_id=storage_id)
+              .first())
+
+    if not result:
+        raise exception.AlertSourceNotFound(storage_id=storage_id)
+
+    return result
+
+
+def _alert_source_get_query(context, session=None):
+    return model_query(context, models.AlertSource, session=session)
+
+
+def alert_source_create(context, values):
+    """Add an alert source configuration."""
+    alert_source_ref = models.AlertSource()
+    alert_source_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(alert_source_ref)
+
+    return _alert_source_get(context,
+                             alert_source_ref['storage_id'],
+                             session=session)
+
+
+def alert_source_update(context, storage_id, values):
+    """Update an alert source configuration."""
+    session = get_session()
+    with session.begin():
+        _alert_source_get(context, storage_id, session).update(values)
+        return _alert_source_get(context, storage_id, session)
+
+
+def alert_source_delete(context, storage_id):
+    session = get_session()
+    with session.begin():
+        query = _alert_source_get_query(context, session)
+        result = query.filter_by(storage_id=storage_id).delete()
+        if not result:
+            LOG.error("Delete non-exist alert source[storage_id=%s].", storage_id)
+            raise exception.AlertSourceNotFound(storage_id=storage_id)
+        else:
+            LOG.info("Delete alert source[storage_id=%s] successfully.", storage_id)
 
 
 PAGINATION_HELPERS = {

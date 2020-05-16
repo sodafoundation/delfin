@@ -19,6 +19,7 @@ from dolphin.api.v1 import storages
 from dolphin.api.v1 import access_info
 from dolphin.api.v1 import pools
 from dolphin.api.v1 import volumes
+from dolphin.api.v1 import alert
 
 
 class APIRouter(common.APIRouter):
@@ -49,6 +50,21 @@ class APIRouter(common.APIRouter):
                        controller=self.resources['access_info'],
                        action="update",
                        conditions={"method": ["PUT"]})
+
+        self.resources['alert_sources'] = alert.create_resource()
+        mapper.connect("storages", "/storages/{id}/alert_sources",
+                       controller=self.resources['alert_sources'],
+                       action="update",
+                       conditions={"method": ["PUT"]})
+        mapper.connect("storages", "/storages/{id}/alert_sources",
+                       controller=self.resources['alert_sources'],
+                       action="show",
+                       conditions={"method": ["GET"]})
+        mapper.connect("storages", "/storages/{id}/alert_sources",
+                       controller=self.resources['alert_sources'],
+                       action="delete",
+                       conditions={"method": ["DELETE"]})
+
         self.resources['pools'] = pools.create_resource()
         mapper.resource("pool", "pools",
                         controller=self.resources['pools'])
