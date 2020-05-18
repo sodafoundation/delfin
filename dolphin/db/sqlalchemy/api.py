@@ -533,7 +533,7 @@ def alert_source_delete(context, storage_id):
         query = _alert_source_get_query(context, session)
         result = query.filter_by(storage_id=storage_id).delete()
         if not result:
-            LOG.error("Delete non-exist alert source[storage_id=%s].", storage_id)
+            LOG.error("Cannot delete non-exist alert source[storage_id=%s].", storage_id)
             raise exception.AlertSourceNotFound(storage_id=storage_id)
         else:
             LOG.info("Delete alert source[storage_id=%s] successfully.", storage_id)

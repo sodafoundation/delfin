@@ -58,12 +58,11 @@ class AlertController(wsgi.Controller):
         return alert_source
 
     @wsgi.response(200)
-    @validation.schema(schema_alert.update)
-    def update(self, req, id, body):
+    @validation.schema(schema_alert.put)
+    def put(self, req, id, body):
         """Create a new alert source or update an exist one."""
         ctx = req.environ['dolphin.context']
         alert_source = body
-        # pdb.set_trace()
 
         try:
             alert_source["storage_id"] = id
@@ -72,14 +71,13 @@ class AlertController(wsgi.Controller):
 
             if self.exist(ctx, id):
                 alert_source = db.alert_source_update(ctx, id, alert_source)
-                print(alert_source)
             else:
                 alert_source = db.alert_source_create(ctx, alert_source)
         except exception.StorageNotFound as e:
             msg = (_("Alert source cannot be created or updated for a non-exist storage %s.") % id)
             raise exc.HTTPBadRequest(explanation=msg)
         except exception.InvalidInput as e:
-            msg = _('Failed to update alert_source: {0}'.format(e))
+            msg = _('Failed to put alert_source: {0}'.format(e))
             raise exc.HTTPBadRequest(explanation=msg)
 
         return alert_view.build_alert_source(self.decrypt_password(alert_source))

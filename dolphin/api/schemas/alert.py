@@ -15,7 +15,7 @@
 from dolphin.api.validation import parameter_types
 
 
-update = {
+put = {
     'type': 'object',
     'properties': {
         'host': parameter_types.hostname_or_ip_address,
