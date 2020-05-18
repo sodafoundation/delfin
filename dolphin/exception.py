@@ -258,6 +258,8 @@ class PoolNotFound(NotFound):
 class StorageDriverNotFound(NotFound):
     message = _("Storage driver could not be found.")
 
+class StorageBackendException(DolphinException):
+    message = _("Exception from Storage Backend: %(reason)s.")
 
 class StorageSerialNumberMismatch(DolphinException):
     message = _("Storage  serial number  mismatch: "

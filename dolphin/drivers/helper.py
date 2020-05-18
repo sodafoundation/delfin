@@ -14,6 +14,7 @@
 
 from oslo_log import log
 
+from dolphin import cryptor
 from dolphin import db
 
 LOG = log.getLogger(__name__)
@@ -21,4 +22,6 @@ LOG = log.getLogger(__name__)
 
 def get_access_info(context, storage_id):
     access_info = db.access_info_get(context, storage_id)
-    return access_info.to_dict()
+    access_info_dict = access_info.to_dict()
+    access_info_dict['password'] = cryptor.decode(access_info_dict['password'])
+    return access_info_dict
