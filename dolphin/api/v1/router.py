@@ -52,15 +52,15 @@ class APIRouter(common.APIRouter):
                        conditions={"method": ["PUT"]})
 
         self.resources['alert_sources'] = alert.create_resource()
-        mapper.connect("storages", "/storages/{id}/alert_sources",
+        mapper.connect("storages", "/storages/{id}/alert-source",
                        controller=self.resources['alert_sources'],
                        action="put",
                        conditions={"method": ["PUT"]})
-        mapper.connect("storages", "/storages/{id}/alert_sources",
+        mapper.connect("storages", "/storages/{id}/alert-source",
                        controller=self.resources['alert_sources'],
                        action="show",
                        conditions={"method": ["GET"]})
-        mapper.connect("storages", "/storages/{id}/alert_sources",
+        mapper.connect("storages", "/storages/{id}/alert-source",
                        controller=self.resources['alert_sources'],
                        action="delete",
                        conditions={"method": ["DELETE"]})

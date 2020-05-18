@@ -23,9 +23,9 @@ put = {
         'community_string': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'username': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'password': {'type': 'string', 'minLength': 1, 'maxLength': 255},
-        'auth_enable': parameter_types.boolean,
+        'auth_enabled': parameter_types.boolean,
         'auth_protocol': parameter_types.snmp_auth_protocol,
-        'encryption_enable': parameter_types.boolean,
+        'encryption_enabled': parameter_types.boolean,
         'encryption_protocol': parameter_types.snmp_encryption_protocol,
         'encryption_password': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'engine_id': {'type': 'string', 'minLength': 1, 'maxLength': 255}
