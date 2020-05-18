@@ -14,7 +14,6 @@
 
 import json
 import PyU4V
-from PyU4V import U4VConn
 
 from dolphin import exception
 from oslo_log import log
@@ -22,6 +21,8 @@ from oslo_log import log
 LOG = log.getLogger(__name__)
 
 SUPPORTED_VERSION='90'
+
+_TB_TO_BYTES = 1000000000000
 
 def get_connection(access_info):
     array_id = access_info.get('extra_attributes', {}).\
@@ -74,3 +75,38 @@ def get_storage_capacity(conn, symmetrix_id):
         LOG.error("Failed to get model from vmax: {}".format(err))
         raise exception.StorageBackendException(
             reason='Failed to get capacity from VMAX')
+
+def list_pools(conn, symmetrix_id):
+
+    try:
+        # Get list of SRP pool names
+        pools = conn.provisioning.get_srp_list()
+
+        pool_list = []
+        for pool in pools:
+            pool_info = conn.provisioning.get_srp(pool)
+
+            srp_cap = pool_info['srp_capacity']
+            total_cap = srp_cap['usable_total_tb'] * _TB_TO_BYTES
+            used_cap = srp_cap['usable_used_tb'] * _TB_TO_BYTES
+
+            p = {
+                "id":"",
+                "name": pool,
+                "storage_id": symmetrix_id,
+                "original_id": pool_info["srpId"],
+                "description":"",
+                "status": "",
+                "storage_type": "",
+                "total_capacity": total_cap,
+                "used_capacity": used_cap,
+                "free_capacity": total_cap - used_cap,
+            }
+            pool_list.append(p)
+
+        return pool_list
+
+    except Exception as err:
+        LOG.error("Failed to get pool metrics from vmax: {}".format(err))
+        raise exception.StorageBackendException(
+            reason='Failed to get pool metrics from VMAX')

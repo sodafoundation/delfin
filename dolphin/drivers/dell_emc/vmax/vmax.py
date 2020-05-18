@@ -90,7 +90,8 @@ class VMAXStorageDriver(driver.StorageDriver):
         return storage
 
     def list_pools(self, context):
-        pass
+        self._check_connection(context)
+        return client.list_pools(self.conn, self.symmetrix_id)
 
     def list_volumes(self, context):
         pass
