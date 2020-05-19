@@ -28,8 +28,9 @@ from dolphin.i18n import _
 LOG = log.getLogger(__name__)
 
 
-SNMPv3_keys = ('username', 'password', 'auth_enable', 'auth_protocol', 'encryption_enable',
-               'encryption_protocol', 'encryption_password', 'engine_id')
+SNMPv3_keys = ('username', 'auth_key', 'auth_enabled', 'auth_protocol',
+               'encryption_enabled', 'privacy_protocol', 'privacy_key',
+               'engine_id')
 
 
 class AlertController(wsgi.Controller):
@@ -54,13 +55,13 @@ class AlertController(wsgi.Controller):
             else:
                 alert_source = db.alert_source_create(ctx, alert_source)
         except exception.StorageNotFound as e:
-            msg = (_("Alert source cannot be created or updated for a non-exist storage %s.") % id)
+            msg = (_("Alert source cannot be created or updated for a"
+                     " non-existing storage %s.") % id)
             raise exc.HTTPBadRequest(explanation=msg)
         except exception.InvalidInput as e:
-            msg = _('Failed to put alert_source: {0}'.format(e))
-            raise exc.HTTPBadRequest(explanation=msg)
+            raise exc.HTTPBadRequest(explanation=e.msg)
 
-        return alert_view.build_alert_source(self._decrypt_password(alert_source))
+        return alert_view.build_alert_source(alert_source.to_dict())
 
     @wsgi.response(200)
     def show(self, req, id):
@@ -69,11 +70,8 @@ class AlertController(wsgi.Controller):
             alert_source = db.alert_source_get(ctx, id)
         except exception.AlertSourceNotFound as e:
             raise exc.HTTPNotFound(explanation=e.msg)
-        except Exception as e:
-            LOG.error(e)
-            raise exc.HTTPBadRequest(explanation=e.msg)
 
-        return alert_view.build_alert_source(self._decrypt_password(alert_source))
+        return alert_view.build_alert_source(alert_source.to_dict())
 
     @wsgi.response(200)
     def delete(self, req, id):
@@ -91,37 +89,44 @@ class AlertController(wsgi.Controller):
             auth_enabled_str = alert_source.get('auth_enabled', None)
             engine_id = alert_source.get('engine_id', None)
             if not user_name or not auth_enabled_str or not engine_id:
-                msg = "If snmp version is SNMPv3, then username, auth_enabled and engine_id are required."
+                msg = "If snmp version is SNMPv3, then username, auth_enabled" \
+                      " and engine_id are required."
                 raise exception.InvalidInput(reason=msg)
             auth_enabled = utils.bool_from_string(auth_enabled_str, True)
             alert_source['auth_enabled'] = auth_enabled
 
             if auth_enabled:
                 auth_protocol = alert_source.get('auth_protocol', None)
-                password = alert_source.get('password', None)
-                if not auth_protocol or not password:
-                    msg = "If snmp version is SNMPv3 and auth is enabled, then auth_protocol and password is required."
+                auth_key = alert_source.get('auth_key', None)
+                if not auth_protocol or not auth_key:
+                    msg = "If snmp version is SNMPv3 and auth is enabled, then " \
+                          "auth_protocol and auth_key is required."
                     raise exception.InvalidInput(reason=msg)
-                alert_source['password'] = cryptor.encode(alert_source['password'])
+                alert_source['auth_key'] = cryptor.encode(alert_source['auth_key'])
 
-                # In case encryption_enabled is not set, False will be used as default.
-                encryption_enabled = utils.bool_from_string(alert_source.get('encryption_enabled', ""), False)
+                # If encryption_enabled is not set, False will be used as default.
+                encryption_enabled = utils.bool_from_string(
+                    alert_source.get('encryption_enabled', ""),
+                    False)
                 alert_source['encryption_enabled'] = encryption_enabled
                 if encryption_enabled:
-                    encryption_protocol = alert_source.get('encryption_protocol', None)
-                    encryption_password = alert_source.get('encryption_password', None)
-                    if not encryption_protocol or not encryption_password:
-                        msg = "If snmp version is SNMPv3 and encryption is enabled, encryption_protocol and " \
-                              "encryption_password are required."
+                    privacy_protocol = alert_source.get('privacy_protocol', None)
+                    privacy_key = alert_source.get('privacy_key', None)
+                    if not privacy_protocol or not privacy_key:
+                        msg = "If snmp version is SNMPv3 and encryption is " \
+                              "enabled, privacy_protocol and privacy_key are" \
+                              " required."
                         raise exception.InvalidInput(reason=msg)
-                    alert_source['encryption_password'] = cryptor.encode(alert_source['encryption_password'])
+                    alert_source['privacy_key'] = cryptor.encode(
+                        alert_source['privacy_key'])
 
             # Clear keys for other versions.
             alert_source['community_string'] = None
         else:
             community_string = alert_source.get('community_string', None)
             if not community_string:
-                msg = "Community string is required if snmp version is SNMPv1 or SNMPv2c."
+                msg = "If snmp version is SNMPv1 or SNMPv2c, " \
+                      "community_string is required."
                 raise exception.InvalidInput(reason=msg)
 
             # Clear keys for SNMPv3
@@ -138,13 +143,13 @@ class AlertController(wsgi.Controller):
 
         return True
 
-    def _decrypt_password(self, alert_source):
-        password = alert_source.get('password', None)
-        encryption_password = alert_source.get('encryption_password', None)
-        if password:
-            alert_source['password'] = cryptor.decode(password)
-        if encryption_password:
-            alert_source['encryption_password'] = cryptor.decode(encryption_password)
+    def _decrypt_auth_key(self, alert_source):
+        auth_key = alert_source.get('auth_key', None)
+        privacy_key = alert_source.get('privacy_key', None)
+        if auth_key:
+            alert_source['auth_key'] = cryptor.decode(auth_key)
+        if privacy_key:
+            alert_source['privacy_key'] = cryptor.decode(privacy_key)
 
         return alert_source
 

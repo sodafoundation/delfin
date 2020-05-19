@@ -187,7 +187,7 @@ snmp_auth_protocol = {
     'enum': ['SHA', 'sha', 'MD5', 'md5'],
 }
 
-snmp_encryption_protocol = {
+snmp_privacy_protocol = {
     'type': 'string',
     'enum': ['AES', 'aes', 'DES', 'des', '3DES', '3des'],
 }

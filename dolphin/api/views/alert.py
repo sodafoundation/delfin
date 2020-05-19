@@ -16,4 +16,6 @@ import copy
 
 def build_alert_source(value):
     view = copy.deepcopy(value)
+    view.pop("auth_key")
+    view.pop("privacy_key")
     return dict(view)
