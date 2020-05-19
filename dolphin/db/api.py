@@ -147,9 +147,9 @@ def volume_get_all(context, marker=None, limit=None, sort_keys=None,
                                sort_dirs, filters, offset)
 
 
-def volume_delete(context, storage_id):
+def volume_delete_by_storage(context, storage_id):
     """Delete all the volumes of a device."""
-    return IMPL.volume_delete(context, storage_id)
+    return IMPL.volume_delete_by_storage(context, storage_id)
 
 
 def pool_create(context, pool):
@@ -207,9 +207,9 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
                              filters, offset)
 
 
-def pool_delete(context, storage_id):
+def pool_delete_by_storage(context, storage_id):
     """Delete all the pool of a device."""
-    return IMPL.pool_delete(context, storage_id)
+    return IMPL.pool_delete_by_storage(context, storage_id)
 
 
 def disk_create(context, values):
@@ -292,6 +292,11 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     """
     return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
                                     filters, offset)
+
+
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    return IMPL.access_info_delete(context, storage_id)
 
 
 def is_orm_value(obj):

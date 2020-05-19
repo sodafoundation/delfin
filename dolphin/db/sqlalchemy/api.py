@@ -18,23 +18,22 @@
 
 """Implementation of SQLAlchemy backend."""
 
-import six
 import sys
 
+import six
 import sqlalchemy
-from sqlalchemy import create_engine
-
 from oslo_config import cfg
 from oslo_db import options as db_options
-from oslo_db.sqlalchemy import utils as db_utils
 from oslo_db.sqlalchemy import session
+from oslo_db.sqlalchemy import utils as db_utils
 from oslo_log import log
 from oslo_utils import uuidutils
+from sqlalchemy import create_engine
 
+from dolphin import exception
 from dolphin.common import sqlalchemyutils
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, AccessInfo
-from dolphin import exception
 from dolphin.i18n import _
 
 CONF = cfg.CONF
@@ -211,6 +210,11 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    _access_info_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
 @apply_like_filters(model=models.AccessInfo)
 def _process_access_info_filters(query, filters):
     """Common filter processing for AccessInfo queries."""
@@ -320,7 +324,7 @@ def volume_get_all(context, marker=None, limit=None, sort_keys=None,
     return NotImplemented
 
 
-def volume_delete(context, storage_id):
+def volume_delete_by_storage(context, storage_id):
     """Delete all the volumes of a device"""
     _volume_get_query(context).filter_by(storage_id=storage_id).delete()
 
@@ -450,7 +454,7 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
-def pool_delete(context, storage_id):
+def pool_delete_by_storage(context, storage_id):
     """Delete all the pools of a storage device"""
     _pool_get_query(context).filter_by(storage_id=storage_id).delete()
 

@@ -1,6 +1,7 @@
 import sys
-import pytest
 import unittest
+
+import pytest
 
 from dolphin import context
 from dolphin import exception

@@ -13,26 +13,23 @@
 # limitations under the License.
 
 import copy
+
 import six
-from six.moves import http_client
-import webob
+from oslo_log import log
 from webob import exc
 
-from oslo_log import log
-
-from dolphin.api.common import wsgi
-from dolphin.api.schemas import storages as schema_storages
-from dolphin.api import validation
-from dolphin.api.views import storages as storage_view
 from dolphin import context
 from dolphin import coordination
 from dolphin import cryptor
 from dolphin import db
-from dolphin.drivers import api as driverapi
 from dolphin import exception
+from dolphin.api import validation
+from dolphin.api.common import wsgi
+from dolphin.api.schemas import storages as schema_storages
+from dolphin.api.views import storages as storage_view
+from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
-from dolphin import utils
 from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
