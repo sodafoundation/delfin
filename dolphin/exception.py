@@ -304,3 +304,7 @@ class SSHException(DolphinException):
 
 class SSHInjectionThreat(DolphinException):
     message = _("SSH command injection detected: %(command)s")
+
+
+class AlertSourceNotFound(NotFound):
+    message = _("Alert source for storage %(storage_id)s could not be found.")
