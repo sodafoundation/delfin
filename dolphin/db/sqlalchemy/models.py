@@ -121,3 +121,19 @@ class Disk(BASE, DolphinBase):
     model = Column(String(255))
     media_type = Column(String(255))
     capacity = Column(Integer)
+
+
+class AlertSource(BASE, DolphinBase):
+    """Represents an alert source configuration."""
+    __tablename__ = 'alert_source'
+    storage_id = Column(String(36), primary_key=True)
+    host = Column(String(255))
+    version = Column(String(255))
+    community_string = Column(String(255))
+    username = Column(String(255))
+    security_level = Column(String(255))
+    auth_key = Column(String(255))
+    auth_protocol = Column(String(255))
+    privacy_protocol = Column(String(255))
+    privacy_key = Column(String(255))
+    engine_id = Column(String(255))

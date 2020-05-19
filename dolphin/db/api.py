@@ -297,3 +297,23 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
 def is_orm_value(obj):
     """Check if object is an ORM field."""
     return IMPL.is_orm_value(obj)
+
+
+def alert_source_create(context, values):
+    """Create an alert source."""
+    return IMPL.alert_source_create(context, values)
+
+
+def alert_source_update(context, storage_id, values):
+    """Update an alert source."""
+    return IMPL.alert_source_update(context, storage_id, values)
+
+
+def alert_source_get(context, storage_id):
+    """Get an alert source."""
+    return IMPL.alert_source_get(context, storage_id)
+
+
+def alert_source_delete(context, storage_id):
+    """Delete an alert source."""
+    return IMPL.alert_source_delete(context, storage_id)

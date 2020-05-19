@@ -18,23 +18,22 @@
 
 """Implementation of SQLAlchemy backend."""
 
-import six
 import sys
 
+import six
 import sqlalchemy
-from sqlalchemy import create_engine
-
 from oslo_config import cfg
 from oslo_db import options as db_options
-from oslo_db.sqlalchemy import utils as db_utils
 from oslo_db.sqlalchemy import session
+from oslo_db.sqlalchemy import utils as db_utils
 from oslo_log import log
 from oslo_utils import uuidutils
+from sqlalchemy import create_engine
 
+from dolphin import exception
 from dolphin.common import sqlalchemyutils
 from dolphin.db.sqlalchemy import models
 from dolphin.db.sqlalchemy.models import Storage, AccessInfo
-from dolphin import exception
 from dolphin.i18n import _
 
 CONF = cfg.CONF
@@ -174,7 +173,10 @@ def access_info_create(context, values):
 
 def access_info_update(context, access_info_id, values):
     """Update a storage access information with the values dictionary."""
-    return NotImplemented
+    session = get_session()
+    with session.begin():
+        result = _access_info_get(context, access_info_id, session).update(values)
+        return result
 
 
 def access_info_get(context, storage_id):
@@ -245,8 +247,6 @@ def storage_update(context, storage_id, values):
     with session.begin():
         query = _storage_get_query(context, session)
         result = query.filter_by(id=storage_id).update(values)
-        if not result:
-            raise exception.StorageNotFound(id=storage_id)
     return result
 
 
@@ -272,32 +272,27 @@ def _storage_get_query(context, session=None):
 
 def storage_get_all(context, marker=None, limit=None, sort_keys=None,
                     sort_dirs=None, filters=None, offset=None):
-    this_session = get_session()
-    this_session.begin()
-    if not sort_keys:
-        sort_keys = ['created_at']
-    if not sort_dirs:
-        sort_dirs = ['desc']
-    this_session = get_session()
-    this_session.begin()
-    query = this_session.query(models.Storage)
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Storage,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No storages   match, return empty list
+        if query is None:
+            return []
+        return query.all()
 
+
+@apply_like_filters(model=models.Storage)
+def _process_storage_info_filters(query, filters):
+    """Common filter processing for Storages queries."""
     if filters:
-
-        for attr, value in filters.items():
-            query = query.filter(getattr(models.Storage, attr).like("%%%s%%" % value))
-    try:
-        for (sort_key, sort_dir) in zip(sort_keys, sort_dirs):
-            query = apply_sorting(models.Storage, query, sort_key, sort_dir)
-    except AttributeError:
-        msg = "Wrong sorting keys provided - '%s'." % sort_keys
-        raise exception.InvalidInput(reason=msg)
-
-    if limit:
-        query = query.limit(limit)
-
-    # Returns list of storages  that satisfy filters.
-    return query.all()
+        if not is_valid_model_filters(models.Storage, filters):
+            return
+        query = query.filter_by(**filters)
+    return query
 
 
 def _volume_get_query(context, session=None):
@@ -613,10 +608,66 @@ def model_query(context, model, *args, **kwargs):
         model=model, session=session, args=args, **kwargs)
 
 
+def alert_source_get(context, storage_id):
+    """Get an alert source or raise an exception if it does not exist."""
+    return _alert_source_get(context, storage_id)
+
+
+def _alert_source_get(context, storage_id, session=None):
+    result = (_alert_source_get_query(context, session=session)
+              .filter_by(storage_id=storage_id)
+              .first())
+
+    if not result:
+        raise exception.AlertSourceNotFound(storage_id=storage_id)
+
+    return result
+
+
+def _alert_source_get_query(context, session=None):
+    return model_query(context, models.AlertSource, session=session)
+
+
+def alert_source_create(context, values):
+    """Add an alert source configuration."""
+    alert_source_ref = models.AlertSource()
+    alert_source_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(alert_source_ref)
+
+    return _alert_source_get(context,
+                             alert_source_ref['storage_id'],
+                             session=session)
+
+
+def alert_source_update(context, storage_id, values):
+    """Update an alert source configuration."""
+    session = get_session()
+    with session.begin():
+        _alert_source_get(context, storage_id, session).update(values)
+        return _alert_source_get(context, storage_id, session)
+
+
+def alert_source_delete(context, storage_id):
+    session = get_session()
+    with session.begin():
+        query = _alert_source_get_query(context, session)
+        result = query.filter_by(storage_id=storage_id).delete()
+        if not result:
+            LOG.error("Cannot delete non-exist alert source[storage_id=%s].", storage_id)
+            raise exception.AlertSourceNotFound(storage_id=storage_id)
+        else:
+            LOG.info("Delete alert source[storage_id=%s] successfully.", storage_id)
+
+
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
     models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
+    models.Storage: (_storage_get_query, _process_storage_info_filters,
+                     _storage_get),
     models.Volume: (_volume_get_query, _process_volume_info_filters,
                     _volume_get),
 }
