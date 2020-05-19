@@ -273,32 +273,27 @@ def _storage_get_query(context, session=None):
 
 def storage_get_all(context, marker=None, limit=None, sort_keys=None,
                     sort_dirs=None, filters=None, offset=None):
-    this_session = get_session()
-    this_session.begin()
-    if not sort_keys:
-        sort_keys = ['created_at']
-    if not sort_dirs:
-        sort_dirs = ['desc']
-    this_session = get_session()
-    this_session.begin()
-    query = this_session.query(models.Storage)
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Storage,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No storages   match, return empty list
+        if query is None:
+            return []
+        return query.all()
 
+
+@apply_like_filters(model=models.Storage)
+def _process_storage_info_filters(query, filters):
+    """Common filter processing for Storages queries."""
     if filters:
-
-        for attr, value in filters.items():
-            query = query.filter(getattr(models.Storage, attr).like("%%%s%%" % value))
-    try:
-        for (sort_key, sort_dir) in zip(sort_keys, sort_dirs):
-            query = apply_sorting(models.Storage, query, sort_key, sort_dir)
-    except AttributeError:
-        msg = "Wrong sorting keys provided - '%s'." % sort_keys
-        raise exception.InvalidInput(reason=msg)
-
-    if limit:
-        query = query.limit(limit)
-
-    # Returns list of storages  that satisfy filters.
-    return query.all()
+        if not is_valid_model_filters(models.Storage, filters):
+            return
+        query = query.filter_by(**filters)
+    return query
 
 
 def volume_get(context, volume_id):
@@ -491,6 +486,8 @@ PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
     models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
+    models.Storage: (_storage_get_query, _process_storage_info_filters,
+                     _storage_get),
 }
 
 
