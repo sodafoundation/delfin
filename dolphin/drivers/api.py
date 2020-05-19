@@ -78,8 +78,9 @@ class API(object):
 
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
-        driver = self.driver_manager.get_driver(context, **{'storage_id': storage_id})
-        driver.parse_alert(context, alert)
+        driver = self.driver_manager.get_driver(context,
+                                                **{'storage_id': storage_id})
+        return driver.parse_alert(context, alert)
 
     def clear_alert(self, context, storage_id, alert):
         """Clear alert from storage system."""

@@ -13,10 +13,12 @@
 # limitations under the License.
 
 from oslo_log import log
+
+from dolphin import exception
 from dolphin.drivers import driver
 from dolphin.drivers import helper
+from dolphin.drivers.dellemc_storage.vmax import alert_handler
 from dolphin.drivers.dellemc_storage.vmax import client
-from dolphin import exception
 
 _TB_TO_BYTES_MULTIPLIER = 1000000000000
 
@@ -102,7 +104,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        pass
+        return alert_handler.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
         pass
