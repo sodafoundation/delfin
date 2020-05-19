@@ -26,22 +26,18 @@ class TestStorageController:
         sc = StorageController()
         req = Request()
 
-        """
-        Get storage successfully, call remove_storage_resource
-        Call count depends on the StorageResourceTask's subclasses' count
-        """
+        # Get storage successfully, call remove_storage_resource
+        # Call count depends on the StorageResourceTask's subclasses' count
         mocker.patch('dolphin.db.storage_get')
-        sc.delete(req, 1)
+        sc.delete(req, '83df8a62-9ae4-4ffc-9948-5524cc7cdd64')
         expected_count = 0
         for _ in task.StorageResourceTask.__subclasses__():
             expected_count += 1
         assert expected_count == mock_remove_storage_resource.call_count
 
-        """
-        Get storage failed, raise exception, do not call remove_storage_resource
-        """
+        # Get storage failed, raise exception, do not call remove_storage_resource
         mock_remove_storage_resource.reset_mock()
-        mocker.patch('dolphin.db.storage_get', side_effect=exception.StorageNotFound(id=1))
+        mocker.patch('dolphin.db.storage_get', side_effect=exception.StorageNotFound(id='83df8a62-9ae4-4ffc-9948-5524cc7cdd64'))
         with pytest.raises(Exception):
-            sc.delete(req, 1)
+            sc.delete(req, '83df8a62-9ae4-4ffc-9948-5524cc7cdd64')
         assert 0 == mock_remove_storage_resource.call_count
