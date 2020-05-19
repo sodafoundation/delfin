@@ -31,7 +31,7 @@ setup(
         ],
         'dolphin.storage.drivers': [
             'fake_storage fake_driver = dolphin.drivers.fake_storage:FakeStorageDriver',
-            'dellemc vmax = dolphin.drivers.dellemc_storage.vmax.vmax:VMAXStorageDriver'
+            'dellemc vmax = dolphin.drivers.dellemc.vmax.vmax:VMAXStorageDriver'
         ]
     },
 )
