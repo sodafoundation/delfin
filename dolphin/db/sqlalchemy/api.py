@@ -367,7 +367,7 @@ def volume_update(context, vol_id, values):
     session = get_session()
 
     with session.begin():
-        query = _storage_get_query(context, session)
+        query = _volume_get_query(context, session)
         result = query.filter_by(id=vol_id).update(values)
         if not result:
             raise exception.VolumeNotFound(id=vol_id)
