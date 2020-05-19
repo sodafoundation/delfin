@@ -97,7 +97,7 @@ class AlertController(wsgi.Controller):
                 if not auth_protocol or not auth_key:
                     msg = "If snmp version is SNMPv3 and security_level is " \
                           "AuthPriv or AuthNoPriv, auth_protocol and auth_key" \
-                          " is required."
+                          " are required."
                     raise exception.InvalidInput(reason=msg)
                 alert_source['auth_key'] = cryptor.encode(alert_source['auth_key'])
 
