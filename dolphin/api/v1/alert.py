@@ -17,7 +17,6 @@ from webob import exc
 
 from dolphin import db, cryptor
 from dolphin import exception
-from dolphin import utils
 from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import alert as schema_alert
@@ -28,9 +27,8 @@ from dolphin.i18n import _
 LOG = log.getLogger(__name__)
 
 
-SNMPv3_keys = ('username', 'auth_key', 'auth_enabled', 'auth_protocol',
-               'encryption_enabled', 'privacy_protocol', 'privacy_key',
-               'engine_id')
+SNMPv3_keys = ('username', 'auth_key', 'security_level', 'auth_protocol',
+               'privacy_protocol', 'privacy_key', 'engine_id')
 
 
 class AlertController(wsgi.Controller):
@@ -86,36 +84,30 @@ class AlertController(wsgi.Controller):
 
         if version.lower() == 'snmpv3':
             user_name = alert_source.get('username', None)
-            auth_enabled_str = alert_source.get('auth_enabled', None)
+            security_level = alert_source.get('security_level', None)
             engine_id = alert_source.get('engine_id', None)
-            if not user_name or not auth_enabled_str or not engine_id:
-                msg = "If snmp version is SNMPv3, then username, auth_enabled" \
+            if not user_name or not security_level or not engine_id:
+                msg = "If snmp version is SNMPv3, then username, security_level" \
                       " and engine_id are required."
                 raise exception.InvalidInput(reason=msg)
-            auth_enabled = utils.bool_from_string(auth_enabled_str, True)
-            alert_source['auth_enabled'] = auth_enabled
 
-            if auth_enabled:
+            if security_level == "AuthNoPriv" or security_level == "AuthPriv":
                 auth_protocol = alert_source.get('auth_protocol', None)
                 auth_key = alert_source.get('auth_key', None)
                 if not auth_protocol or not auth_key:
-                    msg = "If snmp version is SNMPv3 and auth is enabled, then " \
-                          "auth_protocol and auth_key is required."
+                    msg = "If snmp version is SNMPv3 and security_level is " \
+                          "AuthPriv or AuthNoPriv, auth_protocol and auth_key" \
+                          " is required."
                     raise exception.InvalidInput(reason=msg)
                 alert_source['auth_key'] = cryptor.encode(alert_source['auth_key'])
 
-                # If encryption_enabled is not set, False will be used as default.
-                encryption_enabled = utils.bool_from_string(
-                    alert_source.get('encryption_enabled', ""),
-                    False)
-                alert_source['encryption_enabled'] = encryption_enabled
-                if encryption_enabled:
+                if security_level == "AuthPriv":
                     privacy_protocol = alert_source.get('privacy_protocol', None)
                     privacy_key = alert_source.get('privacy_key', None)
                     if not privacy_protocol or not privacy_key:
-                        msg = "If snmp version is SNMPv3 and encryption is " \
-                              "enabled, privacy_protocol and privacy_key are" \
-                              " required."
+                        msg = "If snmp version is SNMPv3 and security_level is" \
+                              "AuthPriv, privacy_protocol and privacy_key are " \
+                              "required."
                         raise exception.InvalidInput(reason=msg)
                     alert_source['privacy_key'] = cryptor.encode(
                         alert_source['privacy_key'])

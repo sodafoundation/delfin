@@ -709,13 +709,3 @@ class Singleton(type):
                 if cls not in cls._instances:
                     cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
-
-
-def bool_from_string(str, default=False):
-    str = str.lower()
-    if str == 'true':
-        return True
-    elif str == 'false':
-        return False
-    else:
-        return default

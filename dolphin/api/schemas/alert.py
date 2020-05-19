@@ -22,10 +22,9 @@ put = {
         'version': parameter_types.snmp_version,
         'community_string': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'username': {'type': 'string', 'minLength': 1, 'maxLength': 255},
+        'security_level': parameter_types.snmp_security_level,
         'auth_key': {'type': 'string', 'minLength': 1, 'maxLength': 255},
-        'auth_enabled': parameter_types.boolean,
         'auth_protocol': parameter_types.snmp_auth_protocol,
-        'encryption_enabled': parameter_types.boolean,
         'privacy_protocol': parameter_types.snmp_privacy_protocol,
         'privacy_key': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'engine_id': {'type': 'string', 'minLength': 1, 'maxLength': 255}
