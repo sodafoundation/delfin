@@ -34,11 +34,6 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
-    def register_storage(self, context):
-        """Discovery a storage system with register parameters."""
-        pass
-
-    @abc.abstractmethod
     def get_storage(self, context):
         """Get storage device information from storage system"""
         pass
@@ -72,3 +67,14 @@ class StorageDriver(object):
     def clear_alert(self, context, alert):
         """Clear alert from storage system."""
         pass
+
+    @staticmethod
+    def get_storage_registry():
+        required_register_info = {
+            "host": "IP Address of VMAX Storage",
+            "port": "PORT number of VMAX Storage",
+            "username": "Username for VMAX Storage",
+            "password": "Password for VMAX Storage",
+            "extra_attributes": None
+        }
+        return required_register_info

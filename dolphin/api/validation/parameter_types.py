@@ -172,3 +172,22 @@ tcp_udp_port = {
     'minimum': 0, 'maximum': 65535
 }
 
+snmp_version = {
+    'type': 'string',
+    'enum': ['SNMPv1', 'SNMPv2c', 'SNMPv3', 'snmpv1', 'snmpv2c', 'snmpv3'],
+}
+
+snmp_auth_protocol = {
+    'type': 'string',
+    'enum': ['SHA', 'sha', 'MD5', 'md5'],
+}
+
+snmp_privacy_protocol = {
+    'type': 'string',
+    'enum': ['AES', 'aes', 'DES', 'des', '3DES', '3des'],
+}
+
+snmp_security_level = {
+    'type': 'string',
+    'enum': ['AuthPriv', 'AuthNoPriv', 'NoAuthNoPriv'],
+}
