@@ -14,7 +14,7 @@
 
 from oslo_log import log
 from oslo_utils import units
-from dolphin.common import fields
+from dolphin.common import constants
 from dolphin.drivers.dell_emc.vmax import client
 from dolphin.drivers import driver
 
@@ -36,10 +36,6 @@ class VMAXStorageDriver(driver.StorageDriver):
         # Get the VMAX version to check connection
         version = self.client.get_version()
 
-        # Get storage details
-        self.symmetrix_id = access_info.get('extra_attributes', {}).\
-                                get('array_id', None)
-
     @staticmethod
     def get_storage_registry():
         required_register_attributes = super.get_storage_registry()
@@ -53,17 +49,13 @@ class VMAXStorageDriver(driver.StorageDriver):
     def get_storage(self, context):
 
         # Get the VMAX model
-        model = self.client.get_model(self.symmetrix_id)
+        model = self.client.get_model()
 
         # Get Storage details for capacity info
-        storg_info = self.client.get_storage_capacity(self.symmetrix_id)
-        total_cap = storg_info.get('usable_total_tb', 0)
-        used_cap = storg_info.get('usable_used_tb', 0)
+        storg_info = self.client.get_storage_capacity()
+        total_cap = storg_info.get('usable_total_tb')
+        used_cap = storg_info.get('usable_used_tb')
         free_cap = total_cap - used_cap
-
-        status = fields.StorageStatus.AVAILABLE
-        if used_cap:
-            status = fields.StorageStatus.IN_USE
 
         storage = {
             'id': self.storage_id,
@@ -71,8 +63,8 @@ class VMAXStorageDriver(driver.StorageDriver):
             'vendor': 'Dell EMC',
             'description': '',
             'model': model,
-            'status': status,
-            'serial_number': self.symmetrix_id,
+            'status': constants.StorageStatus.AVAILABLE,
+            'serial_number': self.client.array_id,
             'location': '',
             'total_capacity': int(total_cap * units.Ti),
             'used_capacity': int(used_cap * units.Ti),
@@ -82,7 +74,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         return storage
 
     def list_pools(self, context):
-        return self.client.list_pools(self.symmetrix_id)
+        return self.client.list_pools()
 
     def list_volumes(self, context):
         pass

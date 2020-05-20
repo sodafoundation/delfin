@@ -19,3 +19,38 @@
 DB_MAX_INT = 0x7FFFFFFF
 
 
+# Custom fields for Dolphin objects
+class StorageStatus(object):
+    AVAILABLE = 'available'
+    ERROR = 'error'
+    IN_USE = 'in-use'
+
+    ALL = (AVAILABLE, ERROR, IN_USE)
+
+
+class PoolStatus(object):
+    AVAILABLE = 'available'
+    ERROR = 'error'
+    IN_USE = 'in-use'
+
+    ALL = (AVAILABLE, ERROR, IN_USE)
+
+
+class VolumeStatus(object):
+    CREATING = 'creating'
+    AVAILABLE = 'available'
+    DELETING = 'deleting'
+    ERROR = 'error'
+    ERROR_DELETING = 'error_deleting'
+    IN_USE = 'in-use'
+    EXTENDING = 'extending'
+
+    ALL = (CREATING, AVAILABLE, DELETING, ERROR, ERROR_DELETING,
+           IN_USE, EXTENDING)
+
+
+class StorageType(object):
+    BLOCK = 'block'
+    FILE = 'file'
+
+    ALL = (BLOCK, FILE)

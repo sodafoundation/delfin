@@ -59,12 +59,12 @@ class API(object):
     def get_storage(self, context, storage_id):
         """Get storage device information from storage system"""
         driver = self.driver_manager.get_driver(context, storage_id)
-        driver.get_storage(context)
+        return driver.get_storage(context)
 
     def list_pools(self, context, storage_id):
         """List all storage pools from storage system."""
         driver = self.driver_manager.get_driver(context, storage_id)
-        driver.list_pools(context)
+        return driver.list_pools(context)
 
     def list_volumes(self, context, storage_id):
         """List all storage volumes from storage system."""
