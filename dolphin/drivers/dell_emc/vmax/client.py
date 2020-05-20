@@ -103,16 +103,12 @@ class VMAXClient(object):
                 total_cap = srp_cap['usable_total_tb'] * units.Ti
                 used_cap = srp_cap['usable_used_tb'] * units.Ti
 
-                status = fields.PoolStatus.AVAILABLE
-                if used_cap:
-                    status = fields.PoolStatus.IN_USE
-
                 p = {
                     "name": pool,
                     "storage_id": symmetrix_id,
                     "original_id": pool_info["srpId"],
                     "description": "Dell EMC VMAX Pool",
-                    "status": status,
+                    "status": fields.PoolStatus.AVAILABLE,
                     "storage_type": fields.StorageType.BLOCK,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
