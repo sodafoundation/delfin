@@ -15,7 +15,7 @@
 from oslo_log import log
 from dolphin.drivers import driver
 from dolphin.drivers import helper
-from dolphin.drivers.dellemc.vmax import client
+from dolphin.drivers.dell_emc.vmax import client
 from dolphin import exception
 
 _TB_TO_BYTES_MULTIPLIER = 1000000000000
