@@ -107,7 +107,7 @@ class StorageController(wsgi.Controller):
             raise exc.HTTPBadRequest(explanation=msg)
 
         try:
-            storage = self.driver_api.register_storage(ctxt, access_info_dict)
+            storage = self.driver_api.discover_storage(ctxt, access_info_dict)
             storage = db.storage_create(context, storage)
 
             # Need to encode the password before saving.

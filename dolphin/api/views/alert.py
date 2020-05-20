@@ -11,17 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from oslo_log import log
-
-from dolphin import cryptor
-from dolphin import db
-
-LOG = log.getLogger(__name__)
+import copy
 
 
-def get_access_info(context, storage_id):
-    access_info = db.access_info_get(context, storage_id)
-    access_info_dict = access_info.to_dict()
-    access_info_dict['password'] = cryptor.decode(access_info_dict['password'])
-    return access_info_dict
+def build_alert_source(value):
+    view = copy.deepcopy(value)
+    view.pop("auth_key")
+    view.pop("privacy_key")
+    return dict(view)
