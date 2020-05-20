@@ -57,6 +57,7 @@ class StorageDeviceTask(StorageResourceTask):
         try:
             db.storage_delete(self.context, self.storage_id)
             db.access_info_delete(self.context, self.storage_id)
+            db.alert_source_delete(self.context, self.storage_id)
         except Exception as e:
             LOG.error('Failed to update storage entry in DB: {0}'.format(e))
         else:
