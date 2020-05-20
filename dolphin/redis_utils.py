@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import time
+import uuid
+
 import redis
-from oslo_log import log
 from oslo_config import cfg
+from oslo_log import log
 
 from dolphin import cryptor
-from dolphin.common import constants
 from dolphin import utils
+from dolphin.common import constants
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -48,35 +51,56 @@ class RedisClient(metaclass=utils.Singleton):
                 LOG.error("connect to redis failed")
                 raise err
 
-    def contains_key(self, key_name):
-        """Check whether the key is in redis
-
-        :param key_name: Key name
-        :return: Whether the key is in redis
+    def acquire_lock(self, lock_name):
         """
-        if self.redis_client.get(key_name) is None:
+        Acquire lock from redis
+
+        :param lock_name: Lock name
+        :return identifier: Identifier of this lock
+        """
+        identifier = str(uuid.uuid4())
+        if self.redis_client.setnx(lock_name, identifier):
+            self.redis_client.expire(lock_name, constants.REDIS_TASK_TIMEOUT)
+            return identifier
+        elif not self.redis_client.ttl(lock_name):
+            self.redis_client.expire(lock_name, constants.REDIS_TASK_TIMEOUT)
+        time.sleep(constants.REDIS_SLEEP_TIME)
+        return None
+
+    def release_lock(self, lock_name, identifier):
+        """
+        Release lock from redis
+
+        :param lock_name: Lock name
+        :param identifier: Identifier of this lock
+        :return bool: Whether release the lock successfully
+        """
+        pipeline = self.redis_client.pipeline(True)
+        while True:
+            try:
+                pipeline.watch(lock_name)
+                lock_value = self.redis_client.get(lock_name)
+                if not lock_value:
+                    return True
+                if lock_value.decode() == identifier:
+                    pipeline.multi()
+                    pipeline.delete(lock_name)
+                    pipeline.execute()
+                    return True
+                pipeline.unwatch()
+                break
+            except redis.exceptions.WatchError:
+                LOG.error("redis pipeline watch failed.")
+        return False
+
+    def is_locked(self, lock_name):
+        """
+        Check whether a lock is locked
+
+        :param lock_name: Lock name
+        :return bool: Whether the lock is locked
+        """
+        if self.redis_client.get(lock_name) is not None:
             return False
         else:
             return True
-
-    def add_key(self, key_name, value="", expire=None):
-        """Add a key-value pair to redis
-
-        :param key_name: Key name
-        :param value: The value of the key
-        :param expire: The time to expire in seconds
-        """
-        try:
-            self.redis_client.set(key_name, value, ex=expire)
-        except Exception as err:
-            LOG.error("Redis set key failed, err is %s", err)
-
-    def remove_key(self, key_name):
-        """Remove a key-value pair from redis
-
-        :param key_name: Key name
-        """
-        try:
-            self.redis_client.delete(key_name)
-        except Exception as err:
-            LOG.error("Redis delete key failed, err is %s", err)
