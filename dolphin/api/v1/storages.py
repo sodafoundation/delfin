@@ -133,7 +133,7 @@ class StorageController(wsgi.Controller):
     def delete(self, req, id):
         ctxt = req.environ['dolphin.context']
         try:
-            device = db.storage_get(ctxt, id)
+            storage = db.storage_get(ctxt, id)
         except exception.StorageNotFound as e:
             LOG.error(e)
             raise exc.HTTPBadRequest(explanation=e.msg)
@@ -141,9 +141,9 @@ class StorageController(wsgi.Controller):
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.remove_storage_resource(
                     ctxt,
-                    id,
-                    subclass.__module__ + '.' + subclass.__name__
-                )
+                    storage['id'],
+                    subclass.__module__ + '.' + subclass.__name__)
+            self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
 
     def sync_all(self, req):
         return dict(name="Sync all storages")

@@ -78,6 +78,7 @@ class TaskManager(manager.Manager):
         device_obj.remove()
 
     def remove_storage_in_cache(self, context, storage_id):
-        LOG.info('Remove storage device in memory for storage id:{0}'.format(storage_id))
+        LOG.info('Remove storage device in memory for storage id:{0}'
+                 .format(storage_id))
         drivers = driver_manager.DriverManager()
         drivers.remove_driver(context, storage_id)

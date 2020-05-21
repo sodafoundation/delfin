@@ -17,7 +17,6 @@ from oslo_log import log
 from dolphin.db.sqlalchemy import api as db
 from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
-from dolphin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
@@ -53,15 +52,14 @@ class StorageDeviceTask(StorageResourceTask):
             LOG.info("Syncing storage successful!!!")
 
     def remove(self):
-        LOG.info('Remove storage device for storage id:{0}'.format(self.storage_id))
+        LOG.info('Remove storage device for storage id:{0}'
+                 .format(self.storage_id))
         try:
             db.storage_delete(self.context, self.storage_id)
             db.access_info_delete(self.context, self.storage_id)
             db.alert_source_delete(self.context, self.storage_id)
         except Exception as e:
             LOG.error('Failed to update storage entry in DB: {0}'.format(e))
-        else:
-            task_rpcapi.TaskAPI().remove_storage_in_cache(self.context, self.storage_id)
 
 
 class StoragePoolTask(StorageResourceTask):
