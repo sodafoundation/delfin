@@ -142,23 +142,18 @@ class StorageController(wsgi.Controller):
         api performs the storage device info, pool, volume etc. tasks on each
         registered storage device.
         """
-        # validate the id
         ctxt = req.environ['dolphin.context']
 
-        try:
-            storages = db.storage_get_all(ctxt)
-            LOG.debug("Total {0} registered storages found in database".
-                      format(len(storages)))
-        except Exception as e:
-            LOG.error(e)
-            raise exc.HTTPNotFound(explanation=e.msg)
-        else:
-            for storage in storages:
-                for subclass in task.StorageResourceTask.__subclasses__():
-                    self.task_rpcapi.sync_storage_resource(
-                        ctxt,
-                        storage['id'],
-                        subclass.__module__ + '.' + subclass.__name__)
+        storages = db.storage_get_all(ctxt)
+        LOG.debug("Total {0} registered storages found in database".
+                  format(len(storages)))
+
+        for storage in storages:
+            for subclass in task.StorageResourceTask.__subclasses__():
+                self.task_rpcapi.sync_storage_resource(
+                    ctxt,
+                    storage['id'],
+                    subclass.__module__ + '.' + subclass.__name__)
 
     @wsgi.response(202)
     def sync(self, req, id):
