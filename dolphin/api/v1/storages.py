@@ -144,25 +144,21 @@ class StorageController(wsgi.Controller):
         """
         # validate the id
         ctxt = req.environ['dolphin.context']
+
         try:
             storages = db.storage_get_all(ctxt)
-            if not storages:
-                msg = _("No registered storage found in database")
-                raise exception.DolphinException(msg)
             LOG.debug("Total {0} registered storages found in database".
                       format(len(storages)))
         except Exception as e:
             LOG.error(e)
-            raise exc.HTTPNotFound(explanation=msg)
+            raise exc.HTTPNotFound(explanation=e.msg)
         else:
             for storage in storages:
                 for subclass in task.StorageResourceTask.__subclasses__():
                     self.task_rpcapi.sync_storage_resource(
                         ctxt,
                         storage['id'],
-                        subclass.__module__ + '.' + subclass.__name__
-                    )
-        return
+                        subclass.__module__ + '.' + subclass.__name__)
 
     @wsgi.response(202)
     def sync(self, req, id):
