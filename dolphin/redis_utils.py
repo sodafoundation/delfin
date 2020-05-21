@@ -59,8 +59,7 @@ class RedisClient(metaclass=utils.Singleton):
         :return identifier: Identifier of this lock
         """
         identifier = str(uuid.uuid4())
-        if self.redis_client.setnx(lock_name, identifier):
-            self.redis_client.expire(lock_name, constants.REDIS_TASK_TIMEOUT)
+        if self.redis_client.set(lock_name, identifier, nx=True, ex=constants.REDIS_TASK_TIMEOUT):
             return identifier
         elif not self.redis_client.ttl(lock_name):
             self.redis_client.expire(lock_name, constants.REDIS_TASK_TIMEOUT)
@@ -101,6 +100,6 @@ class RedisClient(metaclass=utils.Singleton):
         :return bool: Whether the lock is locked
         """
         if self.redis_client.get(lock_name) is not None:
-            return False
-        else:
             return True
+        else:
+            return False
