@@ -302,3 +302,27 @@ def alert_source_get(context, storage_id):
 def alert_source_delete(context, storage_id):
     """Delete an alert source."""
     return IMPL.alert_source_delete(context, storage_id)
+
+
+def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
+                         sort_dirs=None, filters=None, offset=None):
+    """Retrieves all alert sources.
+
+    If no sort parameters are specified then the returned alert sources are
+    sorted first by the 'created_at' key in descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage accesses
+    """
+    return IMPL.alert_source_get_all(context, marker, limit, sort_keys,
+                                     sort_dirs, filters, offset)
