@@ -13,14 +13,13 @@
 # limitations under the License.
 
 from oslo_log import log
-from dolphin.drivers import driver
-from dolphin.drivers import helper
+from oslo_utils import units
+from dolphin.common import constants
 from dolphin.drivers.dell_emc.vmax import client
-from dolphin import exception
-
-_TB_TO_BYTES_MULTIPLIER = 1000000000000
+from dolphin.drivers import driver
 
 LOG = log.getLogger(__name__)
+
 
 class VMAXStorageDriver(driver.StorageDriver):
     """VMAXStorageDriver implement the DELL EMC Storage driver,
@@ -28,29 +27,14 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.client = client.VMAXClient()
         self._init_vmax(kwargs)
 
-    def __del__(self):
-        # De-initialize session
-        self.close_session()
-
     def _init_vmax(self, access_info):
-        self.conn = client.get_connection(access_info)
+        self.client.init_connection(access_info)
 
         # Get the VMAX version to check connection
-        version = client.get_version(self.conn)
-
-        # Get storage details
-        self.symmetrix_id = access_info.get('extra_attributes', {}).\
-                                get('array_id', None)
-
-    def _check_connection(self, context):
-        if not self.storage_id:
-            raise exception.InvalidDriverMode(driver_mode='Driver is not initialized')
-
-        if not self.conn:
-            access_info = helper.get_access_info(context, self.storage_id)
-            self._init_vmax(access_info)
+        version = self.client.get_version()
 
     @staticmethod
     def get_storage_registry():
@@ -64,33 +48,32 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def get_storage(self, context):
 
-        self._check_connection(context)
         # Get the VMAX model
-        model = client.get_model(self.conn, self.symmetrix_id)
+        model = self.client.get_model()
 
         # Get Storage details for capacity info
-        storg_info = client.get_storage_capacity(self.conn, self.symmetrix_id)
-        total_cap = storg_info['usable_total_tb']
-        used_cap = storg_info['usable_used_tb']
+        storg_info = self.client.get_storage_capacity()
+        total_cap = storg_info.get('usable_total_tb')
+        used_cap = storg_info.get('usable_used_tb')
+        free_cap = total_cap - used_cap
 
         storage = {
-            'id': self.storage_id,
             'name': '',
             'vendor': 'Dell EMC',
             'description': '',
             'model': model,
-            'status': 'Available',
-            'serial_number': self.symmetrix_id,
+            'status': constants.StorageStatus.NORMAL,
+            'serial_number': self.client.array_id,
             'location': '',
-            'total_capacity': int(total_cap * _TB_TO_BYTES_MULTIPLIER),
-            'used_capacity': int(used_cap * _TB_TO_BYTES_MULTIPLIER),
-            'free_capacity': int((total_cap - used_cap) * _TB_TO_BYTES_MULTIPLIER)
+            'total_capacity': int(total_cap * units.Ti),
+            'used_capacity': int(used_cap * units.Ti),
+            'free_capacity': int(free_cap * units.Ti)
         }
         LOG.info("get_storage(), successfully retrieved storage details")
         return storage
 
     def list_pools(self, context):
-        pass
+        return self.client.list_pools()
 
     def list_volumes(self, context):
         pass
@@ -106,8 +89,3 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
-
-    def close_session(self):
-        if self.conn:
-            self.conn.close_session()
-            self.conn = None
