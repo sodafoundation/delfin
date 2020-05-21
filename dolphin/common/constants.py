@@ -21,32 +21,26 @@ DB_MAX_INT = 0x7FFFFFFF
 
 # Custom fields for Dolphin objects
 class StorageStatus(object):
-    AVAILABLE = 'available'
-    ERROR = 'error'
-    IN_USE = 'in-use'
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    ABNORMAL = 'abnormal'
 
-    ALL = (AVAILABLE, ERROR, IN_USE)
+    ALL = (NORMAL, OFFLINE, ABNORMAL)
 
 
 class PoolStatus(object):
-    AVAILABLE = 'available'
-    ERROR = 'error'
-    IN_USE = 'in-use'
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    ABNORMAL = 'abnormal'
 
-    ALL = (AVAILABLE, ERROR, IN_USE)
+    ALL = (NORMAL, OFFLINE, ABNORMAL)
 
 
 class VolumeStatus(object):
-    CREATING = 'creating'
     AVAILABLE = 'available'
-    DELETING = 'deleting'
     ERROR = 'error'
-    ERROR_DELETING = 'error_deleting'
-    IN_USE = 'in-use'
-    EXTENDING = 'extending'
 
-    ALL = (CREATING, AVAILABLE, DELETING, ERROR, ERROR_DELETING,
-           IN_USE, EXTENDING)
+    ALL = (AVAILABLE, ERROR)
 
 
 class StorageType(object):

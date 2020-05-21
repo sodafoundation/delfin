@@ -58,12 +58,11 @@ class VMAXStorageDriver(driver.StorageDriver):
         free_cap = total_cap - used_cap
 
         storage = {
-            'id': self.storage_id,
             'name': '',
             'vendor': 'Dell EMC',
             'description': '',
             'model': model,
-            'status': constants.StorageStatus.AVAILABLE,
+            'status': constants.StorageStatus.NORMAL,
             'serial_number': self.client.array_id,
             'location': '',
             'total_capacity': int(total_cap * units.Ti),
