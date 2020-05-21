@@ -55,11 +55,7 @@ class PoolController(wsgi.Controller):
                                     query_params, offset)
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
-        except Exception as e:
-            msg = _("Error in list pool query ")
-            raise exc.HTTPNotFound(explanation=msg)
         return pool_view.build_pools(pools)
-
 
 
 def create_resource():

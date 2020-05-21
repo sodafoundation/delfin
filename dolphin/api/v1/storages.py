@@ -81,9 +81,6 @@ class StorageController(wsgi.Controller):
                                           sort_dirs, query_params, offset)
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
-        except Exception as e:
-            msg = _("Error in list storage query.")
-            raise exc.HTTPNotFound(explanation=msg)
         return storage_view.build_storages(storages)
 
     def show(self, req, id):
@@ -92,7 +89,6 @@ class StorageController(wsgi.Controller):
         except exception.StorageNotFound as e:
             raise exc.HTTPNotFound(explanation=e.message)
         return storage_view.build_storage(storage)
-
 
     @wsgi.response(201)
     @validation.schema(schema_storages.create)

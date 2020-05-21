@@ -113,9 +113,9 @@ def _get_offset_param(params):
     """Extract offset id from request's dictionary (defaults to 0) or fail."""
     offset = params.pop('offset', 0)
     return validate_integer(offset,
-                                      'offset',
-                                      0,
-                                      constants.DB_MAX_INT)
+                            'offset',
+                            0,
+                            constants.DB_MAX_INT)
 
 
 def get_sort_params(params, default_key='created_at', default_dir='desc'):
