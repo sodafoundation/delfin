@@ -12,19 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+import six
+from webob import exc
+
+from dolphin import db, exception
+from dolphin.api import api_utils
 from dolphin.api.common import wsgi
+from dolphin.api.views import pools as pool_view
+from dolphin.i18n import _
 
 
 class PoolController(wsgi.Controller):
+    def __init__(self):
+        super(PoolController, self).__init__()
+        self.search_options = ['name', 'status', 'id', 'storage_id']
+
+    def _get_pools_search_options(self):
+        """Return pools search options allowed ."""
+        return self.search_options
+
+    def show(self, req, pool_id):
+        ctxt = req.environ['dolphin.context']
+        try:
+            pool = db.pool_get(ctxt, pool_id)
+        except exception.PoolNotFound as e:
+            raise exc.HTTPNotFound(explanation=e.msg)
+        return pool_view.build_pool(pool)
 
     def index(self, req):
-        return dict(name="Storage pool 1")
-
-    def show(self, req, id):
-        return dict(name="Storage pool 2")
+        ctxt = req.environ['dolphin.context']
+        query_params = {}
+        query_params.update(req.GET)
+        # update options  other than filters
+        sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
+        marker, limit, offset = api_utils.get_pagination_params(query_params)
+        # strip out options except supported search  options
+        api_utils.remove_invalid_options(ctxt, query_params,
+                                         self._get_pools_search_options())
+        try:
+            pools = db.pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
+                                    query_params, offset)
+        except  exception.InvalidInput as e:
+            raise exc.HTTPBadRequest(explanation=six.text_type(e))
+        return pool_view.build_pools(pools)
 
 
 def create_resource():
     return wsgi.Resource(PoolController())
-
-

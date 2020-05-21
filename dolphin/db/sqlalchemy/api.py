@@ -335,7 +335,7 @@ def _pool_get(context, pool_id, session=None):
               .first())
 
     if not result:
-        LOG.error(exception.PoolNotFound(id=pool_id))
+        raise exception.PoolNotFound(id=pool_id)
 
     return result
 
