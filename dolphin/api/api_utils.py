@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 OpenStack Foundation
 # All Rights Reserved.
 #
@@ -12,8 +13,24 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import six
 import webob
+from oslo_config import cfg
 from oslo_log import log
+from oslo_utils import strutils
+
+from dolphin.common import constants
+
+api_common_opts = [
+    cfg.IntOpt('api_max_limit',
+               default=1000,
+               help='The maximum number of items that a collection '
+                    'resource returns in a single response'),
+
+]
+
+CONF = cfg.CONF
+CONF.register_opts(api_common_opts)
 
 LOG = log.getLogger(__name__)
 
@@ -29,12 +46,76 @@ def remove_invalid_options(context, search_options, allowed_search_options):
         del search_options[opt]
 
 
-def get_pagination_params(query_params):
-    """Return marker, limit, offset tuple from request."""
-    limit = query_params.get('limit', None)
-    offset = query_params.get('offset', None)
-    marker = query_params.get('marker', None)
-    return limit, offset, marker
+def validate_integer(value, name, min_value=None, max_value=None):
+    """Make sure that value is a valid integer, potentially within range.
+
+    :param value: the value of the integer
+    :param name: the name of the integer
+    :param min_length: the min_length of the integer
+    :param max_length: the max_length of the integer
+    :returns: integer
+    """
+    try:
+        value = strutils.validate_integer(value, name, min_value, max_value)
+        return value
+    except ValueError as e:
+        raise webob.exc.HTTPBadRequest(explanation=six.text_type(e))
+
+
+def get_pagination_params(params, max_limit=None):
+    """Return marker, limit, offset tuple from request.
+
+    :param params: `wsgi.Request`'s GET dictionary, possibly containing
+                   'marker',  'limit', and 'offset' variables. 'marker' is the
+                   id of the last element the client has seen, 'limit' is the
+                   maximum number of items to return and 'offset' is the number
+                   of items to skip from the marker or from the first element.
+                   If 'limit' is not specified, or > max_limit, we default to
+                   max_limit. Negative values for either offset or limit will
+                   cause exc.HTTPBadRequest() exceptions to be raised. If no
+                   offset is present we'll default to 0 and if no marker is
+                   present we'll default to None.
+    :max_limit: Max value 'limit' return value can take
+    :returns: Tuple (marker, limit, offset)
+    """
+    max_limit = max_limit or CONF.api_max_limit
+    limit = _get_limit_param(params, max_limit)
+    marker = _get_marker_param(params)
+    offset = _get_offset_param(params)
+    return marker, limit, offset
+
+
+def _get_limit_param(params, max_limit=None):
+    """Extract integer limit from request's dictionary or fail.
+
+   Defaults to max_limit if not present and returns max_limit if present
+   'limit' is greater than max_limit.
+    """
+    max_limit = max_limit or CONF.osapi_max_limit
+    try:
+        limit = int(params.pop('limit', max_limit))
+    except ValueError:
+        msg = _('limit param must be an integer')
+        raise webob.exc.HTTPBadRequest(explanation=msg)
+    if limit < 0:
+        msg = _('limit param must be positive')
+        raise webob.exc.HTTPBadRequest(explanation=msg)
+    limit = min(limit, max_limit)
+    return limit
+
+
+def _get_marker_param(params):
+    """Extract marker id from request's dictionary (defaults to None)."""
+    return params.pop('marker', None)
+
+
+def _get_offset_param(params):
+    """Extract offset id from request's dictionary (defaults to 0) or fail."""
+    offset = params.pop('offset', 0)
+    return validate_integer(offset,
+                                      'offset',
+                                      0,
+                                      constants.DB_MAX_INT)
 
 
 def get_sort_params(params, default_key='created_at', default_dir='desc'):

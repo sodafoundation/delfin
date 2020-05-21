@@ -72,7 +72,7 @@ class StorageController(wsgi.Controller):
         query_params.update(req.GET)
         # update options  other than filters
         sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
-        limit, offset, marker = api_utils.get_pagination_params(query_params)
+        marker, limit, offset = api_utils.get_pagination_params(query_params)
         # strip out options except supported search  options
         api_utils.remove_invalid_options(ctxt, query_params,
                                          self._get_storages_search_options())
@@ -82,7 +82,7 @@ class StorageController(wsgi.Controller):
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         except Exception as e:
-            msg = "Error in storage_get_all query from DB "
+            msg = _("Error in list storage query.")
             raise exc.HTTPNotFound(explanation=msg)
         return storage_view.build_storages(storages)
 
