@@ -48,7 +48,7 @@ def update_storage(context, storage_id, storage):
     return db.storage_update(context, storage_id, storage)
 
 
-def check_storage_exist(context, storage):
+def check_storage_repetition(context, storage):
     if not storage:
         msg = _("Storage could not be found.")
         raise exception.StorageNotFound(message=msg)
@@ -66,7 +66,17 @@ def check_storage_exist(context, storage):
         raise exception.InvalidRequest(msg)
 
 
-def check_storage_with_access_info(context, storage_id, storage_new):
+def check_storage_consistency(context, storage_id, storage_new):
+    """Check storage response returned by driver whether it matches the
+    storage stored in database.
+
+    :param context: The context of dolphin.
+    :type context: dolphin.context.RequestContext
+    :param storage_id: The uuid of storage in database.
+    :type storage_id: string
+    :param storage_new: The storage response returned by driver.
+    :type storage_new: dict
+    """
     if not storage_new:
         msg = _("Storage could not be found.")
         raise exception.StorageNotFound(message=msg)
@@ -76,8 +86,8 @@ def check_storage_with_access_info(context, storage_id, storage_new):
         raise exception.InvalidResults(message=msg)
 
     storage_present = db.storage_get(context, storage_id)
-    if storage_new['serial_number'] != storage_present.serial_number:
-        msg = (_("Existing storage serial number is not matching"
-                 " with the new storage serial number: '%s'  ") %
-               storage_new['serial_number'])
+    if storage_new['serial_number'] != storage_present['serial_number']:
+        msg = (_("New storage serial number is not matching "
+                 "with the existing storage serial number: %s") %
+               storage_present['serial_number'])
         raise exception.StorageSerialNumberMismatch(message=msg)

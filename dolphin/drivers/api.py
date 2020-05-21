@@ -38,8 +38,7 @@ class API(object):
         storage = driver.get_storage(context)
 
         # Need to validate storage response from driver
-        helper.check_storage_exist(context, storage)
-
+        helper.check_storage_repetition(context, storage)
         access_info = helper.create_access_info(context, access_info)
         storage['id'] = access_info['storage_id']
         storage = helper.create_storage(context, storage)
@@ -57,10 +56,7 @@ class API(object):
 
         # Need to validate storage response from driver
         storage_id = access_info['storage_id']
-        helper.check_storage_with_access_info(context,
-                                              storage_id,
-                                              storage_new)
-
+        helper.check_storage_consistency(context, storage_id, storage_new)
         access_info = helper.update_access_info(context, storage_id, access_info)
         helper.update_storage(context, storage_id, storage_new)
         self.driver_manager.update_driver(storage_id, driver)

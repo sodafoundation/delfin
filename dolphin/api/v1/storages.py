@@ -105,6 +105,7 @@ class StorageController(wsgi.Controller):
         except (exception.InvalidCredential,
                 exception.InvalidRequest,
                 exception.InvalidResults,
+                exception.AccessInfoNotFound,
                 exception.StorageDriverNotFound,
                 exception.StorageNotFound) as e:
             raise exc.HTTPBadRequest(explanation=e.msg)
