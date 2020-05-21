@@ -19,17 +19,18 @@ import abc
 @six.add_metaclass(abc.ABCMeta)
 class StorageDriver(object):
 
-    def __init__(self, storage_id):
-        self.storage_id = storage_id
+    def __init__(self, **kwargs):
+        """
+        :param kwargs:  A dictionary, include access information. Pay
+            attention that it's not safe to save username and password
+            in memory, so suggest each driver use them to get session
+            instead of save them in memory directly.
+        """
+        self.storage_id = kwargs.get('storage_id', None)
 
     @staticmethod
     def get_storage_registry():
         """Show register parameters which the driver needs."""
-        pass
-
-    @abc.abstractmethod
-    def register_storage(self, context, register_info):
-        """Discovery a storage system with register parameters."""
         pass
 
     @abc.abstractmethod
@@ -66,3 +67,14 @@ class StorageDriver(object):
     def clear_alert(self, context, alert):
         """Clear alert from storage system."""
         pass
+
+    @staticmethod
+    def get_storage_registry():
+        required_register_info = {
+            "host": "IP Address of VMAX Storage",
+            "port": "PORT number of VMAX Storage",
+            "username": "Username for VMAX Storage",
+            "password": "Password for VMAX Storage",
+            "extra_attributes": None
+        }
+        return required_register_info

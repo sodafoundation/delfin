@@ -33,10 +33,11 @@ class RequestContext(context.RequestContext):
 
     """
 
-    def __init__(self, user_id, project_id, is_admin=None, read_deleted="no",
-                 roles=None, remote_address=None, timestamp=None,
-                 request_id=None, auth_token=None, overwrite=True,
-                 quota_class=None, service_catalog=None, **kwargs):
+    def __init__(self, user_id=None, project_id=None, is_admin=None,
+                 read_deleted="no", roles=None, remote_address=None,
+                 timestamp=None, request_id=None, auth_token=None,
+                 overwrite=True, quota_class=None,
+                 service_catalog=None, **kwargs):
         """Initialize RequestContext.
 
         :param read_deleted: 'no' indicates deleted records are hidden, 'yes'

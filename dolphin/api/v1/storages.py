@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import six
 from six.moves import http_client
 import webob
@@ -19,16 +20,20 @@ from webob import exc
 
 from oslo_log import log
 
-from dolphin import db, context
-from dolphin.api.views import storages as storage_view
 from dolphin.api.common import wsgi
-from dolphin.drivers import manager as drivermanager
-from dolphin.db.sqlalchemy import api as db
-from dolphin import exception
-from dolphin import utils
-from dolphin.i18n import _
+from dolphin.api.schemas import storages as schema_storages
+from dolphin.api import validation, api_utils
+from dolphin.api.views import storages as storage_view
 from dolphin import context
+from dolphin import coordination
+from dolphin import cryptor
+from dolphin import db
+from dolphin.drivers import api as driverapi
+from dolphin import exception
+from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
+from dolphin import utils
+from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
 
@@ -51,106 +56,71 @@ def validate_parameters(data, required_parameters,
 
 class StorageController(wsgi.Controller):
     def __init__(self):
+        super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
+        self.driver_api = driverapi.API()
+        self.search_options = ['name', 'vendor', 'model', 'status', 'serial_number']
+
+    def _get_storages_search_options(self):
+        """Return storages search options allowed ."""
+        return self.search_options
 
     def index(self, req):
-
+        ctxt = req.environ['dolphin.context']
         supported_filters = ['name', 'vendor', 'model', 'status']
         query_params = {}
         query_params.update(req.GET)
         # update options  other than filters
-        sort_keys = (lambda x: [x] if x is not None else x)(query_params.get('sort_key'))
-        sort_dirs = (lambda x: [x] if x is not None else x)(query_params.get('sort_dir'))
-        limit = query_params.get('limit', None)
-        offset = query_params.get('offset', None)
-        marker = query_params.get('marker', None)
-        # strip out options except supported filter options
-        filters = query_params
-        unknown_options = [opt for opt in filters
-                           if opt not in supported_filters]
-        bad_options = ", ".join(unknown_options)
-        LOG.debug("Removing options '%(bad_options)s' from query",
-                  {"bad_options": bad_options})
-        for opt in unknown_options:
-            del filters[opt]
+        sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
+        marker, limit, offset = api_utils.get_pagination_params(query_params)
+        # strip out options except supported search  options
+        api_utils.remove_invalid_options(ctxt, query_params,
+                                         self._get_storages_search_options())
         try:
-            storages = db.storage_get_all(context, marker, limit, sort_keys, sort_dirs, filters, offset)
+            storages = db.storage_get_all(context, marker, limit, sort_keys,
+                                          sort_dirs, query_params, offset)
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
-        except Exception as e:
-            msg = "Error in storage_get_all query from DB "
-            raise exc.HTTPNotFound(explanation=msg)
         return storage_view.build_storages(storages)
 
     def show(self, req, id):
-        return dict(name="Storage 2")
-
-    def create(self, req, body):
-        """
-        This function for registering the new storage device
-        :param req:
-        :param body: "It contains the all input parameters"
-        :return:
-        """
-        # Check if body is valid
-        if not self.is_valid_body(body, 'storages'):
-            msg = _("Storage entity not found in request body")
-            raise exc.HTTPUnprocessableEntity(explanation=msg)
-
-        storage = body['storages']
-
-        # validate the body has all required parameters
-        required_parameters = ('hostip', 'vendor', 'model', 'username',
-                               'password')
-        validate_parameters(storage, required_parameters)
-
-        # validate the hostip
-        if not utils.is_valid_ip_address(storage['hostip'], ip_version='4'):
-            msg = _("Invalid hostip: {0}. Please provide a "
-                    "valid hostip".format(storage['hostip']))
-            LOG.error(msg)
-            raise exception.InvalidHost(msg)
-
-        # get dolphin.context. Later may be validated context parameters
-        context = req.environ.get('dolphin.context')
-
-        driver = drivermanager.DriverManager()
         try:
-            device_info = driver.register_storage(context, storage)
-            status = ''
-            if device_info.get('status') == 'available':
-                status = device_info.get('status')
-        except AttributeError as e:
-            LOG.error(e)
-            raise exception.DolphinException(e)
+            storage = db.storage_get(context, id)
+        except exception.StorageNotFound as e:
+            raise exc.HTTPNotFound(explanation=e.message)
+        return storage_view.build_storage(storage)
+
+    @wsgi.response(201)
+    @validation.schema(schema_storages.create)
+    @coordination.synchronized('storage-create-{body[host]}-{body[port]}')
+    def create(self, req, body):
+        """Register a new storage device."""
+        ctxt = req.environ['dolphin.context']
+        access_info_dict = body
+
+        if self._is_registered(ctxt, access_info_dict):
+            msg = _("Storage has been registered.")
+            raise exc.HTTPBadRequest(explanation=msg)
+
+        try:
+            storage = self.driver_api.discover_storage(ctxt, access_info_dict)
+            storage = db.storage_create(context, storage)
+
+            # Need to encode the password before saving.
+            access_info_dict['storage_id'] = storage['id']
+            access_info_dict['password'] = cryptor.encode(access_info_dict['password'])
+            db.access_info_create(context, access_info_dict)
+        except (exception.InvalidCredential,
+                exception.StorageDriverNotFound,
+                exception.AccessInfoNotFound,
+                exception.StorageNotFound) as e:
+            raise exc.HTTPBadRequest(explanation=e.message)
         except Exception as e:
-            msg = _('Failed to register device in driver :{0}'.format(e))
-            LOG.error(e)
-            raise exception.DolphinException(msg)
-
-        if status == 'available':
-            try:
-                storage['storage_id'] = device_info.get('id')
-
-                db.access_info_create(context, storage)
-
-                db.storage_create(context, device_info)
-            except AttributeError as e:
-                LOG.error(e)
-                raise exception.DolphinException(e)
-            except Exception as e:
-                msg = _('Failed to create device entry in DB: {0}'
-                        .format(e))
-                LOG.exception(msg)
-                raise exception.DolphinException(msg)
-
-        else:
-            msg = _('Device registration failed with status: {0}'
-                    .format(status))
+            msg = _('Failed to register storage: {0}'.format(e))
             LOG.error(msg)
-            raise exception.DolphinException(msg)
+            raise exc.HTTPBadRequest(explanation=msg)
 
-        return device_info
+        return storage_view.build_storage(storage)
 
     def update(self, req, id, body):
         return dict(name="Storage 4")
@@ -158,9 +128,28 @@ class StorageController(wsgi.Controller):
     def delete(self, req, id):
         return webob.Response(status_int=http_client.ACCEPTED)
 
+    @wsgi.response(202)
     def sync_all(self, req):
-        return dict(name="Sync all storages")
+        """
+        :param req:
+        :return: it's a Asynchronous call. so return 202 on success. sync_all
+        api performs the storage device info, pool, volume etc. tasks on each
+        registered storage device.
+        """
+        ctxt = req.environ['dolphin.context']
 
+        storages = db.storage_get_all(ctxt)
+        LOG.debug("Total {0} registered storages found in database".
+                  format(len(storages)))
+
+        for storage in storages:
+            for subclass in task.StorageResourceTask.__subclasses__():
+                self.task_rpcapi.sync_storage_resource(
+                    ctxt,
+                    storage['id'],
+                    subclass.__module__ + '.' + subclass.__name__)
+
+    @wsgi.response(202)
     def sync(self, req, id):
         """
         :param req:
@@ -168,22 +157,36 @@ class StorageController(wsgi.Controller):
         :return:
         """
         # validate the id
-        context = req.environ.get('dolphin.context')
-        # admin_context = context.RequestContext('admin', 'fake', True)
+        ctxt = req.environ['dolphin.context']
         try:
-            device = db.access_info_get(context, id)
-        except Exception as e:
+            storage = db.storage_get(ctxt, id)
+        except exception.StorageNotFound as e:
             LOG.error(e)
-            raise exception.AccessInfoNotFound(e)
+            raise exc.HTTPNotFound(explanation=e.msg)
+        else:
+            for subclass in task.StorageResourceTask.__subclasses__():
+                self.task_rpcapi.sync_storage_resource(
+                    ctxt,
+                    storage['id'],
+                    subclass.__module__ + '.' + subclass.__name__
+                )
 
-        tasks = (
-            'pool_task',
-            'volume_task'
-        )
-        for task in tasks:
-            self.task_rpcapi.sync_storage_resource(context, id, task)
+        return
 
-        return dict(name="Sync storage 1")
+    def _is_registered(self, context, access_info):
+        access_info_dict = copy.deepcopy(access_info)
+
+        # Remove unrelated query fields
+        access_info_dict.pop('username', None)
+        access_info_dict.pop('password', None)
+        access_info_dict.pop('vendor', None)
+        access_info_dict.pop('model', None)
+
+        # Check if storage is registered
+        if db.access_info_get_all(context,
+                                  filters=access_info_dict):
+            return True
+        return False
 
 
 def create_resource():

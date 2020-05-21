@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
+
+import webob.dec
+
+from dolphin import context
+from dolphin.wsgi import common as wsgi
 
 
-def build_storages(storages):
-    # Build list of storages
-    views = [build_storage(storage)
-             for storage in storages]
-    return dict(storages=views)
+class ContextWrapper(wsgi.Middleware):
+    """Add 'dolphin.context' to req.environ"""
 
-
-def build_storage(storage):
-    view = copy.deepcopy(storage)
-    return dict(view)
+    @webob.dec.wsgify(RequestClass=wsgi.Request)
+    def __call__(self, req):
+        req.environ['dolphin.context'] = context.RequestContext()
+        return self.application

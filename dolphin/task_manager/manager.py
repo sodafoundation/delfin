@@ -21,13 +21,13 @@
 from oslo_config import cfg
 from oslo_log import log
 from oslo_service import periodic_task
+from oslo_utils import importutils
 
 from dolphin import manager, exception
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import coordination
 from dolphin.exporter import base_exporter
-from dolphin import context
-from dolphin.task_manager import resources
+
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -67,33 +67,8 @@ class TaskManager(manager.Manager):
             pass
 
     def sync_storage_resource(self, context, storage_id, resource_task):
-        """
-        :param context:
-        :param storage_id:
-        :param resource_task:
-        :return:
-        """
-        try:
-            vol_task = resources.StorageVolumeTask(context, storage_id)
-            pol_task = resources.StoragePoolTask(context, storage_id)
-            [pol_task if resource_task == 'pool_task' else vol_task]\
-                .pop().sync()
-        except Exception as e:
-            LOG.erro(e)
-            raise exception.DolphinException(e)
-
-    def remove_storage_resource(self, context, storage_id, resource_task):
-        """
-        :param context:
-        :param storage_id:
-        :param resource_task:
-        :return:
-        """
-        try:
-            vol_task = resources.StorageVolumeTask(context, storage_id)
-            pol_task = resources.StoragePoolTask(context, storage_id)
-            [pol_task if resource_task == 'pool_task' else vol_task] \
-                .pop().remove()
-        except Exception as e:
-            LOG.erro(e)
-            raise exception.DolphinException(e)
+        LOG.debug("Received the sync_storage task: {0} request for storage"
+                  " id:{1}".format(resource_task, storage_id))
+        cls = importutils.import_class(resource_task)
+        device_obj = cls(context, storage_id)
+        device_obj.sync()

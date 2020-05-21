@@ -142,14 +142,29 @@ def volume_get_all(context, marker=None, limit=None, sort_keys=None,
                                sort_dirs, filters, offset)
 
 
-def pool_create(context, values):
-    """Create a pool from the values dictionary."""
-    return IMPL.pool_create(context, values)
+def pool_create(context, pool):
+    """Add a pool."""
+    return IMPL.pool_create(context, pool)
 
 
-def pool_update(context, pool_id, values):
-    """Update a pool withe the values dictionary."""
-    return IMPL.pool_update(context, pool_id, values)
+def pools_create(context, pools):
+    """Add multiple pools."""
+    return IMPL.pools_create(context, pools)
+
+
+def pool_update(context, pool_id, pool):
+    """Update a pool."""
+    return IMPL.pool_update(context, pool_id, pool)
+
+
+def pools_update(context, pools):
+    """Update multiple pools"""
+    return IMPL.pool_update(context, pools)
+
+
+def pools_delete(context, pools):
+    """Delete pools."""
+    return IMPL.pools_delete(context, pools)
 
 
 def pool_get(context, pool_id):
@@ -262,3 +277,28 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     """
     return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
                                     filters, offset)
+
+
+def is_orm_value(obj):
+    """Check if object is an ORM field."""
+    return IMPL.is_orm_value(obj)
+
+
+def alert_source_create(context, values):
+    """Create an alert source."""
+    return IMPL.alert_source_create(context, values)
+
+
+def alert_source_update(context, storage_id, values):
+    """Update an alert source."""
+    return IMPL.alert_source_update(context, storage_id, values)
+
+
+def alert_source_get(context, storage_id):
+    """Get an alert source."""
+    return IMPL.alert_source_get(context, storage_id)
+
+
+def alert_source_delete(context, storage_id):
+    """Delete an alert source."""
+    return IMPL.alert_source_delete(context, storage_id)

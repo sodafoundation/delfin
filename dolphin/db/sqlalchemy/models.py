@@ -23,7 +23,7 @@ import json
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_db.sqlalchemy.types import JsonEncodedDict
-from sqlalchemy import Column, Integer, String, Numeric, Boolean
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 CONF = cfg.CONF
@@ -47,10 +47,13 @@ class DolphinBase(models.ModelBase,
 class AccessInfo(BASE, DolphinBase):
     """Represent access info required for storage accessing."""
     __tablename__ = "access_info"
-    storage_id = Column(String(128), primary_key=True)
-    hostname = Column(String(128))
-    username = Column(String(128))
-    password = Column(String(128))
+    storage_id = Column(String(36), primary_key=True)
+    host = Column(String(255))
+    port = Column(String(255))
+    username = Column(String(255))
+    password = Column(String(255))
+    vendor = Column(String(255))
+    model = Column(String(255))
     extra_attributes = Column(JsonEncodedDict)
 
 
@@ -58,35 +61,35 @@ class Storage(BASE, DolphinBase):
     """Represents a storage object."""
 
     __tablename__ = 'storages'
-    id = Column(String(128), primary_key=True)
-    name = Column(String(128))
-    vendor = Column(String(128))
-    description = Column(String(256))
-    model = Column(String(128))
-    status = Column(String(128))
-    serial_number = Column(String(128))
-    firmware_version = Column(String(128))
-    location = Column(String(128))
-    total_capacity = Column(Numeric)
-    used_capacity = Column(Numeric)
-    free_capacity = Column(Numeric)
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    vendor = Column(String(255))
+    description = Column(String(255))
+    model = Column(String(255))
+    status = Column(String(255))
+    serial_number = Column(String(255))
+    firmware_version = Column(String(255))
+    location = Column(String(255))
+    total_capacity = Column(Integer)
+    used_capacity = Column(Integer)
+    free_capacity = Column(Integer)
 
 
 class Volume(BASE, DolphinBase):
     """Represents a volume object."""
     __tablename__ = 'volumes'
-    id = Column(String(128), primary_key=True)
-    name = Column(String(128))
-    storage_id = Column(String(128))
-    original_pool_id = Column(String(128))
-    description = Column(String(128))
-    status = Column(String(128))
-    original_id = Column(String(128))
-    wwn = Column(String(128))
-    provisioning_policy = Column(String(128))
-    total_capacity = Column(Numeric)
-    used_capacity = Column(Numeric)
-    free_capacity = Column(Numeric)
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(36))
+    original_pool_id = Column(String(255))
+    description = Column(String(255))
+    status = Column(String(255))
+    original_id = Column(String(255))
+    wwn = Column(String(255))
+    provisioning_policy = Column(String(255))
+    total_capacity = Column(Integer)
+    used_capacity = Column(Integer)
+    free_capacity = Column(Integer)
     compressed = Column(Boolean)
     deduplicated = Column(Boolean)
 
@@ -94,27 +97,43 @@ class Volume(BASE, DolphinBase):
 class Pool(BASE, DolphinBase):
     """Represents a pool object."""
     __tablename__ = 'pools'
-    id = Column(String(128), primary_key=True)
-    name = Column(String(128))
-    storage_id = Column(String(128))
-    original_id = Column(String(128))
-    description = Column(String(256))
-    status = Column(String(128))
-    storage_type = Column(String(128))
-    total_capacity = Column(Numeric)
-    used_capacity = Column(Numeric)
-    free_capacity = Column(Numeric)
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(36))
+    original_id = Column(String(255))
+    description = Column(String(255))
+    status = Column(String(255))
+    storage_type = Column(String(255))
+    total_capacity = Column(Integer)
+    used_capacity = Column(Integer)
+    free_capacity = Column(Integer)
 
 
 class Disk(BASE, DolphinBase):
     """Represents a disk object."""
     __tablename__ = 'disks'
-    id = Column(String(128), primary_key=True)
-    name = Column(String(128))
-    status = Column(String(128))
-    vendor = Column(String(128))
-    original_id = Column(String(128))
-    serial_number = Column(String(128))
-    model = Column(String(128))
-    media_type = Column(String(128))
-    capacity = Column(Numeric)
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    status = Column(String(255))
+    vendor = Column(String(255))
+    original_id = Column(String(255))
+    serial_number = Column(String(255))
+    model = Column(String(255))
+    media_type = Column(String(255))
+    capacity = Column(Integer)
+
+
+class AlertSource(BASE, DolphinBase):
+    """Represents an alert source configuration."""
+    __tablename__ = 'alert_source'
+    storage_id = Column(String(36), primary_key=True)
+    host = Column(String(255))
+    version = Column(String(255))
+    community_string = Column(String(255))
+    username = Column(String(255))
+    security_level = Column(String(255))
+    auth_key = Column(String(255))
+    auth_protocol = Column(String(255))
+    privacy_protocol = Column(String(255))
+    privacy_key = Column(String(255))
+    engine_id = Column(String(255))

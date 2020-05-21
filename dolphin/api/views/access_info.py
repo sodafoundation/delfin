@@ -11,16 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 
 
-def build_storages(storages):
-    # Build list of storages
-    views = [build_storage(storage)
-             for storage in storages]
-    return dict(storages=views)
+class ViewBuilder(object):
 
-
-def build_storage(storage):
-    view = copy.deepcopy(storage)
-    return dict(view)
+    def show(self, access_info):
+        access_info_dict = access_info.to_dict()
+        access_info_dict.pop('password', None)
+        return access_info_dict
