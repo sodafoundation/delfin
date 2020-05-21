@@ -365,22 +365,15 @@ def volumes_delete(context, volumes_id_list):
 def volume_update(context, vol_id, values):
     """Update a volume."""
     session = get_session()
-
     with session.begin():
-        query = _volume_get_query(context, session)
-        result = query.filter_by(id=vol_id).update(values)
-        if not result:
-            raise exception.VolumeNotFound(id=vol_id)
-    return result
+        _volume_get(context, vol_id, session).update(values)
+    return _volume_get(context, vol_id, session)
 
 
 def volumes_update(context, volumes):
     """Update multiple volumes."""
     session = get_session()
-
     with session.begin():
-        updated_vol = []
-        not_updated_vol = []
         for vol in volumes:
             LOG.debug('updating volume {0}:'.format(vol.get('id')))
             query = _volume_get_query(context, session)
@@ -388,17 +381,7 @@ def volumes_update(context, volumes):
                                      ).update(vol)
 
             if not result:
-                LOG.error(exception.VolumeNotFound(id=vol.get(
-                    'id')))
-                not_updated_vol.append(vol)
-            else:
-                updated_vol.append(result)
-
-        if not_updated_vol:
-            msg = _("Few volumes are not updated.")
-            raise exception.DolphinException(msg)
-
-    return updated_vol, not_updated_vol
+                LOG.debug(exception.VolumeNotFound(id=vol.get('id')))
 
 
 def volume_get(context, vol_id):
