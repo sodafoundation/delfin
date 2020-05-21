@@ -125,3 +125,58 @@ class VMAXClient(object):
             LOG.error("Failed to get pool metrics from VMAX: {}".format(err))
             raise exception.StorageBackendException(
                 reason='Failed to get pool metrics from VMAX')
+
+    def list_volumes(self, storage_id):
+
+        try:
+            # List all volumes
+            volumes = self.conn.provisioning.get_volume_list(filters={'data_volume': 'false'})
+
+            volume_list = []
+            for volume in volumes:
+                # Get volume details
+                vol = self.conn.provisioning.get_volume(volume)
+
+                total_cap = vol['cap_mb'] * units.Mi
+                used_cap = (total_cap * vol['allocated_percent']) / 100.0
+                free_cap = total_cap - used_cap
+
+                # TODO: Update constants.VolumeStatus to make mapping more precise
+                switcher = {
+                    'Ready': constants.VolumeStatus.AVAILABLE,
+                    'Not Ready': constants.VolumeStatus.ERROR,
+                    'Mixed': constants.VolumeStatus.ERROR,
+                    'Write Disabled': constants.VolumeStatus.ERROR,
+                    'N/A': constants.VolumeStatus.ERROR,
+                }
+                status = switcher.get(vol['status'], constants.VolumeStatus.ERROR)
+
+                v = {
+                    "name": volume,
+                    "storage_id": storage_id,
+                    "description": vol['type'],
+                    "status": status,
+                    "original_id": vol['volumeId'],
+                    "wwn": vol['wwn'],
+                    "storage_type": constants.StorageType.BLOCK,
+                    "total_capacity": int(total_cap),
+                    "used_capacity": int(used_cap),
+                    "free_capacity": int(free_cap),
+                }
+
+                if vol['num_of_storage_groups'] == 1:
+                    sg = vol['storageGroupId'][0]
+                    sg_info = self.conn.provisioning.get_storage_group(sg)
+                    v['original_pool_id'] = sg_info['srp']
+                    v['compressed'] = sg_info['compression']
+
+                # TODO: Workaround when SG is, not available/not unique
+
+                volume_list.append(v)
+
+            return volume_list
+
+        except Exception as err:
+            LOG.error("Failed to get list volumes from vmax: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get list volumes from VMAX')
