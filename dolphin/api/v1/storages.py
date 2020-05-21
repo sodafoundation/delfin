@@ -22,7 +22,7 @@ from oslo_log import log
 
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import storages as schema_storages
-from dolphin.api import validation
+from dolphin.api import validation, api_utils
 from dolphin.api.views import storages as storage_view
 from dolphin import context
 from dolphin import coordination
@@ -59,34 +59,28 @@ class StorageController(wsgi.Controller):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
         self.driver_api = driverapi.API()
+        self.search_options = ['name', 'vendor', 'model', 'status', 'serial_number']
+
+    def _get_storages_search_options(self):
+        """Return storages search options allowed ."""
+        return self.search_options
 
     def index(self, req):
-
+        ctxt = req.environ['dolphin.context']
         supported_filters = ['name', 'vendor', 'model', 'status']
         query_params = {}
         query_params.update(req.GET)
         # update options  other than filters
-        sort_keys = (lambda x: [x] if x is not None else x)(query_params.get('sort_key'))
-        sort_dirs = (lambda x: [x] if x is not None else x)(query_params.get('sort_dir'))
-        limit = query_params.get('limit', None)
-        offset = query_params.get('offset', None)
-        marker = query_params.get('marker', None)
-        # strip out options except supported filter options
-        filters = query_params
-        unknown_options = [opt for opt in filters
-                           if opt not in supported_filters]
-        bad_options = ", ".join(unknown_options)
-        LOG.debug("Removing options '%(bad_options)s' from query",
-                  {"bad_options": bad_options})
-        for opt in unknown_options:
-            del filters[opt]
+        sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
+        marker, limit, offset = api_utils.get_pagination_params(query_params)
+        # strip out options except supported search  options
+        api_utils.remove_invalid_options(ctxt, query_params,
+                                         self._get_storages_search_options())
         try:
-            storages = db.storage_get_all(context, marker, limit, sort_keys, sort_dirs, filters, offset)
+            storages = db.storage_get_all(context, marker, limit, sort_keys,
+                                          sort_dirs, query_params, offset)
         except  exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
-        except Exception as e:
-            msg = "Error in storage_get_all query from DB "
-            raise exc.HTTPNotFound(explanation=msg)
         return storage_view.build_storages(storages)
 
     def show(self, req, id):
@@ -95,7 +89,6 @@ class StorageController(wsgi.Controller):
         except exception.StorageNotFound as e:
             raise exc.HTTPNotFound(explanation=e.message)
         return storage_view.build_storage(storage)
-
 
     @wsgi.response(201)
     @validation.schema(schema_storages.create)
@@ -135,8 +128,26 @@ class StorageController(wsgi.Controller):
     def delete(self, req, id):
         return webob.Response(status_int=http_client.ACCEPTED)
 
+    @wsgi.response(202)
     def sync_all(self, req):
-        return dict(name="Sync all storages")
+        """
+        :param req:
+        :return: it's a Asynchronous call. so return 202 on success. sync_all
+        api performs the storage device info, pool, volume etc. tasks on each
+        registered storage device.
+        """
+        ctxt = req.environ['dolphin.context']
+
+        storages = db.storage_get_all(ctxt)
+        LOG.debug("Total {0} registered storages found in database".
+                  format(len(storages)))
+
+        for storage in storages:
+            for subclass in task.StorageResourceTask.__subclasses__():
+                self.task_rpcapi.sync_storage_resource(
+                    ctxt,
+                    storage['id'],
+                    subclass.__module__ + '.' + subclass.__name__)
 
     @wsgi.response(202)
     def sync(self, req, id):

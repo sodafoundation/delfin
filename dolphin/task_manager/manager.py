@@ -67,7 +67,8 @@ class TaskManager(manager.Manager):
             pass
 
     def sync_storage_resource(self, context, storage_id, resource_task):
-        LOG.info("Consuming the refresh storage")
+        LOG.debug("Received the sync_storage task: {0} request for storage"
+                  " id:{1}".format(resource_task, storage_id))
         cls = importutils.import_class(resource_task)
         device_obj = cls(context, storage_id)
         device_obj.sync()
