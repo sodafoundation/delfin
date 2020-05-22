@@ -28,6 +28,32 @@ class StorageResourceTask(object):
         self.context = context
         self.driver_api = driverapi.API()
 
+    def _classify_resources(self, storage_resources, db_resources):
+        """
+        :param storage_resources:
+        :param db_resources:
+        :return: it will return three list add_list: the items present in
+        storage but not in current_db. update_list:the items present in
+        storage and in current_db. delete_id_list:the items present not in
+        storage but present in current_db.
+        """
+        original_ids_in_db = [resource['original_id']
+                              for resource in db_resources]
+        delete_id_list = [resource['id'] for resource in db_resources]
+        add_list = []
+        update_list = []
+
+        for resource in storage_resources:
+            if resource['original_id'] in original_ids_in_db:
+                resource['id'] = db_resources[original_ids_in_db.index(
+                    resource['original_id'])]['id']
+                delete_id_list.remove(resource['id'])
+                update_list.append(resource)
+            else:
+                add_list.append(resource)
+
+        return add_list, update_list, delete_id_list
+
 
 class StorageDeviceTask(StorageResourceTask):
     def __init__(self, context, storage_id):
@@ -66,31 +92,6 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
-    def _classify_pools(self, storage_pools, db_pools):
-        """
-        :param storage_pools:
-        :param db_pools:
-        :return: it will return three list add_list: the items present in
-        storage but not in current_db. update_list:the items present in
-        storage and in current_db. delete_id_list:the items present not in
-        storage but present in current_db.
-        """
-        original_ids_in_db = [pool['original_id'] for pool in db_pools]
-        delete_id_list = [pool['id'] for pool in db_pools]
-        add_list = []
-        update_list = []
-
-        for pool in storage_pools:
-            if pool['original_id'] in original_ids_in_db:
-                pool['id'] = db_pools[original_ids_in_db.index(
-                    pool['original_id'])]['id']
-                delete_id_list.remove(pool['id'])
-                update_list.append(pool)
-            else:
-                add_list.append(pool)
-
-        return add_list, update_list, delete_id_list
-
     def sync(self):
         """
         :return:
@@ -102,14 +103,17 @@ class StoragePoolTask(StorageResourceTask):
                                                        self.storage_id)
             db_pools = db.pool_get_all(self.context)
 
-            add_list, update_list, delete_id_list = self._classify_pools(
+            add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools
             )
-            db.pools_delete(self.context, delete_id_list)
+            if delete_id_list:
+                db.pools_delete(self.context, delete_id_list)
 
-            db.pools_update(self.context, update_list)
+            if update_list:
+                db.pools_update(self.context, update_list)
 
-            db.pools_create(self.context, add_list)
+            if add_list:
+                db.pools_create(self.context, add_list)
         except AttributeError as e:
             LOG.error(e)
         except Exception as e:
@@ -127,6 +131,42 @@ class StoragePoolTask(StorageResourceTask):
 class StorageVolumeTask(StorageResourceTask):
     def sync(self):
         pass
+
+
+class StorageVolumeTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageVolumeTask, self).__init__(context, storage_id)
+
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing volumes for storage id:{0}'.format(self.storage_id))
+        try:
+            # collect the volumes list from driver and database
+            storage_volumes = self.driver_api.list_volumes(self.context,
+                                                           self.storage_id)
+            db_volumes = db.volume_get_all(self.context)
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_volumes, db_volumes
+            )
+            if delete_id_list:
+                db.volumes_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.volumes_update(self.context, update_list)
+
+            if add_list:
+                db.volumes_create(self.context, add_list)
+        except AttributeError as e:
+            LOG.error(e)
+        except Exception as e:
+            msg = _('Failed to sync volumes entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing volumes successful!!!")
 
     def remove(self):
         LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
