@@ -16,8 +16,8 @@
 Client side of the task manager RPC API.
 """
 
-from oslo_config import cfg
 import oslo_messaging as messaging
+from oslo_config import cfg
 from oslo_serialization import jsonutils
 
 from dolphin import rpc
@@ -63,3 +63,9 @@ class TaskAPI(object):
                                  'remove_storage_resource',
                                  storage_id=storage_id,
                                  resource_task=resource_task)
+
+    def remove_storage_in_cache(self, context, storage_id):
+        call_context = self.client.prepare(version='1.0', fanout=True)
+        return call_context.cast(context,
+                                 'remove_storage_in_cache',
+                                 storage_id=storage_id)

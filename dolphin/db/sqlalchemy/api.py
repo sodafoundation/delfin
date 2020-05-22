@@ -213,6 +213,11 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    _access_info_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
 @apply_like_filters(model=models.AccessInfo)
 def _process_access_info_filters(query, filters):
     """Common filter processing for AccessInfo queries."""
@@ -295,15 +300,29 @@ def _process_storage_info_filters(query, filters):
     return query
 
 
+def storage_delete(context, storage_id):
+    """Delete a storage device."""
+    _storage_get_query(context).filter_by(id=storage_id).delete()
+
+
 def volume_get(context, volume_id):
     """Get a volume or raise an exception if it does not exist."""
     return NotImplemented
+
+
+def _volume_get_query(context, session=None):
+    return model_query(context, models.Volume, session=session)
 
 
 def volume_get_all(context, marker=None, limit=None, sort_keys=None,
                    sort_dirs=None, filters=None, offset=None):
     """Retrieves all volumes."""
     return NotImplemented
+
+
+def volume_delete_by_storage(context, storage_id):
+    """Delete all the volumes of a device"""
+    _volume_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 def _pool_get_query(context, session=None):
@@ -429,6 +448,11 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
         if query is None:
             return []
         return query.all()
+
+
+def pool_delete_by_storage(context, storage_id):
+    """Delete all the pools of a storage device"""
+    _pool_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 @apply_like_filters(model=models.Pool)

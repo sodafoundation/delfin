@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import copy
 
 from oslo_log import log
 
-from dolphin import exception
-from dolphin.drivers import api as driverapi
 from dolphin.db.sqlalchemy import api as db
+from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
@@ -54,7 +52,14 @@ class StorageDeviceTask(StorageResourceTask):
             LOG.info("Syncing storage successful!!!")
 
     def remove(self):
-        pass
+        LOG.info('Remove storage device for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            db.storage_delete(self.context, self.storage_id)
+            db.access_info_delete(self.context, self.storage_id)
+            db.alert_source_delete(self.context, self.storage_id)
+        except Exception as e:
+            LOG.error('Failed to update storage entry in DB: {0}'.format(e))
 
 
 class StoragePoolTask(StorageResourceTask):
@@ -115,4 +120,14 @@ class StoragePoolTask(StorageResourceTask):
             LOG.info("Syncing pools successful!!!")
 
     def remove(self):
+        LOG.info('Remove pools for storage id:{0}'.format(self.storage_id))
+        db.pool_delete_by_storage(self.context, self.storage_id)
+
+
+class StorageVolumeTask(StorageResourceTask):
+    def sync(self):
         pass
+
+    def remove(self):
+        LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
+        db.volume_delete_by_storage(self.context, self.storage_id)

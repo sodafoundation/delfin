@@ -13,26 +13,24 @@
 # limitations under the License.
 
 import copy
+
 import six
-from six.moves import http_client
-import webob
+from oslo_log import log
 from webob import exc
 
-from oslo_log import log
-
-from dolphin.api.common import wsgi
-from dolphin.api.schemas import storages as schema_storages
-from dolphin.api import validation, api_utils
-from dolphin.api.views import storages as storage_view
 from dolphin import context
 from dolphin import coordination
 from dolphin import cryptor
 from dolphin import db
-from dolphin.drivers import api as driverapi
 from dolphin import exception
+from dolphin.api import api_utils
+from dolphin.api import validation
+from dolphin.api.common import wsgi
+from dolphin.api.schemas import storages as schema_storages
+from dolphin.api.views import storages as storage_view
+from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
-from dolphin import utils
 from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
@@ -125,8 +123,21 @@ class StorageController(wsgi.Controller):
     def update(self, req, id, body):
         return dict(name="Storage 4")
 
+    @wsgi.response(202)
     def delete(self, req, id):
-        return webob.Response(status_int=http_client.ACCEPTED)
+        ctxt = req.environ['dolphin.context']
+        try:
+            storage = db.storage_get(ctxt, id)
+        except exception.StorageNotFound as e:
+            LOG.error(e)
+            raise exc.HTTPBadRequest(explanation=e.msg)
+        else:
+            for subclass in task.StorageResourceTask.__subclasses__():
+                self.task_rpcapi.remove_storage_resource(
+                    ctxt,
+                    storage['id'],
+                    subclass.__module__ + '.' + subclass.__name__)
+            self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
 
     @wsgi.response(202)
     def sync_all(self, req):
