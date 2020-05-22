@@ -397,7 +397,7 @@ def volumes_update(context, volumes):
 
 def volume_get(context, volume_id):
     """Get a volume or raise an exception if it does not exist."""
-    return _volume_get(context, vol_id)
+    return _volume_get(context, volume_id)
 
 
 def _volume_get_query(context, session=None):

@@ -11,20 +11,50 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import six
+from webob import exc
 
+from dolphin import db, exception
+from dolphin.api import api_utils
 from dolphin.api.common import wsgi
+from dolphin.api.views import volumes as volume_view
 
 
 class VolumeController(wsgi.Controller):
 
+    def __init__(self):
+        super(VolumeController, self).__init__()
+        self.search_options = ['name', 'status', 'id', 'storage_id', 'pool_id']
+
+    def _get_volumes_search_options(self):
+        """Return volumes search options allowed ."""
+        return self.search_options
+
     def index(self, req):
-        return dict(name="Storage volume 1")
+        ctxt = req.environ['dolphin.context']
+        query_params = {}
+        query_params.update(req.GET)
+        # update options  other than filters
+        sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
+        marker, limit, offset = api_utils.get_pagination_params(query_params)
+        # strip out options except supported search  options
+        api_utils.remove_invalid_options(ctxt, query_params,
+                                         self._get_volumes_search_options())
+        try:
+            volumes = db.volume_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
+                                        query_params, offset)
+        except  exception.InvalidInput as e:
+            raise exc.HTTPBadRequest(explanation=six.text_type(e))
+        return volume_view.build_volumes(volumes)
 
     def show(self, req, id):
-        return dict(name="Storage volume 2")
+        ctxt = req.environ['dolphin.context']
+        try:
+            volume = db.volume_get(ctxt, id)
+        except exception.VolumeNotFound as e:
+            raise exc.HTTPNotFound(explanation=e.msg)
+        return volume_view.build_volume(volume)
 
 
 def create_resource():
     return wsgi.Resource(VolumeController())
-
-
