@@ -213,6 +213,11 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    _access_info_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
 @apply_like_filters(model=models.AccessInfo)
 def _process_access_info_filters(query, filters):
     """Common filter processing for AccessInfo queries."""
@@ -293,6 +298,11 @@ def _process_storage_info_filters(query, filters):
             return
         query = query.filter_by(**filters)
     return query
+
+
+def storage_delete(context, storage_id):
+    """Delete a storage device."""
+    _storage_get_query(context).filter_by(id=storage_id).delete()
 
 
 def _volume_get_query(context, session=None):
@@ -384,9 +394,13 @@ def volumes_update(context, volumes):
                 LOG.debug(exception.VolumeNotFound(id=vol.get('id')))
 
 
-def volume_get(context, vol_id):
+def volume_get(context, volume_id):
     """Get a volume or raise an exception if it does not exist."""
     return _volume_get(context, vol_id)
+
+
+def _volume_get_query(context, session=None):
+    return model_query(context, models.Volume, session=session)
 
 
 def volume_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -416,6 +430,11 @@ def _process_volume_info_filters(query, filters):
     return query
 
 
+def volume_delete_by_storage(context, storage_id):
+    """Delete all the volumes of a device"""
+    _volume_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
 def _pool_get_query(context, session=None):
     return model_query(context, models.Pool, session=session)
 
@@ -426,7 +445,7 @@ def _pool_get(context, pool_id, session=None):
               .first())
 
     if not result:
-        LOG.error(exception.PoolNotFound(id=pool_id))
+        raise exception.PoolNotFound(id=pool_id)
 
     return result
 
@@ -541,6 +560,11 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
+def pool_delete_by_storage(context, storage_id):
+    """Delete all the pools of a storage device"""
+    _pool_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
 @apply_like_filters(model=models.Pool)
 def _process_pool_info_filters(query, filters):
     """Common filter processing for Pools queries."""
@@ -611,6 +635,17 @@ def _alert_source_get_query(context, session=None):
     return model_query(context, models.AlertSource, session=session)
 
 
+@apply_like_filters(model=models.AlertSource)
+def _process_alert_source_filters(query, filters):
+    """Common filter processing for alert source queries."""
+    if filters:
+        if not is_valid_model_filters(models.AlertSource, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def alert_source_create(context, values):
     """Add an alert source configuration."""
     alert_source_ref = models.AlertSource()
@@ -645,12 +680,27 @@ def alert_source_delete(context, storage_id):
             LOG.info("Delete alert source[storage_id=%s] successfully.", storage_id)
 
 
+def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
+                    sort_dirs=None, filters=None, offset=None):
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(context, session, models.AlertSource,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        if query is None:
+            return []
+        return query.all()
+
+
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
     models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
     models.Storage: (_storage_get_query, _process_storage_info_filters,
                      _storage_get),
+    models.AlertSource: (_alert_source_get_query, _process_alert_source_filters,
+                         _alert_source_get),
     models.Volume: (_volume_get_query, _process_volume_info_filters,
                     _volume_get),
 }
