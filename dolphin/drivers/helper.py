@@ -16,6 +16,8 @@ from oslo_log import log
 
 from dolphin import cryptor
 from dolphin import db
+from dolphin import exception
+from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -25,3 +27,67 @@ def get_access_info(context, storage_id):
     access_info_dict = access_info.to_dict()
     access_info_dict['password'] = cryptor.decode(access_info_dict['password'])
     return access_info_dict
+
+
+def create_access_info(context, access_info):
+    access_info['password'] = cryptor.encode(access_info['password'])
+    return db.access_info_create(context, access_info)
+
+
+def update_access_info(context, storage_id, access_info):
+    return db.access_info_update(context,
+                                 storage_id,
+                                 access_info)
+
+
+def create_storage(context, storage):
+    return db.storage_create(context, storage)
+
+
+def update_storage(context, storage_id, storage):
+    return db.storage_update(context, storage_id, storage)
+
+
+def check_storage_repetition(context, storage):
+    if not storage:
+        msg = _("Storage could not be found.")
+        raise exception.StorageNotFound(message=msg)
+
+    if not storage.get('serial_number'):
+        msg = _("Serial number should be provided by storage.")
+        raise exception.InvalidResults(message=msg)
+
+    filters = dict(serial_number=storage['serial_number'])
+    storage_list = db.storage_get_all(context, filters=filters)
+    if storage_list:
+        msg = (_("Failed to register storage. Reason: same serial number: "
+                 "%s detected.") % storage['serial_number'])
+        LOG.error(msg)
+        raise exception.InvalidRequest(msg)
+
+
+def check_storage_consistency(context, storage_id, storage_new):
+    """Check storage response returned by driver whether it matches the
+    storage stored in database.
+
+    :param context: The context of dolphin.
+    :type context: dolphin.context.RequestContext
+    :param storage_id: The uuid of storage in database.
+    :type storage_id: string
+    :param storage_new: The storage response returned by driver.
+    :type storage_new: dict
+    """
+    if not storage_new:
+        msg = _("Storage could not be found.")
+        raise exception.StorageNotFound(message=msg)
+
+    if not storage_new.get('serial_number'):
+        msg = _("Serial number should be provided by storage.")
+        raise exception.InvalidResults(message=msg)
+
+    storage_present = db.storage_get(context, storage_id)
+    if storage_new['serial_number'] != storage_present['serial_number']:
+        msg = (_("New storage serial number is not matching "
+                 "with the existing storage serial number: %s") %
+               storage_present['serial_number'])
+        raise exception.StorageSerialNumberMismatch(message=msg)

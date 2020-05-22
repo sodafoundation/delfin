@@ -23,10 +23,6 @@ class FakeStorageDriver(driver.StorageDriver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @staticmethod
-    def get_storage_registry():
-        pass
-
     def get_storage(self, context):
         # Do something here
         return {

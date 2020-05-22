@@ -48,6 +48,8 @@ class AccessInfo(BASE, DolphinBase):
     """Represent access info required for storage accessing."""
     __tablename__ = "access_info"
     storage_id = Column(String(36), primary_key=True)
+    vendor = Column(String(255))
+    model = Column(String(255))
     host = Column(String(255))
     port = Column(String(255))
     username = Column(String(255))

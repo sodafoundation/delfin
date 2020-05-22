@@ -259,14 +259,19 @@ def access_info_create(context, values):
     return IMPL.access_info_create(context, values)
 
 
-def access_info_update(context, access_info_id, values):
+def access_info_update(context, storage_id, values):
     """Update a storage access information with the values dictionary."""
-    return IMPL.access_info_update(context, access_info_id, values)
+    return IMPL.access_info_update(context, storage_id, values)
 
 
 def access_info_get(context, storage_id):
     """Get a storage access information."""
     return IMPL.access_info_get(context, storage_id)
+
+
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    return IMPL.access_info_delete(context, storage_id)
 
 
 def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -292,11 +297,6 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     """
     return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
                                     filters, offset)
-
-
-def access_info_delete(context, storage_id):
-    """Delete a storage access information."""
-    return IMPL.access_info_delete(context, storage_id)
 
 
 def is_orm_value(obj):

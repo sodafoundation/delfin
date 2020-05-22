@@ -28,11 +28,6 @@ class StorageDriver(object):
         """
         self.storage_id = kwargs.get('storage_id', None)
 
-    @staticmethod
-    def get_storage_registry():
-        """Show register parameters which the driver needs."""
-        pass
-
     @abc.abstractmethod
     def get_storage(self, context):
         """Get storage device information from storage system"""
