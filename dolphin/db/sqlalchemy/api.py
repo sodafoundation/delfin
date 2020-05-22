@@ -171,12 +171,12 @@ def access_info_create(context, values):
                             session=session)
 
 
-def access_info_update(context, access_info_id, values):
+def access_info_update(context, storage_id, values):
     """Update a storage access information with the values dictionary."""
     session = get_session()
     with session.begin():
-        _access_info_get(context, access_info_id, session).update(values)
-        return _access_info_get(context, access_info_id, session)
+        _access_info_get(context, storage_id, session).update(values)
+        return _access_info_get(context, storage_id, session)
 
 
 def access_info_delete(context, storage_id):
@@ -217,11 +217,6 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
         if query is None:
             return []
         return query.all()
-
-
-def access_info_delete(context, storage_id):
-    """Delete a storage access information."""
-    _access_info_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 @apply_like_filters(model=models.AccessInfo)

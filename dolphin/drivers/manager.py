@@ -51,7 +51,7 @@ class DriverManager(stevedore.ExtensionManager):
         :param cache_on_load: Boolean to decide whether save driver object
             in driver_factory when generating a new driver object.
             It takes effect when invoke_on_load is True.
-        :type invoke_on_load: bool
+        :type cache_on_load: bool
         :param kwargs: Parameters from access_info.
         """
         if not invoke_on_load:
@@ -96,7 +96,7 @@ class DriverManager(stevedore.ExtensionManager):
         name = '%s %s' % (kwargs.get('vendor'), kwargs.get('model'))
         if name in self.names():
             return self[name].plugin
-        else:
-            msg = (_("Storage driver '%s' could not be found.") % name)
-            LOG.error(msg)
-            raise exception.StorageDriverNotFound(message=msg)
+
+        msg = (_("Storage driver '%s' could not be found.") % name)
+        LOG.error(msg)
+        raise exception.StorageDriverNotFound(message=msg)

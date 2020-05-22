@@ -96,7 +96,7 @@ class StorageController(wsgi.Controller):
         access_info_dict = body
 
         if self._storage_exist(ctxt, access_info_dict):
-            msg = _("Storage has been registered.")
+            msg = _("Storage already exists.")
             raise exc.HTTPBadRequest(explanation=msg)
 
         try:
