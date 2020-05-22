@@ -1,12 +1,12 @@
 import sys
-import unittest
+import mock
 
 import pytest
 
 from dolphin import context
 from dolphin import exception
 
-sys.modules['dolphin.cryptor'] = unittest.mock.MagicMock()
+sys.modules['dolphin.cryptor'] = mock.MagicMock()
 from dolphin.api.v1.storages import StorageController
 from dolphin.task_manager.tasks import task
 
