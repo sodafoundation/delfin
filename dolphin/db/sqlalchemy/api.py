@@ -391,7 +391,7 @@ def volumes_update(context, volumes):
                                      ).update(vol)
 
             if not result:
-                LOG.debug(exception.VolumeNotFound(id=vol.get('id')))
+                LOG.error(exception.VolumeNotFound(id=vol.get('id')))
 
 
 def volume_get(context, volume_id):
