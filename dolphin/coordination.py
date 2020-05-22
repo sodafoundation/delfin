@@ -61,7 +61,6 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
-        LOG.info("cfg.CONF.coordination.backend_url=%s, membrid=%s" % (cfg.CONF.coordination.backend_url, member_id))
         self.coordinator = coordination.get_coordinator(
             cfg.CONF.coordination.backend_url, member_id)
         self.coordinator.start(start_heart=True)

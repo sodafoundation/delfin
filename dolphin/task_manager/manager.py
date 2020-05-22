@@ -43,11 +43,12 @@ class TaskManager(manager.Manager):
         super(TaskManager, self).__init__(*args, **kwargs)
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
-    """Periodical task, this task will use coordination for distribute synchronization."""
-
     @periodic_task.periodic_task(spacing=2, run_immediately=True)
     @coordination.synchronized('lock-task-example')
     def _task_example(self, context):
+        """Periodical task, it will use coordination for
+        distribute synchronization.
+        """
         LOG.info("Produce task, say hello ...")
         self.task_rpcapi.say_hello(context)
 

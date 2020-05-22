@@ -67,7 +67,7 @@ class TrapReceiver(object):
                     (self.trap_receiver_address, int(self.trap_receiver_port)))
             )
         except Exception:
-            raise ValueError("Port binding failed the provided port is in use.")
+            raise ValueError("Port binding failed: Port is in use.")
 
     @staticmethod
     def _extract_oid_value(var_bind):
@@ -109,9 +109,10 @@ class TrapReceiver(object):
                      context_name.prettyPrint(), exec_context['securityModel'],
                      exec_context['securityName']))
 
-        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]),
-                                        x[1]).resolveWithMib(self.mib_view_controller)
-                     for x in var_binds]
+        var_binds = [rfc1902.ObjectType(
+            rfc1902.ObjectIdentity(x[0]),
+            x[1]).resolveWithMib(self.mib_view_controller)
+            for x in var_binds]
         alert = {}
 
         for var_bind in var_binds:
@@ -122,7 +123,8 @@ class TrapReceiver(object):
         # transportAddress contains both ip and port, extract ip address
         alert['transport_address'] = exec_context['transportAddress'][0]
 
-        # Handover trap info to alert processor for model translation and export
+        # Handover trap info to alert processor for model
+        # translation and export
         try:
             alert_processor.AlertProcessor().process_alert_info(alert)
         except (exception.AccessInfoNotFound,
