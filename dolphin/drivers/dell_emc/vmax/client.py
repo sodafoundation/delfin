@@ -129,8 +129,18 @@ class VMAXClient(object):
     def list_volumes(self, storage_id):
 
         try:
-            # List all volumes
-            volumes = self.conn.provisioning.get_volume_list(filters={'data_volume': 'false'})
+            # List all volumes except data volumes
+            volumes = self.conn.provisioning.get_volume_list(
+                filters={'data_volume': 'false'})
+
+            # TODO: Update constants.VolumeStatus to make mapping more precise
+            switcher = {
+                'Ready': constants.VolumeStatus.AVAILABLE,
+                'Not Ready': constants.VolumeStatus.ERROR,
+                'Mixed': constants.VolumeStatus.ERROR,
+                'Write Disabled': constants.VolumeStatus.ERROR,
+                'N/A': constants.VolumeStatus.ERROR,
+            }
 
             volume_list = []
             for volume in volumes:
@@ -141,20 +151,17 @@ class VMAXClient(object):
                 used_cap = (total_cap * vol['allocated_percent']) / 100.0
                 free_cap = total_cap - used_cap
 
-                # TODO: Update constants.VolumeStatus to make mapping more precise
-                switcher = {
-                    'Ready': constants.VolumeStatus.AVAILABLE,
-                    'Not Ready': constants.VolumeStatus.ERROR,
-                    'Mixed': constants.VolumeStatus.ERROR,
-                    'Write Disabled': constants.VolumeStatus.ERROR,
-                    'N/A': constants.VolumeStatus.ERROR,
-                }
-                status = switcher.get(vol['status'], constants.VolumeStatus.ERROR)
+                status = switcher.get(vol['status'],
+                                      constants.VolumeStatus.ERROR)
+
+                description = "Dell EMC VMAX volume"
+                if vol['type'] == 'TDEV':
+                    description = "Dell EMC VMAX 'thin device' volume"
 
                 v = {
                     "name": volume,
                     "storage_id": storage_id,
-                    "description": vol['type'],
+                    "description": description,
                     "status": status,
                     "original_id": vol['volumeId'],
                     "wwn": vol['wwn'],
@@ -177,6 +184,6 @@ class VMAXClient(object):
             return volume_list
 
         except Exception as err:
-            LOG.error("Failed to get list volumes from vmax: {}".format(err))
+            LOG.error("Failed to get list volumes from VMAX: {}".format(err))
             raise exception.StorageBackendException(
                 reason='Failed to get list volumes from VMAX')

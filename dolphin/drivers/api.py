@@ -82,7 +82,7 @@ class API(object):
 
     def list_volumes(self, context, storage_id):
         """List all storage volumes from storage system."""
-        driver = self.driver_manager.get_driver(context, storage_id)
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_volumes(context)
 
     def add_trap_config(self, context, storage_id, trap_config):
