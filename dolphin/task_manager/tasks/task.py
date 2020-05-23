@@ -63,9 +63,11 @@ class StorageDeviceTask(StorageResourceTask):
         """
         :return:
         """
-        LOG.info('Syncing storage device for storage id:{0}'.format(self.storage_id))
+        LOG.info('Syncing storage device for storage id:{0}'.format(
+            self.storage_id))
         try:
-            storage = self.driver_api.get_storage(self.context, self.storage_id)
+            storage = self.driver_api.get_storage(self.context,
+                                                  self.storage_id)
 
             db.storage_update(self.context, self.storage_id, storage)
         except AttributeError as e:

@@ -221,8 +221,8 @@ class AlertMngrService(service.Service):
     """Service object for triggering trap receiver functionalities.
     """
 
-    def __init__(self, trap_receiver_address=None,
-                 trap_receiver_port=None, snmp_mib_path=None, trap_receiver_class=None):
+    def __init__(self, trap_receiver_address=None, trap_receiver_port=None,
+                 snmp_mib_path=None, trap_receiver_class=None):
         super(AlertMngrService, self).__init__()
 
         if not trap_receiver_address:
