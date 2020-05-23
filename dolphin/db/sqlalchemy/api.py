@@ -48,9 +48,9 @@ db_options.set_defaults(cfg.CONF,
 
 def apply_sorting(model, query, sort_key, sort_dir):
     if sort_dir.lower() not in ('desc', 'asc'):
-        msg = ("Wrong sorting data provided: sort key is '%(sort_key)s' "
-               "and sort order is '%(sort_dir)s'.") % {
-                  "sort_key": sort_key, "sort_dir": sort_dir}
+        msg = (("Wrong sorting data provided: sort key is '%(sort_key)s' "
+                "and sort order is '%(sort_dir)s'.") %
+               {"sort_key": sort_key, "sort_dir": sort_dir})
         raise exception.InvalidInput(reason=msg)
 
     sort_attr = getattr(model, sort_key)
@@ -172,12 +172,18 @@ def access_info_create(context, values):
                             session=session)
 
 
-def access_info_update(context, access_info_id, values):
+def access_info_update(context, storage_id, values):
     """Update a storage access information with the values dictionary."""
     session = get_session()
     with session.begin():
-        result = _access_info_get(context, access_info_id, session).update(values)
-        return result
+        _access_info_get(context, storage_id, session).update(values)
+        return _access_info_get(context, storage_id, session)
+
+
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    _access_info_get_query(context). \
+        filter_by(storage_id=storage_id).delete()
 
 
 def access_info_get(context, storage_id):
@@ -296,15 +302,134 @@ def _process_storage_info_filters(query, filters):
     return query
 
 
+def storage_delete(context, storage_id):
+    """Delete a storage device."""
+    _storage_get_query(context).filter_by(id=storage_id).delete()
+
+
+def _volume_get_query(context, session=None):
+    return model_query(context, models.Volume, session=session)
+
+
+def _volume_get(context, volume_id, session=None):
+    result = (_volume_get_query(context, session=session)
+              .filter_by(id=volume_id)
+              .first())
+
+    if not result:
+        raise exception.VolumeNotFound(id=volume_id)
+
+    return result
+
+
+def volume_create(context, values):
+    """Create a volume."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    vol_ref = models.Volume()
+    vol_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(vol_ref)
+
+    return _volume_get(context,
+                       vol_ref['id'],
+                       session=session)
+
+
+def volumes_create(context, volumes):
+    """Create multiple volumes."""
+    session = get_session()
+    vol_refs = []
+    with session.begin():
+
+        for vol in volumes:
+            LOG.debug('adding new volume for original_id {0}:'
+                      .format(vol.get('original_id')))
+            if not vol.get('id'):
+                vol['id'] = uuidutils.generate_uuid()
+
+            vol_ref = models.Volume()
+            vol_ref.update(vol)
+            vol_refs.append(vol_ref)
+
+        session.add_all(vol_refs)
+
+    return vol_refs
+
+
+def volumes_delete(context, volumes_id_list):
+    """Delete multiple volumes."""
+    session = get_session()
+    with session.begin():
+        for vol_id in volumes_id_list:
+            LOG.debug('deleting volume {0}:'.format(vol_id))
+            query = _volume_get_query(context, session)
+            result = query.filter_by(id=vol_id).delete()
+
+            if not result:
+                LOG.error(exception.VolumeNotFound(id=vol_id))
+    return
+
+
+def volume_update(context, vol_id, values):
+    """Update a volume."""
+    session = get_session()
+    with session.begin():
+        _volume_get(context, vol_id, session).update(values)
+    return _volume_get(context, vol_id, session)
+
+
+def volumes_update(context, volumes):
+    """Update multiple volumes."""
+    session = get_session()
+    with session.begin():
+        for vol in volumes:
+            LOG.debug('updating volume {0}:'.format(vol.get('id')))
+            query = _volume_get_query(context, session)
+            result = query.filter_by(id=vol.get('id')
+                                     ).update(vol)
+
+            if not result:
+                LOG.error(exception.VolumeNotFound(id=vol.get('id')))
+
+
 def volume_get(context, volume_id):
     """Get a volume or raise an exception if it does not exist."""
-    return NotImplemented
+    return _volume_get(context, volume_id)
 
 
 def volume_get_all(context, marker=None, limit=None, sort_keys=None,
                    sort_dirs=None, filters=None, offset=None):
-    """Retrieves all volumes."""
-    return NotImplemented
+    """Retrieves all storage volumes."""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Volume,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No volume would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Volume)
+def _process_volume_info_filters(query, filters):
+    """Common filter processing for volumes queries."""
+    if filters:
+        if not is_valid_model_filters(models.Volume, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def volume_delete_by_storage(context, storage_id):
+    """Delete all the volumes of a device"""
+    _volume_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 def _pool_get_query(context, session=None):
@@ -317,7 +442,7 @@ def _pool_get(context, pool_id, session=None):
               .first())
 
     if not result:
-        LOG.error(exception.PoolNotFound(id=pool_id))
+        raise exception.PoolNotFound(id=pool_id)
 
     return result
 
@@ -432,6 +557,11 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
+def pool_delete_by_storage(context, storage_id):
+    """Delete all the pools of a storage device"""
+    _pool_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
 @apply_like_filters(model=models.Pool)
 def _process_pool_info_filters(query, filters):
     """Common filter processing for Pools queries."""
@@ -502,6 +632,17 @@ def _alert_source_get_query(context, session=None):
     return model_query(context, models.AlertSource, session=session)
 
 
+@apply_like_filters(model=models.AlertSource)
+def _process_alert_source_filters(query, filters):
+    """Common filter processing for alert source queries."""
+    if filters:
+        if not is_valid_model_filters(models.AlertSource, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def alert_source_create(context, values):
     """Add an alert source configuration."""
     alert_source_ref = models.AlertSource()
@@ -536,12 +677,29 @@ def alert_source_delete(context, storage_id):
             LOG.info("Delete alert source[storage_id=%s] successfully.", storage_id)
 
 
+def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
+                         sort_dirs=None, filters=None, offset=None):
+    session = get_session()
+    with session.begin():
+        query = _generate_paginate_query(context, session, models.AlertSource,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        if query is None:
+            return []
+        return query.all()
+
+
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
     models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
     models.Storage: (_storage_get_query, _process_storage_info_filters,
                      _storage_get),
+    models.AlertSource: (_alert_source_get_query, _process_alert_source_filters,
+                         _alert_source_get),
+    models.Volume: (_volume_get_query, _process_volume_info_filters,
+                    _volume_get),
 }
 
 
@@ -618,7 +776,7 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
 
 def _generate_paginate_query(context, session, paginate_type, marker,
                              limit, sort_keys, sort_dirs, filters,
-                             offset=None,
+                             offset=None
                              ):
     """Generate the query to include the filters and the paginate options.
 

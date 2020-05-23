@@ -11,18 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from dolphin.api.common import wsgi
-
-
-class VolumeController(wsgi.Controller):
-
-    def index(self, req):
-        return dict(name="Storage volume 1")
-
-    def show(self, req, id):
-        return dict(name="Storage volume 2")
+import copy
 
 
-def create_resource():
-    return wsgi.Resource(VolumeController())
+def build_pools(pools):
+    # Build list of pools
+    views = [build_pool(pool)
+             for pool in pools]
+    return dict(pools=views)
+
+
+def build_pool(pool):
+    view = copy.deepcopy(pool)
+    return dict(view)

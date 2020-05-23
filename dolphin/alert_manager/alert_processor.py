@@ -47,13 +47,13 @@ class AlertProcessor(object):
             access_info = db.access_info_get_all(ctxt, filters=filters)
         except Exception:
             msg = "Access information could not be found with host %s." \
-                    % alert['transport_address']
+                  % alert['transport_address']
             raise exception.AccessInfoNotFound(message=msg)
 
         # For given source ip, there should be unique access_info
         if len(access_info) != 1:
             msg = "Failed to get unique access information with host %s." \
-                    % alert['transport_address']
+                  % alert['transport_address']
             raise exception.InvalidResults(message=msg)
 
         try:
@@ -80,4 +80,3 @@ class AlertProcessor(object):
     def _export_alert_model(self, alert_model):
         """Exports the filled alert model to the export manager."""
         LOG.info('Alert model to be exported: %s.', alert_model)
-

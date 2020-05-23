@@ -103,14 +103,34 @@ def storage_update(context, storage_id, values):
     return IMPL.storage_update(context, storage_id, values)
 
 
+def storage_delete(context, storage_id):
+    """Delete a storage device."""
+    return IMPL.storage_delete(context, storage_id)
+
+
 def volume_create(context, values):
     """Create a volume from the values dictionary."""
     return IMPL.volume_create(context, values)
 
 
+def volumes_create(context, values):
+    """Create multiple volumes."""
+    return IMPL.volumes_create(context, values)
+
+
 def volume_update(context, volume_id, values):
     """Update a volume with the values dictionary."""
     return IMPL.volume_update(context, volume_id, values)
+
+
+def volumes_update(context, values):
+    """Update multiple volumes."""
+    return IMPL.volumes_update(context, values)
+
+
+def volumes_delete(context, values):
+    """Delete multiple volumes."""
+    return IMPL.volumes_delete(context, values)
 
 
 def volume_get(context, volume_id):
@@ -143,6 +163,11 @@ def volume_get_all(context, marker=None, limit=None, sort_keys=None,
                                sort_dirs, filters, offset)
 
 
+def volume_delete_by_storage(context, storage_id):
+    """Delete all the volumes of a device."""
+    return IMPL.volume_delete_by_storage(context, storage_id)
+
+
 def pool_create(context, pool):
     """Add a pool."""
     return IMPL.pool_create(context, pool)
@@ -160,7 +185,7 @@ def pool_update(context, pool_id, pool):
 
 def pools_update(context, pools):
     """Update multiple pools"""
-    return IMPL.pool_update(context, pools)
+    return IMPL.pools_update(context, pools)
 
 
 def pools_delete(context, pools):
@@ -196,6 +221,11 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
     """
     return IMPL.pool_get_all(context, marker, limit, sort_keys, sort_dirs,
                              filters, offset)
+
+
+def pool_delete_by_storage(context, storage_id):
+    """Delete all the pool of a device."""
+    return IMPL.pool_delete_by_storage(context, storage_id)
 
 
 def disk_create(context, values):
@@ -245,14 +275,19 @@ def access_info_create(context, values):
     return IMPL.access_info_create(context, values)
 
 
-def access_info_update(context, access_info_id, values):
+def access_info_update(context, storage_id, values):
     """Update a storage access information with the values dictionary."""
-    return IMPL.access_info_update(context, access_info_id, values)
+    return IMPL.access_info_update(context, storage_id, values)
 
 
 def access_info_get(context, storage_id):
     """Get a storage access information."""
     return IMPL.access_info_get(context, storage_id)
+
+
+def access_info_delete(context, storage_id):
+    """Delete a storage access information."""
+    return IMPL.access_info_delete(context, storage_id)
 
 
 def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -303,3 +338,27 @@ def alert_source_get(context, storage_id):
 def alert_source_delete(context, storage_id):
     """Delete an alert source."""
     return IMPL.alert_source_delete(context, storage_id)
+
+
+def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
+                         sort_dirs=None, filters=None, offset=None):
+    """Retrieves all alert sources.
+
+    If no sort parameters are specified then the returned alert sources are
+    sorted first by the 'created_at' key in descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage accesses
+    """
+    return IMPL.alert_source_get_all(context, marker, limit, sort_keys,
+                                     sort_dirs, filters, offset)

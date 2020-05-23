@@ -22,11 +22,11 @@ from oslo_log import log
 from oslo_service import periodic_task
 from oslo_utils import importutils
 
-from dolphin import manager, exception
-from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin import coordination
+from dolphin import manager
+from dolphin.drivers import manager as driver_manager
 from dolphin.exporter import base_exporter
-
+from dolphin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -62,11 +62,23 @@ class TaskManager(manager.Manager):
             # report data to northbound platform
             base_exporter.dispatch_example_data(data)
 
-        except Exception as ex:
+        except Exception:
             pass
 
     def sync_storage_resource(self, context, storage_id, resource_task):
-        LOG.info("Consuming the refresh storage")
+        LOG.debug("Received the sync_storage task: {0} request for storage"
+                  " id:{1}".format(resource_task, storage_id))
         cls = importutils.import_class(resource_task)
         device_obj = cls(context, storage_id)
         device_obj.sync()
+
+    def remove_storage_resource(self, context, storage_id, resource_task):
+        cls = importutils.import_class(resource_task)
+        device_obj = cls(context, storage_id)
+        device_obj.remove()
+
+    def remove_storage_in_cache(self, context, storage_id):
+        LOG.info('Remove storage device in memory for storage id:{0}'
+                 .format(storage_id))
+        drivers = driver_manager.DriverManager()
+        drivers.remove_driver(context, storage_id)

@@ -12,65 +12,115 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import PyU4V
-from PyU4V import U4VConn
+
+from oslo_log import log
+from oslo_utils import units
 
 from dolphin import exception
-from oslo_log import log
+from dolphin.common import constants
 
 LOG = log.getLogger(__name__)
 
-SUPPORTED_VERSION='90'
+SUPPORTED_VERSION = '90'
 
-def get_connection(access_info):
-    array_id = access_info.get('extra_attributes', {}).\
-                            get('array_id', None)
-    if not array_id:
-        raise exception.InvalidInput(reason='Input array_id is missing')
 
-    try:
-        # Initialise PyU4V connection to VMAX
-        return PyU4V.U4VConn(
-            u4v_version=SUPPORTED_VERSION,
-            server_ip=access_info['host'],
-            port=access_info['port'],
-            verify=False,
-            array_id=array_id,
-            username=access_info['username'],
-            password=access_info['password'])
+class VMAXClient(object):
+    """ Client class for communicating with VMAX storage """
 
-    except Exception as err:
-        LOG.error("Failed to connect to VMAX: {}".format(err))
-        raise exception.InvalidInput(reason='Invalid credentials for VMAX storage')
+    def __init__(self):
+        self.conn = None
+        self.array_id = None
 
-def get_version(conn):
-    try:
-        # Get the VMAX version
-        return conn.common.get_uni_version()
+    def __del__(self):
+        # De-initialize session
+        if self.conn:
+            self.conn.close_session()
+            self.conn = None
 
-    except Exception as err:
-        LOG.error("Failed to get version from vmax: {}".format(err))
-        raise exception.StorageBackendException(
-            reason='Failed to get version from VMAX')
+    def init_connection(self, access_info):
+        """ Given the access_info get a connection to VMAX storage """
+        self.array_id = access_info.get('extra_attributes', {}). \
+            get('array_id', None)
+        if not self.array_id:
+            raise exception.InvalidInput(reason='Input array_id is missing')
 
-def get_model(conn, symmetrix_id):
-    try:
-        # Get the VMAX model
-        uri = "/system/symmetrix/" + symmetrix_id
-        model = conn.common.get_request(uri, "")
-        return model['symmetrix'][0]['model']
-    except Exception as err:
-        LOG.error("Failed to get model from vmax: {}".format(err))
-        raise exception.StorageBackendException(
-            reason='Failed to get model from VMAX')
+        try:
+            # Initialise PyU4V connection to VMAX
+            self.conn = PyU4V.U4VConn(
+                u4v_version=SUPPORTED_VERSION,
+                server_ip=access_info['host'],
+                port=access_info['port'],
+                verify=False,
+                array_id=self.array_id,
+                username=access_info['username'],
+                password=access_info['password'])
 
-def get_storage_capacity(conn, symmetrix_id):
-    try:
-        uri = "/" + SUPPORTED_VERSION + "/sloprovisioning/symmetrix/" + symmetrix_id
-        storage_info = conn.common.get_request(uri, "")
-        return storage_info['system_capacity']
-    except Exception as err:
-        LOG.error("Failed to get model from vmax: {}".format(err))
-        raise exception.StorageBackendException(
-            reason='Failed to get capacity from VMAX')
+        except Exception as err:
+            LOG.error("Failed to connect to VMAX: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to connect to VMAX storage')
+
+    def get_version(self):
+        try:
+            # Get the VMAX version
+            return self.conn.common.get_uni_version()
+
+        except Exception as err:
+            LOG.error("Failed to get version from VMAX: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get version from VMAX')
+
+    def get_model(self):
+        try:
+            # Get the VMAX model
+            uri = "/system/symmetrix/" + self.array_id
+            model = self.conn.common.get_request(uri, "")
+            return model['symmetrix'][0]['model']
+        except Exception as err:
+            LOG.error("Failed to get model from VMAX: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get model from VMAX')
+
+    def get_storage_capacity(self):
+        try:
+            uri = "/" + SUPPORTED_VERSION + "/sloprovisioning/symmetrix/" + self.array_id
+            storage_info = self.conn.common.get_request(uri, "")
+            return storage_info['system_capacity']
+        except Exception as err:
+            LOG.error("Failed to get model from VMAX: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get capacity from VMAX')
+
+    def list_pools(self):
+
+        try:
+            # Get list of SRP pool names
+            pools = self.conn.provisioning.get_srp_list()
+
+            pool_list = []
+            for pool in pools:
+                pool_info = self.conn.provisioning.get_srp(pool)
+
+                srp_cap = pool_info['srp_capacity']
+                total_cap = srp_cap['usable_total_tb'] * units.Ti
+                used_cap = srp_cap['usable_used_tb'] * units.Ti
+
+                p = {
+                    "name": pool,
+                    "original_id": pool_info["srpId"],
+                    "description": "Dell EMC VMAX Pool",
+                    "status": constants.PoolStatus.NORMAL,
+                    "storage_type": constants.StorageType.BLOCK,
+                    "total_capacity": int(total_cap),
+                    "used_capacity": int(used_cap),
+                    "free_capacity": int(total_cap - used_cap),
+                }
+                pool_list.append(p)
+
+            return pool_list
+
+        except Exception as err:
+            LOG.error("Failed to get pool metrics from VMAX: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get pool metrics from VMAX')

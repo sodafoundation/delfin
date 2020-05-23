@@ -52,7 +52,7 @@ class AlertController(wsgi.Controller):
                 alert_source = db.alert_source_update(ctx, id, alert_source)
             else:
                 alert_source = db.alert_source_create(ctx, alert_source)
-        except exception.StorageNotFound as e:
+        except exception.StorageNotFound:
             msg = (_("Alert source cannot be created or updated for a"
                      " non-existing storage %s.") % id)
             raise exc.HTTPBadRequest(explanation=msg)
