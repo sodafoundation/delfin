@@ -314,3 +314,7 @@ class SSHInjectionThreat(DolphinException):
 
 class AlertSourceNotFound(NotFound):
     message = _("Alert source for storage %(storage_id)s could not be found.")
+
+
+class InvalidSNMPConfig(Invalid):
+    message = _("SNMP configuration is invalid: %(detail)s.")
