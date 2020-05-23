@@ -24,7 +24,7 @@ class VolumeController(wsgi.Controller):
 
     def __init__(self):
         super(VolumeController, self).__init__()
-        self.search_options = ['name', 'status', 'id', 'storage_id', 'pool_id']
+        self.search_options = ['name', 'status', 'id', 'storage_id', 'wwn', 'original_id', 'original_pool_id']
 
     def _get_volumes_search_options(self):
         """Return volumes search options allowed ."""
