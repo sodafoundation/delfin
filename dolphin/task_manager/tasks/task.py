@@ -129,11 +129,6 @@ class StoragePoolTask(StorageResourceTask):
 
 
 class StorageVolumeTask(StorageResourceTask):
-    def sync(self):
-        pass
-
-
-class StorageVolumeTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageVolumeTask, self).__init__(context, storage_id)
 

@@ -326,4 +326,3 @@ def load_standard_extensions(ext_mgr, logger, path, package, ext_list=None):
 
         # Update the list of directories we'll explore...
         dirnames[:] = subdirs
-

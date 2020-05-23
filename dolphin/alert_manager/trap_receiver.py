@@ -29,7 +29,7 @@ LOG = log.getLogger(__name__)
 
 # Currently static mib file list is loaded
 # Mechanism to be changed to load all mib file
-MIB_LOAD_LIST = ['SNMPv2-MIB','IF_MIB']
+MIB_LOAD_LIST = ['SNMPv2-MIB', 'IF_MIB']
 
 
 class TrapReceiver(object):
@@ -109,8 +109,8 @@ class TrapReceiver(object):
                      context_name.prettyPrint(), exec_context['securityModel'],
                      exec_context['securityName']))
 
-        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]), x[1])
-                         .resolveWithMib(self.mib_view_controller)
+        var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]),
+                                        x[1]).resolveWithMib(self.mib_view_controller)
                      for x in var_binds]
         alert = {}
 

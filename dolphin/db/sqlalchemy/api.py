@@ -47,9 +47,9 @@ db_options.set_defaults(cfg.CONF,
 
 def apply_sorting(model, query, sort_key, sort_dir):
     if sort_dir.lower() not in ('desc', 'asc'):
-        msg = ("Wrong sorting data provided: sort key is '%(sort_key)s' "
-               "and sort order is '%(sort_dir)s'.") % {
-                  "sort_key": sort_key, "sort_dir": sort_dir}
+        msg = (("Wrong sorting data provided: sort key is '%(sort_key)s' "
+                "and sort order is '%(sort_dir)s'.") %
+               {"sort_key": sort_key, "sort_dir": sort_dir})
         raise exception.InvalidInput(reason=msg)
 
     sort_attr = getattr(model, sort_key)
@@ -181,7 +181,7 @@ def access_info_update(context, storage_id, values):
 
 def access_info_delete(context, storage_id):
     """Delete a storage access information."""
-    _access_info_get_query(context).\
+    _access_info_get_query(context). \
         filter_by(storage_id=storage_id).delete()
 
 
@@ -397,11 +397,7 @@ def volumes_update(context, volumes):
 
 def volume_get(context, volume_id):
     """Get a volume or raise an exception if it does not exist."""
-    return _volume_get(context, vol_id)
-
-
-def _volume_get_query(context, session=None):
-    return model_query(context, models.Volume, session=session)
+    return _volume_get(context, volume_id)
 
 
 def volume_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -412,8 +408,7 @@ def volume_get_all(context, marker=None, limit=None, sort_keys=None,
         # Generate the query
         query = _generate_paginate_query(context, session, models.Volume,
                                          marker, limit, sort_keys, sort_dirs,
-                                         filters, offset
-                                         )
+                                         filters, offset)
         # No volume would match, return empty list
         if query is None:
             return []
@@ -682,7 +677,7 @@ def alert_source_delete(context, storage_id):
 
 
 def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
-                    sort_dirs=None, filters=None, offset=None):
+                         sort_dirs=None, filters=None, offset=None):
     session = get_session()
     with session.begin():
         query = _generate_paginate_query(context, session, models.AlertSource,

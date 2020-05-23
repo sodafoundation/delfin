@@ -70,12 +70,12 @@ class API(object):
 
     def get_storage(self, context, storage_id):
         """Get storage device information from storage system"""
-        driver = self.driver_manager.get_driver(context, storage_id)
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.get_storage(context)
 
     def list_pools(self, context, storage_id):
         """List all storage pools from storage system."""
-        driver = self.driver_manager.get_driver(context, storage_id)
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_pools(context)
 
     def list_volumes(self, context, storage_id):
@@ -92,11 +92,9 @@ class API(object):
 
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
-        driver = self.driver_manager.get_driver(context, **{'storage_id': storage_id})
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         driver.parse_alert(context, alert)
 
     def clear_alert(self, context, storage_id, alert):
         """Clear alert from storage system."""
         pass
-
-

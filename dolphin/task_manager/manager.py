@@ -63,7 +63,7 @@ class TaskManager(manager.Manager):
             # report data to northbound platform
             base_exporter.dispatch_example_data(data)
 
-        except Exception as ex:
+        except Exception:
             pass
 
     def sync_storage_resource(self, context, storage_id, resource_task):
