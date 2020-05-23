@@ -20,7 +20,6 @@ from dolphin import db, exception
 from dolphin.api import api_utils
 from dolphin.api.common import wsgi
 from dolphin.api.views import pools as pool_view
-from dolphin.i18n import _
 
 
 class PoolController(wsgi.Controller):
@@ -53,7 +52,7 @@ class PoolController(wsgi.Controller):
         try:
             pools = db.pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
                                     query_params, offset)
-        except  exception.InvalidInput as e:
+        except exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         return pool_view.build_pools(pools)
 

@@ -27,7 +27,6 @@ import re
 import shutil
 import sys
 import tempfile
-import time
 import threading
 
 from eventlet import pools
@@ -481,6 +480,7 @@ def retry(exception, interval=1, retries=10, backoff_rate=2,
     :param backoff_sleep_max: Maximum number of seconds for the calculated
                               backoff sleep. Use None if no maximum is needed.
     """
+
     def _retry_on_exception(e):
         return isinstance(e, exception)
 
@@ -578,6 +578,7 @@ def require_driver_initialized(func):
             driver_name = self.driver.__class__.__name__
             raise exception.DriverNotInitialized(driver=driver_name)
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -666,11 +667,13 @@ def notifications_enabled(conf):
 
 def if_notifications_enabled(function):
     """Calls decorated method only if notifications are enabled."""
+
     @functools.wraps(function)
     def wrapped(*args, **kwargs):
         if notifications_enabled(CONF):
             return function(*args, **kwargs)
         return DO_NOTHING
+
     return wrapped
 
 

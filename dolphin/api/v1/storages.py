@@ -64,7 +64,6 @@ class StorageController(wsgi.Controller):
 
     def index(self, req):
         ctxt = req.environ['dolphin.context']
-        supported_filters = ['name', 'vendor', 'model', 'status']
         query_params = {}
         query_params.update(req.GET)
         # update options  other than filters
@@ -76,7 +75,7 @@ class StorageController(wsgi.Controller):
         try:
             storages = db.storage_get_all(context, marker, limit, sort_keys,
                                           sort_dirs, query_params, offset)
-        except  exception.InvalidInput as e:
+        except exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         return storage_view.build_storages(storages)
 

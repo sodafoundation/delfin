@@ -19,13 +19,13 @@ DEF_TRAP_RECV_PORT = 162
 TRAP_RECEIVER_CLASS = 'dolphin.alert_manager.trap_receiver.TrapReceiver'
 
 # Temporary snmp community and user configurations
-SNMP_COMMUNITY_STR='public'
-SNMP_USM_USER='test1'
-SNMP_V3_AUTHKEY='abcd123456'
-SNMP_V3_PRIVKEY='abcd123456'
-SNMP_V3_AUTH_PROTOCOL='usmHMACMD5AuthProtocol'
-SNMP_V3_PRIV_PROTOCOL='usmDESPrivProtocol'
-SNMP_ENGINE_ID='800000d30300000e112245'
+SNMP_COMMUNITY_STR = 'public'
+SNMP_USM_USER = 'test1'
+SNMP_V3_AUTHKEY = 'abcd123456'
+SNMP_V3_PRIVKEY = 'abcd123456'
+SNMP_V3_AUTH_PROTOCOL = 'usmHMACMD5AuthProtocol'
+SNMP_V3_PRIV_PROTOCOL = 'usmDESPrivProtocol'
+SNMP_ENGINE_ID = '800000d30300000e112245'
 
 # Temporary mib lod dir. This mechanism to be changed later
 SNMP_MIB_PATH = '/usr/local/lib/python3.6/dist-packages/pysnmp/smi/mibs'

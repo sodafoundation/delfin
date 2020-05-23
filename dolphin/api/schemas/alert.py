@@ -32,4 +32,3 @@ put = {
     'required': ['host', 'version'],
     'additionalProperties': False,
 }
-

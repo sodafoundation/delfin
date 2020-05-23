@@ -20,6 +20,7 @@ from oslo_log import log
 from oslo_utils import strutils
 
 from dolphin.common import constants
+from dolphin.i18n import _
 
 api_common_opts = [
     cfg.IntOpt('api_max_limit',

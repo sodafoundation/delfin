@@ -33,19 +33,6 @@ class VMAXStorageDriver(driver.StorageDriver):
     def _init_vmax(self, access_info):
         self.client.init_connection(access_info)
 
-        # Get the VMAX version to check connection
-        version = self.client.get_version()
-
-    @staticmethod
-    def get_storage_registry():
-        required_register_attributes = super.get_storage_registry()
-        extra_attributes = {
-            'array_id': "The storage id in unisphere system.",
-        }
-        required_register_attributes['extra_attributes'] = extra_attributes
-
-        return  required_register_attributes
-
     def get_storage(self, context):
 
         # Get the VMAX model

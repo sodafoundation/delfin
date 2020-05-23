@@ -26,5 +26,3 @@ class VolumeController(wsgi.Controller):
 
 def create_resource():
     return wsgi.Resource(VolumeController())
-
-
