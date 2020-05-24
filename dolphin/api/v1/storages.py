@@ -109,6 +109,7 @@ class StorageController(wsgi.Controller):
                 exception.StorageDriverNotFound,
                 exception.StorageNotFound) as e:
             raise exc.HTTPBadRequest(explanation=e.msg)
+
         # Registration success, sync resource collection for this storage
         try:
             self.sync(req, storage.id)
