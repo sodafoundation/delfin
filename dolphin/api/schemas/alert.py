@@ -20,7 +20,9 @@ put = {
     'properties': {
         'host': parameter_types.hostname_or_ip_address,
         'version': parameter_types.snmp_version,
-        'community_string': {'type': 'string', 'minLength': 1, 'maxLength': 255},
+        'community_string': {'type': 'string',
+                             'minLength': 1,
+                             'maxLength': 255},
         'username': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'security_level': parameter_types.snmp_security_level,
         'auth_key': {'type': 'string', 'minLength': 1, 'maxLength': 255},
@@ -32,4 +34,3 @@ put = {
     'required': ['host', 'version'],
     'additionalProperties': False,
 }
-

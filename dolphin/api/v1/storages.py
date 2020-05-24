@@ -56,7 +56,8 @@ class StorageController(wsgi.Controller):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
         self.driver_api = driverapi.API()
-        self.search_options = ['name', 'vendor', 'model', 'status', 'serial_number']
+        self.search_options = ['name', 'vendor', 'model', 'status',
+                               'serial_number']
 
     def _get_storages_search_options(self):
         """Return storages search options allowed ."""
@@ -64,7 +65,6 @@ class StorageController(wsgi.Controller):
 
     def index(self, req):
         ctxt = req.environ['dolphin.context']
-        supported_filters = ['name', 'vendor', 'model', 'status']
         query_params = {}
         query_params.update(req.GET)
         # update options  other than filters
@@ -76,7 +76,7 @@ class StorageController(wsgi.Controller):
         try:
             storages = db.storage_get_all(context, marker, limit, sort_keys,
                                           sort_dirs, query_params, offset)
-        except  exception.InvalidInput as e:
+        except exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         return storage_view.build_storages(storages)
 

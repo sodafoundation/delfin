@@ -30,7 +30,8 @@ class API(object):
     def discover_storage(self, context, access_info):
         """Discover a storage system with access information."""
         if 'storage_id' not in access_info:
-            access_info['storage_id'] = six.text_type(uuidutils.generate_uuid())
+            access_info['storage_id'] = six.text_type(
+                uuidutils.generate_uuid())
 
         driver = self.driver_manager.get_driver(context,
                                                 cache_on_load=False,
@@ -57,7 +58,8 @@ class API(object):
         # Need to validate storage response from driver
         storage_id = access_info['storage_id']
         helper.check_storage_consistency(context, storage_id, storage_new)
-        access_info = helper.update_access_info(context, storage_id, access_info)
+        access_info = helper.update_access_info(context,
+                                                storage_id, access_info)
         helper.update_storage(context, storage_id, storage_new)
         self.driver_manager.update_driver(storage_id, driver)
 
@@ -70,12 +72,12 @@ class API(object):
 
     def get_storage(self, context, storage_id):
         """Get storage device information from storage system"""
-        driver = self.driver_manager.get_driver(context, storage_id)
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.get_storage(context)
 
     def list_pools(self, context, storage_id):
         """List all storage pools from storage system."""
-        driver = self.driver_manager.get_driver(context, storage_id)
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_pools(context)
 
     def list_volumes(self, context, storage_id):
@@ -92,11 +94,9 @@ class API(object):
 
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
-        driver = self.driver_manager.get_driver(context, **{'storage_id': storage_id})
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         driver.parse_alert(context, alert)
 
     def clear_alert(self, context, storage_id, alert):
         """Clear alert from storage system."""
         pass
-
-

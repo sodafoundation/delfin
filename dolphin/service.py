@@ -20,20 +20,18 @@
 import inspect
 import os
 import random
-import socket
 
+import oslo_messaging as messaging
 from oslo_config import cfg
 from oslo_log import log
+from oslo_service import loopingcall
 from oslo_service import service
 from oslo_service import wsgi
-from oslo_service import loopingcall
 from oslo_utils import importutils
-import oslo_messaging as messaging
 
 from dolphin import context
-from dolphin import exception
-from dolphin import rpc
 from dolphin import coordination
+from dolphin import rpc
 from dolphin.alert_manager import constants
 
 LOG = log.getLogger(__name__)
@@ -218,12 +216,13 @@ class Service(service.Service):
         ctxt = context.get_admin_context()
         self.manager.periodic_tasks(ctxt, raise_on_error=raise_on_error)
 
+
 class AlertMngrService(service.Service):
     """Service object for triggering trap receiver functionalities.
     """
 
-    def __init__(self, trap_receiver_address=None,
-                 trap_receiver_port=None, snmp_mib_path=None, trap_receiver_class=None):
+    def __init__(self, trap_receiver_address=None, trap_receiver_port=None,
+                 snmp_mib_path=None, trap_receiver_class=None):
         super(AlertMngrService, self).__init__()
 
         if not trap_receiver_address:
@@ -252,6 +251,7 @@ class AlertMngrService(service.Service):
     def stop(self):
         """Calls the shutdown flow of the service."""
         self.manager.stop()
+
 
 class WSGIService(service.ServiceBase):
     """Provides ability to launch API from a 'paste' configuration."""

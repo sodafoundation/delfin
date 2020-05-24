@@ -12,21 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
 import PyU4V
 
-from dolphin import exception
-from dolphin.common import constants
 from oslo_log import log
 from oslo_utils import units
 
+from dolphin import exception
+from dolphin.common import constants
+
 LOG = log.getLogger(__name__)
 
-SUPPORTED_VERSION='90'
+SUPPORTED_VERSION = '90'
 
 
 class VMAXClient(object):
     """ Client class for communicating with VMAX storage """
+
     def __init__(self):
         self.conn = None
         self.array_id = None
@@ -39,8 +40,8 @@ class VMAXClient(object):
 
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
-        self.array_id = access_info.get('extra_attributes', {}).\
-                                get('array_id', None)
+        self.array_id = access_info.get('extra_attributes', {}). \
+            get('array_id', None)
         if not self.array_id:
             raise exception.InvalidInput(reason='Input array_id is missing')
 
@@ -83,7 +84,8 @@ class VMAXClient(object):
 
     def get_storage_capacity(self):
         try:
-            uri = "/" + SUPPORTED_VERSION + "/sloprovisioning/symmetrix/" + self.array_id
+            uri = "/" + SUPPORTED_VERSION \
+                  + "/sloprovisioning/symmetrix/" + self.array_id
             storage_info = self.conn.common.get_request(uri, "")
             return storage_info['system_capacity']
         except Exception as err:

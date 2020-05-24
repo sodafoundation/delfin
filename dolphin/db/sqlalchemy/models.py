@@ -18,7 +18,6 @@
 """
 SQLAlchemy models for Dolphin  data.
 """
-import json
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
