@@ -315,3 +315,12 @@ class SSHInjectionThreat(DolphinException):
 
 class AlertSourceNotFound(NotFound):
     message = _("Alert source for storage %(storage_id)s could not be found.")
+
+
+# Tooz locking
+class LockCreationFailed(DolphinException):
+    message = _('Unable to create lock. Coordination backend not started.')
+
+
+class LockingFailed(DolphinException):
+    message = _('Lock acquisition failed.')

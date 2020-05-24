@@ -30,7 +30,8 @@ class API(object):
     def discover_storage(self, context, access_info):
         """Discover a storage system with access information."""
         if 'storage_id' not in access_info:
-            access_info['storage_id'] = six.text_type(uuidutils.generate_uuid())
+            access_info['storage_id'] = six.text_type(
+                uuidutils.generate_uuid())
 
         driver = self.driver_manager.get_driver(context,
                                                 cache_on_load=False,
@@ -57,7 +58,8 @@ class API(object):
         # Need to validate storage response from driver
         storage_id = access_info['storage_id']
         helper.check_storage_consistency(context, storage_id, storage_new)
-        access_info = helper.update_access_info(context, storage_id, access_info)
+        access_info = helper.update_access_info(context,
+                                                storage_id, access_info)
         helper.update_storage(context, storage_id, storage_new)
         self.driver_manager.update_driver(storage_id, driver)
 
