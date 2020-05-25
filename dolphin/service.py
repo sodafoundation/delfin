@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2011 Justin Santa Barbara
@@ -221,8 +222,8 @@ class AlertMngrService(service.Service):
     """Service object for triggering trap receiver functionalities.
     """
 
-    def __init__(self, trap_receiver_address=None,
-                 trap_receiver_port=None, snmp_mib_path=None, trap_receiver_class=None):
+    def __init__(self, trap_receiver_address=None, trap_receiver_port=None,
+                 snmp_mib_path=None, trap_receiver_class=None):
         super(AlertMngrService, self).__init__()
 
         self.topic = CONF.snmp_config_topic

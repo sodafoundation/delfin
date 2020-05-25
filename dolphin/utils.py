@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2011 Justin Santa Barbara
@@ -710,5 +711,6 @@ class Singleton(type):
         if cls not in cls._instances:
             with lock:
                 if cls not in cls._instances:
-                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+                    cls._instances[cls] = super(Singleton,
+                                                cls).__call__(*args, **kwargs)
         return cls._instances[cls]

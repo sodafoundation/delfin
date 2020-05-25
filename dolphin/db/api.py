@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright (c) 2011 X.commerce, a business unit of eBay Inc.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
@@ -310,8 +311,8 @@ def access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     :param offset: number of items to skip
     :returns: list of storage accesses
     """
-    return IMPL.access_info_get_all(context, marker, limit, sort_keys, sort_dirs,
-                                    filters, offset)
+    return IMPL.access_info_get_all(context, marker, limit,
+                                    sort_keys, sort_dirs, filters, offset)
 
 
 def is_orm_value(obj):

@@ -95,31 +95,32 @@ class AlertController(wsgi.Controller):
         version = alert_source.get('version')
 
         if version.lower() == 'snmpv3':
-            user_name = alert_source.get('username', None)
-            security_level = alert_source.get('security_level', None)
-            engine_id = alert_source.get('engine_id', None)
+            user_name = alert_source.get('username')
+            security_level = alert_source.get('security_level')
+            engine_id = alert_source.get('engine_id')
             if not user_name or not security_level or not engine_id:
-                msg = "If snmp version is SNMPv3, then username, security_level" \
-                      " and engine_id are required."
+                msg = "If snmp version is SNMPv3, then username, " \
+                      "security_level and engine_id are required."
                 raise exception.InvalidInput(reason=msg)
 
             if security_level == "AuthNoPriv" or security_level == "AuthPriv":
-                auth_protocol = alert_source.get('auth_protocol', None)
-                auth_key = alert_source.get('auth_key', None)
+                auth_protocol = alert_source.get('auth_protocol')
+                auth_key = alert_source.get('auth_key')
                 if not auth_protocol or not auth_key:
                     msg = "If snmp version is SNMPv3 and security_level is " \
-                          "AuthPriv or AuthNoPriv, auth_protocol and auth_key" \
-                          " are required."
+                          "AuthPriv or AuthNoPriv, auth_protocol and " \
+                          "auth_key are required."
                     raise exception.InvalidInput(reason=msg)
-                alert_source['auth_key'] = cryptor.encode(alert_source['auth_key'])
+                alert_source['auth_key'] = cryptor.encode(
+                    alert_source['auth_key'])
 
                 if security_level == "AuthPriv":
-                    privacy_protocol = alert_source.get('privacy_protocol', None)
-                    privacy_key = alert_source.get('privacy_key', None)
+                    privacy_protocol = alert_source.get('privacy_protocol')
+                    privacy_key = alert_source.get('privacy_key')
                     if not privacy_protocol or not privacy_key:
-                        msg = "If snmp version is SNMPv3 and security_level is" \
-                              "AuthPriv, privacy_protocol and privacy_key are " \
-                              "required."
+                        msg = "If snmp version is SNMPv3 and security_level" \
+                              " is AuthPriv, privacy_protocol and " \
+                              "privacy_key are  required."
                         raise exception.InvalidInput(reason=msg)
                     alert_source['privacy_key'] = cryptor.encode(
                         alert_source['privacy_key'])

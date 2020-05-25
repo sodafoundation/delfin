@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -316,5 +317,14 @@ class AlertSourceNotFound(NotFound):
     message = _("Alert source for storage %(storage_id)s could not be found.")
 
 
+# Tooz locking
+class LockCreationFailed(DolphinException):
+    message = _('Unable to create lock. Coordination backend not started.')
+
+
+class LockingFailed(DolphinException):
+    message = _('Lock acquisition failed.')
+
+    
 class InvalidSNMPConfig(Invalid):
-    message = _("SNMP configuration is invalid: %(detail)s.")
+    message = _("SNMP configuration is invalid: %(detail)s.")    

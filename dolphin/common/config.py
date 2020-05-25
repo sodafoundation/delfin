@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -58,8 +59,9 @@ global_opts = [
                             'FQDN, or IP address.'),
     cfg.ListOpt('dolphin_api_ext_list',
                 default=[],
-                help='Specify list of extensions to load when using dolphin_api_extension'
-                     'option with dolphin.api.contrib.select_extensions.'),
+                help='Specify list of extensions to load when using '
+                     'dolphin_api_extension option with '
+                     'dolphin.api.contrib.select_extensions.'),
     cfg.ListOpt('dolphin_api_extension',
                 default=['dolphin.api.contrib.standard_extensions'],
                 help='The dolphin api extensions to load.'),

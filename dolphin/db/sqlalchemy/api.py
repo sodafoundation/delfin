@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright (c) 2011 X.commerce, a business unit of eBay Inc.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
@@ -670,10 +671,12 @@ def alert_source_delete(context, storage_id):
         query = _alert_source_get_query(context, session)
         result = query.filter_by(storage_id=storage_id).delete()
         if not result:
-            LOG.error("Cannot delete non-exist alert source[storage_id=%s].", storage_id)
+            LOG.error("Cannot delete non-exist alert source[storage_id=%s]." %
+                      storage_id)
             raise exception.AlertSourceNotFound(storage_id=storage_id)
         else:
-            LOG.info("Delete alert source[storage_id=%s] successfully.", storage_id)
+            LOG.info("Delete alert source[storage_id=%s] successfully." %
+                     storage_id)
 
 
 def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -682,8 +685,7 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
     with session.begin():
         query = _generate_paginate_query(context, session, models.AlertSource,
                                          marker, limit, sort_keys, sort_dirs,
-                                         filters, offset,
-                                         )
+                                         filters, offset)
         if query is None:
             return []
         return query.all()
@@ -695,7 +697,8 @@ PAGINATION_HELPERS = {
     models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
     models.Storage: (_storage_get_query, _process_storage_info_filters,
                      _storage_get),
-    models.AlertSource: (_alert_source_get_query, _process_alert_source_filters,
+    models.AlertSource: (_alert_source_get_query,
+                         _process_alert_source_filters,
                          _alert_source_get),
     models.Volume: (_volume_get_query, _process_volume_info_filters,
                     _volume_get),
