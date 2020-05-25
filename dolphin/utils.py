@@ -32,7 +32,6 @@ import threading
 
 from eventlet import pools
 import logging
-import netaddr
 from oslo_concurrency import lockutils
 from oslo_concurrency import processutils
 from oslo_config import cfg
@@ -368,25 +367,6 @@ def walk_class_hierarchy(clazz, encountered=None):
             yield subclass
 
 
-def cidr_to_network(cidr):
-    """Convert cidr to network."""
-    try:
-        network = netaddr.IPNetwork(cidr)
-        return network
-    except netaddr.AddrFormatError:
-        raise exception.InvalidInput(_("Invalid cidr supplied %s") % cidr)
-
-
-def cidr_to_netmask(cidr):
-    """Convert cidr to netmask."""
-    return six.text_type(cidr_to_network(cidr).netmask)
-
-
-def cidr_to_prefixlen(cidr):
-    """Convert cidr to prefix length."""
-    return cidr_to_network(cidr).prefixlen
-
-
 def is_valid_ip_address(ip_address, ip_version):
     ip_version = ([int(ip_version)] if not isinstance(ip_version, list)
                   else ip_version)
@@ -569,18 +549,6 @@ def check_params_are_boolean(keys, params, default=False):
         value = get_bool_from_api_params(key, params, default, strict=True)
         result[key] = value
     return result
-
-
-def require_driver_initialized(func):
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        # we can't do anything if the driver didn't init
-        if not self.driver.initialized:
-            driver_name = self.driver.__class__.__name__
-            raise exception.DriverNotInitialized(driver=driver_name)
-        return func(self, *args, **kwargs)
-
-    return wrapper
 
 
 def convert_str(text):
