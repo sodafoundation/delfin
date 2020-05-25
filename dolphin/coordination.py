@@ -33,7 +33,7 @@ coordination_opts = [
                help='The back end URL to use for distributed coordination.'),
     cfg.IntOpt('expiration',
                default=100,
-               help='The expiration of the lock.')
+               help='The expiration(in second) of the lock.')
 ]
 
 CONF = cfg.CONF
