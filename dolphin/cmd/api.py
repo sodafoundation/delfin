@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -43,7 +44,8 @@ def main():
 
     launcher = service.process_launcher()
     api_server = service.WSGIService('dolphin')
-    task_server = service.Service.create(binary='dolphin-task', coordination=True)
+    task_server = service.Service.create(binary='dolphin-task',
+                                         coordination=True)
     launcher.launch_service(api_server, workers=api_server.workers or 1)
     launcher.launch_service(task_server)
 

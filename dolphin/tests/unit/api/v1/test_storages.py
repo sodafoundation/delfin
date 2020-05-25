@@ -19,7 +19,8 @@ class Request:
 class TestStorageController:
     def test_delete(self, mocker):
         # For StorageController.__init__
-        mocker.patch('dolphin.task_manager.rpcapi.TaskAPI.__init__', return_value=None)
+        mocker.patch('dolphin.task_manager.rpcapi.TaskAPI.__init__',
+                     return_value=None)
         # For StorageController.delete
         mock_remove_storage_resource = mocker.patch(
             'dolphin.task_manager.rpcapi.TaskAPI.remove_storage_resource')
@@ -39,7 +40,8 @@ class TestStorageController:
         assert expected_count == mock_remove_storage_resource.call_count
         assert 1 == mock_remove_storage_in_cache.call_count
 
-        # Get storage failed, raise exception, do not call remove_storage_resource
+        # Get storage failed, raise exception,
+        # do not call remove_storage_resource
         mock_remove_storage_resource.reset_mock()
         mocker.patch('dolphin.db.storage_get',
                      side_effect=exception.StorageNotFound(

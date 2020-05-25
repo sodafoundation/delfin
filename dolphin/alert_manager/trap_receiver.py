@@ -69,7 +69,7 @@ class TrapReceiver(object):
                     (self.trap_receiver_address, int(self.trap_receiver_port)))
             )
         except Exception:
-            raise ValueError("Port binding failed the provided port is in use.")
+            raise ValueError("Port binding failed: Port is in use.")
 
     @staticmethod
     def _extract_oid_value(var_bind):

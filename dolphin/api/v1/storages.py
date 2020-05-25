@@ -56,7 +56,8 @@ class StorageController(wsgi.Controller):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
         self.driver_api = driverapi.API()
-        self.search_options = ['name', 'vendor', 'model', 'status', 'serial_number']
+        self.search_options = ['name', 'vendor', 'model', 'status',
+                               'serial_number']
 
     def _get_storages_search_options(self):
         """Return storages search options allowed ."""
