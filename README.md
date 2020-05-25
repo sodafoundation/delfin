@@ -19,8 +19,6 @@ It provides set of APIs to export and connect with clients as well as a set if i
 
 This is one of the SODA Core Projects and is maintained by SODA Foundation directly.
 
-//FIXME: Currently under design & analysis. We will be updating the initial development and source soon.
-
 ## Documentation
 
 [https://docs.sodafoundation.io](https://docs.sodafoundation.io/)
