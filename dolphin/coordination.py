@@ -30,7 +30,10 @@ LOG = log.getLogger(__name__)
 coordination_opts = [
     cfg.StrOpt('backend_url',
                default='redis://127.0.0.1:6379',
-               help='The back end URL to use for distributed coordination.')
+               help='The back end URL to use for distributed coordination.'),
+    cfg.IntOpt('expiration',
+               default=100,
+               help='The expiration of the lock.')
 ]
 
 CONF = cfg.CONF
@@ -62,7 +65,7 @@ class Coordinator(object):
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
         self.coordinator = coordination.get_coordinator(
-            cfg.CONF.coordination.backend_url, member_id)
+            cfg.CONF.coordination.backend_url, member_id, timeout=cfg.CONF.coordination.expiration)
         self.coordinator.start(start_heart=True)
         self.started = True
 
