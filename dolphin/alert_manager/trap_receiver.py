@@ -57,7 +57,7 @@ class TrapReceiver(object):
         LOG.info("Add snmp config:%s" % new_config)
         storage_id = new_config["storage_id"]
         version_int = self._get_snmp_version_int(ctxt, new_config["version"])
-        if version_int == 1 or version_int == 2:
+        if version_int == constants.SNMP_V2_INT or version_int == constants.SNMP_V1_INT:
             community_string = new_config["community_string"]
             community_index = self._get_community_index(storage_id)
             config.addV1System(self.snmp_engine, community_index,
@@ -87,7 +87,7 @@ class TrapReceiver(object):
     def _delete_snmp_config(self, ctxt, snmp_config):
         LOG.info("Delete snmp config:%s" % snmp_config)
         version_int = self._get_snmp_version_int(ctxt, snmp_config["version"])
-        if version_int == 3:
+        if version_int == constants.SNMP_V3_INT:
             username = snmp_config['username']
             engine_id = snmp_config['engine_id']
             config.delV3User(self.snmp_engine, userName=username,
@@ -103,13 +103,8 @@ class TrapReceiver(object):
 
     def _get_snmp_version_int(self, ctxt, version):
         _version = version.lower()
-        if _version == "snmpv1":
-            version_int = 1
-        elif _version == "snmpv2c":
-            version_int = 2
-        elif _version == "snmpv3":
-            version_int = 3
-        else:
+        version_int = constants.VALID_SNMP_VERSIONS.get(_version)
+        if version_int is None:
             msg = "Invalid snmp version %s." % version
             raise exception.InvalidSNMPConfig(detail=msg)
 
@@ -119,9 +114,9 @@ class TrapReceiver(object):
         usm_auth_protocol = config.usmNoAuthProtocol
         if auth_protocol is not None:
             auth_protocol = auth_protocol.lower()
-            if auth_protocol == "sha":
+            if auth_protocol == constants.SNMP_AUTH_PROTOCOL_SHA:
                 usm_auth_protocol = config.usmHMACSHAAuthProtocol
-            elif auth_protocol == "md5":
+            elif auth_protocol == constants.SNMP_AUTH_PROTOCOL_MD5:
                 usm_auth_protocol = config.usmHMACMD5AuthProtocol
             else:
                 msg = "Invalid auth_protocol %s." % auth_protocol
@@ -133,11 +128,11 @@ class TrapReceiver(object):
         usm_priv_protocol = config.usmNoPrivProtocol
         if privacy_protocol is not None:
             privacy_protocol = privacy_protocol.lower()
-            if privacy_protocol == "aes":
+            if privacy_protocol == constants.SNMP_PRIVACY_PROTOCOL_AES:
                 usm_priv_protocol = config.usmAesCfb128Protocol
-            elif privacy_protocol == "des":
+            elif privacy_protocol == constants.SNMP_PRIVACY_PROTOCOL_DES:
                 usm_priv_protocol = config.usmDESPrivProtocol
-            elif privacy_protocol == "3des":
+            elif privacy_protocol == constants.SNMP_PRIVACY_PROTOCOL_3DES:
                 usm_priv_protocol = config.usm3DESEDEPrivProtocol
             else:
                 msg = "Invalid privacy_protocol %s." % privacy_protocol
@@ -214,7 +209,7 @@ class TrapReceiver(object):
         var_binds = [rfc1902.ObjectType(
             rfc1902.ObjectIdentity(x[0]),
             x[1]).resolveWithMib(self.mib_view_controller)
-            for x in var_binds]
+                     for x in var_binds]
         alert = {}
 
         for var_bind in var_binds:

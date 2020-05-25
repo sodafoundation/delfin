@@ -149,6 +149,12 @@ class AlertController(wsgi.Controller):
         return alert_source
 
     def _get_snmp_config_brief(self, ctx, storage_id):
+        """
+        Get snmp configuration that will be used to delete from trap receiver.
+        Only community_index(storage_id) required for snmp v1/v2 deletion,
+        user_name and engine_id are required for snmp v3. So here we only get
+        those required parameters. Return None if configuration not found.
+        """
         try:
             alert_source = db.alert_source_get(ctx, storage_id)
             snmp_config = {"storage_id": alert_source["storage_id"],
