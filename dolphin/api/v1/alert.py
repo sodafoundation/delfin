@@ -58,7 +58,7 @@ class AlertController(wsgi.Controller):
             snmp_config_to_add = alert_source
             self.alert_rpcapi.sync_snmp_config(ctx, snmp_config_to_del,
                                                snmp_config_to_add)
-        except exception.StorageNotFound as e:
+        except exception.StorageNotFound:
             msg = (_("Alert source cannot be created or updated for a"
                      " non-existing storage %s.") % id)
             raise exc.HTTPBadRequest(explanation=msg)

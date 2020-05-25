@@ -57,7 +57,8 @@ class TrapReceiver(object):
         LOG.info("Add snmp config:%s" % new_config)
         storage_id = new_config["storage_id"]
         version_int = self._get_snmp_version_int(ctxt, new_config["version"])
-        if version_int == constants.SNMP_V2_INT or version_int == constants.SNMP_V1_INT:
+        if version_int == constants.SNMP_V2_INT or \
+                version_int == constants.SNMP_V1_INT:
             community_string = new_config["community_string"]
             community_index = self._get_community_index(storage_id)
             config.addV1System(self.snmp_engine, community_index,
@@ -207,9 +208,8 @@ class TrapReceiver(object):
                      exec_context['securityName']))
 
         var_binds = [rfc1902.ObjectType(
-            rfc1902.ObjectIdentity(x[0]),
-            x[1]).resolveWithMib(self.mib_view_controller)
-                     for x in var_binds]
+            rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
+            self.mib_view_controller) for x in var_binds]
         alert = {}
 
         for var_bind in var_binds:
