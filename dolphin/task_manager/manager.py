@@ -81,7 +81,7 @@ class TaskManager(manager.Manager):
         else:
             LOG.info("%s is rejected for %s because "
                      "task is already running" % (resource_task, storage_id))
-    import time
+
     def remove_storage_resource(self, context, storage_id, resource_task):
         lock = coordination.Lock(storage_id + resource_task)
         if lock.acquire(False):
