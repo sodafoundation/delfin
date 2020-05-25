@@ -31,8 +31,6 @@ class AlertProcessor(object):
     def process_alert_info(self, alert):
         """Fills alert model using driver manager interface."""
 
-        ctxt = context.get_admin_context()
-
         try:
             storage = db.storage_get(context, alert['storage_id'])
         except Exception:

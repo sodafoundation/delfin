@@ -149,10 +149,10 @@ class TrapReceiver(object):
                               "source, dropping it.")
                     return
 
-            var_binds = [rfc1902.ObjectType(rfc1902.ObjectIdentity(x[0]),
-                                            x[1]).resolveWithMib(
-                                                       self.mib_view_controller)
-                         for x in var_binds]
+            var_binds = [rfc1902.ObjectType(
+                rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
+                self.mib_view_controller) for x in var_binds]
+
             alert = {}
 
             for var_bind in var_binds:
