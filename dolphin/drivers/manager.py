@@ -62,8 +62,10 @@ class DriverManager(stevedore.ExtensionManager):
     def update_driver(self, storage_id, driver):
         self.driver_factory[storage_id] = driver
 
-    def remove_driver(self, storage_id):
+    def remove_driver(self, context, storage_id):
         """Clear driver instance from driver factory."""
+        LOG.info('Remove storage driver from factory for storage id:{0}'
+                 .format(storage_id))
         self.driver_factory.pop(storage_id, None)
 
     def _get_driver_obj(self, context, cache_on_load=True, **kwargs):
