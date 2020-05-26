@@ -324,3 +324,7 @@ class LockCreationFailed(DolphinException):
 
 class LockingFailed(DolphinException):
     message = _('Lock acquisition failed.')
+
+
+class InvalidSNMPConfig(Invalid):
+    message = _("SNMP configuration is invalid: %(detail)s.")
