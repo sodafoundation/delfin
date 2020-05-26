@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # Copyright 2011 Justin Santa Barbara
@@ -27,12 +28,10 @@ import re
 import shutil
 import sys
 import tempfile
-import time
 import threading
 
 from eventlet import pools
 import logging
-import netaddr
 from oslo_concurrency import lockutils
 from oslo_concurrency import processutils
 from oslo_config import cfg
@@ -368,25 +367,6 @@ def walk_class_hierarchy(clazz, encountered=None):
             yield subclass
 
 
-def cidr_to_network(cidr):
-    """Convert cidr to network."""
-    try:
-        network = netaddr.IPNetwork(cidr)
-        return network
-    except netaddr.AddrFormatError:
-        raise exception.InvalidInput(_("Invalid cidr supplied %s") % cidr)
-
-
-def cidr_to_netmask(cidr):
-    """Convert cidr to netmask."""
-    return six.text_type(cidr_to_network(cidr).netmask)
-
-
-def cidr_to_prefixlen(cidr):
-    """Convert cidr to prefix length."""
-    return cidr_to_network(cidr).prefixlen
-
-
 def is_valid_ip_address(ip_address, ip_version):
     ip_version = ([int(ip_version)] if not isinstance(ip_version, list)
                   else ip_version)
@@ -481,6 +461,7 @@ def retry(exception, interval=1, retries=10, backoff_rate=2,
     :param backoff_sleep_max: Maximum number of seconds for the calculated
                               backoff sleep. Use None if no maximum is needed.
     """
+
     def _retry_on_exception(e):
         return isinstance(e, exception)
 
@@ -570,17 +551,6 @@ def check_params_are_boolean(keys, params, default=False):
     return result
 
 
-def require_driver_initialized(func):
-    @functools.wraps(func)
-    def wrapper(self, *args, **kwargs):
-        # we can't do anything if the driver didn't init
-        if not self.driver.initialized:
-            driver_name = self.driver.__class__.__name__
-            raise exception.DriverNotInitialized(driver=driver_name)
-        return func(self, *args, **kwargs)
-    return wrapper
-
-
 def convert_str(text):
     """Convert to native string.
 
@@ -666,11 +636,13 @@ def notifications_enabled(conf):
 
 def if_notifications_enabled(function):
     """Calls decorated method only if notifications are enabled."""
+
     @functools.wraps(function)
     def wrapped(*args, **kwargs):
         if notifications_enabled(CONF):
             return function(*args, **kwargs)
         return DO_NOTHING
+
     return wrapped
 
 
@@ -707,5 +679,6 @@ class Singleton(type):
         if cls not in cls._instances:
             with lock:
                 if cls not in cls._instances:
-                    cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+                    cls._instances[cls] = super(Singleton,
+                                                cls).__call__(*args, **kwargs)
         return cls._instances[cls]

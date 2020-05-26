@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright (c) 2011 X.commerce, a business unit of eBay Inc.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
@@ -18,7 +19,6 @@
 """
 SQLAlchemy models for Dolphin  data.
 """
-import json
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
@@ -48,6 +48,8 @@ class AccessInfo(BASE, DolphinBase):
     """Represent access info required for storage accessing."""
     __tablename__ = "access_info"
     storage_id = Column(String(36), primary_key=True)
+    vendor = Column(String(255))
+    model = Column(String(255))
     host = Column(String(255))
     port = Column(String(255))
     username = Column(String(255))

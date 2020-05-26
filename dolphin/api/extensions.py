@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2011 OpenStack LLC.
 # Copyright 2011 Justin Santa Barbara
 # All Rights Reserved.
@@ -326,4 +327,3 @@ def load_standard_extensions(ext_mgr, logger, path, package, ext_list=None):
 
         # Update the list of directories we'll explore...
         dirnames[:] = subdirs
-

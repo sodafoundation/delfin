@@ -25,9 +25,7 @@ from tooz import locking
 from dolphin import exception
 from dolphin.i18n import _
 
-
 LOG = log.getLogger(__name__)
-
 
 coordination_opts = [
     cfg.StrOpt('backend_url',
@@ -63,7 +61,6 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
-        LOG.info("cfg.CONF.coordination.backend_url=%s, membrid=%s" % (cfg.CONF.coordination.backend_url, member_id))
         self.coordinator = coordination.get_coordinator(
             cfg.CONF.coordination.backend_url, member_id)
         self.coordinator.start(start_heart=True)
@@ -117,6 +114,7 @@ class Lock(locking.Lock):
 
     Available field names are keys of lock_data.
     """
+
     def __init__(self, lock_name, lock_data=None, coordinator=None):
         super(Lock, self).__init__(six.text_type(id(self)))
         lock_data = lock_data or {}
@@ -191,6 +189,7 @@ def synchronized(lock_name, blocking=True, coordinator=None):
     Available field names are: decorated function parameters and
     `f_name` as a decorated function name.
     """
+
     @decorator.decorator
     def _synchronized(f, *a, **k):
         call_args = inspect.getcallargs(f, *a, **k)
@@ -198,6 +197,7 @@ def synchronized(lock_name, blocking=True, coordinator=None):
         lock = Lock(lock_name, call_args, coordinator)
         with lock(blocking):
             LOG.info('Lock "%(name)s" acquired by "%(function)s".',
-                      {'name': lock_name, 'function': f.__name__})
+                     {'name': lock_name, 'function': f.__name__})
             return f(*a, **k)
+
     return _synchronized

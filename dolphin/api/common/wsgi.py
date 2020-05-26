@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright 2011 OpenStack LLC.
 # All Rights Reserved.
 #
@@ -175,7 +176,7 @@ class Request(webob.Request):
                 content_type = self.accept.best_match(SUPPORTED_CONTENT_TYPES)
 
             self.environ['dolphin.best_content_type'] = (content_type or
-                                                        'application/json')
+                                                         'application/json')
 
         return self.environ['dolphin.best_content_type']
 
@@ -262,6 +263,7 @@ def serializers(**serializers):
             func.wsgi_serializers = {}
         func.wsgi_serializers.update(serializers)
         return func
+
     return decorator
 
 
@@ -278,6 +280,7 @@ def deserializers(**deserializers):
             func.wsgi_deserializers = {}
         func.wsgi_deserializers.update(deserializers)
         return func
+
     return decorator
 
 
@@ -292,6 +295,7 @@ def response(code):
     def decorator(func):
         func.wsgi_code = code
         return func
+
     return decorator
 
 
@@ -845,6 +849,7 @@ def action(name):
     def decorator(func):
         func.wsgi_action = name
         return func
+
     return decorator
 
 

@@ -17,7 +17,7 @@ from datetime import datetime
 from oslo_log import log
 
 from dolphin import exception
-from dolphin.drivers.dellemc_storage.vmax import alert_mapper
+from dolphin.drivers.dell_emc.vmax import alert_mapper
 
 LOG = log.getLogger(__name__)
 

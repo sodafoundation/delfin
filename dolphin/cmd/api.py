@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# Copyright 2020 The SODA Authors.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
@@ -26,7 +27,7 @@ import sys
 from oslo_config import cfg
 from oslo_log import log
 
-from dolphin.common import config  # Need to register global_opts
+from dolphin.common import config  # noqa
 from dolphin import service
 from dolphin import utils
 from dolphin import version
@@ -43,11 +44,12 @@ def main():
 
     launcher = service.process_launcher()
     api_server = service.WSGIService('dolphin')
-    task_server = service.Service.create(binary='dolphin-task', coordination=True)
+    task_server = service.Service.create(binary='dolphin-task',
+                                         coordination=True)
     launcher.launch_service(api_server, workers=api_server.workers or 1)
     launcher.launch_service(task_server)
 
-    #Launch alert manager service
+    # Launch alert manager service
     alert_manager = service.AlertMngrService()
     launcher.launch_service(alert_manager)
 
