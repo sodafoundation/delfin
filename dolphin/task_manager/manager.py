@@ -17,8 +17,6 @@
 
 """
 
-import threading
-
 from oslo_config import cfg
 from oslo_log import log
 from oslo_service import periodic_task
@@ -33,7 +31,6 @@ from dolphin.task_manager import rpcapi as task_rpcapi
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 CONF.import_opt('periodic_interval', 'dolphin.service')
-thread_lock = threading.Lock()
 
 
 class TaskManager(manager.Manager):
@@ -83,6 +80,8 @@ class TaskManager(manager.Manager):
                      "task is already running" % (resource_task, storage_id))
 
     def remove_storage_resource(self, context, storage_id, resource_task):
+        LOG.debug("Received the remove_storage_resource task: {0} request for storage"
+                  " id:{1}".format(resource_task, storage_id))
         lock = coordination.Lock(storage_id + resource_task)
         if lock.acquire(False):
             cls = importutils.import_class(resource_task)
@@ -94,14 +93,7 @@ class TaskManager(manager.Manager):
                      "task is already running" % (resource_task, storage_id))
 
     def remove_storage_in_cache(self, context, storage_id):
-        # Use thread lock instead of distributed lock here
-        # Because the data is only available for current thread
-        if thread_lock.acquire(blocking=False):
-            LOG.info('Remove storage device in memory for storage id:{0}'
-                     .format(storage_id))
-            drivers = driver_manager.DriverManager()
-            drivers.remove_driver(storage_id)
-            thread_lock.release()
-        else:
-            LOG.info("remove_storage_in_cache is rejected for %s "
-                     "because task is already running" % storage_id)
+        LOG.info('Remove storage device in memory for storage id:{0}'
+                 .format(storage_id))
+        drivers = driver_manager.DriverManager()
+        drivers.remove_driver(storage_id)
