@@ -33,8 +33,8 @@ class AlertProcessor(object):
 
         try:
             storage = db.storage_get(context, alert['storage_id'])
-        except Exception:
-            raise exception.StorageNotFound(id=alert['storage_id'])
+        except Exception as e:
+            raise exception.StorageNotFound(explanation=e.msg)
 
         # Fill storage specific info
         alert['storage_name'] = storage['name']

@@ -26,6 +26,7 @@ from dolphin import db
 from dolphin import exception
 from dolphin.alert_manager import alert_processor
 from dolphin.alert_manager import constants
+from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -105,13 +106,14 @@ class TrapReceiver(object):
 
         alert_source = db.alert_source_get_all(ctxt, filters=filters)
         if len(alert_source) == 0:
-            msg = "Alert source could not be found with host %s." \
-                  % source_ip
+            msg = (_("Alert source could not be found with host %s.")
+                   % source_ip)
             raise exception.AlertSourceNotFound(message=msg)
 
         # This is to make sure unique host is configured each alert source
-        if len(alert_source) != 1:
-            msg = "Failed to get unique alert source with host %s." % source_ip
+        if len(alert_source) > 1:
+            msg = (_("Failed to get unique alert source with host %s.")
+                   % source_ip)
             raise exception.InvalidResults(message=msg)
 
         return alert_source[0]
@@ -142,12 +144,12 @@ class TrapReceiver(object):
             # library will allow the trap. So for non v3 version, we need to
             # verify that community name is configured at alert source db for
             # the storage which is sending traps.
-            if exec_context['securityModel'] != constants.SNMP_V3_VERSION:
-                # context_name contains the incoming community string value
-                if alert_source['community_string'] != str(context_name):
-                    LOG.error("Community string not matching with alert "
-                              "source, dropping it.")
-                    return
+            # context_name contains the incoming community string value
+            if exec_context['securityModel'] != constants.SNMP_V3_VERSION \
+                    and alert_source['community_string'] != str(context_name):
+                msg = (_("Community string not matching with alert source %s, "
+                         "dropping it.") % source_ip)
+                raise exception.InvalidResults(message=msg)
 
             var_binds = [rfc1902.ObjectType(
                 rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
