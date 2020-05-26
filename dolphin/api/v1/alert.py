@@ -17,6 +17,7 @@ from webob import exc
 
 from dolphin import db, cryptor
 from dolphin import exception
+from dolphin.alert_manager import rpcapi
 from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import alert as schema_alert
@@ -35,6 +36,7 @@ class AlertController(wsgi.Controller):
     def __init__(self):
         super().__init__()
         self.driver_api = driver_api.API()
+        self.alert_rpcapi = rpcapi.AlertAPI()
 
     @wsgi.response(200)
     @validation.schema(schema_alert.put)
@@ -48,10 +50,14 @@ class AlertController(wsgi.Controller):
             db.storage_get(ctx, id)
             alert_source = self._input_check(alert_source)
 
-            if self._exist(ctx, id):
+            snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
+            if snmp_config_to_del is not None:
                 alert_source = db.alert_source_update(ctx, id, alert_source)
             else:
                 alert_source = db.alert_source_create(ctx, alert_source)
+            snmp_config_to_add = alert_source
+            self.alert_rpcapi.sync_snmp_config(ctx, snmp_config_to_del,
+                                               snmp_config_to_add)
         except exception.StorageNotFound:
             msg = (_("Alert source cannot be created or updated for a"
                      " non-existing storage %s.") % id)
@@ -75,7 +81,13 @@ class AlertController(wsgi.Controller):
     def delete(self, req, id):
         ctx = req.environ['dolphin.context']
         try:
-            db.alert_source_delete(ctx, id)
+            snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
+            if snmp_config_to_del is not None:
+                self.alert_rpcapi.sync_snmp_config(ctx, snmp_config_to_del,
+                                                   None)
+                db.alert_source_delete(ctx, id)
+            else:
+                raise exception.AlertSourceNotFound(storage_id=id)
         except exception.AlertSourceNotFound as e:
             raise exc.HTTPNotFound(explanation=e.msg)
 
@@ -86,6 +98,10 @@ class AlertController(wsgi.Controller):
             user_name = alert_source.get('username')
             security_level = alert_source.get('security_level')
             engine_id = alert_source.get('engine_id')
+            alert_source['auth_key'] = None
+            alert_source['auth_protocol'] = None
+            alert_source['privacy_key'] = None
+            alert_source['privacy_protocol'] = None
             if not user_name or not security_level or not engine_id:
                 msg = "If snmp version is SNMPv3, then username, " \
                       "security_level and engine_id are required."
@@ -128,13 +144,23 @@ class AlertController(wsgi.Controller):
 
         return alert_source
 
-    def _exist(self, ctx, storage_id):
+    def _get_snmp_config_brief(self, ctx, storage_id):
+        """
+        Get snmp configuration that will be used to delete from trap receiver.
+        Only community_index(storage_id) required for snmp v1/v2 deletion,
+        user_name and engine_id are required for snmp v3. So here we only get
+        those required parameters. Return None if configuration not found.
+        """
         try:
-            db.alert_source_get(ctx, storage_id)
+            alert_source = db.alert_source_get(ctx, storage_id)
+            snmp_config = {"storage_id": alert_source["storage_id"],
+                           "version": alert_source["version"]}
+            if snmp_config["version"].lower() == "snmpv3":
+                snmp_config["username"] = alert_source["username"]
+                snmp_config["engine_id"] = alert_source["engine_id"]
+            return snmp_config
         except exception.AlertSourceNotFound:
-            return False
-
-        return True
+            return None
 
     def _decrypt_auth_key(self, alert_source):
         auth_key = alert_source.get('auth_key', None)

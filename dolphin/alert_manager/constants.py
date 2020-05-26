@@ -35,3 +35,13 @@ SNMP_MIB_PATH = '/usr/local/lib/python3.6/dist-packages/pysnmp/smi/mibs'
 
 # SNMP dispatcher job id (static identifier)
 SNMP_DISPATCHER_JOB_ID = 1
+
+# Valid SNMP versions.
+SNMP_V1_INT = 1
+SNMP_V2_INT = 2
+SNMP_V3_INT = 3
+VALID_SNMP_VERSIONS = {"snmpv1": SNMP_V1_INT, "snmpv2c": SNMP_V2_INT,
+                       "snmpv3": SNMP_V3_INT}
+
+# Default limitation for batch query.
+DEFAULT_LIMIT = 1000
