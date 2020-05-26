@@ -80,8 +80,8 @@ class TaskManager(manager.Manager):
                      "task is already running" % (resource_task, storage_id))
 
     def remove_storage_resource(self, context, storage_id, resource_task):
-        LOG.debug("Received the remove_storage_resource task: {0} request for storage"
-                  " id:{1}".format(resource_task, storage_id))
+        LOG.info("Received the remove_storage_resource task: {0} request"
+                 " for storage id:{1}".format(resource_task, storage_id))
         lock = coordination.Lock(storage_id + resource_task)
         if lock.acquire(False):
             cls = importutils.import_class(resource_task)
