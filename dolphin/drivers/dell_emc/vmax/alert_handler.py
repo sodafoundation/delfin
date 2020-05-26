@@ -87,6 +87,20 @@ class AlertHandler(object):
         alert_model['manufacturer'] = alert['vendor']
         alert_model['product_name'] = alert['model']
 
+        # Fill default values for alert attributes
+        alert_model['category'] = self.default_category
+        alert_model['location'] = self.default_location
+        alert_model['event_type'] = self.default_event_type
+        alert_model['severity'] = self.default_severity
+        alert_model['probable_cause'] = self.default_probable_cause
+        alert_model['me_category'] = self.default_me_category
+
+        # Trap info does not have clear_type and alert sequence number
+        # TBD : Below fields filling to be updated
+        alert_model['clear_type'] = ""
+        alert_model['device_alert_sn'] = ""
+        alert_model['match_key'] = ""
+
         # trap info do not contain occur time, update with received time
         # Get date and time. Format will be like : Wed May 20 01:53:29 2020
         curr_time = datetime.now()
@@ -95,8 +109,6 @@ class AlertHandler(object):
         # Fill all the alert model fields
         if alert.get('category'):
             alert_model['category'] = alert['category']
-        else:
-            alert_model['category'] = self.default_category
 
         # Array id is used to fill unique id at source system side
         alert_model['native_me_dn'] = alert['connUnitName']
@@ -110,23 +122,15 @@ class AlertHandler(object):
                                       + component_type \
                                       + ',Component name: ' \
                                       + alert['emcAsyncEventComponentName']
-        else:
-            alert_model['location'] = self.default_location
 
         if alert.get('connUnitEventType'):
             alert_model['event_type'] = alert['connUnitEventType']
-        else:
-            alert_model['event_type'] = self.default_event_type
 
         if alert.get('connUnitEventSeverity'):
             alert_model['severity'] = alert['connUnitEventSeverity']
-        else:
-            alert_model['severity'] = self.default_severity
 
         if alert.get('connUnitEventDescr'):
             alert_model['probable_cause'] = alert['connUnitEventDescr']
-        else:
-            alert_model['probable_cause'] = self.default_probable_cause
 
         # Fill alarm id and fill alarm_name with corresponding mapping names
         alert_model['alarm_id'] = alert['emcAsyncEventCode']
@@ -135,14 +139,6 @@ class AlertHandler(object):
 
         if alert.get('connUnitType'):
             alert_model['me_category'] = alert['connUnitType']
-        else:
-            alert_model['me_category'] = self.default_me_category
-
-        # Trap info does not have clear_type and alert sequence number
-        # TBD : Below fields filling to be updated
-        alert_model['clear_type'] = ""
-        alert_model['device_alert_sn'] = ""
-        alert_model['match_key'] = ""
 
         return alert_model
 
