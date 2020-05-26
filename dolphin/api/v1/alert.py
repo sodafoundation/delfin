@@ -98,6 +98,10 @@ class AlertController(wsgi.Controller):
             user_name = alert_source.get('username')
             security_level = alert_source.get('security_level')
             engine_id = alert_source.get('engine_id')
+            alert_source['auth_key'] = None
+            alert_source['auth_protocol'] = None
+            alert_source['privacy_key'] = None
+            alert_source['privacy_protocol'] = None
             if not user_name or not security_level or not engine_id:
                 msg = "If snmp version is SNMPv3, then username, " \
                       "security_level and engine_id are required."
@@ -124,14 +128,6 @@ class AlertController(wsgi.Controller):
                         raise exception.InvalidInput(reason=msg)
                     alert_source['privacy_key'] = cryptor.encode(
                         alert_source['privacy_key'])
-                else:
-                    alert_source['privacy_key'] = None
-                    alert_source['privacy_protocol'] = None
-            else:
-                alert_source['auth_key'] = None
-                alert_source['auth_protocol'] = None
-                alert_source['privacy_key'] = None
-                alert_source['privacy_protocol'] = None
 
             # Clear keys for other versions.
             alert_source['community_string'] = None
