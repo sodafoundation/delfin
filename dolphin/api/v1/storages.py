@@ -114,7 +114,7 @@ class StorageController(wsgi.Controller):
         try:
             self.sync(req, storage['id'])
         except Exception as e:
-            # Unexpected error occurred while syncing resources.
+            # Unexpected error occurred, while syncing resources.
             msg = _('Failed to sync resources for storage: %(storage)s. '
                     'Error: %(err)s') % {'storage': storage['id'], 'err': e}
             LOG.error(msg)
