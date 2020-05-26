@@ -48,7 +48,7 @@ class AlertHandler(object):
                 used to construct this
     me_dn : Unique id at resource module (management system) side
     me_name : Unique name at resource module (management system) side
-    native_me_dn : Unique id of the device at source system that reports the 
+    native_me_dn : Unique id of the device at source system that reports the
                    alarm
     location : Alarm location information. It helps to locate the lowest unit
                where fault is originated(Name-value pairs)
@@ -65,9 +65,9 @@ class AlertHandler(object):
     manufacturer : Vendor of the device
     Product_name : Name of the product
     probable_cause : Probable reason for alert generation
-    clear_type : Alarm clearance type such as manual, automatic, reset clear etc
+    clear_type : Alarm clearance type such as manual, automatic, reset clear
     me_category : Resource category of the device generating the alarm
-                  Probable value: Network,Server,Storage..        
+                  Probable value: Network,Server,Storage..
     """
 
     def parse_alert(self, context, alert):

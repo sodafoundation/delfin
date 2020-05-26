@@ -15,7 +15,7 @@
 from oslo_log import log
 from oslo_utils import units
 from dolphin.common import constants
-from dolphin.drivers.dell_emc.vmax import alert_handler 
+from dolphin.drivers.dell_emc.vmax import alert_handler
 from dolphin.drivers.dell_emc.vmax import client
 from dolphin.drivers import driver
 
