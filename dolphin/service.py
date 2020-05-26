@@ -226,6 +226,7 @@ class AlertMngrService(service.Service):
                  snmp_mib_path=None, trap_receiver_class=None):
         super(AlertMngrService, self).__init__()
 
+        self.topic = CONF.snmp_config_topic
         if not trap_receiver_address:
             trap_receiver_address = CONF.trap_receiver_address
         if not trap_receiver_port:
@@ -241,6 +242,14 @@ class AlertMngrService(service.Service):
     def start(self):
         """Trigger trap receiver creation"""
         try:
+            LOG.info('Starting %(topic)s node.', {'topic': self.topic})
+            LOG.debug("Creating RPC server for service %s.", self.topic)
+
+            target = messaging.Target(topic=self.topic, server=CONF.host)
+            endpoints = [self.manager]
+            self.rpcserver = rpc.get_server(target, endpoints)
+            self.rpcserver.start()
+
             self.manager.start()
         except Exception:
             LOG.exception("Failed to start alert manager service.")
