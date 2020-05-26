@@ -24,7 +24,8 @@ class VolumeController(wsgi.Controller):
 
     def __init__(self):
         super(VolumeController, self).__init__()
-        self.search_options = ['name', 'status', 'id', 'storage_id', 'wwn', 'original_id', 'original_pool_id']
+        self.search_options = ['name', 'status', 'id', 'storage_id', 'wwn',
+                               'original_id', 'original_pool_id']
 
     def _get_volumes_search_options(self):
         """Return volumes search options allowed ."""
@@ -41,9 +42,9 @@ class VolumeController(wsgi.Controller):
         api_utils.remove_invalid_options(ctxt, query_params,
                                          self._get_volumes_search_options())
         try:
-            volumes = db.volume_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
-                                        query_params, offset)
-        except  exception.InvalidInput as e:
+            volumes = db.volume_get_all(ctxt, marker, limit, sort_keys,
+                                        sort_dirs, query_params, offset)
+        except exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         return volume_view.build_volumes(volumes)
 
