@@ -40,11 +40,5 @@ SNMP_V3_INT = 3
 VALID_SNMP_VERSIONS = {"snmpv1": SNMP_V1_INT, "snmpv2c": SNMP_V2_INT,
                        "snmpv3": SNMP_V3_INT}
 
-# Valid SNMP auth protocol.
-SNMP_AUTH_PROTOCOL_SHA = "sha"
-SNMP_AUTH_PROTOCOL_MD5 = "md5"
-
-# Valid SNMP privacy protocol.
-SNMP_PRIVACY_PROTOCOL_AES = "aes"
-SNMP_PRIVACY_PROTOCOL_DES = "des"
-SNMP_PRIVACY_PROTOCOL_3DES = "3des"
+# Default limitation for batch query.
+DEFAULT_LIMIT = 1000

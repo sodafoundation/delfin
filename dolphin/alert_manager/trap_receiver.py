@@ -33,6 +33,13 @@ LOG = log.getLogger(__name__)
 # Mechanism to be changed to load all mib file
 MIB_LOAD_LIST = ['SNMPv2-MIB', 'IF_MIB', 'EMCGATEWAY-MIB', 'FCMGMT-MIB']
 
+AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
+                     "md5": config.usmHMACMD5AuthProtocol}
+
+PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
+                        "des": config.usmDESPrivProtocol,
+                        "3des": config.usm3DESEDEPrivProtocol}
+
 
 class TrapReceiver(object):
     """Trap listening and processing functions"""
@@ -55,17 +62,18 @@ class TrapReceiver(object):
 
     def _add_snmp_config(self, ctxt, new_config):
         LOG.info("Add snmp config:%s" % new_config)
-        storage_id = new_config["storage_id"]
-        version_int = self._get_snmp_version_int(ctxt, new_config["version"])
+        storage_id = new_config.get("storage_id")
+        version_int = self._get_snmp_version_int(ctxt,
+                                                 new_config.get("version"))
         if version_int == constants.SNMP_V2_INT or \
                 version_int == constants.SNMP_V1_INT:
-            community_string = new_config["community_string"]
+            community_string = new_config.get("community_string")
             community_index = self._get_community_index(storage_id)
             config.addV1System(self.snmp_engine, community_index,
                                community_string, contextName=community_string)
         else:
-            username = new_config["username"]
-            engine_id = new_config["engine_id"]
+            username = new_config.get("username")
+            engine_id = new_config.get("engine_id")
             auth_key = new_config.get("auth_key", None)
             auth_protocol = new_config.get("auth_protocol", None)
             privacy_key = new_config.get("privacy_key", None)
@@ -87,15 +95,16 @@ class TrapReceiver(object):
 
     def _delete_snmp_config(self, ctxt, snmp_config):
         LOG.info("Delete snmp config:%s" % snmp_config)
-        version_int = self._get_snmp_version_int(ctxt, snmp_config["version"])
+        version_int = self._get_snmp_version_int(ctxt,
+                                                 snmp_config.get("version"))
         if version_int == constants.SNMP_V3_INT:
-            username = snmp_config['username']
-            engine_id = snmp_config['engine_id']
+            username = snmp_config.get('username')
+            engine_id = snmp_config.get('engine_id')
             config.delV3User(self.snmp_engine, userName=username,
                              securityEngineId=v2c.OctetString(
                                  hexValue=engine_id))
         else:
-            storage_id = snmp_config['storage_id']
+            storage_id = snmp_config.get('storage_id')
             community_index = self._get_community_index(storage_id)
             config.delV1System(self.snmp_engine, community_index)
 
@@ -112,34 +121,27 @@ class TrapReceiver(object):
         return version_int
 
     def _get_usm_auth_protocol(self, ctxt, auth_protocol):
-        usm_auth_protocol = config.usmNoAuthProtocol
         if auth_protocol is not None:
-            auth_protocol = auth_protocol.lower()
-            if auth_protocol == constants.SNMP_AUTH_PROTOCOL_SHA:
-                usm_auth_protocol = config.usmHMACSHAAuthProtocol
-            elif auth_protocol == constants.SNMP_AUTH_PROTOCOL_MD5:
-                usm_auth_protocol = config.usmHMACMD5AuthProtocol
+            usm_auth_protocol = AUTH_PROTOCOL_MAP.get(auth_protocol.lower())
+            if usm_auth_protocol is not None:
+                return usm_auth_protocol
             else:
                 msg = "Invalid auth_protocol %s." % auth_protocol
                 raise exception.InvalidSNMPConfig(detail=msg)
-
-        return usm_auth_protocol
+        else:
+            return config.usmNoAuthProtocol
 
     def _get_usm_priv_protocol(self, ctxt, privacy_protocol):
-        usm_priv_protocol = config.usmNoPrivProtocol
         if privacy_protocol is not None:
-            privacy_protocol = privacy_protocol.lower()
-            if privacy_protocol == constants.SNMP_PRIVACY_PROTOCOL_AES:
-                usm_priv_protocol = config.usmAesCfb128Protocol
-            elif privacy_protocol == constants.SNMP_PRIVACY_PROTOCOL_DES:
-                usm_priv_protocol = config.usmDESPrivProtocol
-            elif privacy_protocol == constants.SNMP_PRIVACY_PROTOCOL_3DES:
-                usm_priv_protocol = config.usm3DESEDEPrivProtocol
+            usm_priv_protocol = PRIVACY_PROTOCOL_MAP.get(
+                privacy_protocol.lower())
+            if usm_priv_protocol is not None:
+                return usm_priv_protocol
             else:
                 msg = "Invalid privacy_protocol %s." % privacy_protocol
                 raise exception.InvalidSNMPConfig(detail=msg)
 
-        return usm_priv_protocol
+        return config.usmNoPrivProtocol
 
     def _mib_builder(self):
         """Loads given set of mib files from given path."""
@@ -237,17 +239,18 @@ class TrapReceiver(object):
         """Load snmp config from database when service start."""
         ctxt = context.get_admin_context()
         marker = None
-        finish = False
-        while not finish:
+        finished = False
+        limit = constants.DEFAULT_LIMIT
+        while not finished:
             alert_sources = db_api.alert_source_get_all(ctxt, marker=marker,
-                                                        limit=1000)
+                                                        limit=limit)
             for alert_source in alert_sources:
                 snmp_config = dict()
                 snmp_config.update(alert_source)
                 self._add_snmp_config(ctxt, snmp_config)
                 marker = alert_source['storage_id']
-            if len(alert_sources) < 1000:
-                finish = True
+            if len(alert_sources) < limit:
+                finished = True
 
     def start(self):
         """Starts the snmp trap receiver with necessary prerequisites."""
