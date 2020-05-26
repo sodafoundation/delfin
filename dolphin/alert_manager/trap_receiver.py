@@ -14,6 +14,7 @@
 
 import re
 
+import six
 from oslo_log import log
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
@@ -104,7 +105,15 @@ class TrapReceiver(object):
         filters = {'host': source_ip}
         ctxt = context.get_admin_context()
 
-        alert_source = db.alert_source_get_all(ctxt, filters=filters)
+        try:
+            alert_source = db.alert_source_get_all(ctxt, filters=filters)
+        except exception.InvalidInput as e:
+            raise exception.InvalidResults(message=six.text_type(e))
+        except Exception:
+            msg = (_("Error in alert_source_get_all query from DB for the "
+                     "host %s.") % source_ip)
+            raise exception.InvalidResults(message=msg)
+
         if len(alert_source) == 0:
             msg = (_("Alert source could not be found with host %s.")
                    % source_ip)
