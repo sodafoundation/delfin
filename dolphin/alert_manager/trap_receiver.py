@@ -74,10 +74,10 @@ class TrapReceiver(object):
         else:
             username = new_config.get("username")
             engine_id = new_config.get("engine_id")
-            auth_key = new_config.get("auth_key", None)
-            auth_protocol = new_config.get("auth_protocol", None)
-            privacy_key = new_config.get("privacy_key", None)
-            privacy_protocol = new_config.get("privacy_protocol", None)
+            auth_key = new_config.get("auth_key")
+            auth_protocol = new_config.get("auth_protocol")
+            privacy_key = new_config.get("privacy_key")
+            privacy_protocol = new_config.get("privacy_protocol")
             if auth_key is not None:
                 auth_key = cryptor.decode(auth_key)
             if privacy_key is not None:
