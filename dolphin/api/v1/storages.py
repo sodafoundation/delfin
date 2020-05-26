@@ -110,6 +110,14 @@ class StorageController(wsgi.Controller):
                 exception.StorageNotFound) as e:
             raise exc.HTTPBadRequest(explanation=e.msg)
 
+        # Registration success, sync resource collection for this storage
+        try:
+            self.sync(req, storage['id'])
+        except Exception as e:
+            # Unexpected error occurred, while syncing resources.
+            msg = _('Failed to sync resources for storage: %(storage)s. '
+                    'Error: %(err)s') % {'storage': storage['id'], 'err': e}
+            LOG.error(msg)
         return storage_view.build_storage(storage)
 
     def update(self, req, id, body):
