@@ -31,10 +31,10 @@ class PoolController(wsgi.Controller):
         """Return pools search options allowed ."""
         return self.search_options
 
-    def show(self, req, pool_id):
+    def show(self, req, id):
         ctxt = req.environ['dolphin.context']
         try:
-            pool = db.pool_get(ctxt, pool_id)
+            pool = db.pool_get(ctxt, id)
         except exception.PoolNotFound as e:
             raise exc.HTTPNotFound(explanation=e.msg)
         return pool_view.build_pool(pool)
