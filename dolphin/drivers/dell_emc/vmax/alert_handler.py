@@ -46,7 +46,8 @@ class AlertHandler(object):
     match_key : This info uniquely identifies the fault point. Several infos
                 such as source system id, location, alarm id together can be
                 used to construct this
-    me_dn : Unique id at resource module (management system) side
+    me_dn : Unique id at resource module (management system) side. me stands
+            for management element here
     me_name : Unique name at resource module (management system) side
     native_me_dn : Unique id of the device at source system that reports the
                    alarm
