@@ -67,30 +67,22 @@ class TaskManager(manager.Manager):
             pass
 
     def sync_storage_resource(self, context, storage_id, resource_task):
-        lock = coordination.Lock(storage_id + resource_task)
-        if lock.acquire(False):
+        lock = coordination.Lock(storage_id + '-' + resource_task)
+        with lock(blocking=False):
             LOG.debug("Received the sync_storage task: {0} request for storage"
                       " id:{1}".format(resource_task, storage_id))
             cls = importutils.import_class(resource_task)
             device_obj = cls(context, storage_id)
             device_obj.sync()
-            lock.release()
-        else:
-            LOG.info("%s is rejected for %s because "
-                     "task is already running" % (resource_task, storage_id))
 
     def remove_storage_resource(self, context, storage_id, resource_task):
         LOG.info("Received the remove_storage_resource task: {0} request"
                  " for storage id:{1}".format(resource_task, storage_id))
-        lock = coordination.Lock(storage_id + resource_task)
-        if lock.acquire(False):
+        lock = coordination.Lock(storage_id + '-' + resource_task)
+        with lock(blocking=False):
             cls = importutils.import_class(resource_task)
             device_obj = cls(context, storage_id)
             device_obj.remove()
-            lock.release()
-        else:
-            LOG.info("%s is rejected for %s because "
-                     "task is already running" % (resource_task, storage_id))
 
     def remove_storage_in_cache(self, context, storage_id):
         LOG.info('Remove storage device in memory for storage id:{0}'

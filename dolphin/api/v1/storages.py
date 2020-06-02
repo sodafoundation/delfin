@@ -31,7 +31,7 @@ from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin.task_manager.tasks import task
-
+from tooz import coordination as tooz_coordination
 LOG = log.getLogger(__name__)
 
 
@@ -120,9 +120,23 @@ class StorageController(wsgi.Controller):
         ctxt = req.environ['dolphin.context']
         try:
             storage = db.storage_get(ctxt, id)
+            # Check whether all the tasks' lock can be acquired
+            for subclass in task.StorageResourceTask.__subclasses__():
+                # The lock name should be same with the
+                # lock name in task_manager/manager.py
+                lock_name = storage['id'] + '-' + subclass.__module__ + '.'\
+                            + subclass.__name__
+                lock = coordination.Lock(lock_name)
+                with lock(blocking=False):
+                    pass
         except exception.StorageNotFound as e:
             LOG.error(e)
             raise exc.HTTPBadRequest(explanation=e.msg)
+        except tooz_coordination.LockAcquireFailed:
+            err_msg = 'Task %s is running for storage %s'\
+                      % (subclass.__name__, storage['id'])
+            LOG.warning(err_msg)
+            raise exc.HTTPBadRequest(explanation=err_msg)
         else:
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.remove_storage_resource(
@@ -146,11 +160,31 @@ class StorageController(wsgi.Controller):
                   format(len(storages)))
 
         for storage in storages:
+            task_is_running = False
+            # Check whether all the task lock can be acquired for this storage
             for subclass in task.StorageResourceTask.__subclasses__():
-                self.task_rpcapi.sync_storage_resource(
-                    ctxt,
-                    storage['id'],
-                    subclass.__module__ + '.' + subclass.__name__)
+                # The lock name should be same with the
+                # lock name in task_manager/manager.py
+                lock_name = storage['id'] + '-' + subclass.__module__ + '.'\
+                           + subclass.__name__
+                try:
+                    lock = coordination.Lock(lock_name)
+                    with lock(blocking=False):
+                        pass
+                except tooz_coordination.LockAcquireFailed:
+                    err_msg = 'Task %s is running for %s'\
+                              % (subclass.__name__, storage['id'])
+                    LOG.warning(err_msg)
+                    task_is_running = True
+                    continue
+            # If none of the sync tasks is running for this storage, run them
+            # If not, run nothing
+            if not task_is_running:
+                for subclass in task.StorageResourceTask.__subclasses__():
+                    self.task_rpcapi.sync_storage_resource(
+                        ctxt,
+                        storage['id'],
+                        subclass.__module__ + '.' + subclass.__name__)
 
     @wsgi.response(202)
     def sync(self, req, id):
@@ -163,10 +197,24 @@ class StorageController(wsgi.Controller):
         ctxt = req.environ['dolphin.context']
         try:
             storage = db.storage_get(ctxt, id)
+            for subclass in task.StorageResourceTask.__subclasses__():
+                # The lock name should be same with the
+                # lock name in task_manager/manager.py
+                lock_name = storage['id'] + '-' + subclass.__module__ + '.'\
+                           + subclass.__name__
+                lock = coordination.Lock(lock_name)
+                with lock(blocking=False):
+                    pass
         except exception.StorageNotFound as e:
             LOG.error(e)
             raise exc.HTTPNotFound(explanation=e.msg)
+        except tooz_coordination.LockAcquireFailed:
+            err_msg = 'Task %s is running for storage %s'\
+                      % (subclass.__name__, storage['id'])
+            LOG.warning(err_msg)
+            raise exc.HTTPBadRequest(explanation=err_msg)
         else:
+
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,
