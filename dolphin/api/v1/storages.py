@@ -133,7 +133,7 @@ class StorageController(wsgi.Controller):
                 # The lock name should be same with the
                 # lock name in task_manager/manager.py
                 lock_name = storage['id'] + '-' + subclass.__module__ + '.'\
-                            + subclass.__name__
+                    + subclass.__name__
                 lock = coordination.Lock(lock_name)
                 with lock(blocking=False):
                     pass
@@ -174,7 +174,7 @@ class StorageController(wsgi.Controller):
                 # The lock name should be same with the
                 # lock name in task_manager/manager.py
                 lock_name = storage['id'] + '-' + subclass.__module__ + '.'\
-                           + subclass.__name__
+                    + subclass.__name__
                 try:
                     lock = coordination.Lock(lock_name)
                     with lock(blocking=False):
@@ -209,7 +209,7 @@ class StorageController(wsgi.Controller):
                 # The lock name should be same with the
                 # lock name in task_manager/manager.py
                 lock_name = storage['id'] + '-' + subclass.__module__ + '.'\
-                           + subclass.__name__
+                    + subclass.__name__
                 lock = coordination.Lock(lock_name)
                 with lock(blocking=False):
                     pass
