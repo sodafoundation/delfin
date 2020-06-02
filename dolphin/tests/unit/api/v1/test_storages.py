@@ -1,51 +1,39 @@
-import sys
-import mock
+from unittest import mock
 
-import pytest
-
-from dolphin import context
+from dolphin import db
 from dolphin import exception
-
-sys.modules['dolphin.cryptor'] = mock.MagicMock()
+from dolphin import test
 from dolphin.api.v1.storages import StorageController
-from dolphin.task_manager.tasks import task
+from dolphin.tests.unit.api import fakes
 
 
-class Request:
-    def __init__(self):
-        self.environ = {'dolphin.context': context.RequestContext()}
+class TestStorageController(test.TestCase):
 
+    def setUp(self):
+        super(TestStorageController, self).setUp()
+        self.task_rpcapi = mock.Mock()
+        self.driver_api = mock.Mock()
+        self.controller = StorageController()
+        self.mock_object(self.controller, 'task_rpcapi', self.task_rpcapi)
+        self.mock_object(self.controller, 'driver_api', self.driver_api)
 
-class TestStorageController:
-    def test_delete(self, mocker):
-        # For StorageController.__init__
-        mocker.patch('dolphin.task_manager.rpcapi.TaskAPI.__init__',
-                     return_value=None)
-        # For StorageController.delete
-        mock_remove_storage_resource = mocker.patch(
-            'dolphin.task_manager.rpcapi.TaskAPI.remove_storage_resource')
-        mock_remove_storage_in_cache = mocker.patch(
-            'dolphin.task_manager.rpcapi.TaskAPI.remove_storage_in_cache')
+    @mock.patch.object(db, 'storage_get',
+                       mock.Mock(return_value={'id': 'fake_id'}))
+    def test_delete(self):
+        req = fakes.HTTPRequest.blank('/storages/fake_id')
+        self.controller.delete(req, 'fake_id')
+        ctxt = req.environ['dolphin.context']
+        db.storage_get.assert_called_once_with(ctxt, 'fake_id')
+        self.task_rpcapi.remove_storage_resource.assert_called_with(
+            ctxt, 'fake_id', mock.ANY)
+        self.task_rpcapi.remove_storage_in_cache.assert_called_once_with(
+            ctxt, 'fake_id')
 
-        sc = StorageController()
-        req = Request()
-
-        # Get storage successfully, call remove_storage_resource
-        # Call count depends on the StorageResourceTask's subclasses' count
-        mocker.patch('dolphin.db.storage_get')
-        sc.delete(req, '83df8a62-9ae4-4ffc-9948-5524cc7cdd64')
-        expected_count = 0
-        for _ in task.StorageResourceTask.__subclasses__():
-            expected_count += 1
-        assert expected_count == mock_remove_storage_resource.call_count
-        assert 1 == mock_remove_storage_in_cache.call_count
-
-        # Get storage failed, raise exception,
-        # do not call remove_storage_resource
-        mock_remove_storage_resource.reset_mock()
-        mocker.patch('dolphin.db.storage_get',
-                     side_effect=exception.StorageNotFound(
-                         '83df8a62-9ae4-4ffc-9948-5524cc7cdd64'))
-        with pytest.raises(Exception):
-            sc.delete(req, '83df8a62-9ae4-4ffc-9948-5524cc7cdd64')
-        assert 0 == mock_remove_storage_resource.call_count
+    def test_delete_with_invalid_id(self):
+        self.mock_object(
+            db, 'storage_get',
+            mock.Mock(side_effect=exception.StorageNotFound('fake_id')))
+        req = fakes.HTTPRequest.blank('/storages/fake_id')
+        self.assertRaises(exception.StorageNotFound,
+                          self.controller.delete,
+                          req, 'fake_id')
