@@ -15,6 +15,7 @@
 from oslo_log import log
 from oslo_utils import units
 from dolphin.common import constants
+from dolphin.drivers.dell_emc.vmax import alert_handler
 from dolphin.drivers.dell_emc.vmax import client
 from dolphin.drivers import driver
 
@@ -63,7 +64,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         return self.client.list_pools()
 
     def list_volumes(self, context):
-        pass
+        return self.client.list_volumes(self.storage_id)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -72,7 +73,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        pass
+        return alert_handler.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
         pass

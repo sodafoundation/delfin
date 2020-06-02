@@ -82,7 +82,8 @@ class API(object):
 
     def list_volumes(self, context, storage_id):
         """List all storage volumes from storage system."""
-        pass
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_volumes(context)
 
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
@@ -95,7 +96,7 @@ class API(object):
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
-        driver.parse_alert(context, alert)
+        return driver.parse_alert(context, alert)
 
     def clear_alert(self, context, storage_id, alert):
         """Clear alert from storage system."""
