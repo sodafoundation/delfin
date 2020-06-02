@@ -176,7 +176,7 @@ class StorageController(wsgi.Controller):
                               % (subclass.__name__, storage['id'])
                     LOG.warning(err_msg)
                     task_is_running = True
-                    continue
+                    break
             # If none of the sync tasks is running for this storage, run them
             # If not, run nothing
             if not task_is_running:
