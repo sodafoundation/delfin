@@ -26,6 +26,8 @@ from oslo_db.sqlalchemy.types import JsonEncodedDict
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
+from dolphin.common import constants
+
 CONF = cfg.CONF
 BASE = declarative_base()
 
@@ -75,6 +77,7 @@ class Storage(BASE, DolphinBase):
     total_capacity = Column(Integer)
     used_capacity = Column(Integer)
     free_capacity = Column(Integer)
+    sync_status = Column(Integer, default=constants.SyncStatus.SYNCED)
 
 
 class Volume(BASE, DolphinBase):

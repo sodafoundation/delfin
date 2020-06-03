@@ -12,13 +12,46 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import inspect
+
+import decorator
 from oslo_log import log
 
-from dolphin.db.sqlalchemy import api as db
+from dolphin import coordination
+from dolphin import db
+from dolphin import utils
+from dolphin.common import constants
 from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
+
+
+def sync_task(resource_type):
+
+    @decorator.decorator
+    def _sync_task(f, *a, **k):
+        call_args = inspect.getcallargs(f, *a, **k)
+        self = call_args['self']
+        lock = coordination.Lock(self.storage_id)
+        with lock:
+            storage = db.storage_get(self.context, self.storage_id)
+            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bit(
+                storage[constants.DB.DEVICE_SYNC_STATUS],
+                resource_type,
+                constants.SyncStatus.SYNCING)
+            db.storage_update(self.context, self.storage_id, storage)
+        ret = f(*a, **k)
+        with lock:
+            storage = db.storage_get(self.context, self.storage_id)
+            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bit(
+                storage[constants.DB.DEVICE_SYNC_STATUS],
+                resource_type,
+                constants.SyncStatus.SYNCED)
+            db.storage_update(self.context, self.storage_id, storage)
+        return ret
+
+    return _sync_task
 
 
 class StorageResourceTask(object):
@@ -59,6 +92,7 @@ class StorageDeviceTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageDeviceTask, self).__init__(context, storage_id)
 
+    @sync_task(constants.ResourceType.STORAGE_DEVICE)
     def sync(self):
         """
         :return:
@@ -94,6 +128,7 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
+    @sync_task(constants.ResourceType.POOL)
     def sync(self):
         """
         :return:
@@ -134,6 +169,7 @@ class StorageVolumeTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageVolumeTask, self).__init__(context, storage_id)
 
+    @sync_task(constants.ResourceType.VOLUME)
     def sync(self):
         """
         :return:

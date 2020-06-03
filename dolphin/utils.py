@@ -682,3 +682,11 @@ class Singleton(type):
                     cls._instances[cls] = super(Singleton,
                                                 cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+def set_bit(source, index, value):
+    mask = 1 << index
+    source &= ~mask
+    if value:
+        source |= mask
+    return source

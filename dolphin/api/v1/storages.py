@@ -27,6 +27,7 @@ from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import storages as schema_storages
 from dolphin.api.views import storages as storage_view
+from dolphin.common import constants
 from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
@@ -154,6 +155,10 @@ class StorageController(wsgi.Controller):
                   format(len(storages)))
 
         for storage in storages:
+            if storage[constants.DB.DEVICE_SYNC_STATUS] != \
+                    constants.SyncStatus.SYNCED:
+                LOG.warn('sync task is running for %s' % storage['id'])
+                continue
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,
@@ -175,6 +180,10 @@ class StorageController(wsgi.Controller):
             LOG.error(e)
             raise exc.HTTPNotFound(explanation=e.msg)
         else:
+            if storage[constants.DB.DEVICE_SYNC_STATUS] != \
+                    constants.SyncStatus.SYNCED:
+                msg = 'sync task is running for %s' % storage['id']
+                raise exc.HTTPBadRequest(explanation=msg)
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,

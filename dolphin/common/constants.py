@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from enum import IntEnum
 
 # The maximum value a signed INT type may have
 DB_MAX_INT = 0x7FFFFFFF
@@ -48,3 +49,21 @@ class StorageType(object):
     FILE = 'file'
 
     ALL = (BLOCK, FILE)
+
+
+class ResourceType(IntEnum):
+    STORAGE_DEVICE = 0
+    POOL = 1
+    VOLUME = 2
+    ACCESS_INFO = 3
+    DISK = 4
+    ALERT_SOURCE = 5
+
+
+class SyncStatus(IntEnum):
+    SYNCED = 0
+    SYNCING = 1
+
+
+class DB(object):
+    DEVICE_SYNC_STATUS = 'sync_status'
