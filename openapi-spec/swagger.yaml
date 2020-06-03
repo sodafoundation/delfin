@@ -500,7 +500,6 @@ paths:
               - Normal
               - Offline
               - Abnormal
-              - Unknown
       responses:
         '200':
           description: List storage pools query was success
@@ -512,7 +511,7 @@ paths:
                   - storage_pools
                 additionalProperties: true
                 properties:
-                  storages:
+                  storage_pools:
                     type: array
                     title: the storage pools schema
                     items:
@@ -651,13 +650,20 @@ paths:
             type: string
       responses:
         '200':
-          description: OK
+          description: List storage pools query was success
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StoragePoolSpec'
+                type: object
+                required:
+                  - storage_pools
+                additionalProperties: true
+                properties:
+                  storage_pools:
+                    type: array
+                    title: the storage pools schema
+                    items:
+                      $ref: '#/components/schemas/StoragePoolSpec'
         '401':
           description: NotAuthorized
           content:
@@ -958,13 +964,19 @@ paths:
             type: string
       responses:
         '200':
-          description: OK
+          description: List volumes operation was successful
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/VolumeRespSpec'
+                type: object
+                required:
+                  - volumes
+                additionalProperties: true
+                properties:
+                  volumes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VolumeRespSpec'
         '401':
           description: NotAuthorized
           content:
