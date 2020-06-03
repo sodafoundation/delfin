@@ -70,7 +70,7 @@ class RestClient(object):
         else:
             msg = _("Request method %s is invalid.") % method
             LOG.error(msg)
-            raise exception.StorageBackendException(data=msg)
+            raise exception.StorageBackendException(reason=msg)
 
         try:
             res = func(url, **kwargs)
@@ -129,13 +129,13 @@ class RestClient(object):
                 msg = _("Password has expired or has been reset, "
                         "please change the password.")
                 LOG.error(msg)
-                raise exception.StorageBackendException(data=msg)
+                raise exception.StorageBackendException(reason=msg)
             break
 
         if device_id is None:
             msg = _("Failed to login with all rest URLs.")
             LOG.error(msg)
-            raise exception.StorageBackendException(data=msg)
+            raise exception.StorageBackendException(reason=msg)
 
         return device_id
 
@@ -145,7 +145,6 @@ class RestClient(object):
         except Exception as err:
             LOG.warning('Login failed. Error: %s.', err)
 
-    # @utils.synchronized('huawei_cinder_call')
     def call(self, url, data=None, method=None, log_filter_flag=False):
         """Send requests to server.
 
@@ -185,13 +184,13 @@ class RestClient(object):
             msg = (_('%(err)s\nresult: %(res)s.') % {'err': err_str,
                                                      'res': result})
             LOG.error(msg)
-            raise exception.StorageBackendException(data=msg)
+            raise exception.StorageBackendException(reason=msg)
 
     def _assert_data_in_result(self, result, msg):
         if 'data' not in result:
             err_msg = _('%s "data" is not in result.') % msg
             LOG.error(err_msg)
-            raise exception.StorageBackendException(data=err_msg)
+            raise exception.StorageBackendException(reason=err_msg)
 
     def get_storage(self):
         url = "/system/"
@@ -203,6 +202,14 @@ class RestClient(object):
 
         return result['data']
 
+    def get_all_volumes(self):
+        url = "/lun"
+        result = self.call(url, None, "GET", log_filter_flag=True)
+        msg = _('Query resource volume error.')
+        self._assert_rest_result(result, msg)
+        self._assert_data_in_result(result, msg)
+        return result['data']
+
     def get_all_pools(self):
         url = "/storagepool"
         result = self.call(url, None, "GET", log_filter_flag=True)
@@ -210,3 +217,35 @@ class RestClient(object):
         self._assert_rest_result(result, msg)
         self._assert_data_in_result(result, msg)
         return result['data']
+
+    def get_pool_info(self, pool_name=None, pools=None):
+        info = {}
+        if not pool_name:
+            return info
+
+        for pool in pools:
+            if pool_name.strip() != pool['NAME']:
+                continue
+
+            if pool.get('USAGETYPE') == consts.FILE_SYSTEM_POOL_TYPE:
+                break
+
+            info['ID'] = pool['ID']
+            info['CAPACITY'] = pool.get('DATASPACE', pool['USERFREECAPACITY'])
+            info['TOTALCAPACITY'] = pool.get('USERTOTALCAPACITY', '0')
+            info['TIER0CAPACITY'] = pool.get('TIER0CAPACITY', '0')
+            info['TIER1CAPACITY'] = pool.get('TIER1CAPACITY', '0')
+            info['TIER2CAPACITY'] = pool.get('TIER2CAPACITY', '0')
+
+        return info
+
+    def get_pool_id(self, pool_name):
+        pools = self.get_all_pools()
+        pool_info = self.get_pool_info(pool_name, pools)
+
+        if not pool_info:
+            msg = _('Can not get pool info. pool: %s') % pool_name
+            LOG.error(msg)
+            raise exception.StorageBackendException(reason=msg)
+
+        return pool_info['ID']

@@ -13,6 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+STATUS_HEALTH = '1'
+STATUS_ACTIVE = '43'
+STATUS_RUNNING = '10'
+STATUS_VOLUME_READY = '27'
+STATUS_LUNCOPY_READY = '40'
+STATUS_QOS_ACTIVE = '2'
+QOS_INACTIVATED = '45'
+LUN_TYPE = '11'
+SNAPSHOT_TYPE = '27'
 
 ERROR_CONNECT_TO_SERVER = -403
 ERROR_UNAUTHORIZED_TO_SERVER = -401

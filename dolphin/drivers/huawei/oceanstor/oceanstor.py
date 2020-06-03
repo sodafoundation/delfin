@@ -35,7 +35,7 @@ class OceanStorDriver(driver.StorageDriver):
         storg_info = self.client.get_storage()
 
         status = constants.StorageStatus.NORMAL
-        if storg_info['HEALTHSTATUS'] != '1':
+        if storg_info['HEALTHSTATUS'] != consts.STATUS_HEALTH:
             status = constants.StorageStatus.ABNORMAL
 
         storage = {
@@ -88,7 +88,54 @@ class OceanStorDriver(driver.StorageDriver):
                 reason='Failed to get pool metrics from OceanStor')
 
     def list_volumes(self, context):
-        pass
+        try:
+            # Get all volumes in OceanStor
+            volumes = self.client.get_all_volumes()
+
+            volume_list = []
+            for volume in volumes:
+                # Get pool id of volume
+                orig_pool_id = self.client.get_pool_id(volume["PARENTNAME"])
+
+                compressed = False
+                if volume["ENABLECOMPRESSION"] != 'false':
+                    compressed = True
+
+                deduplicated = False
+                if volume["ENABLEDEDUP"] != 'false':
+                    deduplicated = True
+
+                status = constants.VolumeStatus.ERROR
+                if volume["HEALTHSTATUS"] == consts.STATUS_HEALTH \
+                        and volume["RUNNINGSTATUS"] == \
+                        consts.STATUS_VOLUME_READY:
+                    status = constants.VolumeStatus.AVAILABLE
+
+                v = {
+                    "name": volume["NAME"],
+                    "storage_id": self.storage_id,
+                    "description": "Huawei OceanStor volume",
+                    "status": status,
+                    "original_id": volume["ID"],
+                    "original_pool_id": orig_pool_id,
+                    "wwn": volume["WWN"],
+                    "provisioning_policy": "",
+                    "total_capacity": int(volume["ALLOCCAPACITY"]),
+                    "used_capacity": int(volume["CAPACITY"]),
+                    "free_capacity": None,
+                    "compressed": compressed,
+                    "deduplicated": deduplicated,
+                }
+
+                volume_list.append(v)
+
+            return volume_list
+
+        except Exception as err:
+            LOG.error(
+                "Failed to get list volumes from OceanStor: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get list volumes from OceanStor')
 
     def add_trap_config(self, context, trap_config):
         pass
