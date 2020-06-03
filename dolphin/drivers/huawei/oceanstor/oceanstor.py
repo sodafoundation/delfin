@@ -14,8 +14,9 @@
 
 from oslo_log import log
 from dolphin.common import constants
-from dolphin.drivers.huawei.oceanstor import rest_client
+from dolphin.drivers.huawei.oceanstor import rest_client, consts
 from dolphin.drivers import driver
+from dolphin import exception
 
 LOG = log.getLogger(__name__)
 
@@ -32,7 +33,6 @@ class OceanStorDriver(driver.StorageDriver):
     def get_storage(self, context):
 
         storg_info = self.client.get_storage()
-        print(storg_info)
 
         status = constants.StorageStatus.NORMAL
         if storg_info['HEALTHSTATUS'] != '1':
@@ -55,7 +55,37 @@ class OceanStorDriver(driver.StorageDriver):
         return storage
 
     def list_pools(self, context):
-        pass
+        try:
+            # Get list of OceanStor pool details
+            pools = self.client.get_all_pools()
+
+            pool_list = []
+            for pool in pools:
+                storage_type = None
+                if pool.get('USAGETYPE') == consts.BLOCK_STORAGE_POOL_TYPE:
+                    storage_type = constants.StorageType.BLOCK
+                if pool.get('USAGETYPE') == consts.FILE_SYSTEM_POOL_TYPE:
+                    storage_type = constants.StorageType.FILE
+                p = {
+                    "name": pool["NAME"],
+                    "storage_id": self.storage_id,
+                    "original_id": pool["ID"],
+                    "description": "Huawei OceanStor Pool",
+                    "status": constants.PoolStatus.NORMAL,
+                    "storage_type": storage_type,
+                    "total_capacity": int(pool["USERTOTALCAPACITY"]),
+                    "used_capacity": int(pool["USERCONSUMEDCAPACITY"]),
+                    "free_capacity": int(pool["USERFREECAPACITY"]),
+                }
+                pool_list.append(p)
+
+            return pool_list
+
+        except Exception as err:
+            LOG.error(
+                "Failed to get pool metrics from OceanStor: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get pool metrics from OceanStor')
 
     def list_volumes(self, context):
         pass

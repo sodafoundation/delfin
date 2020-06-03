@@ -202,3 +202,11 @@ class RestClient(object):
         self._assert_data_in_result(result, msg)
 
         return result['data']
+
+    def get_all_pools(self):
+        url = "/storagepool"
+        result = self.call(url, None, "GET", log_filter_flag=True)
+        msg = _('Query resource pool error.')
+        self._assert_rest_result(result, msg)
+        self._assert_data_in_result(result, msg)
+        return result['data']
