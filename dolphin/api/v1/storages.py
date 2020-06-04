@@ -156,17 +156,21 @@ class StorageController(wsgi.Controller):
                   format(len(storages)))
 
         for storage in storages:
-            if storage[constants.DB.DEVICE_SYNC_STATUS] != \
-                    constants.SyncStatus.SYNCED:
-                LOG.warn('sync task is running for %s' % storage['id'])
-                continue
-            # Set all bits of sync_status to SYNCING and start sync tasks
-            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
-                storage[constants.DB.DEVICE_SYNC_STATUS],
-                0,
-                len(constants.ResourceType) - 1,
-                constants.SyncStatus.SYNCING)
-            db.storage_update(ctxt, storage['id'], storage)
+            lock = coordination.Lock(storage['id'])
+            task_is_running = False
+            with lock:
+                tmp_storage = db.storage_get(ctxt, storage['id'])
+                if tmp_storage[constants.DB.DEVICE_SYNC_STATUS] != \
+                        constants.SyncStatus.SYNCED:
+                    LOG.warn('sync task is running for %s' % tmp_storage['id'])
+                    continue
+                # Set all bits of sync_status to SYNCING and start sync tasks
+                tmp_storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
+                    tmp_storage[constants.DB.DEVICE_SYNC_STATUS],
+                    0,
+                    len(constants.ResourceType) - 1,
+                    constants.SyncStatus.SYNCING)
+                db.storage_update(ctxt, tmp_storage['id'], tmp_storage)
 
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
@@ -189,17 +193,20 @@ class StorageController(wsgi.Controller):
             LOG.error(e)
             raise exc.HTTPNotFound(explanation=e.msg)
         else:
-            if storage[constants.DB.DEVICE_SYNC_STATUS] != \
-                    constants.SyncStatus.SYNCED:
-                msg = 'sync task is running for %s' % storage['id']
-                raise exc.HTTPBadRequest(explanation=msg)
-            # Set all bits of sync_status to SYNCING and start sync tasks
-            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
-                storage[constants.DB.DEVICE_SYNC_STATUS],
-                0,
-                len(constants.ResourceType) - 1,
-                constants.SyncStatus.SYNCING)
-            db.storage_update(ctxt, storage['id'], storage)
+            lock = coordination.Lock(storage['id'])
+            with lock:
+                tmp_storage = db.storage_get(ctxt, id)
+                if tmp_storage[constants.DB.DEVICE_SYNC_STATUS] != \
+                        constants.SyncStatus.SYNCED:
+                    msg = 'sync task is running for %s' % tmp_storage['id']
+                    raise exc.HTTPBadRequest(explanation=msg)
+                # Set all bits of sync_status to SYNCING and start sync tasks
+                tmp_storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
+                    tmp_storage[constants.DB.DEVICE_SYNC_STATUS],
+                    0,
+                    len(constants.ResourceType) - 1,
+                    constants.SyncStatus.SYNCING)
+                db.storage_update(ctxt, tmp_storage['id'], tmp_storage)
 
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
