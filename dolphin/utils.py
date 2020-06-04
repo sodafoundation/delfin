@@ -690,3 +690,16 @@ def set_bit(source, index, value):
     if value:
         source |= mask
     return source
+
+
+def set_bits(source, start, end, value):
+    """
+    Set the bits from start to end([start, end]) for source to value
+    """
+    mask = 0
+    for index in range(start, end + 1):
+        mask = set_bit(mask, index, 1)
+    source &= ~mask
+    if value:
+        source |= mask
+    return source

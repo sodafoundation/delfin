@@ -21,6 +21,7 @@ from webob import exc
 from dolphin import context
 from dolphin import coordination
 from dolphin import db
+from dolphin import utils
 from dolphin import exception
 from dolphin.api import api_utils
 from dolphin.api import validation
@@ -159,6 +160,14 @@ class StorageController(wsgi.Controller):
                     constants.SyncStatus.SYNCED:
                 LOG.warn('sync task is running for %s' % storage['id'])
                 continue
+            # Set all bits of sync_status to SYNCING and start sync tasks
+            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
+                storage[constants.DB.DEVICE_SYNC_STATUS],
+                0,
+                len(constants.ResourceType) - 1,
+                constants.SyncStatus.SYNCING)
+            db.storage_update(ctxt, storage['id'], storage)
+
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,
@@ -184,6 +193,14 @@ class StorageController(wsgi.Controller):
                     constants.SyncStatus.SYNCED:
                 msg = 'sync task is running for %s' % storage['id']
                 raise exc.HTTPBadRequest(explanation=msg)
+            # Set all bits of sync_status to SYNCING and start sync tasks
+            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
+                storage[constants.DB.DEVICE_SYNC_STATUS],
+                0,
+                len(constants.ResourceType) - 1,
+                constants.SyncStatus.SYNCING)
+            db.storage_update(ctxt, storage['id'], storage)
+
             for subclass in task.StorageResourceTask.__subclasses__():
                 self.task_rpcapi.sync_storage_resource(
                     ctxt,

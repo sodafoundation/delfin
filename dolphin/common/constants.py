@@ -55,9 +55,6 @@ class ResourceType(IntEnum):
     STORAGE_DEVICE = 0
     POOL = 1
     VOLUME = 2
-    ACCESS_INFO = 3
-    DISK = 4
-    ALERT_SOURCE = 5
 
 
 class SyncStatus(IntEnum):
