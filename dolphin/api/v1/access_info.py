@@ -53,6 +53,7 @@ class AccessInfoController(wsgi.Controller):
                 exception.StorageDriverNotFound,
                 exception.AccessInfoNotFound,
                 exception.StorageNotFound,
+                exception.StorageBackendException,
                 exception.StorageSerialNumberMismatch) as e:
             raise exc.HTTPBadRequest(explanation=e.msg)
 
