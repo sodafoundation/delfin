@@ -122,7 +122,8 @@ class VMAXClient(object):
             return pool_list
 
         except Exception as err:
-            LOG.error("Failed to get storage pool metrics from VMAX: {}".format(err))
+            LOG.error("Failed to get storage pool metrics from "
+                      "VMAX: {}".format(err))
             raise exception.StorageBackendException(
                 reason='Failed to get storage pool metrics from VMAX')
 

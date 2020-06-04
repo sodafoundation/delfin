@@ -199,7 +199,7 @@ def storage_pool_get(context, storage_pool_id):
 
 
 def storage_pool_get_all(context, marker=None, limit=None, sort_keys=None,
-                 sort_dirs=None, filters=None, offset=None):
+                         sort_dirs=None, filters=None, offset=None):
     """Retrieves all  storage_pools.
 
     If no sort parameters are specified then the returned volumes are sorted
@@ -219,8 +219,8 @@ def storage_pool_get_all(context, marker=None, limit=None, sort_keys=None,
     :param offset: number of items to skip
     :returns: list of  storage_pools
     """
-    return IMPL.storage_pool_get_all(context, marker, limit, sort_keys, sort_dirs,
-                             filters, offset)
+    return IMPL.storage_pool_get_all(context, marker, limit,
+                                     sort_keys, sort_dirs, filters, offset)
 
 
 def storage_pool_delete_by_storage(context, storage_id):

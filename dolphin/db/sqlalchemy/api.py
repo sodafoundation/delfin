@@ -460,8 +460,8 @@ def storage_pool_create(context, values):
         session.add(storage_pool_ref)
 
     return _storage_pool_get(context,
-                     storage_pool_ref['id'],
-                     session=session)
+                             storage_pool_ref['id'],
+                             session=session)
 
 
 def storage_pools_create(context, storage_pools):
@@ -522,7 +522,8 @@ def storage_pools_update(context, storage_pools):
         storage_pool_refs = []
 
         for storage_pool in storage_pools:
-            LOG.debug('updating storage_pool {0}:'.format(storage_pool.get('id')))
+            LOG.debug('updating storage_pool {0}:'.format(
+                storage_pool.get('id')))
             query = _storage_pool_get_query(context, session)
             result = query.filter_by(id=storage_pool.get('id')
                                      ).update(storage_pool)
@@ -542,7 +543,7 @@ def storage_pool_get(context, storage_pool_id):
 
 
 def storage_pool_get_all(context, marker=None, limit=None, sort_keys=None,
-                 sort_dirs=None, filters=None, offset=None):
+                         sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage storage_pools."""
     session = get_session()
     with session.begin():
@@ -694,7 +695,9 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
-    models.StoragePool: (_storage_pool_get_query, _process_storage_pool_info_filters, _storage_pool_get),
+    models.StoragePool: (_storage_pool_get_query,
+                         _process_storage_pool_info_filters,
+                         _storage_pool_get),
     models.Storage: (_storage_get_query, _process_storage_info_filters,
                      _storage_get),
     models.AlertSource: (_alert_source_get_query,

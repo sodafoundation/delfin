@@ -98,11 +98,12 @@ class StoragePoolTask(StorageResourceTask):
         """
         :return:
         """
-        LOG.info('Syncing storage pool for storage id:{0}'.format(self.storage_id))
+        LOG.info('Syncing storage pool for storage id:{0}'.format(
+            self.storage_id))
         try:
             # collect the storage pools list from driver and database
             storage_pools = self.driver_api.list_storage_pools(self.context,
-                                                       self.storage_id)
+                                                               self.storage_id)
             db_pools = db.storage_pool_get_all(self.context)
 
             add_list, update_list, delete_id_list = self._classify_resources(
@@ -126,7 +127,8 @@ class StoragePoolTask(StorageResourceTask):
             LOG.info("Syncing storage pools successful!!!")
 
     def remove(self):
-        LOG.info('Remove storage pools for storage id:{0}'.format(self.storage_id))
+        LOG.info('Remove storage pools for storage id:{0}'.format(
+            self.storage_id))
         db.storage_pool_delete_by_storage(self.context, self.storage_id)
 
 

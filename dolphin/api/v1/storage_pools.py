@@ -47,11 +47,12 @@ class StoragePoolController(wsgi.Controller):
         sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
         marker, limit, offset = api_utils.get_pagination_params(query_params)
         # strip out options except supported search  options
-        api_utils.remove_invalid_options(ctxt, query_params,
-                                         self._get_storage_pools_search_options())
+        api_utils.remove_invalid_options(
+            ctxt, query_params, self._get_storage_pools_search_options())
         try:
-            storage_pools = db.storage_pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
-                                    query_params, offset)
+            storage_pools = db.storage_pool_get_all(
+                ctxt, marker, limit, sort_keys, sort_dirs, query_params,
+                offset)
         except exception.InvalidInput as e:
             raise exc.HTTPBadRequest(explanation=six.text_type(e))
         return storage_pool_view.build_storage_pools(storage_pools)
