@@ -61,11 +61,12 @@ class TestSIMDBAPI(unittest.TestCase):
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
     def test_update(self, mock_session):
-        values = {'id': 1}
+        values = {'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}
         mock_session.return_value.__enter__.return_value.query.return_value \
             = values
-        result = api.pool_update(context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'
-                                 , values)
+        result = api.pool_update(context,
+                                 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
+                                 values)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
