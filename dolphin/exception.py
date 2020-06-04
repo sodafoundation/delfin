@@ -101,10 +101,6 @@ class InvalidCredential(Invalid):
     msg_fmt = _("The credentials are invalid.")
 
 
-class InvalidRequest(Invalid):
-    msg_fmt = _("The request is invalid.")
-
-
 class InvalidResults(Invalid):
     msg_fmt = _("The results are invalid. {0}")
 

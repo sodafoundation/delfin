@@ -62,7 +62,7 @@ def check_storage_repetition(context, storage):
         msg = (_("Failed to register storage. Reason: same serial number: "
                  "%s detected.") % storage['serial_number'])
         LOG.error(msg)
-        raise exception.InvalidRequest(msg)
+        raise exception.StorageAlreadyExists()
 
 
 def check_storage_consistency(context, storage_id, storage_new):
