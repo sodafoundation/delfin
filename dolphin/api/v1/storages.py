@@ -157,7 +157,6 @@ class StorageController(wsgi.Controller):
 
         for storage in storages:
             lock = coordination.Lock(storage['id'])
-            task_is_running = False
             with lock:
                 tmp_storage = db.storage_get(ctxt, storage['id'])
                 if tmp_storage[constants.DB.DEVICE_SYNC_STATUS] != \
