@@ -79,7 +79,7 @@ class AlertHandler(object):
             if not alert.get(attr):
                 msg = "Mandatory information %s missing in alert message. " \
                       % attr
-                raise exception.ValidationError(detail=msg)
+                raise exception.InvalidInput(msg)
 
         alert_model = {}
         # These information are sourced from device registration info

@@ -22,309 +22,190 @@ Includes decorator for re-raising Dolphin-type exceptions.
 SHOULD include dedicated exception logging.
 
 """
-import re
 
-from oslo_concurrency import processutils
-from oslo_config import cfg
-from oslo_log import log
 import six
 import webob.exc
+
+from oslo_log import log
 
 from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
-exc_log_opts = [
-    cfg.BoolOpt('fatal_exception_format_errors',
-                default=False,
-                help='Whether to make exception message format errors fatal.'),
-]
-
-CONF = cfg.CONF
-CONF.register_opts(exc_log_opts)
-
-ProcessExecutionError = processutils.ProcessExecutionError
-
 
 class ConvertedException(webob.exc.WSGIHTTPException):
-    def __init__(self, code=400, title="", explanation=""):
-        self.code = code
-        self.title = title
-        self.explanation = explanation
+    def __init__(self, exception):
+        self.code = exception.code
+        self.title = ''
+        self.explanation = exception.msg
+        self.error_code = exception.error_code
+        self.error_args = exception.error_args
         super(ConvertedException, self).__init__()
-
-
-class Error(Exception):
-    pass
 
 
 class DolphinException(Exception):
     """Base Dolphin Exception
 
     To correctly use this class, inherit from it and define
-    a 'message' property. That message will get printf'd
-    with the keyword arguments provided to the constructor.
+    a 'msg_fmt' property. That msg_fmt will get printf'd
+    with the tuple arguments provided to the constructor.
 
     """
-    message = _("An unknown exception occurred.")
+    msg_fmt = _("An unknown exception occurred.")
     code = 500
-    headers = {}
-    safe = False
 
-    def __init__(self, message=None, detail_data={}, **kwargs):
-        self.kwargs = kwargs
-        self.detail_data = detail_data
-
-        if 'code' not in self.kwargs:
-            try:
-                self.kwargs['code'] = self.code
-            except AttributeError:
-                pass
-        for k, v in self.kwargs.items():
-            if isinstance(v, Exception):
-                self.kwargs[k] = six.text_type(v)
-
-        if not message:
-            try:
-                message = self.message % kwargs
-
-            except Exception:
-                # kwargs doesn't match a variable in the message
-                # log the issue and the kwargs
-                LOG.exception('Exception in string format operation.')
-                for name, value in kwargs.items():
-                    LOG.error("%(name)s: %(value)s", {
-                        'name': name, 'value': value})
-                if CONF.fatal_exception_format_errors:
-                    raise
-                else:
-                    # at least get the core message out if something happened
-                    message = self.message
-        elif isinstance(message, Exception):
-            message = six.text_type(message)
-
-        if re.match(r'.*[^\.]\.\.$', message):
-            message = message[:-1]
+    def __init__(self, *args, **kwargs):
+        self.error_args = args
+        message = kwargs.get('message')
+        try:
+            if not message:
+                message = self.msg_fmt.format(*args)
+            else:
+                message = six.text_type(message)
+        except Exception:
+            LOG.error("Failed to format message: {0}".format(args))
+            message = self.msg_fmt
         self.msg = message
         super(DolphinException, self).__init__(message)
 
-
-class NetworkException(DolphinException):
-    message = _("Exception due to network failure.")
-
-
-class NetworkBindException(DolphinException):
-    message = _("Exception due to failed port status in binding.")
-
-
-class NetworkBadConfigurationException(NetworkException):
-    message = _("Bad network configuration: %(reason)s.")
-
-
-class BadConfigurationException(DolphinException):
-    message = _("Bad configuration: %(reason)s.")
+    @property
+    def error_code(self):
+        return self.__class__.__name__
 
 
 class NotAuthorized(DolphinException):
-    message = _("Not authorized.")
+    msg_fmt = _("Not authorized.")
     code = 403
 
 
-class AdminRequired(NotAuthorized):
-    message = _("User does not have admin privileges.")
-
-
-class PolicyNotAuthorized(NotAuthorized):
-    message = _("Policy doesn't allow %(action)s to be performed.")
-
-
-class Conflict(DolphinException):
-    message = _("%(err)s")
-    code = 409
-
-
 class Invalid(DolphinException):
-    message = _("Unacceptable parameters.")
+    msg_fmt = _("Unacceptable parameters.")
     code = 400
 
 
+class BadRequest(Invalid):
+    msg_fmt = _('The server could not comply with the request since\r\n'
+                'it is either malformed or otherwise incorrect.\r\n')
+    code = 400
+
+
+class MalformedRequestBody(Invalid):
+    msg_fmt = _("Malformed request body: {0}.")
+
+
+class MalformedRequestUrl(Invalid):
+    msg_fmt = _("Malformed request url.")
+
+
 class InvalidCredential(Invalid):
-    message = _("The credentials are invalid.")
+    msg_fmt = _("The credentials are invalid.")
 
 
 class InvalidRequest(Invalid):
-    message = _("The request is invalid.")
+    msg_fmt = _("The request is invalid.")
 
 
 class InvalidResults(Invalid):
-    message = _("The results are invalid.")
+    msg_fmt = _("The results are invalid. {0}")
 
 
 class InvalidInput(Invalid):
-    message = _("Invalid input received: %(reason)s.")
+    msg_fmt = _("Invalid input received. {0}")
 
 
 class InvalidName(Invalid):
-    message = _("An invalid 'name' value was provided. %(reason)s")
-
-
-class ValidationError(Invalid):
-    message = "%(detail)s"
+    msg_fmt = _("An invalid 'name' value was provided. {0}")
 
 
 class InvalidContentType(Invalid):
-    message = _("Invalid content type %(content_type)s.")
-
-
-class InvalidHost(Invalid):
-    message = _("Invalid host: %(reason)s")
-
-
-# Cannot be templated as the error syntax varies.
-# msg needs to be constructed when raised.
-class InvalidParameterValue(Invalid):
-    message = _("%(err)s")
-
-
-class InvalidUUID(Invalid):
-    message = _("Expected a uuid but received %(uuid)s.")
-
-
-class InvalidDriverMode(Invalid):
-    message = _("Invalid driver mode: %(driver_mode)s.")
-
-
-class InvalidAPIVersionString(Invalid):
-    message = _("API Version String %(version)s is of invalid format. Must "
-                "be of format MajorNum.MinorNum.")
-
-
-class VersionNotFoundForAPIMethod(Invalid):
-    message = _("API version %(version)s is not supported on this method.")
-
-
-class InvalidGlobalAPIVersion(Invalid):
-    message = _("Version %(req_ver)s is not supported by the API. Minimum "
-                "is %(min_ver)s and maximum is %(max_ver)s.")
-
-
-class InvalidCapacity(Invalid):
-    message = _("Invalid capacity: %(name)s = %(value)s.")
-
-
-class NotFound(DolphinException):
-    message = _("Resource could not be found.")
-    code = 404
-    safe = True
-
-
-class MessageNotFound(NotFound):
-    message = _("Message %(message_id)s could not be found.")
-
-
-class Found(DolphinException):
-    message = _("Resource was found.")
-    code = 302
-    safe = True
-
-
-class InUse(DolphinException):
-    message = _("Resource is in use.")
-
-
-class AvailabilityZoneNotFound(NotFound):
-    message = _("Availability zone %(id)s could not be found.")
-
-
-class ServiceNotFound(NotFound):
-    message = _("Service %(service_id)s could not be found.")
-
-
-class ResourceNotFound(NotFound):
-    message = _("Resource %(storage_id)s could not be found.")
-
-
-class AccessInfoNotFound(NotFound):
-    message = _("Storage access info %(storage_id)s could not be found.")
-
-
-class StorageNotFound(NotFound):
-    message = _("Storage %(id)s could not be found.")
-
-
-class PoolNotFound(NotFound):
-    message = _("Pool %(id)s could not be found.")
-
-
-class VolumeNotFound(NotFound):
-    message = _("Volume %(id)s could not be found.")
-
-
-class StorageDriverNotFound(NotFound):
-    message = _("Storage driver could not be found.")
-
-
-class StorageBackendException(DolphinException):
-    message = _("Exception from Storage Backend: %(reason)s.")
+    msg_fmt = _("Invalid content type: {0}.")
 
 
 class StorageSerialNumberMismatch(Invalid):
-    message = _("Storage serial number mismatch: "
-                "%(reason)s")
+    msg_fmt = _("Storage serial number mismatch. {0}")
 
 
-class ServiceIsDown(Invalid):
-    message = _("Service %(service)s is down.")
+class StorageAlreadyExists(Invalid):
+    msg_fmt = _("Storage already exists.")
 
 
-class HostNotFound(NotFound):
-    message = _("Host %(host)s could not be found.")
+class InvalidSNMPConfig(Invalid):
+    msg_fmt = _("Invalid SNMP configuration: {0}")
 
 
-class FileNotFound(NotFound):
-    message = _("File %(file_path)s could not be found.")
+class NotFound(DolphinException):
+    msg_fmt = _("Resource could not be found.")
+    code = 404
 
 
-class MalformedRequestBody(DolphinException):
-    message = _("Malformed message body: %(reason)s.")
+class NoSuchAction(NotFound):
+    msg_fmt = _("There is no such action: {0}")
 
 
-class ConfigNotFound(NotFound):
-    message = _("Could not find config at %(path)s.")
-
-
-class PasteAppNotFound(NotFound):
-    message = _("Could not load paste app '%(name)s' from %(path)s.")
-
-
-class NoValidHost(DolphinException):
-    message = _("No valid host was found. %(reason)s.")
-
-
-class InvalidSqliteDB(Invalid):
-    message = _("Invalid Sqlite database.")
-
-
-class SSHException(DolphinException):
-    message = _("Exception in SSH protocol negotiation or logic.")
-
-
-class SSHInjectionThreat(DolphinException):
-    message = _("SSH command injection detected: %(command)s")
+class AccessInfoNotFound(NotFound):
+    msg_fmt = _("Access information for storage {0} could not be found.")
 
 
 class AlertSourceNotFound(NotFound):
-    message = _("Alert source for storage %(storage_id)s could not be found.")
+    msg_fmt = _("Alert source for storage {0} could not be found.")
+
+
+class AlertSourceNotFoundWithHost(NotFound):
+    msg_fmt = _("Alert source could not be found with host {0}.")
+
+
+class StorageNotFound(NotFound):
+    msg_fmt = _("Storage {0} could not be found.")
+
+
+class StorageBackendNotFound(NotFound):
+    msg_fmt = _("Storage backend could not be found.")
+
+
+class StoragePoolNotFound(NotFound):
+    msg_fmt = _("Storage pool {0} could not be found.")
+
+
+class VolumeNotFound(NotFound):
+    msg_fmt = _("Volume {0} could not be found.")
+
+
+class StorageDriverNotFound(NotFound):
+    msg_fmt = _("Storage driver '{0}'could not be found.")
+
+
+class ConfigNotFound(NotFound):
+    msg_fmt = _("Could not find config at {0}.")
+
+
+class PasteAppNotFound(NotFound):
+    msg_fmt = _("Could not load paste app '{0}' from {1}.")
+
+
+class StorageBackendException(DolphinException):
+    msg_fmt = _("Exception from Storage Backend: {0}.")
+
+
+class SSHException(DolphinException):
+    msg_fmt = _("Exception in SSH protocol negotiation or logic. {0}")
+
+
+class SSHInjectionThreat(DolphinException):
+    msg_fmt = _("SSH command injection detected: {0}.")
 
 
 # Tooz locking
 class LockCreationFailed(DolphinException):
-    message = _('Unable to create lock. Coordination backend not started.')
+    msg_fmt = _('Unable to create lock. Coordination backend not started.')
 
 
-class LockingFailed(DolphinException):
-    message = _('Lock acquisition failed.')
+class LockAcquisitionFailed(DolphinException):
+    msg_fmt = _('Lock acquisition failed.')
 
 
-class InvalidSNMPConfig(Invalid):
-    message = _("SNMP configuration is invalid: %(detail)s.")
+class DuplicateExtension(DolphinException):
+    msg_fmt = _('Found duplicate extension: {0}.')
+
+
+class ImproperIPVersion(DolphinException):
+    msg_fmt = _("Provided improper IP version {0}.")

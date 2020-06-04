@@ -26,7 +26,6 @@ from jsonschema import exceptions as jsonschema_exc
 from oslo_utils import timeutils
 from oslo_utils import uuidutils
 import six
-import webob.exc
 
 from dolphin import exception
 from dolphin.i18n import _
@@ -104,7 +103,7 @@ def _validate_string_length(value, entity_name, mandatory=False,
 
     if mandatory and not value:
         msg = _("The '%s' can not be None.") % entity_name
-        raise webob.exc.HTTPBadRequest(explanation=msg)
+        raise exception.InvalidInput(msg)
 
     if remove_whitespaces:
         value = value.strip()
@@ -128,10 +127,10 @@ def _validate_datetime_format(param_value):
 def _validate_name(param_value):
     if not param_value:
         msg = _("The 'name' can not be None.")
-        raise exception.InvalidName(reason=msg)
+        raise exception.InvalidName(msg)
     elif len(param_value.strip()) == 0:
         msg = _("The 'name' can not be empty.")
-        raise exception.InvalidName(reason=msg)
+        raise exception.InvalidName(msg)
     return True
 
 
@@ -140,14 +139,14 @@ def _validate_name(param_value):
 def _validate_name_skip_leading_trailing_spaces(param_value):
     if not param_value:
         msg = _("The 'name' can not be None.")
-        raise exception.InvalidName(reason=msg)
+        raise exception.InvalidName(msg)
     param_value = param_value.strip()
     if len(param_value) == 0:
         msg = _("The 'name' can not be empty.")
-        raise exception.InvalidName(reason=msg)
+        raise exception.InvalidName(msg)
     elif len(param_value) > 255:
         msg = _("The 'name' can not be greater than 255 characters.")
-        raise exception.InvalidName(reason=msg)
+        raise exception.InvalidName(msg)
     return True
 
 
@@ -223,7 +222,7 @@ class _SchemaValidator(object):
             self.validator.validate(*args, **kwargs)
         except jsonschema.ValidationError as ex:
             if isinstance(ex.cause, exception.InvalidName):
-                detail = ex.cause.msg
+                raise ex.cause
             elif len(ex.path) > 0:
                 detail = _("Invalid input for field/attribute %(path)s."
                            " Value: %(value)s. %(message)s") % {
@@ -232,12 +231,12 @@ class _SchemaValidator(object):
                 }
             else:
                 detail = ex.message
-            raise exception.ValidationError(detail=detail)
+            raise exception.InvalidInput(detail)
         except TypeError as ex:
             # NOTE: If passing non string value to patternProperties parameter,
             #       TypeError happens. Here is for catching the TypeError.
             detail = six.text_type(ex)
-            raise exception.ValidationError(detail=detail)
+            raise exception.InvalidInput(detail)
 
     def _number_from_str(self, param_value):
         try:

@@ -20,8 +20,6 @@ import os
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
-import webob.dec
-import webob.exc
 
 from dolphin.api.common import wsgi
 from dolphin import exception
@@ -100,15 +98,15 @@ class ExtensionsResource(wsgi.Resource):
             # NOTE(dprince): the extensions alias is used as the 'id' for show
             ext = self.extension_manager.extensions[id]
         except KeyError:
-            raise webob.exc.HTTPNotFound()
+            raise exception.NotFound()
 
         return dict(extension=self._translate(ext))
 
     def delete(self, req, id):
-        raise webob.exc.HTTPNotFound()
+        raise exception.NotFound()
 
     def create(self, req):
-        raise webob.exc.HTTPNotFound()
+        raise exception.NotFound()
 
 
 class ExtensionManager(object):
@@ -136,7 +134,7 @@ class ExtensionManager(object):
         LOG.info('Loaded extension: %s', alias)
 
         if alias in self.extensions:
-            raise exception.Error("Found duplicate extension: %s" % alias)
+            raise exception.DuplicateExtension(alias)
         self.extensions[alias] = ext
 
     def get_resources(self):

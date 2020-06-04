@@ -50,12 +50,11 @@ def update_storage(context, storage_id, storage):
 
 def check_storage_repetition(context, storage):
     if not storage:
-        msg = _("Storage could not be found.")
-        raise exception.StorageNotFound(message=msg)
+        raise exception.StorageBackendNotFound()
 
     if not storage.get('serial_number'):
         msg = _("Serial number should be provided by storage.")
-        raise exception.InvalidResults(message=msg)
+        raise exception.InvalidResults(msg)
 
     filters = dict(serial_number=storage['serial_number'])
     storage_list = db.storage_get_all(context, filters=filters)
@@ -78,16 +77,16 @@ def check_storage_consistency(context, storage_id, storage_new):
     :type storage_new: dict
     """
     if not storage_new:
-        msg = _("Storage could not be found.")
-        raise exception.StorageNotFound(message=msg)
+        raise exception.StorageBackendNotFound()
 
     if not storage_new.get('serial_number'):
         msg = _("Serial number should be provided by storage.")
-        raise exception.InvalidResults(message=msg)
+        raise exception.InvalidResults(msg)
 
     storage_present = db.storage_get(context, storage_id)
     if storage_new['serial_number'] != storage_present['serial_number']:
-        msg = (_("New storage serial number is not matching "
-                 "with the existing storage serial number: %s") %
-               storage_present['serial_number'])
-        raise exception.StorageSerialNumberMismatch(message=msg)
+        msg = (_("Serial number %s does not match "
+                 "the existing storage serial number %s.") %
+               (storage_new['serial_number'],
+                storage_present['serial_number']))
+        raise exception.StorageSerialNumberMismatch(msg)
