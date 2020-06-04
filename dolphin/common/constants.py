@@ -28,7 +28,7 @@ class StorageStatus(object):
     ALL = (NORMAL, OFFLINE, ABNORMAL)
 
 
-class PoolStatus(object):
+class StoragePoolStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'

@@ -252,7 +252,7 @@ class StorageNotFound(NotFound):
     message = _("Storage %(id)s could not be found.")
 
 
-class PoolNotFound(NotFound):
+class StoragePoolNotFound(NotFound):
     message = _("Pool %(id)s could not be found.")
 
 

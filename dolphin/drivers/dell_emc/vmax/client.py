@@ -93,7 +93,7 @@ class VMAXClient(object):
             raise exception.StorageBackendException(
                 reason='Failed to get capacity from VMAX')
 
-    def list_pools(self):
+    def list_storage_pools(self):
 
         try:
             # Get list of SRP pool names
@@ -111,7 +111,7 @@ class VMAXClient(object):
                     "name": pool,
                     "original_id": pool_info["srpId"],
                     "description": "Dell EMC VMAX Pool",
-                    "status": constants.PoolStatus.NORMAL,
+                    "status": constants.StoragePoolStatus.NORMAL,
                     "storage_type": constants.StorageType.BLOCK,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
@@ -122,9 +122,9 @@ class VMAXClient(object):
             return pool_list
 
         except Exception as err:
-            LOG.error("Failed to get pool metrics from VMAX: {}".format(err))
+            LOG.error("Failed to get storage pool metrics from VMAX: {}".format(err))
             raise exception.StorageBackendException(
-                reason='Failed to get pool metrics from VMAX')
+                reason='Failed to get storage pool metrics from VMAX')
 
     def list_volumes(self, storage_id):
 
