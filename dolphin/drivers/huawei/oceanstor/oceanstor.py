@@ -29,30 +29,41 @@ class OceanStorDriver(driver.StorageDriver):
         super().__init__(**kwargs)
         self.client = rest_client.RestClient(**kwargs)
         self.client.login()
+        self.sector_size = consts.SECTORS_SIZE
 
     def get_storage(self, context):
 
-        storg_info = self.client.get_storage()
+        storage = self.client.get_storage()
 
-        status = constants.StorageStatus.NORMAL
-        if storg_info['HEALTHSTATUS'] != consts.STATUS_HEALTH:
-            status = constants.StorageStatus.ABNORMAL
+        # Get status
+        status = constants.StorageStatus.OFFLINE
+        if storage['HEALTHSTATUS'] == consts.STATUS_HEALTH \
+                and storage['RUNNINGSTATUS'] == \
+                consts.STATUS_STORAGE_NORMAL:
+            status = constants.StorageStatus.NORMAL
 
-        storage = {
+        # Keep sector_size for use in list pools
+        self.sector_size = int(storage['SECTORSIZE'])
+
+        total_cap = int(storage['TOTALCAPACITY']) * self.sector_size
+        used_cap = int(storage['USEDCAPACITY']) * self.sector_size
+        free_cap = int(storage['userFreeCapacity']) * self.sector_size
+
+        s = {
             'name': 'OceanStor',
             'vendor': 'Huawei',
             'description': 'Huawei OceanStor Storage',
-            'model': storg_info['NAME'],
+            'model': storage['NAME'],
             'status': status,
-            'serial_number': storg_info['ID'],
+            'serial_number': storage['ID'],
             'firmware_version': '',
-            'location': storg_info['LOCATION'],
-            'total_capacity': storg_info['TOTALCAPACITY'],
-            'used_capacity': storg_info['USEDCAPACITY'],
-            'free_capacity': storg_info['FREEDISKSCAPACITY']
+            'location': storage['LOCATION'],
+            'total_capacity': total_cap,
+            'used_capacity': used_cap,
+            'free_capacity': free_cap
         }
         LOG.info("get_storage(), successfully retrieved storage details")
-        return storage
+        return s
 
     def list_pools(self, context):
         try:
@@ -61,21 +72,37 @@ class OceanStorDriver(driver.StorageDriver):
 
             pool_list = []
             for pool in pools:
+                # Get pool status
+                status = constants.PoolStatus.OFFLINE
+                if pool['HEALTHSTATUS'] == consts.STATUS_HEALTH \
+                        and pool['RUNNINGSTATUS'] == \
+                        consts.STATUS_POOL_ONLINE:
+                    status = constants.PoolStatus.NORMAL
+
+                # Get pool storage_type
                 storage_type = None
                 if pool.get('USAGETYPE') == consts.BLOCK_STORAGE_POOL_TYPE:
                     storage_type = constants.StorageType.BLOCK
                 if pool.get('USAGETYPE') == consts.FILE_SYSTEM_POOL_TYPE:
                     storage_type = constants.StorageType.FILE
+
+                total_cap = \
+                    int(pool['USERTOTALCAPACITY']) * self.sector_size
+                used_cap = \
+                    int(pool['USERCONSUMEDCAPACITY']) * self.sector_size
+                free_cap = \
+                    int(pool['USERFREECAPACITY']) * self.sector_size
+
                 p = {
-                    "name": pool["NAME"],
-                    "storage_id": self.storage_id,
-                    "original_id": pool["ID"],
-                    "description": "Huawei OceanStor Pool",
-                    "status": constants.PoolStatus.NORMAL,
-                    "storage_type": storage_type,
-                    "total_capacity": int(pool["USERTOTALCAPACITY"]),
-                    "used_capacity": int(pool["USERCONSUMEDCAPACITY"]),
-                    "free_capacity": int(pool["USERFREECAPACITY"]),
+                    'name': pool['NAME'],
+                    'storage_id': self.storage_id,
+                    'original_id': pool['ID'],
+                    'description': 'Huawei OceanStor Pool',
+                    'status': status,
+                    'storage_type': storage_type,
+                    'total_capacity': total_cap,
+                    'used_capacity': used_cap,
+                    'free_capacity': free_cap,
                 }
                 pool_list.append(p)
 
@@ -95,36 +122,40 @@ class OceanStorDriver(driver.StorageDriver):
             volume_list = []
             for volume in volumes:
                 # Get pool id of volume
-                orig_pool_id = self.client.get_pool_id(volume["PARENTNAME"])
+                orig_pool_id = self.client.get_pool_id(volume['PARENTNAME'])
 
                 compressed = False
-                if volume["ENABLECOMPRESSION"] != 'false':
+                if volume['ENABLECOMPRESSION'] != 'false':
                     compressed = True
 
                 deduplicated = False
-                if volume["ENABLEDEDUP"] != 'false':
+                if volume['ENABLEDEDUP'] != 'false':
                     deduplicated = True
 
                 status = constants.VolumeStatus.ERROR
-                if volume["HEALTHSTATUS"] == consts.STATUS_HEALTH \
-                        and volume["RUNNINGSTATUS"] == \
+                if volume['HEALTHSTATUS'] == consts.STATUS_HEALTH \
+                        and volume['RUNNINGSTATUS'] == \
                         consts.STATUS_VOLUME_READY:
                     status = constants.VolumeStatus.AVAILABLE
 
+                sector_size = int(volume['SECTORSIZE'])
+                total_cap = int(volume['CAPACITY']) * sector_size
+                used_cap = int(volume['ALLOCCAPACITY']) * sector_size
+
                 v = {
-                    "name": volume["NAME"],
-                    "storage_id": self.storage_id,
-                    "description": "Huawei OceanStor volume",
-                    "status": status,
-                    "original_id": volume["ID"],
-                    "original_pool_id": orig_pool_id,
-                    "wwn": volume["WWN"],
-                    "provisioning_policy": "",
-                    "total_capacity": int(volume["ALLOCCAPACITY"]),
-                    "used_capacity": int(volume["CAPACITY"]),
-                    "free_capacity": None,
-                    "compressed": compressed,
-                    "deduplicated": deduplicated,
+                    'name': volume['NAME'],
+                    'storage_id': self.storage_id,
+                    'description': 'Huawei OceanStor volume',
+                    'status': status,
+                    'original_id': volume['ID'],
+                    'original_pool_id': orig_pool_id,
+                    'wwn': volume['WWN'],
+                    'provisioning_policy': '',
+                    'total_capacity': total_cap,
+                    'used_capacity': used_cap,
+                    'free_capacity': None,
+                    'compressed': compressed,
+                    'deduplicated': deduplicated,
                 }
 
                 volume_list.append(v)

@@ -31,8 +31,8 @@ setup(
         ],
         'dolphin.storage.drivers': [
             'fake_storage fake_driver = dolphin.drivers.fake_storage:FakeStorageDriver',
-            'huawei oceanstor = dolphin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver',
-            'dellemc vmax = dolphin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver'
+            'dellemc vmax = dolphin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
+            'huawei oceanstor = dolphin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver'
         ]
     },
 )
