@@ -234,13 +234,13 @@ def _set_synced_if_ok(context, storage_id):
     try:
         storage = db.storage_get(context, storage_id)
     except exception.StorageNotFound:
-        msg = 'storage %s not found when try to set sync_status' \
+        msg = 'Storage %s not found when try to set sync_status' \
               % storage_id
         raise exception.InvalidInput(reason=msg)
     else:
         if storage[constants.DB.DEVICE_SYNC_STATUS] != \
                 constants.SyncStatus.SYNCED:
-            msg = 'sync task is running for %s' % storage['id']
+            msg = 'Sync task is running for %s' % storage['id']
             raise exception.InvalidInput(reason=msg)
         # Set all bits of sync_status to SYNCING and start sync tasks
         storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
