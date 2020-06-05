@@ -240,9 +240,8 @@ class TestSIMDBAPI(unittest.TestCase):
         fake_access_info = models.AccessInfo()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_access_info
-        result = db_api.access_info_update(context,
-                                           'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
-                                           fake_access_info)
+        result = db_api.access_info_update(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', fake_access_info)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -262,9 +261,8 @@ class TestSIMDBAPI(unittest.TestCase):
         fake_alert_source = models.AlertSource()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_alert_source
-        result = db_api.alert_source_update(context,
-                                            'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
-                                            fake_alert_source)
+        result = db_api.alert_source_update(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', fake_alert_source)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
