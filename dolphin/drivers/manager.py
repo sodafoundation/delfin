@@ -22,7 +22,6 @@ from oslo_log import log
 from dolphin import exception
 from dolphin import utils
 from dolphin.drivers import helper
-from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -97,6 +96,6 @@ class DriverManager(stevedore.ExtensionManager):
         if name in self.names():
             return self[name].plugin
 
-        msg = (_("Storage driver '%s' could not be found.") % name)
+        msg = "Storage driver '%s' could not be found." % name
         LOG.error(msg)
-        raise exception.StorageDriverNotFound(message=msg)
+        raise exception.StorageDriverNotFound(name)

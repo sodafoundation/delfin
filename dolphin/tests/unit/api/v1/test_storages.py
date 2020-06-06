@@ -45,7 +45,7 @@ class TestStorageController:
         mock_remove_storage_resource.reset_mock()
         mocker.patch('dolphin.db.storage_get',
                      side_effect=exception.StorageNotFound(
-                         id='83df8a62-9ae4-4ffc-9948-5524cc7cdd64'))
+                         '83df8a62-9ae4-4ffc-9948-5524cc7cdd64'))
         with pytest.raises(Exception):
             sc.delete(req, '83df8a62-9ae4-4ffc-9948-5524cc7cdd64')
         assert 0 == mock_remove_storage_resource.call_count

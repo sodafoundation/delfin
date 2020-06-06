@@ -56,8 +56,6 @@ class AccessInfo(BASE, DolphinBase):
     port = Column(String(255))
     username = Column(String(255))
     password = Column(String(255))
-    vendor = Column(String(255))
-    model = Column(String(255))
     extra_attributes = Column(JsonEncodedDict)
 
 
