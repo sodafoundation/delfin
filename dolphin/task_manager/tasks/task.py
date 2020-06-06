@@ -19,6 +19,7 @@ from oslo_log import log
 
 from dolphin import coordination
 from dolphin import db
+from dolphin import exception
 from dolphin import utils
 from dolphin.common import constants
 from dolphin.drivers import api as driverapi
@@ -36,15 +37,39 @@ def set_synced_after(resource_type):
         ret = f(*a, **k)
         lock = coordination.Lock(self.storage_id)
         with lock:
-            storage = db.storage_get(self.context, self.storage_id)
-            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bit(
-                storage[constants.DB.DEVICE_SYNC_STATUS],
-                resource_type,
-                constants.SyncStatus.SYNCED)
-            db.storage_update(self.context, self.storage_id, storage)
+            try:
+                storage = db.storage_get(self.context, self.storage_id)
+            except exception.StorageNotFound:
+                LOG.warn('Storage %s not found when set synced' % self.storage_id)
+            else:
+                storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bit(
+                    storage[constants.DB.DEVICE_SYNC_STATUS],
+                    resource_type,
+                    constants.SyncStatus.SYNCED)
+                db.storage_update(self.context, self.storage_id, storage)
         return ret
 
     return _set_synced_after
+
+
+def check_deleted(resource_type):
+
+    @decorator.decorator
+    def _check_deleted(f, *a, **k):
+        call_args = inspect.getcallargs(f, *a, **k)
+        self = call_args['self']
+        ret = f(*a, **k)
+        self.context.read_deleted = 'yes'
+        try:
+            storage = db.storage_get(self.context, self.storage_id)
+        except exception.StorageNotFound:
+            LOG.warn('Storage %s not found when checking deleted' % self.storage_id)
+        else:
+            if storage['deleted'] != 0:
+                self.remove()
+        return ret
+
+    return _check_deleted
 
 
 class StorageResourceTask(object):
@@ -85,6 +110,7 @@ class StorageDeviceTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageDeviceTask, self).__init__(context, storage_id)
 
+    @check_deleted(constants.ResourceType.STORAGE_DEVICE)
     @set_synced_after(constants.ResourceType.STORAGE_DEVICE)
     def sync(self):
         """
@@ -121,6 +147,7 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
+    @check_deleted(constants.ResourceType.POOL)
     @set_synced_after(constants.ResourceType.POOL)
     def sync(self):
         """
@@ -162,6 +189,7 @@ class StorageVolumeTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageVolumeTask, self).__init__(context, storage_id)
 
+    @check_deleted(constants.ResourceType.VOLUME)
     @set_synced_after(constants.ResourceType.VOLUME)
     def sync(self):
         """

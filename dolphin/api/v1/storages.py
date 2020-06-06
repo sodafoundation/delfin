@@ -58,7 +58,7 @@ class StorageController(wsgi.Controller):
         api_utils.remove_invalid_options(ctxt, query_params,
                                          self._get_storages_search_options())
 
-        storages = db.storage_get_all(context, marker, limit, sort_keys,
+        storages = db.storage_get_all(ctxt, marker, limit, sort_keys,
                                       sort_dirs, query_params, offset)
         return storage_view.build_storages(storages)
 
