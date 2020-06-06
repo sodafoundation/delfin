@@ -19,12 +19,14 @@ from oslo_log import log
 from dolphin import context
 from dolphin import coordination
 from dolphin import db
+from dolphin import utils
 from dolphin import exception
 from dolphin.api import api_utils
 from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import storages as schema_storages
 from dolphin.api.views import storages as storage_view
+from dolphin.common import constants
 from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
@@ -116,11 +118,18 @@ class StorageController(wsgi.Controller):
                   format(len(storages)))
 
         for storage in storages:
-            for subclass in task.StorageResourceTask.__subclasses__():
-                self.task_rpcapi.sync_storage_resource(
-                    ctxt,
-                    storage['id'],
-                    subclass.__module__ + '.' + subclass.__name__)
+            try:
+                _set_synced_if_ok(ctxt, storage['id'])
+            except exception.InvalidInput as e:
+                LOG.warn('Can not set SYNCING for %s, reason is %s'
+                         % (storage['id'], e.msg))
+                continue
+            else:
+                for subclass in task.StorageResourceTask.__subclasses__():
+                    self.task_rpcapi.sync_storage_resource(
+                        ctxt,
+                        storage['id'],
+                        subclass.__module__ + '.' + subclass.__name__)
 
     @wsgi.response(202)
     def sync(self, req, id):
@@ -131,6 +140,7 @@ class StorageController(wsgi.Controller):
         """
         ctxt = req.environ['dolphin.context']
         storage = db.storage_get(ctxt, id)
+        _set_synced_if_ok(ctxt, storage['id'])
         for subclass in task.StorageResourceTask.__subclasses__():
             self.task_rpcapi.sync_storage_resource(
                 ctxt,
@@ -168,3 +178,25 @@ class StorageController(wsgi.Controller):
 
 def create_resource():
     return wsgi.Resource(StorageController())
+
+
+@coordination.synchronized('{storage_id}')
+def _set_synced_if_ok(context, storage_id):
+    try:
+        storage = db.storage_get(context, storage_id)
+    except exception.StorageNotFound:
+        msg = 'Storage %s not found when try to set sync_status' \
+              % storage_id
+        raise exception.InvalidInput(message=msg)
+    else:
+        if storage[constants.DB.DEVICE_SYNC_STATUS] != \
+                constants.SyncStatus.SYNCED:
+            msg = 'Sync task is running for %s' % storage['id']
+            raise exception.InvalidInput(message=msg)
+        # Set all bits of sync_status to SYNCING and start sync tasks
+        storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
+            storage[constants.DB.DEVICE_SYNC_STATUS],
+            0,
+            len(constants.ResourceType) - 1,
+            constants.SyncStatus.SYNCING)
+        db.storage_update(context, storage['id'], storage)
