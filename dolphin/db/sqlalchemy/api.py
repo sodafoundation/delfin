@@ -51,7 +51,7 @@ def apply_sorting(model, query, sort_key, sort_dir):
         msg = (("Wrong sorting data provided: sort key is '%(sort_key)s' "
                 "and sort order is '%(sort_dir)s'.") %
                {"sort_key": sort_key, "sort_dir": sort_dir})
-        raise exception.InvalidInput(reason=msg)
+        raise exception.InvalidInput(msg)
 
     sort_attr = getattr(model, sort_key)
     sort_method = getattr(sort_attr, sort_dir.lower())
@@ -197,7 +197,7 @@ def _access_info_get(context, storage_id, session=None):
               .first())
 
     if not result:
-        raise exception.AccessInfoNotFound(storage_id=storage_id)
+        raise exception.AccessInfoNotFound(storage_id)
 
     return result
 
@@ -268,7 +268,7 @@ def _storage_get(context, storage_id, session=None):
               .first())
 
     if not result:
-        raise exception.StorageNotFound(id=storage_id)
+        raise exception.StorageNotFound(storage_id)
 
     return result
 
@@ -317,7 +317,7 @@ def _volume_get(context, volume_id, session=None):
               .first())
 
     if not result:
-        raise exception.VolumeNotFound(id=volume_id)
+        raise exception.VolumeNotFound(volume_id)
 
     return result
 
@@ -370,7 +370,7 @@ def volumes_delete(context, volumes_id_list):
             result = query.filter_by(id=vol_id).delete()
 
             if not result:
-                LOG.error(exception.VolumeNotFound(id=vol_id))
+                LOG.error(exception.VolumeNotFound(vol_id))
     return
 
 
@@ -393,7 +393,7 @@ def volumes_update(context, volumes):
                                      ).update(vol)
 
             if not result:
-                LOG.error(exception.VolumeNotFound(id=vol.get('id')))
+                LOG.error(exception.VolumeNotFound(vol.get('id')))
 
 
 def volume_get(context, volume_id):
@@ -442,7 +442,7 @@ def _pool_get(context, pool_id, session=None):
               .first())
 
     if not result:
-        raise exception.PoolNotFound(id=pool_id)
+        raise exception.StoragePoolNotFound(pool_id)
 
     return result
 
@@ -495,7 +495,7 @@ def pools_delete(context, pools_id_list):
             result = query.filter_by(id=pool_id).delete()
 
             if not result:
-                LOG.error(exception.PoolNotFound(id=pool_id))
+                LOG.error(exception.StoragePoolNotFound(pool_id))
 
     return
 
@@ -509,7 +509,7 @@ def pool_update(context, pool_id, values):
         result = query.filter_by(id=pool_id).update(values)
 
         if not result:
-            raise exception.PoolNotFound(id=pool_id)
+            raise exception.StoragePoolNotFound(pool_id)
 
     return result
 
@@ -528,7 +528,7 @@ def pools_update(context, pools):
                                      ).update(pool)
 
             if not result:
-                LOG.error(exception.PoolNotFound(id=pool.get(
+                LOG.error(exception.StoragePoolNotFound(pool.get(
                     'id')))
             else:
                 pool_refs.append(result)
@@ -623,7 +623,7 @@ def _alert_source_get(context, storage_id, session=None):
               .first())
 
     if not result:
-        raise exception.AlertSourceNotFound(storage_id=storage_id)
+        raise exception.AlertSourceNotFound(storage_id)
 
     return result
 
@@ -673,7 +673,7 @@ def alert_source_delete(context, storage_id):
         if not result:
             LOG.error("Cannot delete non-exist alert source[storage_id=%s]." %
                       storage_id)
-            raise exception.AlertSourceNotFound(storage_id=storage_id)
+            raise exception.AlertSourceNotFound(storage_id)
         else:
             LOG.info("Delete alert source[storage_id=%s] successfully." %
                      storage_id)
@@ -754,7 +754,7 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
         for sort_dir in sort_dirs:
             if sort_dir not in ('asc', 'desc'):
                 msg = _("Unknown sort direction, must be 'desc' or 'asc'.")
-                raise exception.InvalidInput(reason=msg)
+                raise exception.InvalidInput(msg)
             result_dirs.append(sort_dir)
     else:
         result_dirs = [default_dir_value for _sort_key in result_keys]
@@ -765,7 +765,7 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
     # Unless more direction are specified, which is an error
     if len(result_dirs) > len(result_keys):
         msg = _("Sort direction array size exceeds sort key array size.")
-        raise exception.InvalidInput(reason=msg)
+        raise exception.InvalidInput(msg)
 
     # Ensure defaults are included
     for key in default_keys:

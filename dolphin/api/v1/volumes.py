@@ -11,10 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import six
-from webob import exc
 
-from dolphin import db, exception
+from dolphin import db
 from dolphin.api import api_utils
 from dolphin.api.common import wsgi
 from dolphin.api.views import volumes as volume_view
@@ -41,19 +39,14 @@ class VolumeController(wsgi.Controller):
         # strip out options except supported search  options
         api_utils.remove_invalid_options(ctxt, query_params,
                                          self._get_volumes_search_options())
-        try:
-            volumes = db.volume_get_all(ctxt, marker, limit, sort_keys,
-                                        sort_dirs, query_params, offset)
-        except exception.InvalidInput as e:
-            raise exc.HTTPBadRequest(explanation=six.text_type(e))
+
+        volumes = db.volume_get_all(ctxt, marker, limit, sort_keys,
+                                    sort_dirs, query_params, offset)
         return volume_view.build_volumes(volumes)
 
     def show(self, req, id):
         ctxt = req.environ['dolphin.context']
-        try:
-            volume = db.volume_get(ctxt, id)
-        except exception.VolumeNotFound as e:
-            raise exc.HTTPNotFound(explanation=e.msg)
+        volume = db.volume_get(ctxt, id)
         return volume_view.build_volume(volume)
 
 

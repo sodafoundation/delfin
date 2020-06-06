@@ -30,50 +30,21 @@ class AlertProcessor(object):
 
     def process_alert_info(self, alert):
         """Fills alert model using driver manager interface."""
-
-        ctxt = context.get_admin_context()
-
-        # Trap source ip should be configured as part of alert source
-        # configuration. Incoming source ip will be mapped with Trap source
-        # ip in db and storage id will be obtained As config flow not exists
-        # now Currently source ip is mapped with access_info ip address
-
-        # First retrieve access_info from source ip and get storage info
-        # using storage id
-        # This is a temporary mechanism till the alert config flow is handled
-        filters = {'host': alert['transport_address']}
-
-        try:
-            access_info = db.access_info_get_all(ctxt, filters=filters)
-        except Exception:
-            msg = "Access information could not be found with host %s." \
-                  % alert['transport_address']
-            raise exception.AccessInfoNotFound(message=msg)
-
-        # For given source ip, there should be unique access_info
-        if len(access_info) != 1:
-            msg = "Failed to get unique access information with host %s." \
-                  % alert['transport_address']
-            raise exception.InvalidResults(message=msg)
-
-        try:
-            storage = db.storage_get(context, access_info[0]['storage_id'])
-        except Exception:
-            raise exception.StorageNotFound(id=access_info[0]['storage_id'])
+        storage = db.storage_get(context, alert['storage_id'])
 
         # Fill storage specific info
-        alert['storage_id'] = storage['id']
         alert['storage_name'] = storage['name']
         alert['vendor'] = storage['vendor']
         alert['model'] = storage['model']
 
         try:
             alert_model = self.driver_manager.parse_alert(context,
-                                                          storage['id'], alert)
+                                                          alert['storage_id'],
+                                                          alert)
         except Exception as e:
             LOG.error(e)
             raise exception.InvalidResults(
-                message="Failed to fill the alert model from driver.")
+                "Failed to fill the alert model from driver.")
 
         self._export_alert_model(alert_model)
 

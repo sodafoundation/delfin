@@ -22,10 +22,12 @@ from pysnmp.proto.api import v2c
 from pysnmp.smi import builder, view, rfc1902
 
 from dolphin import context, cryptor
+from dolphin import db
 from dolphin import exception
 from dolphin.alert_manager import alert_processor
 from dolphin.alert_manager import constants
 from dolphin.db import api as db_api
+from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -116,7 +118,7 @@ class TrapReceiver(object):
         version_int = constants.VALID_SNMP_VERSIONS.get(_version)
         if version_int is None:
             msg = "Invalid snmp version %s." % version
-            raise exception.InvalidSNMPConfig(detail=msg)
+            raise exception.InvalidSNMPConfig(msg)
 
         return version_int
 
@@ -127,7 +129,7 @@ class TrapReceiver(object):
                 return usm_auth_protocol
             else:
                 msg = "Invalid auth_protocol %s." % auth_protocol
-                raise exception.InvalidSNMPConfig(detail=msg)
+                raise exception.InvalidSNMPConfig(msg)
         else:
             return config.usmNoAuthProtocol
 
@@ -139,7 +141,7 @@ class TrapReceiver(object):
                 return usm_priv_protocol
             else:
                 msg = "Invalid privacy_protocol %s." % privacy_protocol
-                raise exception.InvalidSNMPConfig(detail=msg)
+                raise exception.InvalidSNMPConfig(msg)
 
         return config.usmNoPrivProtocol
 
@@ -195,6 +197,25 @@ class TrapReceiver(object):
 
         return oid, val
 
+    @staticmethod
+    def _get_alert_source_by_host(source_ip):
+        """Gets alert source for given source ip address."""
+        filters = {'host': source_ip}
+        ctxt = context.RequestContext()
+
+        # Using the known filter and db exceptions are handled by api
+        alert_source = db.alert_source_get_all(ctxt, filters=filters)
+        if not alert_source:
+            raise exception.AlertSourceNotFoundWithHost(source_ip)
+
+        # This is to make sure unique host is configured each alert source
+        if len(alert_source) > 1:
+            msg = (_("Failed to get unique alert source with host %s.")
+                   % source_ip)
+            raise exception.InvalidResults(msg)
+
+        return alert_source[0]
+
     def _cb_fun(self, state_reference, context_engine_id, context_name,
                 var_binds, cb_ctx):
         """Callback function to process the incoming trap."""
@@ -209,24 +230,42 @@ class TrapReceiver(object):
                      context_name.prettyPrint(), exec_context['securityModel'],
                      exec_context['securityName']))
 
-        var_binds = [rfc1902.ObjectType(
-            rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
-            self.mib_view_controller) for x in var_binds]
-        alert = {}
-
-        for var_bind in var_binds:
-            oid, value = self._extract_oid_value(var_bind)
-            alert[oid] = value
-
-        # Fill additional info to alert_info
-        # transportAddress contains both ip and port, extract ip address
-        alert['transport_address'] = exec_context['transportAddress'][0]
-
-        # Handover trap info to alert processor for model
-        # translation and export
         try:
+            # transportAddress contains both ip and port, extract ip address
+            source_ip = exec_context['transportAddress'][0]
+            alert_source = self._get_alert_source_by_host(source_ip)
+
+            # In case of non v3 version, community string is used to map the
+            # trap. Pysnmp library helps to filter traps whose community string
+            # are not configured. But if a given community name x is configured
+            # for storage1, if the trap is received with x from storage 2,
+            # library will allow the trap. So for non v3 version, we need to
+            # verify that community name is configured at alert source db for
+            # the storage which is sending traps.
+            # context_name contains the incoming community string value
+            if exec_context['securityModel'] != constants.SNMP_V3_VERSION \
+                    and alert_source['community_string'] != str(context_name):
+                msg = (_("Community string not matching with alert source %s, "
+                         "dropping it.") % source_ip)
+                raise exception.InvalidResults(msg)
+
+            var_binds = [rfc1902.ObjectType(
+                rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
+                self.mib_view_controller) for x in var_binds]
+
+            alert = {}
+
+            for var_bind in var_binds:
+                oid, value = self._extract_oid_value(var_bind)
+                alert[oid] = value
+
+            # Fill additional info to alert info
+            alert['transport_address'] = source_ip
+            alert['storage_id'] = alert_source['storage_id']
+
+            # Handover to alert processor for model translation and export
             alert_processor.AlertProcessor().process_alert_info(alert)
-        except (exception.AccessInfoNotFound,
+        except (exception.AlertSourceNotFound,
                 exception.StorageNotFound,
                 exception.InvalidResults) as e:
             # Log and end the trap processing error flow

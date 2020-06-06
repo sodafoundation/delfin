@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import six
-from webob import exc
-
-from dolphin import db, exception
+from dolphin import db
 from dolphin.api import api_utils
 from dolphin.api.common import wsgi
 from dolphin.api.views import pools as pool_view
@@ -33,10 +29,7 @@ class PoolController(wsgi.Controller):
 
     def show(self, req, pool_id):
         ctxt = req.environ['dolphin.context']
-        try:
-            pool = db.pool_get(ctxt, pool_id)
-        except exception.PoolNotFound as e:
-            raise exc.HTTPNotFound(explanation=e.msg)
+        pool = db.pool_get(ctxt, pool_id)
         return pool_view.build_pool(pool)
 
     def index(self, req):
@@ -49,11 +42,9 @@ class PoolController(wsgi.Controller):
         # strip out options except supported search  options
         api_utils.remove_invalid_options(ctxt, query_params,
                                          self._get_pools_search_options())
-        try:
-            pools = db.pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
-                                    query_params, offset)
-        except exception.InvalidInput as e:
-            raise exc.HTTPBadRequest(explanation=six.text_type(e))
+
+        pools = db.pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
+                                query_params, offset)
         return pool_view.build_pools(pools)
 
 
