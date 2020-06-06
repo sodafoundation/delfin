@@ -16,7 +16,6 @@ import copy
 
 from oslo_log import log
 
-from dolphin import context
 from dolphin import coordination
 from dolphin import db
 from dolphin import utils
