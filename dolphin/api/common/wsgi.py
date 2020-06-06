@@ -15,8 +15,6 @@
 #    under the License.
 
 import inspect
-import math
-import time
 
 from oslo_log import log
 from oslo_serialization import jsonutils
@@ -192,7 +190,7 @@ class Request(webob.Request):
         content_type = self.content_type
 
         if content_type not in allowed_types:
-            raise exception.InvalidContentType(content_type=content_type)
+            raise exception.InvalidContentType(content_type)
 
         return content_type
 
@@ -227,7 +225,7 @@ class JSONDeserializer(TextDeserializer):
             return jsonutils.loads(datastring)
         except ValueError:
             msg = _("cannot understand JSON")
-            raise exception.MalformedRequestBody(reason=msg)
+            raise exception.MalformedRequestBody(msg)
 
     def default(self, datastring):
         return {'body': self._from_json(datastring)}
@@ -375,7 +373,7 @@ class ResponseObject(object):
             else:
                 return mtype, default_serializers[mtype]
         except (KeyError, TypeError):
-            raise exception.InvalidContentType(content_type=content_type)
+            raise exception.InvalidContentType(content_type)
 
     def preserialize(self, content_type, default_serializers=None):
         """Prepares the serializer that will be used to serialize.
@@ -440,12 +438,12 @@ def action_peek_json(body):
         decoded = jsonutils.loads(body)
     except ValueError:
         msg = _("cannot understand JSON")
-        raise exception.MalformedRequestBody(reason=msg)
+        raise exception.MalformedRequestBody(msg)
 
     # Make sure there's exactly one key...
     if len(decoded) != 1:
         msg = _("too many body keys")
-        raise exception.MalformedRequestBody(reason=msg)
+        raise exception.MalformedRequestBody(msg)
 
     # Return the action and the decoded body...
     return list(decoded.keys())[0]
@@ -466,19 +464,14 @@ class ResourceExceptionHandler(object):
         if not ex_value:
             return True
 
-        if isinstance(ex_value, exception.NotAuthorized):
-            msg = six.text_type(ex_value)
-            raise Fault(webob.exc.HTTPForbidden(explanation=msg))
-        elif isinstance(ex_value, exception.VersionNotFoundForAPIMethod):
-            raise
-        elif isinstance(ex_value, exception.Invalid):
-            raise Fault(exception.ConvertedException(
-                code=ex_value.code, explanation=six.text_type(ex_value)))
+        if isinstance(ex_value, exception.DolphinException):
+            raise Fault(exception.ConvertedException(ex_value))
         elif isinstance(ex_value, TypeError):
             exc_info = (ex_type, ex_value, ex_traceback)
             LOG.error('Exception handling resource: %s',
                       ex_value, exc_info=exc_info)
-            raise Fault(webob.exc.HTTPBadRequest())
+            exc = exception.BadRequest()
+            raise Fault(exception.ConvertedException(exc))
         elif isinstance(ex_value, Fault):
             LOG.info("Fault thrown: %s", ex_value)
             raise ex_value
@@ -611,7 +604,7 @@ class Resource(wsgi.Application):
             else:
                 deserializer = self.default_deserializers[mtype]
         except (KeyError, TypeError):
-            raise exception.InvalidContentType(content_type=content_type)
+            raise exception.InvalidContentType(content_type)
 
         return deserializer().deserialize(body)
 
@@ -706,13 +699,15 @@ class Resource(wsgi.Application):
             meth, extensions = self.get_method(request, action,
                                                content_type, body)
         except (AttributeError, TypeError):
-            return Fault(webob.exc.HTTPNotFound())
+            ex = exception.ConvertedException(exception.NotFound())
+            return Fault(ex)
         except KeyError as ex:
-            msg = _("There is no such action: %s") % ex.args[0]
-            return Fault(webob.exc.HTTPBadRequest(explanation=msg))
-        except exception.MalformedRequestBody:
-            msg = _("Malformed request body")
-            return Fault(webob.exc.HTTPBadRequest(explanation=msg))
+            ex = exception.ConvertedException(
+                exception.NoSuchAction(ex.args[0]))
+            return Fault(ex)
+        except exception.MalformedRequestBody as ex:
+            ex = exception.ConvertedException(ex)
+            return Fault(ex)
 
         try:
             method_name = meth.__qualname__
@@ -736,12 +731,12 @@ class Resource(wsgi.Application):
                 contents = self.deserialize(meth, content_type, body)
             else:
                 contents = {}
-        except exception.InvalidContentType:
-            msg = _("Unsupported Content-Type")
-            return Fault(webob.exc.HTTPBadRequest(explanation=msg))
-        except exception.MalformedRequestBody:
-            msg = _("Malformed request body")
-            return Fault(webob.exc.HTTPBadRequest(explanation=msg))
+        except exception.InvalidContentType as ex:
+            ex = exception.ConvertedException(ex)
+            return Fault(ex)
+        except exception.MalformedRequestBody as ex:
+            ex = exception.ConvertedException(ex)
+            return Fault(ex)
 
         # Update the action args
         action_args.update(contents)
@@ -749,8 +744,8 @@ class Resource(wsgi.Application):
         project_id = action_args.pop("project_id", None)
         context = request.environ.get('dolphin.context')
         if (context and project_id and (project_id != context.project_id)):
-            msg = _("Malformed request url")
-            return Fault(webob.exc.HTTPBadRequest(explanation=msg))
+            ex = exception.ConvertedException(exception.MalformedRequestUrl())
+            return Fault(ex)
 
         # Run pre-processing extensions
         response, post = self.pre_process_extensions(extensions,
@@ -952,17 +947,6 @@ class Controller(object):
 class Fault(webob.exc.HTTPException):
     """Wrap webob.exc.HTTPException to provide API friendly response."""
 
-    _fault_names = {400: "badRequest",
-                    401: "unauthorized",
-                    403: "forbidden",
-                    404: "itemNotFound",
-                    405: "badMethod",
-                    409: "conflictingRequest",
-                    413: "overLimit",
-                    415: "badMediaType",
-                    501: "notImplemented",
-                    503: "serviceUnavailable"}
-
     def __init__(self, exception):
         """Create a Fault for the given webob.exc.exception."""
         self.wrapped_exc = exception
@@ -972,15 +956,14 @@ class Fault(webob.exc.HTTPException):
     def __call__(self, req):
         """Generate a WSGI response based on the exception passed to ctor."""
         # Replace the body with fault details.
-        code = self.wrapped_exc.status_int
-        fault_name = self._fault_names.get(code, "computeFault")
+        status_code = self.wrapped_exc.status_int
         fault_data = {
-            fault_name: {
-                'code': code,
-                'message': self.wrapped_exc.explanation}}
-        if code == 413:
+            'error_code': self.wrapped_exc.error_code,
+            'error_msg': self.wrapped_exc.explanation,
+            'error_args': self.wrapped_exc.error_args}
+        if status_code == 413:
             retry = self.wrapped_exc.headers['Retry-After']
-            fault_data[fault_name]['retryAfter'] = '%s' % retry
+            fault_data['retryAfter'] = '%s' % retry
 
         content_type = req.best_match_content_type()
         serializer = {
@@ -1001,44 +984,3 @@ def _set_request_id_header(req, headers):
     context = req.environ.get('dolphin.context')
     if context:
         headers['x-compute-request-id'] = context.request_id
-
-
-class OverLimitFault(webob.exc.HTTPException):
-    """Rate-limited request response."""
-
-    def __init__(self, message, details, retry_time):
-        """Initialize new `OverLimitFault` with relevant information."""
-        hdrs = OverLimitFault._retry_after(retry_time)
-        self.wrapped_exc = webob.exc.HTTPRequestEntityTooLarge(headers=hdrs)
-        self.content = {
-            "overLimitFault": {
-                "code": self.wrapped_exc.status_int,
-                "message": message,
-                "details": details,
-            },
-        }
-
-    @staticmethod
-    def _retry_after(retry_time):
-        delay = int(math.ceil(retry_time - time.time()))
-        retry_after = delay if delay > 0 else 0
-        headers = {'Retry-After': '%s' % retry_after}
-        return headers
-
-    @webob.dec.wsgify(RequestClass=Request)
-    def __call__(self, request):
-        """Wrap the exception.
-
-        Wrap the exception with a serialized body conforming to our
-        error format.
-        """
-        content_type = request.best_match_content_type()
-
-        serializer = {
-            'application/json': JSONDictSerializer(),
-        }[content_type]
-
-        content = serializer.serialize(self.content)
-        self.wrapped_exc.body = content
-
-        return self.wrapped_exc
