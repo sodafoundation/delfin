@@ -145,8 +145,7 @@ class StorageController(wsgi.Controller):
             self.task_rpcapi.sync_storage_resource(
                 ctxt,
                 storage['id'],
-                subclass.__module__ + '.' + subclass.__name__
-            )
+                subclass.__module__ + '.' + subclass.__name__)
 
     def _storage_exist(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)
