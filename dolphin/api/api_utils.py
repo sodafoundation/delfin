@@ -14,12 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import six
-import webob
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import strutils
 
 from dolphin.common import constants
+from dolphin import exception
 from dolphin.i18n import _
 
 api_common_opts = [
@@ -52,15 +53,15 @@ def validate_integer(value, name, min_value=None, max_value=None):
 
     :param value: the value of the integer
     :param name: the name of the integer
-    :param min_length: the min_length of the integer
-    :param max_length: the max_length of the integer
+    :param min_value: the min_value of the integer
+    :param max_value: the max_value of the integer
     :returns: integer
     """
     try:
         value = strutils.validate_integer(value, name, min_value, max_value)
         return value
     except ValueError as e:
-        raise webob.exc.HTTPBadRequest(explanation=six.text_type(e))
+        raise exception.InvalidInput(six.text_type(e))
 
 
 def get_pagination_params(params, max_limit=None):
@@ -73,10 +74,10 @@ def get_pagination_params(params, max_limit=None):
                    of items to skip from the marker or from the first element.
                    If 'limit' is not specified, or > max_limit, we default to
                    max_limit. Negative values for either offset or limit will
-                   cause exc.HTTPBadRequest() exceptions to be raised. If no
+                   cause dolphin.InvalidInput() exceptions to be raised. If no
                    offset is present we'll default to 0 and if no marker is
                    present we'll default to None.
-    :max_limit: Max value 'limit' return value can take
+    :param max_limit: Max value 'limit' return value can take
     :returns: Tuple (marker, limit, offset)
     """
     max_limit = max_limit or CONF.api_max_limit
@@ -97,10 +98,10 @@ def _get_limit_param(params, max_limit=None):
         limit = int(params.pop('limit', max_limit))
     except ValueError:
         msg = _('limit param must be an integer')
-        raise webob.exc.HTTPBadRequest(explanation=msg)
+        raise exception.InvalidInput(msg)
     if limit < 0:
         msg = _('limit param must be positive')
-        raise webob.exc.HTTPBadRequest(explanation=msg)
+        raise exception.InvalidInput(msg)
     limit = min(limit, max_limit)
     return limit
 

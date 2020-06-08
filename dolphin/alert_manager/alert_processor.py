@@ -30,11 +30,7 @@ class AlertProcessor(object):
 
     def process_alert_info(self, alert):
         """Fills alert model using driver manager interface."""
-
-        try:
-            storage = db.storage_get(context, alert['storage_id'])
-        except Exception as e:
-            raise exception.StorageNotFound(explanation=e.msg)
+        storage = db.storage_get(context, alert['storage_id'])
 
         # Fill storage specific info
         alert['storage_name'] = storage['name']
@@ -48,7 +44,7 @@ class AlertProcessor(object):
         except Exception as e:
             LOG.error(e)
             raise exception.InvalidResults(
-                message="Failed to fill the alert model from driver.")
+                "Failed to fill the alert model from driver.")
 
         self._export_alert_model(alert_model)
 

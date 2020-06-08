@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from webob import exc
-
 from dolphin import db
-from dolphin import exception
 from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import access_info as schema_access_info
@@ -32,29 +29,16 @@ class AccessInfoController(wsgi.Controller):
     def show(self, req, id):
         """Show access information by storage id."""
         ctxt = req.environ['dolphin.context']
-
-        try:
-            access_info = db.access_info_get(ctxt, id)
-        except exception.AccessInfoNotFound as e:
-            raise exc.HTTPNotFound(explanation=e.msg)
-
+        access_info = db.access_info_get(ctxt, id)
         return self._view_builder.show(access_info)
 
     @validation.schema(schema_access_info.update)
     def update(self, req, id, body):
         """Update storage access information."""
         ctxt = req.environ.get('dolphin.context')
-        try:
-            access_info = db.access_info_get(ctxt, id)
-            access_info.update(body)
-            access_info = self.driver_api.update_access_info(ctxt, access_info)
-        except (exception.InvalidCredential,
-                exception.InvalidResults,
-                exception.StorageDriverNotFound,
-                exception.AccessInfoNotFound,
-                exception.StorageNotFound,
-                exception.StorageSerialNumberMismatch) as e:
-            raise exc.HTTPBadRequest(explanation=e.msg)
+        access_info = db.access_info_get(ctxt, id)
+        access_info.update(body)
+        access_info = self.driver_api.update_access_info(ctxt, access_info)
 
         return self._view_builder.show(access_info)
 
