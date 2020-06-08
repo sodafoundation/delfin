@@ -22,14 +22,27 @@ import six
 from tooz import coordination
 from tooz import locking
 
+from dolphin import cryptor
 from dolphin import exception
 from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
 coordination_opts = [
-    cfg.StrOpt('backend_url',
-               default='redis://127.0.0.1:6379',
+    cfg.StrOpt('backend_type',
+               default='redis',
+               help='The back end type to use for distributed coordination.'),
+    cfg.StrOpt('backend_user',
+               default='',
+               help='The back end user to use for distributed coordination.'),
+    cfg.StrOpt('backend_password',
+               default='',
+               help='The back end URL to use for distributed coordination.'),
+    cfg.StrOpt('backend_ip',
+               default='127.0.0.1',
+               help='The back end URL to use for distributed coordination.'),
+    cfg.StrOpt('backend_port',
+               default='6379',
                help='The back end URL to use for distributed coordination.'),
     cfg.IntOpt('expiration',
                default=100,
@@ -64,8 +77,21 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
+        if cfg.CONF.coordination.backend_user \
+                or cfg.CONF.coordination.backend_password:
+            password = cryptor.decode(
+                cfg.CONF.coordination.backend_password).decode('utf-8')
+            backend_url = cfg.CONF.coordination.backend_type + '://' \
+                + cfg.CONF.coordination.backend_user \
+                + ':' + password + '@' \
+                + cfg.CONF.coordination.backend_ip + ':' \
+                + cfg.CONF.coordination.backend_port
+        else:
+            backend_url = cfg.CONF.coordination.backend_type + '://' \
+                + cfg.CONF.coordination.backend_ip + ':' \
+                + cfg.CONF.coordination.backend_port
         self.coordinator = coordination.get_coordinator(
-            cfg.CONF.coordination.backend_url, member_id,
+            backend_url, member_id,
             timeout=cfg.CONF.coordination.expiration)
         self.coordinator.start(start_heart=True)
         self.started = True
