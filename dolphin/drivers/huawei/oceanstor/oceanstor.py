@@ -35,11 +35,13 @@ class OceanStorDriver(driver.StorageDriver):
 
         storage = self.client.get_storage()
 
+        # Get firmware version
+        controller = self.client.get_controller()
+        firmware_ver = controller[0]['SOFTVER']
+
         # Get status
         status = constants.StorageStatus.OFFLINE
-        if storage['HEALTHSTATUS'] == consts.STATUS_HEALTH \
-                and storage['RUNNINGSTATUS'] == \
-                consts.STATUS_STORAGE_NORMAL:
+        if storage['RUNNINGSTATUS'] == consts.STATUS_STORAGE_NORMAL:
             status = constants.StorageStatus.NORMAL
 
         # Keep sector_size for use in list pools
@@ -56,7 +58,7 @@ class OceanStorDriver(driver.StorageDriver):
             'model': storage['NAME'],
             'status': status,
             'serial_number': storage['ID'],
-            'firmware_version': '',
+            'firmware_version': firmware_ver,
             'location': storage['LOCATION'],
             'total_capacity': total_cap,
             'used_capacity': used_cap,
@@ -74,15 +76,11 @@ class OceanStorDriver(driver.StorageDriver):
             for pool in pools:
                 # Get pool status
                 status = constants.PoolStatus.OFFLINE
-                if pool['HEALTHSTATUS'] == consts.STATUS_HEALTH \
-                        and pool['RUNNINGSTATUS'] == \
-                        consts.STATUS_POOL_ONLINE:
+                if pool['RUNNINGSTATUS'] == consts.STATUS_POOL_ONLINE:
                     status = constants.PoolStatus.NORMAL
 
                 # Get pool storage_type
-                storage_type = None
-                if pool.get('USAGETYPE') == consts.BLOCK_STORAGE_POOL_TYPE:
-                    storage_type = constants.StorageType.BLOCK
+                storage_type = constants.StorageType.BLOCK
                 if pool.get('USAGETYPE') == consts.FILE_SYSTEM_POOL_TYPE:
                     storage_type = constants.StorageType.FILE
 
@@ -118,11 +116,15 @@ class OceanStorDriver(driver.StorageDriver):
         try:
             # Get all volumes in OceanStor
             volumes = self.client.get_all_volumes()
+            pools = self.client.get_all_pools()
 
             volume_list = []
             for volume in volumes:
                 # Get pool id of volume
-                orig_pool_id = self.client.get_pool_id(volume['PARENTNAME'])
+                orig_pool_id = ''
+                for pool in pools:
+                    if volume['PARENTNAME'] == pool['NAME']:
+                        orig_pool_id = pool['ID']
 
                 compressed = False
                 if volume['ENABLECOMPRESSION'] != 'false':
@@ -133,10 +135,12 @@ class OceanStorDriver(driver.StorageDriver):
                     deduplicated = True
 
                 status = constants.VolumeStatus.ERROR
-                if volume['HEALTHSTATUS'] == consts.STATUS_HEALTH \
-                        and volume['RUNNINGSTATUS'] == \
-                        consts.STATUS_VOLUME_READY:
+                if volume['RUNNINGSTATUS'] == consts.STATUS_VOLUME_READY:
                     status = constants.VolumeStatus.AVAILABLE
+
+                prov_policy = constants.ProvisioningPolicy.THICK
+                if volume['ALLOCTYPE'] == consts.THIN_LUNTYPE:
+                    prov_policy = constants.ProvisioningPolicy.THIN
 
                 sector_size = int(volume['SECTORSIZE'])
                 total_cap = int(volume['CAPACITY']) * sector_size
@@ -150,7 +154,7 @@ class OceanStorDriver(driver.StorageDriver):
                     'original_id': volume['ID'],
                     'original_pool_id': orig_pool_id,
                     'wwn': volume['WWN'],
-                    'provisioning_policy': '',
+                    'provisioning_policy': prov_policy,
                     'total_capacity': total_cap,
                     'used_capacity': used_cap,
                     'free_capacity': None,

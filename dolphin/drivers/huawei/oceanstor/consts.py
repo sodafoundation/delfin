@@ -1,3 +1,4 @@
+# Copyright 2020 The SODA Authors.
 # Copyright (c) 2016 Huawei Technologies Co., Ltd.
 # All Rights Reserved.
 #
@@ -40,3 +41,7 @@ BLOCK_STORAGE_POOL_TYPE = '1'
 FILE_SYSTEM_POOL_TYPE = '2'
 
 SECTORS_SIZE = 512
+QUERY_PAGE_SIZE = 150
+
+THICK_LUNTYPE = '0'
+THIN_LUNTYPE = '1'

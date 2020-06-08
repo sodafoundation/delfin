@@ -31,9 +31,10 @@ class RestClient(object):
     """Common class for Huawei OceanStor storage system."""
 
     def __init__(self, **kwargs):
-        # self.configuration = configuration
+
         host = kwargs.get('host', 'localhost')
         port = kwargs.get('port', '8088')
+        # Lists of addresses to try, for authorization
         self.san_address = [
             'https://' + host + ':' + port + '/deviceManager/rest/']
         self.san_user = kwargs.get('username')
@@ -172,6 +173,29 @@ class RestClient(object):
                 result['error']['code'] = 0
         return result
 
+    def paginated_call(self, url, data=None, method=None,
+                       log_filter_flag=False,
+                       page_size=consts.QUERY_PAGE_SIZE):
+        result_list = []
+        start, end = 0, page_size
+        msg = _('Query resource volume error')
+        while True:
+            url_p = '{0}?range=[{1}-{2}]'.format(url, start, end)
+            start, end = end, end + page_size
+            result = self.call(url_p, data, method, log_filter_flag)
+            self._assert_rest_result(result, msg)
+
+            # Empty data if this is first page, OR last page got all data
+            if 'data' not in result:
+                break
+
+            result_list.extend(result['data'])
+            # Check if this is last page
+            if len(result['data']) < page_size:
+                break
+
+        return result_list
+
     def logout(self):
         """Logout the session."""
         url = "/sessions"
@@ -194,9 +218,19 @@ class RestClient(object):
 
     def get_storage(self):
         url = "/system/"
-        result = self.call(url, method='GET')
+        result = self.call(url, method='GET', log_filter_flag=True)
 
-        msg = _('Create lun error.')
+        msg = _('Get storage error.')
+        self._assert_rest_result(result, msg)
+        self._assert_data_in_result(result, msg)
+
+        return result['data']
+
+    def get_controller(self):
+        url = "/controller"
+        result = self.call(url, method='GET', log_filter_flag=True)
+
+        msg = _('Get controller error.')
         self._assert_rest_result(result, msg)
         self._assert_data_in_result(result, msg)
 
@@ -204,19 +238,11 @@ class RestClient(object):
 
     def get_all_volumes(self):
         url = "/lun"
-        result = self.call(url, None, "GET", log_filter_flag=True)
-        msg = _('Query resource volume error.')
-        self._assert_rest_result(result, msg)
-        self._assert_data_in_result(result, msg)
-        return result['data']
+        return self.paginated_call(url, None, "GET", log_filter_flag=True)
 
     def get_all_pools(self):
         url = "/storagepool"
-        result = self.call(url, None, "GET", log_filter_flag=True)
-        msg = _('Query resource pool error.')
-        self._assert_rest_result(result, msg)
-        self._assert_data_in_result(result, msg)
-        return result['data']
+        return self.paginated_call(url, None, "GET", log_filter_flag=True)
 
     def get_pool_info(self, pool_name=None, pools=None):
         info = {}
