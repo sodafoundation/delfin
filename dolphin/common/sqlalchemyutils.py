@@ -119,9 +119,9 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
         try:
             sort_key_attr = getattr(model, current_sort_key)
         except AttributeError:
-            raise exception.InvalidInput(reason='Invalid sort key')
+            raise exception.InvalidInput('Invalid sort key')
         if not api.is_orm_value(sort_key_attr):
-            raise exception.InvalidInput(reason='Invalid sort key')
+            raise exception.InvalidInput('Invalid sort key')
         query = query.order_by(sort_dir_func(sort_key_attr))
 
     # Add pagination

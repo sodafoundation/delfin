@@ -44,7 +44,6 @@ from oslo_utils import timeutils
 import paramiko
 import retrying
 import six
-from webob import exc
 
 from dolphin import exception
 from dolphin.i18n import _
@@ -199,12 +198,12 @@ def check_ssh_injection(cmd_list):
             if quoted:
                 if (re.match('[\'"]', quoted) or
                         re.search('[^\\\\][\'"]', quoted)):
-                    raise exception.SSHInjectionThreat(command=cmd_list)
+                    raise exception.SSHInjectionThreat(cmd_list)
         else:
             # We only allow spaces within quoted arguments, and that
             # is the only special character allowed within quotes
             if len(arg.split()) > 1:
-                raise exception.SSHInjectionThreat(command=cmd_list)
+                raise exception.SSHInjectionThreat(cmd_list)
 
         # Second, check whether danger character in command. So the shell
         # special operator must be a single argument.
@@ -215,38 +214,7 @@ def check_ssh_injection(cmd_list):
             result = arg.find(c)
             if not result == -1:
                 if result == 0 or not arg[result - 1] == '\\':
-                    raise exception.SSHInjectionThreat(command=cmd_list)
-
-
-class LazyPluggable(object):
-    """A pluggable backend loaded lazily based on some value."""
-
-    def __init__(self, pivot, **backends):
-        self.__backends = backends
-        self.__pivot = pivot
-        self.__backend = None
-
-    def __get_backend(self):
-        if not self.__backend:
-            backend_name = CONF[self.__pivot]
-            if backend_name not in self.__backends:
-                raise exception.Error(_('Invalid backend: %s') % backend_name)
-
-            backend = self.__backends[backend_name]
-            if isinstance(backend, tuple):
-                name = backend[0]
-                fromlist = backend[1]
-            else:
-                name = backend
-                fromlist = backend
-
-            self.__backend = __import__(name, None, None, fromlist)
-            LOG.debug('backend %s', self.__backend)
-        return self.__backend
-
-    def __getattr__(self, key):
-        backend = self.__get_backend()
-        return getattr(backend, key)
+                    raise exception.SSHInjectionThreat(cmd_list)
 
 
 def monkey_patch():
@@ -326,11 +294,11 @@ def check_string_length(value, name, min_length=0, max_length=None,
                                      min_length=min_length,
                                      max_length=max_length)
     except(ValueError, TypeError) as exc:
-        raise exception.InvalidInput(reason=exc)
+        raise exception.InvalidInput(exc)
 
     if not allow_all_spaces and value.isspace():
-        msg = _('%(name)s cannot be all spaces.')
-        raise exception.InvalidInput(reason=msg)
+        msg = _('%(name)s cannot be all spaces.') % name
+        raise exception.InvalidInput(msg)
 
 
 def service_is_up(service):
@@ -372,8 +340,7 @@ def is_valid_ip_address(ip_address, ip_version):
                   else ip_version)
 
     if not set(ip_version).issubset(set([4, 6])):
-        raise exception.DolphinException(
-            _("Provided improper IP version '%s'.") % ip_version)
+        raise exception.ImproperIPVersion(ip_version)
 
     if 4 in ip_version:
         if netutils.is_valid_ipv4(ip_address):
@@ -521,7 +488,7 @@ def get_bool_from_api_params(key, params, default=False, strict=True):
         msg = _('Invalid value %(param)s for %(param_string)s. '
                 'Expecting a boolean.') % {'param': param,
                                            'param_string': key}
-        raise exc.HTTPBadRequest(explanation=msg)
+        raise exception.InvalidInput(msg)
     return param
 
 
@@ -533,7 +500,7 @@ def check_params_exist(keys, params):
     """
     if any(set(keys) - set(params)):
         msg = _("Must specify all mandatory parameters: %s") % keys
-        raise exc.HTTPBadRequest(explanation=msg)
+        raise exception.InvalidInput(msg)
 
 
 def check_params_are_boolean(keys, params, default=False):
@@ -567,49 +534,6 @@ def convert_str(text):
             return text.decode('utf-8')
         else:
             return text
-
-
-def translate_string_size_to_float(string, multiplier='G'):
-    """Translates human-readable storage size to float value.
-
-    Supported values for 'multiplier' are following:
-        K - kilo | 1
-        M - mega | 1024
-        G - giga | 1024 * 1024
-        T - tera | 1024 * 1024 * 1024
-        P = peta | 1024 * 1024 * 1024 * 1024
-
-    returns:
-        - float if correct input data provided
-        - None if incorrect
-    """
-    if not isinstance(string, six.string_types):
-        return None
-    multipliers = ('K', 'M', 'G', 'T', 'P')
-    mapping = {
-        k: 1024.0 ** v
-        for k, v in zip(multipliers, range(len(multipliers)))
-    }
-    if multiplier not in multipliers:
-        raise exception.DolphinException(
-            "'multiplier' arg should be one of following: "
-            "'%(multipliers)s'. But it is '%(multiplier)s'." % {
-                'multiplier': multiplier,
-                'multipliers': "', '".join(multipliers),
-            }
-        )
-    try:
-        value = float(string.replace(",", ".")) / 1024.0
-        value = value / mapping[multiplier]
-        return value
-    except (ValueError, TypeError):
-        matched = re.match(
-            r"^(\d*[.,]*\d*)([%s])$" % ''.join(multipliers), string)
-        if matched:
-            # The replace() is needed in case decimal separator is a comma
-            value = float(matched.groups()[0].replace(",", "."))
-            multiplier = mapping[matched.groups()[1]] / mapping[multiplier]
-            return value * multiplier
 
 
 class DoNothing(str):
@@ -682,3 +606,24 @@ class Singleton(type):
                     cls._instances[cls] = super(Singleton,
                                                 cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+def set_bit(source, index, value):
+    mask = 1 << index
+    source &= ~mask
+    if value:
+        source |= mask
+    return source
+
+
+def set_bits(source, start, end, value):
+    """
+    Set the bits from start to end([start, end]) for source to value
+    """
+    mask = 0
+    for index in range(start, end + 1):
+        mask = set_bit(mask, index, 1)
+    source &= ~mask
+    if value:
+        source |= mask
+    return source
