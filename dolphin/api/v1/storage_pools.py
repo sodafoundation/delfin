@@ -30,7 +30,7 @@ class StoragePoolController(wsgi.Controller):
     def show(self, req, id):
         ctxt = req.environ['dolphin.context']
         pool = db.storage_pool_get(ctxt, id)
-        return storage_pool_view.build_pool(pool)
+        return storage_pool_view.build_storage_pool(pool)
 
     def index(self, req):
         ctxt = req.environ['dolphin.context']
@@ -40,12 +40,12 @@ class StoragePoolController(wsgi.Controller):
         sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
         marker, limit, offset = api_utils.get_pagination_params(query_params)
         # strip out options except supported search  options
-        api_utils.remove_invalid_options(ctxt, query_params,
-                                         self._get_storage_pools_search_options())
+        api_utils.remove_invalid_options(
+            ctxt, query_params, self._get_storage_pools_search_options())
 
-        storage_pools = db.storage_pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
-                                query_params, offset)
-        return storage_pool_view.build_pools(storage_pools)
+        storage_pools = db.storage_pool_get_all(
+            ctxt, marker, limit, sort_keys, sort_dirs, query_params, offset)
+        return storage_pool_view.build_storage_pools(storage_pools)
 
 
 def create_resource():
