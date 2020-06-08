@@ -31,10 +31,10 @@ LOG = log.getLogger(__name__)
 def set_synced_after(resource_type):
 
     @decorator.decorator
-    def _set_synced_after(f, *a, **k):
-        call_args = inspect.getcallargs(f, *a, **k)
+    def _set_synced_after(func, *args, **kwargs):
+        call_args = inspect.getcallargs(func, *args, **kwargs)
         self = call_args['self']
-        ret = f(*a, **k)
+        ret = func(*args, **kwargs)
         lock = coordination.Lock(self.storage_id)
         with lock:
             try:
@@ -56,10 +56,10 @@ def set_synced_after(resource_type):
 def check_deleted(resource_type):
 
     @decorator.decorator
-    def _check_deleted(f, *a, **k):
-        call_args = inspect.getcallargs(f, *a, **k)
+    def _check_deleted(func, *args, **kwargs):
+        call_args = inspect.getcallargs(func, *args, **kwargs)
         self = call_args['self']
-        ret = f(*a, **k)
+        ret = func(*args, **kwargs)
         self.context.read_deleted = 'yes'
         try:
             storage = db.storage_get(self.context, self.storage_id)
