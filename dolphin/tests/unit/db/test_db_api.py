@@ -1,12 +1,14 @@
-import unittest
 from unittest import mock
-from dolphin.db.sqlalchemy import api, models
-from dolphin.db import api as db_api
+
 from dolphin import context, exception
+from dolphin import test
+from dolphin.db import api as db_api
+from dolphin.db.sqlalchemy import api, models
 
 
-class TestSIMDBAPI(unittest.TestCase):
+class TestSIMDBAPI(test.TestCase):
 
+    @mock.patch('sqlalchemy.create_engine', mock.Mock())
     def test_register_db(self):
         db_api.register_db()
 
