@@ -31,19 +31,22 @@ LOG = log.getLogger(__name__)
 coordination_opts = [
     cfg.StrOpt('backend_type',
                default='redis',
-               help='The back end type to use for distributed coordination.'),
+               help='The back end type to use for distributed coordination.'
+                    'Backend could be redis, mysql, zookeeper and so on.'
+                    'For more supported backend, please check Tooz'),
     cfg.StrOpt('backend_user',
                default='',
                help='The back end user to use for distributed coordination.'),
     cfg.StrOpt('backend_password',
                default='',
-               help='The back end URL to use for distributed coordination.'),
+               help='The back end password to use '
+                    'for distributed coordination.'),
     cfg.StrOpt('backend_ip',
                default='127.0.0.1',
-               help='The back end URL to use for distributed coordination.'),
+               help='The back end ip to use for distributed coordination.'),
     cfg.StrOpt('backend_port',
                default='6379',
-               help='The back end URL to use for distributed coordination.'),
+               help='The back end port to use for distributed coordination.'),
     cfg.IntOpt('expiration',
                default=100,
                help='The expiration(in second) of the lock.')
@@ -77,19 +80,28 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
-        if cfg.CONF.coordination.backend_user \
-                or cfg.CONF.coordination.backend_password:
-            password = cryptor.decode(
-                cfg.CONF.coordination.backend_password).decode('utf-8')
-            backend_url = cfg.CONF.coordination.backend_type + '://' \
-                + cfg.CONF.coordination.backend_user \
-                + ':' + password + '@' \
-                + cfg.CONF.coordination.backend_ip + ':' \
-                + cfg.CONF.coordination.backend_port
+        backend_type = cfg.CONF.coordination.backend_type
+        ip = cfg.CONF.coordination.backend_ip
+        port = cfg.CONF.coordination.backend_port
+        user = cfg.CONF.coordination.backend_user
+        password = cfg.CONF.coordination.backend_password
+        # If no user name and password was configured,
+        # the backend url should be {backend_type}://{ip}:{port}
+        # Otherwise, the backend should be
+        # {backend_type}://{user}:{password}@{ip}:{port}
+        if user or password:
+            password = cryptor.decode(password).decode('utf-8')
+            backend_url = '{backend_type}://{user}:{password}@{ip}:{port}'\
+                .format(backend_type=backend_type,
+                        user=user,
+                        password=password,
+                        ip=ip,
+                        port=port)
         else:
-            backend_url = cfg.CONF.coordination.backend_type + '://' \
-                + cfg.CONF.coordination.backend_ip + ':' \
-                + cfg.CONF.coordination.backend_port
+            backend_url = '{backend_type}://{ip}:{port}'.format(
+                backend_type=backend_type,
+                ip=ip,
+                port=port)
         self.coordinator = coordination.get_coordinator(
             backend_url, member_id,
             timeout=cfg.CONF.coordination.expiration)
