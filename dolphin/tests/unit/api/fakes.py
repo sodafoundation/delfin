@@ -38,3 +38,64 @@ class HTTPRequest(os_wsgi.Request):
         out.environ['dolphin.context'] = context.RequestContext(
             is_admin=use_admin_context)
         return out
+
+
+def fake_storages_get_all():
+    return [
+        {
+            "id": "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6",
+            "created_at": "2020-06-09T08:59:48.710890",
+            "free_capacity": 1045449,
+            "updated_at": "2020-06-09T08:59:48.769470",
+            "name": "fake_driver",
+            "location": "HK",
+            "firmware_version": "1.0.0",
+            "vendor": "fake_vendor",
+            "status": "normal",
+            "sync_status": "SYNCED",
+            "model": "fake_model",
+            "description": "it is a fake driver.",
+            "serial_number": "2102453JPN12KA0000113",
+            "used_capacity": 3126,
+            "total_capacity": 1048576
+        },
+        {
+            "id": "277a1d8f-a36e-423e-bdd9-db154f32c289",
+            "created_at": "2020-06-09T08:58:23.008821",
+            "free_capacity": 1045449,
+            "updated_at": "2020-06-09T08:58:23.033601",
+            "name": "fake_driver",
+            "location": "HK",
+            "firmware_version": "1.0.0",
+            "vendor": "fake_vendor",
+            "status": "normal",
+            "sync_status": "SYNCED",
+            "model": "fake_model",
+            "description": "it is a fake driver.",
+            "serial_number": "2102453JPN12KA0000112",
+            "used_capacity": 3126,
+            "total_capacity": 1048576
+        }
+    ]
+
+
+def fake_storages_get_all_with_filter():
+    return [
+        {
+            "id": "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6",
+            "created_at": "2020-06-09T08:59:48.710890",
+            "free_capacity": 1045449,
+            "updated_at": "2020-06-09T08:59:48.769470",
+            "name": "fake_driver",
+            "location": "HK",
+            "firmware_version": "1.0.0",
+            "vendor": "fake_vendor",
+            "status": "normal",
+            "sync_status": "SYNCED",
+            "model": "fake_model",
+            "description": "it is a fake driver.",
+            "serial_number": "2102453JPN12KA0000113",
+            "used_capacity": 3126,
+            "total_capacity": 1048576
+        }
+    ]
