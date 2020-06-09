@@ -60,15 +60,16 @@ def check_deleted(resource_type):
         call_args = inspect.getcallargs(func, *args, **kwargs)
         self = call_args['self']
         ret = func(*args, **kwargs)
+        # When context.read_deleted = 'yes', db.storage_get would
+        # only get the storage whose 'deleted' tag is not default value
         self.context.read_deleted = 'yes'
         try:
-            storage = db.storage_get(self.context, self.storage_id)
+            db.storage_get(self.context, self.storage_id)
         except exception.StorageNotFound:
-            LOG.warn('Storage %s not found when checking deleted'
-                     % self.storage_id)
+            LOG.debug('Storage %s not found when checking deleted'
+                      % self.storage_id)
         else:
-            if storage['deleted'] != 0:
-                self.remove()
+            self.remove()
         return ret
 
     return _check_deleted
