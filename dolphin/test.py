@@ -114,7 +114,9 @@ class TestCase(base_test.BaseTestCase):
         fake_notifier.stub_notifier(self)
 
         # Locks must be cleaned up after tests
-        CONF.set_override('backend_url', 'file://' + lock_path,
+        CONF.set_override('backend_type', 'file',
+                          group='coordination')
+        CONF.set_override('backend_server', lock_path,
                           group='coordination')
         coordination.LOCK_COORDINATOR.start()
         self.addCleanup(coordination.LOCK_COORDINATOR.stop)

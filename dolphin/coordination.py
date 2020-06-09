@@ -29,27 +29,19 @@ from dolphin.i18n import _
 LOG = log.getLogger(__name__)
 
 coordination_opts = [
-    cfg.StrOpt('backend_url',
-               default='redis://127.0.0.1:6379',
-               help='The back end URL to use for distributed coordination.'),
     cfg.StrOpt('backend_type',
                default='redis',
-               help='The back end type to use for distributed coordination.'
+               help='The backend type for distributed coordination.'
                     'Backend could be redis, mysql, zookeeper and so on.'
                     'For more supported backend, please check Tooz'),
     cfg.StrOpt('backend_user',
-               default='',
-               help='The back end user to use for distributed coordination.'),
+               help='The backend user for distributed coordination.'),
     cfg.StrOpt('backend_password',
-               default='',
-               help='The back end password to use '
+               help='The backend password to use '
                     'for distributed coordination.'),
-    cfg.StrOpt('backend_ip',
-               default='127.0.0.1',
-               help='The back end ip to use for distributed coordination.'),
-    cfg.StrOpt('backend_port',
-               default='6379',
-               help='The back end port to use for distributed coordination.'),
+    cfg.StrOpt('backend_server',
+               default='127.0.0.1:6379',
+               help='The backend server for distributed coordination.'),
     cfg.IntOpt('expiration',
                default=100,
                help='The expiration(in second) of the lock.')
@@ -83,24 +75,10 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
-        if CONF.coordination.backend_password:
-            # If password is needed, the password should be
-            # set in config file with cipher text
-            # And in this scenario, these are also needed for backend:
-            # {backend_type}://[{user}]:{password}@{ip}:{port}.
-            plaintext_password = cryptor.decode(
-                CONF.coordination.backend_password).decode('utf-8')
-            backend_url = '{backend_type}://{user}:{password}@{ip}:{port}'\
-                .format(backend_type=CONF.coordination.backend_type,
-                        user=CONF.coordination.backend_user,
-                        password=plaintext_password,
-                        ip=CONF.coordination.backend_ip,
-                        port=CONF.coordination.backend_port)
-            CONF.set_override('backend_url', backend_url,
-                              group='coordination')
 
+        backend_url = get_redis_backend_url()
         self.coordinator = coordination.get_coordinator(
-            CONF.coordination.backend_url, member_id,
+            backend_url, member_id,
             timeout=CONF.coordination.expiration)
         self.coordinator.start(start_heart=True)
         self.started = True
@@ -240,3 +218,24 @@ def synchronized(lock_name, blocking=True, coordinator=None):
             return f(*a, **k)
 
     return _synchronized
+
+
+def get_redis_backend_url():
+    password = getattr(CONF.coordination, 'backend_password', None)
+    if password is not None:
+        # If password is needed, the password should be
+        # set in config file with cipher text
+        # And in this scenario, these are also needed for backend:
+        # {backend_type}://[{user}]:{password}@{ip}:{port}.
+        plaintext_password = cryptor.decode(password).decode('utf-8')
+        # User could be null
+        backend_url = '{backend_type}://{user}:{password}@{server}' \
+            .format(backend_type=CONF.coordination.backend_type,
+                    user=getattr(CONF.coordination, 'backend_user', ''),
+                    password=plaintext_password,
+                    server=CONF.coordination.backend_server)
+    else:
+        backend_url = '{backend_type}://{server}' \
+            .format(backend_type=CONF.coordination.backend_type,
+                    server=CONF.coordination.backend_server)
+    return backend_url
