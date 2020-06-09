@@ -19,7 +19,7 @@ import webob.request
 
 from dolphin import context
 from dolphin.api.common import wsgi as os_wsgi
-from dolphin.common import config  # noqa
+from dolphin.common import config, constants  # noqa
 
 
 @webob.dec.wsgify
@@ -53,7 +53,7 @@ def fake_storages_get_all(context, marker=None, limit=None, sort_keys=None,
             "firmware_version": "1.0.0",
             "vendor": "fake_vendor",
             "status": "normal",
-            "sync_status": "SYNCED",
+            "sync_status": constants.SyncStatus.SYNCED,
             "model": "fake_model",
             "description": "it is a fake driver.",
             "serial_number": "2102453JPN12KA0000113",
@@ -70,7 +70,7 @@ def fake_storages_get_all(context, marker=None, limit=None, sort_keys=None,
             "firmware_version": "1.0.0",
             "vendor": "fake_vendor",
             "status": "normal",
-            "sync_status": "SYNCED",
+            "sync_status": constants.SyncStatus.SYNCED,
             "model": "fake_model",
             "description": "it is a fake driver.",
             "serial_number": "2102453JPN12KA0000112",
@@ -94,7 +94,7 @@ def fake_storages_get_all_with_filter(
             "firmware_version": "1.0.0",
             "vendor": "fake_vendor",
             "status": "normal",
-            "sync_status": "SYNCED",
+            "sync_status": constants.SyncStatus.SYNCED,
             "model": "fake_model",
             "description": "it is a fake driver.",
             "serial_number": "2102453JPN12KA0000113",
@@ -115,7 +115,7 @@ def fake_storages_show(context, storage_id):
         "firmware_version": "1.0.0",
         "vendor": "fake_vendor",
         "status": "normal",
-        "sync_status": "SYNCED",
+        "sync_status": constants.SyncStatus.SYNCED,
         "model": "fake_model",
         "description": "it is a fake driver.",
         "serial_number": "2102453JPN12KA0000113",

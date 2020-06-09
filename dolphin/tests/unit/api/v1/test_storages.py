@@ -59,6 +59,7 @@ class TestStorageController(test.TestCase):
         req = fakes.HTTPRequest.blank('/storages')
 
         res_dict = self.controller.index(req)
+
         expctd_dict = {
             "storages": [
                 {
@@ -97,15 +98,14 @@ class TestStorageController(test.TestCase):
                 }
             ]
         }
-        self.assertEqual(expctd_dict, res_dict)
+        self.assertDictEqual(expctd_dict, res_dict)
 
     def test_storages_list_with_filter(self):
         self.mock_object(
             db, 'storage_get_all',
-            fakes.fake_storages_get_all)
+            fakes.fake_storages_get_all_with_filter)
         req = fakes.HTTPRequest.blank(
             '/storages/?name=fake_driver&sort=name:asc&wrongfilter=remove')
-
         res_dict = self.controller.index(req)
         expctd_dict = {
             "storages": [
@@ -128,7 +128,7 @@ class TestStorageController(test.TestCase):
                 }
             ]
         }
-        self.assertEqual(expctd_dict, res_dict)
+        self.assertDictEqual(expctd_dict, res_dict)
 
     def test_storages_show(self):
         self.mock_object(
@@ -137,7 +137,8 @@ class TestStorageController(test.TestCase):
         req = fakes.HTTPRequest.blank(
             '/storages/12c2d52f-01bc-41f5-b73f-7abf6f38a2a6')
 
-        res_dict = self.controller.index(req)
+        res_dict = self.controller.show(req,
+                                        '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6')
         expctd_dict = {
             "id": "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6",
             "created_at": "2020-06-09T08:59:48.710890",
@@ -155,4 +156,4 @@ class TestStorageController(test.TestCase):
             "used_capacity": 3126,
             "total_capacity": 1048576
         }
-        self.assertEqual(expctd_dict, res_dict)
+        self.assertDictEqual(expctd_dict, res_dict)
