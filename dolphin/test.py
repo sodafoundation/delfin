@@ -32,6 +32,7 @@ from oslo_messaging import conffixture as messaging_conffixture
 from oslo_utils import uuidutils
 import oslotest.base as base_test
 
+from dolphin.common import config  # noqa
 from dolphin import coordination
 from dolphin.db.sqlalchemy import api as db_api
 from dolphin.db.sqlalchemy import models as db_models

@@ -29,6 +29,9 @@ from dolphin.i18n import _
 LOG = log.getLogger(__name__)
 
 coordination_opts = [
+    cfg.StrOpt('backend_url',
+               default='',
+               help='The back end URL to use for distributed coordination.'),
     cfg.StrOpt('backend_type',
                default='redis',
                help='The back end type to use for distributed coordination.'
@@ -80,30 +83,24 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
-        backend_type = cfg.CONF.coordination.backend_type
-        ip = cfg.CONF.coordination.backend_ip
-        port = cfg.CONF.coordination.backend_port
-        user = cfg.CONF.coordination.backend_user
-        password = cfg.CONF.coordination.backend_password
-        # If no user name and password was configured,
-        # the backend url should be {backend_type}://{ip}:{port}
-        # Otherwise, the backend should be
-        # {backend_type}://{user}:{password}@{ip}:{port}
-        if user or password:
-            password = cryptor.decode(password).decode('utf-8')
+        if cfg.CONF.coordination.backend_password:
+            # If password is needed, the password should be
+            # set in config file with cipher text
+            # And in this scenario, these are also needed for backend:
+            # {backend_type}://[{user}]:{password}@{ip}:{port}.
+            plaintext_password = cryptor.decode(
+                cfg.CONF.coordination.backend_password).decode('utf-8')
             backend_url = '{backend_type}://{user}:{password}@{ip}:{port}'\
-                .format(backend_type=backend_type,
-                        user=user,
-                        password=password,
-                        ip=ip,
-                        port=port)
-        else:
-            backend_url = '{backend_type}://{ip}:{port}'.format(
-                backend_type=backend_type,
-                ip=ip,
-                port=port)
+                .format(backend_type=cfg.CONF.coordination.backend_type,
+                        user=cfg.CONF.coordination.backend_user,
+                        password=plaintext_password,
+                        ip=cfg.CONF.coordination.backend_ip,
+                        port=cfg.CONF.coordination.backend_port)
+            CONF.set_override('backend_url', backend_url,
+                              group='coordination')
+
         self.coordinator = coordination.get_coordinator(
-            backend_url, member_id,
+            CONF.coordination.backend_url, member_id,
             timeout=cfg.CONF.coordination.expiration)
         self.coordinator.start(start_heart=True)
         self.started = True
