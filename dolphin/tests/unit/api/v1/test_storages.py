@@ -101,7 +101,7 @@ class TestStorageController(test.TestCase):
 
     def test_storages_list_with_filter(self):
         self.mock_object(
-            db, 'storage_get_all_filter',
+            db, 'storage_get_all',
             fakes.fake_storages_get_all)
         req = fakes.HTTPRequest.blank(
             '/storages/?name=fake_driver&sort=name:asc&wrongfilter=remove')
@@ -127,5 +127,32 @@ class TestStorageController(test.TestCase):
                     "total_capacity": 1048576
                 }
             ]
+        }
+        self.assertEqual(expctd_dict, res_dict)
+
+    def test_storages_show(self):
+        self.mock_object(
+            db, 'storage_get',
+            fakes.fake_storages_show)
+        req = fakes.HTTPRequest.blank(
+            '/storages/12c2d52f-01bc-41f5-b73f-7abf6f38a2a6')
+
+        res_dict = self.controller.index(req)
+        expctd_dict = {
+            "id": "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6",
+            "created_at": "2020-06-09T08:59:48.710890",
+            "free_capacity": 1045449,
+            "updated_at": "2020-06-09T08:59:48.769470",
+            "name": "fake_driver",
+            "location": "HK",
+            "firmware_version": "1.0.0",
+            "vendor": "fake_vendor",
+            "status": "normal",
+            "sync_status": "SYNCED",
+            "model": "fake_model",
+            "description": "it is a fake driver.",
+            "serial_number": "2102453JPN12KA0000113",
+            "used_capacity": 3126,
+            "total_capacity": 1048576
         }
         self.assertEqual(expctd_dict, res_dict)

@@ -40,7 +40,8 @@ class HTTPRequest(os_wsgi.Request):
         return out
 
 
-def fake_storages_get_all():
+def fake_storages_get_all(context, marker=None, limit=None, sort_keys=None,
+                          sort_dirs=None, filters=None, offset=None):
     return [
         {
             "id": "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6",
@@ -79,7 +80,9 @@ def fake_storages_get_all():
     ]
 
 
-def fake_storages_get_all_with_filter():
+def fake_storages_get_all_with_filter(
+        context, marker=None, limit=None,
+        sort_keys=None, sort_dirs=None, filters=None, offset=None):
     return [
         {
             "id": "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6",
@@ -99,3 +102,23 @@ def fake_storages_get_all_with_filter():
             "total_capacity": 1048576
         }
     ]
+
+
+def fake_storages_show(context, storage_id):
+    return {
+        "id": "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6",
+        "created_at": "2020-06-09T08:59:48.710890",
+        "free_capacity": 1045449,
+        "updated_at": "2020-06-09T08:59:48.769470",
+        "name": "fake_driver",
+        "location": "HK",
+        "firmware_version": "1.0.0",
+        "vendor": "fake_vendor",
+        "status": "normal",
+        "sync_status": "SYNCED",
+        "model": "fake_model",
+        "description": "it is a fake driver.",
+        "serial_number": "2102453JPN12KA0000113",
+        "used_capacity": 3126,
+        "total_capacity": 1048576
+    }
