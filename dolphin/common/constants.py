@@ -53,7 +53,7 @@ class StorageType(object):
 
 class ResourceType(IntEnum):
     STORAGE_DEVICE = 0
-    POOL = 1
+    STORAGE_POOL = 1
     VOLUME = 2
 
 

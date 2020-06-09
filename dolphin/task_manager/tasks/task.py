@@ -121,7 +121,7 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
-    @set_synced_after(constants.ResourceType.POOL)
+    @set_synced_after(constants.ResourceType.STORAGE_POOL)
     def sync(self):
         """
         :return:
