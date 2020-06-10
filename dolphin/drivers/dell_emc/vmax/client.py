@@ -165,7 +165,6 @@ class VMAXClient(object):
                     "status": status,
                     "original_id": vol['volumeId'],
                     "wwn": vol['wwn'],
-                    "storage_type": constants.StorageType.BLOCK,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
                     "free_capacity": int(free_cap),
