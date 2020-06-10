@@ -440,141 +440,142 @@ def volume_delete_by_storage(context, storage_id):
     _volume_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
-def _pool_get_query(context, session=None):
-    return model_query(context, models.Pool, session=session)
+def _storage_pool_get_query(context, session=None):
+    return model_query(context, models.StoragePool, session=session)
 
 
-def _pool_get(context, pool_id, session=None):
-    result = (_pool_get_query(context, session=session)
-              .filter_by(id=pool_id)
+def _storage_pool_get(context, storage_pool_id, session=None):
+    result = (_storage_pool_get_query(context, session=session)
+              .filter_by(id=storage_pool_id)
               .first())
 
     if not result:
-        raise exception.StoragePoolNotFound(pool_id)
+        raise exception.StoragePoolNotFound(storage_pool_id)
 
     return result
 
 
-def pool_create(context, values):
-    """Create a pool from the values dictionary."""
+def storage_pool_create(context, values):
+    """Create a storage_pool from the values dictionary."""
     if not values.get('id'):
         values['id'] = uuidutils.generate_uuid()
 
-    pool_ref = models.Pool()
-    pool_ref.update(values)
+    storage_pool_ref = models.StoragePool()
+    storage_pool_ref.update(values)
 
     session = get_session()
     with session.begin():
-        session.add(pool_ref)
+        session.add(storage_pool_ref)
 
-    return _pool_get(context,
-                     pool_ref['id'],
-                     session=session)
+    return _storage_pool_get(context,
+                             storage_pool_ref['id'],
+                             session=session)
 
 
-def pools_create(context, pools):
-    """Create a pool from the values dictionary."""
+def storage_pools_create(context, storage_pools):
+    """Create a storage_pool from the values dictionary."""
     session = get_session()
-    pool_refs = []
+    storage_pool_refs = []
     with session.begin():
 
-        for pool in pools:
-            LOG.debug('adding new pool for original_id {0}:'
-                      .format(pool.get('original_id')))
-            if not pool.get('id'):
-                pool['id'] = uuidutils.generate_uuid()
+        for storage_pool in storage_pools:
+            LOG.debug('adding new storage_pool for original_id {0}:'
+                      .format(storage_pool.get('original_id')))
+            if not storage_pool.get('id'):
+                storage_pool['id'] = uuidutils.generate_uuid()
 
-            pool_ref = models.Pool()
-            pool_ref.update(pool)
-            pool_refs.append(pool_ref)
+            storage_pool_ref = models.StoragePool()
+            storage_pool_ref.update(storage_pool)
+            storage_pool_refs.append(storage_pool_ref)
 
-        session.add_all(pool_refs)
+        session.add_all(storage_pool_refs)
 
-    return pool_refs
+    return storage_pool_refs
 
 
-def pools_delete(context, pools_id_list):
-    """Delete multiple pools with the pools dictionary."""
+def storage_pools_delete(context, storage_pools_id_list):
+    """Delete multiple storage_pools with the storage_pools dictionary."""
     session = get_session()
     with session.begin():
-        for pool_id in pools_id_list:
-            LOG.debug('deleting pool {0}:'.format(pool_id))
-            query = _pool_get_query(context, session)
-            result = query.filter_by(id=pool_id).delete()
+        for storage_pool_id in storage_pools_id_list:
+            LOG.debug('deleting storage_pool {0}:'.format(storage_pool_id))
+            query = _storage_pool_get_query(context, session)
+            result = query.filter_by(id=storage_pool_id).delete()
 
             if not result:
-                LOG.error(exception.StoragePoolNotFound(pool_id))
+                LOG.error(exception.StoragePoolNotFound(storage_pool_id))
 
     return
 
 
-def pool_update(context, pool_id, values):
-    """Update a pool withe the values dictionary."""
+def storage_pool_update(context, storage_pool_id, values):
+    """Update a storage_pool withe the values dictionary."""
     session = get_session()
 
     with session.begin():
-        query = _pool_get_query(context, session)
-        result = query.filter_by(id=pool_id).update(values)
+        query = _storage_pool_get_query(context, session)
+        result = query.filter_by(id=storage_pool_id).update(values)
 
         if not result:
-            raise exception.StoragePoolNotFound(pool_id)
+            raise exception.StoragePoolNotFound(storage_pool_id)
 
     return result
 
 
-def pools_update(context, pools):
-    """Update multiple pools withe the pools dictionary."""
+def storage_pools_update(context, storage_pools):
+    """Update multiple storage_pools withe the storage_pools dictionary."""
     session = get_session()
 
     with session.begin():
-        pool_refs = []
+        storage_pool_refs = []
 
-        for pool in pools:
-            LOG.debug('updating pool {0}:'.format(pool.get('id')))
-            query = _pool_get_query(context, session)
-            result = query.filter_by(id=pool.get('id')
-                                     ).update(pool)
+        for storage_pool in storage_pools:
+            LOG.debug('updating storage_pool {0}:'.format(
+                storage_pool.get('id')))
+            query = _storage_pool_get_query(context, session)
+            result = query.filter_by(id=storage_pool.get('id')
+                                     ).update(storage_pool)
 
             if not result:
-                LOG.error(exception.StoragePoolNotFound(pool.get(
+                LOG.error(exception.StoragePoolNotFound(storage_pool.get(
                     'id')))
             else:
-                pool_refs.append(result)
+                storage_pool_refs.append(result)
 
-    return pool_refs
-
-
-def pool_get(context, pool_id):
-    """Get a pool or raise an exception if it does not exist."""
-    return _pool_get(context, pool_id)
+    return storage_pool_refs
 
 
-def pool_get_all(context, marker=None, limit=None, sort_keys=None,
-                 sort_dirs=None, filters=None, offset=None):
-    """Retrieves all storage pools."""
+def storage_pool_get(context, storage_pool_id):
+    """Get a storage_pool or raise an exception if it does not exist."""
+    return _storage_pool_get(context, storage_pool_id)
+
+
+def storage_pool_get_all(context, marker=None, limit=None, sort_keys=None,
+                         sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage storage_pools."""
     session = get_session()
     with session.begin():
         # Generate the query
-        query = _generate_paginate_query(context, session, models.Pool,
+        query = _generate_paginate_query(context, session, models.StoragePool,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset,
                                          )
-        # No pool would match, return empty list
+        # No storage_pool would match, return empty list
         if query is None:
             return []
         return query.all()
 
 
-def pool_delete_by_storage(context, storage_id):
-    """Delete all the pools of a storage device"""
-    _pool_get_query(context).filter_by(storage_id=storage_id).delete()
+def storage_pool_delete_by_storage(context, storage_id):
+    """Delete all the storage_pools of a storage device"""
+    _storage_pool_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
-@apply_like_filters(model=models.Pool)
-def _process_pool_info_filters(query, filters):
-    """Common filter processing for Pools queries."""
+@apply_like_filters(model=models.StoragePool)
+def _process_storage_pool_info_filters(query, filters):
+    """Common filter processing for storage_pools queries."""
     if filters:
-        if not is_valid_model_filters(models.Pool, filters):
+        if not is_valid_model_filters(models.StoragePool, filters):
             return
         query = query.filter_by(**filters)
 
@@ -702,7 +703,9 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
-    models.Pool: (_pool_get_query, _process_pool_info_filters, _pool_get),
+    models.StoragePool: (_storage_pool_get_query,
+                         _process_storage_pool_info_filters,
+                         _storage_pool_get),
     models.Storage: (_storage_get_query, _process_storage_info_filters,
                      _storage_get),
     models.AlertSource: (_alert_source_get_query,

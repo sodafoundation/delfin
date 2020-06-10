@@ -38,7 +38,7 @@ these objects be simple dictionaries.
               `sqlite:///var/lib/dolphin/dolphin.sqlite`.
 
 :enable_new_services:  when adding a new service to the database, is it in the
-                       pool of available hardware (Default: True)
+                       storage_pool of available hardware (Default: True)
 
 """
 from oslo_config import cfg
@@ -168,39 +168,39 @@ def volume_delete_by_storage(context, storage_id):
     return IMPL.volume_delete_by_storage(context, storage_id)
 
 
-def pool_create(context, pool):
-    """Add a pool."""
-    return IMPL.pool_create(context, pool)
+def storage_pool_create(context, storage_pool):
+    """Add a storage_storage_pool."""
+    return IMPL.storage_pool_create(context, storage_pool)
 
 
-def pools_create(context, pools):
-    """Add multiple pools."""
-    return IMPL.pools_create(context, pools)
+def storage_pools_create(context, storage_pools):
+    """Add multiple storage_pools."""
+    return IMPL.storage_pools_create(context, storage_pools)
 
 
-def pool_update(context, pool_id, pool):
-    """Update a pool."""
-    return IMPL.pool_update(context, pool_id, pool)
+def storage_pool_update(context, storage_pool_id, storage_pool):
+    """Update a storage_pool."""
+    return IMPL.storage_pool_update(context, storage_pool_id, storage_pool)
 
 
-def pools_update(context, pools):
-    """Update multiple pools"""
-    return IMPL.pools_update(context, pools)
+def storage_pools_update(context, storage_pools):
+    """Update multiple storage_pools"""
+    return IMPL.storage_pools_update(context, storage_pools)
 
 
-def pools_delete(context, pools):
-    """Delete pools."""
-    return IMPL.pools_delete(context, pools)
+def storage_pools_delete(context, storage_pools):
+    """Delete storage_pools."""
+    return IMPL.storage_pools_delete(context, storage_pools)
 
 
-def pool_get(context, pool_id):
-    """Get a pool or raise an exception if it does not exist."""
-    return IMPL.pool_get(context, pool_id)
+def storage_pool_get(context, storage_pool_id):
+    """Get a storage_pool or raise an exception if it does not exist."""
+    return IMPL.storage_pool_get(context, storage_pool_id)
 
 
-def pool_get_all(context, marker=None, limit=None, sort_keys=None,
-                 sort_dirs=None, filters=None, offset=None):
-    """Retrieves all storage pools.
+def storage_pool_get_all(context, marker=None, limit=None, sort_keys=None,
+                         sort_dirs=None, filters=None, offset=None):
+    """Retrieves all  storage_pools.
 
     If no sort parameters are specified then the returned volumes are sorted
     first by the 'created_at' key and then by the 'id' key in descending
@@ -217,15 +217,15 @@ def pool_get_all(context, marker=None, limit=None, sort_keys=None,
                       'desc' for descending order
     :param filters: dictionary of filters
     :param offset: number of items to skip
-    :returns: list of storage pools
+    :returns: list of  storage_pools
     """
-    return IMPL.pool_get_all(context, marker, limit, sort_keys, sort_dirs,
-                             filters, offset)
+    return IMPL.storage_pool_get_all(context, marker, limit,
+                                     sort_keys, sort_dirs, filters, offset)
 
 
-def pool_delete_by_storage(context, storage_id):
-    """Delete all the pool of a device."""
-    return IMPL.pool_delete_by_storage(context, storage_id)
+def storage_pool_delete_by_storage(context, storage_id):
+    """Delete all the storage_pool of a device."""
+    return IMPL.storage_pool_delete_by_storage(context, storage_id)
 
 
 def disk_create(context, values):
