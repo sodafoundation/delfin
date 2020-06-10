@@ -25,8 +25,8 @@ class StoragePoolTask:
     def sync(self):
         LOG.info('Pool sync func...')
         # TODO:
-        # 1. call the driver.list_pools(context)
-        # 2. update the list_pools info to DB
+        # 1. call the driver.list_storage_pools(context)
+        # 2. update the list_storage_pools info to DB
         pass
 
     def remove(self):
@@ -42,7 +42,7 @@ class StorageVolumeTask:
         LOG.info('Volume sync func...')
         # TODO:
         # 1. call the driver.list_volumes(context)
-        # 2. update the list_pools info to DB
+        # 2. update the list_storage_pools info to DB
         pass
 
     def remove(self):

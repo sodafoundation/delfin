@@ -89,65 +89,65 @@ class TestSIMDBAPI(test.TestCase):
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_get(self, mock_session):
-        fake_pool = {}
+    def test_storage_pool_get(self, mock_session):
+        fake_storage_pool = {}
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pool
-        result = db_api.pool_get(context,
-                                 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+            = fake_storage_pool
+        result = db_api.storage_pool_get(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_get_all(self, mock_session):
-        fake_pool = []
+    def test_storage_pool_get_all(self, mock_session):
+        fake_storage_pool = []
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pool
-        result = api.pool_get_all(context)
+            = fake_storage_pool
+        result = api.storage_pool_get_all(context)
         assert len(result) == 0
 
-        result = db_api.pool_get_all(context, filters={'status': 'Normal'})
+        result = db_api.storage_pool_get_all(context,
+                                             filters={'status': 'Normal'})
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pools_update(self, mock_session):
-        pools = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+    def test_storage_pools_update(self, mock_session):
+        storage_pools = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = pools
-        result = db_api.pools_update(context, pools)
+            = storage_pools
+        result = db_api.storage_pools_update(context, storage_pools)
         assert len(result) == 1
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_update(self, mock_session):
+    def test_storage_pool_update(self, mock_session):
         values = {'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}
         mock_session.return_value.__enter__.return_value.query.return_value \
             = values
-        result = db_api.pool_update(context,
-                                    'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
-                                    values)
+        result = db_api.storage_pool_update(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', values)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pools_delete(self, mock_session):
-        fake_pools = [models.Pool().id]
+    def test_storage_pools_delete(self, mock_session):
+        fake_storage_pools = [models.StoragePool().id]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pools
-        result = db_api.pools_delete(context, fake_pools)
+            = fake_storage_pools
+        result = db_api.storage_pools_delete(context, fake_storage_pools)
         assert result is None
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pools_create(self, mock_session):
-        fake_pools = [models.Pool()]
+    def test_storage_pools_create(self, mock_session):
+        fake_storage_pools = [models.StoragePool()]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pools
-        result = db_api.pools_create(context, fake_pools)
+            = fake_storage_pools
+        result = db_api.storage_pools_create(context, fake_storage_pools)
         assert len(result) == 1
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_create(self, mock_session):
-        fake_pool = models.Pool()
+    def test_storage_pool_create(self, mock_session):
+        fake_storage_pool = models.StoragePool()
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pool
-        result = db_api.pool_create(context, fake_pool)
+            = fake_storage_pool
+        result = db_api.storage_pool_create(context, fake_storage_pool)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
