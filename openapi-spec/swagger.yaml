@@ -96,7 +96,7 @@ paths:
               - Abnormal
       responses:
         '200':
-          description: Storage backend list available.
+          description: Storage backend available.
           content:
             application/json:
               schema:
@@ -342,7 +342,7 @@ paths:
       tags:
         - Storages
       description: Get access info of a registered storage backend
-      operationId: GettorageAccessInfobyID
+      operationId: GetStorageAccessInfobyID
       parameters:
         - name: storage_id
           in: path
@@ -1627,14 +1627,19 @@ components:
               example: 10.0.0.1
     ErrorSpec:
       required:
-        - code
-        - message
+        - error_code
+        - error_msg
+        - error_args
       type: object
       properties:
-        code:
-          type: integer
-        message:
+        error_code:
           type: string
+        error_msg:
+          type: string
+        error_args:
+          type: array
+          items:
+            type: string
       description: >-
         Detailed HTTP error response, which consists of a HTTP status code, and
         a custom error message unique for each failure case.
