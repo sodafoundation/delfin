@@ -29,7 +29,7 @@ class StorageStatus(object):
     ALL = (NORMAL, OFFLINE, ABNORMAL)
 
 
-class PoolStatus(object):
+class StoragePoolStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
@@ -53,7 +53,7 @@ class StorageType(object):
 
 class ResourceType(IntEnum):
     STORAGE_DEVICE = 0
-    POOL = 1
+    STORAGE_POOL = 1
     VOLUME = 2
 
 
@@ -64,3 +64,10 @@ class SyncStatus(IntEnum):
 
 class DB(object):
     DEVICE_SYNC_STATUS = 'sync_status'
+
+
+class ProvisioningPolicy(object):
+    THICK = 'thick'
+    THIN = 'thin'
+
+    ALL = (THICK, THIN)

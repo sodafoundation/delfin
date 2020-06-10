@@ -39,7 +39,7 @@ class FakeStorageDriver(driver.StorageDriver):
             'free_capacity': 1045449,
         }
 
-    def list_pools(self, context):
+    def list_storage_pools(self, context):
         pass
 
     def list_volumes(self, context):

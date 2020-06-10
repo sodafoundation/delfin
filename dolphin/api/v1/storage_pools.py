@@ -15,22 +15,22 @@
 from dolphin import db
 from dolphin.api import api_utils
 from dolphin.api.common import wsgi
-from dolphin.api.views import pools as pool_view
+from dolphin.api.views import storage_pools as storage_pool_view
 
 
-class PoolController(wsgi.Controller):
+class StoragePoolController(wsgi.Controller):
     def __init__(self):
-        super(PoolController, self).__init__()
+        super(StoragePoolController, self).__init__()
         self.search_options = ['name', 'status', 'id', 'storage_id']
 
-    def _get_pools_search_options(self):
-        """Return pools search options allowed ."""
+    def _get_storage_pools_search_options(self):
+        """Return storage_pools search options allowed ."""
         return self.search_options
 
-    def show(self, req, pool_id):
+    def show(self, req, id):
         ctxt = req.environ['dolphin.context']
-        pool = db.pool_get(ctxt, pool_id)
-        return pool_view.build_pool(pool)
+        pool = db.storage_pool_get(ctxt, id)
+        return storage_pool_view.build_storage_pool(pool)
 
     def index(self, req):
         ctxt = req.environ['dolphin.context']
@@ -40,13 +40,13 @@ class PoolController(wsgi.Controller):
         sort_keys, sort_dirs = api_utils.get_sort_params(query_params)
         marker, limit, offset = api_utils.get_pagination_params(query_params)
         # strip out options except supported search  options
-        api_utils.remove_invalid_options(ctxt, query_params,
-                                         self._get_pools_search_options())
+        api_utils.remove_invalid_options(
+            ctxt, query_params, self._get_storage_pools_search_options())
 
-        pools = db.pool_get_all(ctxt, marker, limit, sort_keys, sort_dirs,
-                                query_params, offset)
-        return pool_view.build_pools(pools)
+        storage_pools = db.storage_pool_get_all(
+            ctxt, marker, limit, sort_keys, sort_dirs, query_params, offset)
+        return storage_pool_view.build_storage_pools(storage_pools)
 
 
 def create_resource():
-    return wsgi.Resource(PoolController())
+    return wsgi.Resource(StoragePoolController())

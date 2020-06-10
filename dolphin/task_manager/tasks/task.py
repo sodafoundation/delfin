@@ -121,29 +121,30 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
-    @set_synced_after(constants.ResourceType.POOL)
+    @set_synced_after(constants.ResourceType.STORAGE_POOL)
     def sync(self):
         """
         :return:
         """
-        LOG.info('Syncing pool for storage id:{0}'.format(self.storage_id))
+        LOG.info('Syncing storage pool for storage id:{0}'.format(
+            self.storage_id))
         try:
-            # collect the pools list from driver and database
-            storage_pools = self.driver_api.list_pools(self.context,
-                                                       self.storage_id)
-            db_pools = db.pool_get_all(self.context)
+            # collect the storage pools list from driver and database
+            storage_pools = self.driver_api.list_storage_pools(self.context,
+                                                               self.storage_id)
+            db_pools = db.storage_pool_get_all(self.context)
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools
             )
             if delete_id_list:
-                db.pools_delete(self.context, delete_id_list)
+                db.storage_pools_delete(self.context, delete_id_list)
 
             if update_list:
-                db.pools_update(self.context, update_list)
+                db.storage_pools_update(self.context, update_list)
 
             if add_list:
-                db.pools_create(self.context, add_list)
+                db.storage_pools_create(self.context, add_list)
         except AttributeError as e:
             LOG.error(e)
         except Exception as e:
@@ -151,11 +152,12 @@ class StoragePoolTask(StorageResourceTask):
                     .format(e))
             LOG.error(msg)
         else:
-            LOG.info("Syncing pools successful!!!")
+            LOG.info("Syncing storage pools successful!!!")
 
     def remove(self):
-        LOG.info('Remove pools for storage id:{0}'.format(self.storage_id))
-        db.pool_delete_by_storage(self.context, self.storage_id)
+        LOG.info('Remove storage pools for storage id:{0}'.format(
+            self.storage_id))
+        db.storage_pool_delete_by_storage(self.context, self.storage_id)
 
 
 class StorageVolumeTask(StorageResourceTask):

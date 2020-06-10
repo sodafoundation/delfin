@@ -16,7 +16,7 @@ from dolphin.api import common
 from dolphin.api import extensions
 from dolphin.api.v1 import access_info
 from dolphin.api.v1 import alert
-from dolphin.api.v1 import pools
+from dolphin.api.v1 import storage_pools
 from dolphin.api.v1 import storages
 from dolphin.api.v1 import volumes
 
@@ -59,9 +59,9 @@ class APIRouter(common.APIRouter):
                        action="delete",
                        conditions={"method": ["DELETE"]})
 
-        self.resources['pools'] = pools.create_resource()
-        mapper.resource("pool", "pools",
-                        controller=self.resources['pools'])
+        self.resources['storage-pools'] = storage_pools.create_resource()
+        mapper.resource("storage-pool", "storage-pools",
+                        controller=self.resources['storage-pools'])
 
         self.resources['volumes'] = volumes.create_resource()
         mapper.resource("volume", "volumes",

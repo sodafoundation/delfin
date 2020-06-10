@@ -34,7 +34,7 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
-    def list_pools(self, context):
+    def list_storage_pools(self, context):
         """List all storage pools from storage system."""
         pass
 

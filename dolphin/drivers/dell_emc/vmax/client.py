@@ -93,7 +93,7 @@ class VMAXClient(object):
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 
-    def list_pools(self):
+    def list_storage_pools(self):
 
         try:
             # Get list of SRP pool names
@@ -111,7 +111,7 @@ class VMAXClient(object):
                     "name": pool,
                     "original_id": pool_info["srpId"],
                     "description": "Dell EMC VMAX Pool",
-                    "status": constants.PoolStatus.NORMAL,
+                    "status": constants.StoragePoolStatus.NORMAL,
                     "storage_type": constants.StorageType.BLOCK,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
@@ -165,7 +165,6 @@ class VMAXClient(object):
                     "status": status,
                     "original_id": vol['volumeId'],
                     "wwn": vol['wwn'],
-                    "storage_type": constants.StorageType.BLOCK,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
                     "free_capacity": int(free_cap),
