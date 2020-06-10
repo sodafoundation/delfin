@@ -60,8 +60,8 @@ class VMAXStorageDriver(driver.StorageDriver):
         LOG.info("get_storage(), successfully retrieved storage details")
         return storage
 
-    def list_pools(self, context):
-        return self.client.list_pools()
+    def list_storage_pools(self, context):
+        return self.client.list_storage_pools()
 
     def list_volumes(self, context):
         return self.client.list_volumes(self.storage_id)
