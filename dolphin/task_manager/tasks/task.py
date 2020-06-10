@@ -53,7 +53,7 @@ def set_synced_after(resource_type):
     return _set_synced_after
 
 
-def check_deleted(resource_type):
+def check_deleted():
 
     @decorator.decorator
     def _check_deleted(func, *args, **kwargs):
@@ -113,7 +113,7 @@ class StorageDeviceTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageDeviceTask, self).__init__(context, storage_id)
 
-    @check_deleted(constants.ResourceType.STORAGE_DEVICE)
+    @check_deleted()
     @set_synced_after(constants.ResourceType.STORAGE_DEVICE)
     def sync(self):
         """
@@ -150,8 +150,8 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
-    @check_deleted(constants.ResourceType.POOL)
-    @set_synced_after(constants.ResourceType.POOL)
+    @check_deleted()
+    @set_synced_after(constants.ResourceType.STORAGE_POOL)
     def sync(self):
         """
         :return:
@@ -194,8 +194,8 @@ class StorageVolumeTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageVolumeTask, self).__init__(context, storage_id)
 
-    @check_deleted(constants.ResourceType.VOLUME)
-    @set_synced_after(constants.ResourceType.VOLUME)
+    @check_deleted()
+    @set_synced_after(constants.ResourceType.STORAGE_VOLUME)
     def sync(self):
         """
         :return:
