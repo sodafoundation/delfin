@@ -122,3 +122,24 @@ def fake_storages_show(context, storage_id):
         "used_capacity": 3126,
         "total_capacity": 1048576
     }
+
+
+def fake_access_info_get_all(context, marker=None, limit=None, sort_keys=None,
+                             sort_dirs=None, filters=None, offset=None):
+    return [
+        {
+            'created_at': "2020-06-09T08:59:48.710890",
+            'model': 'fake_driver',
+            'storage_id': '5f5c806d-2e65-473c-b612-345ef43f0642',
+            'host': '10.0.0.76',
+            'extra_attributes': {'array_id': '0001234567891'},
+            'password': b'YWJjZA==', 'port': '1234',
+            'updated_at': None,
+            'username': 'admin',
+            'vendor': 'fake_storage'
+        }
+    ]
+
+
+def fake_sync(self, req, id):
+    pass
