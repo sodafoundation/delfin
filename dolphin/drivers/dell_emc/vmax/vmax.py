@@ -61,7 +61,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         return storage
 
     def list_storage_pools(self, context):
-        return self.client.list_storage_pools()
+        return self.client.list_storage_pools(self.storage_id)
 
     def list_volumes(self, context):
         return self.client.list_volumes(self.storage_id)
