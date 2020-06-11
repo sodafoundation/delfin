@@ -38,11 +38,25 @@ class _Base64(ICryptor):
 
     @staticmethod
     def encode(data):
-        return base64.b64encode(data.encode())
+        """Base64 encode
+
+        :param data: The plain text that need to be encode
+        :type str:
+        :return cipher data: The encoded cipher text
+        :type str:
+        """
+        return base64.b64encode(data.encode()).decode('utf-8')
 
     @staticmethod
     def decode(data):
-        return base64.b64decode(data)
+        """Base64 decode
+
+        :param data: The cipher text that need to be decode
+        :type str:
+        :return plain data: The decoded plain text
+        :type str:
+        """
+        return base64.b64decode(data).decode('utf-8')
 
 
 _cryptor = importutils.import_class(CONF.dolphin_cryptor)

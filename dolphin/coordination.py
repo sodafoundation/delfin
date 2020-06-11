@@ -222,18 +222,18 @@ def synchronized(lock_name, blocking=True, coordinator=None):
 
 
 def _get_redis_backend_url():
-    password = getattr(CONF.coordination, 'backend_password', None)
-    if password is not None:
+    cipher_password = getattr(CONF.coordination, 'backend_password', None)
+    if cipher_password is not None:
         # If password is needed, the password should be
         # set in config file with cipher text
         # And in this scenario, these are also needed for backend:
         # {backend_type}://[{user}]:{password}@{ip}:{port}.
-        plaintext_password = cryptor.decode(password)
+        plaintext_password = cryptor.decode(cipher_password)
         # User could be null
         backend_url = '{backend_type}://{user}:{password}@{server}' \
             .format(backend_type=CONF.coordination.backend_type,
-                    user=getattr(CONF.coordination, 'backend_user'),
-                    password=plaintext_password.decode('utf-8'),
+                    user=CONF.coordination.backend_user,
+                    password=plaintext_password,
                     server=CONF.coordination.backend_server)
 
     else:
