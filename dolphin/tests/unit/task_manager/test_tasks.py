@@ -19,7 +19,7 @@ from dolphin import test, context, coordination
 from dolphin.task_manager.tasks import task
 
 
-class TestStorageDeviceTask(unittest.TestCase):
+class TestStorageDeviceTask(test.TestCase):
     @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
     @mock.patch('dolphin.drivers.api.API.get_storage')
