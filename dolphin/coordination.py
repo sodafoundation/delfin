@@ -35,6 +35,7 @@ coordination_opts = [
                     'Backend could be redis, mysql, zookeeper and so on.'
                     'For more supported backend, please check Tooz'),
     cfg.StrOpt('backend_user',
+               default='',
                help='The backend user for distributed coordination.'),
     cfg.StrOpt('backend_password',
                help='The backend password to use '
@@ -76,7 +77,7 @@ class Coordinator(object):
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
 
-        backend_url = get_redis_backend_url()
+        backend_url = _get_redis_backend_url()
         self.coordinator = coordination.get_coordinator(
             backend_url, member_id,
             timeout=CONF.coordination.expiration)
@@ -220,20 +221,21 @@ def synchronized(lock_name, blocking=True, coordinator=None):
     return _synchronized
 
 
-def get_redis_backend_url():
+def _get_redis_backend_url():
     password = getattr(CONF.coordination, 'backend_password', None)
     if password is not None:
         # If password is needed, the password should be
         # set in config file with cipher text
         # And in this scenario, these are also needed for backend:
         # {backend_type}://[{user}]:{password}@{ip}:{port}.
-        plaintext_password = cryptor.decode(password).decode('utf-8')
+        plaintext_password = cryptor.decode(password)
         # User could be null
         backend_url = '{backend_type}://{user}:{password}@{server}' \
             .format(backend_type=CONF.coordination.backend_type,
-                    user=getattr(CONF.coordination, 'backend_user', ''),
-                    password=plaintext_password,
+                    user=getattr(CONF.coordination, 'backend_user'),
+                    password=plaintext_password.decode('utf-8'),
                     server=CONF.coordination.backend_server)
+
     else:
         backend_url = '{backend_type}://{server}' \
             .format(backend_type=CONF.coordination.backend_type,
