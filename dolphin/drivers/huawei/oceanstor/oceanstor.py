@@ -67,7 +67,7 @@ class OceanStorDriver(driver.StorageDriver):
         LOG.info("get_storage(), successfully retrieved storage details")
         return s
 
-    def list_pools(self, context):
+    def list_storage_pools(self, context):
         try:
             # Get list of OceanStor pool details
             pools = self.client.get_all_pools()
@@ -75,9 +75,9 @@ class OceanStorDriver(driver.StorageDriver):
             pool_list = []
             for pool in pools:
                 # Get pool status
-                status = constants.PoolStatus.OFFLINE
+                status = constants.StoragePoolStatus.OFFLINE
                 if pool['RUNNINGSTATUS'] == consts.STATUS_POOL_ONLINE:
-                    status = constants.PoolStatus.NORMAL
+                    status = constants.StoragePoolStatus.NORMAL
 
                 # Get pool storage_type
                 storage_type = constants.StorageType.BLOCK
