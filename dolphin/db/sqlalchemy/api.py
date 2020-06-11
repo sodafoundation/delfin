@@ -274,7 +274,15 @@ def _storage_get(context, storage_id, session=None):
 
 
 def _storage_get_query(context, session=None):
-    return model_query(context, models.Storage, session=session)
+    read_deleted = context.read_deleted
+    kwargs = dict()
+
+    if read_deleted in ('no', 'n', False):
+        kwargs['deleted'] = False
+    elif read_deleted in ('yes', 'y', True):
+        kwargs['deleted'] = True
+
+    return model_query(context, models.Storage, session=session, **kwargs)
 
 
 def storage_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -304,7 +312,7 @@ def _process_storage_info_filters(query, filters):
 
 def storage_delete(context, storage_id):
     """Delete a storage device."""
-    _storage_get_query(context).filter_by(id=storage_id).delete()
+    _storage_get_query(context).filter_by(id=storage_id).soft_delete()
 
 
 def _volume_get_query(context, session=None):

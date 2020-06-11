@@ -19,6 +19,7 @@ from oslo_log import log
 
 from dolphin import coordination
 from dolphin import db
+from dolphin import exception
 from dolphin import utils
 from dolphin.common import constants
 from dolphin.drivers import api as driverapi
@@ -30,21 +31,48 @@ LOG = log.getLogger(__name__)
 def set_synced_after(resource_type):
 
     @decorator.decorator
-    def _set_synced_after(f, *a, **k):
-        call_args = inspect.getcallargs(f, *a, **k)
+    def _set_synced_after(func, *args, **kwargs):
+        call_args = inspect.getcallargs(func, *args, **kwargs)
         self = call_args['self']
-        ret = f(*a, **k)
+        ret = func(*args, **kwargs)
         lock = coordination.Lock(self.storage_id)
         with lock:
-            storage = db.storage_get(self.context, self.storage_id)
-            storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bit(
-                storage[constants.DB.DEVICE_SYNC_STATUS],
-                resource_type,
-                constants.SyncStatus.SYNCED)
-            db.storage_update(self.context, self.storage_id, storage)
+            try:
+                storage = db.storage_get(self.context, self.storage_id)
+            except exception.StorageNotFound:
+                LOG.warn('Storage %s not found when set synced'
+                         % self.storage_id)
+            else:
+                storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bit(
+                    storage[constants.DB.DEVICE_SYNC_STATUS],
+                    resource_type,
+                    constants.SyncStatus.SYNCED)
+                db.storage_update(self.context, self.storage_id, storage)
         return ret
 
     return _set_synced_after
+
+
+def check_deleted():
+
+    @decorator.decorator
+    def _check_deleted(func, *args, **kwargs):
+        call_args = inspect.getcallargs(func, *args, **kwargs)
+        self = call_args['self']
+        ret = func(*args, **kwargs)
+        # When context.read_deleted = 'yes', db.storage_get would
+        # only get the storage whose 'deleted' tag is not default value
+        self.context.read_deleted = 'yes'
+        try:
+            db.storage_get(self.context, self.storage_id)
+        except exception.StorageNotFound:
+            LOG.debug('Storage %s not found when checking deleted'
+                      % self.storage_id)
+        else:
+            self.remove()
+        return ret
+
+    return _check_deleted
 
 
 class StorageResourceTask(object):
@@ -85,6 +113,7 @@ class StorageDeviceTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageDeviceTask, self).__init__(context, storage_id)
 
+    @check_deleted()
     @set_synced_after(constants.ResourceType.STORAGE_DEVICE)
     def sync(self):
         """
@@ -121,6 +150,7 @@ class StoragePoolTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
+    @check_deleted()
     @set_synced_after(constants.ResourceType.STORAGE_POOL)
     def sync(self):
         """
@@ -164,7 +194,8 @@ class StorageVolumeTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageVolumeTask, self).__init__(context, storage_id)
 
-    @set_synced_after(constants.ResourceType.VOLUME)
+    @check_deleted()
+    @set_synced_after(constants.ResourceType.STORAGE_VOLUME)
     def sync(self):
         """
         :return:
