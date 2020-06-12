@@ -162,7 +162,8 @@ class StoragePoolTask(StorageResourceTask):
             # collect the storage pools list from driver and database
             storage_pools = self.driver_api.list_storage_pools(self.context,
                                                                self.storage_id)
-            db_pools = db.storage_pool_get_all(self.context)
+            db_pools = db.storage_pool_get_all(self.context,
+                                               filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools
@@ -205,11 +206,17 @@ class StorageVolumeTask(StorageResourceTask):
             # collect the volumes list from driver and database
             storage_volumes = self.driver_api.list_volumes(self.context,
                                                            self.storage_id)
-            db_volumes = db.volume_get_all(self.context)
+            db_volumes = db.volume_get_all(self.context,
+                                           filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_volumes, db_volumes
             )
+            LOG.info('###StorageVolumeTask for {0}:add={1},delete={2},'
+                     'update={3}'.format(self.storage_id,
+                                         len(add_list),
+                                         len(delete_id_list),
+                                         len(update_list)))
             if delete_id_list:
                 db.volumes_delete(self.context, delete_id_list)
 
