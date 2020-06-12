@@ -29,7 +29,6 @@ LOG = log.getLogger(__name__)
 
 
 def set_synced_after(resource_type):
-
     @decorator.decorator
     def _set_synced_after(func, *args, **kwargs):
         call_args = inspect.getcallargs(func, *args, **kwargs)
@@ -54,7 +53,6 @@ def set_synced_after(resource_type):
 
 
 def check_deleted():
-
     @decorator.decorator
     def _check_deleted(func, *args, **kwargs):
         call_args = inspect.getcallargs(func, *args, **kwargs)
@@ -163,7 +161,8 @@ class StoragePoolTask(StorageResourceTask):
             storage_pools = self.driver_api.list_storage_pools(self.context,
                                                                self.storage_id)
             db_pools = db.storage_pool_get_all(self.context,
-                                               filters={"storage_id": self.storage_id})
+                                               filters={"storage_id":
+                                                        self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools
@@ -207,7 +206,8 @@ class StorageVolumeTask(StorageResourceTask):
             storage_volumes = self.driver_api.list_volumes(self.context,
                                                            self.storage_id)
             db_volumes = db.volume_get_all(self.context,
-                                           filters={"storage_id": self.storage_id})
+                                           filters={"storage_id":
+                                                    self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_volumes, db_volumes
