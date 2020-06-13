@@ -14,7 +14,6 @@
 
 import unittest
 
-import pytest
 from oslo_utils import importutils
 
 from dolphin import exception
@@ -80,7 +79,6 @@ class AlertHandlerTestCase(unittest.TestCase):
         context = {}
         alert = self._get_fake_alert_info()
         alert['storage_id'] = ''
-        with pytest.raises(exception.InvalidInput,
-                           match=r".* Mandatory information storage_id "
-                                 r"missing.*"):
-            alert_handler_inst.parse_alert(context, alert)
+        self.assertRaisesRegex(exception.InvalidInput, "Mandatory information "
+                                                       "storage_id missing",
+                               alert_handler_inst.parse_alert, context, alert)
