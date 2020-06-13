@@ -59,7 +59,7 @@ class AccessInfo(BASE, DolphinBase):
     extra_attributes = Column(JsonEncodedDict)
 
 
-class Storage(BASE, DolphinBase):
+class Storage(BASE, DolphinBase, models.SoftDeleteMixin):
     """Represents a storage object."""
 
     __tablename__ = 'storages'

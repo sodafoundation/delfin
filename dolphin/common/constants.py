@@ -54,7 +54,7 @@ class StorageType(object):
 class ResourceType(IntEnum):
     STORAGE_DEVICE = 0
     STORAGE_POOL = 1
-    VOLUME = 2
+    STORAGE_VOLUME = 2
 
 
 class SyncStatus(IntEnum):

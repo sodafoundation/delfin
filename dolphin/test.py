@@ -32,6 +32,7 @@ from oslo_messaging import conffixture as messaging_conffixture
 from oslo_utils import uuidutils
 import oslotest.base as base_test
 
+from dolphin.common import config  # noqa
 from dolphin import coordination
 from dolphin.db.sqlalchemy import api as db_api
 from dolphin.db.sqlalchemy import models as db_models
@@ -113,7 +114,9 @@ class TestCase(base_test.BaseTestCase):
         fake_notifier.stub_notifier(self)
 
         # Locks must be cleaned up after tests
-        CONF.set_override('backend_url', 'file://' + lock_path,
+        CONF.set_override('backend_type', 'file',
+                          group='coordination')
+        CONF.set_override('backend_server', lock_path,
                           group='coordination')
         coordination.LOCK_COORDINATOR.start()
         self.addCleanup(coordination.LOCK_COORDINATOR.stop)
