@@ -37,8 +37,7 @@ class API(object):
                                                 cache_on_load=False,
                                                 **access_info)
         storage = driver.get_storage(context)
-        if 'id' in storage:
-            access_info['storage_id']=storage['id']
+
         # Need to validate storage response from driver
         helper.check_storage_repetition(context, storage)
         access_info = helper.create_access_info(context, access_info)
