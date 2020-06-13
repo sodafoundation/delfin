@@ -5,6 +5,8 @@ from dolphin import test
 from dolphin.db import api as db_api
 from dolphin.db.sqlalchemy import api, models
 
+ctxt = context.get_admin_context()
+
 
 class TestSIMDBAPI(test.TestCase):
 
@@ -23,7 +25,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_storage = {}
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_storage
-        result = db_api.storage_get(context,
+        result = db_api.storage_get(ctxt,
                                     'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         assert len(result) == 0
 
@@ -32,7 +34,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_storage = models.Storage()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_storage
-        result = db_api.storage_update(context,
+        result = db_api.storage_update(ctxt,
                                        'c5c91c98-91aa-40e6-85ac-37a1d3b32bda',
                                        fake_storage)
         assert len(result) == 0
@@ -42,7 +44,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_storage = models.Storage()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_storage
-        result = db_api.storage_delete(context,
+        result = db_api.storage_delete(ctxt,
                                        'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         assert result is None
 
@@ -51,7 +53,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_storage = models.Storage()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_storage
-        result = db_api.storage_create(context, fake_storage)
+        result = db_api.storage_create(ctxt, fake_storage)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -59,95 +61,95 @@ class TestSIMDBAPI(test.TestCase):
         fake_storage = []
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_storage
-        result = db_api.storage_get_all(context)
+        result = db_api.storage_get_all(ctxt)
         assert len(result) == 0
 
         mock_session.return_value.__enter__.return_value.query = fake_storage
-        result = db_api.storage_get_all(context, filters={'status': 'Normal'})
+        result = db_api.storage_get_all(ctxt, filters={'status': 'Normal'})
         assert len(result) == 0
 
-        result = db_api.storage_get_all(context, limit=1)
+        result = db_api.storage_get_all(ctxt, limit=1)
         assert len(result) == 0
 
-        result = db_api.storage_get_all(context, offset=3)
+        result = db_api.storage_get_all(ctxt, offset=3)
         assert len(result) == 0
 
-        result = db_api.storage_get_all(context, sort_dirs=['desc'],
+        result = db_api.storage_get_all(ctxt, sort_dirs=['desc'],
                                         sort_keys=['name'])
         assert len(result) == 0
 
         self.assertRaises(exception.InvalidInput, api.storage_get_all,
-                          context, sort_dirs=['desc', 'asc'],
+                          ctxt, sort_dirs=['desc', 'asc'],
                           sort_keys=['name'])
 
         self.assertRaises(exception.InvalidInput, api.storage_get_all,
-                          context, sort_dirs=['desc_err'],
+                          ctxt, sort_dirs=['desc_err'],
                           sort_keys=['name'])
 
-        result = db_api.storage_get_all(context, sort_dirs=['desc'],
+        result = db_api.storage_get_all(ctxt, sort_dirs=['desc'],
                                         sort_keys=['name', 'id'])
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_get(self, mock_session):
-        fake_pool = {}
+    def test_storage_pool_get(self, mock_session):
+        fake_storage_pool = {}
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pool
-        result = db_api.pool_get(context,
-                                 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+            = fake_storage_pool
+        result = db_api.storage_pool_get(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_get_all(self, mock_session):
-        fake_pool = []
+    def test_storage_pool_get_all(self, mock_session):
+        fake_storage_pool = []
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pool
-        result = api.pool_get_all(context)
+            = fake_storage_pool
+        result = api.storage_pool_get_all(context)
         assert len(result) == 0
 
-        result = db_api.pool_get_all(context, filters={'status': 'Normal'})
+        result = db_api.storage_pool_get_all(context,
+                                             filters={'status': 'Normal'})
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pools_update(self, mock_session):
-        pools = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+    def test_storage_pools_update(self, mock_session):
+        storage_pools = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = pools
-        result = db_api.pools_update(context, pools)
+            = storage_pools
+        result = db_api.storage_pools_update(context, storage_pools)
         assert len(result) == 1
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_update(self, mock_session):
+    def test_storage_pool_update(self, mock_session):
         values = {'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}
         mock_session.return_value.__enter__.return_value.query.return_value \
             = values
-        result = db_api.pool_update(context,
-                                    'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
-                                    values)
+        result = db_api.storage_pool_update(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', values)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pools_delete(self, mock_session):
-        fake_pools = [models.Pool().id]
+    def test_storage_pools_delete(self, mock_session):
+        fake_storage_pools = [models.StoragePool().id]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pools
-        result = db_api.pools_delete(context, fake_pools)
+            = fake_storage_pools
+        result = db_api.storage_pools_delete(context, fake_storage_pools)
         assert result is None
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pools_create(self, mock_session):
-        fake_pools = [models.Pool()]
+    def test_storage_pools_create(self, mock_session):
+        fake_storage_pools = [models.StoragePool()]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pools
-        result = db_api.pools_create(context, fake_pools)
+            = fake_storage_pools
+        result = db_api.storage_pools_create(context, fake_storage_pools)
         assert len(result) == 1
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
-    def test_pool_create(self, mock_session):
-        fake_pool = models.Pool()
+    def test_storage_pool_create(self, mock_session):
+        fake_storage_pool = models.StoragePool()
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_pool
-        result = db_api.pool_create(context, fake_pool)
+            = fake_storage_pool
+        result = db_api.storage_pool_create(context, fake_storage_pool)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -155,7 +157,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_volume = {}
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_volume
-        result = db_api.volume_get(context,
+        result = db_api.volume_get(ctxt,
                                    'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
         assert len(result) == 0
 
@@ -164,7 +166,7 @@ class TestSIMDBAPI(test.TestCase):
         volumes = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
         mock_session.return_value.__enter__.return_value.query.return_value \
             = volumes
-        result = db_api.volumes_update(context, volumes)
+        result = db_api.volumes_update(ctxt, volumes)
         assert result is None
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -172,7 +174,7 @@ class TestSIMDBAPI(test.TestCase):
         volumes = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
         mock_session.return_value.__enter__.return_value.query.return_value \
             = volumes
-        result = db_api.volume_update(context,
+        result = db_api.volume_update(ctxt,
                                       'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
                                       volumes)
         assert len(result) == 0
@@ -182,7 +184,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_volume = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_volume
-        result = db_api.volumes_delete(context, fake_volume)
+        result = db_api.volumes_delete(ctxt, fake_volume)
         assert result is None
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -190,7 +192,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_volume = [models.Volume()]
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_volume
-        result = db_api.volumes_create(context, fake_volume)
+        result = db_api.volumes_create(ctxt, fake_volume)
         assert len(result) == 1
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -198,7 +200,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_volume = models.Volume()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_volume
-        result = db_api.volume_create(context, fake_volume)
+        result = db_api.volume_create(ctxt, fake_volume)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -206,10 +208,10 @@ class TestSIMDBAPI(test.TestCase):
         fake_volume = []
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_volume
-        result = db_api.volume_get_all(context)
+        result = db_api.volume_get_all(ctxt)
         assert len(result) == 0
 
-        result = db_api.volume_get_all(context, filters={'status': 'Normal'})
+        result = db_api.volume_get_all(ctxt, filters={'status': 'Normal'})
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -217,7 +219,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_access_info = []
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_access_info
-        result = db_api.access_info_get_all(context)
+        result = db_api.access_info_get_all(ctxt)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -225,7 +227,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_access_info = models.AccessInfo()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_access_info
-        result = db_api.access_info_get(context,
+        result = db_api.access_info_get(ctxt,
                                         'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
         assert len(result) == 0
 
@@ -234,7 +236,7 @@ class TestSIMDBAPI(test.TestCase):
         fake_access_info = models.AccessInfo()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_access_info
-        result = db_api.access_info_create(context, fake_access_info)
+        result = db_api.access_info_create(ctxt, fake_access_info)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -243,7 +245,7 @@ class TestSIMDBAPI(test.TestCase):
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_access_info
         result = db_api.access_info_update(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', fake_access_info)
+            ctxt, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', fake_access_info)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -251,10 +253,10 @@ class TestSIMDBAPI(test.TestCase):
         fake_alert_source = []
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_alert_source
-        result = db_api.alert_source_get_all(context)
+        result = db_api.alert_source_get_all(ctxt)
         assert len(result) == 0
 
-        result = db_api.alert_source_get_all(context,
+        result = db_api.alert_source_get_all(ctxt,
                                              filters={'status': 'Normal'})
         assert len(result) == 0
 
@@ -264,7 +266,7 @@ class TestSIMDBAPI(test.TestCase):
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_alert_source
         result = db_api.alert_source_update(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', fake_alert_source)
+            ctxt, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', fake_alert_source)
         assert len(result) == 0
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -273,7 +275,7 @@ class TestSIMDBAPI(test.TestCase):
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_alert_source
         result = db_api.alert_source_delete(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+            ctxt, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
         assert result is None
 
     @mock.patch('dolphin.db.sqlalchemy.api.get_session')
@@ -281,5 +283,5 @@ class TestSIMDBAPI(test.TestCase):
         fake_alert_source = models.AlertSource()
         mock_session.return_value.__enter__.return_value.query.return_value \
             = fake_alert_source
-        result = db_api.alert_source_create(context, fake_alert_source)
+        result = db_api.alert_source_create(ctxt, fake_alert_source)
         assert len(result) == 0
