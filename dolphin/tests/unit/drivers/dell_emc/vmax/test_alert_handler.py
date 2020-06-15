@@ -31,8 +31,8 @@ class AlertHandlerTestCase(unittest.TestCase):
 
     def _get_fake_alert_info(self):
         alert_info = {'storage_id': 'abcd-1234-56789',
-                      'storage_name': 'Dell EMC', 'vendor': 'Dell EMC',
-                      'model': 'vmax', 'connUnitEventId': 79,
+                      'storage_name': 'storage1', 'vendor': 'fake vendor',
+                      'model': 'fake model', 'connUnitEventId': 79,
                       'connUnitName': '000192601409',
                       'connUnitEventType': 'topology',
                       'connUnitEventDescr': 'Symmetrix 000192601409 FastSRP '
@@ -51,9 +51,12 @@ class AlertHandlerTestCase(unittest.TestCase):
         """ Success flow with all necessary parameters"""
         alert_handler_inst = self._get_alert_handler()
         alert = self._get_fake_alert_info()
+
         expected_alert_model = {'me_dn': alert['storage_id'],
                                 'me_name': alert['storage_name'],
                                 'manufacturer': alert['vendor'],
+                                'product_name': alert['model'],
+                                'category': 'New',
                                 'location': 'Component type: Symmetrix Disk '
                                             'Group,Component name: SRP_1',
                                 'event_type': alert['connUnitEventType'],
@@ -63,15 +66,18 @@ class AlertHandlerTestCase(unittest.TestCase):
                                 'native_me_dn': alert['connUnitName'],
                                 'alarm_id': alert['emcAsyncEventCode'],
                                 'alarm_name':
-                                    'SYMAPI_AEVENT2_UID_MOD_DIAG_TRACE_TRIG'
+                                    'SYMAPI_AEVENT2_UID_MOD_DIAG_TRACE_TRIG',
+                                'clear_type': '',
+                                'device_alert_sn': '',
+                                'match_key': '',
                                 }
         context = {}
         alert_model = alert_handler_inst.parse_alert(context, alert)
 
-        # Not comparing dicts as it has some varying para like occur_time
-        # Verify that relevant fields are matching with expected model fields
-        for key in expected_alert_model:
-            assert expected_alert_model[key] == alert_model[key]
+        # occur_time depends on current time
+        # Verify that all other fields are matching
+        expected_alert_model['occur_time'] = alert_model['occur_time']
+        self.assertDictEqual(expected_alert_model, alert_model)
 
     def test_parse_alert_without_mandatory_info(self):
         """ Error flow with some mandatory parameters missing"""
