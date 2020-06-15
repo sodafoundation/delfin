@@ -1,18 +1,16 @@
 # Copyright 2020 The SODA Authors.
-# Copyright 2010 OpenStack LLC.
-# All Rights Reserved.
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#         http://www.apache.org/licenses/LICENSE-2.0
+#   http:#www.apache.org/licenses/LICENSE-2.0
 #
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from dolphin import exception
 
@@ -20,16 +18,16 @@ from dolphin import exception
 def fake_storage_info():
     return {
         'id': 'abcd-1234-56789',
-        'name': 'Dell EMC',
-        'vendor': 'Dell EMC',
-        'model': 'vmax'
+        'name': 'storage1',
+        'vendor': 'fake vendor',
+        'model': 'fake model'
     }
 
 
 def fake_alert_model():
     return {'me_dn': 'abcd-1234-56789',
-            'me_name': 'Dell EMC',
-            'manufacturer': 'Dell EMC',
+            'me_name': 'storage1',
+            'manufacturer': 'fake vendor',
             'location': 'Component type: Symmetrix Disk '
                         'Group,Component name: SRP_1',
             'event_type': 'topology',

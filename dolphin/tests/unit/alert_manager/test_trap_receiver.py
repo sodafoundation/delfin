@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import unittest
-
-import mock
+from unittest import mock
 from oslo_utils import importutils
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config

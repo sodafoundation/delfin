@@ -13,13 +13,12 @@
 # limitations under the License.
 
 import unittest
-
-import mock
-
+from unittest import mock
 from oslo_utils import importutils
+
+from dolphin import context
 from dolphin import exception
 from dolphin.tests.unit.alert_manager import fakes
-from dolphin import context
 
 
 class AlertProcessorTestCase(unittest.TestCase):
@@ -96,8 +95,8 @@ class AlertProcessorTestCase(unittest.TestCase):
     def test_process_alert_info_exception(self, mock_storage):
         """ Mock parse alert for raising exception"""
         alert = {'storage_id': 'abcd-1234-56789',
-                 'storage_name': 'Dell EMC', 'vendor': 'Dell EMC',
-                 'model': 'vmax', 'connUnitEventId': 79,
+                 'storage_name': 'storage1', 'vendor': 'fake vendor',
+                 'model': 'fake model', 'connUnitEventId': 79,
                  'connUnitName': '000192601409',
                  'connUnitEventType': 'topology',
                  'connUnitEventDescr': 'Symmetrix 000192601409 FastSRP '
