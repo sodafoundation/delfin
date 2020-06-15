@@ -18,8 +18,10 @@ import webob.dec
 import webob.request
 
 from dolphin import context
+from dolphin import exception
 from dolphin.api.common import wsgi as os_wsgi
 from dolphin.common import config, constants  # noqa
+from dolphin.db.sqlalchemy import models
 
 
 @webob.dec.wsgify
@@ -143,3 +145,73 @@ def fake_access_info_get_all(context, marker=None, limit=None, sort_keys=None,
 
 def fake_sync(self, req, id):
     pass
+
+
+def fake_v3_alert_source_config():
+    return {'host': '127.0.0.1',
+            'version': 'snmpv3',
+            'security_level': 'AuthPriv',
+            'engine_id': '800000d30300000e112245',
+            'username': 'test1',
+            'auth_key': 'abcd123456',
+            'auth_protocol': 'md5',
+            'privacy_key': 'abcd123456',
+            'privacy_protocol': 'des'
+            }
+
+
+def fake_v2_alert_source_config():
+    return {'host': '127.0.0.1',
+            'version': 'snmpv2c',
+            'community_string': 'public'
+            }
+
+
+def fake_v3_alert_source():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv3'
+    alert_source.engine_id = '800000d30300000e112245'
+    alert_source.username = 'test1'
+    alert_source.auth_key = 'YWJjZDEyMzQ1Njc='
+    alert_source.auth_protocol = 'md5'
+    alert_source.privacy_key = 'YWJjZDEyMzQ1Njc='
+    alert_source.privacy_protocol = 'des'
+    return alert_source
+
+
+def fake_v3_alert_source_noauth_nopriv():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv3'
+    alert_source.security_level = 'NoAuthNoPriv'
+    alert_source.engine_id = '800000d30300000e112245'
+    alert_source.username = 'test1'
+    return alert_source
+
+
+def fake_v3_alert_source_auth_nopriv():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv3'
+    alert_source.security_level = 'AuthNoPriv'
+    alert_source.auth_protocol = 'md5'
+    alert_source.engine_id = '800000d30300000e112245'
+    alert_source.username = 'test1'
+    return alert_source
+
+
+def fake_v2_alert_source():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv2c'
+    alert_source.community_string = 'public'
+    return alert_source
+
+
+def alert_source_get_exception(ctx, storage_id):
+    raise exception.AlertSourceNotFound('abcd-1234-5678')
