@@ -35,6 +35,7 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.jobStarted')
     @mock.patch('dolphin.db.api.alert_source_get_all')
+    @mock.patch('pysnmp.entity.config.addTransport', fakes.mock_add_transport)
     def test_start_success(self, mock_alert_source, mock_dispatcher):
         mock_alert_source.return_value = {}
         trap_receiver_inst = self._get_trap_receiver()
@@ -42,8 +43,6 @@ class TrapReceiverTestCase(unittest.TestCase):
 
         # Verify that snmp engine is initialised and transport config is set
         self.assertTrue(trap_receiver_inst.snmp_engine is not None)
-        self.assertTrue(config.getTransport(trap_receiver_inst.snmp_engine,
-                                            udp.domainName) is not None)
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.jobStarted')
@@ -58,14 +57,13 @@ class TrapReceiverTestCase(unittest.TestCase):
         self.assertRaisesRegex(ValueError, "Failed to setup for trap listener",
                                trap_receiver_inst.start)
 
-    def test_add_transport_successful(self):
+    @mock.patch('pysnmp.entity.config.addTransport')
+    def test_add_transport_successful(self, mock_add_transport):
         trap_receiver_inst = self._get_trap_receiver()
         trap_receiver_inst.snmp_engine = engine.SnmpEngine()
+        mock_add_transport.return_value = fakes.mock_add_transport
         trap_receiver_inst._add_transport()
-
-        # Verify _add_transport success by getTransport
-        self.assertTrue(config.getTransport(trap_receiver_inst.snmp_engine,
-                                            udp.domainName) is not None)
+        self.assertTrue(mock_add_transport.called)
 
     def test_add_transport_exception(self):
         trap_receiver_inst = self._get_trap_receiver()
@@ -80,6 +78,7 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.closeDispatcher')
     @mock.patch('dolphin.db.api.alert_source_get_all')
+    @mock.patch('pysnmp.entity.config.addTransport', fakes.mock_add_transport)
     def test_stop_with_snmp_engine(self, mock_alert_source,
                                    mock_close_dispatcher, mock_dispatcher):
         mock_alert_source.return_value = {}

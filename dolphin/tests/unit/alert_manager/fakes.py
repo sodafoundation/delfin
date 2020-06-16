@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
+
 from dolphin import exception
 
 
@@ -102,3 +104,7 @@ def parse_alert_exception():
 
 def load_config_exception():
     raise exception.InvalidResults("load config failed.")
+
+
+def mock_add_transport(snmpEngine, transportDomain, transport):
+    snmpEngine.transportDispatcher = AsyncoreDispatcher()
