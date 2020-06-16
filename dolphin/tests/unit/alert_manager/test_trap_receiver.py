@@ -14,9 +14,9 @@
 
 import unittest
 from unittest import mock
+
 from oslo_utils import importutils
-from pysnmp.carrier.asyncore.dgram import udp
-from pysnmp.entity import engine, config
+from pysnmp.entity import engine
 
 from dolphin import exception
 from dolphin.alert_manager import constants
@@ -35,6 +35,8 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.jobStarted')
     @mock.patch('dolphin.db.api.alert_source_get_all')
+    @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
+                '.openServerMode', mock.Mock())
     @mock.patch('pysnmp.entity.config.addTransport', fakes.mock_add_transport)
     def test_start_success(self, mock_alert_source, mock_dispatcher):
         mock_alert_source.return_value = {}
@@ -57,6 +59,8 @@ class TrapReceiverTestCase(unittest.TestCase):
         self.assertRaisesRegex(ValueError, "Failed to setup for trap listener",
                                trap_receiver_inst.start)
 
+    @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
+                '.openServerMode', mock.Mock())
     @mock.patch('pysnmp.entity.config.addTransport')
     def test_add_transport_successful(self, mock_add_transport):
         trap_receiver_inst = self._get_trap_receiver()
@@ -78,6 +82,8 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.closeDispatcher')
     @mock.patch('dolphin.db.api.alert_source_get_all')
+    @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
+                '.openServerMode',mock.Mock())
     @mock.patch('pysnmp.entity.config.addTransport', fakes.mock_add_transport)
     def test_stop_with_snmp_engine(self, mock_alert_source,
                                    mock_close_dispatcher, mock_dispatcher):

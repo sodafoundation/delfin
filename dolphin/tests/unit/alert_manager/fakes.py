@@ -102,7 +102,7 @@ def parse_alert_exception():
     raise exception.InvalidResults("parse alert failed.")
 
 
-def load_config_exception():
+def load_config_exception(para):
     raise exception.InvalidResults("load config failed.")
 
 
