@@ -41,7 +41,7 @@ def set_synced_after():
                 LOG.warn('Storage %s not found when set synced'
                          % self.storage_id)
             else:
-                # One sync task done, sync status minors 1
+                # One sync task done, sync status minus 1
                 # When sync status get to 0
                 # means all the sync tasks are completed
                 if storage[constants.DB.DEVICE_SYNC_STATUS] > 0:
@@ -69,6 +69,7 @@ def check_deleted():
                       % self.storage_id)
         else:
             self.remove()
+        self.context.read_deleted = 'no'
         return ret
 
     return _check_deleted
