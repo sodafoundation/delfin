@@ -24,6 +24,7 @@ from pysnmp.smi import builder, view, rfc1902
 from dolphin import context, cryptor
 from dolphin import db
 from dolphin import exception
+from dolphin import manager
 from dolphin.alert_manager import alert_processor
 from dolphin.alert_manager import constants
 from dolphin.db import api as db_api
@@ -43,16 +44,18 @@ PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
                         "3des": config.usm3DESEDEPrivProtocol}
 
 
-class TrapReceiver(object):
+class TrapReceiver(manager.Manager):
     """Trap listening and processing functions"""
 
-    def __init__(self, trap_receiver_address, trap_receiver_port,
-                 snmp_mib_path, mib_view_controller=None, snmp_engine=None):
-        self.mib_view_controller = mib_view_controller
-        self.snmp_engine = snmp_engine
-        self.trap_receiver_address = trap_receiver_address
-        self.trap_receiver_port = trap_receiver_port
-        self.snmp_mib_path = snmp_mib_path
+    RPC_API_VERSION = '1.0'
+
+    def __init__(self, service_name=None, *args, **kwargs):
+        self.mib_view_controller = kwargs.get('mib_view_controller')
+        self.snmp_engine = kwargs.get('snmp_engine')
+        self.trap_receiver_address = kwargs.get('trap_receiver_address')
+        self.trap_receiver_port = kwargs.get('trap_receiver_port')
+        self.snmp_mib_path = kwargs.get('snmp_mib_path')
+        super(TrapReceiver, self).__init__(host=kwargs.get('host'))
 
     def sync_snmp_config(self, ctxt, snmp_config_to_del=None,
                          snmp_config_to_add=None):
