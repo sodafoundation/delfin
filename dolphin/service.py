@@ -33,7 +33,6 @@ from oslo_utils import importutils
 from dolphin import context
 from dolphin import coordination
 from dolphin import rpc
-from dolphin.alert_manager import constants
 
 LOG = log.getLogger(__name__)
 
@@ -64,13 +63,13 @@ service_opts = [
                 help='Wraps the socket in a SSL context if True is set. '
                      'A certificate file and key file must be specified.'),
     cfg.HostAddressOpt('trap_receiver_address',
-                       default=constants.DEF_TRAP_RECV_ADDR,
+                       default="0.0.0.0",
                        help='IP address at which trap receiver listens.'),
     cfg.PortOpt('trap_receiver_port',
-                default=constants.DEF_TRAP_RECV_PORT,
+                default=162,
                 help='Port at which trap receiver listens.'),
     cfg.StrOpt('snmp_mib_path',
-               default=constants.SNMP_MIB_PATH,
+               default='/var/lib/dolphin/mibs',
                help='Path at which mib files to be loaded are placed.'),
 ]
 
@@ -142,7 +141,7 @@ class Service(service.Service):
     def create(cls, host=None, binary=None, topic=None, manager=None,
                periodic_enable=None, periodic_interval=None,
                periodic_fuzzy_delay=None, service_name=None,
-               coordination=False):
+               coordination=False, *args, **kwargs):
         """Instantiates class and passes back application object.
 
         :param host: defaults to CONF.host
@@ -174,7 +173,8 @@ class Service(service.Service):
                           periodic_interval=periodic_interval,
                           periodic_fuzzy_delay=periodic_fuzzy_delay,
                           service_name=service_name,
-                          coordination=coordination)
+                          coordination=coordination,
+                          *args, **kwargs)
 
         return service_obj
 
@@ -218,55 +218,44 @@ class Service(service.Service):
         self.manager.periodic_tasks(ctxt, raise_on_error=raise_on_error)
 
 
-class AlertMngrService(service.Service):
+class AlertService(Service):
     """Service object for triggering trap receiver functionalities.
-    """
+        """
 
-    def __init__(self, trap_receiver_address=None, trap_receiver_port=None,
-                 snmp_mib_path=None, trap_receiver_class=None):
-        super(AlertMngrService, self).__init__()
+    @classmethod
+    def create(cls, host=None, binary=None, topic=None,
+               manager=None, periodic_interval=None,
+               periodic_fuzzy_delay=None, service_name=None,
+               coordination=False, *args, **kwargs):
+        kwargs['trap_receiver_address'] = CONF.trap_receiver_address
+        kwargs['trap_receiver_port'] = CONF.trap_receiver_port
+        kwargs['snmp_mib_path'] = CONF.snmp_mib_path
 
-        self.topic = CONF.snmp_config_topic
-        if not trap_receiver_address:
-            trap_receiver_address = CONF.trap_receiver_address
-        if not trap_receiver_port:
-            trap_receiver_port = CONF.trap_receiver_port
-        if not snmp_mib_path:
-            snmp_mib_path = CONF.snmp_mib_path
-        if not trap_receiver_class:
-            trap_receiver_class = CONF.trap_receiver_class
-        manager_class = importutils.import_class(trap_receiver_class)
-        self.manager = manager_class(trap_receiver_address,
-                                     trap_receiver_port, snmp_mib_path)
+        service_obj = super(AlertService, cls).create(
+            host=host, binary=binary, topic=topic, manager=manager,
+            periodic_interval=periodic_interval,
+            periodic_fuzzy_delay=periodic_fuzzy_delay,
+            service_name=service_name,
+            coordination=coordination, *args, **kwargs)
+
+        return service_obj
 
     def start(self):
-        """Trigger trap receiver creation"""
-        try:
-            LOG.info('Starting %(topic)s node.', {'topic': self.topic})
-            LOG.debug("Creating RPC server for service %s.", self.topic)
-
-            target = messaging.Target(topic=self.topic, server=CONF.host)
-            endpoints = [self.manager]
-            self.rpcserver = rpc.get_server(target, endpoints)
-            self.rpcserver.start()
-
-            self.manager.start()
-        except Exception:
-            LOG.exception("Failed to start alert manager service.")
-
-    def kill(self):
-        """Destroy the service object in the datastore."""
-        self.stop()
+        super(AlertService, self).start()
+        self.manager.start()
 
     def stop(self):
-        """Calls the shutdown flow of the service."""
-        self.manager.stop()
+        try:
+            self.manager.stop()
+        except Exception:
+            pass
+        super(AlertService, self).stop()
 
 
 class WSGIService(service.ServiceBase):
     """Provides ability to launch API from a 'paste' configuration."""
 
-    def __init__(self, name, loader=None):
+    def __init__(self, name, loader=None, coordination=False):
         """Initialize, but do not start the WSGI server.
 
         :param name: The name of the WSGI server given to the loader.
@@ -298,6 +287,7 @@ class WSGIService(service.ServiceBase):
             port=self.port,
             use_ssl=self.use_ssl
         )
+        self.coordinator = coordination
 
     def _get_manager(self):
         """Initialize a Manager object appropriate for this service.
@@ -329,6 +319,8 @@ class WSGIService(service.ServiceBase):
         :returns: None
 
         """
+        if self.coordinator:
+            coordination.LOCK_COORDINATOR.start()
         if self.manager:
             self.manager.init_host()
         self.server.start()
@@ -340,7 +332,12 @@ class WSGIService(service.ServiceBase):
         :returns: None
 
         """
-        self.server.stop()
+        try:
+            self.server.stop()
+        except Exception:
+            pass
+
+        self._stop_coordinator()
 
     def wait(self):
         """Wait for the service to stop serving this API.
@@ -349,6 +346,7 @@ class WSGIService(service.ServiceBase):
 
         """
         self.server.wait()
+        self._stop_coordinator()
 
     def reset(self):
         """Reset server greenpool size to default.
@@ -357,29 +355,38 @@ class WSGIService(service.ServiceBase):
         """
         self.server.reset()
 
+    def _stop_coordinator(self):
+        if self.coordinator:
+            try:
+                coordination.LOCK_COORDINATOR.stop()
+            except Exception:
+                LOG.exception("Unable to stop the Tooz Locking "
+                              "Coordinator.")
+
 
 def process_launcher():
     # return service.ProcessLauncher(CONF, restart_method='mutate')
     return service.ServiceLauncher(CONF, restart_method='reload')
 
-# # NOTE(vish): the global launcher is to maintain the existing
-# #             functionality of calling service.serve +
-# #             service.wait
-# _launcher = None
-#
-#
-# def serve(server, workers=None):
-#     global _launcher
-#     if _launcher:
-#         raise RuntimeError('serve() can only be called once')
-#     _launcher = service.launch(CONF, server, workers=workers,
-#                                restart_method='mutate')
-#
-#
-# def wait():
-#     CONF.log_opt_values(LOG, log.DEBUG)
-#     try:
-#         _launcher.wait()
-#     except KeyboardInterrupt:
-#         _launcher.stop()
-#     rpc.cleanup()
+
+# NOTE(vish): the global launcher is to maintain the existing
+#             functionality of calling service.serve +
+#             service.wait
+_launcher = None
+
+
+def serve(server, workers=None):
+    global _launcher
+    if _launcher:
+        raise RuntimeError('serve() can only be called once')
+    _launcher = service.launch(CONF, server, workers=workers,
+                               restart_method='mutate')
+
+
+def wait():
+    CONF.log_opt_values(LOG, log.DEBUG)
+    try:
+        _launcher.wait()
+    except KeyboardInterrupt:
+        _launcher.stop()
+    rpc.cleanup()
