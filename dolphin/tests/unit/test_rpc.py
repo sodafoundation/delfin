@@ -12,7 +12,7 @@
 #    under the License.
 
 import ddt
-import mock
+from unittest import mock
 
 from dolphin import rpc
 from dolphin import test
