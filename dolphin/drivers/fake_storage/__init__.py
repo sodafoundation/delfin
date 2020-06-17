@@ -12,7 +12,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import random
+
+import decorator
+import math
+import six
+import time
+from oslo_config import cfg
+from oslo_log import log
+from oslo_utils import uuidutils
+
+from dolphin import exception
 from dolphin.drivers import driver
+
+CONF = cfg.CONF
+
+fake_opts = [
+    cfg.StrOpt('fake_pool_range',
+               default='1-100',
+               help='The range of pool number for one device.'),
+    cfg.StrOpt('fake_volume_range',
+               default='1-2000',
+               help='The range of volume number for one device.'),
+    cfg.StrOpt('fake_api_time_range',
+               default='0.1-0.5',
+               help='The range of time cost for each API.'),
+    cfg.StrOpt('fake_page_query_limit',
+               default='500',
+               help='The limitation of volumes for each query.'),
+]
+
+CONF.register_opts(fake_opts, "fake_driver")
+
+
+LOG = log.getLogger(__name__)
+
+
+MIN_WAIT, MAX_WAIT = 0.1, 0.5
+MIN_POOL, MAX_POOL = 1, 100
+MIN_VOLUME, MAX_VOLUME = 1, 2000
+PAGE_LIMIT = 500
+
+
+def get_range_val(range_str, t):
+    try:
+        rng = range_str.split('-')
+        LOG.info("rng={0}".format(rng))
+        if len(rng) != 2:
+            raise exception.InvalidInput
+        min_val = t(rng[0])
+        max_val = t(rng[1])
+        return min_val, max_val
+    except exception:
+        raise exception.InvalidInput
+
+
+def wait_random(low, high):
+    @decorator.decorator
+    def _wait(f, *a, **k):
+        rd = random.randint(0, 100)
+        secs = low + (high - low) * rd / 100
+        time.sleep(secs)
+        return f(*a, **k)
+
+    return _wait
 
 
 class FakeStorageDriver(driver.StorageDriver):
@@ -22,381 +85,72 @@ class FakeStorageDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        global MIN_WAIT, MAX_WAIT, MIN_POOL, MAX_POOL, MIN_VOLUME, MAX_VOLUME
+        global PAGE_LIMIT
+        MIN_WAIT, MAX_WAIT = get_range_val(
+            CONF.fake_driver.fake_api_time_range, float)
+        MIN_POOL, MAX_POOL = get_range_val(
+            CONF.fake_driver.fake_pool_range, int)
+        MIN_VOLUME, MAX_VOLUME = get_range_val(
+            CONF.fake_driver.fake_volume_range, int)
+        PAGE_LIMIT = int(CONF.fake_driver.fake_page_query_limit)
 
+    @wait_random(MIN_WAIT, MAX_WAIT)
     def get_storage(self, context):
         # Do something here
+        sn = six.text_type(uuidutils.generate_uuid())
+        total, used, free = self._get_random_capacity()
         return {
             'name': 'fake_driver',
-            'description': 'it is a fake driver.',
+            'description': 'fake driver.',
             'vendor': 'fake_vendor',
             'model': 'fake_model',
             'status': 'normal',
-            'serial_number': self.storage_id,
+            'serial_number': sn,
             'firmware_version': '1.0.0',
             'location': 'HK',
-            'total_capacity': 1024 * 1024,
-            'used_capacity': 3126,
-            'free_capacity': 1045449,
+            'total_capacity': total,
+            'used_capacity': used,
+            'free_capacity': free,
         }
 
-    def list_storage_pools(self, context):
-        return [{
-
-            "id": "14155a1f-f053-4ccb-a846-ed67e4387428",
-            "name": "SRP_1",
-            "storage_id": self.storage_id,
-            "original_id": "SRP_1",
-            "description": "Dell EMC VMAX Pool",
-            "status": "normal",
-            "storage_type": "block",
-            "total_capacity": 26300318136401,
-            "used_capacity": 19054536509358,
-            "free_capacity": 7245781627043
-        }]
-
-    def list_volumes(self, context):
-        return [
-            {
-
-                "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
-                "name": "004DF",
+    @wait_random(MIN_WAIT, MAX_WAIT)
+    def list_storage_pools(self, ctx):
+        rd_pools_count = random.randint(MIN_POOL, MAX_POOL)
+        LOG.info("###########fake_pools number for %s: %d" % (self.storage_id,
+                                                              rd_pools_count))
+        pool_list = []
+        for idx in range(rd_pools_count):
+            total, used, free = self._get_random_capacity()
+            p = {
+                "name": "fake_pool_" + str(idx),
                 "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004DF",
-                "wwn": "60000970000297801855533030344446",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "dad84a1f-db8d-49ab-af40-048fc3544c12",
-                "name": "004E0",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E0",
-                "wwn": "60000970000297801855533030344530",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "2c8afe15-92b7-4717-b667-a4f4f2d0bf99",
-                "name": "004E1",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E1",
-                "wwn": "60000970000297801855533030344531",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "3a66da0c-2c21-4dba-b5d1-0a6307178426",
-                "name": "004E2",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E2",
-                "wwn": "60000970000297801855533030344532",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "a04e6123-2576-4277-828e-e509057a766f",
-                "name": "004E3",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E3",
-                "wwn": "60000970000297801855533030344533",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 1075838976,
-                "free_capacity": 0,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "ec869d3e-1a60-44a9-9292-6e315fb7ea28",
-                "name": "004E4",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E4",
-                "wwn": "60000970000297801855533030344534",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "c2327232-38ec-48e2-8a32-3621b0a976d9",
-                "name": "004E5",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E5",
-                "wwn": "60000970000297801855533030344535",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 1075838976,
-                "free_capacity": 0,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "faf6e5f6-2d87-4d07-9756-389ef0a15a71",
-                "name": "004E6",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E6",
-                "wwn": "60000970000297801855533030344536",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "1bbb37ce-bc58-4ee2-81e8-bcccfe9017bf",
-                "name": "004E7",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E7",
-                "wwn": "60000970000297801855533030344537",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "22912687-1f31-4e81-8d8a-762842dd05ff",
-                "name": "004E8",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E8",
-                "wwn": "60000970000297801855533030344538",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "9b3cc41a-5883-40fe-8037-64c853c26d29",
-                "name": "004E9",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004E9",
-                "wwn": "60000970000297801855533030344539",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "8cf95a54-824f-425e-9a38-be0ff6ffd310",
-                "name": "004EA",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004EA",
-                "wwn": "60000970000297801855533030344541",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "8aeeeb2e-bb4d-49ca-9a22-9601c921bdd9",
-                "name": "004EB",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004EB",
-                "wwn": "60000970000297801855533030344542",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "213f05c6-045c-4a20-ac39-7556e67ab1cd",
-                "name": "004EC",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004EC",
-                "wwn": "60000970000297801855533030344543",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "8c2a1db6-e630-48b5-8ee1-0e3b2608c0ba",
-                "name": "004ED",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004ED",
-                "wwn": "60000970000297801855533030344544",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "1508cf32-ed09-46b8-812f-a7d4ed650ec6",
-                "name": "004EE",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004EE",
-                "wwn": "60000970000297801855533030344545",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "8c9de067-7a3e-41bf-ba4e-ffa0d44257e0",
-                "name": "004EF",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004EF",
-                "wwn": "60000970000297801855533030344546",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "b557a996-02ea-400e-ad5a-5641f1bb4be9",
-                "name": "004F0",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004F0",
-                "wwn": "60000970000297801855533030344630",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "ecc61fa9-dce8-4109-bad6-cdb271769791",
-                "name": "004F1",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004F1",
-                "wwn": "60000970000297801855533030344631",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
-            },
-            {
-
-                "id": "7a932d24-0e2f-4118-abf4-35539036fb38",
-                "name": "004F2",
-                "storage_id": self.storage_id,
-                "original_pool_id": "SRP_1",
-                "description": "Dell EMC VMAX 'thin device' volume",
-                "status": "available",
-                "original_id": "004F2",
-                "wwn": "60000970000297801855533030344632",
-                "provisioning_policy": 'thin',
-                "total_capacity": 1075838976,
-                "used_capacity": 0,
-                "free_capacity": 1075838976,
-                "compressed": True,
-                "deduplicated": False
+                "native_storage_pool_id": "fake_original_id_" + str(idx),
+                "description": "Fake Pool",
+                "status": "normal",
+                "total_capacity": total,
+                "used_capacity": used,
+                "free_capacity": free,
             }
-        ]
+            pool_list.append(p)
+        return pool_list
+
+    def list_volumes(self, ctx):
+        # Get a random number as the volume count.
+        # rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
+        rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
+        LOG.info("###########fake_volumes number for %s: %d" % (
+            self.storage_id, rd_volumes_count))
+        loops = math.ceil(rd_volumes_count / PAGE_LIMIT)
+        volume_list = []
+        for idx in range(loops):
+            start = idx * PAGE_LIMIT
+            end = (idx + 1) * PAGE_LIMIT
+            if idx == (loops - 1):
+                end = rd_volumes_count
+            vs = self._get_volume_range(start, end)
+            volume_list = volume_list + vs
+        return volume_list
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -409,3 +163,29 @@ class FakeStorageDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
+
+    @wait_random(MIN_WAIT, MAX_WAIT)
+    def _get_volume_range(self, start, end):
+        volume_list = []
+
+        for i in range(start, end):
+            total, used, free = self._get_random_capacity()
+            v = {
+                "name": "fake_vol_" + str(i),
+                "storage_id": self.storage_id,
+                "description": "Fake Volume",
+                "status": "normal",
+                "native_volume_id": "fake_original_id_" + str(i),
+                "wwn": "fake_wwn_" + str(i),
+                "total_capacity": total,
+                "used_capacity": used,
+                "free_capacity": free,
+            }
+            volume_list.append(v)
+        return volume_list
+
+    def _get_random_capacity(self):
+        total = random.randint(1000, 2000)
+        used = int(random.randint(0, 100) * total / 100)
+        free = total - used
+        return total, used, free

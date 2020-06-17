@@ -110,7 +110,7 @@ class VMAXClient(object):
                 p = {
                     "name": pool,
                     "storage_id": storage_id,
-                    "native_pool_id": pool_info["srpId"],
+                    "native_storage_pool_id": pool_info["srpId"],
                     "description": "Dell EMC VMAX Pool",
                     "status": constants.StoragePoolStatus.NORMAL,
                     "storage_type": constants.StorageType.BLOCK,

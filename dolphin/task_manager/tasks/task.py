@@ -94,7 +94,7 @@ class StorageResourceTask(object):
         delete_id_list = [resource['id'] for resource in db_resources]
         add_list = []
         update_list = []
-        print(key)
+
         for resource in storage_resources:
             if resource[key] in original_ids_in_db:
                 resource['id'] = db_resources[original_ids_in_db.index(

@@ -28,7 +28,7 @@ from oslo_config import cfg
 from oslo_log import log
 
 from dolphin.common import config  # noqa
-from dolphin import service, db
+from dolphin import service
 from dolphin import utils
 from dolphin import version
 
@@ -41,7 +41,7 @@ def main():
          version=version.version_string())
     log.setup(CONF, "dolphin")
     utils.monkey_patch()
-    db.register_db()
+
     launcher = service.process_launcher()
     api_server = service.WSGIService('dolphin', coordination=True)
     launcher.launch_service(api_server, workers=api_server.workers or 1)
