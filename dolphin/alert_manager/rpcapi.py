@@ -35,7 +35,7 @@ class AlertAPI(object):
 
     def __init__(self):
         super(AlertAPI, self).__init__()
-        target = messaging.Target(topic=CONF.snmp_config_topic,
+        target = messaging.Target(topic=CONF.dolphin_alert_topic,
                                   version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap=self.RPC_API_VERSION)
 

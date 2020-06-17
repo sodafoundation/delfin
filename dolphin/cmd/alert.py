@@ -17,7 +17,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-"""Starter script for dolphin OS API."""
+"""Starter script for dolphin alert service."""
 
 import eventlet
 eventlet.monkey_patch()
@@ -42,10 +42,10 @@ def main():
     log.setup(CONF, "dolphin")
     utils.monkey_patch()
 
-    launcher = service.process_launcher()
-    api_server = service.WSGIService('dolphin', coordination=True)
-    launcher.launch_service(api_server, workers=api_server.workers or 1)
-    launcher.wait()
+    # Launch alert manager service
+    alert_manager = service.AlertService.create(binary='dolphin-alert')
+    service.serve(alert_manager)
+    service.wait()
 
 
 if __name__ == '__main__':
