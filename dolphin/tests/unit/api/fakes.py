@@ -19,6 +19,7 @@ from oslo_service import wsgi
 import routes
 import webob.dec
 import webob.request
+from dolphin.db.sqlalchemy import models
 
 from dolphin import context
 from dolphin import exception
@@ -226,3 +227,37 @@ def fake_v2_alert_source():
 
 def alert_source_get_exception(ctx, storage_id):
     raise exception.AlertSourceNotFound('abcd-1234-5678')
+
+
+def fake_access_info__show(context, storage_id):
+    access_info = models.AccessInfo()
+
+    access_info.updated_at = '2020-06-15T09:50:31.698956'
+    access_info.storage_id = '865ffd4d-f1f7-47de-abc3-5541ef44d0c1'
+    access_info.created_at = '2020-06-15T09:50:31.698956'
+    access_info.vendor = 'fake_storage'
+    access_info.model = 'fake_driver'
+    access_info.host = '10.0.0.0'
+    access_info.username = 'admin'
+    access_info.password = 'YWJjZA=='
+    access_info.port = '1234'
+    access_info.extra_attributes = {'array_id': '0001234567897'}
+
+    return access_info
+
+
+def fake_update_access_info(self, context, access_info):
+    access_info = models.AccessInfo()
+
+    access_info.updated_at = '2020-06-15T09:50:31.698956'
+    access_info.storage_id = '865ffd4d-f1f7-47de-abc3-5541ef44d0c1'
+    access_info.created_at = '2020-06-15T09:50:31.698956'
+    access_info.vendor = 'fake_storage'
+    access_info.model = 'fake_driver'
+    access_info.host = '10.0.0.0'
+    access_info.username = 'admin_modified'
+    access_info.password = 'YWJjZA=='
+    access_info.port = '1234'
+    access_info.extra_attributes = {'array_id': '0001234567897'}
+
+    return access_info
