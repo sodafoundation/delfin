@@ -96,7 +96,7 @@ paths:
               - Abnormal
       responses:
         '200':
-          description: Storage backend available.
+          description: Storage backend list available.
           content:
             application/json:
               schema:
@@ -342,7 +342,7 @@ paths:
       tags:
         - Storages
       description: Get access info of a registered storage backend
-      operationId: GetStorageAccessInfobyID
+      operationId: GettorageAccessInfobyID
       parameters:
         - name: storage_id
           in: path
@@ -472,9 +472,17 @@ paths:
           explode: true
           schema:
             type: string
-        - name: pool_id
+        - name: id
           in: query
           description: Database ID created for a storage pool.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_storage_pool_id
+          in: query
+          description: Actual ID of the storage pool in the storage backend.
           required: false
           style: form
           explode: true
@@ -534,7 +542,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storage-pools/{pool_id}':
+  '/v1/storage-pools/{id}':
     get:
       tags:
         - Storage Pools
@@ -548,7 +556,7 @@ paths:
           explode: false
           schema:
             type: string
-        - name: pool_id
+        - name: id
           in: path
           description: Database ID created for a storage pool.
           required: true
@@ -583,154 +591,6 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
         '500':
           description: An unexpected error occurred.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/{storage_id}/storage-pools':
-    get:
-      tags:
-        - Storage Pools
-      description: List storage pools  of a storage backend.
-      parameters:
-        - name: storage_id
-          in: path
-          description: Database ID created for a storage backend.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: limit
-          in: query
-          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
-          required: false
-          style: form
-          explode: true
-          schema:
-            minimum: 1
-            type: integer
-            format: int32
-        - name: offset
-          in: query
-          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
-          required: false
-          style: form
-          explode: true
-          schema:
-            minimum: 0
-            type: integer
-            format: int32
-        - name: sort
-          in: query
-          description: >-
-            Comma-separated list of sort keys and optional sort directions in
-            the form of key:val
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-            example: 'sort=name:desc,id:asc'
-        - name: name
-          in: query
-          description: The storage pool name
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-        - name: status
-          in: query
-          description: The storage pool status
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List storage pools query was success
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - storage_pools
-                additionalProperties: true
-                properties:
-                  storage_pools:
-                    type: array
-                    title: the storage pools schema
-                    items:
-                      $ref: '#/components/schemas/StoragePoolSpec'
-        '401':
-          description: NotAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '500':
-          description: An unexpected error occured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/{storage_id}/storage-pools/{pool_id}':
-    get:
-      tags:
-        - Storage Pools
-      description: Get storage pool detail by storage and storage pool ID.
-      parameters:
-        - name: storage_id
-          in: path
-          description: Database ID created for a storage backend.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: pool_id
-          in: path
-          description: Database ID created for a storage pool.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StoragePoolSpec'
-        '401':
-          description: NotAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '404':
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '500':
-          description: An unexpected error occured.
           content:
             application/json:
               schema:
@@ -779,9 +639,17 @@ paths:
           explode: true
           schema:
             type: string
-        - name: pool_id
+        - name: native_storage_pool_id
           in: query
-          description: Database ID created for a storage pool.
+          description: Actual ID of the storage pool in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_volume_id
+          in: query
+          description: Actual ID created for the volume in the storage backend.
           required: false
           style: form
           explode: true
@@ -840,7 +708,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  '/v1/volumes/{volume_id}':
+  '/v1/volumes/{id}':
     get:
       tags:
         - Volumes
@@ -854,162 +722,7 @@ paths:
           explode: false
           schema:
             type: string
-        - name: volume_id
-          in: path
-          description: Database ID created for a volume.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VolumeRespSpec'
-        '401':
-          description: NotAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '404':
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '500':
-          description: An unexpected error occured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/{storage_id}/volumes':
-    get:
-      tags:
-        - Volumes
-      description: List information for all storage volume.
-      parameters:
-        - name: storage_id
-          in: path
-          description: Database ID created for a storage backend.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: limit
-          in: query
-          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
-          required: false
-          style: form
-          explode: true
-          schema:
-            minimum: 1
-            type: integer
-            format: int32
-        - name: offset
-          in: query
-          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
-          required: false
-          style: form
-          explode: true
-          schema:
-            minimum: 0
-            type: integer
-            format: int32
-        - name: sort
-          in: query
-          description: >-
-            Comma-separated list of sort keys and optional sort directions in
-            the form of key:val
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-            example: 'sort=name:desc,id:asc'
-        - name: name
-          in: query
-          description: The volume name
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-        - name: pool_id
-          in: query
-          description: Database ID created for a storage pool.
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-        - name: status
-          in: query
-          description: The volume status
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List volumes operation was successful
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - volumes
-                additionalProperties: true
-                properties:
-                  volumes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/VolumeRespSpec'
-        '401':
-          description: NotAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '500':
-          description: An unexpected error occured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/{storage_id}/volumes/{volume_id}':
-    get:
-      tags:
-        - Volumes
-      description: Get storage volume detail by volume ID.
-      parameters:
-        - name: storage_id
-          in: path
-          description: Database ID created for a storage backend.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
-        - name: volume_id
+        - name: id
           in: path
           description: Database ID created for a volume.
           required: true
@@ -1425,10 +1138,14 @@ components:
           properties:
             name:
               type: string
-            pool_id:
+            id:
               type: string
               readOnly: true
               example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_storage_pool_id:
+              type: string
+              readOnly: true
+              example: SRP_1
             storage_type:
               type: string
               enum:
@@ -1487,16 +1204,16 @@ components:
             deduplicated:
               type: boolean
               example: false
-            provisioning_policy :
+            type :
               type: string
               enum:
                 - thick
                 - thin
-            volume_id:
+            native_volume_id:
               type: string
             wwn:
               type: string
-            pool_id:
+            native_storage_pool_id:
               type: string
     AlertSourceUpdateSpec:
       required:
@@ -1690,19 +1407,19 @@ components:
       explode: false
       schema:
         type: string
-    pool_id:
-      name: pool_id
+    native_storage_pool_id:
+      name: native_storage_pool_id
       in: path
-      description: Database ID created for a storage pool.
+      description: Actual ID of the storage pool in backend.
       required: true
       style: simple
       explode: false
       schema:
         type: string
-    volume_id:
-      name: volume_id
+    native_volume_id:
+      name: native_volume_id
       in: path
-      description: Database ID created for a volume.
+      description: Actual ID of the volume in backend.
       required: true
       style: simple
       explode: false
