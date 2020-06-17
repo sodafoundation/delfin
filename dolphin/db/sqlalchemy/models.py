@@ -59,7 +59,7 @@ class AccessInfo(BASE, DolphinBase):
     extra_attributes = Column(JsonEncodedDict)
 
 
-class Storage(BASE, DolphinBase):
+class Storage(BASE, DolphinBase, models.SoftDeleteMixin):
     """Represents a storage object."""
 
     __tablename__ = 'storages'
@@ -97,9 +97,9 @@ class Volume(BASE, DolphinBase):
     deduplicated = Column(Boolean)
 
 
-class Pool(BASE, DolphinBase):
-    """Represents a pool object."""
-    __tablename__ = 'pools'
+class StoragePool(BASE, DolphinBase):
+    """Represents a storage_pool object."""
+    __tablename__ = 'storage_pools'
     id = Column(String(36), primary_key=True)
     name = Column(String(255))
     storage_id = Column(String(36))

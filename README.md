@@ -3,8 +3,7 @@
 The initial design and code development in progress. Hence, there are chances for code structure, name changes etc. Contact us in slack in case you need more info.
 //FIXME : Need to fix the below report tabs after creating the CI or the project
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/sodafoundation/sim?branch=master)](https://goreportcard.com/report/github.com/sodafoundation/sim)
-[![Build Status](https://travis-ci.org/sodafoundation/sim.svg?branch=master)](https://travis-ci.org/sodafoundation/sim)
+[![Build Status](https://travis-ci.com/sodafoundation/sim.svg?branch=master)](https://travis-ci.com/sodafoundation/sim)
 [![codecov.io](https://codecov.io/github/sodafoundation/sim/coverage.svg?branch=master)](https://codecov.io/github/sodafoundation/sim?branch=master)
 [![Releases](https://img.shields.io/github/release/sodafoundation/sim/all.svg?style=flat-square)](https://github.com/sodafoundation/sim/releases)
 [![LICENSE](https://img.shields.io/github/license/sodafoundation/sim.svg?style=flat-square)](https://github.com/sodafoundation/sim/blob/master/LICENSE)

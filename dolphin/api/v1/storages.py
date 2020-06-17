@@ -16,7 +16,6 @@ import copy
 
 from oslo_log import log
 
-from dolphin import context
 from dolphin import coordination
 from dolphin import db
 from dolphin import utils
@@ -58,7 +57,7 @@ class StorageController(wsgi.Controller):
         api_utils.remove_invalid_options(ctxt, query_params,
                                          self._get_storages_search_options())
 
-        storages = db.storage_get_all(context, marker, limit, sort_keys,
+        storages = db.storage_get_all(ctxt, marker, limit, sort_keys,
                                       sort_dirs, query_params, offset)
         return storage_view.build_storages(storages)
 
@@ -108,8 +107,8 @@ class StorageController(wsgi.Controller):
         """
         :param req:
         :return: it's a Asynchronous call. so return 202 on success. sync_all
-        api performs the storage device info, pool, volume etc. tasks on each
-        registered storage device.
+        api performs the storage device info, storage_pool,
+         volume etc. tasks on each registered storage device.
         """
         ctxt = req.environ['dolphin.context']
 
