@@ -110,7 +110,7 @@ class VMAXClient(object):
                 p = {
                     "name": pool,
                     "storage_id": storage_id,
-                    "original_id": pool_info["srpId"],
+                    "native_pool_id": pool_info["srpId"],
                     "description": "Dell EMC VMAX Pool",
                     "status": constants.StoragePoolStatus.NORMAL,
                     "storage_type": constants.StorageType.BLOCK,
@@ -164,9 +164,9 @@ class VMAXClient(object):
                     "storage_id": storage_id,
                     "description": description,
                     "status": status,
-                    "original_id": vol['volumeId'],
+                    "native_volume_id": vol['volumeId'],
                     "wwn": vol['wwn'],
-                    "provisioning_policy": constants.ProvisioningPolicy.THIN,
+                    "type": constants.ProvisioningPolicy.THIN,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
                     "free_capacity": int(free_cap),
@@ -175,7 +175,7 @@ class VMAXClient(object):
                 if vol['num_of_storage_groups'] == 1:
                     sg = vol['storageGroupId'][0]
                     sg_info = self.conn.provisioning.get_storage_group(sg)
-                    v['original_pool_id'] = sg_info['srp']
+                    v['native_storage_pool_id'] = sg_info['srp']
                     v['compressed'] = sg_info['compression']
 
                 # TODO: Workaround when SG is, not available/not unique
