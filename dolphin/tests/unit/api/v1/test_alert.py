@@ -34,8 +34,8 @@ class AlertControllerTestCase(unittest.TestCase):
     @mock.patch('dolphin.db.storage_get', mock.Mock())
     @mock.patch('dolphin.db.alert_source_update')
     @mock.patch('dolphin.db.alert_source_get')
-    def test_put_v3_config_create_success(self, mock_alert_source_get,
-                                          mock_alert_source_update):
+    def test_put_v3_authpriv_config_create_success(self, mock_alert_source_get,
+                                                   mock_alert_source_update):
         req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
         fake_storage_id = 'abcd-1234-5678'
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
@@ -47,8 +47,8 @@ class AlertControllerTestCase(unittest.TestCase):
                                  'username': 'test1',
                                  'auth_protocol': 'md5',
                                  'privacy_protocol': 'des',
-                                 "created_at": None,
-                                 "updated_at": None
+                                 "created_at": '2020-06-15T09:50:31.698956',
+                                 "updated_at": '2020-06-15T09:50:31.698956'
                                  }
         mock_alert_source_update.return_value = fakes.fake_v3_alert_source()
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -80,10 +80,10 @@ class AlertControllerTestCase(unittest.TestCase):
                                  'engine_id': '800000d30300000e112245',
                                  'security_level': 'NoAuthNoPriv',
                                  'username': 'test1',
-                                 "created_at": None,
                                  'auth_protocol': None,
                                  'privacy_protocol': None,
-                                 "updated_at": None
+                                 "created_at": '2020-06-15T09:50:31.698956',
+                                 "updated_at": '2020-06-15T09:50:31.698956'
                                  }
 
         alert_controller_inst = self._get_alert_controller()
@@ -113,10 +113,10 @@ class AlertControllerTestCase(unittest.TestCase):
                                  'engine_id': '800000d30300000e112245',
                                  'security_level': 'AuthNoPriv',
                                  'username': 'test1',
-                                 "created_at": None,
                                  'auth_protocol': 'md5',
                                  'privacy_protocol': None,
-                                 "updated_at": None
+                                 "created_at": '2020-06-15T09:50:31.698956',
+                                 "updated_at": '2020-06-15T09:50:31.698956'
                                  }
         alert_controller_inst = self._get_alert_controller()
         body = fakes.fake_v3_alert_source_config()
@@ -142,10 +142,10 @@ class AlertControllerTestCase(unittest.TestCase):
                                  'engine_id': None,
                                  'security_level': None,
                                  'username': None,
-                                 "created_at": None,
                                  'auth_protocol': None,
                                  'privacy_protocol': None,
-                                 "updated_at": None
+                                 "created_at": '2020-06-15T09:50:31.698956',
+                                 "updated_at": '2020-06-15T09:50:31.698956'
                                  }
         alert_controller_inst = self._get_alert_controller()
         body = fakes.fake_v2_alert_source_config()
@@ -201,9 +201,163 @@ class AlertControllerTestCase(unittest.TestCase):
                                  'username': 'test1',
                                  'auth_protocol': 'md5',
                                  'privacy_protocol': 'des',
-                                 "created_at": None,
-                                 "updated_at": None
+                                 "created_at": '2020-06-15T09:50:31.698956',
+                                 "updated_at": '2020-06-15T09:50:31.698956'
                                  }
         alert_controller_inst = self._get_alert_controller()
         output_alert_source = alert_controller_inst.show(req, fake_storage_id)
         self.assertDictEqual(expected_alert_source, output_alert_source)
+
+    @mock.patch('dolphin.db.storage_get', mock.Mock())
+    @mock.patch('dolphin.db.alert_source_update')
+    @mock.patch('dolphin.db.alert_source_get')
+    def test_put_v3_authpriv_no_priv_key(self,
+                                         mock_alert_source_get,
+                                         mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = {}
+        mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+        body['security_level'] = 'AuthPriv'
+        body['privacy_key'] = ''
+
+        self.assertRaisesRegex(exception.InvalidInput, "Invalid input for "
+                                                       "field/attribute "
+                                                       "privacy_key",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
+
+    @mock.patch('dolphin.db.storage_get', mock.Mock())
+    @mock.patch('dolphin.db.alert_source_update')
+    @mock.patch('dolphin.db.alert_source_get')
+    def test_put_v3_authpriv_no_priv_protocol(self,
+                                              mock_alert_source_get,
+                                              mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = {}
+        mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+        body['security_level'] = 'AuthPriv'
+        body['privacy_protocol'] = ''
+
+        self.assertRaisesRegex(exception.InvalidInput, "Invalid input for "
+                                                       "field/attribute "
+                                                       "privacy_protocol",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
+
+    @mock.patch('dolphin.db.storage_get', mock.Mock())
+    @mock.patch('dolphin.db.alert_source_update')
+    @mock.patch('dolphin.db.alert_source_get')
+    def test_put_v3_authnopriv_no_auth_protocol(self,
+                                                mock_alert_source_get,
+                                                mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = {}
+        mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+        body['security_level'] = 'AuthNoPriv'
+        body['auth_protocol'] = ''
+
+        self.assertRaisesRegex(exception.InvalidInput, "Invalid input for "
+                                                       "field/attribute "
+                                                       "auth_protocol",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
+
+    @mock.patch('dolphin.db.storage_get', mock.Mock())
+    @mock.patch('dolphin.db.alert_source_update')
+    @mock.patch('dolphin.db.alert_source_get')
+    def test_put_v3_authnopriv_no_auth_key(self,
+                                           mock_alert_source_get,
+                                           mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = {}
+        mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+        body['security_level'] = 'AuthNoPriv'
+        body['auth_key'] = ''
+
+        self.assertRaisesRegex(exception.InvalidInput, "Invalid input for "
+                                                       "field/attribute "
+                                                       "auth_key",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
+
+    @mock.patch('dolphin.db.storage_get', mock.Mock())
+    @mock.patch('dolphin.db.alert_source_update')
+    @mock.patch('dolphin.db.alert_source_get')
+    def test_put_without_username(self, mock_alert_source_get,
+                                  mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = {}
+        mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+        body['username'] = ''
+
+        self.assertRaisesRegex(exception.InvalidInput, "Invalid input "
+                                                       "received. Invalid "
+                                                       "input for "
+                                                       "field/attribute "
+                                                       "username.",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
+
+    @mock.patch('dolphin.db.storage_get', mock.Mock())
+    @mock.patch('dolphin.db.alert_source_update')
+    @mock.patch('dolphin.db.alert_source_get')
+    def test_put_without_engine_id(self, mock_alert_source_get,
+                                  mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = {}
+        mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+        body['engine_id'] = ''
+
+        self.assertRaisesRegex(exception.InvalidInput, "Invalid input "
+                                                       "received. Invalid "
+                                                       "input for "
+                                                       "field/attribute "
+                                                       "engine_id..",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
+
+    @mock.patch('dolphin.db.storage_get', mock.Mock())
+    @mock.patch('dolphin.db.alert_source_update')
+    @mock.patch('dolphin.db.alert_source_get')
+    def test_put_without_community_str(self, mock_alert_source_get,
+                                       mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = {}
+        mock_alert_source_get.return_value = fakes.fake_v2_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v2_alert_source_config()
+        body['community_string'] = ''
+
+        self.assertRaisesRegex(exception.InvalidInput, "Invalid input "
+                                                       "received. Invalid "
+                                                       "input for "
+                                                       "field/attribute "
+                                                       "community_string.",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
