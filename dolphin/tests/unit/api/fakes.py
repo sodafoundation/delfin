@@ -14,6 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_service import wsgi
+
+import routes
 import webob.dec
 import webob.request
 from dolphin.db.sqlalchemy import models
@@ -26,6 +29,14 @@ from dolphin.common import config, constants  # noqa
 @webob.dec.wsgify
 def fake_wsgi(self, req):
     return self.application
+
+
+class TestRouter(wsgi.Router):
+    def __init__(self, controller):
+        mapper = routes.Mapper()
+        mapper.resource("test", "tests",
+                        controller=os_wsgi.Resource(controller))
+        super(TestRouter, self).__init__(mapper)
 
 
 class HTTPRequest(os_wsgi.Request):
