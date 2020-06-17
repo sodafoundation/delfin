@@ -19,7 +19,6 @@ from oslo_service import wsgi
 import routes
 import webob.dec
 import webob.request
-from dolphin.db.sqlalchemy import models
 
 from dolphin import context
 from dolphin import exception
@@ -190,6 +189,8 @@ def fake_v3_alert_source():
     alert_source.auth_protocol = 'md5'
     alert_source.privacy_key = 'YWJjZDEyMzQ1Njc='
     alert_source.privacy_protocol = 'des'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
 
 
@@ -201,6 +202,8 @@ def fake_v3_alert_source_noauth_nopriv():
     alert_source.security_level = 'NoAuthNoPriv'
     alert_source.engine_id = '800000d30300000e112245'
     alert_source.username = 'test1'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
 
 
@@ -213,6 +216,8 @@ def fake_v3_alert_source_auth_nopriv():
     alert_source.auth_protocol = 'md5'
     alert_source.engine_id = '800000d30300000e112245'
     alert_source.username = 'test1'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
 
 
@@ -222,6 +227,8 @@ def fake_v2_alert_source():
     alert_source.storage_id = 'abcd-1234-5678'
     alert_source.version = 'snmpv2c'
     alert_source.community_string = 'public'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
 
 

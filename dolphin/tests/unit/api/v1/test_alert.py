@@ -322,7 +322,7 @@ class AlertControllerTestCase(unittest.TestCase):
     @mock.patch('dolphin.db.alert_source_update')
     @mock.patch('dolphin.db.alert_source_get')
     def test_put_without_engine_id(self, mock_alert_source_get,
-                                  mock_alert_source_update):
+                                   mock_alert_source_update):
         req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
