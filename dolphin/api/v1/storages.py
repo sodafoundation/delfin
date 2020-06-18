@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import copy
+from datetime import datetime
 
+from oslo_config import cfg
 from oslo_log import log
 
 from dolphin import coordination
 from dolphin import db
-from dolphin import utils
 from dolphin import exception
 from dolphin.api import api_utils
 from dolphin.api import validation
@@ -32,6 +33,7 @@ from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class StorageController(wsgi.Controller):
@@ -115,12 +117,13 @@ class StorageController(wsgi.Controller):
         storages = db.storage_get_all(ctxt)
         LOG.debug("Total {0} registered storages found in database".
                   format(len(storages)))
+        resource_count = len(task.StorageResourceTask.__subclasses__())
 
         for storage in storages:
             try:
-                _set_synced_if_ok(ctxt, storage['id'])
+                _set_synced_if_ok(ctxt, storage['id'], resource_count)
             except exception.InvalidInput as e:
-                LOG.warn('Can not set SYNCING for %s, reason is %s'
+                LOG.warn('Can not start new sync task for %s, reason is %s'
                          % (storage['id'], e.msg))
                 continue
             else:
@@ -139,7 +142,8 @@ class StorageController(wsgi.Controller):
         """
         ctxt = req.environ['dolphin.context']
         storage = db.storage_get(ctxt, id)
-        _set_synced_if_ok(ctxt, storage['id'])
+        resource_count = len(task.StorageResourceTask.__subclasses__())
+        _set_synced_if_ok(ctxt, storage['id'], resource_count)
         for subclass in task.StorageResourceTask.__subclasses__():
             self.task_rpcapi.sync_storage_resource(
                 ctxt,
@@ -180,7 +184,7 @@ def create_resource():
 
 
 @coordination.synchronized('{storage_id}')
-def _set_synced_if_ok(context, storage_id):
+def _set_synced_if_ok(context, storage_id, resource_count):
     try:
         storage = db.storage_get(context, storage_id)
     except exception.StorageNotFound:
@@ -188,14 +192,15 @@ def _set_synced_if_ok(context, storage_id):
               % storage_id
         raise exception.InvalidInput(message=msg)
     else:
-        if storage[constants.DB.DEVICE_SYNC_STATUS] != \
-                constants.SyncStatus.SYNCED:
+        last_update = storage['updated_at']
+        current_time = datetime.now()
+        interval = (current_time - last_update).seconds
+        # If last synchronization was within 30 minutes,
+        # and the sync status is not SYNCED, it means some sync task
+        # is still running, the new sync task should not launch
+        if interval < CONF.sync_task_expiration and \
+                storage['sync_status'] != constants.SyncStatus.SYNCED:
             msg = 'Sync task is running for %s' % storage['id']
             raise exception.InvalidInput(message=msg)
-        # Set all bits of sync_status to SYNCING and start sync tasks
-        storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bits(
-            storage[constants.DB.DEVICE_SYNC_STATUS],
-            0,
-            len(constants.ResourceType) - 1,
-            constants.SyncStatus.SYNCING)
+        storage['sync_status'] = resource_count
         db.storage_update(context, storage['id'], storage)
