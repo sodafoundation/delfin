@@ -138,9 +138,9 @@ class OceanStorDriver(driver.StorageDriver):
                 if volume['RUNNINGSTATUS'] == consts.STATUS_VOLUME_READY:
                     status = constants.VolumeStatus.AVAILABLE
 
-                prov_policy = constants.ProvisioningPolicy.THICK
+                vol_type = constants.VolumeType.THICK
                 if volume['ALLOCTYPE'] == consts.THIN_LUNTYPE:
-                    prov_policy = constants.ProvisioningPolicy.THIN
+                    vol_type = constants.VolumeType.THIN
 
                 sector_size = int(volume['SECTORSIZE'])
                 total_cap = int(volume['CAPACITY']) * sector_size
@@ -154,7 +154,7 @@ class OceanStorDriver(driver.StorageDriver):
                     'native_volume_id': volume['ID'],
                     'native_storage_pool_id': orig_pool_id,
                     'wwn': volume['WWN'],
-                    'type': prov_policy,
+                    'type': vol_type,
                     'total_capacity': total_cap,
                     'used_capacity': used_cap,
                     'free_capacity': None,

@@ -66,7 +66,7 @@ class DB(object):
     DEVICE_SYNC_STATUS = 'sync_status'
 
 
-class ProvisioningPolicy(object):
+class VolumeType(object):
     THICK = 'thick'
     THIN = 'thin'
 

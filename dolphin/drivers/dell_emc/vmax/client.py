@@ -166,7 +166,7 @@ class VMAXClient(object):
                     "status": status,
                     "native_volume_id": vol['volumeId'],
                     "wwn": vol['wwn'],
-                    "type": constants.ProvisioningPolicy.THIN,
+                    "type": constants.VolumeType.THIN,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
                     "free_capacity": int(free_cap),
