@@ -61,16 +61,6 @@ class VMAXClient(object):
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 
-    def get_version(self):
-        try:
-            # Get the VMAX version
-            return self.conn.common.get_uni_version()
-
-        except Exception as err:
-            msg = "Failed to get version from VMAX: {}".format(err)
-            LOG.error(msg)
-            raise exception.StorageBackendException(msg)
-
     def get_model(self):
         try:
             # Get the VMAX model
