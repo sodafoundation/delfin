@@ -31,8 +31,23 @@ from dolphin.common import config  # noqa
 from dolphin import service
 from dolphin import utils
 from dolphin import version
+import socket
 
 CONF = cfg.CONF
+LOG = log.getLogger(__name__)
+
+
+def is_port_in_use(address, port):
+    s = socket.socket()
+    LOG.debug("Trying to connect%s on port %s" % (address, port))
+    try:
+        s.connect((address, port))
+        return True
+    except socket.error as e:
+        LOG.debug("No process bound to %s on port %s : %s" % (address, port, e))
+        return False
+    finally:
+        s.close()
 
 
 def main():
@@ -41,6 +56,10 @@ def main():
          version=version.version_string())
     log.setup(CONF, "dolphin")
     utils.monkey_patch()
+
+    if is_port_in_use('localhost', CONF.dolphin_listen_port):
+        LOG.error("Port %s is already in use " % CONF.dolphin_listen_port)
+        sys.exit()
 
     launcher = service.process_launcher()
     api_server = service.WSGIService('dolphin', coordination=True)
