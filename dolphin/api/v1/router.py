@@ -31,8 +31,12 @@ class APIRouter(common.APIRouter):
         self.resources['storages'] = storages.create_resource()
         mapper.resource("storage", "storages",
                         controller=self.resources['storages'],
-                        collection={'sync_all': 'POST'},
                         member={'sync': 'POST'})
+
+        mapper.connect("storages", "/storages/sync-all",
+                       controller=self.resources['storages'],
+                       action="sync_all",
+                       conditions={"method": ["POST"]})
 
         self.resources['access_info'] = access_info.create_resource()
         mapper.connect("storages", "/storages/{id}/access-info",
