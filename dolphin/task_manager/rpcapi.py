@@ -18,7 +18,6 @@ Client side of the task manager RPC API.
 
 import oslo_messaging as messaging
 from oslo_config import cfg
-from oslo_serialization import jsonutils
 
 from dolphin import rpc
 
