@@ -44,7 +44,8 @@ def is_port_in_use(address, port):
         s.connect((address, port))
         return True
     except socket.error as e:
-        LOG.debug("No process bound to %s on port %s : %s" % (address, port, e))
+        LOG.debug("No process bound to %s on port %s : %s" % (
+            address, port, e))
         return False
     finally:
         s.close()
