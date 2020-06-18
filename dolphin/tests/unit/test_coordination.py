@@ -14,7 +14,7 @@
 #    under the License.
 
 import ddt
-import mock
+from unittest import mock
 from tooz import coordination as tooz_coordination
 from tooz import locking as tooz_locking
 
