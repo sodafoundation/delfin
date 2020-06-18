@@ -20,9 +20,9 @@ import traceback as tb
 from helper import *
 
 sim_source_path = ''
-sim_etc_dir = '/etc/dolphin'
-sim_var_dir = '/var/lib/dolphin'
-conf_file = os.path.join(sim_etc_dir, 'dolphin.conf')
+sim_etc_dir = '/etc/delfin'
+sim_var_dir = '/var/lib/delfin'
+conf_file = os.path.join(sim_etc_dir, 'delfin.conf')
 proj_name = 'SIM'
 DEVNULL = '/dev/null'
 
@@ -47,7 +47,7 @@ def create_sim_db():
         
 def start_processes():
     # start api process
-    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'api.py')
+    proc_path = os.path.join(sim_source_path, 'delfin', 'cmd', 'api.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
 # >/dev/null 2>&1
     logger.info("Executing command [%s]", command)
@@ -55,7 +55,7 @@ def start_processes():
     logger.info("API process_started")
 
     #start task process
-    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'task.py')
+    proc_path = os.path.join(sim_source_path, 'delfin', 'cmd', 'task.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
@@ -63,7 +63,7 @@ def start_processes():
     logger.info("TASK process_started")
 
     # Start alert process
-    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'alert.py')
+    proc_path = os.path.join(sim_source_path, 'delfin', 'cmd', 'alert.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL +  ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
@@ -104,12 +104,12 @@ def main():
 
     # Copy required files
     # Copy api-paste.ini
-    ini_file_src = os.path.join(sim_source_path, 'etc', 'dolphin', 'api-paste.ini')
+    ini_file_src = os.path.join(sim_source_path, 'etc', 'delfin', 'api-paste.ini')
     ini_file_dest = os.path.join(sim_etc_dir, 'api-paste.ini')
     copy_files(ini_file_src, ini_file_dest)
 
     # Copy the conf file
-    conf_file_src = os.path.join(sim_source_path, 'etc', 'dolphin', 'dolphin.conf')
+    conf_file_src = os.path.join(sim_source_path, 'etc', 'delfin', 'delfin.conf')
     copy_files(conf_file_src, conf_file)
 
     # install
