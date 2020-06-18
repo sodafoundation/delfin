@@ -44,8 +44,8 @@ def set_synced_after():
                 # One sync task done, sync status minus 1
                 # When sync status get to 0
                 # means all the sync tasks are completed
-                if storage[constants.DB.DEVICE_SYNC_STATUS] > 0:
-                    storage[constants.DB.DEVICE_SYNC_STATUS] -= 1
+                if storage['sync_status'] != constants.SyncStatus.SYNCED:
+                    storage['sync_status'] -= 1
                     db.storage_update(self.context, self.storage_id, storage)
 
         return ret

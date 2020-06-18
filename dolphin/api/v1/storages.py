@@ -15,6 +15,7 @@
 import copy
 from datetime import datetime
 
+from oslo_config import cfg
 from oslo_log import log
 
 from dolphin import coordination
@@ -32,6 +33,7 @@ from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class StorageController(wsgi.Controller):
@@ -192,13 +194,13 @@ def _set_synced_if_ok(context, storage_id, resource_count):
     else:
         last_update = storage['updated_at']
         current_time = datetime.now()
-        interval = (current_time - last_update).seconds / 60
+        interval = (current_time - last_update).seconds
         # If last synchronization was within 30 minutes,
         # and the sync status is not SYNCED, it means some sync task
         # is still running, the new sync task should not launch
-        if interval < 30 and storage[constants.DB.DEVICE_SYNC_STATUS] != \
-                constants.SyncStatus.SYNCED:
+        if interval < CONF.sync_task_expiration and \
+                storage['sync_status'] != constants.SyncStatus.SYNCED:
             msg = 'Sync task is running for %s' % storage['id']
             raise exception.InvalidInput(message=msg)
-        storage[constants.DB.DEVICE_SYNC_STATUS] = resource_count
+        storage['sync_status'] = resource_count
         db.storage_update(context, storage['id'], storage)

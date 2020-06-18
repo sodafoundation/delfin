@@ -55,10 +55,6 @@ class SyncStatus(IntEnum):
     SYNCED = 0
 
 
-class DB(object):
-    DEVICE_SYNC_STATUS = 'sync_status'
-
-
 class ProvisioningPolicy(object):
     THICK = 'thick'
     THIN = 'thin'
