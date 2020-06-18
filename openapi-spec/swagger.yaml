@@ -250,7 +250,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  /v1/storages/sync-all:
+  /v1/storages/sync:
     post:
       tags:
         - Storages
@@ -1090,6 +1090,11 @@ components:
           type: string
         updated_at:
           type: string
+        sync_status:
+              type: string
+              enum:
+                - SYNCED
+                - SYNCING
         total_capacity:
           type: integer
           format: int64
