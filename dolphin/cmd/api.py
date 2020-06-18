@@ -58,7 +58,7 @@ def main():
     log.setup(CONF, "dolphin")
     utils.monkey_patch()
 
-    if is_port_in_use('localhost', CONF.dolphin_listen_port):
+    if is_port_in_use(CONF.my_ip, CONF.dolphin_listen_port):
         LOG.error("Port %s is already in use " % CONF.dolphin_listen_port)
         sys.exit()
 
