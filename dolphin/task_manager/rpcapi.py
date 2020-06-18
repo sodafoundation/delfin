@@ -18,7 +18,6 @@ Client side of the task manager RPC API.
 
 import oslo_messaging as messaging
 from oslo_config import cfg
-from oslo_serialization import jsonutils
 
 from dolphin import rpc
 
@@ -40,15 +39,6 @@ class TaskAPI(object):
         target = messaging.Target(topic=CONF.dolphin_task_topic,
                                   version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap=self.RPC_API_VERSION)
-
-    def say_hello(self, context, request_spec=None,
-                  filter_properties=None):
-        request_spec_p = jsonutils.to_primitive(request_spec)
-        call_context = self.client.prepare(version='1.0')
-        return call_context.cast(context,
-                                 'say_hello',
-                                 request_spec=request_spec_p,
-                                 filter_properties=filter_properties)
 
     def sync_storage_resource(self, context, storage_id, resource_task):
         call_context = self.client.prepare(version='1.0')
