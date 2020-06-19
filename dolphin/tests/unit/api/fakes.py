@@ -332,3 +332,41 @@ def fake_volume_show(context, volume_id):
         "compressed": True,
         "deduplicated": False
     }
+
+
+def fake_storage_pool_get_all(context, marker=None,
+                              limit=None, sort_keys=None,
+                              sort_dirs=None, filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:08.707356",
+            "updated_at": "2020-06-10T07:17:08.707356",
+            "id": "14155a1f-f053-4ccb-a846-ed67e4387428",
+            "name": "SRP_1",
+            "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+            "original_id": "SRP_1",
+            "description": "fake storage Pool",
+            "status": "normal",
+            "storage_type": "block",
+            "total_capacity": 26300318136401,
+            "used_capacity": 19054536509358,
+            "free_capacity": 7245781627043
+        }
+    ]
+
+
+def fake_storage_pool_show(context, storage_pool_id):
+    return {
+        "created_at": "2020-06-10T07:17:08.707356",
+        "updated_at": "2020-06-10T07:17:08.707356",
+        "id": "14155a1f-f053-4ccb-a846-ed67e4387428",
+        "name": "SRP_1",
+        "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+        "original_id": "SRP_1",
+        "description": "fake storage Pool",
+        "status": "normal",
+        "storage_type": "block",
+        "total_capacity": 26300318136401,
+        "used_capacity": 19054536509358,
+        "free_capacity": 7245781627043
+    }
