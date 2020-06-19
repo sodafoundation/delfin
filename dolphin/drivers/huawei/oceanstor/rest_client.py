@@ -140,12 +140,6 @@ class RestClient(object):
 
         return device_id
 
-    def try_login(self):
-        try:
-            self.login()
-        except Exception as err:
-            LOG.warning('Login failed. Error: %s.', err)
-
     def call(self, url, data=None, method=None, log_filter_flag=False):
         """Send requests to server.
 
@@ -243,35 +237,3 @@ class RestClient(object):
     def get_all_pools(self):
         url = "/storagepool"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
-
-    def get_pool_info(self, pool_name=None, pools=None):
-        info = {}
-        if not pool_name:
-            return info
-
-        for pool in pools:
-            if pool_name.strip() != pool['NAME']:
-                continue
-
-            if pool.get('USAGETYPE') == consts.FILE_SYSTEM_POOL_TYPE:
-                break
-
-            info['ID'] = pool['ID']
-            info['CAPACITY'] = pool.get('DATASPACE', pool['USERFREECAPACITY'])
-            info['TOTALCAPACITY'] = pool.get('USERTOTALCAPACITY', '0')
-            info['TIER0CAPACITY'] = pool.get('TIER0CAPACITY', '0')
-            info['TIER1CAPACITY'] = pool.get('TIER1CAPACITY', '0')
-            info['TIER2CAPACITY'] = pool.get('TIER2CAPACITY', '0')
-
-        return info
-
-    def get_pool_id(self, pool_name):
-        pools = self.get_all_pools()
-        pool_info = self.get_pool_info(pool_name, pools)
-
-        if not pool_info:
-            msg = _('Can not get pool info. pool: %s') % pool_name
-            LOG.error(msg)
-            raise exception.StorageBackendException(reason=msg)
-
-        return pool_info['ID']
