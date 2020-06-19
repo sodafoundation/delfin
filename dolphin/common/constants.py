@@ -51,19 +51,8 @@ class StorageType(object):
     ALL = (BLOCK, FILE)
 
 
-class ResourceType(IntEnum):
-    STORAGE_DEVICE = 0
-    STORAGE_POOL = 1
-    STORAGE_VOLUME = 2
-
-
 class SyncStatus(IntEnum):
     SYNCED = 0
-    SYNCING = 1
-
-
-class DB(object):
-    DEVICE_SYNC_STATUS = 'sync_status'
 
 
 class VolumeType(object):

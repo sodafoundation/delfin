@@ -57,13 +57,13 @@ PAGE_LIMIT = 500
 def get_range_val(range_str, t):
     try:
         rng = range_str.split('-')
-        LOG.info("rng={0}".format(rng))
         if len(rng) != 2:
             raise exception.InvalidInput
         min_val = t(rng[0])
         max_val = t(rng[1])
         return min_val, max_val
     except exception:
+        LOG.error("Invalid range: {0}".format(range_str))
         raise exception.InvalidInput
 
 
