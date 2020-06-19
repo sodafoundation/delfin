@@ -88,6 +88,9 @@ global_opts = [
     cfg.StrOpt('dolphin_cryptor',
                default='dolphin.cryptor._Base64',
                help='cryptor type'),
+    cfg.IntOpt('sync_task_expiration',
+               default=1800,
+               help='Sync task expiration in seconds.'),
 ]
 
 CONF.register_opts(global_opts)
