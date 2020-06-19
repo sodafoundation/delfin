@@ -45,12 +45,28 @@ def create_sim_db():
         return
     logger.info('db created ')
         
-def start_api():
-    api_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'api.py')
-    command = 'python3 ' + api_path + ' --config-file ' + conf_file  + ' &'
+def start_processes():
+    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'api.py')
+    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
+
+    logger.info("Executing command ", command)
     os.system(command)
-    #subprocess.call(['python3', api_path, '--config-file', conf_file], shell=True)
-    logger.info("process_started")
+    logger.info("API process_started")
+
+
+    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'task.py')
+    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
+    logger.info("Executing command ", command)
+    os.system(command)
+
+    logger.info("TASK process_started")
+
+    # Start alert process
+    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'alert.py')
+    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
+    logger.info("Executing command ", command)
+    os.system(command)
+    logger.info("ALERT process_started")
     
     
 def install_sim():
@@ -102,6 +118,9 @@ def main():
     create_sim_db()
 
     # start
-    start_api()
+    start_processes()
+
+
+
 if __name__ == "__main__":
     main()
