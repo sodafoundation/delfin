@@ -19,11 +19,12 @@ from oslo_service import wsgi
 import routes
 import webob.dec
 import webob.request
-from dolphin.db.sqlalchemy import models
 
 from dolphin import context
+from dolphin import exception
 from dolphin.api.common import wsgi as os_wsgi
 from dolphin.common import config, constants  # noqa
+from dolphin.db.sqlalchemy import models
 
 
 @webob.dec.wsgify
@@ -157,6 +158,84 @@ def fake_sync(self, req, id):
     pass
 
 
+def fake_v3_alert_source_config():
+    return {'host': '127.0.0.1',
+            'version': 'snmpv3',
+            'security_level': 'AuthPriv',
+            'engine_id': '800000d30300000e112245',
+            'username': 'test1',
+            'auth_key': 'abcd123456',
+            'auth_protocol': 'md5',
+            'privacy_key': 'abcd123456',
+            'privacy_protocol': 'des'
+            }
+
+
+def fake_v2_alert_source_config():
+    return {'host': '127.0.0.1',
+            'version': 'snmpv2c',
+            'community_string': 'public'
+            }
+
+
+def fake_v3_alert_source():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv3'
+    alert_source.engine_id = '800000d30300000e112245'
+    alert_source.username = 'test1'
+    alert_source.auth_key = 'YWJjZDEyMzQ1Njc='
+    alert_source.auth_protocol = 'md5'
+    alert_source.privacy_key = 'YWJjZDEyMzQ1Njc='
+    alert_source.privacy_protocol = 'des'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
+    return alert_source
+
+
+def fake_v3_alert_source_noauth_nopriv():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv3'
+    alert_source.security_level = 'NoAuthNoPriv'
+    alert_source.engine_id = '800000d30300000e112245'
+    alert_source.username = 'test1'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
+    return alert_source
+
+
+def fake_v3_alert_source_auth_nopriv():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv3'
+    alert_source.security_level = 'AuthNoPriv'
+    alert_source.auth_protocol = 'md5'
+    alert_source.engine_id = '800000d30300000e112245'
+    alert_source.username = 'test1'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
+    return alert_source
+
+
+def fake_v2_alert_source():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv2c'
+    alert_source.community_string = 'public'
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
+    return alert_source
+
+
+def alert_source_get_exception(ctx, storage_id):
+    raise exception.AlertSourceNotFound('abcd-1234-5678')
+
+
 def fake_access_info__show(context, storage_id):
     access_info = models.AccessInfo()
 
@@ -189,3 +268,67 @@ def fake_update_access_info(self, context, access_info):
     access_info.extra_attributes = {'array_id': '0001234567897'}
 
     return access_info
+
+
+def fake_volume_get_all(context, marker=None,
+                        limit=None, sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "original_pool_id": "SRP_1",
+            "description": "fake_storage 'thin device' volume",
+            "status": "available",
+            "original_id": "004DF",
+            "wwn": "60000970000297801855533030344446",
+            "provisioning_policy": 'thin',
+            "total_capacity": 1075838976,
+            "used_capacity": 0,
+            "free_capacity": 1075838976,
+            "compressed": True,
+            "deduplicated": False
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "dad84a1f-db8d-49ab-af40-048fc3544c12",
+            "name": "004E0",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "original_pool_id": "SRP_1",
+            "description": "fake_storage 'thin device' volume",
+            "status": "available",
+            "original_id": "004E0",
+            "wwn": "60000970000297801855533030344530",
+            "provisioning_policy": 'thin',
+            "total_capacity": 1075838976,
+            "used_capacity": 0,
+            "free_capacity": 1075838976,
+            "compressed": True,
+            "deduplicated": False
+        }
+    ]
+
+
+def fake_volume_show(context, volume_id):
+    return {
+        "created_at": "2020-06-10T07:17:31.157079",
+        "updated_at": "2020-06-10T07:17:31.157079",
+        "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+        "name": "004DF",
+        "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+        "original_pool_id": "SRP_1",
+        "description": "fake_storage 'thin device' volume",
+        "status": "available",
+        "original_id": "004DF",
+        "wwn": "60000970000297801855533030344446",
+        "provisioning_policy": 'thin',
+        "total_capacity": 1075838976,
+        "used_capacity": 0,
+        "free_capacity": 1075838976,
+        "compressed": True,
+        "deduplicated": False
+    }
