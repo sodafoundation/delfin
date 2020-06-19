@@ -49,14 +49,14 @@ def start_processes():
     proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'api.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
 
-    logger.info("Executing command ", command)
+    logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("API process_started")
 
 
     proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'task.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
-    logger.info("Executing command ", command)
+    logger.info("Executing command [%s]", command)
     os.system(command)
 
     logger.info("TASK process_started")
@@ -64,7 +64,7 @@ def start_processes():
     # Start alert process
     proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'alert.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
-    logger.info("Executing command ", command)
+    logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("ALERT process_started")
     
