@@ -21,7 +21,6 @@ from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import alert as schema_alert
 from dolphin.api.views import alert as alert_view
-from dolphin.drivers import api as driver_api
 
 LOG = log.getLogger(__name__)
 
@@ -33,7 +32,6 @@ SNMPv3_keys = ('username', 'auth_key', 'security_level', 'auth_protocol',
 class AlertController(wsgi.Controller):
     def __init__(self):
         super().__init__()
-        self.driver_api = driver_api.API()
         self.alert_rpcapi = rpcapi.AlertAPI()
 
     @wsgi.response(200)

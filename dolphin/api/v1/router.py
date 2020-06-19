@@ -33,7 +33,7 @@ class APIRouter(common.APIRouter):
                         controller=self.resources['storages'],
                         member={'sync': 'POST'})
 
-        mapper.connect("storages", "/storages/sync-all",
+        mapper.connect("storages", "/storages/sync",
                        controller=self.resources['storages'],
                        action="sync_all",
                        conditions={"method": ["POST"]})

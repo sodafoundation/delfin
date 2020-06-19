@@ -25,8 +25,8 @@ def build_storages(storages):
 
 def build_storage(storage):
     view = copy.deepcopy(storage)
-    if view[constants.DB.DEVICE_SYNC_STATUS] == constants.SyncStatus.SYNCED:
-        view[constants.DB.DEVICE_SYNC_STATUS] = 'SYNCED'
+    if view['sync_status'] == constants.SyncStatus.SYNCED:
+        view['sync_status'] = 'SYNCED'
     else:
-        view[constants.DB.DEVICE_SYNC_STATUS] = 'SYNCING'
+        view['sync_status'] = 'SYNCING'
     return dict(view)
