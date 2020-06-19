@@ -268,3 +268,67 @@ def fake_update_access_info(self, context, access_info):
     access_info.extra_attributes = {'array_id': '0001234567897'}
 
     return access_info
+
+
+def fake_volume_get_all(context, marker=None,
+                        limit=None, sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "original_pool_id": "SRP_1",
+            "description": "fake_storage 'thin device' volume",
+            "status": "available",
+            "original_id": "004DF",
+            "wwn": "60000970000297801855533030344446",
+            "provisioning_policy": 'thin',
+            "total_capacity": 1075838976,
+            "used_capacity": 0,
+            "free_capacity": 1075838976,
+            "compressed": True,
+            "deduplicated": False
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "dad84a1f-db8d-49ab-af40-048fc3544c12",
+            "name": "004E0",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "original_pool_id": "SRP_1",
+            "description": "fake_storage 'thin device' volume",
+            "status": "available",
+            "original_id": "004E0",
+            "wwn": "60000970000297801855533030344530",
+            "provisioning_policy": 'thin',
+            "total_capacity": 1075838976,
+            "used_capacity": 0,
+            "free_capacity": 1075838976,
+            "compressed": True,
+            "deduplicated": False
+        }
+    ]
+
+
+def fake_volume_show(context, volume_id):
+    return {
+        "created_at": "2020-06-10T07:17:31.157079",
+        "updated_at": "2020-06-10T07:17:31.157079",
+        "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+        "name": "004DF",
+        "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+        "original_pool_id": "SRP_1",
+        "description": "fake_storage 'thin device' volume",
+        "status": "available",
+        "original_id": "004DF",
+        "wwn": "60000970000297801855533030344446",
+        "provisioning_policy": 'thin',
+        "total_capacity": 1075838976,
+        "used_capacity": 0,
+        "free_capacity": 1075838976,
+        "compressed": True,
+        "deduplicated": False
+    }
