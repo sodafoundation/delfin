@@ -16,11 +16,12 @@
 curr_dir=$(dirname "$0")
 API_PROC_PATH=${curr_dir}/../dolphin/cmd/api.py
 ALERT_PROC_PATH=${curr_dir}/../dolphin/cmd/alert.py
-TASK_PROC_PATH=${curr_dir}/../dolphin/cmd/alert.py
+TASK_PROC_PATH=${curr_dir}/../dolphin/cmd/task.py
 
-api_proc_id=$(ps -eaf |grep ${API_PROC_PATH} | grep -v grep |awk '{print $2}')
-task_proc_id=$(ps -eaf |grep ${TASK_PROC_PATH} | grep -v grep |awk '{print $2}')
-alert_proc_id=$(ps -eaf |grep ${ALERT_PROC_PATH} | grep -v grep |awk '{print $2}')
+mapfile -t api_proc_id < <( ps -eaf |grep ${API_PROC_PATH} | grep -v grep |awk '{print $2}' )
+mapfile -t alert_proc_id < <( ps -eaf |grep ${ALERT_PROC_PATH} | grep -v grep |awk '{print $2}' )
+mapfile -t task_proc_id < <( ps -eaf |grep ${TASK_PROC_PATH} | grep -v grep |awk '{print $2}' )
+
 
 for i in "${api_proc_id[@]}"
 do

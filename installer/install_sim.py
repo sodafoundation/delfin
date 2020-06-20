@@ -24,10 +24,10 @@ sim_etc_dir = '/etc/dolphin'
 sim_var_dir = '/var/lib/dolphin'
 conf_file = os.path.join(sim_etc_dir, 'dolphin.conf')
 proj_name = 'SIM'
+DEVNULL = '/dev/null'
 
 def _activate():
-    path_to_activate = os.getcwd() + '/' + proj_name + '/bin/activate'
-    print(path_to_activate)
+    path_to_activate = os.path.join(sim_source_path , 'installer', proj_name, 'bin/activate')
     command = '. ' +  path_to_activate    
     os.system(command) 
 
@@ -46,16 +46,17 @@ def create_sim_db():
     logger.info('db created ')
         
 def start_processes():
+    # start api process
     proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'api.py')
-    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
-
+    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
+# >/dev/null 2>&1
     logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("API process_started")
 
-
+    #start task process
     proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'task.py')
-    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
+    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
 
@@ -63,7 +64,7 @@ def start_processes():
 
     # Start alert process
     proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'alert.py')
-    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' &'
+    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL +  ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("ALERT process_started")

@@ -137,8 +137,8 @@ check_install_p3_venv(){
         sim::log "venv is installed"
     fi
     
-    venv_dir=$(python3 -m venv ${PROJECT_NAME})
-    source SIM/bin/activate
+    venv_dir=$(python3 -m venv ${BASEDIR}/${PROJECT_NAME})
+    source ${BASEDIR}/${PROJECT_NAME}/bin/activate
 }
 
 main(){
