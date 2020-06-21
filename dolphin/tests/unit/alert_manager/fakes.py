@@ -30,18 +30,17 @@ def fake_alert_model():
     return {'me_dn': 'abcd-1234-56789',
             'me_name': 'storage1',
             'manufacturer': 'fake vendor',
-            'location': 'Component type: Symmetrix Disk '
-                        'Group,Component name: SRP_1',
+            'location': 'Component type: location1 '
+                        'Group,Component name: comp1',
             'event_type': 'topology',
             'severity': 'warning',
-            'probable_cause': 'Symmetrix 000192601409 FastSRP '
-                              'SRP_1 : Remote (SRDF) diagnostic'
+            'probable_cause': 'Diagnostic '
                               'event trace triggered.',
             'me_category': 'storage-subsystem',
             'native_me_dn': '000192601409',
             'alarm_id': '1050',
             'alarm_name':
-                'SYMAPI_AEVENT2_UID_MOD_DIAG_TRACE_TRIG'
+                'SAMPLE_ALARM_NAME'
             }
 
 

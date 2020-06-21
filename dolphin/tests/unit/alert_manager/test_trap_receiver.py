@@ -106,7 +106,7 @@ class TrapReceiverTestCase(unittest.TestCase):
         trap_receiver_inst.start()
         trap_receiver_inst.stop()
 
-        # Verify that close dispatcher is called during stop
+        # Verify that close dispatcher is called during alert manager stop
         self.assertTrue(mock_close_dispatcher.called)
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'

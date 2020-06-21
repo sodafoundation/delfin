@@ -40,18 +40,17 @@ class AlertProcessorTestCase(unittest.TestCase):
         fake_storage_info = fakes.fake_storage_info()
 
         input_alert = {'storage_id': 'abcd-1234-56789',
-                       'model': 'vmax', 'connUnitEventId': 79,
+                       'model': 'fake_model', 'connUnitEventId': 79,
                        'connUnitName': '000192601409',
                        'connUnitEventType': 'topology',
-                       'connUnitEventDescr': 'Symmetrix 000192601409 FastSRP '
-                                             'SRP_1 : Remote (SRDF) diagnostic'
+                       'connUnitEventDescr': 'Diagnostic '
                                              'event trace triggered.',
                        'connUnitEventSeverity': 'warning',
                        'connUnitType': 'storage-subsystem',
-                       'emcAsyncEventSource': 'symmetrix',
-                       'emcAsyncEventCode': '1050',
-                       'emcAsyncEventComponentType': '1051',
-                       'emcAsyncEventComponentName': 'SRP_1'}
+                       'asyncEventSource': 'eventsource1',
+                       'asyncEventCode': '1050',
+                       'asyncEventComponentType': '1051',
+                       'asyncEventComponentName': 'comp1'}
 
         expected_driver_input = input_alert
         expected_driver_input['storage_name'] = fake_storage_info['name']
@@ -61,8 +60,8 @@ class AlertProcessorTestCase(unittest.TestCase):
         expected_alert_model = {'me_dn': fake_storage_info['id'],
                                 'me_name': fake_storage_info['name'],
                                 'manufacturer': fake_storage_info['vendor'],
-                                'location': 'Component type: Symmetrix Disk '
-                                            'Group,Component name: SRP_1',
+                                'location': 'Component type: location1 '
+                                            'Group,Component name: comp1',
                                 'event_type': input_alert['connUnitEventType'],
                                 'severity':
                                     input_alert['connUnitEventSeverity'],
@@ -70,9 +69,9 @@ class AlertProcessorTestCase(unittest.TestCase):
                                     input_alert['connUnitEventDescr'],
                                 'me_category': input_alert['connUnitType'],
                                 'native_me_dn': input_alert['connUnitName'],
-                                'alarm_id': input_alert['emcAsyncEventCode'],
+                                'alarm_id': input_alert['asyncEventCode'],
                                 'alarm_name':
-                                    'SYMAPI_AEVENT2_UID_MOD_DIAG_TRACE_TRIG'
+                                    'SAMPLE_ALARM_NAME'
                                 }
         mock_storage.return_value = fake_storage_info
         mock_parse_alert.return_value = fakes.fake_alert_model()
@@ -96,18 +95,7 @@ class AlertProcessorTestCase(unittest.TestCase):
         """ Mock parse alert for raising exception"""
         alert = {'storage_id': 'abcd-1234-56789',
                  'storage_name': 'storage1', 'vendor': 'fake vendor',
-                 'model': 'fake model', 'connUnitEventId': 79,
-                 'connUnitName': '000192601409',
-                 'connUnitEventType': 'topology',
-                 'connUnitEventDescr': 'Symmetrix 000192601409 FastSRP '
-                                       'SRP_1 : Remote (SRDF) diagnostic'
-                                       'event trace triggered.',
-                 'connUnitEventSeverity': 'warning',
-                 'connUnitType': 'storage-subsystem',
-                 'emcAsyncEventSource': 'symmetrix',
-                 'emcAsyncEventCode': '1050',
-                 'emcAsyncEventComponentType': '1051',
-                 'emcAsyncEventComponentName': 'SRP_1'}
+                 'model': 'fake model'}
 
         mock_storage.return_value = fakes.fake_storage_info()
         alert_processor_inst = self._get_alert_processor()
