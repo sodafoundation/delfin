@@ -16,20 +16,26 @@ import unittest
 from unittest import mock
 
 from oslo_utils import importutils
-from pysnmp.entity import engine
+from pysnmp.carrier.asyncore.dgram import udp
+from pysnmp.entity import engine, config
 
 from dolphin import exception
-from dolphin.alert_manager import constants
 from dolphin.tests.unit.alert_manager import fakes
 
 
 class TrapReceiverTestCase(unittest.TestCase):
+    TRAP_RECEIVER_CLASS = 'dolphin.alert_manager.trap_receiver' \
+                          '.TrapReceiver'
+    DEF_TRAP_RECV_ADDR = '127.0.0.1'
+    DEF_TRAP_RECV_PORT = '162'
+    SNMP_MIB_PATH = '/var/lib/dolphin'
+
     def _get_trap_receiver(self):
         trap_receiver_class = importutils.import_class(
-            constants.TRAP_RECEIVER_CLASS)
-        trap_receiver = trap_receiver_class(constants.DEF_TRAP_RECV_ADDR,
-                                            constants.DEF_TRAP_RECV_PORT,
-                                            constants.SNMP_MIB_PATH)
+            self.TRAP_RECEIVER_CLASS)
+        trap_receiver = trap_receiver_class(self.DEF_TRAP_RECV_ADDR,
+                                            self.DEF_TRAP_RECV_PORT,
+                                            self.SNMP_MIB_PATH)
         return trap_receiver
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
@@ -37,10 +43,12 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('dolphin.db.api.alert_source_get_all')
     @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
                 '.openServerMode', mock.Mock())
-    @mock.patch('pysnmp.entity.config.addTransport', fakes.mock_add_transport)
     def test_start_success(self, mock_alert_source, mock_dispatcher):
         mock_alert_source.return_value = {}
         trap_receiver_inst = self._get_trap_receiver()
+        trap_receiver_inst.trap_receiver_address = self.DEF_TRAP_RECV_ADDR
+        trap_receiver_inst.trap_receiver_port = self.DEF_TRAP_RECV_PORT
+        trap_receiver_inst.snmp_mib_path = self.SNMP_MIB_PATH
         trap_receiver_inst.start()
 
         # Verify that snmp engine is initialised and transport config is set
@@ -61,13 +69,16 @@ class TrapReceiverTestCase(unittest.TestCase):
 
     @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
                 '.openServerMode', mock.Mock())
-    @mock.patch('pysnmp.entity.config.addTransport')
-    def test_add_transport_successful(self, mock_add_transport):
+    def test_add_transport_successful(self):
         trap_receiver_inst = self._get_trap_receiver()
         trap_receiver_inst.snmp_engine = engine.SnmpEngine()
-        mock_add_transport.return_value = fakes.mock_add_transport
+        trap_receiver_inst.trap_receiver_address = self.DEF_TRAP_RECV_ADDR
+        trap_receiver_inst.trap_receiver_port = self.DEF_TRAP_RECV_PORT
         trap_receiver_inst._add_transport()
-        self.assertTrue(mock_add_transport.called)
+        get_transport = config.getTransport(trap_receiver_inst.snmp_engine,
+                                            udp.domainName)
+        # Verify that snmp engine transport config is set after _add_transport
+        self.assertTrue(get_transport is not None)
 
     def test_add_transport_exception(self):
         trap_receiver_inst = self._get_trap_receiver()
@@ -83,12 +94,15 @@ class TrapReceiverTestCase(unittest.TestCase):
                 '.closeDispatcher')
     @mock.patch('dolphin.db.api.alert_source_get_all')
     @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
-                '.openServerMode',mock.Mock())
+                '.openServerMode', mock.Mock())
     @mock.patch('pysnmp.entity.config.addTransport', fakes.mock_add_transport)
     def test_stop_with_snmp_engine(self, mock_alert_source,
                                    mock_close_dispatcher, mock_dispatcher):
         mock_alert_source.return_value = {}
         trap_receiver_inst = self._get_trap_receiver()
+        trap_receiver_inst.trap_receiver_address = self.DEF_TRAP_RECV_ADDR
+        trap_receiver_inst.trap_receiver_port = self.DEF_TRAP_RECV_PORT
+        trap_receiver_inst.snmp_mib_path = self.SNMP_MIB_PATH
         trap_receiver_inst.start()
         trap_receiver_inst.stop()
 
