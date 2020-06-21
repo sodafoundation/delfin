@@ -31,7 +31,6 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_middleware import cors
 from oslo_utils import netutils
-from dolphin.alert_manager import constants
 
 
 CONF = cfg.CONF
@@ -80,15 +79,18 @@ global_opts = [
     cfg.StrOpt('dolphin_task_topic',
                default='dolphin-task',
                help='The topic task manager nodes listen on.'),
-    cfg.StrOpt('snmp_config_topic',
-               default='snmp-config',
+    cfg.StrOpt('dolphin_alert_topic',
+               default='dolphin-alert',
                help='The topic alert manager nodes listen on.'),
-    cfg.StrOpt('trap_receiver_class',
-               default=constants.TRAP_RECEIVER_CLASS,
+    cfg.StrOpt('alert_manager',
+               default='dolphin.alert_manager.trap_receiver.TrapReceiver',
                help='Full class name for the trap receiver.'),
     cfg.StrOpt('dolphin_cryptor',
                default='dolphin.cryptor._Base64',
                help='cryptor type'),
+    cfg.IntOpt('sync_task_expiration',
+               default=1800,
+               help='Sync task expiration in seconds.'),
 ]
 
 CONF.register_opts(global_opts)

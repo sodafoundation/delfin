@@ -20,7 +20,6 @@ from oslo_log import log
 from dolphin import coordination
 from dolphin import db
 from dolphin import exception
-from dolphin import utils
 from dolphin.common import constants
 from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
@@ -28,7 +27,7 @@ from dolphin.i18n import _
 LOG = log.getLogger(__name__)
 
 
-def set_synced_after(resource_type):
+def set_synced_after():
     @decorator.decorator
     def _set_synced_after(func, *args, **kwargs):
         call_args = inspect.getcallargs(func, *args, **kwargs)
@@ -42,11 +41,13 @@ def set_synced_after(resource_type):
                 LOG.warn('Storage %s not found when set synced'
                          % self.storage_id)
             else:
-                storage[constants.DB.DEVICE_SYNC_STATUS] = utils.set_bit(
-                    storage[constants.DB.DEVICE_SYNC_STATUS],
-                    resource_type,
-                    constants.SyncStatus.SYNCED)
-                db.storage_update(self.context, self.storage_id, storage)
+                # One sync task done, sync status minus 1
+                # When sync status get to 0
+                # means all the sync tasks are completed
+                if storage['sync_status'] != constants.SyncStatus.SYNCED:
+                    storage['sync_status'] -= 1
+                    db.storage_update(self.context, self.storage_id, storage)
+
         return ret
 
     return _set_synced_after
@@ -68,6 +69,7 @@ def check_deleted():
                       % self.storage_id)
         else:
             self.remove()
+        self.context.read_deleted = 'no'
         return ret
 
     return _check_deleted
@@ -80,7 +82,7 @@ class StorageResourceTask(object):
         self.context = context
         self.driver_api = driverapi.API()
 
-    def _classify_resources(self, storage_resources, db_resources):
+    def _classify_resources(self, storage_resources, db_resources, key):
         """
         :param storage_resources:
         :param db_resources:
@@ -89,16 +91,16 @@ class StorageResourceTask(object):
         storage and in current_db. delete_id_list:the items present not in
         storage but present in current_db.
         """
-        original_ids_in_db = [resource['original_id']
+        original_ids_in_db = [resource[key]
                               for resource in db_resources]
         delete_id_list = [resource['id'] for resource in db_resources]
         add_list = []
         update_list = []
 
         for resource in storage_resources:
-            if resource['original_id'] in original_ids_in_db:
+            if resource[key] in original_ids_in_db:
                 resource['id'] = db_resources[original_ids_in_db.index(
-                    resource['original_id'])]['id']
+                    resource[key])]['id']
                 delete_id_list.remove(resource['id'])
                 update_list.append(resource)
             else:
@@ -112,7 +114,7 @@ class StorageDeviceTask(StorageResourceTask):
         super(StorageDeviceTask, self).__init__(context, storage_id)
 
     @check_deleted()
-    @set_synced_after(constants.ResourceType.STORAGE_DEVICE)
+    @set_synced_after()
     def sync(self):
         """
         :return:
@@ -149,7 +151,7 @@ class StoragePoolTask(StorageResourceTask):
         super(StoragePoolTask, self).__init__(context, storage_id)
 
     @check_deleted()
-    @set_synced_after(constants.ResourceType.STORAGE_POOL)
+    @set_synced_after()
     def sync(self):
         """
         :return:
@@ -165,7 +167,7 @@ class StoragePoolTask(StorageResourceTask):
                                                         self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
-                storage_pools, db_pools
+                storage_pools, db_pools, 'native_storage_pool_id'
             )
             if delete_id_list:
                 db.storage_pools_delete(self.context, delete_id_list)
@@ -195,7 +197,7 @@ class StorageVolumeTask(StorageResourceTask):
         super(StorageVolumeTask, self).__init__(context, storage_id)
 
     @check_deleted()
-    @set_synced_after(constants.ResourceType.STORAGE_VOLUME)
+    @set_synced_after()
     def sync(self):
         """
         :return:
@@ -210,7 +212,7 @@ class StorageVolumeTask(StorageResourceTask):
                                                     self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
-                storage_volumes, db_volumes
+                storage_volumes, db_volumes, 'native_volume_id'
             )
             LOG.info('###StorageVolumeTask for {0}:add={1},delete={2},'
                      'update={3}'.format(self.storage_id,
