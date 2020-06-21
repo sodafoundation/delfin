@@ -125,7 +125,7 @@ class FakeStorageDriver(driver.StorageDriver):
             p = {
                 "name": "fake_pool_" + str(idx),
                 "storage_id": self.storage_id,
-                "original_id": "fake_original_id_" + str(idx),
+                "native_storage_pool_id": "fake_original_id_" + str(idx),
                 "description": "Fake Pool",
                 "status": "normal",
                 "total_capacity": total,
@@ -175,7 +175,7 @@ class FakeStorageDriver(driver.StorageDriver):
                 "storage_id": self.storage_id,
                 "description": "Fake Volume",
                 "status": "normal",
-                "original_id": "fake_original_id_" + str(i),
+                "native_volume_id": "fake_original_id_" + str(i),
                 "wwn": "fake_wwn_" + str(i),
                 "total_capacity": total,
                 "used_capacity": used,
