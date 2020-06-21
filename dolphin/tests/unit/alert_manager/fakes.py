@@ -25,7 +25,7 @@ def fake_storage_info():
         'model': 'fake model'
     }
 
-
+# Dummy alert Model
 def fake_alert_model():
     return {'me_dn': 'abcd-1234-56789',
             'me_name': 'storage1',
