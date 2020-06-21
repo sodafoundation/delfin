@@ -21,7 +21,8 @@ from dolphin.api.views import storage_pools as storage_pool_view
 class StoragePoolController(wsgi.Controller):
     def __init__(self):
         super(StoragePoolController, self).__init__()
-        self.search_options = ['name', 'status', 'id', 'storage_id']
+        self.search_options = ['name', 'status', 'id', 'storage_id',
+                               'native_storage_pool_id']
 
     def _get_storage_pools_search_options(self):
         """Return storage_pools search options allowed ."""

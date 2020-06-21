@@ -113,7 +113,7 @@ class TestVMAXStorageDriver(TestCase):
         expected = [{
             'name': 'SRP_1',
             'storage_id': '12345',
-            'original_id': 'SRP_ID',
+            'native_storage_pool_id': 'SRP_ID',
             'description': 'Dell EMC VMAX Pool',
             'status': 'normal',
             'storage_type': 'block',
@@ -159,14 +159,14 @@ class TestVMAXStorageDriver(TestCase):
             'name': 'volume_1',
             'storage_id': '12345',
             'description': "Dell EMC VMAX 'thin device' volume",
-            'provisioning_policy': 'thin',
+            'type': 'thin',
             'status': 'available',
-            'original_id': '00001',
+            'native_volume_id': '00001',
             'wwn': 'wwn123',
             'total_capacity': 104857600,
             'used_capacity': 10485760,
             'free_capacity': 94371840,
-            'original_pool_id': 'SRP_1',
+            'native_storage_pool_id': 'SRP_1',
             'compressed': True
         }]
         kwargs = VMAX_STORAGE_CONF
