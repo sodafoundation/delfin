@@ -94,7 +94,7 @@ class OceanStorDriver(driver.StorageDriver):
                 p = {
                     'name': pool['NAME'],
                     'storage_id': self.storage_id,
-                    'original_id': pool['ID'],
+                    'native_storage_pool_id': pool['ID'],
                     'description': 'Huawei OceanStor Pool',
                     'status': status,
                     'storage_type': storage_type,
@@ -138,9 +138,9 @@ class OceanStorDriver(driver.StorageDriver):
                 if volume['RUNNINGSTATUS'] == consts.STATUS_VOLUME_READY:
                     status = constants.VolumeStatus.AVAILABLE
 
-                prov_policy = constants.ProvisioningPolicy.THICK
+                vol_type = constants.VolumeType.THICK
                 if volume['ALLOCTYPE'] == consts.THIN_LUNTYPE:
-                    prov_policy = constants.ProvisioningPolicy.THIN
+                    vol_type = constants.VolumeType.THIN
 
                 sector_size = int(volume['SECTORSIZE'])
                 total_cap = int(volume['CAPACITY']) * sector_size
@@ -151,10 +151,10 @@ class OceanStorDriver(driver.StorageDriver):
                     'storage_id': self.storage_id,
                     'description': 'Huawei OceanStor volume',
                     'status': status,
-                    'original_id': volume['ID'],
-                    'original_pool_id': orig_pool_id,
+                    'native_volume_id': volume['ID'],
+                    'native_storage_pool_id': orig_pool_id,
                     'wwn': volume['WWN'],
-                    'provisioning_policy': prov_policy,
+                    'type': vol_type,
                     'total_capacity': total_cap,
                     'used_capacity': used_cap,
                     'free_capacity': None,

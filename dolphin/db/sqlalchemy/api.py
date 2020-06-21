@@ -354,8 +354,8 @@ def volumes_create(context, volumes):
     with session.begin():
 
         for vol in volumes:
-            LOG.debug('adding new volume for original_id {0}:'
-                      .format(vol.get('original_id')))
+            LOG.debug('adding new volume for native_volume_id {0}:'
+                      .format(vol.get('native_volume_id')))
             if not vol.get('id'):
                 vol['id'] = uuidutils.generate_uuid()
 
@@ -479,8 +479,8 @@ def storage_pools_create(context, storage_pools):
     with session.begin():
 
         for storage_pool in storage_pools:
-            LOG.debug('adding new storage_pool for original_id {0}:'
-                      .format(storage_pool.get('original_id')))
+            LOG.debug('adding new storage_pool for native_storage_pool_id {0}:'
+                      .format(storage_pool.get('native_storage_pool_id')))
             if not storage_pool.get('id'):
                 storage_pool['id'] = uuidutils.generate_uuid()
 
