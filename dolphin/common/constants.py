@@ -55,7 +55,7 @@ class SyncStatus(IntEnum):
     SYNCED = 0
 
 
-class ProvisioningPolicy(object):
+class VolumeType(object):
     THICK = 'thick'
     THIN = 'thin'
 

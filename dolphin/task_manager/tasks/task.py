@@ -82,7 +82,7 @@ class StorageResourceTask(object):
         self.context = context
         self.driver_api = driverapi.API()
 
-    def _classify_resources(self, storage_resources, db_resources):
+    def _classify_resources(self, storage_resources, db_resources, key):
         """
         :param storage_resources:
         :param db_resources:
@@ -91,16 +91,16 @@ class StorageResourceTask(object):
         storage and in current_db. delete_id_list:the items present not in
         storage but present in current_db.
         """
-        original_ids_in_db = [resource['original_id']
+        original_ids_in_db = [resource[key]
                               for resource in db_resources]
         delete_id_list = [resource['id'] for resource in db_resources]
         add_list = []
         update_list = []
 
         for resource in storage_resources:
-            if resource['original_id'] in original_ids_in_db:
+            if resource[key] in original_ids_in_db:
                 resource['id'] = db_resources[original_ids_in_db.index(
-                    resource['original_id'])]['id']
+                    resource[key])]['id']
                 delete_id_list.remove(resource['id'])
                 update_list.append(resource)
             else:
@@ -167,7 +167,7 @@ class StoragePoolTask(StorageResourceTask):
                                                         self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
-                storage_pools, db_pools
+                storage_pools, db_pools, 'native_storage_pool_id'
             )
             if delete_id_list:
                 db.storage_pools_delete(self.context, delete_id_list)
@@ -212,7 +212,7 @@ class StorageVolumeTask(StorageResourceTask):
                                                     self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
-                storage_volumes, db_volumes
+                storage_volumes, db_volumes, 'native_volume_id'
             )
             LOG.info('###StorageVolumeTask for {0}:add={1},delete={2},'
                      'update={3}'.format(self.storage_id,
