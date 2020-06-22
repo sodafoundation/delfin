@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-version: '3'
+version: '2'
 
 services:
 
@@ -30,8 +30,8 @@ services:
       volumes:
           - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
       environment:
-          RABBITMQ_DEFAULT_USER: "sim"
-          RABBITMQ_DEFAULT_PASS: "simpass"
+          RABBITMQ_DEFAULT_USER: ${SIM_RABBITMQ_USER}
+          RABBITMQ_DEFAULT_PASS: ${SIM_RABBITMQ_PASS}
           RABBITMQ_DEFAULT_VHOST: "/"
       ports:
           - 5672:5672
@@ -44,5 +44,5 @@ services:
     ports:
       - 8190:8190
     environment:
-      - OS_COORDINATION__BACKEND_SERVER=192.168.20.158:6379
-      - OS_DEFAULT__TRANSPORT_URL=rabbit://sim:simpass@192.168.20.158:5672//
+      - OS_COORDINATION__BACKEND_SERVER=${SIM_HOST_IP}:6379
+      - OS_DEFAULT__TRANSPORT_URL=rabbit://${SIM_RABBITMQ_USER}:${SIM_RABBITMQ_PASS}@${SIM_HOST_IP}:5672//
