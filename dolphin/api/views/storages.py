@@ -13,6 +13,8 @@
 # limitations under the License.
 import copy
 
+from dolphin.common import constants
+
 
 def build_storages(storages):
     # Build list of storages
@@ -23,4 +25,8 @@ def build_storages(storages):
 
 def build_storage(storage):
     view = copy.deepcopy(storage)
+    if view['sync_status'] == constants.SyncStatus.SYNCED:
+        view['sync_status'] = 'SYNCED'
+    else:
+        view['sync_status'] = 'SYNCING'
     return dict(view)

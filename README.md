@@ -1,10 +1,5 @@
 # SODA Infrastructure Manager
-## This project is under initiation. 
-The initial design and code development in progress. Hence, there are chances for code structure, name changes etc. Contact us in slack in case you need more info.
-//FIXME : Need to fix the below report tabs after creating the CI or the project
-
-[![Go Report Card](https://goreportcard.com/badge/github.com/sodafoundation/sim?branch=master)](https://goreportcard.com/report/github.com/sodafoundation/sim)
-[![Build Status](https://travis-ci.org/sodafoundation/sim.svg?branch=master)](https://travis-ci.org/sodafoundation/sim)
+[![Build Status](https://travis-ci.com/sodafoundation/sim.svg?branch=master)](https://travis-ci.com/sodafoundation/sim)
 [![codecov.io](https://codecov.io/github/sodafoundation/sim/coverage.svg?branch=master)](https://codecov.io/github/sodafoundation/sim?branch=master)
 [![Releases](https://img.shields.io/github/release/sodafoundation/sim/all.svg?style=flat-square)](https://github.com/sodafoundation/sim/releases)
 [![LICENSE](https://img.shields.io/github/license/sodafoundation/sim.svg?style=flat-square)](https://github.com/sodafoundation/sim/blob/master/LICENSE)
@@ -13,9 +8,9 @@ The initial design and code development in progress. Hence, there are chances fo
 
 ## Introduction
 
-SODA Infrastructure Manager(SIM) is an open source project to manage the infrastructure resources, alerts and monitoring for SODA platform. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment. It will also provide the alert management and metric data(performance/health) for monitoring and further analysis. SIM will provide a scalable framework where more and more backends and also client exporters can be added. This will enable to add more storage and infrastructure backends, also support different management clients for monitoring and health prediction.
+SODA Infrastructure Manager is an open source project to provides unified, intelligent and scalable resource management, alert and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment. It will also provide the alert management and metric data(performance/health) for monitoring and further analysis. It will provide a scalable framework where more and more backends and also client exporters can be added. This will enable to add more storage and infrastructure backends, also support different management clients for monitoring and health prediction.
 
-It provides set of APIs to export and connect with clients as well as a set if interfaces for various driver addition.
+It provides unified APIs to access, export and connect with clients as well as a set if interfaces for various driver addition.
 
 This is one of the SODA Core Projects and is maintained by SODA Foundation directly.
 

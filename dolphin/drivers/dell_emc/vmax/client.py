@@ -43,7 +43,7 @@ class VMAXClient(object):
         self.array_id = access_info.get('extra_attributes', {}). \
             get('array_id', None)
         if not self.array_id:
-            raise exception.InvalidInput(reason='Input array_id is missing')
+            raise exception.InvalidInput('Input array_id is missing')
 
         try:
             # Initialise PyU4V connection to VMAX
@@ -57,19 +57,9 @@ class VMAXClient(object):
                 password=access_info['password'])
 
         except Exception as err:
-            LOG.error("Failed to connect to VMAX: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to connect to VMAX storage')
-
-    def get_version(self):
-        try:
-            # Get the VMAX version
-            return self.conn.common.get_uni_version()
-
-        except Exception as err:
-            LOG.error("Failed to get version from VMAX: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get version from VMAX')
+            msg = "Failed to connect to VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
 
     def get_model(self):
         try:
@@ -78,9 +68,9 @@ class VMAXClient(object):
             model = self.conn.common.get_request(uri, "")
             return model['symmetrix'][0]['model']
         except Exception as err:
-            LOG.error("Failed to get model from VMAX: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get model from VMAX')
+            msg = "Failed to get model from VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
 
     def get_storage_capacity(self):
         try:
@@ -89,11 +79,11 @@ class VMAXClient(object):
             storage_info = self.conn.common.get_request(uri, "")
             return storage_info['system_capacity']
         except Exception as err:
-            LOG.error("Failed to get model from VMAX: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get capacity from VMAX')
+            msg = "Failed to get capacity from VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
 
-    def list_pools(self):
+    def list_storage_pools(self, storage_id):
 
         try:
             # Get list of SRP pool names
@@ -109,9 +99,10 @@ class VMAXClient(object):
 
                 p = {
                     "name": pool,
-                    "original_id": pool_info["srpId"],
+                    "storage_id": storage_id,
+                    "native_storage_pool_id": pool_info["srpId"],
                     "description": "Dell EMC VMAX Pool",
-                    "status": constants.PoolStatus.NORMAL,
+                    "status": constants.StoragePoolStatus.NORMAL,
                     "storage_type": constants.StorageType.BLOCK,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
@@ -122,9 +113,9 @@ class VMAXClient(object):
             return pool_list
 
         except Exception as err:
-            LOG.error("Failed to get pool metrics from VMAX: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get pool metrics from VMAX')
+            msg = "Failed to get pool metrics from VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
 
     def list_volumes(self, storage_id):
 
@@ -163,9 +154,9 @@ class VMAXClient(object):
                     "storage_id": storage_id,
                     "description": description,
                     "status": status,
-                    "original_id": vol['volumeId'],
+                    "native_volume_id": vol['volumeId'],
                     "wwn": vol['wwn'],
-                    "storage_type": constants.StorageType.BLOCK,
+                    "type": constants.VolumeType.THIN,
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
                     "free_capacity": int(free_cap),
@@ -174,7 +165,7 @@ class VMAXClient(object):
                 if vol['num_of_storage_groups'] == 1:
                     sg = vol['storageGroupId'][0]
                     sg_info = self.conn.provisioning.get_storage_group(sg)
-                    v['original_pool_id'] = sg_info['srp']
+                    v['native_storage_pool_id'] = sg_info['srp']
                     v['compressed'] = sg_info['compression']
 
                 # TODO: Workaround when SG is, not available/not unique
@@ -184,6 +175,6 @@ class VMAXClient(object):
             return volume_list
 
         except Exception as err:
-            LOG.error("Failed to get list volumes from VMAX: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get list volumes from VMAX')
+            msg = "Failed to get list volumes from VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)

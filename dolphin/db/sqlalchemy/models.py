@@ -26,6 +26,8 @@ from oslo_db.sqlalchemy.types import JsonEncodedDict
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
+from dolphin.common import constants
+
 CONF = cfg.CONF
 BASE = declarative_base()
 
@@ -54,12 +56,10 @@ class AccessInfo(BASE, DolphinBase):
     port = Column(String(255))
     username = Column(String(255))
     password = Column(String(255))
-    vendor = Column(String(255))
-    model = Column(String(255))
     extra_attributes = Column(JsonEncodedDict)
 
 
-class Storage(BASE, DolphinBase):
+class Storage(BASE, DolphinBase, models.SoftDeleteMixin):
     """Represents a storage object."""
 
     __tablename__ = 'storages'
@@ -75,6 +75,7 @@ class Storage(BASE, DolphinBase):
     total_capacity = Column(Integer)
     used_capacity = Column(Integer)
     free_capacity = Column(Integer)
+    sync_status = Column(Integer, default=constants.SyncStatus.SYNCED)
 
 
 class Volume(BASE, DolphinBase):
@@ -83,12 +84,12 @@ class Volume(BASE, DolphinBase):
     id = Column(String(36), primary_key=True)
     name = Column(String(255))
     storage_id = Column(String(36))
-    original_pool_id = Column(String(255))
+    native_storage_pool_id = Column(String(255))
     description = Column(String(255))
     status = Column(String(255))
-    original_id = Column(String(255))
+    native_volume_id = Column(String(255))
     wwn = Column(String(255))
-    provisioning_policy = Column(String(255))
+    type = Column(String(255))
     total_capacity = Column(Integer)
     used_capacity = Column(Integer)
     free_capacity = Column(Integer)
@@ -96,13 +97,13 @@ class Volume(BASE, DolphinBase):
     deduplicated = Column(Boolean)
 
 
-class Pool(BASE, DolphinBase):
-    """Represents a pool object."""
-    __tablename__ = 'pools'
+class StoragePool(BASE, DolphinBase):
+    """Represents a storage_pool object."""
+    __tablename__ = 'storage_pools'
     id = Column(String(36), primary_key=True)
     name = Column(String(255))
     storage_id = Column(String(36))
-    original_id = Column(String(255))
+    native_storage_pool_id = Column(String(255))
     description = Column(String(255))
     status = Column(String(255))
     storage_type = Column(String(255))
@@ -118,7 +119,7 @@ class Disk(BASE, DolphinBase):
     name = Column(String(255))
     status = Column(String(255))
     vendor = Column(String(255))
-    original_id = Column(String(255))
+    native_disk_id = Column(String(255))
     serial_number = Column(String(255))
     model = Column(String(255))
     media_type = Column(String(255))

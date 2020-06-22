@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import copy
+from datetime import datetime
 
-import six
+from oslo_config import cfg
 from oslo_log import log
-from webob import exc
 
-from dolphin import context
 from dolphin import coordination
 from dolphin import db
 from dolphin import exception
@@ -27,28 +26,14 @@ from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import storages as schema_storages
 from dolphin.api.views import storages as storage_view
+from dolphin.common import constants
 from dolphin.drivers import api as driverapi
 from dolphin.i18n import _
 from dolphin.task_manager import rpcapi as task_rpcapi
 from dolphin.task_manager.tasks import task
 
 LOG = log.getLogger(__name__)
-
-
-def validate_parameters(data, required_parameters,
-                        fix_response=False):
-    if fix_response:
-        exc_response = exc.HTTPBadRequest
-    else:
-        exc_response = exc.HTTPUnprocessableEntity
-
-    for parameter in required_parameters:
-        if parameter not in data:
-            msg = _("Required parameter %s not found.") % parameter
-            raise exc_response(explanation=msg)
-        if not data.get(parameter):
-            msg = _("Required parameter %s is empty.") % parameter
-            raise exc_response(explanation=msg)
+CONF = cfg.CONF
 
 
 class StorageController(wsgi.Controller):
@@ -73,18 +58,14 @@ class StorageController(wsgi.Controller):
         # strip out options except supported search  options
         api_utils.remove_invalid_options(ctxt, query_params,
                                          self._get_storages_search_options())
-        try:
-            storages = db.storage_get_all(context, marker, limit, sort_keys,
-                                          sort_dirs, query_params, offset)
-        except exception.InvalidInput as e:
-            raise exc.HTTPBadRequest(explanation=six.text_type(e))
+
+        storages = db.storage_get_all(ctxt, marker, limit, sort_keys,
+                                      sort_dirs, query_params, offset)
         return storage_view.build_storages(storages)
 
     def show(self, req, id):
-        try:
-            storage = db.storage_get(context, id)
-        except exception.StorageNotFound as e:
-            raise exc.HTTPNotFound(explanation=e.message)
+        ctxt = req.environ['dolphin.context']
+        storage = db.storage_get(ctxt, id)
         return storage_view.build_storage(storage)
 
     @wsgi.response(201)
@@ -96,19 +77,10 @@ class StorageController(wsgi.Controller):
         access_info_dict = body
 
         if self._storage_exist(ctxt, access_info_dict):
-            msg = _("Storage already exists.")
-            raise exc.HTTPBadRequest(explanation=msg)
+            raise exception.StorageAlreadyExists()
 
-        try:
-            storage = self.driver_api.discover_storage(ctxt,
-                                                       access_info_dict)
-        except (exception.InvalidCredential,
-                exception.InvalidRequest,
-                exception.InvalidResults,
-                exception.AccessInfoNotFound,
-                exception.StorageDriverNotFound,
-                exception.StorageNotFound) as e:
-            raise exc.HTTPBadRequest(explanation=e.msg)
+        storage = self.driver_api.discover_storage(ctxt,
+                                                   access_info_dict)
 
         # Registration success, sync resource collection for this storage
         try:
@@ -120,45 +92,46 @@ class StorageController(wsgi.Controller):
             LOG.error(msg)
         return storage_view.build_storage(storage)
 
-    def update(self, req, id, body):
-        return dict(name="Storage 4")
-
     @wsgi.response(202)
     def delete(self, req, id):
         ctxt = req.environ['dolphin.context']
-        try:
-            storage = db.storage_get(ctxt, id)
-        except exception.StorageNotFound as e:
-            LOG.error(e)
-            raise exc.HTTPBadRequest(explanation=e.msg)
-        else:
-            for subclass in task.StorageResourceTask.__subclasses__():
-                self.task_rpcapi.remove_storage_resource(
-                    ctxt,
-                    storage['id'],
-                    subclass.__module__ + '.' + subclass.__name__)
-            self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
+        storage = db.storage_get(ctxt, id)
+
+        for subclass in task.StorageResourceTask.__subclasses__():
+            self.task_rpcapi.remove_storage_resource(
+                ctxt,
+                storage['id'],
+                subclass.__module__ + '.' + subclass.__name__)
+        self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
 
     @wsgi.response(202)
     def sync_all(self, req):
         """
         :param req:
         :return: it's a Asynchronous call. so return 202 on success. sync_all
-        api performs the storage device info, pool, volume etc. tasks on each
-        registered storage device.
+        api performs the storage device info, storage_pool,
+         volume etc. tasks on each registered storage device.
         """
         ctxt = req.environ['dolphin.context']
 
         storages = db.storage_get_all(ctxt)
         LOG.debug("Total {0} registered storages found in database".
                   format(len(storages)))
+        resource_count = len(task.StorageResourceTask.__subclasses__())
 
         for storage in storages:
-            for subclass in task.StorageResourceTask.__subclasses__():
-                self.task_rpcapi.sync_storage_resource(
-                    ctxt,
-                    storage['id'],
-                    subclass.__module__ + '.' + subclass.__name__)
+            try:
+                _set_synced_if_ok(ctxt, storage['id'], resource_count)
+            except exception.InvalidInput as e:
+                LOG.warn('Can not start new sync task for %s, reason is %s'
+                         % (storage['id'], e.msg))
+                continue
+            else:
+                for subclass in task.StorageResourceTask.__subclasses__():
+                    self.task_rpcapi.sync_storage_resource(
+                        ctxt,
+                        storage['id'],
+                        subclass.__module__ + '.' + subclass.__name__)
 
     @wsgi.response(202)
     def sync(self, req, id):
@@ -167,22 +140,15 @@ class StorageController(wsgi.Controller):
         :param id:
         :return:
         """
-        # validate the id
         ctxt = req.environ['dolphin.context']
-        try:
-            storage = db.storage_get(ctxt, id)
-        except exception.StorageNotFound as e:
-            LOG.error(e)
-            raise exc.HTTPNotFound(explanation=e.msg)
-        else:
-            for subclass in task.StorageResourceTask.__subclasses__():
-                self.task_rpcapi.sync_storage_resource(
-                    ctxt,
-                    storage['id'],
-                    subclass.__module__ + '.' + subclass.__name__
-                )
-
-        return
+        storage = db.storage_get(ctxt, id)
+        resource_count = len(task.StorageResourceTask.__subclasses__())
+        _set_synced_if_ok(ctxt, storage['id'], resource_count)
+        for subclass in task.StorageResourceTask.__subclasses__():
+            self.task_rpcapi.sync_storage_resource(
+                ctxt,
+                storage['id'],
+                subclass.__module__ + '.' + subclass.__name__)
 
     def _storage_exist(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)
@@ -199,6 +165,8 @@ class StorageController(wsgi.Controller):
             try:
                 storage = db.storage_get(context, _access_info['storage_id'])
                 if storage:
+                    LOG.error("Storage %s has same access "
+                              "information." % storage['id'])
                     return True
             except exception.StorageNotFound:
                 # Suppose storage was not saved successfully after access
@@ -213,3 +181,26 @@ class StorageController(wsgi.Controller):
 
 def create_resource():
     return wsgi.Resource(StorageController())
+
+
+@coordination.synchronized('{storage_id}')
+def _set_synced_if_ok(context, storage_id, resource_count):
+    try:
+        storage = db.storage_get(context, storage_id)
+    except exception.StorageNotFound:
+        msg = 'Storage %s not found when try to set sync_status' \
+              % storage_id
+        raise exception.InvalidInput(message=msg)
+    else:
+        last_update = storage['updated_at']
+        current_time = datetime.now()
+        interval = (current_time - last_update).seconds
+        # If last synchronization was within 30 minutes,
+        # and the sync status is not SYNCED, it means some sync task
+        # is still running, the new sync task should not launch
+        if interval < CONF.sync_task_expiration and \
+                storage['sync_status'] != constants.SyncStatus.SYNCED:
+            msg = 'Sync task is running for %s' % storage['id']
+            raise exception.InvalidInput(message=msg)
+        storage['sync_status'] = resource_count
+        db.storage_update(context, storage['id'], storage)

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from oslo_log import log
-from webob import exc
 
 from dolphin import db, cryptor
 from dolphin import exception
@@ -22,8 +21,6 @@ from dolphin.api import validation
 from dolphin.api.common import wsgi
 from dolphin.api.schemas import alert as schema_alert
 from dolphin.api.views import alert as alert_view
-from dolphin.drivers import api as driver_api
-from dolphin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -35,7 +32,6 @@ SNMPv3_keys = ('username', 'auth_key', 'security_level', 'auth_protocol',
 class AlertController(wsgi.Controller):
     def __init__(self):
         super().__init__()
-        self.driver_api = driver_api.API()
         self.alert_rpcapi = rpcapi.AlertAPI()
 
     @wsgi.response(200)
@@ -45,51 +41,39 @@ class AlertController(wsgi.Controller):
         ctx = req.environ['dolphin.context']
         alert_source = body
 
-        try:
-            alert_source["storage_id"] = id
-            db.storage_get(ctx, id)
-            alert_source = self._input_check(alert_source)
+        alert_source["storage_id"] = id
+        db.storage_get(ctx, id)
+        alert_source = self._input_check(alert_source)
 
-            snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
-            if snmp_config_to_del is not None:
-                alert_source = db.alert_source_update(ctx, id, alert_source)
-            else:
-                alert_source = db.alert_source_create(ctx, alert_source)
-            snmp_config_to_add = alert_source
-            self.alert_rpcapi.sync_snmp_config(ctx, snmp_config_to_del,
-                                               snmp_config_to_add)
-        except exception.StorageNotFound:
-            msg = (_("Alert source cannot be created or updated for a"
-                     " non-existing storage %s.") % id)
-            raise exc.HTTPBadRequest(explanation=msg)
-        except exception.InvalidInput as e:
-            raise exc.HTTPBadRequest(explanation=e.msg)
+        snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
+        if snmp_config_to_del is not None:
+            alert_source = db.alert_source_update(ctx, id, alert_source)
+        else:
+            alert_source = db.alert_source_create(ctx, alert_source)
+        snmp_config_to_add = alert_source
+        self.alert_rpcapi.sync_snmp_config(ctx, snmp_config_to_del,
+                                           snmp_config_to_add)
 
         return alert_view.build_alert_source(alert_source.to_dict())
 
     @wsgi.response(200)
     def show(self, req, id):
         ctx = req.environ['dolphin.context']
-        try:
-            alert_source = db.alert_source_get(ctx, id)
-        except exception.AlertSourceNotFound as e:
-            raise exc.HTTPNotFound(explanation=e.msg)
+        alert_source = db.alert_source_get(ctx, id)
 
         return alert_view.build_alert_source(alert_source.to_dict())
 
     @wsgi.response(200)
     def delete(self, req, id):
         ctx = req.environ['dolphin.context']
-        try:
-            snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
-            if snmp_config_to_del is not None:
-                self.alert_rpcapi.sync_snmp_config(ctx, snmp_config_to_del,
-                                                   None)
-                db.alert_source_delete(ctx, id)
-            else:
-                raise exception.AlertSourceNotFound(storage_id=id)
-        except exception.AlertSourceNotFound as e:
-            raise exc.HTTPNotFound(explanation=e.msg)
+
+        snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
+        if snmp_config_to_del is not None:
+            self.alert_rpcapi.sync_snmp_config(ctx, snmp_config_to_del,
+                                               None)
+            db.alert_source_delete(ctx, id)
+        else:
+            raise exception.AlertSourceNotFound(id)
 
     def _input_check(self, alert_source):
         version = alert_source.get('version')
@@ -101,7 +85,7 @@ class AlertController(wsgi.Controller):
             if not user_name or not security_level or not engine_id:
                 msg = "If snmp version is SNMPv3, then username, " \
                       "security_level and engine_id are required."
-                raise exception.InvalidInput(reason=msg)
+                raise exception.InvalidInput(msg)
 
             if security_level == "AuthNoPriv" or security_level == "AuthPriv":
                 auth_protocol = alert_source.get('auth_protocol')
@@ -110,7 +94,7 @@ class AlertController(wsgi.Controller):
                     msg = "If snmp version is SNMPv3 and security_level is " \
                           "AuthPriv or AuthNoPriv, auth_protocol and " \
                           "auth_key are required."
-                    raise exception.InvalidInput(reason=msg)
+                    raise exception.InvalidInput(msg)
                 alert_source['auth_key'] = cryptor.encode(
                     alert_source['auth_key'])
 
@@ -121,7 +105,7 @@ class AlertController(wsgi.Controller):
                         msg = "If snmp version is SNMPv3 and security_level" \
                               " is AuthPriv, privacy_protocol and " \
                               "privacy_key are  required."
-                        raise exception.InvalidInput(reason=msg)
+                        raise exception.InvalidInput(msg)
                     alert_source['privacy_key'] = cryptor.encode(
                         alert_source['privacy_key'])
                 else:
@@ -140,7 +124,7 @@ class AlertController(wsgi.Controller):
             if not community_string:
                 msg = "If snmp version is SNMPv1 or SNMPv2c, " \
                       "community_string is required."
-                raise exception.InvalidInput(reason=msg)
+                raise exception.InvalidInput(msg)
 
             # Clear keys for SNMPv3
             for k in SNMPv3_keys:

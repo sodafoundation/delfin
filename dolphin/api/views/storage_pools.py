@@ -14,13 +14,13 @@
 import copy
 
 
-def build_pools(pools):
-    # Build list of pools
-    views = [build_pool(pool)
-             for pool in pools]
-    return dict(pools=views)
+def build_storage_pools(storage_pools):
+    # Build list of storage_pools
+    views = [build_storage_pool(storage_pool)
+             for storage_pool in storage_pools]
+    return dict(storage_pools=views)
 
 
-def build_pool(pool):
-    view = copy.deepcopy(pool)
+def build_storage_pool(storage_pool):
+    view = copy.deepcopy(storage_pool)
     return dict(view)

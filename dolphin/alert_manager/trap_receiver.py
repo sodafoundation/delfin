@@ -24,6 +24,7 @@ from pysnmp.smi import builder, view, rfc1902
 from dolphin import context, cryptor
 from dolphin import db
 from dolphin import exception
+from dolphin import manager
 from dolphin.alert_manager import alert_processor
 from dolphin.alert_manager import constants
 from dolphin.db import api as db_api
@@ -43,16 +44,18 @@ PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
                         "3des": config.usm3DESEDEPrivProtocol}
 
 
-class TrapReceiver(object):
+class TrapReceiver(manager.Manager):
     """Trap listening and processing functions"""
 
-    def __init__(self, trap_receiver_address, trap_receiver_port,
-                 snmp_mib_path, mib_view_controller=None, snmp_engine=None):
-        self.mib_view_controller = mib_view_controller
-        self.snmp_engine = snmp_engine
-        self.trap_receiver_address = trap_receiver_address
-        self.trap_receiver_port = trap_receiver_port
-        self.snmp_mib_path = snmp_mib_path
+    RPC_API_VERSION = '1.0'
+
+    def __init__(self, service_name=None, *args, **kwargs):
+        self.mib_view_controller = kwargs.get('mib_view_controller')
+        self.snmp_engine = kwargs.get('snmp_engine')
+        self.trap_receiver_address = kwargs.get('trap_receiver_address')
+        self.trap_receiver_port = kwargs.get('trap_receiver_port')
+        self.snmp_mib_path = kwargs.get('snmp_mib_path')
+        super(TrapReceiver, self).__init__(host=kwargs.get('host'))
 
     def sync_snmp_config(self, ctxt, snmp_config_to_del=None,
                          snmp_config_to_add=None):
@@ -118,7 +121,7 @@ class TrapReceiver(object):
         version_int = constants.VALID_SNMP_VERSIONS.get(_version)
         if version_int is None:
             msg = "Invalid snmp version %s." % version
-            raise exception.InvalidSNMPConfig(detail=msg)
+            raise exception.InvalidSNMPConfig(msg)
 
         return version_int
 
@@ -129,7 +132,7 @@ class TrapReceiver(object):
                 return usm_auth_protocol
             else:
                 msg = "Invalid auth_protocol %s." % auth_protocol
-                raise exception.InvalidSNMPConfig(detail=msg)
+                raise exception.InvalidSNMPConfig(msg)
         else:
             return config.usmNoAuthProtocol
 
@@ -141,7 +144,7 @@ class TrapReceiver(object):
                 return usm_priv_protocol
             else:
                 msg = "Invalid privacy_protocol %s." % privacy_protocol
-                raise exception.InvalidSNMPConfig(detail=msg)
+                raise exception.InvalidSNMPConfig(msg)
 
         return config.usmNoPrivProtocol
 
@@ -206,15 +209,13 @@ class TrapReceiver(object):
         # Using the known filter and db exceptions are handled by api
         alert_source = db.alert_source_get_all(ctxt, filters=filters)
         if not alert_source:
-            msg = (_("Alert source could not be found with host %s.")
-                   % source_ip)
-            raise exception.AlertSourceNotFound(message=msg)
+            raise exception.AlertSourceNotFoundWithHost(source_ip)
 
         # This is to make sure unique host is configured each alert source
         if len(alert_source) > 1:
             msg = (_("Failed to get unique alert source with host %s.")
                    % source_ip)
-            raise exception.InvalidResults(message=msg)
+            raise exception.InvalidResults(msg)
 
         return alert_source[0]
 
@@ -245,11 +246,11 @@ class TrapReceiver(object):
             # verify that community name is configured at alert source db for
             # the storage which is sending traps.
             # context_name contains the incoming community string value
-            if exec_context['securityModel'] != constants.SNMP_V3_VERSION \
+            if exec_context['securityModel'] != constants.SNMP_V3_INT \
                     and alert_source['community_string'] != str(context_name):
                 msg = (_("Community string not matching with alert source %s, "
                          "dropping it.") % source_ip)
-                raise exception.InvalidResults(message=msg)
+                raise exception.InvalidResults(msg)
 
             var_binds = [rfc1902.ObjectType(
                 rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(

@@ -43,16 +43,8 @@ def main():
     utils.monkey_patch()
 
     launcher = service.process_launcher()
-    api_server = service.WSGIService('dolphin')
-    task_server = service.Service.create(binary='dolphin-task',
-                                         coordination=True)
+    api_server = service.WSGIService('dolphin', coordination=True)
     launcher.launch_service(api_server, workers=api_server.workers or 1)
-    launcher.launch_service(task_server)
-
-    # Launch alert manager service
-    alert_manager = service.AlertMngrService()
-    launcher.launch_service(alert_manager)
-
     launcher.wait()
 
 
