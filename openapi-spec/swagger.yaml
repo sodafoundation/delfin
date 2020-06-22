@@ -91,9 +91,9 @@ paths:
           schema:
             type: string
             enum:
-              - Normal
-              - Offline
-              - Abnormal
+              - normal
+              - offline
+              - abnormal
       responses:
         '200':
           description: Storage backend list available.
@@ -505,9 +505,9 @@ paths:
           schema:
             type: string
             enum:
-              - Normal
-              - Offline
-              - Abnormal
+              - normal
+              - offline
+              - abnormal
       responses:
         '200':
           description: List storage pools query was success
@@ -1188,9 +1188,8 @@ components:
             status:
               type: string
               enum:
-                - normal
-                - offline
-                - abnormal
+                - available
+                - error
             total_capacity:
               type: integer
               format: int64
