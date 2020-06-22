@@ -192,15 +192,13 @@ def _set_synced_if_ok(context, storage_id, resource_count):
               % storage_id
         raise exception.InvalidInput(message=msg)
     else:
-        last_update = storage['updated_at']
-        if last_update is None:
-            interval = 0
-        else:
-            current_time = datetime.now()
-            interval = (current_time - last_update).seconds
-        # If last synchronization was within 30 minutes,
-        # and the sync status is not SYNCED, it means some sync task
-        # is still running, the new sync task should not launch
+        last_update = storage['updated_at'] or storage['created_at']
+        current_time = datetime.now()
+        interval = (current_time - last_update).seconds
+        # If last synchronization was within
+        # CONF.sync_task_expiration(in seconds), and the sync status
+        # is not SYNCED, it means some sync task is still running,
+        # the new sync task should not launch
         if interval < CONF.sync_task_expiration and \
                 storage['sync_status'] != constants.SyncStatus.SYNCED:
             msg = 'Sync task is running for %s' % storage['id']
