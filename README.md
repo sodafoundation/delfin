@@ -1,4 +1,4 @@
-# SODA Infrastructure Manager
+# delfin : SODA Infrastructure Manager Project
 [![Build Status](https://travis-ci.com/sodafoundation/sim.svg?branch=master)](https://travis-ci.com/sodafoundation/sim)
 [![codecov.io](https://codecov.io/github/sodafoundation/sim/coverage.svg?branch=master)](https://codecov.io/github/sodafoundation/sim?branch=master)
 [![Releases](https://img.shields.io/github/release/sodafoundation/sim/all.svg?style=flat-square)](https://github.com/sodafoundation/sim/releases)
@@ -8,7 +8,7 @@
 
 ## Introduction
 
-SODA Infrastructure Manager is an open source project to provides unified, intelligent and scalable resource management, alert and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment. It will also provide the alert management and metric data(performance/health) for monitoring and further analysis. It will provide a scalable framework where more and more backends and also client exporters can be added. This will enable to add more storage and infrastructure backends, also support different management clients for monitoring and health prediction.
+delfin (Dolphin in spanish!) , the SODA Infrastructure Manager project is an an open source project to provide unified, intelligent and scalable resource management, alert and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment. It will also provide the alert management and metric data(performance/health) for monitoring and further analysis. It will provide a scalable framework where more and more backends as well as client exporters can be added. This will enable to add more storage and infrastructure backends and also support different management clients for monitoring and health prediction.
 
 It provides unified APIs to access, export and connect with clients as well as a set if interfaces for various driver addition.
 
@@ -28,11 +28,11 @@ This is one of the SODA Core Projects and is maintained by SODA Foundation direc
 
 ## Latest Releases
 
-[https://github.com/sodafoundation/sim/releases](https://github.com/sodafoundation/sim/releases)
+[https://github.com/sodafoundation/delfin/releases](https://github.com/sodafoundation/delfin/releases)
 
 ## Support and Issues
 
-[https://github.com/sodafoundation/sim/issues](https://github.com/sodafoundation/sim/issues)
+[https://github.com/sodafoundation/delfin/issues](https://github.com/sodafoundation/delfin/issues)
 
 ## Project Community
 
@@ -42,7 +42,7 @@ This is one of the SODA Core Projects and is maintained by SODA Foundation direc
 
 Join [https://sodafoundation.io/slack/](https://sodafoundation.io/slack/) and share your interest in the ‘general’ channel
 
-Checkout [https://github.com/sodafoundation/sim/issues](https://github.com/sodafoundation/sim/issues) labelled with ‘good first issue’ or ‘help needed’ or ‘help wanted’ or ‘StartMyContribution’ or ‘SMC’
+Checkout [https://github.com/sodafoundation/delfin/issues](https://github.com/sodafoundation/delfin/issues) labelled with ‘good first issue’ or ‘help needed’ or ‘help wanted’ or ‘StartMyContribution’ or ‘SMC’
 
 ## Project Roadmap
 
