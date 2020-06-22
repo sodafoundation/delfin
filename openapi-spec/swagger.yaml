@@ -5,7 +5,7 @@ info:
   description: SODA Infrastructure Management API for resource monitoring, alerting and management across multiple, heterogeneous storage backend. Currently supporting storage monitoring and alerting.
   contact:
     name: SODA Support
-    url: 'https://opensds.slack.com'
+    url: 'https://sodafoundation.io/slack'
     email: support@sodafoundation.io
   license:
     name: Apache 2.0
