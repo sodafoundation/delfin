@@ -19,7 +19,7 @@ PROJECT_NAME='SIM'
 LOG_DIR=/var/log/sodafoundation
 LOGFILE=${LOGFILE:-/var/log/sodafoundation/sim_pre_installer.log}
 
-if [ ! -d ${LOGDIR} ]; then
+if [ ! -d ${LOG_DIR} ]; then
     mkdir -p $LOG_DIR
 fi
 

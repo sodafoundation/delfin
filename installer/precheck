@@ -85,7 +85,7 @@ check_install_rabbitmq(){
         ret=$(wget -O- https://dl.bintray.com/rabbitmq/Keys/rabbitmq-release-signing-key.asc | sudo apt-key add -)
         if [ $? -eq 0 ]; then
             ret=$(wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -)
-            if ![ $? -eq 0 ]; then
+            if [ $? -ne 0 ]; then
                 sim::log "Error in importing RabbitMQ"
                 exit 1
             fi
@@ -137,6 +137,11 @@ check_install_p3_venv(){
         sim::log "venv is installed"
     fi
     
+    py_venv=$(apt-get install python3-venv)
+    if [ $? -eq 0 ]; then
+        sim::log "python3-venv is installed"
+    fi
+
     venv_dir=$(python3 -m venv ${BASEDIR}/${PROJECT_NAME})
     source ${BASEDIR}/${PROJECT_NAME}/bin/activate
 }
