@@ -1,4 +1,4 @@
 [run]
 branch = true
-source = dolphin
-omit = dolphin/tests/*
+source = delfin
+omit = delfin/tests/*
