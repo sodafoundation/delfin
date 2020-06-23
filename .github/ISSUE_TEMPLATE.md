@@ -18,7 +18,7 @@
 **Anything else we need to know?**:
 
 **Environment**:
-- Dolphin(release/branch) version:
+- Delfin(release/branch) version:
 - OS (e.g. from /etc/os-release):
 - Kernel (e.g. `uname -a`):
 - Install tools:

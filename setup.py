@@ -17,7 +17,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="dolphin",
+    name="delfin",
     version="1.0",
     author="SODA Authors",
     author_email="Opensds-tech-discuss@lists.opensds.io",
@@ -26,13 +26,13 @@ setup(
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
     entry_points={
         'resource.exporter': [
-            'example1 = dolphin.exporter.example_exporter:Example1Exporter',
-            'example2 = dolphin.exporter.example_exporter:Example2Exporter'
+            'example1 = delfin.exporter.example_exporter:Example1Exporter',
+            'example2 = delfin.exporter.example_exporter:Example2Exporter'
         ],
-        'dolphin.storage.drivers': [
-            'fake_storage fake_driver = dolphin.drivers.fake_storage:FakeStorageDriver',
-            'dellemc vmax = dolphin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
-            'huawei oceanstor = dolphin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver'
+        'delfin.storage.drivers': [
+            'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
+            'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
+            'huawei oceanstor = delfin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver'
         ]
     },
 )

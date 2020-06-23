@@ -1,8 +1,8 @@
 # delfin : SODA Infrastructure Manager Project
-[![Build Status](https://travis-ci.com/sodafoundation/sim.svg?branch=master)](https://travis-ci.com/sodafoundation/sim)
-[![codecov.io](https://codecov.io/github/sodafoundation/sim/coverage.svg?branch=master)](https://codecov.io/github/sodafoundation/sim?branch=master)
-[![Releases](https://img.shields.io/github/release/sodafoundation/sim/all.svg?style=flat-square)](https://github.com/sodafoundation/sim/releases)
-[![LICENSE](https://img.shields.io/github/license/sodafoundation/sim.svg?style=flat-square)](https://github.com/sodafoundation/sim/blob/master/LICENSE)
+[![Build Status](https://travis-ci.com/sodafoundation/delfin.svg?branch=master)](https://travis-ci.com/sodafoundation/delfin)
+[![codecov.io](https://codecov.io/github/sodafoundation/delfin/coverage.svg?branch=master)](https://codecov.io/github/sodafoundation/delfin?branch=master)
+[![Releases](https://img.shields.io/github/release/sodafoundation/delfin/all.svg?style=flat-square)](https://github.com/sodafoundation/delfin/releases)
+[![LICENSE](https://img.shields.io/github/license/sodafoundation/delfin.svg?style=flat-square)](https://github.com/sodafoundation/delfin/blob/master/LICENSE)
 
 <img src="https://sodafoundation.io/wp-content/uploads/2020/01/SODA_logo_outline_color_800x800.png" width="200" height="200">
 
