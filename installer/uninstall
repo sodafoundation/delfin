@@ -47,5 +47,5 @@ do
     fi
 done
 
-$(rm -rf /etc/dolphin)
-$(rm -rf /var/lib/dolphin)
+$(rm -rf /etc/delfin)
+$(rm -rf /var/lib/delfin)

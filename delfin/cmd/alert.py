@@ -17,25 +17,35 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-"""db create  script for delfin """
+"""Starter script for delfin alert service."""
 
-
+import eventlet
+eventlet.monkey_patch()
 
 import sys
 
 from oslo_config import cfg
+from oslo_log import log
 
-from delfin import  db
+from delfin.common import config  # noqa
+from delfin import service
+from delfin import utils
 from delfin import version
 
 CONF = cfg.CONF
 
 
 def main():
-
+    log.register_options(CONF)
     CONF(sys.argv[1:], project='delfin',
          version=version.version_string())
-    db.register_db()
+    log.setup(CONF, "delfin")
+    utils.monkey_patch()
+
+    # Launch alert manager service
+    alert_manager = service.AlertService.create(binary='delfin-alert')
+    service.serve(alert_manager)
+    service.wait()
 
 
 if __name__ == '__main__':
