@@ -88,7 +88,7 @@ class AlertController(wsgi.Controller):
             try:
                 OctetString.fromHexString(engine_id)
             except ValueError:
-                msg = "Invalid engine_id.It should be set of octets in " \
+                msg = "engine_id should be a set of octets in " \
                       "hexadecimal format."
                 raise exception.InvalidInput(msg)
 
