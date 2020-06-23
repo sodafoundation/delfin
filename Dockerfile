@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN apt-get update -y && \
-    apt-get install -y python3-pip python3-dev && \
+    apt-get install -y python3-pip && \
     apt-get install -y sqlite3 && \
     apt-get install -y libffi-dev
 
