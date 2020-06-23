@@ -19,15 +19,15 @@ from subprocess import CalledProcessError
 import traceback as tb
 from helper import *
 
-sim_source_path = ''
-sim_etc_dir = '/etc/dolphin'
-sim_var_dir = '/var/lib/dolphin'
-conf_file = os.path.join(sim_etc_dir, 'dolphin.conf')
-proj_name = 'SIM'
+delfin_source_path = ''
+delfin_etc_dir = '/etc/delfin'
+delfin_var_dir = '/var/lib/delfin'
+conf_file = os.path.join(delfin_etc_dir, 'delfin.conf')
+proj_name = 'delfin'
 DEVNULL = '/dev/null'
 
 def _activate():
-    path_to_activate = os.path.join(sim_source_path , 'installer', proj_name, 'bin/activate')
+    path_to_activate = os.path.join(delfin_source_path , 'installer', proj_name, 'bin/activate')
     command = '. ' +  path_to_activate    
     os.system(command) 
 
@@ -36,9 +36,9 @@ def init():
     #_activate()
     pass
     
-def create_sim_db():
+def create_delfin_db():
     try:
-        db_path = os.path.join(sim_source_path, 'installer', 'create_db.py')
+        db_path = os.path.join(delfin_source_path, 'installer', 'create_db.py')
         subprocess.check_call(['python3', db_path, '--config-file', conf_file])
     except CalledProcessError as cpe:
         logger.error("Got CPE error [%s]:[%s]" % (cpe, tb.print_exc()))
@@ -47,7 +47,7 @@ def create_sim_db():
         
 def start_processes():
     # start api process
-    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'api.py')
+    proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'api.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
 # >/dev/null 2>&1
     logger.info("Executing command [%s]", command)
@@ -55,7 +55,7 @@ def start_processes():
     logger.info("API process_started")
 
     #start task process
-    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'task.py')
+    proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'task.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
@@ -63,21 +63,21 @@ def start_processes():
     logger.info("TASK process_started")
 
     # Start alert process
-    proc_path = os.path.join(sim_source_path, 'dolphin', 'cmd', 'alert.py')
+    proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'alert.py')
     command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL +  ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("ALERT process_started")
     
     
-def install_sim():
+def install_delfin():
     python_setup_comm = ['build', 'install'] 
-    req_logs = os.path.join(sim_log_dir, 'requirements.log')
+    req_logs = os.path.join(delfin_log_dir, 'requirements.log')
     command='pip3 install -r requirements.txt >' + req_logs+ ' 2>&1'
     logger.info("Executing [%s]", command)
     os.system(command)
     
-    setup_file=os.path.join(sim_source_path, 'setup.py')
+    setup_file=os.path.join(delfin_source_path, 'setup.py')
     for command in python_setup_comm:
         try:
             command = 'python3 ' + setup_file + ' ' + command + ' >>' + logfile
@@ -88,35 +88,35 @@ def install_sim():
             return
 
 def main():
-    global sim_source_path
+    global delfin_source_path
     cwd = os.getcwd()
     logger.info("Current dir is %s" % (cwd))
     this_file_dir = os.path.dirname(os.path.realpath(__file__))
-    sim_source_path = os.path.join(this_file_dir, "../" )
+    delfin_source_path = os.path.join(this_file_dir, "../" )
 
-    logger.info("sims [%s]" % (sim_source_path))
-    os.chdir(sim_source_path)
+    logger.info("delfins [%s]" % (delfin_source_path))
+    os.chdir(delfin_source_path)
     logger.info(os.getcwd())
 
     # create required directories
-    create_dir(sim_etc_dir)
-    create_dir(sim_var_dir)
+    create_dir(delfin_etc_dir)
+    create_dir(delfin_var_dir)
 
     # Copy required files
     # Copy api-paste.ini
-    ini_file_src = os.path.join(sim_source_path, 'etc', 'dolphin', 'api-paste.ini')
-    ini_file_dest = os.path.join(sim_etc_dir, 'api-paste.ini')
+    ini_file_src = os.path.join(delfin_source_path, 'etc', 'delfin', 'api-paste.ini')
+    ini_file_dest = os.path.join(delfin_etc_dir, 'api-paste.ini')
     copy_files(ini_file_src, ini_file_dest)
 
     # Copy the conf file
-    conf_file_src = os.path.join(sim_source_path, 'etc', 'dolphin', 'dolphin.conf')
+    conf_file_src = os.path.join(delfin_source_path, 'etc', 'delfin', 'delfin.conf')
     copy_files(conf_file_src, conf_file)
 
     # install
-    install_sim()
+    install_delfin()
 
     # create db
-    create_sim_db()
+    create_delfin_db()
 
     # start
     start_processes()

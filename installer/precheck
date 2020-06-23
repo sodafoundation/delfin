@@ -20,9 +20,9 @@ pip_version=$(awk -F "=" '/pip_version/ {print $2}' ${BASEDIR}/install.conf)
 apt_update_command="sudo apt-get update"
 apt_update_done=0
 BIN_DIR=/usr/bin/
-PROJECT_NAME='SIM'
+PROJECT_NAME='delfin'
 PROJECT_DIR=$(dirname "$0")
-log=sim::log
+log=delfin::log
 
 
 check_python(){
@@ -35,11 +35,11 @@ check_python(){
         installed_python=${py_ver%%\.*}
         req_python=${python_version%\.*}
         if [[ $installed_python -eq $req_python ]]; then
-            sim::log "Required python is [${req_python}] and installed is [${installed_python}]"
+            delfin::log "Required python is [${req_python}] and installed is [${installed_python}]"
             
             test -n "$(which python${req_python})" && python_path=$(which python${req_python})
             if [[ -z $python_path ]]; then
-                sim::log "Can not find required python version installed, please install it."
+                delfin::log "Can not find required python version installed, please install it."
                 exit 2
             fi
         fi
@@ -51,7 +51,7 @@ check_pip(){
     if [[ -x "$(which pip)" ]]; then
         test -n "$(which pip3)" && pip_path=$(which pip3)
         if [[ -z $pip_path ]]; then
-            sim::log "Can not find pip, please install it."
+            delfin::log "Can not find pip, please install it."
             exit 2
         fi
         ln -sf $pip_path /usr/local/bin/pip
@@ -61,7 +61,7 @@ check_pip(){
 check_install_sqlite(){
     sqlite_ver=$(sqlite3 -version)
     if [ $? -eq 0 ]; then
-        sim::log "Sqlite3 version[${sqlite_ver}] is already installed"
+        delfin::log "Sqlite3 version[${sqlite_ver}] is already installed"
         return
     else
         # Install sqlite
@@ -77,7 +77,7 @@ check_install_rabbitmq(){
     # check if MQ is installed
     mq_status=$(systemctl is-active --quiet rabbitmq-server.service)
     if [ $? -eq 0 ]; then
-        sim::log "RabbitMQ is already installed"
+        delfin::log "RabbitMQ is already installed"
         return
     else
         #TODO check erlang
@@ -86,11 +86,11 @@ check_install_rabbitmq(){
         if [ $? -eq 0 ]; then
             ret=$(wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -)
             if [ $? -ne 0 ]; then
-                sim::log "Error in importing RabbitMQ"
+                delfin::log "Error in importing RabbitMQ"
                 exit 1
             fi
         else
-            sim::log "Error in importing rabbitMQ"
+            delfin::log "Error in importing rabbitMQ"
             exit 1
         fi
         if [ ${apt_update_done} -eq 0 ]; then
@@ -101,7 +101,7 @@ check_install_rabbitmq(){
     fi
     mq_status=$(systemctl is-active --quiet rabbitmq-server.service)
     if [ $? -eq 0 ]; then
-        sim::log "RabbitMQ is successfully installed"
+        delfin::log "RabbitMQ is successfully installed"
     fi
 }
 
@@ -109,7 +109,7 @@ check_install_redis(){
     # Check if redis is installed or not
     redis_status=$(systemctl is-active --quiet redis.service)
     if [ $? -eq 0 ]; then
-        sim::log "Redis is already installed"
+        delfin::log "Redis is already installed"
         return
     else
         if [ ${apt_update_done} -eq 0 ]; then
@@ -124,9 +124,9 @@ check_install_redis(){
 check_sys_req(){
     ubuntu_release=$(${BIN_DIR}lsb_release -cs)
     if [[ ${ubuntu_release} == 'xenial' || ${ubuntu_release} == 'bionic' ]]; then
-        sim::log "System requirements satisfied"
+        delfin::log "System requirements satisfied"
     else
-        sim::log "Installation of ${PROJECT_NAME} is not supported on this platform"
+        delfin::log "Installation of ${PROJECT_NAME} is not supported on this platform"
     fi
 }
 
@@ -134,12 +134,12 @@ check_install_p3_venv(){
 
     venv_res=$(python3 -m pip install --user virtualenv)
     if [ $? -eq 0 ]; then
-        sim::log "venv is installed"
+        delfin::log "venv is installed"
     fi
     
-    py_venv=$(apt-get install python3-venv)
+    py_venv=$(apt-get -y install python3-venv)
     if [ $? -eq 0 ]; then
-        sim::log "python3-venv is installed"
+        delfin::log "python3-venv is installed"
     fi
 
     venv_dir=$(python3 -m venv ${BASEDIR}/${PROJECT_NAME})

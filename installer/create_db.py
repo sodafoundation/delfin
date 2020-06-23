@@ -17,7 +17,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-"""db create  script for dolphin """
+"""db create  script for delphin """
 
 
 
@@ -33,7 +33,7 @@ CONF = cfg.CONF
 
 def main():
 
-    CONF(sys.argv[1:], project='dolphin',
+    CONF(sys.argv[1:], project='delfin',
          version=version.version_string())
     db.register_db()
 
