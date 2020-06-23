@@ -15,16 +15,16 @@
 
 # Script to hold the utilities required
 
-PROJECT_NAME='SIM'
+PROJECT_NAME='delfin'
 LOG_DIR=/var/log/sodafoundation
-LOGFILE=${LOGFILE:-/var/log/sodafoundation/sim_pre_installer.log}
+LOGFILE=${LOGFILE:-/var/log/sodafoundation/delfin_pre_installer.log}
 
-if [ ! -d ${LOGDIR} ]; then
+if [ ! -d ${LOG_DIR} ]; then
     mkdir -p $LOG_DIR
 fi
 
 # Log function
-sim::log(){
+delfin::log(){
     DATE=`date "+%Y-%m-%d %H:%M:%S"`
     USER=$(whoami)
     echo "${DATE} ${USER} execute $0 [INFO] $@ 2>&1" >> $LOGFILE

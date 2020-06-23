@@ -17,9 +17,9 @@ PYTHON='python3'
 BASEDIR=$(dirname "$0")
 
 
-sim_install_usage(){
+delfin_install_usage(){
     echo "Usage $(basename $0) [--help|--precheck|--skip_precheck]"
-cat << SIM_INSTALL_INFO
+cat << DELFIN_INSTALL_INFO
 Usage:
     $(basename $0) [-h|--help]
     $(basename $0) [-p|--precheck]
@@ -28,26 +28,26 @@ Flags:
     -h, --help Print the usage of install
     -p, --precheck Only perform system software requirements for installation
     -s, --skip_precheck If precheck is not required and directly install
-SIM_INSTALL_INFO
+DELFIN_INSTALL_INFO
 }
 
 precheck(){
-    sim::log "Precheck called.."
+    delfin::log "Precheck called.."
     echo $!
     source ${BASEDIR}/precheck
 }
 
 precheck_and_install(){
-    sim::log "precheck_and_install"
+    delfin::log "precheck_and_install"
     precheck
     install
 }
 
 
 install(){
-    sim::log "Install called.."
+    delfin::log "Install called.."
 
-    ${PYTHON} ${BASEDIR}/install_sim.py
+    ${PYTHON} ${BASEDIR}/install_delfin.py
 }
 
 main(){
@@ -68,7 +68,7 @@ main(){
         install
         ;;
     *)
-        sim_install_usage
+        delfin_install_usage
         exit 1
         ;;
     esac

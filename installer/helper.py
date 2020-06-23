@@ -20,23 +20,23 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
-log_filename = 'sim_installer.log' + datetime.now().strftime("%d_%m_%Y_%H_%M_%s")
+log_filename = 'delfin_installer.log' + datetime.now().strftime("%d_%m_%Y_%H_%M_%s")
 LOGGING_FORMAT = "[%(asctime)s] [%(levelname)s] [%(filename)s] " \
     "[%(funcName)s():%(lineno)s] [PID:%(process)d TID:%(thread)d] %(message)s"
 LOGGING_LEVEL = "INFO"
 logger = None
 logfile=''
-sim_log_dir = '/var/log/sodafoundation/'
+delfin_log_dir = '/var/log/sodafoundation/'
 
 def init_logging():
     global logfile
     global logger
     
     try:
-        os.mkdir(sim_log_dir)
+        os.mkdir(delfin_log_dir)
     except OSError as ose:
         pass
-    logfile = sim_log_dir + log_filename
+    logfile = delfin_log_dir + log_filename
     server_log_file = RotatingFileHandler(
                                             logfile,
                                             maxBytes=10000,
