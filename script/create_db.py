@@ -17,7 +17,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-"""db create  script for dolphin """
+"""db create  script for delfin """
 
 
 
@@ -25,15 +25,15 @@ import sys
 
 from oslo_config import cfg
 
-from dolphin import  db
-from dolphin import version
+from delfin import  db
+from delfin import version
 
 CONF = cfg.CONF
 
 
 def main():
 
-    CONF(sys.argv[1:], project='dolphin',
+    CONF(sys.argv[1:], project='delfin',
          version=version.version_string())
     db.register_db()
 

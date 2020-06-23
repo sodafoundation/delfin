@@ -19,17 +19,17 @@ RUN apt-get update -y && \
     apt-get install -y sqlite3 && \
     apt-get install -y libffi-dev
 
-ADD . /SIM
-WORKDIR /SIM
+ADD . /delfin
+WORKDIR /delfin
 
-RUN mkdir -p /var/log/SIM
-RUN mkdir -p /var/lib/dolphin/
+RUN mkdir -p /var/log/delfin
+RUN mkdir -p /var/lib/delfin/
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 
-COPY etc/dolphin/api-paste.ini /etc/dolphin/api-paste.ini
-COPY etc/dolphin/dolphin.conf /etc/dolphin/dolphin.conf
+COPY etc/delfin/api-paste.ini /etc/delfin/api-paste.ini
+COPY etc/delfin/delfin.conf /etc/delfin/delfin.conf
 
 COPY script/start.sh start.sh
 

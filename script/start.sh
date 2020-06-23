@@ -16,12 +16,12 @@
 
 python3 setup.py install
 
-python3 script/create_db.py --config-file /etc/dolphin/dolphin.conf
+python3 script/create_db.py --config-file /etc/delfin/delfin.conf
 
 sleep 10
 
-python3 dolphin/cmd/api.py --config-file /etc/dolphin/dolphin.conf > /var/log/dolphin/api.log 2>&1 &
+python3 delfin/cmd/api.py --config-file /etc/delfin/delfin.conf > /var/log/delfin/api.log 2>&1 &
 
-python3 dolphin/cmd/task.py --config-file /etc/dolphin/dolphin.conf > /var/log/dolphin/task.log 2>&1 &
+python3 delfin/cmd/task.py --config-file /etc/delfin/delfin.conf > /var/log/delfin/task.log 2>&1 &
 
-python3 dolphin/cmd/alert.py --config-file /etc/dolphin/dolphin.conf > /var/log/dolphin/alert.log 2>&1
+python3 delfin/cmd/alert.py --config-file /etc/delfin/delfin.conf > /var/log/delfin/alert.log 2>&1

@@ -30,19 +30,19 @@ services:
       volumes:
           - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
       environment:
-          RABBITMQ_DEFAULT_USER: ${SIM_RABBITMQ_USER}
-          RABBITMQ_DEFAULT_PASS: ${SIM_RABBITMQ_PASS}
+          RABBITMQ_DEFAULT_USER: ${DELFIN_RABBITMQ_USER}
+          RABBITMQ_DEFAULT_PASS: ${DELFIN_RABBITMQ_PASS}
           RABBITMQ_DEFAULT_VHOST: "/"
       ports:
           - 5672:5672
           - 15672:15672
 
-  soda-sim:
-    image: soda-sim
+  delfin:
+    image: sodafoundation/delfin
     volumes:
-      - /var/log/dolphin:/var/log/dolphin
+      - /var/log/delfin:/var/log/delfin
     ports:
       - 8190:8190
     environment:
-      - OS_COORDINATION__BACKEND_SERVER=${SIM_HOST_IP}:6379
-      - OS_DEFAULT__TRANSPORT_URL=rabbit://${SIM_RABBITMQ_USER}:${SIM_RABBITMQ_PASS}@${SIM_HOST_IP}:5672//
+      - OS_COORDINATION__BACKEND_SERVER=${DELFIN_HOST_IP}:6379
+      - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER}:${DELFIN_RABBITMQ_PASS}@${DELFIN_HOST_IP}:5672//
