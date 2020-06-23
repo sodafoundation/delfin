@@ -1,6 +1,6 @@
 # Introduction
-This is a standalone/non-containerized installer for SODA Infrastructure Management (SIM) project.
-It contains script and options to check the environment feasible for installing SIM. Installs required dependent software/binaries.
+This is a standalone/non-containerized installer for SODA Infrastructure Manager (delfin) project.
+It contains script and options to check the environment feasible for installing delfin. Installs required dependent software/binaries.
 
 # Pre-requisite
 Python3 and Pip3 should be installed on the system.
@@ -15,9 +15,9 @@ The logs can be uniquely identified based upon the timestamp.
 
 # Strucute of the installer
 This installer comes with options of pre-check, install and uninstall
-pre-check: This script checks for the components required by SIM to function. If they are not present, precheck will install them.
-Install: Installs and starts the SIM process
-Uninstall: Uninstalls the SIM. Doesn't uninstalls the required components. You may need to uninstall it explicitly using the native approach.
+pre-check: This script checks for the components required by delfin to function. If they are not present, precheck will install them.
+Install: Installs and starts the delfin process
+Uninstall: Uninstalls the delfin. Doesn't uninstalls the required components. You may need to uninstall it explicitly using the native approach.
 
 # How to install
 To get help, execute 'install -h'. It will show help information
@@ -31,7 +31,7 @@ Install script can be executed with three different switches to:
 ```
 <path to installer/instatll script>/install -h
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM
+/root/gopath/src/github.com/sodafoundation/delfin
 $ installer/install -h
 age install [--help|--precheck|--skip_precheck]
 Usage:
@@ -49,13 +49,13 @@ Flags:
 <path to installer/install script>/install -p
 Ex:
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM
+/root/gopath/src/github.com/sodafoundation/delfin
 $ installer/install -p
 
 OR
 
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM/installer
+/root/gopath/src/github.com/sodafoundation/delfin/installer
 $ ./install -p
 
 ```
@@ -65,13 +65,13 @@ $ ./install -p
 <path to installer/install script>/install -s
 Ex:
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM
+/root/gopath/src/github.com/sodafoundation/delfin
 $ installer/install -s
 
 OR
 
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM/installer
+/root/gopath/src/github.com/sodafoundation/delfin/installer
 $ ./install -s
 
 ```
@@ -81,23 +81,23 @@ $ ./install -s
 <path to installer/install script>/install
 Ex:
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM
+/root/gopath/src/github.com/sodafoundation/delfin
 $ installer/install
 
 OR
 
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM/installer
+/root/gopath/src/github.com/sodafoundation/delfin/installer
 $ ./install
 
 ```
 
 # Uninstall
-Running the uninstall script will stop all SIM processes and do cleanup
+Running the uninstall script will stop all delfin processes and do cleanup
 ```
 <path to installer/install script>/uninstall.sh
 Ex:
 $ pwd
-/root/gopath/src/github.com/sodafoundation/SIM
+/root/gopath/src/github.com/sodafoundation/delfin
 $ installer/uninstall
 

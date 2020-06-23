@@ -26,7 +26,7 @@ mapfile -t task_proc_id < <( ps -eaf |grep ${TASK_PROC_PATH} | grep -v grep |awk
 for i in "${api_proc_id[@]}"
 do
     if [ ! $i == "" ]; then
-        echo "Killing sim process ${i}"
+        echo "Killing delfin process ${i}"
         $(kill -9 $i)
     fi
 done
@@ -34,7 +34,7 @@ done
 for i in "${task_proc_id[@]}"
 do
     if [ ! $i == "" ]; then
-        echo "Killing sim process ${i}"
+        echo "Killing delfin process ${i}"
         $(kill -9 $i)
     fi
 done
@@ -42,7 +42,7 @@ done
 for i in "${alert_proc_id[@]}"
 do
     if [ ! $i == "" ]; then
-        echo "Killing sim process ${i}"
+        echo "Killing delfin process ${i}"
         $(kill -9 $i)
     fi
 done
