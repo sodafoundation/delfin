@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from oslo_log import log
+from pyasn1.type.univ import OctetString
 
 from delfin import db, cryptor
 from delfin import exception
@@ -82,6 +83,15 @@ class AlertController(wsgi.Controller):
             user_name = alert_source.get('username')
             security_level = alert_source.get('security_level')
             engine_id = alert_source.get('engine_id')
+
+            # Validate engine_id, check octet string can be formed from it
+            try:
+                OctetString.fromHexString(engine_id)
+            except ValueError:
+                msg = "engine_id should be a set of octets in " \
+                      "hexadecimal format."
+                raise exception.InvalidInput(msg)
+
             if not user_name or not security_level or not engine_id:
                 msg = "If snmp version is SNMPv3, then username, " \
                       "security_level and engine_id are required."
