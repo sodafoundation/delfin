@@ -30,8 +30,8 @@ class AlertProcessor(object):
 
     def process_alert_info(self, alert):
         """Fills alert model using driver manager interface."""
-        storage = db.storage_get(context, alert['storage_id'])
-
+        ctxt = context.RequestContext()
+        storage = db.storage_get(ctxt, alert['storage_id'])
         # Fill storage specific info
         alert['storage_name'] = storage['name']
         alert['vendor'] = storage['vendor']
