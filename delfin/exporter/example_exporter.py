@@ -28,6 +28,11 @@ class Example1Exporter(base_exporter.BaseExampleExporter):
         for name, value in sorted(data.items()):
             LOG.info("example1: %s = %s" % (name, value))
 
+    def dispatch_alert_model(self, alert_model):
+        LOG.info("\nExample1Exporter: Exported Alert model..")
+        for name, value in sorted(alert_model.items()):
+            LOG.info("%s = %s" % (name, value))
+
 
 class Example2Exporter(base_exporter.BaseExampleExporter):
     def __init__(self):
@@ -38,3 +43,8 @@ class Example2Exporter(base_exporter.BaseExampleExporter):
         LOG.info("Example2: report data ...")
         for name, value in sorted(data.items()):
             LOG.info("example2: %s = %s" % (name, value))
+
+    def dispatch_alert_model(self, alert_model):
+        LOG.info("\nExample2Exporter: Exported Alert model..")
+        for name, value in sorted(alert_model.items()):
+            LOG.info("%s = %s" % (name, value))

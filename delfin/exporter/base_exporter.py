@@ -45,6 +45,10 @@ def _dispatch_example(ext, data):
     ext.obj.dispatch_data(data)
 
 
+def _dispatch_alert(ext, alert_model):
+    ext.obj.dispatch_alert_model(alert_model)
+
+
 # Task can call this function to report example data.
 def dispatch_example_data(data):
     """
@@ -56,6 +60,16 @@ def dispatch_example_data(data):
     export_manager.map(_dispatch_example, data)
 
 
+def dispatch_alert_model(alert_model):
+    """
+        :param alert_model: Alert model.
+        :type alert_model: dict
+        Redefine this in child classes.
+    """
+    export_manager = ExportManager().export_manager
+    export_manager.map(_dispatch_alert, alert_model)
+
+
 class BaseExampleExporter(object):
     """Base class for example exporter."""
 
@@ -63,6 +77,14 @@ class BaseExampleExporter(object):
         """Dispatch data to north bound platforms.
             :param data: Resource data.
             :type data: dict
+            Redefine this in child classes.
+        """
+        raise NotImplementedError
+
+    def dispatch_alert_model(self, alert_model):
+        """Dispatch data to north bound platforms.
+            :param alert_model: Alert model.
+            :type alert_model: dict
             Redefine this in child classes.
         """
         raise NotImplementedError
