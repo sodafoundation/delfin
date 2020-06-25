@@ -14,7 +14,7 @@
 
 from oslo_log import log
 from delfin.common import constants
-from delfin.drivers.huawei.oceanstor import rest_client, consts
+from delfin.drivers.huawei.oceanstor import rest_client, consts, alert_handler
 from delfin.drivers import driver
 from delfin import exception
 
@@ -179,7 +179,7 @@ class OceanStorDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        pass
+        return alert_handler.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
         pass

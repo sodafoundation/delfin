@@ -85,26 +85,27 @@ class AlertHandler(object):
             alert_model['alarm_name'] = alert['hwIsmReportingAlarmFaultTitle']
             alert_model['device_alert_sn'] = \
                 alert['hwIsmReportingAlarmSerialNo']
-
-            # Trap info does not have clear_type
-            # Below fields filling to be updated
             alert_model['clear_type'] = ""
             alert_model['match_key'] = ""
             alert_model['native_me_dn'] = ""
             return alert_model
-        except Exception:
+        except Exception as e:
+            LOG.error(e)
             msg = (_("Failed to build alert model as some attributes missing "
                      "in alert message."))
             raise exception.InvalidResults(msg)
 
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
+        # Currently not implemented
         pass
 
     def remove_trap_config(self, context, storage_id, trap_config):
         """Remove trap receiver configuration from storage system."""
+        # Currently not implemented
         pass
 
     def clear_alert(self, context, storage_id, alert):
+        # Currently not implemented
         """Clear alert from storage system."""
         pass
