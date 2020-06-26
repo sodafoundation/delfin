@@ -18,6 +18,7 @@ from delfin import context
 from delfin import db
 from delfin import exception
 from delfin.drivers import api as driver_manager
+from delfin.exporter import base_exporter
 
 LOG = log.getLogger(__name__)
 
@@ -50,4 +51,6 @@ class AlertProcessor(object):
 
     def _export_alert_model(self, alert_model):
         """Exports the filled alert model to the export manager."""
-        LOG.info('Alert model to be exported: %s.', alert_model)
+
+        # Export to base exporter which handles dispatch for all exporters
+        base_exporter.dispatch_alert_model(alert_model)
