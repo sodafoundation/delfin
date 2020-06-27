@@ -34,7 +34,8 @@ LOG = log.getLogger(__name__)
 
 # Currently static mib file list is loaded
 # Mechanism to be changed to load all mib file
-MIB_LOAD_LIST = ['SNMPv2-MIB', 'IF_MIB', 'EMCGATEWAY-MIB', 'FCMGMT-MIB']
+MIB_LOAD_LIST = ['SNMPv2-MIB', 'IF_MIB', 'EMCGATEWAY-MIB', 'FCMGMT-MIB',
+                 'ISM-HUAWEI-MIB']
 
 AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
                      "md5": config.usmHMACMD5AuthProtocol}
