@@ -100,6 +100,23 @@ global_opts = [
 CONF.register_opts(global_opts)
 
 
+southbound_security_opts = [
+    cfg.BoolOpt('enable_ssl',
+                default=True,
+                help='If enable SSL certificate verification for connecting'
+                     ' to southbound devices.'),
+    cfg.StrOpt('ca_path',
+               default='/usr/local/share/ca-certificates/',
+               help='The path for saving ca certificates.'),
+    cfg.BoolOpt('assert_hostname',
+                default=False,
+                help='If assert hostname or not during the process of '
+                     'certificate verification.')
+]
+
+CONF.register_opts(southbound_security_opts, group='southbound_security')
+
+
 def set_middleware_defaults():
     """Update default configuration options for oslo.middleware."""
     cors.set_defaults(

@@ -16,18 +16,19 @@
 
 import json
 
-from oslo_log import log as logging
 import requests
 import six
+from oslo_log import log as logging
 
 from delfin import exception
-from delfin.i18n import _
 from delfin.drivers.huawei.oceanstor import consts
+from delfin.drivers.security import RootRestClient, HostNameIgnoreAdapter
+from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
 
 
-class RestClient(object):
+class RestClient(RootRestClient):
     """Common class for Huawei OceanStor storage system."""
 
     def __init__(self, **kwargs):
@@ -39,6 +40,7 @@ class RestClient(object):
         self.rest_port = rest_access.get('port')
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
+        super(RestClient, self).__init__()
         # Lists of addresses to try, for authorization
         self.san_address = [
             'https://' + self.rest_host + ':' + self.rest_port +
@@ -53,7 +55,15 @@ class RestClient(object):
         self.session.headers.update({
             "Connection": "keep-alive",
             "Content-Type": "application/json"})
-        self.session.verify = False
+        if not self.enable_ssl:
+            self.session.verify = False
+        else:
+            LOG.debug("Enable certificate verification, ca_path: {0}".format(
+                self.ca_path))
+            self.session.verify = self.ca_path
+            if not self.assert_hostname:
+                self.session.mount("https://", HostNameIgnoreAdapter())
+
         self.session.trust_env = False
 
     def do_call(self, url, data, method,
