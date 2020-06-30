@@ -34,8 +34,8 @@ class RootRestClient(object):
         As required by requests, ca_path must be a directory prepared using
         the c_rehash tool included with OpenSSL.
         Once new certificate added, this function can be called for update.
-        If there is a CA certificate chain, all CA certificates should be
-        included in a single file.
+        If there is a CA certificate chain, all CA certificates along this
+        chain should be included in a single file.
         """
         self.enable_ssl = CONF.southbound_security.enable_ssl
         self.ca_path = CONF.southbound_security.ca_path
@@ -73,6 +73,7 @@ class HostNameIgnoreAdapter(requests.adapters.HTTPAdapter):
         conn.assert_hostname = False
         return super(HostNameIgnoreAdapter, self).cert_verify(
             conn, url, verify, cert)
+
     def init_poolmanager(self, connections, maxsize, block=False,
                          **pool_kwargs):
         self._pool_connections = connections
@@ -82,4 +83,3 @@ class HostNameIgnoreAdapter(requests.adapters.HTTPAdapter):
                                        block=block, strict=True,
                                        ssl_version=ssl.PROTOCOL_TLSv1_2,
                                        **pool_kwargs)
-
