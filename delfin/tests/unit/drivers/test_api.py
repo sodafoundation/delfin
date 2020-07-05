@@ -34,12 +34,14 @@ class Request:
 
 ACCESS_INFO = {
     "storage_id": "12345",
-    "host": "10.0.0.1",
-    "port": "8443",
-    "username": "user",
-    "password": "pass",
     "vendor": "fake_storage",
     "model": "fake_driver",
+    "rest_access": {
+        "host": "10.0.0.1",
+        "port": "8443",
+        "username": "user",
+        "password": "pass"
+    },
     "extra_attributes": {
         "array_id": "00112233"
     }
@@ -136,7 +138,7 @@ class TestDriverAPI(TestCase):
                                 mock_storage):
         storage = copy.deepcopy(STORAGE)
         access_info_new = copy.deepcopy(ACCESS_INFO)
-        access_info_new['username'] = 'new_user'
+        access_info_new['rest_access']['username'] = 'new_user'
 
         mock_storage_get.return_value = storage
         mock_access_info_update.return_value = access_info_new
@@ -155,7 +157,7 @@ class TestDriverAPI(TestCase):
         mock_storage_update.assert_called_with(
             context, storage_id, storage)
 
-        access_info_new['password'] = mock.Mock()
+        access_info_new['rest_access']['password'] = mock.Mock()
         self.assertDictEqual(access_info_new, updated)
 
         # Case: Wrong storage serial number

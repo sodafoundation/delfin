@@ -199,11 +199,13 @@ class TestStorageController(test.TestCase):
         body = {
             'model': 'fake_driver',
             'vendor': 'fake_storage',
-            'username': 'admin',
-            'extra_attributes': {'array_id': '0001234567891'},
-            'password': 'abcd',
-            'host': '10.0.0.76',
-            'port': 1234
+            'rest_access': {
+                'username': 'admin',
+                'password': 'abcd',
+                'host': '10.0.0.76',
+                'port': 1234
+            },
+            'extra_attributes': {'array_id': '0001234567891'}
         }
         req = fakes.HTTPRequest.blank(
             '/storages')
@@ -256,11 +258,13 @@ class TestStorageController(test.TestCase):
         body = {
             'model': 'fake_driver',
             'vendor': 'fake_storage',
-            'username': 'admin',
-            'extra_attributes': {'array_id': '0001234567891'},
-            'password': 'abcd',
-            'host': '10.0.0.76',
-            'port': 1234
+            'rest_access': {
+                'username': 'admin',
+                'password': 'abcd',
+                'host': '10.0.0.76',
+                'port': 1234
+            },
+            'extra_attributes': {'array_id': '0001234567891'}
         }
         req = fakes.HTTPRequest.blank(
             '/storages')

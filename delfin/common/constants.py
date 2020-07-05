@@ -20,6 +20,10 @@ from enum import IntEnum
 DB_MAX_INT = 0x7FFFFFFF
 
 
+# Valid access type supported currently.
+ACCESS_TYPE = ['rest_access', 'ssh_access']
+
+
 # Custom fields for Delfin objects
 class StorageStatus(object):
     NORMAL = 'normal'

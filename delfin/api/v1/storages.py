@@ -70,11 +70,20 @@ class StorageController(wsgi.Controller):
 
     @wsgi.response(201)
     @validation.schema(schema_storages.create)
-    @coordination.synchronized('storage-create-{body[host]}-{body[port]}')
     def create(self, req, body):
         """Register a new storage device."""
         ctxt = req.environ['delfin.context']
         access_info_dict = body
+
+        # Lock to avoid synchronous creating.
+        if access_info_dict.get('rest_access') is not None:
+            host = access_info_dict.get('rest_access').get('host')
+            port = access_info_dict.get('rest_access').get('port')
+        else:
+            host = access_info_dict.get('ssh_access').get('host')
+            port = access_info_dict.get('ssh_access').get('port')
+        lock_name = 'storage-create-' + host + '-' + str(port)
+        coordination.synchronized(lock_name)
 
         if self._storage_exist(ctxt, access_info_dict):
             raise exception.StorageAlreadyExists()
@@ -155,8 +164,10 @@ class StorageController(wsgi.Controller):
 
         # Remove unrelated query fields
         unrelated_fields = ['username', 'password']
-        for key in unrelated_fields:
-            access_info_dict.pop(key)
+        for access in constants.ACCESS_TYPE:
+            if access_info_dict.get(access):
+                for key in unrelated_fields:
+                    access_info_dict[access].pop(key)
 
         # Check if storage is registered
         access_info_list = db.access_info_get_all(context,

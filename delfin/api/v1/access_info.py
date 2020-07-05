@@ -16,6 +16,7 @@ from delfin.api import validation
 from delfin.api.common import wsgi
 from delfin.api.schemas import access_info as schema_access_info
 from delfin.api.views import access_info as access_info_viewer
+from delfin.common import constants
 from delfin.drivers import api as driverapi
 
 
@@ -37,6 +38,9 @@ class AccessInfoController(wsgi.Controller):
         """Update storage access information."""
         ctxt = req.environ.get('delfin.context')
         access_info = db.access_info_get(ctxt, id)
+        for access in constants.ACCESS_TYPE:
+            if not body.get(access):
+                body[access] = None
         access_info.update(body)
         access_info = self.driver_api.update_access_info(ctxt, access_info)
 
