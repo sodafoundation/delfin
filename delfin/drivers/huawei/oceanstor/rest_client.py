@@ -50,7 +50,7 @@ class RestClient(RootRestClient):
         self.session.headers.update({
             "Connection": "keep-alive",
             "Content-Type": "application/json"})
-        if not self.enable_ssl:
+        if not self.enable_verify:
             self.session.verify = False
         else:
             LOG.debug("Enable certificate verification, ca_path: {0}".format(
