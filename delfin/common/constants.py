@@ -60,3 +60,49 @@ class VolumeType(object):
     THIN = 'thin'
 
     ALL = (THICK, THIN)
+
+
+class PortType(object):
+    FRONT_END = 'front_end'
+    BACK_END = 'back_end'
+    REPLICATION = 'replication'
+    OTHER = 'other'
+
+    ALL = (FRONT_END, BACK_END, REPLICATION, OTHER)
+
+
+class ControllerType(object):
+    FRONT_END = 'front_end'
+    BACK_END = 'back_end'
+    REPLICATION = 'replication'
+    OTHER = 'other'
+
+    ALL = (FRONT_END, BACK_END, REPLICATION, OTHER)
+
+
+class InterfaceType(object):
+    FC = 'fc'
+    FICON = 'ficon'
+    ESCON = 'escon'
+    ISCSI = 'iscsi'
+    FCOE = 'fcoe'
+    ETHERNET = 'ethernet'
+    OTHER = 'other'
+
+    ALL = (FC, FICON, ESCON, ISCSI, FCOE, ETHERNET, OTHER)
+
+
+class PortStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (NORMAL, OFFLINE, UNKNOWN)
+
+
+class ControllerStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (NORMAL, OFFLINE, UNKNOWN)

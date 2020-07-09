@@ -140,3 +140,37 @@ class AlertSource(BASE, DelfinBase):
     privacy_protocol = Column(String(255))
     privacy_key = Column(String(255))
     engine_id = Column(String(255))
+
+
+class Port(BASE, DelfinBase):
+    """Represents a port object."""
+    __tablename__ = 'ports'
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(36))
+    native_port_id = Column(String(255))
+    native_controller_id = Column(String(255))
+    status = Column(String(255))
+    interface_type = Column(String(255))
+    wwn = Column(String(255))
+    type = Column(String(255))
+    management_ip = Column(String(255))
+    speed = Column(Integer)
+    max_speed = Column(Integer)
+    extra_attributes = Column(JsonEncodedDict)
+
+
+class Controller(BASE, DelfinBase):
+    """Represents a controller object."""
+    __tablename__ = 'controllers'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    is_master = Column(Boolean)
+    native_controller_id = Column(String(255))
+    location = Column(String(255))
+    status = Column(String(255))
+    interface_type = Column(String(255))
+    type = Column(String(255))
+    cpu = Column(String(255))
+    memory = Column(Integer)
+    extra_attributes = Column(JsonEncodedDict)

@@ -834,3 +834,45 @@ def _generate_paginate_query(context, session, paginate_type, marker,
                                           marker=marker_object,
                                           sort_dirs=sort_dirs,
                                           offset=offset)
+
+
+def port_create(context, values):
+    """Create a port from the values dictionary."""
+    return NotImplemented
+
+
+def port_update(context, port_id, values):
+    """Update a port with the values dictionary."""
+    return NotImplemented
+
+
+def port_get(context, port_id):
+    """Get a port or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def port_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all ports."""
+    return NotImplemented
+
+
+def controller_create(context, values):
+    """Create a controller from the values dictionary."""
+    return NotImplemented
+
+
+def controller_update(context, controller_id, values):
+    """Update a controller with the values dictionary."""
+    return NotImplemented
+
+
+def controller_get(context, controller_id):
+    """Get a controller or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def controller_get_all(context, marker=None, limit=None, sort_keys=None,
+                       sort_dirs=None, filters=None, offset=None):
+    """Retrieves all controllers."""
+    return NotImplemented
