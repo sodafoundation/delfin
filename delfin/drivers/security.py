@@ -37,11 +37,11 @@ class RootRestClient(object):
         If there is a CA certificate chain, all CA certificates along this
         chain should be included in a single file.
         """
-        self.enable_ssl = CONF.southbound_security.enable_ssl
+        self.enable_verify = CONF.southbound_security.enable_verify
         self.ca_path = CONF.southbound_security.ca_path
         self.assert_hostname = CONF.southbound_security.assert_hostname
 
-        if self.enable_ssl:
+        if self.enable_verify:
             if not os.path.exists(self.ca_path):
                 LOG.error("Directory {0} could not be found.".format(
                     self.ca_path))

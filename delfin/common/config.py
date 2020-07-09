@@ -101,7 +101,7 @@ CONF.register_opts(global_opts)
 
 
 southbound_security_opts = [
-    cfg.BoolOpt('enable_ssl',
+    cfg.BoolOpt('enable_verify',
                 default=True,
                 help='If enable SSL certificate verification for connecting'
                      ' to southbound devices.'),
