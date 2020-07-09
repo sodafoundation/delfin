@@ -995,14 +995,143 @@ components:
           format: date-time
           readOnly: true
           example: '2017-07-10T14:36:58.014Z'
-    StorageBackendRegistry:
+    RestAccessInfoRegistry:
       required:
         - host
-        - model
-        - password
         - port
         - username
+        - password
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "8008"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+    SSHAccessInfoRegistry:
+      required:
+        - host
+        - port
+        - username
+        - password
+        - pub_key
+        - pub_key_type
+      type: object
+      properties:
+        host:
+          type: string
+          example: '10.0.0.1'
+        port:
+          type: string
+          example: '22'
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+        pub_key:
+          type: string
+          example: '73:d8:34:18:70:2a:ae:d8:1c:a5:44:40:ef:50:d0:63'
+        pub_key_type:
+          type: string
+          enum: ['ed25519', 'ecdsa', 'rsa']
+    RestAccessInfoUpdate:
+      required:
+        - username
+        - password
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "8008"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+    SSHAccessInfoUpdate:
+      required:
+        - username
+        - password
+      type: object
+      properties:
+        host:
+          type: string
+          example: '10.0.0.1'
+        port:
+          type: string
+          example: '22'
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+        pub_key:
+          type: string
+          example: '73:d8:34:18:70:2a:ae:d8:1c:a5:44:40:ef:50:d0:63'
+        pub_key_type:
+          type: string
+          enum: ['ed25519', 'ecdsa', 'rsa']
+    RestAccessInfoResponse:
+      required:
+        - host
+        - port
+        - username
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "8008"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+    SSHAccessInfoResponse:
+      required:
+        - host
+        - port
+        - username
+        - pub_key
+        - pub_key_type
+      type: object
+      properties:
+        host:
+          type: string
+          example: '10.0.0.1'
+        port:
+          type: string
+          example: '22'
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+        pub_key:
+          type: string
+          example: '73:d8:34:18:70:2a:ae:d8:1c:a5:44:40:ef:50:d0:63'
+        pub_key_type:
+          type: string
+          enum: ['ed25519', 'ecdsa', 'rsa']
+    StorageBackendRegistry:
+      required:
+        - model
         - vendor
+      anyOf:
+        - $ref: '#/components/schemas/RestAccessInfoRegistry'
+        - $ref: '#/components/schemas/SSHAccessInfoRegistry'
       type: object
       properties:
         name:
@@ -1017,17 +1146,10 @@ components:
         model:
           type: string
           example: vmax
-        host:
-          type: string
-          example: 10.0.0.1
-        port:
-          type: string
-          example: '8443'
-        username:
-          type: string
-          example: admin
-        password:
-          type: string
+        rest_access:
+          $ref: '#/components/schemas/RestAccessInfoRegistry'
+        ssh_access:
+          $ref: '#/components/schemas/SSHAccessInfoRegistry'
         extra_attributes:
           type: object
           additionalProperties:
@@ -1035,21 +1157,15 @@ components:
           example:
             array_id: 00002554321
     StorageBackendRegistryUpdate:
-      required:
-        - password
-        - username
+      anyOf:
+        - $ref: '#/components/schemas/RestAccessInfoUpdate'
+        - $ref: '#/components/schemas/SSHAccessInfoUpdate'
       type: object
       properties:
-        host:
-          type: string
-          example: 10.0.0.1
-        username:
-          type: string
-          example: admin
-        password:
-          type: string
-        port:
-          type: string
+        rest_access:
+          $ref: '#/components/schemas/RestAccessInfoUpdate'
+        ssh_access:
+          $ref: '#/components/schemas/SSHAccessInfoUpdate'
         extra_attributes:
           type: object
           additionalProperties:
@@ -1109,12 +1225,10 @@ components:
       properties:
         id:
           type: string
-        username:
-          type: string
-          example: admin
-        port:
-          type: string
-          example: '1234'
+        rest_access:
+          $ref: '#/components/schemas/RestAccessInfoResponse'
+        ssh_access:
+          $ref: '#/components/schemas/SSHAccessInfoResponse'
         vendor:
           type: string
           example: dellemc
