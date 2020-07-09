@@ -548,14 +548,6 @@ paths:
         - Storage Pools
       description: Get storage pool detail by pool ID.
       parameters:
-        - name: storage_id
-          in: path
-          description: Database ID created for a storage backend.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
         - name: id
           in: path
           description: Database ID created for a storage pool.
@@ -714,14 +706,6 @@ paths:
         - Volumes
       description: Get storage volume detail by volume ID.
       parameters:
-        - name: storage_id
-          in: path
-          description: The ID created for a backend .
-          required: true
-          style: simple
-          explode: false
-          schema:
-            type: string
         - name: id
           in: path
           description: Database ID created for a volume.
@@ -1147,6 +1131,10 @@ components:
               type: string
               readOnly: true
               example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
             native_storage_pool_id:
               type: string
               readOnly: true
@@ -1190,6 +1178,10 @@ components:
               enum:
                 - available
                 - error
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
             total_capacity:
               type: integer
               format: int64
