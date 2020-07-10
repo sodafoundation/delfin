@@ -194,5 +194,6 @@ snmp_security_level = {
 
 host_key_type = {
     'type': 'string',
-    'enum': ['dsa', 'ecdsa', 'ed25519', 'rsa'],
+    'enum': ['ssh-ed25519', 'ecdsa-sha2-nistp256', 'ecdsa-sha2-nistp384',
+             'ecdsa-sha2-nistp521', 'ssh-rsa', 'ssh-dss'],
 }
