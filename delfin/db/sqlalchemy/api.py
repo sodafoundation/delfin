@@ -836,6 +836,21 @@ def _generate_paginate_query(context, session, paginate_type, marker,
                                           offset=offset)
 
 
+def ports_create(context, values):
+    """Create multiple ports."""
+    return NotImplemented
+
+
+def ports_update(context, values):
+    """Update multiple ports."""
+    return NotImplemented
+
+
+def ports_delete(context, values):
+    """Delete multiple ports."""
+    return NotImplemented
+
+
 def port_create(context, values):
     """Create a port from the values dictionary."""
     return NotImplemented
@@ -851,9 +866,29 @@ def port_get(context, port_id):
     return NotImplemented
 
 
+def port_delete(context, port_id):
+    """delete a port or raise an exception if it does not exist."""
+    return NotImplemented
+
+
 def port_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
     """Retrieves all ports."""
+    return NotImplemented
+
+
+def controllers_create(context, values):
+    """Create multiple controllers."""
+    return NotImplemented
+
+
+def controllers_update(context, values):
+    """Update multiple controllers."""
+    return NotImplemented
+
+
+def controllers_delete(context, values):
+    """Delete multiple controllers."""
     return NotImplemented
 
 
@@ -869,6 +904,11 @@ def controller_update(context, controller_id, values):
 
 def controller_get(context, controller_id):
     """Get a controller or raise an exception if it does not exist."""
+    return NotImplemented
+
+
+def controller_delete(context, controller_id):
+    """Delete a controller or raise an exception if it does not exist."""
     return NotImplemented
 
 

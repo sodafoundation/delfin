@@ -364,6 +364,21 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
                                      sort_dirs, filters, offset)
 
 
+def ports_create(context, values):
+    """Create multiple ports."""
+    return IMPL.ports_create(context, values)
+
+
+def ports_update(context, values):
+    """Update multiple ports."""
+    return IMPL.volumes_update(context, values)
+
+
+def ports_delete(context, values):
+    """Delete multiple ports."""
+    return IMPL.ports_delete(context, values)
+
+
 def port_create(context, values):
     """Create a port from the values dictionary."""
     return IMPL.port_create(context, values)
@@ -377,6 +392,11 @@ def port_update(context, port_id, values):
 def port_get(context, port_id):
     """Get a port or raise an exception if it does not exist."""
     return IMPL.port_get(context, port_id)
+
+
+def port_delete(context, port_id):
+    """delete a port or raise an exception if it does not exist."""
+    return IMPL.port_delete(context, port_id)
 
 
 def port_get_all(context, marker=None, limit=None, sort_keys=None,
@@ -405,6 +425,21 @@ def port_get_all(context, marker=None, limit=None, sort_keys=None,
                              filters, offset)
 
 
+def controllers_create(context, values):
+    """Create multiple controllers."""
+    return IMPL.ports_create(context, values)
+
+
+def controllers_update(context, values):
+    """Update multiple controllers."""
+    return IMPL.controllers_update(context, values)
+
+
+def controllers_delete(context, values):
+    """Delete multiple controllers."""
+    return IMPL.controllers_delete(context, values)
+
+
 def controller_create(context, values):
     """Create a controller from the values dictionary."""
     return IMPL.controller_create(context, values)
@@ -420,8 +455,13 @@ def controller_get(context, controller_id):
     return IMPL.controller_get(context, controller_id)
 
 
+def controller_delete(context, controller_id):
+    """Delete a controller or raise an exception if it does not exist."""
+    return IMPL.controller_get(context, controller_id)
+
+
 def controller_get_all(context, marker=None, limit=None, sort_keys=None,
-                 sort_dirs=None, filters=None, offset=None):
+                       sort_dirs=None, filters=None, offset=None):
     """Retrieves all controllers.
 
     If no sort parameters are specified then the returned volumes are sorted
@@ -441,5 +481,5 @@ def controller_get_all(context, marker=None, limit=None, sort_keys=None,
     :param offset: number of items to skip
     :returns: list of controllers
     """
-    return IMPL.controller_get_all(context, marker, limit, sort_keys, sort_dirs,
-                             filters, offset)
+    return IMPL.controller_get_all(context, marker, limit, sort_keys,
+                                   sort_dirs, filters, offset)
