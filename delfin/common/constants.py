@@ -63,6 +63,15 @@ class VolumeType(object):
 
 
 class PortType(object):
+    """ This enum class  describes the types of port
+            based on the purpose it serves
+         FRONT_END -  port which is masked to an initiator
+         BACK_END -  port which is used to connect  disk enclosures.
+         REPLICATION - port which is used to connect  controllers for
+            replication purpose.
+         OTHER - any port which is not belongs to above categories
+            or serves multiple purpose .
+    """
     FRONT_END = 'front_end'
     BACK_END = 'back_end'
     REPLICATION = 'replication'
@@ -72,6 +81,15 @@ class PortType(object):
 
 
 class ControllerType(object):
+    """This enum class  describes the types of controller
+            based on the purpose it serves
+             FRONT_END -  controller  which has only FRONT_END ports
+             BACK_END -  controller  which has only BACK_END ports
+             REPLICATION - controller which is used only for
+                replication purpose.
+             OTHER - any controller  which is not belongs to above categories
+                or serves multiple purpose .
+        """
     FRONT_END = 'front_end'
     BACK_END = 'back_end'
     REPLICATION = 'replication'
@@ -81,6 +99,20 @@ class ControllerType(object):
 
 
 class InterfaceType(object):
+    """This is enum class  describes the types of interface/module
+     FC - Fibre Channel Protocol
+     FICON -  is the IBM proprietary
+        name Fibre Channel protocol
+     ESCON - is a data connection created by IBM,
+        and is commonly used to connect their mainframe computers.
+     ISCSI - an Internet Protocol-based storage
+        networking standard for linking data storage facilities.
+     FCOE - is a computer network
+        technology that encapsulates Fibre Channel
+        frames over Ethernet networks.
+     ETHERNET - local area network (LAN) using
+        Ethernet as the transmission mechanism.
+    """
     FC = 'fc'
     FICON = 'ficon'
     ESCON = 'escon'
