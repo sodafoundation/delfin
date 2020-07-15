@@ -19,6 +19,8 @@ from delfin.api.v1 import alert
 from delfin.api.v1 import storage_pools
 from delfin.api.v1 import storages
 from delfin.api.v1 import volumes
+from delfin.api.v1 import controllers
+from delfin.api.v1 import ports
 
 
 class APIRouter(common.APIRouter):
@@ -70,3 +72,11 @@ class APIRouter(common.APIRouter):
         self.resources['volumes'] = volumes.create_resource()
         mapper.resource("volume", "volumes",
                         controller=self.resources['volumes'])
+
+        self.resources['controllers'] = controllers.create_resource()
+        mapper.resource("controller", "controllers",
+                        controller=self.resources['controllers'])
+
+        self.resources['ports'] = ports.create_resource()
+        mapper.resource("port", "ports",
+                        controller=self.resources['ports'])

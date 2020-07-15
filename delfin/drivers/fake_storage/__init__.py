@@ -152,6 +152,12 @@ class FakeStorageDriver(driver.StorageDriver):
             volume_list = volume_list + vs
         return volume_list
 
+    def list_controllers(self, storage_id):
+        pass
+
+    def list_ports(self, storage_id):
+        pass
+
     def add_trap_config(self, context, trap_config):
         pass
 
