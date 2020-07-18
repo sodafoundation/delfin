@@ -36,7 +36,7 @@ class OceanStorDriver(driver.StorageDriver):
         storage = self.client.get_storage()
 
         # Get firmware version
-        controller = self.client.get_controller()
+        controller = self.client.get_all_controllers()
         firmware_ver = controller[0]['SOFTVER']
 
         # Get status
@@ -171,6 +171,53 @@ class OceanStorDriver(driver.StorageDriver):
                 "Failed to get list volumes from OceanStor: {}".format(err))
             raise exception.StorageBackendException(
                 reason='Failed to get list volumes from OceanStor')
+
+    def list_controllers(self, storage_id):
+        try:
+            # Get list of OceanStor controller details
+            controllers = self.client.get_all_controllers()
+
+            controller_list = []
+            for controller in controllers:
+                c = {
+                    'name': controller['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_controller_id': controller['ID'],
+                    'description': 'Huawei OceanStor Pool',
+                }
+                controller_list.append(c)
+
+            return controller_list
+
+        except Exception as err:
+            LOG.error(
+                "Failed to get controller metrics from OceanStor: {}".
+                format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get controller metrics from OceanStor')
+
+    def list_ports(self, storage_id):
+        try:
+            # Get list of OceanStor port details
+            ports = self.client.get_all_ports()
+
+            port_list = []
+            for port in ports:
+                p = {
+                    'name': port['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_port_id': port['ID'],
+                    'description': 'Huawei OceanStor Pool',
+                }
+                port_list.append(p)
+
+            return port_list
+
+        except Exception as err:
+            LOG.error(
+                "Failed to get port metrics from OceanStor: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get port metrics from OceanStor')
 
     def add_trap_config(self, context, trap_config):
         pass

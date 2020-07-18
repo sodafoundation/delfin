@@ -220,7 +220,7 @@ class RestClient(object):
 
         return result['data']
 
-    def get_controller(self):
+    def get_all_controllers(self):
         url = "/controller"
         result = self.call(url, method='GET', log_filter_flag=True)
 
@@ -237,3 +237,31 @@ class RestClient(object):
     def get_all_pools(self):
         url = "/storagepool"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+    def get_all_ports(self):
+        url = "/fc_port"
+        fc_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/fcoe_port"
+        fcoe_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/eth_port"
+        eth_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/pcie_port"
+        pcie_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/bond_port"
+        bond_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/sas_port"
+        sas_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        return fc_ports + fcoe_ports + eth_ports + \
+            pcie_ports + bond_ports + sas_ports

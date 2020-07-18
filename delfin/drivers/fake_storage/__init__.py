@@ -51,6 +51,9 @@ LOG = log.getLogger(__name__)
 MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
+MIN_CONTROLLER, MAX_CONTROLLER = 1, 10
+MIN_PORT, MAX_PORT = 1, 10
+
 PAGE_LIMIT = 500
 
 
@@ -151,6 +154,40 @@ class FakeStorageDriver(driver.StorageDriver):
             vs = self._get_volume_range(start, end)
             volume_list = volume_list + vs
         return volume_list
+
+    def list_controllers(self, storage_id):
+        # Get a random number as the controllers count.
+        rd_controllers_count = random.randint(MIN_CONTROLLER, MAX_CONTROLLER)
+        LOG.info("###########fake_controllers number for %s: %d" % (
+            self.storage_id, rd_controllers_count))
+        controller_list = []
+        for idx in range(rd_controllers_count):
+            c = {
+                "name": "fake_controller_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_controller_id": "fake_original_id_" + str(idx),
+                "description": "Fake Pool",
+                "status": "normal",
+            }
+            controller_list.append(c)
+        return controller_list
+
+    def list_ports(self, storage_id):
+        # Get a random number as the port count.
+        rd_ports_count = random.randint(MIN_PORT, MAX_PORT)
+        LOG.info("###########fake_ports number for %s: %d" % (
+            self.storage_id, rd_ports_count))
+        port_list = []
+        for idx in range(rd_ports_count):
+            p = {
+                "name": "fake_port_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_port_id": "fake_original_id_" + str(idx),
+                "description": "Fake Port",
+                "status": "normal",
+            }
+            port_list.append(p)
+        return port_list
 
     def add_trap_config(self, context, trap_config):
         pass

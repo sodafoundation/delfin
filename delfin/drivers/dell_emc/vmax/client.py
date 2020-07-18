@@ -178,3 +178,58 @@ class VMAXClient(object):
             msg = "Failed to get list volumes from VMAX: {}".format(err)
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
+
+    def list_controllers(self, storage_id):
+
+        try:
+            # Get list of VMAX directors names
+            controllers = self.conn.provisioning.get_director_list()
+
+            controller_list = []
+            for controller in controllers:
+                director_info = self.conn.provisioning.get_director(controller)
+
+                c = {
+                    "name": controller,
+                    "storage_id": storage_id,
+                    "native_storage_controller_id":
+                        director_info["directorId"],
+                    "description": "Dell EMC VMAX Director",
+                }
+                controller_list.append(c)
+
+            return controller_list
+
+        except Exception as err:
+            msg = "Failed to get controller metrics from VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
+
+    def list_ports(self, storage_id):
+
+        try:
+            # Get list of SRP port names
+            controllers = self.conn.provisioning.get_director_list()
+            for controller in controllers:
+                ports = self.conn.provisioning.get_director_port_list(
+                    controller)
+
+                port_list = []
+                for port in ports:
+                    port_info = self.conn.provisioning.get_director_port(
+                        port['directorId'], port['portId'])
+
+                    p = {
+                        "name": port['directorId'] + port['portId'],
+                        "storage_id": storage_id,
+                        "native_storage_port_id": port_info["identifier"],
+                        "description": "Dell EMC VMAX Port",
+                    }
+                    port_list.append(p)
+
+            return port_list
+
+        except Exception as err:
+            msg = "Failed to get port metrics from VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
