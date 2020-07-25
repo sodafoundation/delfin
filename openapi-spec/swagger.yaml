@@ -1130,9 +1130,9 @@ components:
         model:
           type: string
           example: vmax
-        rest_access:
+        rest:
           $ref: '#/components/schemas/RestAccessInfoRegistry'
-        ssh_access:
+        ssh:
           $ref: '#/components/schemas/SSHAccessInfoRegistry'
         extra_attributes:
           type: object
@@ -1146,9 +1146,9 @@ components:
         - $ref: '#/components/schemas/SSHAccessInfoUpdate'
       type: object
       properties:
-        rest_access:
+        rest:
           $ref: '#/components/schemas/RestAccessInfoUpdate'
-        ssh_access:
+        ssh:
           $ref: '#/components/schemas/SSHAccessInfoUpdate'
         extra_attributes:
           type: object
@@ -1209,9 +1209,9 @@ components:
       properties:
         id:
           type: string
-        rest_access:
+        rest:
           $ref: '#/components/schemas/RestAccessInfoResponse'
-        ssh_access:
+        ssh:
           $ref: '#/components/schemas/SSHAccessInfoResponse'
         vendor:
           type: string
