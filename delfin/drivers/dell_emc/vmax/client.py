@@ -31,11 +31,11 @@ class VMAXClient(object):
     def __init__(self, **kwargs):
         self.conn = None
         self.array_id = None
-        rest_access = kwargs.get('rest_access')
+        rest_access = kwargs.get('rest')
         if rest_access is None:
             raise exception.InvalidInput('Input rest_access is missing')
-        self.rest_host = rest_access.get('host', 'localhost')
-        self.rest_port = rest_access.get('port', '8088')
+        self.rest_host = rest_access.get('host')
+        self.rest_port = rest_access.get('port')
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
 

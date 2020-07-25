@@ -42,12 +42,12 @@ class TestAccessInfoController(test.TestCase):
             "model": "fake_driver",
             "vendor": "fake_storage",
             "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
-            "rest_access": {
+            "rest": {
                 "host": "10.0.0.0",
                 "port": 1234,
                 "username": "admin"
             },
-            "ssh_access": None,
+            "ssh": None,
             "extra_attributes": {
                 "array_id": "0001234567897"
             },
@@ -77,7 +77,7 @@ class TestAccessInfoController(test.TestCase):
             mock.Mock(return_value=fake_access_info))
 
         body = {
-            'rest_access': {
+            'rest': {
                 'username': 'admin_modified',
                 'password': 'abcd_modified',
                 'host': '10.0.0.0',
@@ -93,12 +93,12 @@ class TestAccessInfoController(test.TestCase):
             "model": "fake_driver",
             "vendor": "fake_storage",
             "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
-            "rest_access": {
+            "rest": {
                 "username": "admin_modified",
                 "host": "10.0.0.0",
                 "port": 1234
             },
-            "ssh_access": None,
+            "ssh": None,
             "extra_attributes": {
                 "array_id": "0001234567897"
             },

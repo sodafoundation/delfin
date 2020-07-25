@@ -199,7 +199,7 @@ class TestStorageController(test.TestCase):
         body = {
             'model': 'fake_driver',
             'vendor': 'fake_storage',
-            'rest_access': {
+            'rest': {
                 'username': 'admin',
                 'password': 'abcd',
                 'host': '10.0.0.76',
@@ -258,7 +258,7 @@ class TestStorageController(test.TestCase):
         body = {
             'model': 'fake_driver',
             'vendor': 'fake_storage',
-            'rest_access': {
+            'rest': {
                 'username': 'admin',
                 'password': 'abcd',
                 'host': '10.0.0.76',

@@ -29,7 +29,7 @@ VMAX_STORAGE_CONF = {
     "storage_id": "12345",
     "vendor": "dell_emc",
     "model": "vmax",
-    "rest_access": {
+    "rest": {
         "host": "10.0.0.1",
         "port": "8443",
         "username": "user",
@@ -58,7 +58,7 @@ class TestVMAXStorageDriver(TestCase):
             self.assertEqual(driver.client.array_id, "00112233")
 
         invalid_input = {
-            'rest_access': {
+            'rest': {
                 "host": "10.0.0.1",
                 "port": "8443",
                 "username": "user",

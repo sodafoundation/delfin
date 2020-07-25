@@ -76,12 +76,11 @@ class StorageController(wsgi.Controller):
         access_info_dict = body
 
         # Lock to avoid synchronous creating.
-        if access_info_dict.get('rest_access') is not None:
-            host = access_info_dict.get('rest_access').get('host')
-            port = access_info_dict.get('rest_access').get('port')
-        else:
-            host = access_info_dict.get('ssh_access').get('host')
-            port = access_info_dict.get('ssh_access').get('port')
+        for access in constants.ACCESS_TYPE:
+            if access_info_dict.get(access) is not None:
+                host = access_info_dict.get('rest').get('host')
+                port = access_info_dict.get('rest').get('port')
+                break
         lock_name = 'storage-create-' + host + '-' + str(port)
         coordination.synchronized(lock_name)
 

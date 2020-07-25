@@ -19,7 +19,7 @@ create = {
     'properties': {
         'vendor': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'model': {'type': 'string', 'minLength': 1, 'maxLength': 255},
-        'rest_access': {
+        'rest': {
             'type': 'object',
             'properties': {
                 'host': parameter_types.hostname_or_ip_address,
@@ -32,7 +32,7 @@ create = {
             'required': ['host', 'port', 'username', 'password'],
             'additionalProperties': False
         },
-        'ssh_access': {
+        'ssh': {
             'type': 'object',
             'properties': {
                 'host': parameter_types.hostname_or_ip_address,
@@ -60,8 +60,8 @@ create = {
     },
     'required': ['vendor', 'model'],
     'anyOf': [
-        {'required': ['rest_access']},
-        {'required': ['ssh_access']}
+        {'required': ['rest']},
+        {'required': ['ssh']}
     ],
     'additionalProperties': False
 }

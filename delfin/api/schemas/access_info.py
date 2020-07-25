@@ -17,7 +17,7 @@ from delfin.api.validation import parameter_types
 update = {
     'type': 'object',
     'properties': {
-        'rest_access': {
+        'rest': {
             'type': 'object',
             'properties': {
                 'host': parameter_types.hostname_or_ip_address,
@@ -30,7 +30,7 @@ update = {
             'required': ['host', 'port', 'username', 'password'],
             'additionalProperties': False
         },
-        'ssh_access': {
+        'ssh': {
             'type': 'object',
             'properties': {
                 'host': parameter_types.hostname_or_ip_address,
@@ -57,8 +57,8 @@ update = {
         }
     },
     'anyOf': [
-        {'required': ['rest_access']},
-        {'required': ['ssh_access']}
+        {'required': ['rest']},
+        {'required': ['ssh']}
     ],
     'additionalProperties': False
 }

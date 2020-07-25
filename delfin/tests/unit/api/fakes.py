@@ -146,7 +146,7 @@ def fake_access_info_get_all(context, marker=None, limit=None, sort_keys=None,
             'storage_id': '5f5c806d-2e65-473c-b612-345ef43f0642',
             'model': 'fake_driver',
             'vendor': 'fake_storage',
-            'rest_access': {
+            'rest': {
                 'host': '10.0.0.76',
                 'port': '1234',
                 'username': 'admin',
@@ -248,7 +248,7 @@ def fake_access_info_show(context, storage_id):
     access_info.created_at = '2020-06-15T09:50:31.698956'
     access_info.vendor = 'fake_storage'
     access_info.model = 'fake_driver'
-    access_info.rest_access = {
+    access_info.rest = {
         'host': '10.0.0.0',
         'username': 'admin',
         'password': 'YWJjZA==',
@@ -267,7 +267,7 @@ def fake_update_access_info(self, context, access_info):
     access_info.created_at = '2020-06-15T09:50:31.698956'
     access_info.vendor = 'fake_storage'
     access_info.model = 'fake_driver'
-    access_info.rest_access = {
+    access_info.rest = {
         'host': '10.0.0.0',
         'username': 'admin_modified',
         'password': 'YWJjZA==',

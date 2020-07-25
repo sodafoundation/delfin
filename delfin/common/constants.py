@@ -21,7 +21,7 @@ DB_MAX_INT = 0x7FFFFFFF
 
 
 # Valid access type supported currently.
-ACCESS_TYPE = ['rest_access', 'ssh_access']
+ACCESS_TYPE = ['rest', 'ssh']
 
 
 # Custom fields for Delfin objects
