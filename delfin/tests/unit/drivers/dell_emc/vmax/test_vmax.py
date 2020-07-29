@@ -27,12 +27,14 @@ class Request:
 
 VMAX_STORAGE_CONF = {
     "storage_id": "12345",
-    "host": "10.0.0.1",
-    "port": "8443",
-    "username": "user",
-    "password": "pass",
     "vendor": "dell_emc",
     "model": "vmax",
+    "rest": {
+        "host": "10.0.0.1",
+        "port": "8443",
+        "username": "user",
+        "password": "pass"
+    },
     "extra_attributes": {
         "array_id": "00112233"
     }
@@ -55,7 +57,14 @@ class TestVMAXStorageDriver(TestCase):
             self.assertEqual(driver.storage_id, "12345")
             self.assertEqual(driver.client.array_id, "00112233")
 
-        invalid_input = {'extra_attributes': {}}
+        invalid_input = {
+            'rest': {
+                "host": "10.0.0.1",
+                "port": "8443",
+                "username": "user",
+                "password": "pass"
+            },
+            'extra_attributes': {}}
         with self.assertRaises(Exception) as exc:
             VMAXStorageDriver(**invalid_input)
         self.assertIn('Input array_id is missing', str(exc.exception))

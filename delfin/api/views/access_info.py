@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from delfin.common import constants
+
 
 class ViewBuilder(object):
 
     def show(self, access_info):
         access_info_dict = access_info.to_dict()
-        access_info_dict.pop('password', None)
+        for access in constants.ACCESS_TYPE:
+            if access_info.get(access):
+                access_info[access].pop('password', None)
         return access_info_dict

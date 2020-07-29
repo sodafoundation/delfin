@@ -28,9 +28,16 @@ SUPPORTED_VERSION = '90'
 class VMAXClient(object):
     """ Client class for communicating with VMAX storage """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.conn = None
         self.array_id = None
+        rest_access = kwargs.get('rest')
+        if rest_access is None:
+            raise exception.InvalidInput('Input rest_access is missing')
+        self.rest_host = rest_access.get('host')
+        self.rest_port = rest_access.get('port')
+        self.rest_username = rest_access.get('username')
+        self.rest_password = rest_access.get('password')
 
     def __del__(self):
         # De-initialize session
@@ -49,12 +56,12 @@ class VMAXClient(object):
             # Initialise PyU4V connection to VMAX
             self.conn = PyU4V.U4VConn(
                 u4v_version=SUPPORTED_VERSION,
-                server_ip=access_info['host'],
-                port=access_info['port'],
+                server_ip=self.rest_host,
+                port=self.rest_port,
                 verify=False,
                 array_id=self.array_id,
-                username=access_info['username'],
-                password=access_info['password'])
+                username=self.rest_username,
+                password=self.rest_password)
 
         except Exception as err:
             msg = "Failed to connect to VMAX: {}".format(err)

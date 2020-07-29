@@ -143,14 +143,17 @@ def fake_access_info_get_all(context, marker=None, limit=None, sort_keys=None,
     return [
         {
             'created_at': "2020-06-09T08:59:48.710890",
-            'model': 'fake_driver',
             'storage_id': '5f5c806d-2e65-473c-b612-345ef43f0642',
-            'host': '10.0.0.76',
+            'model': 'fake_driver',
+            'vendor': 'fake_storage',
+            'rest': {
+                'host': '10.0.0.76',
+                'port': '1234',
+                'username': 'admin',
+                'password': b'YWJjZA=='
+            },
             'extra_attributes': {'array_id': '0001234567891'},
-            'password': b'YWJjZA==', 'port': '1234',
-            'updated_at': None,
-            'username': 'admin',
-            'vendor': 'fake_storage'
+            'updated_at': None
         }
     ]
 
@@ -237,7 +240,7 @@ def alert_source_get_exception(ctx, storage_id):
     raise exception.AlertSourceNotFound('abcd-1234-5678')
 
 
-def fake_access_info__show(context, storage_id):
+def fake_access_info_show(context, storage_id):
     access_info = models.AccessInfo()
 
     access_info.updated_at = '2020-06-15T09:50:31.698956'
@@ -245,10 +248,12 @@ def fake_access_info__show(context, storage_id):
     access_info.created_at = '2020-06-15T09:50:31.698956'
     access_info.vendor = 'fake_storage'
     access_info.model = 'fake_driver'
-    access_info.host = '10.0.0.0'
-    access_info.username = 'admin'
-    access_info.password = 'YWJjZA=='
-    access_info.port = '1234'
+    access_info.rest = {
+        'host': '10.0.0.0',
+        'username': 'admin',
+        'password': 'YWJjZA==',
+        'port': 1234
+    }
     access_info.extra_attributes = {'array_id': '0001234567897'}
 
     return access_info
@@ -262,10 +267,12 @@ def fake_update_access_info(self, context, access_info):
     access_info.created_at = '2020-06-15T09:50:31.698956'
     access_info.vendor = 'fake_storage'
     access_info.model = 'fake_driver'
-    access_info.host = '10.0.0.0'
-    access_info.username = 'admin_modified'
-    access_info.password = 'YWJjZA=='
-    access_info.port = '1234'
+    access_info.rest = {
+        'host': '10.0.0.0',
+        'username': 'admin_modified',
+        'password': 'YWJjZA==',
+        'port': 1234
+    }
     access_info.extra_attributes = {'array_id': '0001234567897'}
 
     return access_info

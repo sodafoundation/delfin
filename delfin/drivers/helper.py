@@ -17,24 +17,36 @@ from oslo_log import log
 from delfin import cryptor
 from delfin import db
 from delfin import exception
+from delfin.common import constants
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
 
+def encrypt_password(context, access_info):
+    for access in constants.ACCESS_TYPE:
+        if access_info.get(access):
+            access_info[access]['password'] = cryptor.encode(
+                access_info[access]['password'])
+
+
 def get_access_info(context, storage_id):
     access_info = db.access_info_get(context, storage_id)
     access_info_dict = access_info.to_dict()
-    access_info_dict['password'] = cryptor.decode(access_info_dict['password'])
+    for access in constants.ACCESS_TYPE:
+        if access_info.get(access):
+            access_info[access]['password'] = cryptor.decode(
+                access_info[access]['password'])
     return access_info_dict
 
 
 def create_access_info(context, access_info):
-    access_info['password'] = cryptor.encode(access_info['password'])
+    encrypt_password(context, access_info)
     return db.access_info_create(context, access_info)
 
 
 def update_access_info(context, storage_id, access_info):
+    encrypt_password(context, access_info)
     return db.access_info_update(context,
                                  storage_id,
                                  access_info)

@@ -14,16 +14,41 @@
 
 from delfin.api.validation import parameter_types
 
-
 create = {
     'type': 'object',
     'properties': {
-        'host': parameter_types.hostname_or_ip_address,
-        'port': parameter_types.tcp_udp_port,
-        'username': {'type': 'string', 'minLength': 1, 'maxLength': 255},
-        'password': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'vendor': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'model': {'type': 'string', 'minLength': 1, 'maxLength': 255},
+        'rest': {
+            'type': 'object',
+            'properties': {
+                'host': parameter_types.hostname_or_ip_address,
+                'port': parameter_types.tcp_udp_port,
+                'username': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255},
+                'password': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255}
+            },
+            'required': ['host', 'port', 'username', 'password'],
+            'additionalProperties': False
+        },
+        'ssh': {
+            'type': 'object',
+            'properties': {
+                'host': parameter_types.hostname_or_ip_address,
+                'port': parameter_types.tcp_udp_port,
+                'username': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255},
+                'password': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255},
+                'host_key': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255},
+                'host_key_type': parameter_types.host_key_type
+            },
+            'required': ['host', 'port', 'username', 'password', 'host_key',
+                         'host_key_type'],
+            'additionalProperties': False
+        },
         'extra_attributes': {
             'type': 'object',
             'patternProperties': {
@@ -33,6 +58,10 @@ create = {
             }
         }
     },
-    'required': ['host', 'port', 'username', 'password', 'vendor', 'model'],
+    'required': ['vendor', 'model'],
+    'anyOf': [
+        {'required': ['rest']},
+        {'required': ['ssh']}
+    ],
     'additionalProperties': False
 }

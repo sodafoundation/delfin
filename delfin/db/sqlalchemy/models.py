@@ -52,10 +52,8 @@ class AccessInfo(BASE, DelfinBase):
     storage_id = Column(String(36), primary_key=True)
     vendor = Column(String(255))
     model = Column(String(255))
-    host = Column(String(255))
-    port = Column(String(255))
-    username = Column(String(255))
-    password = Column(String(255))
+    rest = Column(JsonEncodedDict)
+    ssh = Column(JsonEncodedDict)
     extra_attributes = Column(JsonEncodedDict)
 
 

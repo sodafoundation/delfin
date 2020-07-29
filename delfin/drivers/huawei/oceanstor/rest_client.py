@@ -32,13 +32,17 @@ class RestClient(object):
 
     def __init__(self, **kwargs):
 
-        host = kwargs.get('host', 'localhost')
-        port = kwargs.get('port', '8088')
+        rest_access = kwargs.get('rest')
+        if rest_access is None:
+            raise exception.InvalidInput('Input rest_access is missing')
+        self.rest_host = rest_access.get('host')
+        self.rest_port = rest_access.get('port')
+        self.rest_username = rest_access.get('username')
+        self.rest_password = rest_access.get('password')
         # Lists of addresses to try, for authorization
         self.san_address = [
-            'https://' + host + ':' + port + '/deviceManager/rest/']
-        self.san_user = kwargs.get('username')
-        self.san_password = kwargs.get('password')
+            'https://' + self.rest_host + ':' + self.rest_port +
+            '/deviceManager/rest/']
         self.session = None
         self.url = None
         self.device_id = None
@@ -105,8 +109,8 @@ class RestClient(object):
         device_id = None
         for item_url in self.san_address:
             url = item_url + "xx/sessions"
-            data = {"username": self.san_user,
-                    "password": self.san_password,
+            data = {"username": self.rest_username,
+                    "password": self.rest_password,
                     "scope": "0"}
             self.init_http_head()
             result = self.do_call(url, data, 'POST',

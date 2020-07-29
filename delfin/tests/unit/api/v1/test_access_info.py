@@ -32,7 +32,7 @@ class TestAccessInfoController(test.TestCase):
     def test_show(self):
         self.mock_object(
             db, 'access_info_get',
-            fakes.fake_access_info__show)
+            fakes.fake_access_info_show)
         req = fakes.HTTPRequest.blank(
             '/storages/865ffd4d-f1f7-47de-abc3-5541ef44d0c1/access-info')
 
@@ -42,14 +42,17 @@ class TestAccessInfoController(test.TestCase):
             "model": "fake_driver",
             "vendor": "fake_storage",
             "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
-            "port": "1234",
-            "host": "10.0.0.0",
+            "rest": {
+                "host": "10.0.0.0",
+                "port": 1234,
+                "username": "admin"
+            },
+            "ssh": None,
             "extra_attributes": {
                 "array_id": "0001234567897"
             },
             "created_at": "2020-06-15T09:50:31.698956",
-            "updated_at": "2020-06-15T09:50:31.698956",
-            "username": "admin"
+            "updated_at": "2020-06-15T09:50:31.698956"
         }
 
         self.assertDictEqual(expctd_dict, res_dict)
@@ -66,7 +69,7 @@ class TestAccessInfoController(test.TestCase):
     def test_access_info_update(self):
         self.mock_object(
             db, 'access_info_get',
-            fakes.fake_access_info__show)
+            fakes.fake_access_info_show)
 
         fake_access_info = fakes.fake_update_access_info(None, None, None)
         self.mock_object(
@@ -74,11 +77,13 @@ class TestAccessInfoController(test.TestCase):
             mock.Mock(return_value=fake_access_info))
 
         body = {
-            'username': 'admin_modified',
-            'extra_attributes': {'array_id': '0001234567891'},
-            'password': 'abcd_modified',
-            'host': '10.0.0.0',
-            'port': 1234
+            'rest': {
+                'username': 'admin_modified',
+                'password': 'abcd_modified',
+                'host': '10.0.0.0',
+                'port': 1234
+            },
+            'extra_attributes': {'array_id': '0001234567891'}
         }
         req = fakes.HTTPRequest.blank(
             '/storages/865ffd4d-f1f7-47de-abc3-5541ef44d0c1/access-info')
@@ -88,13 +93,16 @@ class TestAccessInfoController(test.TestCase):
             "model": "fake_driver",
             "vendor": "fake_storage",
             "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
-            "port": "1234",
-            "host": "10.0.0.0",
+            "rest": {
+                "username": "admin_modified",
+                "host": "10.0.0.0",
+                "port": 1234
+            },
+            "ssh": None,
             "extra_attributes": {
                 "array_id": "0001234567897"
             },
             "created_at": "2020-06-15T09:50:31.698956",
-            "updated_at": "2020-06-15T09:50:31.698956",
-            "username": "admin_modified"
+            "updated_at": "2020-06-15T09:50:31.698956"
         }
         self.assertDictEqual(expctd_dict, res_dict)
