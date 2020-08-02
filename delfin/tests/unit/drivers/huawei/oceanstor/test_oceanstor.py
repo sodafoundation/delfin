@@ -103,7 +103,8 @@ class TestOceanStorStorageDriver(TestCase):
             'location': 'Location1',
             'total_capacity': 51200,
             'used_capacity': 38400,
-            'free_capacity': 20480
+            'free_capacity': 20480,
+            'raw_capacity': 76800
         }
 
         ret = [
@@ -114,6 +115,7 @@ class TestOceanStorStorageDriver(TestCase):
                     'SECTORSIZE': '512',
                     'TOTALCAPACITY': '100',
                     'USEDCAPACITY': '75',
+                    'MEMBERDISKSCAPACITY': '150',
                     'userFreeCapacity': '40',
                     'NAME': 'OceanStor_1',
                     'ID': '012345',

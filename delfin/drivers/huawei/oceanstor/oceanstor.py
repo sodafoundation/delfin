@@ -64,7 +64,7 @@ class OceanStorDriver(driver.StorageDriver):
             'total_capacity': total_cap,
             'used_capacity': used_cap,
             'free_capacity': free_cap,
-            'raw_capacity' : raw_cap
+            'raw_capacity': raw_cap
         }
         LOG.info("get_storage(), successfully retrieved storage details")
         return s
