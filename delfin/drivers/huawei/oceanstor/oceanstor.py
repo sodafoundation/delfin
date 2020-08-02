@@ -181,5 +181,5 @@ class OceanStorDriver(driver.StorageDriver):
     def parse_alert(self, context, alert):
         return alert_handler.AlertHandler().parse_alert(context, alert)
 
-    def clear_alert(self, context, alert):
-        pass
+    def clear_alert(self, context, sequence_number):
+        return self.client.clear_alert(sequence_number)

@@ -902,7 +902,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/{storage_id}/alerts/{alertSequenceNum}':
+  '/v1/storages/{storage_id}/alerts/{sequence_number}':
     delete:
       tags:
         - Alerts
@@ -916,7 +916,7 @@ paths:
           explode: false
           schema:
             type: string
-        - name: alertSequenceNum
+        - name: sequence_number
           in: path
           description: Sequence number which uniquely maps to the trap sent by a backend.
           required: true
@@ -1558,8 +1558,8 @@ components:
         type: integer
         format: int32
           - desc
-    alertSequenceNum:
-      name: alertSequenceNum
+    sequence_number:
+      name: sequence_number
       in: path
       description: Sequence number which uniquely maps to the trap sent by a backend.
       required: true
