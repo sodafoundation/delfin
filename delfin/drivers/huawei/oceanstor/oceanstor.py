@@ -50,6 +50,7 @@ class OceanStorDriver(driver.StorageDriver):
         total_cap = int(storage['TOTALCAPACITY']) * self.sector_size
         used_cap = int(storage['USEDCAPACITY']) * self.sector_size
         free_cap = int(storage['userFreeCapacity']) * self.sector_size
+        raw_cap = int(storage['MEMBERDISKSCAPACITY']) * self.sector_size
 
         s = {
             'name': 'OceanStor',
@@ -62,7 +63,8 @@ class OceanStorDriver(driver.StorageDriver):
             'location': storage['LOCATION'],
             'total_capacity': total_cap,
             'used_capacity': used_cap,
-            'free_capacity': free_cap
+            'free_capacity': free_cap,
+            'raw_capacity' : raw_cap
         }
         LOG.info("get_storage(), successfully retrieved storage details")
         return s

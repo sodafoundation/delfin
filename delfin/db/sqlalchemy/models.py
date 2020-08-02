@@ -73,6 +73,8 @@ class Storage(BASE, DelfinBase, models.SoftDeleteMixin):
     total_capacity = Column(Integer)
     used_capacity = Column(Integer)
     free_capacity = Column(Integer)
+    raw_capacity = Column(Integer)
+    subscribed_capacity = Column(Integer)
     sync_status = Column(Integer, default=constants.SyncStatus.SYNCED)
 
 
@@ -108,6 +110,7 @@ class StoragePool(BASE, DelfinBase):
     total_capacity = Column(Integer)
     used_capacity = Column(Integer)
     free_capacity = Column(Integer)
+    subscribed_capacity = Column(Integer)
 
 
 class Disk(BASE, DelfinBase):
