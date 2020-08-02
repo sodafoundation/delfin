@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import enum
 
 from oslo_log import log
 
@@ -23,6 +24,33 @@ from delfin.exporter import base_exporter
 LOG = log.getLogger(__name__)
 
 
+# Enumerations for alert severity
+class Severity(enum.Enum):
+    FATAL = 'fatal'
+    CRITICAL = 'critical'
+    MAJOR = 'major'
+    MINOR = 'minor'
+    WARNING = 'warning'
+    INFORMATIONAL = 'informational'
+    NOT_SPECIFIED = 'not specified'
+
+
+# Enumerations for alert category
+class Category(enum.Enum):
+    FAULT = 'Fault'
+    EVENT = 'Event'
+    RECOVERY = 'Recovery'
+    NOT_SPECIFIED = 'Not Specified'
+
+
+# Enumerations for resource type
+class ResourceType(enum.Enum):
+    NETWORK = 'Network'
+    SERVER = 'Server'
+    STORAGE = 'Storage'
+    OTHER = 'Other'
+
+
 class AlertProcessor(object):
     """Alert model translation and export functions"""
 
@@ -33,15 +61,17 @@ class AlertProcessor(object):
         """Fills alert model using driver manager interface."""
         ctxt = context.RequestContext()
         storage = db.storage_get(ctxt, alert['storage_id'])
-        # Fill storage specific info
-        alert['storage_name'] = storage['name']
-        alert['vendor'] = storage['vendor']
-        alert['model'] = storage['model']
 
         try:
-            alert_model = self.driver_manager.parse_alert(context,
+            alert_model = self.driver_manager.parse_alert(ctxt,
                                                           alert['storage_id'],
                                                           alert)
+            # Fill storage specific info
+            alert_model['storage_id'] = storage['id']
+            alert_model['storage_name'] = storage['name']
+            alert_model['manufacturer'] = storage['vendor']
+            alert_model['product_name'] = storage['model']
+            alert_model['serial_number'] = storage['serial_number']
         except Exception as e:
             LOG.error(e)
             raise exception.InvalidResults(

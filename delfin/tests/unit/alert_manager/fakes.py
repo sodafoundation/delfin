@@ -15,32 +15,36 @@
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 
 from delfin import exception
+from delfin.alert_manager import alert_processor
 
 
 def fake_storage_info():
     return {
         'id': 'abcd-1234-56789',
         'name': 'storage1',
-        'vendor': 'fake vendor',
-        'model': 'fake model'
+        'vendor': 'fake manufacturer',
+        'model': 'fake product',
+        'serial_number': 'serial-1234',
     }
 
 
 def fake_alert_model():
-    return {'me_dn': 'abcd-1234-56789',
-            'me_name': 'storage1',
-            'manufacturer': 'fake vendor',
-            'location': 'Component type: location1 '
-                        'Group,Component name: comp1',
-            'event_type': 'topology',
-            'severity': 'warning',
-            'probable_cause': 'Diagnostic '
-                              'event trace triggered.',
-            'me_category': 'storage-subsystem',
-            'native_me_dn': '000192601409',
-            'alarm_id': '1050',
-            'alarm_name':
-                'SAMPLE_ALARM_NAME'
+    return {'storage_id': 'abcd-1234-56789',
+            'storage_name': 'storage1',
+            'manufacturer': 'fake manufacturer',
+            'product_name': 'fake product',
+            'serial_number': 'serial-1234',
+            'alert_id': '1050',
+            'alert_name': 'SAMPLE_ALERT_NAME',
+            'severity': alert_processor.Severity.WARNING,
+            'category': alert_processor.Category.NOT_SPECIFIED,
+            'type': 'topology',
+            'sequence_number': 79,
+            'detailed_info': 'Diagnostic event trace triggered.',
+            'recovery_advice': 'NA',
+            'resource_type': alert_processor.ResourceType.STORAGE,
+            'location': 'Array id=000192601409,Component type=location1 '
+                        'Group,Component name=comp1,Event source=symmetrix',
             }
 
 

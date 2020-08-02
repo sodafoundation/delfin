@@ -40,7 +40,9 @@ class AlertProcessorTestCase(unittest.TestCase):
         fake_storage_info = fakes.fake_storage_info()
 
         input_alert = {'storage_id': 'abcd-1234-56789',
-                       'model': 'fake_model', 'connUnitEventId': 79,
+                       'product_name': 'fake_model',
+                       'serial_number': 'serial-1234',
+                       'connUnitEventId': 79,
                        'connUnitName': '000192601409',
                        'connUnitEventType': 'topology',
                        'connUnitEventDescr': 'Diagnostic '
@@ -54,24 +56,28 @@ class AlertProcessorTestCase(unittest.TestCase):
 
         expected_driver_input = input_alert
         expected_driver_input['storage_name'] = fake_storage_info['name']
-        expected_driver_input['vendor'] = fake_storage_info['vendor']
-        expected_driver_input['model'] = fake_storage_info['model']
+        expected_driver_input['manufacturer'] = fake_storage_info['vendor']
+        expected_driver_input['product_name'] = fake_storage_info['model']
+        expected_driver_input['serial_number'] \
+            = fake_storage_info['serial_number']
 
-        expected_alert_model = {'me_dn': fake_storage_info['id'],
-                                'me_name': fake_storage_info['name'],
-                                'manufacturer': fake_storage_info['vendor'],
+        expected_alert_model = {'storage_id': fake_storage_info['id'],
+                                'storage_name': fake_storage_info['name'],
+                                'manufacturer':
+                                    fake_storage_info['vendor'],
+                                'product_name': fake_storage_info['model'],
+                                'serial_number':
+                                    fake_storage_info['serial_number'],
                                 'location': 'Component type: location1 '
                                             'Group,Component name: comp1',
-                                'event_type': input_alert['connUnitEventType'],
+                                'type': input_alert['connUnitEventType'],
                                 'severity':
                                     input_alert['connUnitEventSeverity'],
-                                'probable_cause':
+                                'detailed_info':
                                     input_alert['connUnitEventDescr'],
-                                'me_category': input_alert['connUnitType'],
-                                'native_me_dn': input_alert['connUnitName'],
-                                'alarm_id': input_alert['asyncEventCode'],
-                                'alarm_name':
-                                    'SAMPLE_ALARM_NAME'
+                                'resource_type': input_alert['connUnitType'],
+                                'alert_id': input_alert['emcAsyncEventCode'],
+                                'alert_name': 'SAMPLE_ALERT_NAME'
                                 }
         mock_storage.return_value = fake_storage_info
         mock_parse_alert.return_value = fakes.fake_alert_model()
@@ -94,8 +100,10 @@ class AlertProcessorTestCase(unittest.TestCase):
     def test_process_alert_info_exception(self, mock_storage):
         """ Mock parse alert for raising exception"""
         alert = {'storage_id': 'abcd-1234-56789',
-                 'storage_name': 'storage1', 'vendor': 'fake vendor',
-                 'model': 'fake model'}
+                 'storage_name': 'storage1',
+                 'manufacturer': 'fake manufacturer',
+                 'product_name': 'fake product',
+                 'serial_number': 'serial-1234'}
 
         mock_storage.return_value = fakes.fake_storage_info()
         alert_processor_inst = self._get_alert_processor()

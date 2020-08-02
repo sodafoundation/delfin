@@ -17,6 +17,7 @@ from datetime import datetime
 from oslo_log import log
 
 from delfin import exception
+from delfin.alert_manager import alert_processor
 from delfin.drivers.dell_emc.vmax import alert_mapper
 
 LOG = log.getLogger(__name__)
@@ -24,122 +25,122 @@ LOG = log.getLogger(__name__)
 
 class AlertHandler(object):
     """Alert handling functions for vmax driver"""
-    default_category = 'New'
-    default_event_type = 'unknown'
-    default_probable_cause = 'Not available'
-    default_severity = 'unknown'
-    default_me_category = 'storage-subsystem'
-    default_location = 'unknown'
 
-    # Mandatory attributes expected in alert info to proceed with model filling
-    mandatory_alert_attributes = ('storage_id', 'storage_name', 'vendor',
-                                  'model', 'connUnitName', 'emcAsyncEventCode')
+    # Translation of trap severity to alert model severity
+    SEVERITY_MAP = {"emergency": alert_processor.Severity.FATAL,
+                    "alert": alert_processor.Severity.CRITICAL,
+                    "critical": alert_processor.Severity.CRITICAL,
+                    "error": alert_processor.Severity.MAJOR,
+                    "warning": alert_processor.Severity.WARNING,
+                    "notify": alert_processor.Severity.WARNING,
+                    "info": alert_processor.Severity.INFORMATIONAL,
+                    "debug": alert_processor.Severity.INFORMATIONAL,
+                    "mark": alert_processor.Severity.INFORMATIONAL}
+
+    # Translation of trap resource type to alert model resource type
+    RESOURCE_TYPE_MAP = {
+        "hub": alert_processor.ResourceType.NETWORK,
+        "switch": alert_processor.ResourceType.NETWORK,
+        "gateway": alert_processor.ResourceType.NETWORK,
+        "converter": alert_processor.ResourceType.NETWORK,
+        "hba": alert_processor.ResourceType.NETWORK,
+        "proxy-agent": alert_processor.ResourceType.NETWORK,
+        "storage-device": alert_processor.ResourceType.STORAGE,
+        "host": alert_processor.ResourceType.SERVER,
+        "storage-subsystem": alert_processor.ResourceType.STORAGE,
+        "module": alert_processor.ResourceType.OTHER,
+        "swdriver": alert_processor.ResourceType.OTHER,
+        "storage-access-device": alert_processor.ResourceType.STORAGE,
+        "wdm": alert_processor.ResourceType.OTHER,
+        "ups": alert_processor.ResourceType.OTHER,
+        "other": alert_processor.ResourceType.OTHER}
+
+    # Attributes mandatory in alert info to proceed with model filling
+    _mandatory_alert_attributes = ('emcAsyncEventCode',
+                                   'connUnitEventSeverity',
+                                   'connUnitEventType', 'connUnitEventDescr',
+                                   'connUnitType',
+                                   'emcAsyncEventComponentType',
+                                   'emcAsyncEventComponentName',
+                                   'emcAsyncEventSource')
 
     def __init__(self):
         pass
 
     """
-    Alert model contains below fields
-    category : Type of the reported notification
-    occur_time : Time of occurrence of alert. When trap does not contain it,
-                 it will be filled with receive time
-    match_key : This info uniquely identifies the fault point. Several infos
-                such as source system id, location, alarm id together can be
-                used to construct this
-    me_dn : Unique id at resource module (management system) side. me stands
-            for management element here
-    me_name : Unique name at resource module (management system) side
-    native_me_dn : Unique id of the device at source system that reports the
-                   alarm
-    location : Alarm location information. It helps to locate the lowest unit
-               where fault is originated(Name-value pairs)
-               ex: Location = subtrack, No = 1, Slot No = 5.
-                   shelf Id = 1, board type = ADSL
-    event_type : Basic classification of the alarm. Probable values such as
-                 status, configuration, topology ....
-    alarm_id : Identification of alarm
-    alarm_name : Name of the alarm, might need translation from alarm id
-    severity : Severity of alarm. Helps admin to decide on action to be taken
-               Probable values: Critical, Major, Minor, Warning, Info
-    device_alert_sn : Sequence number of alert generated. This will be helpful
-                      during alert clearing process
-    manufacturer : Vendor of the device
-    Product_name : Name of the product
-    probable_cause : Probable reason for alert generation
-    clear_type : Alarm clearance type such as manual, automatic, reset clear
-    me_category : Resource category of the device generating the alarm
-                  Probable value: Network,Server,Storage..
+    Alert Model	Description
+    Part of the fields filled from delfin resource info and other from driver
+    *****Filled from delfin resource info***********************
+    storage_id	Id of the storage system on behalf of which alert is generated
+    storage_name	Name of the storage system on behalf of which alert is
+                    generated
+    manufacturer	Vendor of the device
+    product_name	Product or the model name
+    serial_number	Serial number of the alert generating source
+    ****************************************************
+    *****Filled from driver side ***********************
+    alert_id	Unique identification for a given alert type
+    alert_name	Unique name for a given alert type
+    severity	Severity of the alert
+    category	Category of alert generated
+    type	Type of the alert generated
+    sequence_number	Sequence number for the alert, uniquely identifies a
+                              given alert instance used for clearing the alert
+    occur_time	Time at which alert is generated from device
+    detailed_info	Possible cause description or other details about the alert
+    recovery_advice	Some suggestion for handling the given alert
+    resource_type	Resource type of device/source generating alert
+    location	Detailed info about the tracing the alerting device such as
+                slot, rack, component, parts etc
+    *****************************************************
     """
 
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
 
         # Check for mandatory alert attributes
-        for attr in self.mandatory_alert_attributes:
+        for attr in self._mandatory_alert_attributes:
             if not alert.get(attr):
                 msg = "Mandatory information %s missing in alert message. " \
                       % attr
                 raise exception.InvalidInput(msg)
 
         alert_model = {}
-        # These information are sourced from device registration info
-        alert_model['me_dn'] = alert['storage_id']
-        alert_model['me_name'] = alert['storage_name']
-        alert_model['manufacturer'] = alert['vendor']
-        alert_model['product_name'] = alert['model']
 
-        # Fill default values for alert attributes
-        alert_model['category'] = self.default_category
-        alert_model['location'] = self.default_location
-        alert_model['event_type'] = self.default_event_type
-        alert_model['severity'] = self.default_severity
-        alert_model['probable_cause'] = self.default_probable_cause
-        alert_model['me_category'] = self.default_me_category
+        # Fill alarm id and fill alarm_name with corresponding mapping names
+        alert_model['alert_id'] = alert['emcAsyncEventCode']
+        alert_model['alert_name'] = alert_mapper.alarm_id_name_mapping.get(
+            alert_model['alert_id'], alert_model['alert_id'])
 
-        # Trap info does not have clear_type and alert sequence number
-        # TBD : Below fields filling to be updated
-        alert_model['clear_type'] = ""
-        alert_model['device_alert_sn'] = ""
-        alert_model['match_key'] = ""
+        alert_model['severity'] = self.SEVERITY_MAP.get(
+            alert['connUnitEventSeverity'],
+            alert_processor.Severity.INFORMATIONAL)
+
+        alert_model['category'] = alert_processor.Category.NOT_SPECIFIED
+        alert_model['type'] = alert['connUnitEventType']
+
+        alert_model['sequence_number'] = alert['connUnitEventId']
 
         # trap info do not contain occur time, update with received time
         # Get date and time. Format will be like : Wed May 20 01:53:29 2020
         curr_time = datetime.now()
         alert_model['occur_time'] = curr_time.strftime('%c')
-
-        # Fill all the alert model fields
-        if alert.get('category'):
-            alert_model['category'] = alert['category']
-
-        # Array id is used to fill unique id at source system side
-        alert_model['native_me_dn'] = alert['connUnitName']
+        alert_model['detailed_info'] = alert['connUnitEventDescr']
+        alert_model['recovery_advice'] = 'None'
+        alert_model['resource_type'] = self.RESOURCE_TYPE_MAP.get(
+            alert['connUnitType'], alert_processor.ResourceType.OTHER)
 
         # Location is name-value pair having component type and component name
-        if alert.get('emcAsyncEventComponentType') \
-                and alert.get('emcAsyncEventComponentName'):
-            component_type = alert_mapper.component_type_mapping.get(
-                alert.get('emcAsyncEventComponentType'), "")
-            alert_model['location'] = 'Component type: ' \
-                                      + component_type \
-                                      + ',Component name: ' \
-                                      + alert['emcAsyncEventComponentName']
-
-        if alert.get('connUnitEventType'):
-            alert_model['event_type'] = alert['connUnitEventType']
-
-        if alert.get('connUnitEventSeverity'):
-            alert_model['severity'] = alert['connUnitEventSeverity']
-
-        if alert.get('connUnitEventDescr'):
-            alert_model['probable_cause'] = alert['connUnitEventDescr']
-
-        # Fill alarm id and fill alarm_name with corresponding mapping names
-        alert_model['alarm_id'] = alert['emcAsyncEventCode']
-        alert_model['alarm_name'] = alert_mapper.alarm_id_name_mapping.get(
-            alert_model['alarm_id'], alert_model['alarm_id'])
-
-        if alert.get('connUnitType'):
-            alert_model['me_category'] = alert['connUnitType']
+        component_type = alert_mapper.component_type_mapping.get(
+            alert.get('emcAsyncEventComponentType'), "")
+        alert_model['location'] = 'Array id=' \
+                                  + alert['connUnitName'] \
+                                  + ',Component type=' \
+                                  + component_type \
+                                  + ',Component name=' \
+                                  + alert['emcAsyncEventComponentName'] \
+                                  + ',Event source=' \
+                                  + alert['emcAsyncEventSource']
 
         return alert_model
 
