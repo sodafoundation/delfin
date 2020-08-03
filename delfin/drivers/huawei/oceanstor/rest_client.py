@@ -57,8 +57,7 @@ class RestClient(object):
         self.session.trust_env = False
 
     def do_call(self, url, data, method,
-                calltimeout=consts.SOCKET_TIMEOUT, log_filter_flag=False,
-                params=None):
+                calltimeout=consts.SOCKET_TIMEOUT, log_filter_flag=False):
         """Send requests to Huawei storage server.
 
         Send HTTPS call, get response in JSON.
@@ -70,8 +69,6 @@ class RestClient(object):
         kwargs = {'timeout': calltimeout}
         if data:
             kwargs['data'] = json.dumps(data)
-        if params:
-            kwargs['params'] = params
 
         if method in ('POST', 'PUT', 'GET', 'DELETE'):
             func = getattr(self.session, method.lower())
@@ -148,7 +145,7 @@ class RestClient(object):
         return device_id
 
     def call(self, url, data=None, method=None,
-             log_filter_flag=False, params=None):
+             log_filter_flag=False):
         """Send requests to server.
 
         If fail, try another RestURL.
@@ -156,7 +153,7 @@ class RestClient(object):
         device_id = None
         old_url = self.url
         result = self.do_call(url, data, method,
-                              log_filter_flag=log_filter_flag, params=params)
+                              log_filter_flag=log_filter_flag)
         error_code = result['error']['code']
         if (error_code == consts.ERROR_CONNECT_TO_SERVER
                 or error_code == consts.ERROR_UNAUTHORIZED_TO_SERVER):
@@ -170,8 +167,7 @@ class RestClient(object):
                       {'old_url': old_url,
                        'new_url': self.url})
             result = self.do_call(url, data, method,
-                                  log_filter_flag=log_filter_flag,
-                                  params=params)
+                                  log_filter_flag=log_filter_flag)
             if result['error']['code'] in consts.RELOGIN_ERROR_PASS:
                 result['error']['code'] = 0
         return result
@@ -248,7 +244,5 @@ class RestClient(object):
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
 
     def clear_alert(self, sequence_number):
-        url = "/alarm/currentalarm/"
-        param = {'sequence': sequence_number}
-        return self.call(url, method="DELETE", log_filter_flag=True,
-                         params=param)
+        url = "/alarm/currentalarm?sequence=%s" % sequence_number
+        return self.call(url, method="DELETE", log_filter_flag=True)

@@ -15,7 +15,7 @@
 from delfin.api import common
 from delfin.api import extensions
 from delfin.api.v1 import access_info
-from delfin.api.v1 import alert
+from delfin.api.v1 import alert_source
 from delfin.api.v1 import alerts
 from delfin.api.v1 import storage_pools
 from delfin.api.v1 import storages
@@ -50,7 +50,7 @@ class APIRouter(common.APIRouter):
                        action="update",
                        conditions={"method": ["PUT"]})
 
-        self.resources['alert_sources'] = alert.create_resource()
+        self.resources['alert_sources'] = alert_source.create_resource()
         mapper.connect("storages", "/storages/{id}/alert-source",
                        controller=self.resources['alert_sources'],
                        action="put",
