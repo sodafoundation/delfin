@@ -58,6 +58,10 @@ class StorageDriver(object):
         """Parse alert data got from snmp trap server."""
         pass
 
+    def list_alerts(self, context):
+        """List all current alerts from storage system."""
+        pass
+
     @abc.abstractmethod
     def clear_alert(self, context, alert):
         """Clear alert from storage system."""

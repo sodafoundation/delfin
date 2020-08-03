@@ -12,79 +12,90 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import threading
 
-from stevedore import extension
+from oslo_config import cfg
 from oslo_log import log
+from stevedore import extension
+
+from delfin import exception
+from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
+exporter_opts = [
+    cfg.ListOpt('alert_exporters',
+                default=['AlertExporterExample'],
+                help="Which exporters for alert push."),
+    cfg.ListOpt('performance_exporters',
+                default=['PerformanceExporterExample'],
+                help="Which exporters for performance push."),
+]
 
-class ExportManager(object):
-    _instance_lock = threading.Lock()
+CONF = cfg.CONF
+CONF.register_opts(exporter_opts)
+
+
+class BaseExporter(object):
+    """Base class for data exporter."""
+
+    def dispatch(self, ctxt, data):
+        """Dispatch data to the third platforms.
+            :param ctxt: delfin.RequestContext
+            :param data: The data to be pushed, it's a list with dict item.
+            :type data: list
+        """
+        raise NotImplementedError()
+
+
+class BaseManager(BaseExporter):
+    def __init__(self, namespace):
+        self.extension_manager = extension.ExtensionManager(namespace)
+        self.exporters = self._get_exporters()
+
+    def dispatch(self, ctxt, data):
+        for exporter in self.exporters:
+            try:
+                exporter.dispatch(ctxt, data)
+            except exception.DelfinException as e:
+                err_msg = _("Failed to export data (%s).") % e.msg
+                LOG.exception(err_msg)
+            except Exception:
+                err_msg = _("Failed to export data.")
+                LOG.exception(err_msg)
+
+    def _get_exporters(self):
+        """Get exporters from configuration file which
+        shall be supported in entry points.
+        """
+        supported_exporters = self._get_supported_exporters()
+        configured_exporters = self._get_configured_exporters()
+        return [cls() for cls in supported_exporters
+                if cls.__name__ in configured_exporters]
+
+    def _get_supported_exporters(self):
+        """Get all supported exporters from entry points file."""
+        return [ext.plugin for ext in self.extension_manager]
+
+    def _get_configured_exporters(self):
+        """Get exporters from configuration file."""
+        raise NotImplementedError()
+
+
+class AlertExporterManager(BaseManager):
+    NAMESPACE = 'delfin.alert.exporters'
 
     def __init__(self):
-        pass
+        super(AlertExporterManager, self).__init__(self.NAMESPACE)
 
-    def __init_manager(self):
-        self.export_manager = extension.ExtensionManager(
-            namespace='resource.exporter',
-            invoke_on_load=True,
-        )
-
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(ExportManager, "_instance"):
-            with ExportManager._instance_lock:
-                if not hasattr(ExportManager, "_instance"):
-                    ExportManager._instance = object.__new__(cls)
-                    ExportManager._instance.__init_manager()
-        return ExportManager._instance
+    def _get_configured_exporters(self):
+        return CONF.alert_exporters
 
 
-def _dispatch_example(ext, data):
-    ext.obj.dispatch_data(data)
+class PerformanceExporterManager(BaseManager):
+    NAMESPACE = 'delfin.performance.exporters'
 
+    def __init__(self):
+        super(PerformanceExporterManager, self).__init__(self.NAMESPACE)
 
-def _dispatch_alert(ext, alert_model):
-    ext.obj.dispatch_alert_model(alert_model)
-
-
-# Task can call this function to report example data.
-def dispatch_example_data(data):
-    """
-        :param data: Resource data.
-        :type data: dict
-        Redefine this in child classes.
-    """
-    export_manager = ExportManager().export_manager
-    export_manager.map(_dispatch_example, data)
-
-
-def dispatch_alert_model(alert_model):
-    """
-        :param alert_model: Alert model.
-        :type alert_model: dict
-        Redefine this in child classes.
-    """
-    export_manager = ExportManager().export_manager
-    export_manager.map(_dispatch_alert, alert_model)
-
-
-class BaseExampleExporter(object):
-    """Base class for example exporter."""
-
-    def dispatch_data(self, data):
-        """Dispatch data to north bound platforms.
-            :param data: Resource data.
-            :type data: dict
-            Redefine this in child classes.
-        """
-        raise NotImplementedError
-
-    def dispatch_alert_model(self, alert_model):
-        """Dispatch data to north bound platforms.
-            :param alert_model: Alert model.
-            :type alert_model: dict
-            Redefine this in child classes.
-        """
-        raise NotImplementedError
+    def _get_configured_exporters(self):
+        return CONF.performance_exporters
