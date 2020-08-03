@@ -25,9 +25,11 @@ setup(
     packages=find_packages(exclude=("tests", "tests.*")),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
     entry_points={
-        'resource.exporter': [
-            'example1 = delfin.exporter.example_exporter:Example1Exporter',
-            'example2 = delfin.exporter.example_exporter:Example2Exporter'
+        'delfin.alert.exporters': [
+            'example = delfin.exporter.example:AlertExporterExample'
+        ],
+        'delfin.performance.exporters': [
+            'example = delfin.exporter.example:PerformanceExporterExample'
         ],
         'delfin.storage.drivers': [
             'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
