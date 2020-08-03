@@ -144,8 +144,7 @@ class RestClient(object):
 
         return device_id
 
-    def call(self, url, data=None, method=None,
-             log_filter_flag=False):
+    def call(self, url, data=None, method=None, log_filter_flag=False):
         """Send requests to server.
 
         If fail, try another RestURL.

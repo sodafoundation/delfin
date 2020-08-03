@@ -100,6 +100,8 @@ class FakeStorageDriver(driver.StorageDriver):
         # Do something here
         sn = six.text_type(uuidutils.generate_uuid())
         total, used, free = self._get_random_capacity()
+        raw = random.randint(2000, 3000)
+        subscribed = random.randint(3000, 4000)
         return {
             'name': 'fake_driver',
             'description': 'fake driver.',
@@ -112,6 +114,8 @@ class FakeStorageDriver(driver.StorageDriver):
             'total_capacity': total,
             'used_capacity': used,
             'free_capacity': free,
+            'raw_capacity': raw,
+            'subscribed_capacity': subscribed
         }
 
     @wait_random(MIN_WAIT, MAX_WAIT)
