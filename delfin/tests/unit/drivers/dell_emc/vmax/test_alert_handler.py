@@ -17,7 +17,7 @@ import unittest
 from oslo_utils import importutils
 
 from delfin import exception
-from delfin.alert_manager import alert_processor
+from delfin.common import constants
 
 
 class AlertHandlerTestCase(unittest.TestCase):
@@ -54,15 +54,15 @@ class AlertHandlerTestCase(unittest.TestCase):
         expected_alert_model = {'alert_id': alert['emcAsyncEventCode'],
                                 'alert_name':
                                     'SYMAPI_AEVENT2_UID_MOD_DIAG_TRACE_TRIG',
-                                'severity': alert_processor.Severity.WARNING,
+                                'severity': constants.Severity.WARNING,
                                 'category':
-                                    alert_processor.Category.NOT_SPECIFIED,
+                                    constants.Category.NOT_SPECIFIED,
                                 'type': alert['connUnitEventType'],
                                 'sequence_number': alert['connUnitEventId'],
                                 'detailed_info': alert['connUnitEventDescr'],
                                 'recovery_advice': 'None',
                                 'resource_type':
-                                    alert_processor.ResourceType.STORAGE,
+                                    constants.ResourceType.STORAGE,
                                 'location': 'Array id=000192601409,'
                                             'Component type=Symmetrix Disk '
                                             'Group,'

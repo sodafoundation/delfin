@@ -16,7 +16,7 @@
 from oslo_log import log
 
 from delfin import exception
-from delfin.alert_manager import alert_processor
+from delfin.common import constants
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
@@ -26,15 +26,15 @@ class AlertHandler(object):
     """Alert handling functions for huawei oceanstor driver"""
 
     # Translation of trap severity to alert model severity
-    SEVERITY_MAP = {"criticalAlarm": alert_processor.Severity.CRITICAL,
-                    "majorAlarm": alert_processor.Severity.MAJOR,
-                    "minorAlarm": alert_processor.Severity.MINOR,
-                    "warningAlarm": alert_processor.Severity.WARNING}
+    SEVERITY_MAP = {"criticalAlarm": constants.Severity.CRITICAL,
+                    "majorAlarm": constants.Severity.MAJOR,
+                    "minorAlarm": constants.Severity.MINOR,
+                    "warningAlarm": constants.Severity.WARNING}
 
     # Translation of trap alert category to alert model category
-    CATEGORY_MAP = {"faultAlarm": alert_processor.Category.FAULT,
-                    "recoveryAlarm": alert_processor.Category.RECOVERY,
-                    "eventAlarm": alert_processor.Category.EVENT}
+    CATEGORY_MAP = {"faultAlarm": constants.Category.FAULT,
+                    "recoveryAlarm": constants.Category.RECOVERY,
+                    "eventAlarm": constants.Category.EVENT}
 
     # Attributes expected in alert info to proceed with model filling
     _mandatory_alert_attributes = ('hwIsmReportingAlarmAlarmID',
@@ -52,34 +52,6 @@ class AlertHandler(object):
     def __init__(self):
         pass
 
-    """
-     Alert Model	Description
-     Part of the fields filled from delfin resource info and other from driver
-     *****Filled from delfin resource info***********************
-     storage_id	Id of the storage system on behalf of which alert is generated
-     storage_name	Name of the storage system on behalf of which alert is
-                     generated
-     manufacturer	Vendor of the device
-     product_name	Product or the model name
-     serial_number	Serial number of the alert generating source
-     ****************************************************
-     *****Filled from driver side ***********************
-     alert_id	Unique identification for a given alert type
-     alert_name	Unique name for a given alert type
-     severity	Severity of the alert
-     category	Category of alert generated
-     type	Type of the alert generated
-     sequence_number	Sequence number for the alert, uniquely identifies a
-                               given alert instance used for clearing the alert
-     occur_time	Time at which alert is generated from device
-     detailed_info	Possible cause description or other details about the alert
-     recovery_advice	Some suggestion for handling the given alert
-     resource_type	Resource type of device/source generating alert
-     location	Detailed info about the tracing the alerting device such as
-                 slot, rack, component, parts etc
-     *****************************************************
-     """
-
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
         # Check for mandatory alert attributes
@@ -96,10 +68,10 @@ class AlertHandler(object):
             alert_model['alert_name'] = alert['hwIsmReportingAlarmFaultTitle']
             alert_model['severity'] = self.SEVERITY_MAP.get(
                 alert['hwIsmReportingAlarmFaultLevel'],
-                alert_processor.Severity.NOT_SPECIFIED)
+                constants.Severity.NOT_SPECIFIED)
             alert_model['category'] = self.CATEGORY_MAP.get(
                 alert['hwIsmReportingAlarmFaultCategory'],
-                alert_processor.Category.NOT_SPECIFIED)
+                constants.Category.NOT_SPECIFIED)
             alert_model['type'] = alert['hwIsmReportingAlarmFaultType']
             alert_model['sequence_number'] \
                 = alert['hwIsmReportingAlarmSerialNo']
@@ -108,7 +80,7 @@ class AlertHandler(object):
                 = alert['hwIsmReportingAlarmAdditionInfo']
             alert_model['recovery_advice'] \
                 = alert['hwIsmReportingAlarmRestoreAdvice']
-            alert_model['resource_type'] = alert_processor.ResourceType.STORAGE
+            alert_model['resource_type'] = constants.ResourceType.STORAGE
             alert_model['location'] = 'Node code=' \
                                       + alert['hwIsmReportingAlarmNodeCode']
 

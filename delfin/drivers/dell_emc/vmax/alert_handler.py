@@ -17,7 +17,7 @@ from datetime import datetime
 from oslo_log import log
 
 from delfin import exception
-from delfin.alert_manager import alert_processor
+from delfin.common import constants
 from delfin.drivers.dell_emc.vmax import alert_mapper
 
 LOG = log.getLogger(__name__)
@@ -27,33 +27,33 @@ class AlertHandler(object):
     """Alert handling functions for vmax driver"""
 
     # Translation of trap severity to alert model severity
-    SEVERITY_MAP = {"emergency": alert_processor.Severity.FATAL,
-                    "alert": alert_processor.Severity.CRITICAL,
-                    "critical": alert_processor.Severity.CRITICAL,
-                    "error": alert_processor.Severity.MAJOR,
-                    "warning": alert_processor.Severity.WARNING,
-                    "notify": alert_processor.Severity.WARNING,
-                    "info": alert_processor.Severity.INFORMATIONAL,
-                    "debug": alert_processor.Severity.INFORMATIONAL,
-                    "mark": alert_processor.Severity.INFORMATIONAL}
+    SEVERITY_MAP = {"emergency": constants.Severity.FATAL,
+                    "alert": constants.Severity.CRITICAL,
+                    "critical": constants.Severity.CRITICAL,
+                    "error": constants.Severity.MAJOR,
+                    "warning": constants.Severity.WARNING,
+                    "notify": constants.Severity.WARNING,
+                    "info": constants.Severity.INFORMATIONAL,
+                    "debug": constants.Severity.INFORMATIONAL,
+                    "mark": constants.Severity.INFORMATIONAL}
 
     # Translation of trap resource type to alert model resource type
     RESOURCE_TYPE_MAP = {
-        "hub": alert_processor.ResourceType.NETWORK,
-        "switch": alert_processor.ResourceType.NETWORK,
-        "gateway": alert_processor.ResourceType.NETWORK,
-        "converter": alert_processor.ResourceType.NETWORK,
-        "hba": alert_processor.ResourceType.NETWORK,
-        "proxy-agent": alert_processor.ResourceType.NETWORK,
-        "storage-device": alert_processor.ResourceType.STORAGE,
-        "host": alert_processor.ResourceType.SERVER,
-        "storage-subsystem": alert_processor.ResourceType.STORAGE,
-        "module": alert_processor.ResourceType.OTHER,
-        "swdriver": alert_processor.ResourceType.OTHER,
-        "storage-access-device": alert_processor.ResourceType.STORAGE,
-        "wdm": alert_processor.ResourceType.OTHER,
-        "ups": alert_processor.ResourceType.OTHER,
-        "other": alert_processor.ResourceType.OTHER}
+        "hub": constants.ResourceType.NETWORK,
+        "switch": constants.ResourceType.NETWORK,
+        "gateway": constants.ResourceType.NETWORK,
+        "converter": constants.ResourceType.NETWORK,
+        "hba": constants.ResourceType.NETWORK,
+        "proxy-agent": constants.ResourceType.NETWORK,
+        "storage-device": constants.ResourceType.STORAGE,
+        "host": constants.ResourceType.SERVER,
+        "storage-subsystem": constants.ResourceType.STORAGE,
+        "module": constants.ResourceType.OTHER,
+        "swdriver": constants.ResourceType.OTHER,
+        "storage-access-device": constants.ResourceType.STORAGE,
+        "wdm": constants.ResourceType.OTHER,
+        "ups": constants.ResourceType.OTHER,
+        "other": constants.ResourceType.OTHER}
 
     # Attributes mandatory in alert info to proceed with model filling
     _mandatory_alert_attributes = ('emcAsyncEventCode',
@@ -66,34 +66,6 @@ class AlertHandler(object):
 
     def __init__(self):
         pass
-
-    """
-    Alert Model	Description
-    Part of the fields filled from delfin resource info and other from driver
-    *****Filled from delfin resource info***********************
-    storage_id	Id of the storage system on behalf of which alert is generated
-    storage_name	Name of the storage system on behalf of which alert is
-                    generated
-    manufacturer	Vendor of the device
-    product_name	Product or the model name
-    serial_number	Serial number of the alert generating source
-    ****************************************************
-    *****Filled from driver side ***********************
-    alert_id	Unique identification for a given alert type
-    alert_name	Unique name for a given alert type
-    severity	Severity of the alert
-    category	Category of alert generated
-    type	Type of the alert generated
-    sequence_number	Sequence number for the alert, uniquely identifies a
-                              given alert instance used for clearing the alert
-    occur_time	Time at which alert is generated from device
-    detailed_info	Possible cause description or other details about the alert
-    recovery_advice	Some suggestion for handling the given alert
-    resource_type	Resource type of device/source generating alert
-    location	Detailed info about the tracing the alerting device such as
-                slot, rack, component, parts etc
-    *****************************************************
-    """
 
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
@@ -114,9 +86,9 @@ class AlertHandler(object):
 
         alert_model['severity'] = self.SEVERITY_MAP.get(
             alert['connUnitEventSeverity'],
-            alert_processor.Severity.INFORMATIONAL)
+            constants.Severity.INFORMATIONAL)
 
-        alert_model['category'] = alert_processor.Category.NOT_SPECIFIED
+        alert_model['category'] = constants.Category.NOT_SPECIFIED
         alert_model['type'] = alert['connUnitEventType']
 
         alert_model['sequence_number'] = alert['connUnitEventId']
@@ -128,7 +100,7 @@ class AlertHandler(object):
         alert_model['detailed_info'] = alert['connUnitEventDescr']
         alert_model['recovery_advice'] = 'None'
         alert_model['resource_type'] = self.RESOURCE_TYPE_MAP.get(
-            alert['connUnitType'], alert_processor.ResourceType.OTHER)
+            alert['connUnitType'], constants.ResourceType.OTHER)
 
         # Location is name-value pair having component type and component name
         component_type = alert_mapper.component_type_mapping.get(

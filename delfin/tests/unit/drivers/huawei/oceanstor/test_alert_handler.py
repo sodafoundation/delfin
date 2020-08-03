@@ -17,7 +17,7 @@ import unittest
 from oslo_utils import importutils
 
 from delfin import exception
-from delfin.alert_manager import alert_processor
+from delfin.common import constants
 
 
 class AlertHandlerTestCase(unittest.TestCase):
@@ -73,14 +73,14 @@ class AlertHandlerTestCase(unittest.TestCase):
             'alert_id': alert['hwIsmReportingAlarmAlarmID'],
             'alert_name': alert[
                 'hwIsmReportingAlarmFaultTitle'],
-            'severity': alert_processor.Severity.CRITICAL,
-            'category': alert_processor.Category.FAULT,
+            'severity': constants.Severity.CRITICAL,
+            'category': constants.Category.FAULT,
             'type': alert['hwIsmReportingAlarmFaultType'],
             'sequence_number': alert['hwIsmReportingAlarmSerialNo'],
             'detailed_info': alert[
                 'hwIsmReportingAlarmAdditionInfo'],
             'recovery_advice': alert['hwIsmReportingAlarmRestoreAdvice'],
-            'resource_type': alert_processor.ResourceType.STORAGE,
+            'resource_type': constants.ResourceType.STORAGE,
             'occur_time': alert['hwIsmReportingAlarmFaultTime'],
             'location': 'Node code=' + alert['hwIsmReportingAlarmNodeCode']
                         + ',' + alert['hwIsmReportingAlarmLocationInfo']
