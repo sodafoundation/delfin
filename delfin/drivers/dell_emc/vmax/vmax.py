@@ -35,14 +35,17 @@ class VMAXStorageDriver(driver.StorageDriver):
         self.client.init_connection(access_info)
 
     def get_storage(self, context):
-
         # Get the VMAX model
         model = self.client.get_model()
 
         # Get Storage details for capacity info
         storg_info = self.client.get_storage_capacity()
-        total_cap = storg_info.get('usable_total_tb')
-        used_cap = storg_info.get('usable_used_tb')
+        system_capacity = storg_info['system_capacity']
+        physical_capacity = storg_info['physicalCapacity']
+        total_cap = system_capacity.get('usable_total_tb')
+        used_cap = system_capacity.get('usable_used_tb')
+        subscribed_cap = system_capacity.get('subscribed_total_tb')
+        total_raw = physical_capacity.get('total_capacity_gb')
         free_cap = total_cap - used_cap
 
         storage = {
@@ -55,7 +58,9 @@ class VMAXStorageDriver(driver.StorageDriver):
             'location': '',
             'total_capacity': int(total_cap * units.Ti),
             'used_capacity': int(used_cap * units.Ti),
-            'free_capacity': int(free_cap * units.Ti)
+            'free_capacity': int(free_cap * units.Ti),
+            'raw_capacity': int(total_raw * units.Gi),
+            'subscribed_capacity': int(subscribed_cap * units.Ti)
         }
         LOG.info("get_storage(), successfully retrieved storage details")
         return storage

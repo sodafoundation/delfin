@@ -84,7 +84,7 @@ class VMAXClient(object):
             uri = "/" + SUPPORTED_VERSION \
                   + "/sloprovisioning/symmetrix/" + self.array_id
             storage_info = self.conn.common.get_request(uri, "")
-            return storage_info['system_capacity']
+            return storage_info
         except Exception as err:
             msg = "Failed to get capacity from VMAX: {}".format(err)
             LOG.error(msg)
