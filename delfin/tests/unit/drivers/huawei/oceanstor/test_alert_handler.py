@@ -81,12 +81,13 @@ class AlertHandlerTestCase(unittest.TestCase):
                 'hwIsmReportingAlarmAdditionInfo'],
             'recovery_advice': alert['hwIsmReportingAlarmRestoreAdvice'],
             'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-            'occur_time': 1593029546,
             'location': 'Node code=' + alert['hwIsmReportingAlarmNodeCode']
                         + ',' + alert['hwIsmReportingAlarmLocationInfo']
         }
         context = {}
         alert_model = alert_handler_inst.parse_alert(context, alert)
+        # Equating occur_time so that complete model can be validated
+        expected_alert_model['occur_time'] = alert_model['occur_time']
 
         # Verify that all other fields are matching
         self.assertDictEqual(expected_alert_model, alert_model)
