@@ -80,7 +80,9 @@ class TestVMAXStorageDriver(TestCase):
             'location': '',
             'total_capacity': 109951162777600,
             'used_capacity': 82463372083200,
-            'free_capacity': 27487790694400
+            'free_capacity': 27487790694400,
+            'raw_capacity': 1610612736000,
+            'subscribed_capacity': 219902325555200
         }
         kwargs = VMAX_STORAGE_CONF
 
@@ -95,7 +97,12 @@ class TestVMAXStorageDriver(TestCase):
                 ],
                 'system_capacity': {
                     'usable_total_tb': 100,
-                    'usable_used_tb': 75
+                    'usable_used_tb': 75,
+                    'subscribed_total_tb': 200
+                },
+                'physicalCapacity': {
+                    'total_capacity_gb': 1500
+
                 }
             }
             m.common.get_request.side_effect = \
@@ -128,7 +135,8 @@ class TestVMAXStorageDriver(TestCase):
             'storage_type': 'block',
             'total_capacity': 109951162777600,
             'used_capacity': 82463372083200,
-            'free_capacity': 27487790694400
+            'free_capacity': 27487790694400,
+            'subscribed_capacity': 219902325555200
         }]
         kwargs = VMAX_STORAGE_CONF
 
@@ -140,7 +148,8 @@ class TestVMAXStorageDriver(TestCase):
             pool_info = {
                 'srp_capacity': {
                     'usable_total_tb': 100,
-                    'usable_used_tb': 75
+                    'usable_used_tb': 75,
+                    'subscribed_total_tb': 200
                 },
                 'srpId': 'SRP_ID'
             }
