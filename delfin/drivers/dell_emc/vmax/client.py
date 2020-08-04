@@ -84,7 +84,7 @@ class VMAXClient(object):
             uri = "/" + SUPPORTED_VERSION \
                   + "/sloprovisioning/symmetrix/" + self.array_id
             storage_info = self.conn.common.get_request(uri, "")
-            return storage_info['system_capacity']
+            return storage_info
         except Exception as err:
             msg = "Failed to get capacity from VMAX: {}".format(err)
             LOG.error(msg)
@@ -103,7 +103,7 @@ class VMAXClient(object):
                 srp_cap = pool_info['srp_capacity']
                 total_cap = srp_cap['usable_total_tb'] * units.Ti
                 used_cap = srp_cap['usable_used_tb'] * units.Ti
-
+                subscribed_cap = srp_cap['subscribed_total_tb'] * units.Ti
                 p = {
                     "name": pool,
                     "storage_id": storage_id,
@@ -114,6 +114,7 @@ class VMAXClient(object):
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
                     "free_capacity": int(total_cap - used_cap),
+                    "subscribed_capacity": int(subscribed_cap),
                 }
                 pool_list.append(p)
 
