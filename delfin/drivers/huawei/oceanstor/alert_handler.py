@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import time
+
 from oslo_log import log
 
 from delfin import exception
@@ -75,12 +77,17 @@ class AlertHandler(object):
             alert_model['type'] = alert['hwIsmReportingAlarmFaultType']
             alert_model['sequence_number'] \
                 = alert['hwIsmReportingAlarmSerialNo']
-            alert_model['occur_time'] = alert['hwIsmReportingAlarmFaultTime']
-            alert_model['detailed_info'] \
+
+            # Convert received time to epoch format
+            pattern = '%Y-%m-%d,%H:%M:%S.0'
+
+            alert_model['occur_time'] = int(time.mktime(time.strptime(
+                alert['hwIsmReportingAlarmFaultTime'], pattern)))
+            alert_model['description'] \
                 = alert['hwIsmReportingAlarmAdditionInfo']
             alert_model['recovery_advice'] \
                 = alert['hwIsmReportingAlarmRestoreAdvice']
-            alert_model['resource_type'] = constants.ResourceType.STORAGE
+            alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = 'Node code=' \
                                       + alert['hwIsmReportingAlarmNodeCode']
 

@@ -35,9 +35,9 @@ def fake_alert_model():
             'category': constants.Category.NOT_SPECIFIED,
             'type': 'topology',
             'sequence_number': 79,
-            'detailed_info': 'Diagnostic event trace triggered.',
+            'description': 'Diagnostic event trace triggered.',
             'recovery_advice': 'NA',
-            'resource_type': constants.ResourceType.STORAGE,
+            'resource_type': constants.DEFAULT_RESOURCE_TYPE,
             'location': 'Array id=000192601409,Component type=location1 '
                         'Group,Component name=comp1,Event source=symmetrix',
             }

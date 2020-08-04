@@ -68,8 +68,9 @@ class StorageDriver(object):
         sequence_number	Sequence number for the alert, uniquely identifies a
                                   given alert instance used for
                                   clearing the alert
-        occur_time	Time at which alert is generated from device
-        detailed_info	Possible cause description or other details about
+        occur_time	Time at which alert is generated from device in epoch
+                    format
+        description	Possible cause description or other details about
                                 the alert
         recovery_advice	Some suggestion for handling the given alert
         resource_type	Resource type of device/source generating alert

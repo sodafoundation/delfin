@@ -83,9 +83,5 @@ class Category(enum.Enum):
     NOT_SPECIFIED = 'NotSpecified'
 
 
-# Enumerations for resource type
-class ResourceType(enum.Enum):
-    NETWORK = 'Network'
-    SERVER = 'Server'
-    STORAGE = 'Storage'
-    OTHER = 'Other'
+# Default resource type for alert
+DEFAULT_RESOURCE_TYPE = 'Storage'

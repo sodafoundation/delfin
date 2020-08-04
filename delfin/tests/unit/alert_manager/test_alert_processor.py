@@ -66,10 +66,10 @@ class AlertProcessorTestCase(unittest.TestCase):
                                 'type': input_alert['connUnitEventType'],
                                 'severity': constants.Severity.WARNING,
                                 'category': constants.Category.NOT_SPECIFIED,
-                                'detailed_info':
+                                'description':
                                     input_alert['connUnitEventDescr'],
                                 'resource_type':
-                                    constants.ResourceType.STORAGE,
+                                    constants.DEFAULT_RESOURCE_TYPE,
                                 'alert_id': input_alert['asyncEventCode'],
                                 'alert_name': 'SAMPLE_ALERT_NAME',
                                 'sequence_number': 79,

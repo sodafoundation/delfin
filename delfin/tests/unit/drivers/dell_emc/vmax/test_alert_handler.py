@@ -59,10 +59,10 @@ class AlertHandlerTestCase(unittest.TestCase):
                                     constants.Category.NOT_SPECIFIED,
                                 'type': alert['connUnitEventType'],
                                 'sequence_number': alert['connUnitEventId'],
-                                'detailed_info': alert['connUnitEventDescr'],
+                                'description': alert['connUnitEventDescr'],
                                 'recovery_advice': 'None',
                                 'resource_type':
-                                    constants.ResourceType.STORAGE,
+                                    alert['connUnitType'],
                                 'location': 'Array id=000192601409,'
                                             'Component type=Symmetrix Disk '
                                             'Group,'

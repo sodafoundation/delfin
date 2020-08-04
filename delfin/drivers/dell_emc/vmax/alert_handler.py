@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from datetime import datetime
+import time
+from time import gmtime, strftime
 
 from oslo_log import log
 
@@ -36,24 +36,6 @@ class AlertHandler(object):
                     "info": constants.Severity.INFORMATIONAL,
                     "debug": constants.Severity.INFORMATIONAL,
                     "mark": constants.Severity.INFORMATIONAL}
-
-    # Translation of trap resource type to alert model resource type
-    RESOURCE_TYPE_MAP = {
-        "hub": constants.ResourceType.NETWORK,
-        "switch": constants.ResourceType.NETWORK,
-        "gateway": constants.ResourceType.NETWORK,
-        "converter": constants.ResourceType.NETWORK,
-        "hba": constants.ResourceType.NETWORK,
-        "proxy-agent": constants.ResourceType.NETWORK,
-        "storage-device": constants.ResourceType.STORAGE,
-        "host": constants.ResourceType.SERVER,
-        "storage-subsystem": constants.ResourceType.STORAGE,
-        "module": constants.ResourceType.OTHER,
-        "swdriver": constants.ResourceType.OTHER,
-        "storage-access-device": constants.ResourceType.STORAGE,
-        "wdm": constants.ResourceType.OTHER,
-        "ups": constants.ResourceType.OTHER,
-        "other": constants.ResourceType.OTHER}
 
     # Attributes mandatory in alert info to proceed with model filling
     _mandatory_alert_attributes = ('emcAsyncEventCode',
@@ -94,13 +76,15 @@ class AlertHandler(object):
         alert_model['sequence_number'] = alert['connUnitEventId']
 
         # trap info do not contain occur time, update with received time
-        # Get date and time. Format will be like : Wed May 20 01:53:29 2020
-        curr_time = datetime.now()
-        alert_model['occur_time'] = curr_time.strftime('%c')
-        alert_model['detailed_info'] = alert['connUnitEventDescr']
+        # Get date and time and convert to epoch format
+        pattern = '%Y-%m-%d %H:%M:%S'
+        curr_time = strftime(pattern, gmtime())
+
+        alert_model['occur_time'] = int(time.mktime(time.strptime(curr_time,
+                                                                  pattern)))
+        alert_model['description'] = alert['connUnitEventDescr']
         alert_model['recovery_advice'] = 'None'
-        alert_model['resource_type'] = self.RESOURCE_TYPE_MAP.get(
-            alert['connUnitType'], constants.ResourceType.OTHER)
+        alert_model['resource_type'] = alert['connUnitType']
 
         # Location is name-value pair having component type and component name
         component_type = alert_mapper.component_type_mapping.get(

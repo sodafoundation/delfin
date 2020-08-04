@@ -77,11 +77,11 @@ class AlertHandlerTestCase(unittest.TestCase):
             'category': constants.Category.FAULT,
             'type': alert['hwIsmReportingAlarmFaultType'],
             'sequence_number': alert['hwIsmReportingAlarmSerialNo'],
-            'detailed_info': alert[
+            'description': alert[
                 'hwIsmReportingAlarmAdditionInfo'],
             'recovery_advice': alert['hwIsmReportingAlarmRestoreAdvice'],
-            'resource_type': constants.ResourceType.STORAGE,
-            'occur_time': alert['hwIsmReportingAlarmFaultTime'],
+            'resource_type': constants.DEFAULT_RESOURCE_TYPE,
+            'occur_time': 1593029546,
             'location': 'Node code=' + alert['hwIsmReportingAlarmNodeCode']
                         + ',' + alert['hwIsmReportingAlarmLocationInfo']
         }
