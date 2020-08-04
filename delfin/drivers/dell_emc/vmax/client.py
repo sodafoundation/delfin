@@ -103,7 +103,7 @@ class VMAXClient(object):
                 srp_cap = pool_info['srp_capacity']
                 total_cap = srp_cap['usable_total_tb'] * units.Ti
                 used_cap = srp_cap['usable_used_tb'] * units.Ti
-
+                subscribed_cap = srp_cap['subscribed_total_tb'] * units.Ti
                 p = {
                     "name": pool,
                     "storage_id": storage_id,
@@ -114,6 +114,7 @@ class VMAXClient(object):
                     "total_capacity": int(total_cap),
                     "used_capacity": int(used_cap),
                     "free_capacity": int(total_cap - used_cap),
+                    "subscribed_capacity": int(subscribed_cap),
                 }
                 pool_list.append(p)
 

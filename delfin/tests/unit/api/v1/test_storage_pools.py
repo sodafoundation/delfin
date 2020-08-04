@@ -50,7 +50,8 @@ class TestStoragePoolController(test.TestCase):
                     "storage_type": "block",
                     "total_capacity": 26300318136401,
                     "used_capacity": 19054536509358,
-                    "free_capacity": 7245781627043
+                    "free_capacity": 7245781627043,
+                    'subscribed_capacity': 219902325555200
                 }
             ]
         }
@@ -79,7 +80,8 @@ class TestStoragePoolController(test.TestCase):
                     "storage_type": "block",
                     "total_capacity": 26300318136401,
                     "used_capacity": 19054536509358,
-                    "free_capacity": 7245781627043
+                    "free_capacity": 7245781627043,
+                    'subscribed_capacity': 219902325555200
                 }
             ]
         }
@@ -107,7 +109,8 @@ class TestStoragePoolController(test.TestCase):
             "storage_type": "block",
             "total_capacity": 26300318136401,
             "used_capacity": 19054536509358,
-            "free_capacity": 7245781627043
+            "free_capacity": 7245781627043,
+            'subscribed_capacity': 219902325555200
         }
         self.assertDictEqual(expctd_dict, res_dict)
 

@@ -79,7 +79,9 @@ class TestStorageController(test.TestCase):
                     "description": "it is a fake driver.",
                     "serial_number": "2102453JPN12KA0000113",
                     "used_capacity": 3126,
-                    "total_capacity": 1048576
+                    "total_capacity": 1048576,
+                    'raw_capacity': 1610612736000,
+                    'subscribed_capacity': 219902325555200
                 },
                 {
                     "id": "277a1d8f-a36e-423e-bdd9-db154f32c289",
@@ -96,7 +98,9 @@ class TestStorageController(test.TestCase):
                     "description": "it is a fake driver.",
                     "serial_number": "2102453JPN12KA0000112",
                     "used_capacity": 3126,
-                    "total_capacity": 1048576
+                    "total_capacity": 1048576,
+                    'raw_capacity': 1610612736000,
+                    'subscribed_capacity': 219902325555200
                 }
             ]
         }
@@ -126,7 +130,9 @@ class TestStorageController(test.TestCase):
                     "description": "it is a fake driver.",
                     "serial_number": "2102453JPN12KA0000113",
                     "used_capacity": 3126,
-                    "total_capacity": 1048576
+                    "total_capacity": 1048576,
+                    'raw_capacity': 1610612736000,
+                    'subscribed_capacity': 219902325555200
                 }
             ]
         }
@@ -156,7 +162,9 @@ class TestStorageController(test.TestCase):
             "description": "it is a fake driver.",
             "serial_number": "2102453JPN12KA0000113",
             "used_capacity": 3126,
-            "total_capacity": 1048576
+            "total_capacity": 1048576,
+            'raw_capacity': 1610612736000,
+            'subscribed_capacity': 219902325555200
         }
         self.assertDictEqual(expctd_dict, res_dict)
 
@@ -186,6 +194,8 @@ class TestStorageController(test.TestCase):
                 'used_capacity': 3126,
                 'free_capacity': 1045449,
                 "sync_status": constants.SyncStatus.SYNCED,
+                'raw_capacity': 1610612736000,
+                'subscribed_capacity': 219902325555200
             }))
         self.mock_object(
             db, 'access_info_get_all',
@@ -225,6 +235,8 @@ class TestStorageController(test.TestCase):
             'used_capacity': 3126,
             'free_capacity': 1045449,
             "sync_status": "SYNCED",
+            'raw_capacity': 1610612736000,
+            'subscribed_capacity': 219902325555200
         }
         self.assertDictEqual(expctd_dict, res_dict)
 
@@ -245,6 +257,8 @@ class TestStorageController(test.TestCase):
                 'used_capacity': 3126,
                 'free_capacity': 1045449,
                 "sync_status": constants.SyncStatus.SYNCED,
+                'raw_capacity': 1610612736000,
+                'subscribed_capacity': 219902325555200
             }))
         self.mock_object(
             db, 'access_info_get_all',
