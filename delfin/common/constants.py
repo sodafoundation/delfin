@@ -13,10 +13,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import enum
 
 # The maximum value a signed INT type may have
 DB_MAX_INT = 0x7FFFFFFF
-
 
 # Valid access type supported currently.
 ACCESS_TYPE = ['rest', 'ssh']
@@ -62,3 +62,26 @@ class VolumeType(object):
     THIN = 'thin'
 
     ALL = (THICK, THIN)
+
+
+# Enumerations for alert severity
+class Severity(enum.Enum):
+    FATAL = 'Fatal'
+    CRITICAL = 'Critical'
+    MAJOR = 'Major'
+    MINOR = 'Minor'
+    WARNING = 'Warning'
+    INFORMATIONAL = 'Informational'
+    NOT_SPECIFIED = 'NotSpecified'
+
+
+# Enumerations for alert category
+class Category(enum.Enum):
+    FAULT = 'Fault'
+    EVENT = 'Event'
+    RECOVERY = 'Recovery'
+    NOT_SPECIFIED = 'NotSpecified'
+
+
+# Default resource type for alert
+DEFAULT_RESOURCE_TYPE = 'Storage'
