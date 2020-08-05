@@ -378,3 +378,7 @@ def fake_storage_pool_show(context, storage_pool_id):
         "used_capacity": 19054536509358,
         "free_capacity": 7245781627043
     }
+
+
+def fake_storage_get_exception(ctx, storage_id):
+    raise exception.StorageNotFound('abcd-1234-5678')

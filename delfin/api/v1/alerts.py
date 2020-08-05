@@ -15,9 +15,7 @@
 from oslo_log import log
 
 from delfin import db
-from delfin.api import validation
 from delfin.api.common import wsgi
-from delfin.api.schemas import alerts as schema_alerts
 from delfin.drivers import api as driver_manager
 
 LOG = log.getLogger(__name__)
@@ -29,11 +27,10 @@ class AlertController(wsgi.Controller):
         self.driver_manager = driver_manager.API()
 
     @wsgi.response(200)
-    @validation.schema(schema_alerts.delete)
-    def delete(self, req, id, body):
+    def delete(self, req, id, sequence_number):
         ctx = req.environ['delfin.context']
         _ = db.storage_get(ctx, id)
-        self.driver_manager.clear_alert(ctx, id, body['sequence_number'])
+        self.driver_manager.clear_alert(ctx, id, sequence_number)
 
 
 def create_resource():

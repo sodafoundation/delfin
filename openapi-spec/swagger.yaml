@@ -923,9 +923,7 @@ paths:
           style: simple
           explode: false
           schema:
-            minimum: 0
-            type: integer
-            format: int32
+            type: string
       responses:
         '200':
           description: OK
@@ -1566,9 +1564,7 @@ components:
       style: simple
       explode: false
       schema:
-        minimum: 0
-        type: integer
-        format: int32
+        type: string
   requestBodies:
     AlertSourceUpdateSpec:
       content:

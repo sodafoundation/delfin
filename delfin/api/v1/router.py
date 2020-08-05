@@ -65,7 +65,7 @@ class APIRouter(common.APIRouter):
                        conditions={"method": ["DELETE"]})
 
         self.resources['alerts'] = alerts.create_resource()
-        mapper.connect("storages", "/storages/{id}/alerts",
+        mapper.connect("storages", "/storages/{id}/alerts/{sequence_number}",
                        controller=self.resources['alerts'],
                        action="delete",
                        conditions={"method": ["DELETE"]})
