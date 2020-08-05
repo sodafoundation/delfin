@@ -17,6 +17,7 @@ import unittest
 from oslo_utils import importutils
 
 from delfin import exception
+from delfin.common import constants
 
 
 class AlertHandlerTestCase(unittest.TestCase):
@@ -30,10 +31,7 @@ class AlertHandlerTestCase(unittest.TestCase):
         return alert_handler
 
     def _get_fake_alert_info(self):
-        alert_info = {'storage_id': 'abcd-1234-56789',
-                      'storage_name': 'storage1', 'vendor': 'fake vendor',
-                      'model': 'fake model',
-                      'hwIsmReportingAlarmLocationInfo': 'location1',
+        alert_info = {'hwIsmReportingAlarmLocationInfo': 'location=location1',
                       'hwIsmReportingAlarmFaultTitle': 'Trap Test Alarm',
                       'hwIsmReportingAlarmFaultType': 'equipmentFault',
                       'hwIsmReportingAlarmFaultLevel': 'criticalAlarm',
@@ -44,17 +42,15 @@ class AlertHandlerTestCase(unittest.TestCase):
                                                          'ignore it',
                       'hwIsmReportingAlarmFaultCategory': 'faultAlarm',
                       'hwIsmReportingAlarmLocationAlarmID': '230584300921369',
+                      'hwIsmReportingAlarmRestoreAdvice': 'Sample advice',
+                      'hwIsmReportingAlarmNodeCode': 'Array',
                       'hwIsmReportingAlarmFaultTime': '2020-6-25,1:42:26.0'}
 
         return alert_info
 
     def _get_fake_incomplete_alert_info(self):
-
         # hwIsmReportingAlarmFaultCategory is missing here
-        alert_info = {'storage_id': 'abcd-1234-56789',
-                      'storage_name': 'storage1', 'vendor': 'fake vendor',
-                      'model': 'fake model',
-                      'hwIsmReportingAlarmLocationInfo': 'location1',
+        alert_info = {'hwIsmReportingAlarmLocationInfo': 'location=location1',
                       'hwIsmReportingAlarmFaultTitle': 'Trap Test Alarm',
                       'hwIsmReportingAlarmFaultType': 'equipmentFault',
                       'hwIsmReportingAlarmFaultLevel': 'criticalAlarm',
@@ -73,35 +69,25 @@ class AlertHandlerTestCase(unittest.TestCase):
         alert_handler_inst = self._get_alert_handler()
         alert = self._get_fake_alert_info()
 
-        expected_alert_model = {'me_dn': alert['storage_id'],
-                                'me_name': alert['storage_name'],
-                                'manufacturer': alert['vendor'],
-                                'product_name': alert['model'],
-                                'category':
-                                    alert['hwIsmReportingAlarmFaultCategory'],
-                                'location':
-                                    alert['hwIsmReportingAlarmLocationInfo'],
-                                'event_type':
-                                    alert['hwIsmReportingAlarmFaultType'],
-                                'severity':
-                                    alert['hwIsmReportingAlarmFaultLevel'],
-                                'probable_cause':
-                                    alert['hwIsmReportingAlarmAdditionInfo'],
-                                'me_category': 'storage-subsystem',
-                                'alarm_id':
-                                    alert['hwIsmReportingAlarmAlarmID'],
-                                'alarm_name':
-                                    alert['hwIsmReportingAlarmFaultTitle'],
-                                'device_alert_sn':
-                                    alert['hwIsmReportingAlarmSerialNo'],
-                                'occur_time':
-                                    alert['hwIsmReportingAlarmFaultTime'],
-                                'clear_type': '',
-                                'match_key': '',
-                                'native_me_dn': ''
-                                }
+        expected_alert_model = {
+            'alert_id': alert['hwIsmReportingAlarmAlarmID'],
+            'alert_name': alert[
+                'hwIsmReportingAlarmFaultTitle'],
+            'severity': constants.Severity.CRITICAL,
+            'category': constants.Category.FAULT,
+            'type': alert['hwIsmReportingAlarmFaultType'],
+            'sequence_number': alert['hwIsmReportingAlarmSerialNo'],
+            'description': alert[
+                'hwIsmReportingAlarmAdditionInfo'],
+            'recovery_advice': alert['hwIsmReportingAlarmRestoreAdvice'],
+            'resource_type': constants.DEFAULT_RESOURCE_TYPE,
+            'location': 'Node code=' + alert['hwIsmReportingAlarmNodeCode']
+                        + ',' + alert['hwIsmReportingAlarmLocationInfo']
+        }
         context = {}
         alert_model = alert_handler_inst.parse_alert(context, alert)
+        # Equating occur_time so that complete model can be validated
+        expected_alert_model['occur_time'] = alert_model['occur_time']
 
         # Verify that all other fields are matching
         self.assertDictEqual(expected_alert_model, alert_model)
@@ -111,9 +97,8 @@ class AlertHandlerTestCase(unittest.TestCase):
         alert_handler_inst = self._get_alert_handler()
         context = {}
         alert = self._get_fake_incomplete_alert_info()
-        self.assertRaisesRegex(exception.InvalidResults,
-                               "Failed to build alert "
-                               "model as some "
-                               "attributes missing in "
-                               "alert message",
+        self.assertRaisesRegex(exception.InvalidInput,
+                               "Mandatory information "
+                               "hwIsmReportingAlarmNodeCode missing in alert "
+                               "message.",
                                alert_handler_inst.parse_alert, context, alert)

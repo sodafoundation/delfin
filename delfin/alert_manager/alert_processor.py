@@ -33,15 +33,17 @@ class AlertProcessor(object):
         """Fills alert model using driver manager interface."""
         ctxt = context.RequestContext()
         storage = db.storage_get(ctxt, alert['storage_id'])
-        # Fill storage specific info
-        alert['storage_name'] = storage['name']
-        alert['vendor'] = storage['vendor']
-        alert['model'] = storage['model']
 
         try:
-            alert_model = self.driver_manager.parse_alert(context,
+            alert_model = self.driver_manager.parse_alert(ctxt,
                                                           alert['storage_id'],
                                                           alert)
+            # Fill storage specific info
+            alert_model['storage_id'] = storage['id']
+            alert_model['storage_name'] = storage['name']
+            alert_model['vendor'] = storage['vendor']
+            alert_model['model'] = storage['model']
+            alert_model['serial_number'] = storage['serial_number']
         except Exception as e:
             LOG.error(e)
             raise exception.InvalidResults(

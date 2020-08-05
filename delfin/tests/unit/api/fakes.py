@@ -72,7 +72,9 @@ def fake_storages_get_all(context, marker=None, limit=None, sort_keys=None,
             "description": "it is a fake driver.",
             "serial_number": "2102453JPN12KA0000113",
             "used_capacity": 3126,
-            "total_capacity": 1048576
+            "total_capacity": 1048576,
+            'raw_capacity': 1610612736000,
+            'subscribed_capacity': 219902325555200
         },
         {
             "id": "277a1d8f-a36e-423e-bdd9-db154f32c289",
@@ -89,7 +91,10 @@ def fake_storages_get_all(context, marker=None, limit=None, sort_keys=None,
             "description": "it is a fake driver.",
             "serial_number": "2102453JPN12KA0000112",
             "used_capacity": 3126,
-            "total_capacity": 1048576
+            "total_capacity": 1048576,
+            'raw_capacity': 1610612736000,
+            'subscribed_capacity': 219902325555200
+
         }
     ]
 
@@ -113,7 +118,9 @@ def fake_storages_get_all_with_filter(
             "description": "it is a fake driver.",
             "serial_number": "2102453JPN12KA0000113",
             "used_capacity": 3126,
-            "total_capacity": 1048576
+            "total_capacity": 1048576,
+            'raw_capacity': 1610612736000,
+            'subscribed_capacity': 219902325555200
         }
     ]
 
@@ -134,7 +141,9 @@ def fake_storages_show(context, storage_id):
         "description": "it is a fake driver.",
         "serial_number": "2102453JPN12KA0000113",
         "used_capacity": 3126,
-        "total_capacity": 1048576
+        "total_capacity": 1048576,
+        'raw_capacity': 1610612736000,
+        'subscribed_capacity': 219902325555200
     }
 
 
@@ -358,7 +367,8 @@ def fake_storage_pool_get_all(context, marker=None,
             "storage_type": "block",
             "total_capacity": 26300318136401,
             "used_capacity": 19054536509358,
-            "free_capacity": 7245781627043
+            "free_capacity": 7245781627043,
+            'subscribed_capacity': 219902325555200
         }
     ]
 
@@ -376,7 +386,8 @@ def fake_storage_pool_show(context, storage_pool_id):
         "storage_type": "block",
         "total_capacity": 26300318136401,
         "used_capacity": 19054536509358,
-        "free_capacity": 7245781627043
+        "free_capacity": 7245781627043,
+        'subscribed_capacity': 219902325555200
     }
 
 

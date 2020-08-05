@@ -13,9 +13,12 @@
 # limitations under the License.
 
 
+import time
+
 from oslo_log import log
 
 from delfin import exception
+from delfin.common import constants
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
@@ -23,71 +26,76 @@ LOG = log.getLogger(__name__)
 
 class AlertHandler(object):
     """Alert handling functions for huawei oceanstor driver"""
-    default_me_category = 'storage-subsystem'
+
+    # Translation of trap severity to alert model severity
+    SEVERITY_MAP = {"criticalAlarm": constants.Severity.CRITICAL,
+                    "majorAlarm": constants.Severity.MAJOR,
+                    "minorAlarm": constants.Severity.MINOR,
+                    "warningAlarm": constants.Severity.WARNING}
+
+    # Translation of trap alert category to alert model category
+    CATEGORY_MAP = {"faultAlarm": constants.Category.FAULT,
+                    "recoveryAlarm": constants.Category.RECOVERY,
+                    "eventAlarm": constants.Category.EVENT}
+
+    # Attributes expected in alert info to proceed with model filling
+    _mandatory_alert_attributes = ('hwIsmReportingAlarmAlarmID',
+                                   'hwIsmReportingAlarmFaultTitle',
+                                   'hwIsmReportingAlarmFaultLevel',
+                                   'hwIsmReportingAlarmNodeCode',
+                                   'hwIsmReportingAlarmFaultType',
+                                   'hwIsmReportingAlarmAdditionInfo',
+                                   'hwIsmReportingAlarmSerialNo',
+                                   'hwIsmReportingAlarmFaultCategory',
+                                   'hwIsmReportingAlarmRestoreAdvice',
+                                   'hwIsmReportingAlarmFaultTime'
+                                   )
 
     def __init__(self):
         pass
 
-    """
-    Alert model contains below fields
-    category : Type of the reported notification
-    occur_time : Time of occurrence of alert. When trap does not contain it,
-                 it will be filled with receive time
-    match_key : This info uniquely identifies the fault point. Several infos
-                such as source system id, location, alarm id together can be
-                used to construct this
-    me_dn : Unique id at resource module (management system) side. me stands
-            for management element here
-    me_name : Unique name at resource module (management system) side
-    native_me_dn : Unique id of the device at source system that reports the
-                   alarm
-    location : Alarm location information. It helps to locate the lowest unit
-               where fault is originated(Name-value pairs)
-               ex: Location = subtrack, No = 1, Slot No = 5.
-                   shelf Id = 1, board type = ADSL
-    event_type : Basic classification of the alarm. Probable values such as
-                 status, configuration, topology ....
-    alarm_id : Identification of alarm
-    alarm_name : Name of the alarm, might need translation from alarm id
-    severity : Severity of alarm. Helps admin to decide on action to be taken
-               Probable values: Critical, Major, Minor, Warning, Info
-    device_alert_sn : Sequence number of alert generated. This will be helpful
-                      during alert clearing process
-    manufacturer : Vendor of the device
-    Product_name : Name of the product
-    probable_cause : Probable reason for alert generation
-    clear_type : Alarm clearance type such as manual, automatic, reset clear
-    me_category : Resource category of the device generating the alarm
-                  Probable value: Network,Server,Storage..
-    """
-
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
+        # Check for mandatory alert attributes
+        for attr in self._mandatory_alert_attributes:
+            if not alert.get(attr):
+                msg = "Mandatory information %s missing in alert message. " \
+                      % attr
+                raise exception.InvalidInput(msg)
 
         try:
             alert_model = {}
             # These information are sourced from device registration info
-            alert_model['me_dn'] = alert['storage_id']
-            alert_model['me_name'] = alert['storage_name']
-            alert_model['manufacturer'] = alert['vendor']
-            alert_model['product_name'] = alert['model']
+            alert_model['alert_id'] = alert['hwIsmReportingAlarmAlarmID']
+            alert_model['alert_name'] = alert['hwIsmReportingAlarmFaultTitle']
+            alert_model['severity'] = self.SEVERITY_MAP.get(
+                alert['hwIsmReportingAlarmFaultLevel'],
+                constants.Severity.NOT_SPECIFIED)
+            alert_model['category'] = self.CATEGORY_MAP.get(
+                alert['hwIsmReportingAlarmFaultCategory'],
+                constants.Category.NOT_SPECIFIED)
+            alert_model['type'] = alert['hwIsmReportingAlarmFaultType']
+            alert_model['sequence_number'] \
+                = alert['hwIsmReportingAlarmSerialNo']
 
-            # Fill default values for alert attributes
-            alert_model['category'] = alert['hwIsmReportingAlarmFaultCategory']
-            alert_model['location'] = alert['hwIsmReportingAlarmLocationInfo']
-            alert_model['event_type'] = alert['hwIsmReportingAlarmFaultType']
-            alert_model['severity'] = alert['hwIsmReportingAlarmFaultLevel']
-            alert_model['probable_cause'] \
+            # Convert received time to epoch format
+            pattern = '%Y-%m-%d,%H:%M:%S.0'
+
+            alert_model['occur_time'] = int(time.mktime(time.strptime(
+                alert['hwIsmReportingAlarmFaultTime'], pattern)))
+            alert_model['description'] \
                 = alert['hwIsmReportingAlarmAdditionInfo']
-            alert_model['me_category'] = self.default_me_category
-            alert_model['occur_time'] = alert['hwIsmReportingAlarmFaultTime']
-            alert_model['alarm_id'] = alert['hwIsmReportingAlarmAlarmID']
-            alert_model['alarm_name'] = alert['hwIsmReportingAlarmFaultTitle']
-            alert_model['device_alert_sn'] = \
-                alert['hwIsmReportingAlarmSerialNo']
-            alert_model['clear_type'] = ""
-            alert_model['match_key'] = ""
-            alert_model['native_me_dn'] = ""
+            alert_model['recovery_advice'] \
+                = alert['hwIsmReportingAlarmRestoreAdvice']
+            alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
+            alert_model['location'] = 'Node code=' \
+                                      + alert['hwIsmReportingAlarmNodeCode']
+
+            if alert.get('hwIsmReportingAlarmLocationInfo'):
+                alert_model['location'] \
+                    = alert_model['location'] + ',' + alert[
+                    'hwIsmReportingAlarmLocationInfo']
+
             return alert_model
         except Exception as e:
             LOG.error(e)

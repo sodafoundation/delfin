@@ -14,10 +14,11 @@
 
 import unittest
 from unittest import mock
+
 from oslo_utils import importutils
 
-from delfin import context
 from delfin import exception
+from delfin.common import constants
 from delfin.tests.unit.alert_manager import fakes
 
 
@@ -38,9 +39,8 @@ class AlertProcessorTestCase(unittest.TestCase):
     def test_process_alert_info_success(self, mock_export_model,
                                         mock_parse_alert, mock_storage):
         fake_storage_info = fakes.fake_storage_info()
-
         input_alert = {'storage_id': 'abcd-1234-56789',
-                       'model': 'fake_model', 'connUnitEventId': 79,
+                       'connUnitEventId': 79,
                        'connUnitName': '000192601409',
                        'connUnitEventType': 'topology',
                        'connUnitEventDescr': 'Diagnostic '
@@ -52,38 +52,33 @@ class AlertProcessorTestCase(unittest.TestCase):
                        'asyncEventComponentType': '1051',
                        'asyncEventComponentName': 'comp1'}
 
-        expected_driver_input = input_alert
-        expected_driver_input['storage_name'] = fake_storage_info['name']
-        expected_driver_input['vendor'] = fake_storage_info['vendor']
-        expected_driver_input['model'] = fake_storage_info['model']
-
-        expected_alert_model = {'me_dn': fake_storage_info['id'],
-                                'me_name': fake_storage_info['name'],
-                                'manufacturer': fake_storage_info['vendor'],
-                                'location': 'Component type: location1 '
-                                            'Group,Component name: comp1',
-                                'event_type': input_alert['connUnitEventType'],
-                                'severity':
-                                    input_alert['connUnitEventSeverity'],
-                                'probable_cause':
+        expected_alert_model = {'storage_id': fake_storage_info['id'],
+                                'storage_name': fake_storage_info['name'],
+                                'vendor':
+                                    fake_storage_info['vendor'],
+                                'model': fake_storage_info['model'],
+                                'serial_number':
+                                    fake_storage_info['serial_number'],
+                                'location': 'Array id=000192601409,Component '
+                                            'type=location1 '
+                                            'Group,Component name=comp1,Event '
+                                            'source=symmetrix',
+                                'type': input_alert['connUnitEventType'],
+                                'severity': constants.Severity.WARNING,
+                                'category': constants.Category.NOT_SPECIFIED,
+                                'description':
                                     input_alert['connUnitEventDescr'],
-                                'me_category': input_alert['connUnitType'],
-                                'native_me_dn': input_alert['connUnitName'],
-                                'alarm_id': input_alert['asyncEventCode'],
-                                'alarm_name':
-                                    'SAMPLE_ALARM_NAME'
+                                'resource_type':
+                                    constants.DEFAULT_RESOURCE_TYPE,
+                                'alert_id': input_alert['asyncEventCode'],
+                                'alert_name': 'SAMPLE_ALERT_NAME',
+                                'sequence_number': 79,
+                                'recovery_advice': 'NA'
                                 }
         mock_storage.return_value = fake_storage_info
         mock_parse_alert.return_value = fakes.fake_alert_model()
         alert_processor_inst = self._get_alert_processor()
         alert_processor_inst.process_alert_info(input_alert)
-
-        # Verify that storage parameters correctly filled and provided as
-        # input to driver
-        mock_parse_alert.assert_called_once_with(context,
-                                                 expected_driver_input[
-                                                     'storage_id'],
-                                                 expected_driver_input)
 
         # Verify that model returned by driver is exported
         mock_export_model.assert_called_once_with(expected_alert_model)
@@ -94,8 +89,10 @@ class AlertProcessorTestCase(unittest.TestCase):
     def test_process_alert_info_exception(self, mock_storage):
         """ Mock parse alert for raising exception"""
         alert = {'storage_id': 'abcd-1234-56789',
-                 'storage_name': 'storage1', 'vendor': 'fake vendor',
-                 'model': 'fake model'}
+                 'storage_name': 'storage1',
+                 'vendor': 'fake vendor',
+                 'model': 'fake mode',
+                 'serial_number': 'serial-1234'}
 
         mock_storage.return_value = fakes.fake_storage_info()
         alert_processor_inst = self._get_alert_processor()

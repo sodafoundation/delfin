@@ -17,6 +17,7 @@ import unittest
 from oslo_utils import importutils
 
 from delfin import exception
+from delfin.common import constants
 
 
 class AlertHandlerTestCase(unittest.TestCase):
@@ -30,9 +31,7 @@ class AlertHandlerTestCase(unittest.TestCase):
         return alert_handler
 
     def _get_fake_alert_info(self):
-        alert_info = {'storage_id': 'abcd-1234-56789',
-                      'storage_name': 'storage1', 'vendor': 'fake vendor',
-                      'model': 'fake model', 'connUnitEventId': 79,
+        alert_info = {'connUnitEventId': 79,
                       'connUnitName': '000192601409',
                       'connUnitEventType': 'topology',
                       'connUnitEventDescr': 'Symmetrix 000192601409 FastSRP '
@@ -52,24 +51,23 @@ class AlertHandlerTestCase(unittest.TestCase):
         alert_handler_inst = self._get_alert_handler()
         alert = self._get_fake_alert_info()
 
-        expected_alert_model = {'me_dn': alert['storage_id'],
-                                'me_name': alert['storage_name'],
-                                'manufacturer': alert['vendor'],
-                                'product_name': alert['model'],
-                                'category': 'New',
-                                'location': 'Component type: Symmetrix Disk '
-                                            'Group,Component name: SRP_1',
-                                'event_type': alert['connUnitEventType'],
-                                'severity': alert['connUnitEventSeverity'],
-                                'probable_cause': alert['connUnitEventDescr'],
-                                'me_category': alert['connUnitType'],
-                                'native_me_dn': alert['connUnitName'],
-                                'alarm_id': alert['emcAsyncEventCode'],
-                                'alarm_name':
+        expected_alert_model = {'alert_id': alert['emcAsyncEventCode'],
+                                'alert_name':
                                     'SYMAPI_AEVENT2_UID_MOD_DIAG_TRACE_TRIG',
-                                'clear_type': '',
-                                'device_alert_sn': '',
-                                'match_key': '',
+                                'severity': constants.Severity.WARNING,
+                                'category':
+                                    constants.Category.NOT_SPECIFIED,
+                                'type': alert['connUnitEventType'],
+                                'sequence_number': alert['connUnitEventId'],
+                                'description': alert['connUnitEventDescr'],
+                                'recovery_advice': 'None',
+                                'resource_type':
+                                    alert['connUnitType'],
+                                'location': 'Array id=000192601409,'
+                                            'Component type=Symmetrix Disk '
+                                            'Group,'
+                                            'Component name=SRP_1,'
+                                            'Event source=symmetrix',
                                 }
         context = {}
         alert_model = alert_handler_inst.parse_alert(context, alert)
@@ -84,7 +82,8 @@ class AlertHandlerTestCase(unittest.TestCase):
         alert_handler_inst = self._get_alert_handler()
         context = {}
         alert = self._get_fake_alert_info()
-        alert['storage_id'] = ''
+        alert['connUnitEventSeverity'] = ''
         self.assertRaisesRegex(exception.InvalidInput, "Mandatory information "
-                                                       "storage_id missing",
+                                                       "connUnitEventSeverity"
+                                                       " missing",
                                alert_handler_inst.parse_alert, context, alert)
