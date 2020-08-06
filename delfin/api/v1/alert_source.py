@@ -20,8 +20,8 @@ from delfin import exception
 from delfin.alert_manager import rpcapi
 from delfin.api import validation
 from delfin.api.common import wsgi
-from delfin.api.schemas import alert as schema_alert
-from delfin.api.views import alert as alert_view
+from delfin.api.schemas import alert_source as schema_alert
+from delfin.api.views import alert_source as alert_view
 
 LOG = log.getLogger(__name__)
 
@@ -30,7 +30,7 @@ SNMPv3_keys = ('username', 'auth_key', 'security_level', 'auth_protocol',
                'privacy_protocol', 'privacy_key', 'engine_id')
 
 
-class AlertController(wsgi.Controller):
+class AlertSourceController(wsgi.Controller):
     def __init__(self):
         super().__init__()
         self.alert_rpcapi = rpcapi.AlertAPI()
@@ -172,4 +172,4 @@ class AlertController(wsgi.Controller):
 
 
 def create_resource():
-    return wsgi.Resource(AlertController())
+    return wsgi.Resource(AlertSourceController())

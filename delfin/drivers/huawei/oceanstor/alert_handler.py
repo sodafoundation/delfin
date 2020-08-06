@@ -112,8 +112,3 @@ class AlertHandler(object):
         """Remove trap receiver configuration from storage system."""
         # Currently not implemented
         pass
-
-    def clear_alert(self, context, storage_id, alert):
-        # Currently not implemented
-        """Clear alert from storage system."""
-        pass

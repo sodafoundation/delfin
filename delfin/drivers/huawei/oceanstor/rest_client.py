@@ -241,3 +241,7 @@ class RestClient(object):
     def get_all_pools(self):
         url = "/storagepool"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+    def clear_alert(self, sequence_number):
+        url = "/alarm/currentalarm?sequence=%s" % sequence_number
+        return self.call(url, method="DELETE", log_filter_flag=True)

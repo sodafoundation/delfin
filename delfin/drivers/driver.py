@@ -86,6 +86,6 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
-    def clear_alert(self, context, alert):
+    def clear_alert(self, context, sequence_number):
         """Clear alert from storage system."""
         pass

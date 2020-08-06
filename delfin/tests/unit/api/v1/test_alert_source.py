@@ -21,8 +21,8 @@ from delfin import exception
 from delfin.tests.unit.api import fakes
 
 
-class AlertControllerTestCase(unittest.TestCase):
-    ALERT_CONTROLLER_CLASS = 'delfin.api.v1.alert.AlertController'
+class AlertSourceControllerTestCase(unittest.TestCase):
+    ALERT_CONTROLLER_CLASS = 'delfin.api.v1.alert_source.AlertSourceController'
 
     @mock.patch('delfin.alert_manager.rpcapi.AlertAPI', mock.Mock())
     def _get_alert_controller(self):
