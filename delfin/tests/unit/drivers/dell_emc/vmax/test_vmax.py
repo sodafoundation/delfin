@@ -17,6 +17,7 @@ from unittest import TestCase, mock
 from delfin import exception
 from delfin import context
 from delfin.drivers.dell_emc.vmax.vmax import VMAXStorageDriver
+from delfin.drivers.dell_emc.vmax.rest import VMaxRest
 
 
 class Request:
@@ -46,30 +47,26 @@ class TestVMAXStorageDriver(TestCase):
     def test_init(self):
         kwargs = VMAX_STORAGE_CONF
 
-        with mock.patch('PyU4V.U4VConn',
-                        side_effect=exception.StorageBackendException):
-            with self.assertRaises(Exception) as exc:
-                VMAXStorageDriver(**kwargs)
-            self.assertIn('Failed to connect to VMAX', str(exc.exception))
-
-        with mock.patch('PyU4V.U4VConn', return_value=''):
+        with mock.patch.object(VMaxRest, 'request') as m:
+            m.return_value = [200, {'version': 'V9.0.2.7'}]
             driver = VMAXStorageDriver(**kwargs)
+            self.assertEqual(driver.client.uni_version, '90')
             self.assertEqual(driver.storage_id, "12345")
             self.assertEqual(driver.client.array_id, "00112233")
 
-        invalid_input = {
-            'rest': {
-                "host": "10.0.0.1",
-                "port": "8443",
-                "username": "user",
-                "password": "pass"
-            },
-            'extra_attributes': {}}
-        with self.assertRaises(Exception) as exc:
-            VMAXStorageDriver(**invalid_input)
-        self.assertIn('Input array_id is missing', str(exc.exception))
+        with mock.patch.object(VMaxRest, 'request') as m:
+            with self.assertRaises(Exception) as exc:
+                m.side_effect = exception.StorageBackendException
+                VMAXStorageDriver(**kwargs)
+            self.assertIn('Failed to connect to VMAX', str(exc.exception))
 
-    def test_get_storage(self):
+    @mock.patch.object(VMaxRest, 'get_system_capacity')
+    @mock.patch.object(VMaxRest, 'get_vmax_model')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'set_rest_credentials')
+    def test_get_storage(self,
+                         mock_rest, mock_version,
+                         mock_model, mock_capacity):
         expected = {
             'name': '',
             'vendor': 'Dell EMC',
@@ -84,48 +81,53 @@ class TestVMAXStorageDriver(TestCase):
             'raw_capacity': 1610612736000,
             'subscribed_capacity': 219902325555200
         }
+        system_capacity = {
+            'system_capacity': {
+                'usable_total_tb': 100,
+                'usable_used_tb': 75,
+                'subscribed_total_tb': 200
+            },
+            'physicalCapacity': {
+                'total_capacity_gb': 1500
+
+            }
+        }
         kwargs = VMAX_STORAGE_CONF
 
-        m = mock.MagicMock()
-        with mock.patch('PyU4V.U4VConn', return_value=m):
-            driver = VMAXStorageDriver(**kwargs)
-            self.assertEqual(driver.storage_id, "12345")
-            self.assertEqual(driver.client.array_id, "00112233")
-            model = {
-                'symmetrix': [
-                    {'model': 'VMAX250F'}
-                ],
-                'system_capacity': {
-                    'usable_total_tb': 100,
-                    'usable_used_tb': 75,
-                    'subscribed_total_tb': 200
-                },
-                'physicalCapacity': {
-                    'total_capacity_gb': 1500
+        mock_rest.return_value = None
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_model.return_value = 'VMAX250F'
+        mock_capacity.return_value = system_capacity
 
-                }
-            }
-            m.common.get_request.side_effect = \
-                [
-                    model, model,
-                    model, exception.StorageBackendException,
-                    exception.StorageBackendException, model]
-            ret = driver.get_storage(context)
-            self.assertDictEqual(ret, expected)
+        driver = VMAXStorageDriver(**kwargs)
 
-            with self.assertRaises(Exception) as exc:
-                driver.get_storage(context)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
 
-            self.assertIn('Failed to get capacity from VMAX',
-                          str(exc.exception))
+        ret = driver.get_storage(context)
+        self.assertDictEqual(ret, expected)
 
-            with self.assertRaises(Exception) as exc:
-                driver.get_storage(context)
+        mock_model.side_effect = exception.StorageBackendException
+        with self.assertRaises(Exception) as exc:
+            driver.get_storage(context)
 
-            self.assertIn('Failed to get model from VMAX',
-                          str(exc.exception))
+        self.assertIn('Failed to get model from VMAX',
+                      str(exc.exception))
 
-    def test_list_storage_pools(self):
+        mock_model.side_effect = 'VMAX250F'
+        mock_capacity.side_effect = exception.StorageBackendException
+        with self.assertRaises(Exception) as exc:
+            driver.get_storage(context)
+
+        self.assertIn('Failed to get capacity from VMAX',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_srp_by_name')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'set_rest_credentials')
+    def test_list_storage_pools(self,
+                                mock_rest, mock_version,
+                                mock_srp):
         expected = [{
             'name': 'SRP_1',
             'storage_id': '12345',
@@ -138,41 +140,49 @@ class TestVMAXStorageDriver(TestCase):
             'free_capacity': 27487790694400,
             'subscribed_capacity': 219902325555200
         }]
+        pool_info = {
+            'srp_capacity': {
+                'usable_total_tb': 100,
+                'usable_used_tb': 75,
+                'subscribed_total_tb': 200
+            },
+            'srpId': 'SRP_ID'
+        }
         kwargs = VMAX_STORAGE_CONF
+        mock_rest.return_value = None
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_srp.side_effect = [{'srpId': ['SRP_1']}, pool_info]
 
-        m = mock.MagicMock()
-        with mock.patch('PyU4V.U4VConn', return_value=m):
-            driver = VMAXStorageDriver(**kwargs)
-            self.assertEqual(driver.storage_id, "12345")
-            self.assertEqual(driver.client.array_id, "00112233")
-            pool_info = {
-                'srp_capacity': {
-                    'usable_total_tb': 100,
-                    'usable_used_tb': 75,
-                    'subscribed_total_tb': 200
-                },
-                'srpId': 'SRP_ID'
-            }
-            m.provisioning.get_srp_list.side_effect = \
-                [['SRP_1'], ['SRP_2'], exception.StorageBackendException]
-            m.provisioning.get_srp.side_effect = \
-                [pool_info, exception.StorageBackendException, pool_info]
-            ret = driver.list_storage_pools(context)
-            self.assertDictEqual(ret[0], expected[0])
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
 
-            with self.assertRaises(Exception) as exc:
-                driver.list_storage_pools(context)
+        ret = driver.list_storage_pools(context)
+        self.assertDictEqual(ret[0], expected[0])
 
-            self.assertIn('Failed to get pool metrics from VMAX',
-                          str(exc.exception))
+        mock_srp.side_effect = [{'srpId': ['SRP_1']},
+                                exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_pools(context)
 
-            with self.assertRaises(Exception) as exc:
-                driver.list_storage_pools(context)
+        self.assertIn('Failed to get pool metrics from VMAX',
+                      str(exc.exception))
 
-            self.assertIn('Failed to get pool metrics from VMAX',
-                          str(exc.exception))
+        mock_srp.side_effect = [exception.StorageBackendException, pool_info]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_pools(context)
 
-    def test_list_volumes(self):
+        self.assertIn('Failed to get pool metrics from VMAX',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_storage_group')
+    @mock.patch.object(VMaxRest, 'get_volume')
+    @mock.patch.object(VMaxRest, 'get_volume_list')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'set_rest_credentials')
+    def test_list_volumes(self,
+                          mock_rest, mock_version,
+                          mock_vols, mock_vol, mock_sg):
         expected = [{
             'name': 'volume_1',
             'storage_id': '12345',
@@ -187,70 +197,56 @@ class TestVMAXStorageDriver(TestCase):
             'native_storage_pool_id': 'SRP_1',
             'compressed': True
         }]
+        volumes = {
+            'volumeId': '00001',
+            'cap_mb': 100,
+            'allocated_percent': 10,
+            'status': 'Ready',
+            'type': 'TDEV',
+            'wwn': 'wwn123',
+            'num_of_storage_groups': 1,
+            'storageGroupId': ['SG_001']
+        }
+        storage_group_info = {
+            'srp': 'SRP_1',
+            'compression': True
+        }
         kwargs = VMAX_STORAGE_CONF
+        mock_rest.return_value = None
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_vols.side_effect = [['volume_1']]
+        mock_vol.side_effect = [volumes]
+        mock_sg.side_effect = [storage_group_info]
 
-        m = mock.MagicMock()
-        with mock.patch('PyU4V.U4VConn', return_value=m):
-            driver = VMAXStorageDriver(**kwargs)
-            self.assertEqual(driver.storage_id, "12345")
-            self.assertEqual(driver.client.array_id, "00112233")
-            volumes = {
-                'volumeId': '00001',
-                'cap_mb': 100,
-                'allocated_percent': 10,
-                'status': 'Ready',
-                'type': 'TDEV',
-                'wwn': 'wwn123',
-                'num_of_storage_groups': 1,
-                'storageGroupId': ['SG_001']
-            }
-            storage_group_info = {
-                'srp': 'SRP_1',
-                'compression': True
-            }
-            m.provisioning.get_volume_list.side_effect = \
-                [['volume_1'], ['volume_1'],
-                 exception.StorageBackendException, ['volume_1']]
-            m.provisioning.get_volume.side_effect = \
-                [volumes, exception.StorageBackendException,
-                 volumes, volumes]
-            m.provisioning.get_storage_group.side_effect = \
-                [exception.StorageBackendException, storage_group_info,
-                 storage_group_info, storage_group_info]
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_volumes(context)
+        self.assertDictEqual(ret[0], expected[0])
 
-            with self.assertRaises(Exception) as exc:
-                driver.list_volumes(context)
+        mock_vols.side_effect = [['volume_1']]
+        mock_vol.side_effect = [volumes]
+        mock_sg.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_volumes(context)
 
-            self.assertIn('Failed to get list volumes from VMAX',
-                          str(exc.exception))
+        self.assertIn('Failed to get list volumes from VMAX',
+                      str(exc.exception))
 
-            with self.assertRaises(Exception) as exc:
-                driver.list_volumes(context)
+        mock_vols.side_effect = [['volume_1']]
+        mock_vol.side_effect = [exception.StorageBackendException]
+        mock_sg.side_effect = [storage_group_info]
+        with self.assertRaises(Exception) as exc:
+            driver.list_volumes(context)
 
-            self.assertIn('Failed to get list volumes from VMAX',
-                          str(exc.exception))
+        self.assertIn('Failed to get list volumes from VMAX',
+                      str(exc.exception))
 
-            with self.assertRaises(Exception) as exc:
-                driver.list_volumes(context)
+        mock_vols.side_effect = [exception.StorageBackendException]
+        mock_vol.side_effect = [volumes]
+        mock_sg.side_effect = [storage_group_info]
+        with self.assertRaises(Exception) as exc:
+            driver.list_volumes(context)
 
-            self.assertIn('Failed to get list volumes from VMAX',
-                          str(exc.exception))
-
-            ret = driver.list_volumes(context)
-            self.assertDictEqual(ret[0], expected[0])
-
-    def test_delete(self):
-        kwargs = VMAX_STORAGE_CONF
-
-        m = mock.MagicMock()
-        with mock.patch('PyU4V.U4VConn', return_value=m):
-            driver = VMAXStorageDriver(**kwargs)
-            self.assertEqual(driver.storage_id, "12345")
-            self.assertEqual(driver.client.array_id, "00112233")
-
-            m.close_session.side_effect = [
-                None
-            ]
-
-            del driver
-            m.close_session.assert_called()
+        self.assertIn('Failed to get list volumes from VMAX',
+                      str(exc.exception))
