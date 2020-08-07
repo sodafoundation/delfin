@@ -50,7 +50,32 @@ class VMAXClient(object):
         self.array_id = access_info.get('extra_attributes', {}). \
             get('array_id', None)
         if not self.array_id:
-            raise exception.InvalidInput('Input array_id is missing')
+            """ Unisphere  managing  only one array (embedded unisphere)
+             can be supported with out array_id in input """
+
+            # Todo : Remove this temporary connection
+            #  while removing PyU4V dependency
+            try:
+                # Initialise PyU4V connection to VMAX
+                temp_conn = PyU4V.U4VConn(
+                    u4v_version=SUPPORTED_VERSION,
+                    server_ip=self.rest_host,
+                    port=self.rest_port,
+                    verify=False,
+                    username=self.rest_username,
+                    password=self.rest_password)
+
+            except Exception as err:
+                msg = "Failed to connect to VMAX: {}".format(err)
+                LOG.error(msg)
+                raise exception.StorageBackendException(msg)
+            # Get all array list managed by this unisphere
+            array_list = temp_conn.common.get_array_list()
+            if len(array_list) != 1:
+                raise exception.InvalidInput(
+                    'Input array_id is required for'
+                    ' unisphere managing multiple arrays')
+            self.array_id = array_list[0]
 
         try:
             # Initialise PyU4V connection to VMAX
@@ -68,12 +93,14 @@ class VMAXClient(object):
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 
-    def get_model(self):
+    def get_array(self):
         try:
-            # Get the VMAX model
+            # Get the VMAX array details (model, ucode )
             uri = "/system/symmetrix/" + self.array_id
-            model = self.conn.common.get_request(uri, "")
-            return model['symmetrix'][0]['model']
+            array_details = self.conn.common.get_request(uri, "")
+            array = {"model": array_details['symmetrix'][0]['model'],
+                     "ucode": array_details['symmetrix'][0]['ucode']}
+            return array
         except Exception as err:
             msg = "Failed to get model from VMAX: {}".format(err)
             LOG.error(msg)

@@ -36,7 +36,9 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def get_storage(self, context):
         # Get the VMAX model
-        model = self.client.get_model()
+        array = self.client.get_array()
+        model = array['model']
+        ucode = array['ucode']
 
         # Get Storage details for capacity info
         storg_info = self.client.get_storage_capacity()
@@ -49,10 +51,13 @@ class VMAXStorageDriver(driver.StorageDriver):
         free_cap = total_cap - used_cap
 
         storage = {
-            'name': '',
+            # VMAX Rest API do not provide Array name .
+            # Generate  name  by combining model and symmetrixId
+            'name': model + '-' + self.client.array_id,
             'vendor': 'Dell EMC',
             'description': '',
             'model': model,
+            'firmware_version': ucode,
             'status': constants.StorageStatus.NORMAL,
             'serial_number': self.client.array_id,
             'location': '',

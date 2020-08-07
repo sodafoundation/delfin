@@ -40,6 +40,19 @@ VMAX_STORAGE_CONF = {
     }
 }
 
+VMAX_STORAGE_CONF_NO_ARRAY_ID = {
+    "storage_id": "12345",
+    "vendor": "dell_emc",
+    "model": "vmax",
+    "rest": {
+        "host": "10.0.0.1",
+        "port": "8443",
+        "username": "user",
+        "password": "pass"
+    }
+
+}
+
 
 class TestVMAXStorageDriver(TestCase):
 
@@ -57,6 +70,15 @@ class TestVMAXStorageDriver(TestCase):
             self.assertEqual(driver.storage_id, "12345")
             self.assertEqual(driver.client.array_id, "00112233")
 
+        no_array_id_input = VMAX_STORAGE_CONF_NO_ARRAY_ID
+        m = mock.MagicMock()
+        with mock.patch('PyU4V.U4VConn', return_value=m):
+            array_list = ['00112233']
+            m.common.get_array_list.side_effect = \
+                [array_list, exception.StorageBackendException]
+            driver = VMAXStorageDriver(**no_array_id_input)
+            self.assertEqual(driver.storage_id, "12345")
+            self.assertEqual(driver.client.array_id, "00112233")
         invalid_input = {
             'rest': {
                 "host": "10.0.0.1",
@@ -64,17 +86,25 @@ class TestVMAXStorageDriver(TestCase):
                 "username": "user",
                 "password": "pass"
             },
-            'extra_attributes': {}}
-        with self.assertRaises(Exception) as exc:
-            VMAXStorageDriver(**invalid_input)
-        self.assertIn('Input array_id is missing', str(exc.exception))
+        }
+        m = mock.MagicMock()
+        with mock.patch('PyU4V.U4VConn', return_value=m):
+            with self.assertRaises(Exception) as exc:
+                array_list = ['1234', 'ABCD']
+                m.common.get_array_list.side_effect = \
+                    [array_list, exception.StorageBackendException]
+                VMAXStorageDriver(**invalid_input)
+                self.assertIn('Input array_id is required for'
+                              ' unisphere managing multiple arrays',
+                              str(exc.exception))
 
     def test_get_storage(self):
         expected = {
-            'name': '',
+            'name': 'VMAX250F-00112233',
             'vendor': 'Dell EMC',
             'description': '',
             'model': 'VMAX250F',
+            'firmware_version': '5978.221.221',
             'status': 'normal',
             'serial_number': '00112233',
             'location': '',
@@ -93,7 +123,8 @@ class TestVMAXStorageDriver(TestCase):
             self.assertEqual(driver.client.array_id, "00112233")
             model = {
                 'symmetrix': [
-                    {'model': 'VMAX250F'}
+                    {'model': 'VMAX250F',
+                     'ucode': '5978.221.221'}
                 ],
                 'system_capacity': {
                     'usable_total_tb': 100,
