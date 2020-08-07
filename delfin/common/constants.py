@@ -85,3 +85,15 @@ class Category(enum.Enum):
 
 # Default resource type for alert
 DEFAULT_RESOURCE_TYPE = 'Storage'
+
+# Default port for connecting to alert soirce
+DEFAULT_SNMP_CONNECT_PORT = 161
+
+# Default retry count for connecting to alert source
+DEFAULT_SNMP_RETRY_NUM = 4
+
+# Default expiration time(in sec) for a alert source connect request
+DEFAULT_SNMP_EXPIRATION_TIME = 2
+
+# OID used for snmp query, Below oid refers to sysDescr
+SNMP_QUERY_OID = '1.3.6.1.2.1.1.1.0'

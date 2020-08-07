@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from oslo_log import log
-from pyasn1.type.univ import OctetString
 
 from delfin import db, cryptor
 from delfin import exception
@@ -22,9 +21,9 @@ from delfin.api import validation
 from delfin.api.common import wsgi
 from delfin.api.schemas import alert_source as schema_alert
 from delfin.api.views import alert_source as alert_view
+from delfin.api.validation import snmp_validator
 
 LOG = log.getLogger(__name__)
-
 
 SNMPv3_keys = ('username', 'auth_key', 'security_level', 'auth_protocol',
                'privacy_protocol', 'privacy_key', 'engine_id')
@@ -45,6 +44,9 @@ class AlertSourceController(wsgi.Controller):
         alert_source["storage_id"] = id
         db.storage_get(ctx, id)
         alert_source = self._input_check(alert_source)
+
+        # Validate configuration parameters with alert source
+        alert_source = snmp_validator.validate_connectivity(alert_source)
 
         snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
         if snmp_config_to_del is not None:
@@ -85,12 +87,7 @@ class AlertSourceController(wsgi.Controller):
             engine_id = alert_source.get('engine_id')
 
             # Validate engine_id, check octet string can be formed from it
-            try:
-                OctetString.fromHexString(engine_id)
-            except ValueError:
-                msg = "engine_id should be a set of octets in " \
-                      "hexadecimal format."
-                raise exception.InvalidInput(msg)
+            alert_source = snmp_validator.validate_engine_id(engine_id)
 
             if not user_name or not security_level or not engine_id:
                 msg = "If snmp version is SNMPv3, then username, " \
