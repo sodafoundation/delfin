@@ -19,7 +19,7 @@ from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.proto.api import v2c
-from pysnmp.smi import builder, view, rfc1902
+from pysnmp.smi import builder, view, rfc1902, compiler
 
 from delfin import context, cryptor
 from delfin import db
@@ -32,10 +32,8 @@ from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
-# Currently static mib file list is loaded
-# Mechanism to be changed to load all mib file
-MIB_LOAD_LIST = ['SNMPv2-MIB', 'IF_MIB', 'EMCGATEWAY-MIB', 'FCMGMT-MIB',
-                 'ISM-HUAWEI-MIB']
+# Mib file list, can be .mib or .py(precompiled) format
+MIB_LOAD_LIST = ['EMCGATEWAY-MIB', 'FCMGMT-MIB', 'ISM-HUAWEI-MIB']
 
 AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
                      "md5": config.usmHMACMD5AuthProtocol}
@@ -155,10 +153,17 @@ class TrapReceiver(manager.Manager):
         try:
             self.mib_view_controller = view.MibViewController(mib_builder)
 
-            # set mib path to mib_builder object and load mibs
-            mib_path = builder.DirMibSource(self.snmp_mib_path),
-            mib_builder.setMibSources(*mib_path)
+            # Append custom mib path to default path for loading mibs
+            mib_sources = mib_builder.getMibSources() + (builder.DirMibSource(
+                self.snmp_mib_path),)
+            mib_builder.setMibSources(*mib_sources)
             if len(MIB_LOAD_LIST) > 0:
+                # Compile custom mib files (.mib) which will be used by pysnmp
+                # http://mibs.snmplabs.com/asn1/ for satisfying dependencies
+                compiler.addMibCompiler(mib_builder,
+                                        sources=[self.snmp_mib_path,
+                                                 'http://mibs.snmplabs.com'
+                                                 '/asn1/'])
                 mib_builder.loadModules(*MIB_LOAD_LIST)
         except Exception:
             raise ValueError("Mib load failed.")
