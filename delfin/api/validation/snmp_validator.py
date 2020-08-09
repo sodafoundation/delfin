@@ -13,25 +13,15 @@
 # limitations under the License.
 
 from pyasn1.type.univ import OctetString
-from pysnmp.entity import config
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 
 from delfin import exception
 from delfin.common import constants
 from delfin.i18n import _
 
-AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
-                     "md5": config.usmHMACMD5AuthProtocol,
-                     "none": "None"}
-
-PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
-                        "des": config.usmDESPrivProtocol,
-                        "3des": config.usm3DESEDEPrivProtocol,
-                        "none": "None"}
-
 
 def validate_engine_id(engine_id):
-    # Validates the engine_id format
+    # Validate engine_id, check octet string can be formed from it
     try:
         OctetString.fromHexString(engine_id)
     except ValueError:
@@ -40,7 +30,7 @@ def validate_engine_id(engine_id):
         raise exception.InvalidInput(msg)
 
 
-def validate_connectivity(alert_source):
+def validate_connectivity(alert_source, plain_auth_key, plain_priv_key):
     # Fill optional parameters with default values if not set in input
     if not alert_source.get('port'):
         alert_source['port'] = constants.DEFAULT_SNMP_CONNECT_PORT
@@ -54,40 +44,64 @@ def validate_connectivity(alert_source):
     if not alert_source.get('expiration'):
         alert_source['expiration'] = constants.DEFAULT_SNMP_EXPIRATION_TIME
 
-    version = alert_source.get('version')
-
-    if version.lower() == 'snmpv3':
-        cmd_gen = cmdgen.CommandGenerator(
-            snmpEngine=OctetString(hexValue=alert_source['engine_id']))
-        auth_protocol = alert_source['auth_protocol']
-        auth_protocol = AUTH_PROTOCOL_MAP.get(auth_protocol.lower())
-        privacy_protocol = alert_source['privacy_protocol']
-        privacy_protocol = PRIVACY_PROTOCOL_MAP.get(privacy_protocol.lower())
-        security_model = cmdgen.UsmUserData(alert_source['username'],
-                                            authKey=alert_source[
-                                                'auth_key'],
-                                            privKey=alert_source[
-                                                'privacy_key'],
-                                            authProtocol=auth_protocol,
-                                            privProtocol=privacy_protocol),
+    if alert_source.get('validate_config') is not False:
+        alert_source['validate_config'] = constants.DEFAULT_VALIDATE_CONFIG
     else:
-        cmd_gen = cmdgen.CommandGenerator()
-        security_model = cmdgen.CommunityData(
-            alert_source['community_string'],
-            contextName=alert_source['context_name'])
+        alert_source['validate_config'] = False
+        # Skip validate configuration through snmp connectivity and
+        # update configuration
+        return alert_source
 
-    error_indication, __, __, __ = cmd_gen.getCmd(
-        security_model,
-        cmdgen.UdpTransportTarget((alert_source['host'],
-                                   alert_source['port']),
-                                  timeout=alert_source['expiration'],
-                                  retries=alert_source['retry_num']),
-        constants.SNMP_QUERY_OID,
-    )
+    cmd_gen = cmdgen.CommandGenerator()
 
-    if error_indication:
+    version = alert_source.get('version')
+    error_indication = None
+
+    # Connect to alert source through snmp get to check the configuration
+    try:
+        if version.lower() == 'snmpv3':
+            auth_protocol = None
+            privacy_protocol = None
+            if alert_source['auth_protocol'] is not None:
+                auth_protocol = constants.AUTH_PROTOCOL_MAP.get(
+                    alert_source['auth_protocol'].lower())
+            if alert_source['privacy_protocol'] is not None:
+                privacy_protocol = constants.PRIVACY_PROTOCOL_MAP.get(
+                    alert_source['privacy_protocol'].lower())
+
+            error_indication, __, __, __ = cmd_gen.getCmd(
+                cmdgen.UsmUserData(alert_source['username'],
+                                   authKey=plain_auth_key,
+                                   privKey=plain_priv_key,
+                                   authProtocol=auth_protocol,
+                                   privProtocol=privacy_protocol),
+                cmdgen.UdpTransportTarget((alert_source['host'],
+                                           alert_source['port']),
+                                          timeout=alert_source[
+                                              'expiration'],
+                                          retries=alert_source[
+                                              'retry_num']),
+                constants.SNMP_QUERY_OID,
+            )
+        else:
+            error_indication, __, __, __ = cmd_gen.getCmd(
+                cmdgen.CommunityData(alert_source['community_string'],
+                                     contextName=alert_source['context_name']),
+                cmdgen.UdpTransportTarget((alert_source['host'],
+                                           alert_source['port']),
+                                          timeout=alert_source[
+                                              'expiration'],
+                                          retries=alert_source[
+                                              'retry_num']),
+                constants.SNMP_QUERY_OID,
+            )
+
+        if error_indication:
+            msg = (_("configuration validation failed with alert source for "
+                     "reason: %s.") % error_indication)
+            raise exception.InvalidResults(msg)
+        return alert_source
+    except Exception as e:
         msg = (_("configuration validation failed with alert source for "
-                 "reason: %s.") % error_indication)
+                 "reason: %s.") % e)
         raise exception.InvalidResults(msg)
-
-    return alert_source

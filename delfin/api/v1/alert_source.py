@@ -20,8 +20,8 @@ from delfin.alert_manager import rpcapi
 from delfin.api import validation
 from delfin.api.common import wsgi
 from delfin.api.schemas import alert_source as schema_alert
-from delfin.api.views import alert_source as alert_view
 from delfin.api.validation import snmp_validator
+from delfin.api.views import alert_source as alert_view
 
 LOG = log.getLogger(__name__)
 
@@ -44,9 +44,6 @@ class AlertSourceController(wsgi.Controller):
         alert_source["storage_id"] = id
         db.storage_get(ctx, id)
         alert_source = self._input_check(alert_source)
-
-        # Validate configuration parameters with alert source
-        alert_source = snmp_validator.validate_connectivity(alert_source)
 
         snmp_config_to_del = self._get_snmp_config_brief(ctx, id)
         if snmp_config_to_del is not None:
@@ -80,14 +77,16 @@ class AlertSourceController(wsgi.Controller):
 
     def _input_check(self, alert_source):
         version = alert_source.get('version')
+        plain_auth_key = None
+        plain_priv_key = None
 
         if version.lower() == 'snmpv3':
             user_name = alert_source.get('username')
             security_level = alert_source.get('security_level')
             engine_id = alert_source.get('engine_id')
 
-            # Validate engine_id, check octet string can be formed from it
-            alert_source = snmp_validator.validate_engine_id(engine_id)
+            # Validate engine_id
+            snmp_validator.validate_engine_id(engine_id)
 
             if not user_name or not security_level or not engine_id:
                 msg = "If snmp version is SNMPv3, then username, " \
@@ -102,6 +101,7 @@ class AlertSourceController(wsgi.Controller):
                           "AuthPriv or AuthNoPriv, auth_protocol and " \
                           "auth_key are required."
                     raise exception.InvalidInput(msg)
+                plain_auth_key = alert_source['auth_key']
                 alert_source['auth_key'] = cryptor.encode(
                     alert_source['auth_key'])
 
@@ -113,6 +113,7 @@ class AlertSourceController(wsgi.Controller):
                               " is AuthPriv, privacy_protocol and " \
                               "privacy_key are  required."
                         raise exception.InvalidInput(msg)
+                    plain_priv_key = alert_source['privacy_key']
                     alert_source['privacy_key'] = cryptor.encode(
                         alert_source['privacy_key'])
                 else:
@@ -136,6 +137,12 @@ class AlertSourceController(wsgi.Controller):
             # Clear keys for SNMPv3
             for k in SNMPv3_keys:
                 alert_source[k] = None
+
+        # Validate configuration with alert source using snmp connectivity and
+        # update if valid
+        alert_source = snmp_validator.validate_connectivity(alert_source,
+                                                            plain_auth_key,
+                                                            plain_priv_key)
 
         return alert_source
 

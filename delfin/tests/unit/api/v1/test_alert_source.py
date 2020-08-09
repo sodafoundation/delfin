@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import unittest
-from unittest import mock
-
 from oslo_utils import importutils
+from unittest import mock
 
 from delfin import exception
 from delfin.tests.unit.api import fakes
@@ -34,6 +33,8 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.storage_get', mock.Mock())
     @mock.patch('delfin.db.alert_source_update')
     @mock.patch('delfin.db.alert_source_get')
+    @mock.patch('delfin.api.validation.snmp_validator.validate_connectivity',
+                mock.Mock())
     def test_put_v3_authpriv_config_create_success(self, mock_alert_source_get,
                                                    mock_alert_source_update):
         req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
@@ -47,6 +48,11 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'username': 'test1',
                                  'auth_protocol': 'md5',
                                  'privacy_protocol': 'des',
+                                 'port': 161,
+                                 'context_name': "",
+                                 'retry_num': 1,
+                                 'expiration': 1,
+                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -63,6 +69,8 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.storage_get', mock.Mock())
     @mock.patch('delfin.db.alert_source_update')
     @mock.patch('delfin.db.alert_source_get')
+    @mock.patch('delfin.api.validation.snmp_validator.validate_connectivity',
+                mock.Mock())
     def test_put_v3_config_noauthnopriv_create_success(self,
                                                        mock_alert_source_get,
                                                        mock_alert_source_update
@@ -82,6 +90,11 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'username': 'test1',
                                  'auth_protocol': None,
                                  'privacy_protocol': None,
+                                 'port': 161,
+                                 'context_name': "",
+                                 'retry_num': 1,
+                                 'expiration': 1,
+                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -97,6 +110,8 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.storage_get', mock.Mock())
     @mock.patch('delfin.db.alert_source_update')
     @mock.patch('delfin.db.alert_source_get')
+    @mock.patch('delfin.api.validation.snmp_validator.validate_connectivity',
+                mock.Mock())
     def test_put_v3_config_authnopriv_create_success(self,
                                                      mock_alert_source_get,
                                                      mock_alert_source_update):
@@ -115,6 +130,11 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'username': 'test1',
                                  'auth_protocol': 'md5',
                                  'privacy_protocol': None,
+                                 'port': 161,
+                                 'context_name': "",
+                                 'retry_num': 1,
+                                 'expiration': 1,
+                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -129,6 +149,8 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.storage_get', mock.Mock())
     @mock.patch('delfin.db.alert_source_update')
     @mock.patch('delfin.db.alert_source_get')
+    @mock.patch('delfin.api.validation.snmp_validator.validate_connectivity',
+                mock.Mock())
     def test_put_v2_config_success(self, mock_alert_source_get,
                                    mock_alert_source_update):
         req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
@@ -144,6 +166,11 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'username': None,
                                  'auth_protocol': None,
                                  'privacy_protocol': None,
+                                 'port': 161,
+                                 'context_name': "",
+                                 'retry_num': 1,
+                                 'expiration': 1,
+                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -201,6 +228,11 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'username': 'test1',
                                  'auth_protocol': 'md5',
                                  'privacy_protocol': 'des',
+                                 'port': 161,
+                                 'context_name': "",
+                                 'retry_num': 1,
+                                 'expiration': 1,
+                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -359,5 +391,70 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                                        "input for "
                                                        "field/attribute "
                                                        "community_string.",
+                               alert_controller_inst.put, req, fake_storage_id,
+                               body=body)
+
+    @mock.patch('delfin.db.storage_get', mock.Mock())
+    @mock.patch('delfin.db.alert_source_update')
+    @mock.patch('delfin.db.alert_source_get')
+    @mock.patch('pysnmp.entity.rfc3413.oneliner.cmdgen.CommandGenerator'
+                '.getCmd', fakes.fake_getcmd_success)
+    def test_put_v3_snmp_validation_success(self,
+                                            mock_alert_source_get,
+                                            mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = fakes. \
+            fake_v3_alert_source_auth_nopriv()
+        mock_alert_source_get.return_value = fakes. \
+            fake_v3_alert_source_auth_nopriv()
+        expected_alert_source = {'storage_id': 'abcd-1234-5678',
+                                 'host': '127.0.0.1',
+                                 'community_string': None,
+                                 'version': 'snmpv3',
+                                 'engine_id': '800000d30300000e112245',
+                                 'security_level': 'AuthNoPriv',
+                                 'username': 'test1',
+                                 'auth_protocol': 'md5',
+                                 'privacy_protocol': None,
+                                 'port': 161,
+                                 'context_name': "",
+                                 'retry_num': 1,
+                                 'expiration': 1,
+                                 'validate_config': True,
+                                 "created_at": '2020-06-15T09:50:31.698956',
+                                 "updated_at": '2020-06-15T09:50:31.698956'
+                                 }
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+        body['security_level'] = 'AuthNoPriv'
+
+        output_alert_source = alert_controller_inst.put(req, fake_storage_id,
+                                                        body=body)
+        self.assertDictEqual(expected_alert_source, output_alert_source)
+
+    @mock.patch('delfin.db.storage_get', mock.Mock())
+    @mock.patch('delfin.db.alert_source_update')
+    @mock.patch('delfin.db.alert_source_get')
+    @mock.patch('pysnmp.entity.rfc3413.oneliner.cmdgen.CommandGenerator'
+                '.getCmd', fakes.fake_getcmd_exception)
+    def test_put_v3_snmp_validation_failure(self,
+                                            mock_alert_source_get,
+                                            mock_alert_source_update):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        fake_storage_id = 'abcd-1234-5678'
+        mock_alert_source_update.return_value = fakes.fake_v3_alert_source()
+        mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
+
+        alert_controller_inst = self._get_alert_controller()
+        body = fakes.fake_v3_alert_source_config()
+
+        self.assertRaisesRegex(exception.InvalidResults, "The results are "
+                                                         "invalid. "
+                                                         "configuration "
+                                                         "validation failed "
+                                                         "with alert source "
+                                                         "for reason: "
+                                                         "Connection failed.",
                                alert_controller_inst.put, req, fake_storage_id,
                                body=body)

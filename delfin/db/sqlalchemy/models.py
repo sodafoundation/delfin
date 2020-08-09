@@ -141,3 +141,8 @@ class AlertSource(BASE, DelfinBase):
     privacy_protocol = Column(String(255))
     privacy_key = Column(String(255))
     engine_id = Column(String(255))
+    port = Column(Integer)
+    context_name = Column(String(255))
+    retry_num = Column(Integer)
+    expiration = Column(Integer)
+    validate_config = Column(Boolean)

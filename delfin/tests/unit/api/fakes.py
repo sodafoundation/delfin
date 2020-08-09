@@ -14,18 +14,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_service import wsgi
-
 import routes
 import webob.dec
 import webob.request
-
-from delfin.db.sqlalchemy import models
+from oslo_service import wsgi
 
 from delfin import context
 from delfin import exception
 from delfin.api.common import wsgi as os_wsgi
 from delfin.common import config, constants  # noqa
+from delfin.db.sqlalchemy import models
 
 
 @webob.dec.wsgify
@@ -180,14 +178,22 @@ def fake_v3_alert_source_config():
             'auth_key': 'abcd123456',
             'auth_protocol': 'md5',
             'privacy_key': 'abcd123456',
-            'privacy_protocol': 'des'
+            'privacy_protocol': 'des',
+            'context_name': 'NA',
+            'retry_num': 2,
+            'expiration': 2,
+            'port': 161
             }
 
 
 def fake_v2_alert_source_config():
     return {'host': '127.0.0.1',
             'version': 'snmpv2c',
-            'community_string': 'public'
+            'community_string': 'public',
+            'context_name': 'NA',
+            'retry_num': 2,
+            'expiration': 2,
+            'port': 161
             }
 
 
@@ -202,6 +208,11 @@ def fake_v3_alert_source():
     alert_source.auth_protocol = 'md5'
     alert_source.privacy_key = 'YWJjZDEyMzQ1Njc='
     alert_source.privacy_protocol = 'des'
+    alert_source.port = 161
+    alert_source.context_name = ""
+    alert_source.retry_num = 1
+    alert_source.expiration = 1
+    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
@@ -215,6 +226,11 @@ def fake_v3_alert_source_noauth_nopriv():
     alert_source.security_level = 'NoAuthNoPriv'
     alert_source.engine_id = '800000d30300000e112245'
     alert_source.username = 'test1'
+    alert_source.port = 161
+    alert_source.context_name = ""
+    alert_source.retry_num = 1
+    alert_source.expiration = 1
+    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
@@ -229,6 +245,11 @@ def fake_v3_alert_source_auth_nopriv():
     alert_source.auth_protocol = 'md5'
     alert_source.engine_id = '800000d30300000e112245'
     alert_source.username = 'test1'
+    alert_source.port = 161
+    alert_source.context_name = ""
+    alert_source.retry_num = 1
+    alert_source.expiration = 1
+    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
@@ -240,6 +261,11 @@ def fake_v2_alert_source():
     alert_source.storage_id = 'abcd-1234-5678'
     alert_source.version = 'snmpv2c'
     alert_source.community_string = 'public'
+    alert_source.port = 161
+    alert_source.context_name = ""
+    alert_source.retry_num = 1
+    alert_source.expiration = 1
+    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
@@ -393,3 +419,11 @@ def fake_storage_pool_show(context, storage_pool_id):
 
 def fake_storage_get_exception(ctx, storage_id):
     raise exception.StorageNotFound('abcd-1234-5678')
+
+
+def fake_getcmd_exception(auth_data, transport_target, *var_names, **kwargs):
+    return "Connection failed", None, None, None
+
+
+def fake_getcmd_success(auth_data, transport_target, *var_names, **kwargs):
+    return None, None, None, None
