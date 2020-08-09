@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import six
 from pyasn1.type.univ import OctetString
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 
@@ -96,12 +96,15 @@ def validate_connectivity(alert_source, plain_auth_key, plain_priv_key):
                 constants.SNMP_QUERY_OID,
             )
 
-        if error_indication:
-            msg = (_("configuration validation failed with alert source for "
-                     "reason: %s.") % error_indication)
-            raise exception.InvalidResults(msg)
-        return alert_source
+        if not error_indication:
+            return alert_source
+
+        # Prepare exception with error_indication
+        msg = (_("configuration validation failed with alert source for "
+                 "reason: %s.") % error_indication)
     except Exception as e:
         msg = (_("configuration validation failed with alert source for "
-                 "reason: %s.") % e)
-        raise exception.InvalidResults(msg)
+                 "reason: %s.") % six.text_type(e))
+
+    # Since validation occur error, raise exception
+    raise exception.InvalidResults(msg)
