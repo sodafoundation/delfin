@@ -28,10 +28,11 @@ class AlertProcessor(object):
 
     def __init__(self):
         self.driver_manager = driver_manager.API()
+        self.exporter_manager = base_exporter.AlertExporterManager()
 
     def process_alert_info(self, alert):
         """Fills alert model using driver manager interface."""
-        ctxt = context.RequestContext()
+        ctxt = context.get_admin_context()
         storage = db.storage_get(ctxt, alert['storage_id'])
 
         try:
@@ -49,10 +50,5 @@ class AlertProcessor(object):
             raise exception.InvalidResults(
                 "Failed to fill the alert model from driver.")
 
-        self._export_alert_model(alert_model)
-
-    def _export_alert_model(self, alert_model):
-        """Exports the filled alert model to the export manager."""
-
         # Export to base exporter which handles dispatch for all exporters
-        base_exporter.dispatch_alert_model(alert_model)
+        self.exporter_manager.dispatch(ctxt, alert_model)
