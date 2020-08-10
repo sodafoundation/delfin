@@ -44,28 +44,47 @@ VMAX_STORAGE_CONF = {
 
 class TestVMAXStorageDriver(TestCase):
 
-    def test_init(self):
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'set_rest_credentials')
+    def test_init(self,
+                  mock_rest, mock_version, mock_array):
         kwargs = VMAX_STORAGE_CONF
 
-        with mock.patch.object(VMaxRest, 'request') as m:
-            m.return_value = [200, {'version': 'V9.0.2.7'}]
-            driver = VMAXStorageDriver(**kwargs)
-            self.assertEqual(driver.client.uni_version, '90')
-            self.assertEqual(driver.storage_id, "12345")
-            self.assertEqual(driver.client.array_id, "00112233")
+        mock_rest.return_value = None
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
 
-        with mock.patch.object(VMaxRest, 'request') as m:
-            with self.assertRaises(Exception) as exc:
-                m.side_effect = exception.StorageBackendException
-                VMAXStorageDriver(**kwargs)
-            self.assertIn('Failed to connect to VMAX', str(exc.exception))
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.client.uni_version, '90')
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+
+        with self.assertRaises(Exception) as exc:
+            mock_rest.side_effect = exception.StorageBackendException
+            VMAXStorageDriver(**kwargs)
+        self.assertIn('Exception from Storage Backend', str(exc.exception))
+
+        with self.assertRaises(Exception) as exc:
+            mock_rest.side_effect = None
+            mock_version.side_effect = exception.StorageBackendException
+            VMAXStorageDriver(**kwargs)
+        self.assertIn('Exception from Storage Backend', str(exc.exception))
+
+        with self.assertRaises(Exception) as exc:
+            mock_rest.side_effect = None
+            mock_version.side_effect = ['V9.0.2.7', '90']
+            mock_array.side_effect = exception.StorageBackendException
+            VMAXStorageDriver(**kwargs)
+        self.assertIn('Failed to connect to VMAX', str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_system_capacity')
     @mock.patch.object(VMaxRest, 'get_vmax_model')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
     @mock.patch.object(VMaxRest, 'set_rest_credentials')
     def test_get_storage(self,
-                         mock_rest, mock_version,
+                         mock_rest, mock_version, mock_array,
                          mock_model, mock_capacity):
         expected = {
             'name': '',
@@ -96,6 +115,7 @@ class TestVMAXStorageDriver(TestCase):
 
         mock_rest.return_value = None
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
         mock_model.return_value = 'VMAX250F'
         mock_capacity.return_value = system_capacity
 
@@ -123,11 +143,12 @@ class TestVMAXStorageDriver(TestCase):
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_srp_by_name')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
     @mock.patch.object(VMaxRest, 'set_rest_credentials')
     def test_list_storage_pools(self,
                                 mock_rest, mock_version,
-                                mock_srp):
+                                mock_array, mock_srp):
         expected = [{
             'name': 'SRP_1',
             'storage_id': '12345',
@@ -151,6 +172,7 @@ class TestVMAXStorageDriver(TestCase):
         kwargs = VMAX_STORAGE_CONF
         mock_rest.return_value = None
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
         mock_srp.side_effect = [{'srpId': ['SRP_1']}, pool_info]
 
         driver = VMAXStorageDriver(**kwargs)
@@ -178,10 +200,11 @@ class TestVMAXStorageDriver(TestCase):
     @mock.patch.object(VMaxRest, 'get_storage_group')
     @mock.patch.object(VMaxRest, 'get_volume')
     @mock.patch.object(VMaxRest, 'get_volume_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
     @mock.patch.object(VMaxRest, 'set_rest_credentials')
     def test_list_volumes(self,
-                          mock_rest, mock_version,
+                          mock_rest, mock_version, mock_array,
                           mock_vols, mock_vol, mock_sg):
         expected = [{
             'name': 'volume_1',
@@ -214,6 +237,7 @@ class TestVMAXStorageDriver(TestCase):
         kwargs = VMAX_STORAGE_CONF
         mock_rest.return_value = None
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
         mock_vols.side_effect = [['volume_1']]
         mock_vol.side_effect = [volumes]
         mock_sg.side_effect = [storage_group_info]

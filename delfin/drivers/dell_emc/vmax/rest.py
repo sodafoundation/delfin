@@ -54,7 +54,7 @@ class VMaxRest(object):
         self.cert = None
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def set_rest_credentials(self, array_info, extra_attrib):
+    def set_rest_credentials(self, array_info, verify):
         """Given the array record set the rest server credentials.
         :param array_info: record
         :param extra_attrib: record
@@ -63,9 +63,7 @@ class VMaxRest(object):
         port = array_info['port']
         self.user = array_info['username']
         self.passwd = array_info['password']
-        self.verify = False
-        if extra_attrib:
-            self.verify = extra_attrib.get('verify', False)
+        self.verify = verify
         ip_port = "%(ip)s:%(port)s" % {'ip': ip, 'port': port}
         self.base_uri = ("https://%(ip_port)s/univmax/restapi" % {
             'ip_port': ip_port})

@@ -21,6 +21,8 @@ from delfin.drivers.dell_emc.vmax import rest
 
 LOG = log.getLogger(__name__)
 
+EMBEDDED_UNISPHERE_ARRAY_COUNT = 1
+
 
 class VMAXClient(object):
     """ Client class for communicating with VMAX storage """
@@ -36,8 +38,7 @@ class VMAXClient(object):
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
         self.rest = rest.VMaxRest()
-        self.rest.set_rest_credentials(rest_access,
-                                       kwargs.get('extra_attributes', None))
+        self.rest.set_rest_credentials(rest_access, False)
 
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
@@ -53,15 +54,20 @@ class VMAXClient(object):
         self.array_id = access_info.get('extra_attributes', {}). \
             get('array_id', None)
 
-        if not self.array_id:
-            LOG.info('Input array_id is missing in access_info, '
-                     'trying to get a unique array_id from unisphere')
-            array = self.rest.get_array_detail(version=self.uni_version)
-            if len(array['symmetrixId']) == 1:
+        # Get array details from unisphere
+        array = self.rest.get_array_detail(version=self.uni_version)
+        if len(array['symmetrixId']) == EMBEDDED_UNISPHERE_ARRAY_COUNT:
+            if not self.array_id:
                 self.array_id = array['symmetrixId'][0]
+            elif self.array_id != array['symmetrixId'][0]:
+                msg = "Invalid array_id. Supported id: {}". \
+                    format(array['symmetrixId'])
+                raise exception.InvalidInput(msg)
 
         if not self.array_id:
-            raise exception.InvalidInput('Input array_id is missing')
+            msg = "Input array_id is missing. Supported ids: {}". \
+                format(array['symmetrixId'])
+            raise exception.InvalidInput(msg)
 
     def get_model(self):
         try:
