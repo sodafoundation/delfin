@@ -57,7 +57,7 @@ class AlertHandlerTestCase(unittest.TestCase):
                                 'severity': constants.Severity.WARNING,
                                 'category':
                                     constants.Category.NOT_SPECIFIED,
-                                'type': alert['connUnitEventType'],
+                                'type': constants.EventType.EQUIPMENT_ALARM,
                                 'sequence_number': alert['connUnitEventId'],
                                 'description': alert['connUnitEventDescr'],
                                 'recovery_advice': 'None',

@@ -33,7 +33,7 @@ def fake_alert_model():
             'alert_name': 'SAMPLE_ALERT_NAME',
             'severity': constants.Severity.WARNING,
             'category': constants.Category.NOT_SPECIFIED,
-            'type': 'topology',
+            'type': constants.EventType.EQUIPMENT_ALARM,
             'sequence_number': 79,
             'description': 'Diagnostic event trace triggered.',
             'recovery_advice': 'NA',
