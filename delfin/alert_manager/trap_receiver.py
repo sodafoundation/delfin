@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import re
 import six
 
@@ -33,8 +34,8 @@ from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
-# Mib file list, in .py(precompiled) format
-MIB_LOAD_LIST = ['EMCGATEWAY-MIB', 'FCMGMT-MIB', 'ISM-HUAWEI-MIB']
+# Mib file format to be loaded
+MIB_LOAD_FILE_FORMAT = '.py'
 
 AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
                      "md5": config.usmHMACMD5AuthProtocol}
@@ -159,8 +160,13 @@ class TrapReceiver(manager.Manager):
             mib_sources = mib_builder.getMibSources() + (builder.DirMibSource(
                 self.snmp_mib_path),)
             mib_builder.setMibSources(*mib_sources)
-            if len(MIB_LOAD_LIST) > 0:
-                mib_builder.loadModules(*MIB_LOAD_LIST)
+            files = []
+            for file in os.listdir(self.snmp_mib_path):
+                # Pick up all .py files, remove extenstion and load them
+                if file.endswith(MIB_LOAD_FILE_FORMAT):
+                    files.append(os.path.splitext(file)[0])
+            if len(files) > 0:
+                mib_builder.loadModules(*files)
         except Exception:
             raise ValueError("Mib load failed.")
 
