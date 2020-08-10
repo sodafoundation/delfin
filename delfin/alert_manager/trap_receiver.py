@@ -20,7 +20,7 @@ from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.proto.api import v2c
-from pysnmp.smi import builder, view, rfc1902, compiler
+from pysnmp.smi import builder, view, rfc1902
 
 from delfin import context, cryptor
 from delfin import db
@@ -33,7 +33,7 @@ from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
-# Mib file list, can be .mib or .py(precompiled) format
+# Mib file list, in .py(precompiled) format
 MIB_LOAD_LIST = ['EMCGATEWAY-MIB', 'FCMGMT-MIB', 'ISM-HUAWEI-MIB']
 
 AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
@@ -160,12 +160,6 @@ class TrapReceiver(manager.Manager):
                 self.snmp_mib_path),)
             mib_builder.setMibSources(*mib_sources)
             if len(MIB_LOAD_LIST) > 0:
-                # Compile custom mib files (.mib) which will be used by pysnmp
-                # http://mibs.snmplabs.com/asn1/ for satisfying dependencies
-                compiler.addMibCompiler(mib_builder,
-                                        sources=[self.snmp_mib_path,
-                                                 'http://mibs.snmplabs.com'
-                                                 '/asn1/'])
                 mib_builder.loadModules(*MIB_LOAD_LIST)
         except Exception:
             raise ValueError("Mib load failed.")
