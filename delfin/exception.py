@@ -205,3 +205,7 @@ class DuplicateExtension(DelfinException):
 
 class ImproperIPVersion(DelfinException):
     msg_fmt = _("Provided improper IP version {0}.")
+
+
+class ConnectTimeout(DelfinException):
+    msg_fmt = _("connect timeout {0}.")
