@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+import six
 
 from oslo_log import log
 from pysnmp.carrier.asyncore.dgram import udp
@@ -56,6 +57,7 @@ class TrapReceiver(manager.Manager):
         self.trap_receiver_address = kwargs.get('trap_receiver_address')
         self.trap_receiver_port = kwargs.get('trap_receiver_port')
         self.snmp_mib_path = kwargs.get('snmp_mib_path')
+        self.alert_processor = alert_processor.AlertProcessor()
         super(TrapReceiver, self).__init__(host=kwargs.get('host'))
 
     def sync_snmp_config(self, ctxt, snmp_config_to_del=None,
@@ -268,15 +270,14 @@ class TrapReceiver(manager.Manager):
             alert['storage_id'] = alert_source['storage_id']
 
             # Handover to alert processor for model translation and export
-            alert_processor.AlertProcessor().process_alert_info(alert)
-        except (exception.AlertSourceNotFound,
-                exception.StorageNotFound,
-                exception.InvalidResults) as e:
+            self.alert_processor.process_alert_info(alert)
+        except exception.DelfinException as e:
             # Log and end the trap processing error flow
-            LOG.error(e)
+            err_msg = _("Failed to process alert report (%s).") % e.msg
+            LOG.exception(err_msg)
         except Exception as e:
-            # Unexpected exception occurred
-            LOG.error(e)
+            err_msg = six.text_type(e)
+            LOG.exception(err_msg)
 
     def _load_snmp_config(self):
         """Load snmp config from database when service start."""
