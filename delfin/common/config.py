@@ -91,6 +91,10 @@ global_opts = [
     cfg.IntOpt('sync_task_expiration',
                default=1800,
                help='Sync task expiration in seconds.'),
+    cfg.BoolOpt('snmp_validation_enabled',
+                default=True,
+                help='Whether alert source configuration to be validated '
+                     'through snmp connectivity.'),
 ]
 
 CONF.register_opts(global_opts)

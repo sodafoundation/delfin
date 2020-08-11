@@ -29,7 +29,11 @@ put = {
         'auth_protocol': parameter_types.snmp_auth_protocol,
         'privacy_protocol': parameter_types.snmp_privacy_protocol,
         'privacy_key': {'type': 'string', 'minLength': 1, 'maxLength': 255},
-        'engine_id': {'type': 'string', 'minLength': 1, 'maxLength': 255}
+        'engine_id': {'type': 'string', 'minLength': 1, 'maxLength': 255},
+        'context_name': {'type': 'string'},
+        'retry_num': {'type': 'integer'},
+        'expiration': {'type': 'integer'},
+        'port': parameter_types.tcp_udp_port
     },
     'required': ['host', 'version'],
     'additionalProperties': False,
