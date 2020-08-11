@@ -15,6 +15,7 @@
 
 from oslo_config import cfg
 from oslo_log import log
+import six
 from stevedore import extension
 
 from delfin import exception
@@ -53,14 +54,16 @@ class BaseManager(BaseExporter):
         self.exporters = self._get_exporters()
 
     def dispatch(self, ctxt, data):
+        if not isinstance(data, (list, tuple)):
+            data = [data]
         for exporter in self.exporters:
             try:
                 exporter.dispatch(ctxt, data)
             except exception.DelfinException as e:
                 err_msg = _("Failed to export data (%s).") % e.msg
                 LOG.exception(err_msg)
-            except Exception:
-                err_msg = _("Failed to export data.")
+            except Exception as e:
+                err_msg = six.text_type(e)
                 LOG.exception(err_msg)
 
     def _get_exporters(self):

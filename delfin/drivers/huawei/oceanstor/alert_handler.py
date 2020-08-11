@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import time
+import binascii
+from datetime import datetime
 
 from oslo_log import log
 
@@ -27,6 +27,8 @@ LOG = log.getLogger(__name__)
 class AlertHandler(object):
     """Alert handling functions for huawei oceanstor driver"""
 
+    TIME_PATTERN = "%Y-%m-%d,%H:%M:%S.%f"
+
     # Translation of trap severity to alert model severity
     SEVERITY_MAP = {"criticalAlarm": constants.Severity.CRITICAL,
                     "majorAlarm": constants.Severity.MAJOR,
@@ -37,6 +39,15 @@ class AlertHandler(object):
     CATEGORY_MAP = {"faultAlarm": constants.Category.FAULT,
                     "recoveryAlarm": constants.Category.RECOVERY,
                     "eventAlarm": constants.Category.EVENT}
+
+    # Translation of trap alert category to alert type
+    TYPE_MAP = {
+        "communicationQuality": constants.EventType.COMMUNICATIONS_ALARM,
+        "equipmentFault": constants.EventType.EQUIPMENT_ALARM,
+        "processError": constants.EventType.PROCESSING_ERROR_ALARM,
+        "serviceQuality": constants.EventType.QUALITY_OF_SERVICE_ALARM,
+        "environmentFault": constants.EventType.ENVIRONMENTAL_ALARM,
+        "performanceLimit": constants.EventType.QUALITY_OF_SERVICE_ALARM}
 
     # Attributes expected in alert info to proceed with model filling
     _mandatory_alert_attributes = ('hwIsmReportingAlarmAlarmID',
@@ -55,8 +66,9 @@ class AlertHandler(object):
         pass
 
     def parse_alert(self, context, alert):
-        """Parse alert data got from alert manager and fill the alert model."""
+        """Parse alert data and fill the alert model."""
         # Check for mandatory alert attributes
+        LOG.info("Get alert from storage: %s", alert)
         for attr in self._mandatory_alert_attributes:
             if not alert.get(attr):
                 msg = "Mandatory information %s missing in alert message. " \
@@ -64,7 +76,7 @@ class AlertHandler(object):
                 raise exception.InvalidInput(msg)
 
         try:
-            alert_model = {}
+            alert_model = dict()
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert['hwIsmReportingAlarmAlarmID']
             alert_model['alert_name'] = alert['hwIsmReportingAlarmFaultTitle']
@@ -74,19 +86,26 @@ class AlertHandler(object):
             alert_model['category'] = self.CATEGORY_MAP.get(
                 alert['hwIsmReportingAlarmFaultCategory'],
                 constants.Category.NOT_SPECIFIED)
-            alert_model['type'] = alert['hwIsmReportingAlarmFaultType']
+            alert_model['type'] = self.TYPE_MAP.get(
+                alert['hwIsmReportingAlarmFaultType'],
+                constants.EventType.NOT_SPECIFIED)
             alert_model['sequence_number'] \
                 = alert['hwIsmReportingAlarmSerialNo']
+            occur_time = datetime.strptime(
+                alert['hwIsmReportingAlarmFaultTime'],
+                self.TIME_PATTERN)
+            alert_model['occur_time'] = int(occur_time.timestamp() * 1000)
 
-            # Convert received time to epoch format
-            pattern = '%Y-%m-%d,%H:%M:%S.0'
+            description = alert['hwIsmReportingAlarmAdditionInfo']
+            if self._is_hex(description):
+                description = binascii.unhexlify(description[2:])
+            alert_model['description'] = description
 
-            alert_model['occur_time'] = int(time.mktime(time.strptime(
-                alert['hwIsmReportingAlarmFaultTime'], pattern)))
-            alert_model['description'] \
-                = alert['hwIsmReportingAlarmAdditionInfo']
-            alert_model['recovery_advice'] \
-                = alert['hwIsmReportingAlarmRestoreAdvice']
+            recovery_advice = alert['hwIsmReportingAlarmRestoreAdvice']
+            if self._is_hex(recovery_advice):
+                recovery_advice = binascii.unhexlify(recovery_advice[2:])
+            alert_model['recovery_advice'] = recovery_advice
+
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = 'Node code=' \
                                       + alert['hwIsmReportingAlarmNodeCode']
@@ -112,3 +131,15 @@ class AlertHandler(object):
         """Remove trap receiver configuration from storage system."""
         # Currently not implemented
         pass
+
+    def clear_alert(self, context, storage_id, alert):
+        # Currently not implemented
+        """Clear alert from storage system."""
+        pass
+
+    def _is_hex(self, value):
+        try:
+            int(value, 16)
+        except ValueError:
+            return False
+        return True

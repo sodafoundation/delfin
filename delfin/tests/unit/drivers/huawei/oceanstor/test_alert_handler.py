@@ -75,7 +75,7 @@ class AlertHandlerTestCase(unittest.TestCase):
                 'hwIsmReportingAlarmFaultTitle'],
             'severity': constants.Severity.CRITICAL,
             'category': constants.Category.FAULT,
-            'type': alert['hwIsmReportingAlarmFaultType'],
+            'type': constants.EventType.EQUIPMENT_ALARM,
             'sequence_number': alert['hwIsmReportingAlarmSerialNo'],
             'description': alert[
                 'hwIsmReportingAlarmAdditionInfo'],

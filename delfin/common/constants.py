@@ -13,7 +13,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import enum
 from pysnmp.entity import config
 
 # The maximum value a signed INT type may have
@@ -66,7 +65,7 @@ class VolumeType(object):
 
 
 # Enumerations for alert severity
-class Severity(enum.Enum):
+class Severity(object):
     FATAL = 'Fatal'
     CRITICAL = 'Critical'
     MAJOR = 'Major'
@@ -77,10 +76,31 @@ class Severity(enum.Enum):
 
 
 # Enumerations for alert category
-class Category(enum.Enum):
+class Category(object):
     FAULT = 'Fault'
     EVENT = 'Event'
     RECOVERY = 'Recovery'
+    NOT_SPECIFIED = 'NotSpecified'
+
+
+# Enumerations for clear type
+class ClearType(object):
+    AUTOMATIC = 'Automatic'
+    MANUAL = 'Manual'
+
+
+# Enumerations for alert type based on X.733 Specification
+class EventType(object):
+    COMMUNICATIONS_ALARM = 'CommunicationsAlarm'
+    EQUIPMENT_ALARM = 'EquipmentAlarm'
+    PROCESSING_ERROR_ALARM = 'ProcessingErrorAlarm'
+    QUALITY_OF_SERVICE_ALARM = 'QualityOfServiceAlarm'
+    ENVIRONMENTAL_ALARM = 'EnvironmentalAlarm'
+    INTEGRITY_VIOLATION = 'IntegrityViolation'
+    OPERATIONAL_VIOLATION = 'OperationalViolation'
+    PHYSICAL_VIOLATION = 'PhysicalViolation'
+    SECURITY_MECHANISM_VIOLATION = 'SecurityServiceOrMechanismViolation'
+    TIME_DOMAIN_VIOLATION = 'TimeDomainViolation'
     NOT_SPECIFIED = 'NotSpecified'
 
 

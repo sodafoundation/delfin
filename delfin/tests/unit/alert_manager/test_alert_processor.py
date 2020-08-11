@@ -17,6 +17,7 @@ from unittest import mock
 
 from oslo_utils import importutils
 
+from delfin import context
 from delfin import exception
 from delfin.common import constants
 from delfin.tests.unit.alert_manager import fakes
@@ -34,15 +35,17 @@ class AlertProcessorTestCase(unittest.TestCase):
 
     @mock.patch('delfin.db.storage_get')
     @mock.patch('delfin.drivers.api.API.parse_alert')
-    @mock.patch('delfin.alert_manager.alert_processor.AlertProcessor'
-                '._export_alert_model')
-    def test_process_alert_info_success(self, mock_export_model,
+    @mock.patch('delfin.exporter.base_exporter'
+                '.AlertExporterManager.dispatch')
+    @mock.patch('delfin.context.get_admin_context')
+    def test_process_alert_info_success(self, mock_ctxt, mock_export_model,
                                         mock_parse_alert, mock_storage):
         fake_storage_info = fakes.fake_storage_info()
         input_alert = {'storage_id': 'abcd-1234-56789',
                        'connUnitEventId': 79,
                        'connUnitName': '000192601409',
-                       'connUnitEventType': 'topology',
+                       'connUnitEventType':
+                           constants.EventType.EQUIPMENT_ALARM,
                        'connUnitEventDescr': 'Diagnostic '
                                              'event trace triggered.',
                        'connUnitEventSeverity': 'warning',
@@ -76,12 +79,15 @@ class AlertProcessorTestCase(unittest.TestCase):
                                 'recovery_advice': 'NA'
                                 }
         mock_storage.return_value = fake_storage_info
+        expected_ctxt = context.get_admin_context()
+        mock_ctxt.return_value = expected_ctxt
         mock_parse_alert.return_value = fakes.fake_alert_model()
         alert_processor_inst = self._get_alert_processor()
         alert_processor_inst.process_alert_info(input_alert)
 
         # Verify that model returned by driver is exported
-        mock_export_model.assert_called_once_with(expected_alert_model)
+        mock_export_model.assert_called_once_with(expected_ctxt,
+                                                  expected_alert_model)
 
     @mock.patch('delfin.db.storage_get')
     @mock.patch('delfin.drivers.api.API.parse_alert',

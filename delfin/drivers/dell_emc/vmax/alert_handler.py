@@ -71,7 +71,7 @@ class AlertHandler(object):
             constants.Severity.INFORMATIONAL)
 
         alert_model['category'] = constants.Category.NOT_SPECIFIED
-        alert_model['type'] = alert['connUnitEventType']
+        alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
 
         alert_model['sequence_number'] = alert['connUnitEventId']
 
