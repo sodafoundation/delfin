@@ -28,6 +28,7 @@ from delfin import exception
 from delfin import manager
 from delfin.alert_manager import alert_processor
 from delfin.alert_manager import constants
+from delfin.common import constants as common_constants
 from delfin.db import api as db_api
 from delfin.i18n import _
 
@@ -37,13 +38,6 @@ LOG = log.getLogger(__name__)
 # Mechanism to be changed to load all mib file
 MIB_LOAD_LIST = ['SNMPv2-MIB', 'IF_MIB', 'EMCGATEWAY-MIB', 'FCMGMT-MIB',
                  'ISM-HUAWEI-MIB']
-
-AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
-                     "md5": config.usmHMACMD5AuthProtocol}
-
-PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
-                        "des": config.usmDESPrivProtocol,
-                        "3des": config.usm3DESEDEPrivProtocol}
 
 
 class TrapReceiver(manager.Manager):
@@ -130,7 +124,8 @@ class TrapReceiver(manager.Manager):
 
     def _get_usm_auth_protocol(self, ctxt, auth_protocol):
         if auth_protocol is not None:
-            usm_auth_protocol = AUTH_PROTOCOL_MAP.get(auth_protocol.lower())
+            usm_auth_protocol = common_constants.AUTH_PROTOCOL_MAP \
+                .get(auth_protocol.lower())
             if usm_auth_protocol is not None:
                 return usm_auth_protocol
             else:
@@ -141,7 +136,7 @@ class TrapReceiver(manager.Manager):
 
     def _get_usm_priv_protocol(self, ctxt, privacy_protocol):
         if privacy_protocol is not None:
-            usm_priv_protocol = PRIVACY_PROTOCOL_MAP.get(
+            usm_priv_protocol = common_constants.PRIVACY_PROTOCOL_MAP.get(
                 privacy_protocol.lower())
             if usm_priv_protocol is not None:
                 return usm_priv_protocol
