@@ -87,7 +87,9 @@ class TestHdsVspStorStorageDriver(TestCase):
         with mock.patch.object(Session, 'post', return_value=m):
             m.raise_for_status.return_value = 200
             m.json.return_value = {
-                'token': '1&2F28CA9FC1EA0B8EAB80E9D8FD137ED6&8F4C30E46031518E793E316C77E65FC3',
+                'token':
+                '1&2F28CA9FC1EA0B8EAB80E9D8FD137E'
+                'D6&8F4C30E46031518E793E316C77E65FC3',
                 'sessionId': 10
             }
             kwargs = ACCESS_INFO
@@ -101,7 +103,8 @@ class TestHdsVspStorStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             commandStr = 'ls -l'
             driver.sshclient.doexec(context, commandStr)
-        self.assertIn('Exception in SSH protocol negotiation or logic', str(exc.exception))
+        self.assertIn('Exception in SSH protocol negotiation or logic',
+                      str(exc.exception))
     """
     def test_get_storage(self):
         driver = create_driver()
@@ -153,6 +156,7 @@ class TestHdsVspStorStorageDriver(TestCase):
     """
     def test_d_list_storage_pools(self):
         driver = create_driver()
+        """
         expected = {
             'name': 'pool_5',
             'storage_id': '12345',
@@ -165,7 +169,7 @@ class TestHdsVspStorStorageDriver(TestCase):
             'used_capacity': 0.0,
             'free_capacity': 0.0,
         }
-
+        """
         ret = [
             {
                 "data": [
@@ -193,7 +197,9 @@ class TestHdsVspStorStorageDriver(TestCase):
                         "totalReservedCapacity": 0,
                         "reservedVolumeCount": 0,
                         "poolType": "HDP",
-                        "duplicationLdevIds": [65269, 65268, 65267, 65266, 65265, 65264, 65263, 65262],
+                        "duplicationLdevIds":
+                        [65269, 65268, 65267,
+                         65266, 65265, 65264, 65263, 65262],
                         "duplicationNumber": 8,
                         "dataReductionAccelerateCompCapacity": 206783585,
                         "dataReductionCapacity": 205901472,
@@ -233,8 +239,9 @@ class TestHdsVspStorStorageDriver(TestCase):
                 ]
             }
         ]
-        with mock.patch.object(RestClient, 'get_resinfo_call', side_effect=ret):
-            pools = driver.list_storage_pools(context)
+        with mock.patch.object(RestClient, 'get_resinfo_call',
+                               side_effect=ret):
+            driver.list_storage_pools(context)
 #            print("pool is %s" %(pools[0]))
 #            self.assertDictEqual(pools[0], expected)
 #            self.assertDictEqual(pools[1], expected[1])
@@ -362,7 +369,8 @@ class TestHdsVspStorStorageDriver(TestCase):
                 ]
             }
         ]
-        with mock.patch.object(RestClient, 'get_resinfo_call', side_effect=ret):
+        with mock.patch.object(RestClient, 'get_resinfo_call',
+                               side_effect=ret):
             volumes = driver.list_volumes(context)
 #            print("volumes1 is %s" % (volumes[0]))
 #            print("volumes2 is %s" % (volumes[1]))
@@ -375,52 +383,6 @@ class TestHdsVspStorStorageDriver(TestCase):
                 driver.list_volumes(context)
             self.assertIn('Exception from Storage Backend',
                           str(exc.exception))
-
-    def test_f_parse_alert(self):
-        """ Success flow with all necessary parameters"""
-        driver = create_driver()
-        alert = \
-            {
-                'storage_id': 'abcd-1234-56789',
-                'storage_name': 'storage1',
-                'vendor': 'fake vendor',
-                'model': 'fake model',
-                'hwIsmReportingAlarmFaultCategory': 'test',
-                'hwIsmReportingAlarmLocationInfo': 'location1',
-                'hwIsmReportingAlarmFaultTitle': 'Trap Test Alarm',
-                'hwIsmReportingAlarmFaultType': 'equipmentFault',
-                'hwIsmReportingAlarmFaultLevel': 'criticalAlarm',
-                'hwIsmReportingAlarmAlarmID': '4294967294',
-                'hwIsmReportingAlarmSerialNo': '4294967295',
-                'hwIsmReportingAlarmAdditionInfo': 'This is just for ',
-                'hwIsmReportingAlarmLocationAlarmID': '230584300921369',
-                'hwIsmReportingAlarmFaultTime': '2020-6-25,1:42:26.0'
-            }
-
-        expected_alert_model = {
-            'me_dn': 'abcd-1234-56789',
-            'me_name': 'storage1',
-            'manufacturer': 'fake vendor',
-            'product_name': 'fake model',
-            'category': 'test',
-            'location': 'location1',
-            'event_type': 'equipmentFault',
-            'severity': 'criticalAlarm',
-            'probable_cause': 'This is just for testing.Please ignore it',
-            'me_category': 'storage-subsystem',
-            'occur_time': '2020-6-25,1:42:26.0',
-            'alarm_id': '4294967294',
-            'alarm_name': 'Trap Test Alarm',
-            'device_alert_sn': '4294967295',
-            'clear_type': '',
-            'match_key': '',
-            'native_me_dn': ''
-        }
-        context = {}
-        alert_model = driver.parse_alert(context, alert)
-
-        # Verify that all other fields are matching
-#        self.assertDictEqual(expected_alert_model, alert_model)
 
     def test_g_clear_alert(self):
         driver = create_driver()
@@ -454,6 +416,7 @@ class TestHdsVspStorStorageDriver(TestCase):
             rc = RestClient(**kwargs)
             re = rc.logout()
             self.assertIsNone(re)
+
 
 if __name__ == '__main__':
     unittest.main()
