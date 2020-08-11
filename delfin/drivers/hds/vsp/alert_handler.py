@@ -16,7 +16,7 @@
 from oslo_log import log
 
 from delfin import exception
-from delfin.i18n import _
+# from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -63,37 +63,7 @@ class AlertHandler(object):
 
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
-
-        try:
-            alert_model = {}
-            # These information are sourced from device registration info
-            alert_model['me_dn'] = alert['storage_id']
-            alert_model['me_name'] = alert['storage_name']
-            alert_model['manufacturer'] = alert['vendor']
-            alert_model['product_name'] = alert['model']
-
-            # Fill default values for alert attributes
-            alert_model['category'] = alert['hwIsmReportingAlarmFaultCategory']
-            alert_model['location'] = alert['hwIsmReportingAlarmLocationInfo']
-            alert_model['event_type'] = alert['hwIsmReportingAlarmFaultType']
-            alert_model['severity'] = alert['hwIsmReportingAlarmFaultLevel']
-            alert_model['probable_cause'] \
-                = alert['hwIsmReportingAlarmAdditionInfo']
-            alert_model['me_category'] = self.default_me_category
-            alert_model['occur_time'] = alert['hwIsmReportingAlarmFaultTime']
-            alert_model['alarm_id'] = alert['hwIsmReportingAlarmAlarmID']
-            alert_model['alarm_name'] = alert['hwIsmReportingAlarmFaultTitle']
-            alert_model['device_alert_sn'] = \
-                alert['hwIsmReportingAlarmSerialNo']
-            alert_model['clear_type'] = ""
-            alert_model['match_key'] = ""
-            alert_model['native_me_dn'] = ""
-            return alert_model
-        except Exception as e:
-            LOG.error(e)
-            msg = (_("Failed to build alert model as some attributes missing "
-                     "in alert message."))
-            raise exception.InvalidResults(msg)
+        pass
 
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
@@ -113,12 +83,13 @@ class AlertHandler(object):
         try:
             if alert is not None and sshclient is not None:
                 LOG.info("alert alert==={}".format(alert))
-                commandStr = AlertHandler.hpe3par_command_removealert + alert.get(
-                    'hwIsmReportingAlarmAlarmID')
+                commandStr = AlertHandler.hpe3par_command_removealert + \
+                    alert.get('hwIsmReportingAlarmAlarmID')
                 LOG.info("clear_alert commandStr==={}".format(commandStr))
                 reStr = sshclient.doexec(context, commandStr)
                 LOG.info("clear_alert reStr==={}".format(reStr))
-                # Determine the returned content to implement the result of the device
+                # Determine the returned content to implement
+                # the result of the device
                 re = 'Success'
         except Exception as e:
             LOG.error(e)

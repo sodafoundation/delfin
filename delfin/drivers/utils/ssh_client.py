@@ -54,7 +54,8 @@ class SSHClient(object):
                              timeout=self.ssh_conn_timeout)
         else:
 
-            private_key = paramiko.RSAKey(file_obj=StringIO(self.ssh_private_key))
+            private_key = \
+                paramiko.RSAKey(file_obj=StringIO(self.ssh_private_key))
 
             self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                              username=self.ssh_username,

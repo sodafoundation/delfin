@@ -53,13 +53,18 @@ class HdsVspDriver(driver.StorageDriver):
             'serial_number': specificjson["serialNumber"],
             'firmware_version': '',
             'location': '',
-            'raw_capacity': capacityjson["internal"]["totalCapacity"] * consts.KB_TO_Bytes,
-            'subscribed_capacity': capacityjson["internal"]["totalCapacity"] * consts.KB_TO_Bytes -
+            'raw_capacity': capacityjson["internal"]["totalCapacity"]
+                        * consts.KB_TO_Bytes,
+            'subscribed_capacity': capacityjson["internal"]["totalCapacity"]
+                        * consts.KB_TO_Bytes -
             capacityjson["internal"]["freeSpace"] * consts.KB_TO_Bytes,
-            'total_capacity': capacityjson["total"]["totalCapacity"] * consts.KB_TO_Bytes,
-            'used_capacity': capacityjson["total"]["totalCapacity"] * consts.KB_TO_Bytes -
+            'total_capacity': capacityjson["total"]["totalCapacity"]
+                        * consts.KB_TO_Bytes,
+            'used_capacity': capacityjson["total"]["totalCapacity"]
+                        * consts.KB_TO_Bytes -
             capacityjson["total"]["freeSpace"] * consts.KB_TO_Bytes,
-            'free_capacity': capacityjson["total"]["freeSpace"] * consts.KB_TO_Bytes
+            'free_capacity': capacityjson["total"]["freeSpace"]
+                        * consts.KB_TO_Bytes
         }
         LOG.info("get_storage(), successfully retrieved storage details")
         return s
@@ -91,7 +96,8 @@ class HdsVspDriver(driver.StorageDriver):
                 free_cap = \
                     int(pool['availableVolumeCapacity']) * consts.MiB_TO_Bytes
                 used_cap = total_cap - free_cap
-                subscribed_capacity = int(pool['totalLocatedCapacity']) * consts.MiB_TO_Bytes
+                subscribed_capacity = int(pool['totalLocatedCapacity']) \
+                    * consts.MiB_TO_Bytes
 #                        * (int(pool['usedLocatedCapacityRate']) * 0.01)
 
                 p = {
@@ -231,7 +237,9 @@ class HdsVspDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        return alert_handler.AlertHandler().parse_alert(context, alert)
+        pass
 
     def clear_alert(self, context, alert):
-        return alert_handler.AlertHandler().clear_alert(context, self.sshclient, alert)
+        return alert_handler.AlertHandler().clear_alert(context,
+                                                        self.sshclient,
+                                                        alert)

@@ -31,14 +31,24 @@ class RestClient(object):
     """Common class for Hpe hdsvsp storage system."""
     hdsvsp_Auth_Token = None
     hdsvsp_Session_Id = None
-#    hdsvsp_Auth_Url = '/ConfigurationManager/v1/objects/sessions/'  # POST    /api/v1/credentials
+    # hdsvsp_Auth_Url = '/ConfigurationManager/v1/objects/sessions/'
+    # POST    /api/v1/credentials
     hdsvsp_Auth_Url = '/ConfigurationManager/v1/objects/sessions/ -d'
-    hdsvsp_Specific_Storage_Url = '/ConfigurationManager/v1/objects/storages/instance'  # GET    /api/v1/system
-    hdsvsp_Summer_Storage_Url = '/ConfigurationManager/v1/objects/storage-summaries/instance'  # GET
-    hdsvsp_Capacity_Url = '/ConfigurationManager/v1/objects/total-capacities/instance'  # GET    /api/v1/capacity
-    hdsvsp_Pools_Url = '/ConfigurationManager/v1/objects/pools'  # GET    /api/v1/cpgs
-    hdsvsp_Volumes_Url = '/ConfigurationManager/v1/objects/ldevs'  # GET    /api/v1/volumes
-    hdsvsp_Ports_Url = '/ConfigurationManager/v1/objects/ports'  # GET
+    # GET    /api/v1/system
+    hdsvsp_Specific_Storage_Url = '/ConfigurationManager/v1/\
+                                  objects/storages/instance'
+    # GET
+    hdsvsp_Summer_Storage_Url = '/ConfigurationManager/v1/\
+                                objects/storage-summaries/instance'
+    # GET    /api/v1/capacity
+    hdsvsp_Capacity_Url = '/ConfigurationManager/v1/objects/\
+                          total-capacities/instance'
+    # GET    /api/v1/cpgs
+    hdsvsp_Pools_Url = '/ConfigurationManager/v1/objects/pools'
+    # GET    /api/v1/volumes
+    hdsvsp_Volumes_Url = '/ConfigurationManager/v1/objects/ldevs'
+    # GET
+    hdsvsp_Ports_Url = '/ConfigurationManager/v1/objects/ports'
     hdsvsp_Logout_Url = '/ConfigurationManager/v1/objects/sessions/'
     hdsvsp_Alert_Url = '/ConfigurationManager/v1/objects/sessions/'
 
@@ -117,16 +127,20 @@ class RestClient(object):
         if self.session is None:
             self.init_http_head()
             if RestClient.hdsvsp_Auth_Token is not None:
-                self.session.headers[RestClient.hdsvsp_Auth_Key] = RestClient.hdsvsp_Auth_Token
+                self.session.headers[RestClient.hdsvsp_Auth_Key] = \
+                    RestClient.hdsvsp_Auth_Token
 
-        LOG.info('url=={0}{1}{2}'.format(url, '==session.headers==', self.session.headers))
+        LOG.info('url=={0}{1}{2}'.format(url, '==session.headers==',
+                                         self.session.headers))
 
         res = self.do_call(url, data, method)
         # status_code=401 "Failed to get token via session"
         if res is not None:
             if res.status_code == 401:
-                LOG.error("Failed to get token via session=={0}=={1}".format(res.status_code, res.text))
-                LOG.error("Failed to get token via session，relogin，Get token again！！！")
+                LOG.error("Failed to get token via session=={0}=={1}"
+                          .format(res.status_code, res.text))
+                LOG.error("Failed to get token via session，relogin，\
+                          Get token again！！！")
                 try:
                     self.logout()
                 except Exception as err:
@@ -141,7 +155,8 @@ class RestClient(object):
 
     def get_resinfo_call(self, url, data=None, method=None, resName=None):
         LOG.info('')
-        LOG.info('hds vsp get {0}{1}{2}'.format(resName, '=================', url))
+        LOG.info('hds vsp get {0}{1}{2}'.format(resName,
+                                                '=================', url))
         rejson = None
 
         self.login()
@@ -238,31 +253,43 @@ class RestClient(object):
         return rejson
 
     def get_specific_storage(self):
-        rejson = self.get_resinfo_call(RestClient.hdsvsp_Specific_Storage_Url, method='GET', resName='Specific_Storage')
+        rejson = self.get_resinfo_call(RestClient.hdsvsp_Specific_Storage_Url,
+                                       method='GET',
+                                       resName='Specific_Storage')
         return rejson
 
     def get_summary_storage(self):
-        rejson = self.get_resinfo_call(RestClient.hdsvsp_Summer_Storage_Url, method='GET', resName='Summer_Storage')
+        rejson = self.get_resinfo_call(RestClient.hdsvsp_Summer_Storage_Url,
+                                       method='GET',
+                                       resName='Summer_Storage')
         return rejson
 
     def get_capacity(self):
-        rejson = self.get_resinfo_call(RestClient.hdsvsp_Capacity_Url, method='GET', resName='capacity')
+        rejson = self.get_resinfo_call(RestClient.hdsvsp_Capacity_Url,
+                                       method='GET',
+                                       resName='capacity')
         return rejson
 
     def get_all_pools(self):
-        rejson = self.get_resinfo_call(RestClient.hdsvsp_Pools_Url, method='GET', resName='pool')
+        rejson = self.get_resinfo_call(RestClient.hdsvsp_Pools_Url,
+                                       method='GET',
+                                       resName='pool')
         return rejson
 
     def get_all_volumes(self):
-        rejson = self.get_resinfo_call(RestClient.hdsvsp_Volumes_Url, method='GET', resName='volume paginated')
+        rejson = self.get_resinfo_call(RestClient.hdsvsp_Volumes_Url,
+                                       method='GET',
+                                       resName='volume paginated')
         return rejson
 
     def get_ports(self):
-        rejson = self.get_resinfo_call(RestClient.hdsvsp_Ports_Url, method='GET', resName='ports paginated')
+        rejson = self.get_resinfo_call(RestClient.hdsvsp_Ports_Url,
+                                       method='GET', resName='ports paginated')
         return rejson
 
     def get_alerts(self):
-        rejson = self.get_resinfo_call(RestClient.hdsvsp_Alert_Url, method='GET', resName='ports paginated')
+        rejson = self.get_resinfo_call(RestClient.hdsvsp_Alert_Url,
+                                       method='GET', resName='ports paginated')
         return rejson
     """
     def paginated_call(self, url, data=None, method=None, resName=None,
