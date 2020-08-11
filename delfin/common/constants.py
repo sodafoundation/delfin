@@ -96,9 +96,6 @@ DEFAULT_SNMP_RETRY_NUM = 1
 # Default expiration time(in sec) for a alert source connect request
 DEFAULT_SNMP_EXPIRATION_TIME = 2
 
-# Default value for whether alert source configuration to be validated
-DEFAULT_VALIDATE_CONFIG = True
-
 # OID used for snmp query, Below oid refers to sysDescr
 SNMP_QUERY_OID = '1.3.6.1.2.1.1.1.0'
 

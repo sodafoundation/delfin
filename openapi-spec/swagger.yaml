@@ -1409,12 +1409,6 @@ components:
             Port for connecting to alert source
             By default, set to 161
           example: 20162
-        validate_config:
-          type: boolean
-          description: >-
-            Indicates whether validate configuration to be performed.
-            By default, set to True
-          example: True
       description: SNMP alert source configuration attributes.
     AlertSourceRespSpec:
       description: Response for snmp alert source configuration.
@@ -1500,12 +1494,6 @@ components:
                 Port for connecting to alert source
                 By default, set to 161
               example: 20162
-            validate_config:
-              type: boolean
-              description: >-
-                  Indicates whether validate configuration to be performed.
-                By default, set to True
-              example: True
     ErrorSpec:
       required:
         - error_code

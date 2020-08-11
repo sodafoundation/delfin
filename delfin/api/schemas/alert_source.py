@@ -33,8 +33,7 @@ put = {
         'context_name': {'type': 'string'},
         'retry_num': {'type': 'integer'},
         'expiration': {'type': 'integer'},
-        'port': parameter_types.tcp_udp_port,
-        'validate_config': {'type': 'boolean'},
+        'port': parameter_types.tcp_udp_port
     },
     'required': ['host', 'version'],
     'additionalProperties': False,

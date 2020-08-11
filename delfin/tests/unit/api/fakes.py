@@ -212,7 +212,6 @@ def fake_v3_alert_source():
     alert_source.context_name = ""
     alert_source.retry_num = 1
     alert_source.expiration = 1
-    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
@@ -230,7 +229,6 @@ def fake_v3_alert_source_noauth_nopriv():
     alert_source.context_name = ""
     alert_source.retry_num = 1
     alert_source.expiration = 1
-    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
@@ -249,7 +247,6 @@ def fake_v3_alert_source_auth_nopriv():
     alert_source.context_name = ""
     alert_source.retry_num = 1
     alert_source.expiration = 1
-    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source
@@ -265,7 +262,6 @@ def fake_v2_alert_source():
     alert_source.context_name = ""
     alert_source.retry_num = 1
     alert_source.expiration = 1
-    alert_source.validate_config = True
     alert_source.created_at = '2020-06-15T09:50:31.698956'
     alert_source.updated_at = '2020-06-15T09:50:31.698956'
     return alert_source

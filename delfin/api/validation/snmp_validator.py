@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import six
+from oslo_config import cfg
 from pyasn1.type.univ import OctetString
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 
 from delfin import exception
 from delfin.common import constants
 from delfin.i18n import _
+
+CONF = cfg.CONF
 
 
 def validate_engine_id(engine_id):
@@ -44,12 +47,7 @@ def validate_connectivity(alert_source, plain_auth_key, plain_priv_key):
     if not alert_source.get('expiration'):
         alert_source['expiration'] = constants.DEFAULT_SNMP_EXPIRATION_TIME
 
-    if alert_source.get('validate_config') is not False:
-        alert_source['validate_config'] = constants.DEFAULT_VALIDATE_CONFIG
-    else:
-        alert_source['validate_config'] = False
-        # Skip validate configuration through snmp connectivity and
-        # update configuration
+    if CONF.snmp_validation_enabled is False:
         return alert_source
 
     cmd_gen = cmdgen.CommandGenerator()

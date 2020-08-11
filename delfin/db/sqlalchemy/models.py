@@ -145,4 +145,3 @@ class AlertSource(BASE, DelfinBase):
     context_name = Column(String(255))
     retry_num = Column(Integer)
     expiration = Column(Integer)
-    validate_config = Column(Boolean)

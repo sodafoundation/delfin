@@ -52,7 +52,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'context_name': "",
                                  'retry_num': 1,
                                  'expiration': 1,
-                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -94,7 +93,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'context_name': "",
                                  'retry_num': 1,
                                  'expiration': 1,
-                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -134,7 +132,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'context_name': "",
                                  'retry_num': 1,
                                  'expiration': 1,
-                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -170,7 +167,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'context_name': "",
                                  'retry_num': 1,
                                  'expiration': 1,
-                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -232,7 +228,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'context_name': "",
                                  'retry_num': 1,
                                  'expiration': 1,
-                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -421,7 +416,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'context_name': "",
                                  'retry_num': 1,
                                  'expiration': 1,
-                                 'validate_config': True,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
