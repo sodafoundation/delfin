@@ -79,6 +79,16 @@ class VMAXClient(object):
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 
+    def get_ucode(self):
+        try:
+            # Get the VMAX ucode
+            return self.rest.get_vmax_ucode(version=self.uni_version,
+                                            array=self.array_id)
+        except Exception as err:
+            msg = "Failed to get ucode from VMAX: {}".format(err)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
+
     def get_storage_capacity(self):
         try:
             storage_info = self.rest.get_system_capacity(

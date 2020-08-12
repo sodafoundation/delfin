@@ -79,18 +79,20 @@ class TestVMAXStorageDriver(TestCase):
         self.assertIn('Failed to connect to VMAX', str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_system_capacity')
+    @mock.patch.object(VMaxRest, 'get_vmax_ucode')
     @mock.patch.object(VMaxRest, 'get_vmax_model')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
     @mock.patch.object(VMaxRest, 'set_rest_credentials')
     def test_get_storage(self,
                          mock_rest, mock_version, mock_array,
-                         mock_model, mock_capacity):
+                         mock_model, mock_ucode, mock_capacity):
         expected = {
-            'name': '',
+            'name': 'VMAX250F-00112233',
             'vendor': 'Dell EMC',
             'description': '',
             'model': 'VMAX250F',
+            'firmware_version': '5978.221.221',
             'status': 'normal',
             'serial_number': '00112233',
             'location': '',
@@ -117,6 +119,7 @@ class TestVMAXStorageDriver(TestCase):
         mock_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
         mock_model.return_value = 'VMAX250F'
+        mock_ucode.return_value = '5978.221.221'
         mock_capacity.return_value = system_capacity
 
         driver = VMAXStorageDriver(**kwargs)
@@ -135,6 +138,15 @@ class TestVMAXStorageDriver(TestCase):
                       str(exc.exception))
 
         mock_model.side_effect = 'VMAX250F'
+
+        mock_ucode.side_effect = exception.StorageBackendException
+        with self.assertRaises(Exception) as exc:
+            driver.get_storage(context)
+
+        self.assertIn('Failed to get ucode from VMAX',
+                      str(exc.exception))
+
+        mock_ucode.side_effect = '5978.221.221'
         mock_capacity.side_effect = exception.StorageBackendException
         with self.assertRaises(Exception) as exc:
             driver.get_storage(context)
