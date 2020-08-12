@@ -1387,6 +1387,28 @@ components:
         host:
           type: string
           example: 10.0.0.1
+        context_name:
+          type: string
+          description: Context name of the alert source
+          example: "New Context"
+        retry_num:
+          type: integer
+          description: >-
+            Maximum number of retries while connecting to alert source
+            By default, set to 1
+          example: 2
+        expiration:
+          type: integer
+          description: >-
+            Expiration time (in sec) for one alert source connect request
+            By default, set to 2
+          example: 60
+        port:
+          type: integer
+          description: >-
+            Port for connecting to alert source
+            By default, set to 161
+          example: 20162
       description: SNMP alert source configuration attributes.
     AlertSourceRespSpec:
       description: Response for snmp alert source configuration.
@@ -1450,6 +1472,28 @@ components:
             host:
               type: string
               example: 10.0.0.1
+            context_name:
+              type: string
+              description: Context name of the alert source
+              example: "New Context"
+            retry_num:
+              type: integer
+              description: >-
+                Maximum number of retries while connecting to alert source
+                By default, set to 1
+              example: 2
+            expiration:
+              type: integer
+              description: >-
+                Expiration time (in sec) for one alert source connect request
+                By default, set to 2
+              example: 60
+            port:
+              type: integer
+              description: >-
+                Port for connecting to alert source
+                By default, set to 161
+              example: 20162
     ErrorSpec:
       required:
         - error_code

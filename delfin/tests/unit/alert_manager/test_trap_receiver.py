@@ -43,6 +43,8 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('delfin.db.api.alert_source_get_all')
     @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
                 '.openServerMode', mock.Mock())
+    @mock.patch('delfin.alert_manager.trap_receiver.TrapReceiver'
+                '._mib_builder', mock.Mock())
     def test_start_success(self, mock_alert_source, mock_dispatcher):
         mock_alert_source.return_value = {}
         trap_receiver_inst = self._get_trap_receiver()
@@ -53,6 +55,23 @@ class TrapReceiverTestCase(unittest.TestCase):
 
         # Verify that snmp engine is initialised and transport config is set
         self.assertTrue(trap_receiver_inst.snmp_engine is not None)
+
+    @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
+                '.jobStarted')
+    @mock.patch('delfin.db.api.alert_source_get_all')
+    @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
+                '.openServerMode', mock.Mock())
+    @mock.patch('pysnmp.smi.builder.MibBuilder.getMibSources', mock.Mock())
+    def test_start_mib_lod_failure(self, mock_alert_source, mock_dispatcher):
+        mock_alert_source.return_value = {}
+        trap_receiver_inst = self._get_trap_receiver()
+        trap_receiver_inst.trap_receiver_address = self.DEF_TRAP_RECV_ADDR
+        trap_receiver_inst.trap_receiver_port = self.DEF_TRAP_RECV_PORT
+        trap_receiver_inst.snmp_mib_path = self.SNMP_MIB_PATH
+
+        self.assertRaisesRegex(ValueError,
+                               "Failed to setup for trap listener.",
+                               trap_receiver_inst.start)
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.jobStarted')
@@ -96,6 +115,8 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
                 '.openServerMode', mock.Mock())
     @mock.patch('pysnmp.entity.config.addTransport', fakes.mock_add_transport)
+    @mock.patch('delfin.alert_manager.trap_receiver.TrapReceiver'
+                '._mib_builder', mock.Mock())
     def test_stop_with_snmp_engine(self, mock_alert_source,
                                    mock_close_dispatcher, mock_dispatcher):
         mock_alert_source.return_value = {}

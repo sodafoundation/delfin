@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import re
 import six
 
@@ -28,22 +29,14 @@ from delfin import exception
 from delfin import manager
 from delfin.alert_manager import alert_processor
 from delfin.alert_manager import constants
+from delfin.common import constants as common_constants
 from delfin.db import api as db_api
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
-# Currently static mib file list is loaded
-# Mechanism to be changed to load all mib file
-MIB_LOAD_LIST = ['SNMPv2-MIB', 'IF_MIB', 'EMCGATEWAY-MIB', 'FCMGMT-MIB',
-                 'ISM-HUAWEI-MIB']
-
-AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
-                     "md5": config.usmHMACMD5AuthProtocol}
-
-PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
-                        "des": config.usmDESPrivProtocol,
-                        "3des": config.usm3DESEDEPrivProtocol}
+# Mib file format to be loaded
+MIB_LOAD_FILE_FORMAT = '.py'
 
 
 class TrapReceiver(manager.Manager):
@@ -130,7 +123,8 @@ class TrapReceiver(manager.Manager):
 
     def _get_usm_auth_protocol(self, ctxt, auth_protocol):
         if auth_protocol is not None:
-            usm_auth_protocol = AUTH_PROTOCOL_MAP.get(auth_protocol.lower())
+            usm_auth_protocol = common_constants.AUTH_PROTOCOL_MAP \
+                .get(auth_protocol.lower())
             if usm_auth_protocol is not None:
                 return usm_auth_protocol
             else:
@@ -141,7 +135,7 @@ class TrapReceiver(manager.Manager):
 
     def _get_usm_priv_protocol(self, ctxt, privacy_protocol):
         if privacy_protocol is not None:
-            usm_priv_protocol = PRIVACY_PROTOCOL_MAP.get(
+            usm_priv_protocol = common_constants.PRIVACY_PROTOCOL_MAP.get(
                 privacy_protocol.lower())
             if usm_priv_protocol is not None:
                 return usm_priv_protocol
@@ -157,11 +151,17 @@ class TrapReceiver(manager.Manager):
         try:
             self.mib_view_controller = view.MibViewController(mib_builder)
 
-            # set mib path to mib_builder object and load mibs
-            mib_path = builder.DirMibSource(self.snmp_mib_path),
-            mib_builder.setMibSources(*mib_path)
-            if len(MIB_LOAD_LIST) > 0:
-                mib_builder.loadModules(*MIB_LOAD_LIST)
+            # Append custom mib path to default path for loading mibs
+            mib_sources = mib_builder.getMibSources() + (builder.DirMibSource(
+                self.snmp_mib_path),)
+            mib_builder.setMibSources(*mib_sources)
+            files = []
+            for file in os.listdir(self.snmp_mib_path):
+                # Pick up all .py files, remove extenstion and load them
+                if file.endswith(MIB_LOAD_FILE_FORMAT):
+                    files.append(os.path.splitext(file)[0])
+            if len(files) > 0:
+                mib_builder.loadModules(*files)
         except Exception:
             raise ValueError("Mib load failed.")
 

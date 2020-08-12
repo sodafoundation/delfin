@@ -12,24 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import PyU4V
-
 from oslo_log import log
 from oslo_utils import units
 
 from delfin import exception
 from delfin.common import constants
+from delfin.drivers.dell_emc.vmax import rest
 
 LOG = log.getLogger(__name__)
 
-SUPPORTED_VERSION = '90'
+EMBEDDED_UNISPHERE_ARRAY_COUNT = 1
 
 
 class VMAXClient(object):
     """ Client class for communicating with VMAX storage """
 
     def __init__(self, **kwargs):
-        self.conn = None
+        self.uni_version = None
         self.array_id = None
         rest_access = kwargs.get('rest')
         if rest_access is None:
@@ -38,42 +37,43 @@ class VMAXClient(object):
         self.rest_port = rest_access.get('port')
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
-
-    def __del__(self):
-        # De-initialize session
-        if self.conn:
-            self.conn.close_session()
-            self.conn = None
+        self.rest = rest.VMaxRest()
+        self.rest.set_rest_credentials(rest_access, False)
 
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
-        self.array_id = access_info.get('extra_attributes', {}). \
-            get('array_id', None)
-        if not self.array_id:
-            raise exception.InvalidInput('Input array_id is missing')
 
         try:
-            # Initialise PyU4V connection to VMAX
-            self.conn = PyU4V.U4VConn(
-                u4v_version=SUPPORTED_VERSION,
-                server_ip=self.rest_host,
-                port=self.rest_port,
-                verify=False,
-                array_id=self.array_id,
-                username=self.rest_username,
-                password=self.rest_password)
-
+            ver, self.uni_version = self.rest.get_uni_version()
+            LOG.info('Connected to Unisphere Version: {0}'.format(ver))
         except Exception as err:
             msg = "Failed to connect to VMAX: {}".format(err)
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 
+        self.array_id = access_info.get('extra_attributes', {}). \
+            get('array_id', None)
+
+        # Get array details from unisphere
+        array = self.rest.get_array_detail(version=self.uni_version)
+        if len(array['symmetrixId']) == EMBEDDED_UNISPHERE_ARRAY_COUNT:
+            if not self.array_id:
+                self.array_id = array['symmetrixId'][0]
+            elif self.array_id != array['symmetrixId'][0]:
+                msg = "Invalid array_id. Supported id: {}". \
+                    format(array['symmetrixId'])
+                raise exception.InvalidInput(msg)
+
+        if not self.array_id:
+            msg = "Input array_id is missing. Supported ids: {}". \
+                format(array['symmetrixId'])
+            raise exception.InvalidInput(msg)
+
     def get_model(self):
         try:
             # Get the VMAX model
-            uri = "/system/symmetrix/" + self.array_id
-            model = self.conn.common.get_request(uri, "")
-            return model['symmetrix'][0]['model']
+            return self.rest.get_vmax_model(version=self.uni_version,
+                                            array=self.array_id)
         except Exception as err:
             msg = "Failed to get model from VMAX: {}".format(err)
             LOG.error(msg)
@@ -81,9 +81,8 @@ class VMAXClient(object):
 
     def get_storage_capacity(self):
         try:
-            uri = "/" + SUPPORTED_VERSION \
-                  + "/sloprovisioning/symmetrix/" + self.array_id
-            storage_info = self.conn.common.get_request(uri, "")
+            storage_info = self.rest.get_system_capacity(
+                self.array_id, self.uni_version)
             return storage_info
         except Exception as err:
             msg = "Failed to get capacity from VMAX: {}".format(err)
@@ -94,11 +93,13 @@ class VMAXClient(object):
 
         try:
             # Get list of SRP pool names
-            pools = self.conn.provisioning.get_srp_list()
+            pools = self.rest.get_srp_by_name(
+                self.array_id, self.uni_version, srp='')['srpId']
 
             pool_list = []
             for pool in pools:
-                pool_info = self.conn.provisioning.get_srp(pool)
+                pool_info = self.rest.get_srp_by_name(
+                    self.array_id, self.uni_version, srp=pool)
 
                 srp_cap = pool_info['srp_capacity']
                 total_cap = srp_cap['usable_total_tb'] * units.Ti
@@ -129,8 +130,9 @@ class VMAXClient(object):
 
         try:
             # List all volumes except data volumes
-            volumes = self.conn.provisioning.get_volume_list(
-                filters={'data_volume': 'false'})
+            volumes = self.rest.get_volume_list(
+                self.array_id, version=self.uni_version,
+                params={'data_volume': 'false'})
 
             # TODO: Update constants.VolumeStatus to make mapping more precise
             switcher = {
@@ -144,7 +146,8 @@ class VMAXClient(object):
             volume_list = []
             for volume in volumes:
                 # Get volume details
-                vol = self.conn.provisioning.get_volume(volume)
+                vol = self.rest.get_volume(self.array_id,
+                                           self.uni_version, volume)
 
                 total_cap = vol['cap_mb'] * units.Mi
                 used_cap = (total_cap * vol['allocated_percent']) / 100.0
@@ -172,7 +175,8 @@ class VMAXClient(object):
 
                 if vol['num_of_storage_groups'] == 1:
                     sg = vol['storageGroupId'][0]
-                    sg_info = self.conn.provisioning.get_storage_group(sg)
+                    sg_info = self.rest.get_storage_group(
+                        self.array_id, self.uni_version, sg)
                     v['native_storage_pool_id'] = sg_info['srp']
                     v['compressed'] = sg_info['compression']
 

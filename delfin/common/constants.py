@@ -13,6 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from pysnmp.entity import config
 
 # The maximum value a signed INT type may have
 DB_MAX_INT = 0x7FFFFFFF
@@ -105,3 +106,25 @@ class EventType(object):
 
 # Default resource type for alert
 DEFAULT_RESOURCE_TYPE = 'Storage'
+
+# Default port for connecting to alert source
+DEFAULT_SNMP_CONNECT_PORT = 161
+
+# Default retry count for connecting to alert source
+DEFAULT_SNMP_RETRY_NUM = 1
+
+# Default expiration time(in sec) for a alert source connect request
+DEFAULT_SNMP_EXPIRATION_TIME = 2
+
+# OID used for snmp query, Below oid refers to sysDescr
+SNMP_QUERY_OID = '1.3.6.1.2.1.1.1.0'
+
+# Maps to convert config values to pysnmp values
+AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
+                     "md5": config.usmHMACMD5AuthProtocol,
+                     "none": "None"}
+
+PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
+                        "des": config.usmDESPrivProtocol,
+                        "3des": config.usm3DESEDEPrivProtocol,
+                        "none": "None"}
