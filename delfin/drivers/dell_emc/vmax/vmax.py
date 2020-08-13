@@ -33,8 +33,9 @@ class VMAXStorageDriver(driver.StorageDriver):
 
     def get_storage(self, context):
         # Get the VMAX model
-        model = self.client.get_model()
-        ucode = self.client.get_ucode()
+        array_details = self.client.get_array_details()
+        model = array_details['model']
+        ucode = array_details['ucode']
 
         # Get Storage details for capacity info
         storg_info = self.client.get_storage_capacity()
