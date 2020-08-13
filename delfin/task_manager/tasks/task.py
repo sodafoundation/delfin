@@ -22,6 +22,7 @@ from delfin import db
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import api as driverapi
+from delfin.exporter import api as exporterapi
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
@@ -81,6 +82,7 @@ class StorageResourceTask(object):
         self.storage_id = storage_id
         self.context = context
         self.driver_api = driverapi.API()
+        self.exporter_api = exporterapi.API()
 
     def _classify_resources(self, storage_resources, db_resources, key):
         """
@@ -160,8 +162,8 @@ class StoragePoolTask(StorageResourceTask):
             self.storage_id))
         try:
             # collect the storage pools list from driver and database
-            storage_pools = self.driver_api.list_storage_pools(self.context,
-                                                               self.storage_id)
+            storage_pools = self.driver_api.list_storage_pools(
+                self.context, self.storage_id)
             db_pools = db.storage_pool_get_all(self.context,
                                                filters={"storage_id":
                                                         self.storage_id})
@@ -239,3 +241,30 @@ class StorageVolumeTask(StorageResourceTask):
     def remove(self):
         LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
         db.volume_delete_by_storage(self.context, self.storage_id)
+
+
+class StorageMetricsCollection(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageMetricsCollection, self).__init__(context, storage_id)
+
+    def metrics_collection(self):
+        """
+        :return:
+        """
+        LOG.info('Collecting performance metrics for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the performance metrics from driver and push to
+            # prometheus exporter api
+            storage_metrics = self.driver_api.collect_storage_metrics(
+                self.context, self.storage_id)
+            self.exporter_api.push_storage_metrics(storage_metrics)
+
+        except AttributeError as e:
+            LOG.error(e)
+        except Exception as e:
+            msg = _('Failed to sync volumes entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Metrics collection done!!!")
