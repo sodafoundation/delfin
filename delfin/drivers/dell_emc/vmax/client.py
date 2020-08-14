@@ -69,13 +69,13 @@ class VMAXClient(object):
                 format(array['symmetrixId'])
             raise exception.InvalidInput(msg)
 
-    def get_model(self):
+    def get_array_details(self):
         try:
-            # Get the VMAX model
-            return self.rest.get_vmax_model(version=self.uni_version,
-                                            array=self.array_id)
+            # Get the VMAX array properties
+            return self.rest.get_vmax_array_details(version=self.uni_version,
+                                                    array=self.array_id)
         except Exception as err:
-            msg = "Failed to get model from VMAX: {}".format(err)
+            msg = "Failed to get array details from VMAX: {}".format(err)
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 

@@ -395,17 +395,26 @@ class VMaxRest(object):
                                         params=None)
         return srp_details
 
-    def get_vmax_model(self, version=U4V_VERSION, array=''):
-        """Get the VMax model.
+    def get_vmax_array_details(self, version=U4V_VERSION, array=''):
+        """Get the VMax array properties.
         :param version: the unisphere version
         :param array: the array serial number
         :returns: the VMax model
         """
         vmax_version = None
+        vmax_ucode = None
+        vmax_display_name = None
         system_info = self.get_array_detail(version, array)
         if system_info and system_info.get('model'):
             vmax_version = system_info.get('model')
-        return vmax_version
+        if system_info and system_info.get('ucode'):
+            vmax_ucode = system_info.get('ucode')
+        if system_info and system_info.get('display_name'):
+            vmax_display_name = system_info.get('display_name')
+        array_details = {"model": vmax_version,
+                         "ucode": vmax_ucode,
+                         "display_name": vmax_display_name}
+        return array_details
 
     def get_array_model_info(self, version=U4V_VERSION, array=''):
         """Get the VMax model.
