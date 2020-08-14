@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import binascii
 from datetime import datetime
 
 from oslo_log import log
@@ -98,12 +97,14 @@ class AlertHandler(object):
 
             description = alert['hwIsmReportingAlarmAdditionInfo']
             if self._is_hex(description):
-                description = binascii.unhexlify(description[2:])
+                description = bytes.fromhex(description[2:]).decode('ascii')
             alert_model['description'] = description
 
             recovery_advice = alert['hwIsmReportingAlarmRestoreAdvice']
             if self._is_hex(recovery_advice):
-                recovery_advice = binascii.unhexlify(recovery_advice[2:])
+                recovery_advice = bytes.fromhex(
+                    recovery_advice[2:]).decode('ascii')
+
             alert_model['recovery_advice'] = recovery_advice
 
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
