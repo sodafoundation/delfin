@@ -35,6 +35,11 @@ class VMAXStorageDriver(driver.StorageDriver):
     def reset_connection(self, context, **kwargs):
         self.client.reset_connection(**kwargs)
 
+    def cleanup(self, context):
+        if self.client:
+            self.client.remove()
+        self.storage_id = None
+
     def get_storage(self, context):
         # Get the VMAX model
         array_details = self.client.get_array_details()

@@ -42,6 +42,10 @@ class VMAXClient(object):
         self.rest.verify = kwargs.get('verify', False)
         self.rest.establish_rest_session()
 
+    def remove(self):
+        if self.rest:
+            self.rest.remove()
+
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
         try:

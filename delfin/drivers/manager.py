@@ -66,12 +66,17 @@ class DriverManager(stevedore.ExtensionManager):
         else:
             return self._get_driver_obj(context, cache_on_load, **kwargs)
 
-    def update_driver(self, storage_id, driver):
+    def update_driver(self, context, storage_id, driver):
+        if storage_id in self.driver_factory:
+            driver_old = self.driver_factory[storage_id]
+            driver_old.cleanup(context)
         self.driver_factory[storage_id] = driver
 
-    def remove_driver(self, storage_id):
+    def remove_driver(self, context, storage_id):
         """Clear driver instance from driver factory."""
-        self.driver_factory.pop(storage_id, None)
+        driver = self.driver_factory.pop(storage_id, None)
+        if driver:
+            driver.cleanup(context)
 
     def _get_driver_obj(self, context, cache_on_load=True, **kwargs):
         if not cache_on_load or not kwargs.get('storage_id'):

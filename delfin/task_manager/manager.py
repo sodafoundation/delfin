@@ -55,7 +55,7 @@ class TaskManager(manager.Manager):
         LOG.info('Remove storage device in memory for storage id:{0}'
                  .format(storage_id))
         drivers = driver_manager.DriverManager()
-        drivers.remove_driver(storage_id)
+        drivers.remove_driver(context, storage_id)
 
     def sync_storage_alerts(self, context, storage_id, query_para):
         LOG.info('Alert sync called for storage id:{0}'

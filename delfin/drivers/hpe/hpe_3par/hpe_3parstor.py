@@ -55,6 +55,9 @@ class Hpe3parStorDriver(driver.StorageDriver):
     def close_connection(self):
         self.rest_handler.logout()
 
+    def cleanup(self, context):
+        pass
+
     def get_storage(self, context):
         return self.comhandler.get_storage(context)
 

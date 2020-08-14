@@ -64,8 +64,19 @@ class RestClient(object):
             LOG.error(msg)
             raise exception.InvalidCredential(msg)
 
+    def remove(self):
+        try:
+            if self.session and self.session.headers.get('iBaseToken'):
+                self.logout()
+            if self.session:
+                self.session.close()
+        except Exception as ex:
+            LOG.error('Failed to close session while remove:{}'.format(ex))
+
     def init_http_head(self):
         self.url = None
+        if self.session:
+            self.session.close()
         self.session = requests.Session()
         self.session.headers.update({
             "Connection": "keep-alive",

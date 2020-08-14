@@ -34,6 +34,11 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
+    def cleanup(self, context):
+        """Do essential cleanup before releasing driver"""
+        pass
+
+    @abc.abstractmethod
     def get_storage(self, context):
         """Get storage device information from storage system"""
         pass

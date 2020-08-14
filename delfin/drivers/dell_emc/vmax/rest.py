@@ -81,6 +81,11 @@ class VMaxRest(object):
         self.verify = None
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+    def remove(self):
+        if self.session:
+            self.session.close()
+            self.session = None
+
     def set_rest_credentials(self, array_info):
         """Given the array record set the rest server credentials.
         :param array_info: record

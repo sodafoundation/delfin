@@ -99,6 +99,10 @@ class FakeStorageDriver(driver.StorageDriver):
         pass
 
     @wait_random(MIN_WAIT, MAX_WAIT)
+    def cleanup(self, context):
+        pass
+
+    @wait_random(MIN_WAIT, MAX_WAIT)
     def get_storage(self, context):
         # Do something here
         sn = six.text_type(uuidutils.generate_uuid())
