@@ -403,13 +403,17 @@ class VMaxRest(object):
         """
         vmax_version = None
         vmax_ucode = None
+        vmax_display_name = None
         system_info = self.get_array_detail(version, array)
         if system_info and system_info.get('model'):
             vmax_version = system_info.get('model')
         if system_info and system_info.get('ucode'):
             vmax_ucode = system_info.get('ucode')
+        if system_info and system_info.get('display_name'):
+            vmax_ucode = system_info.get('display_name')
         array_details = {"model": vmax_version,
-                         "ucode": vmax_ucode}
+                         "ucode": vmax_ucode,
+                         "display_name": vmax_ucode}
         return array_details
 
     def get_array_model_info(self, version=U4V_VERSION, array=''):

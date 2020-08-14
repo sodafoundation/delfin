@@ -36,6 +36,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         array_details = self.client.get_array_details()
         model = array_details['model']
         ucode = array_details['ucode']
+        display_name = array_details['display_name']
 
         # Get Storage details for capacity info
         storg_info = self.client.get_storage_capacity()
@@ -50,7 +51,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         storage = {
             # Unisphere Rest API do not provide Array name .
             # Generate  name  by combining model and symmetrixId
-            'name': model + '-' + self.client.array_id,
+            'name': display_name,
             'vendor': 'Dell EMC',
             'description': '',
             'model': model,

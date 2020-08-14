@@ -117,8 +117,10 @@ class TestVMAXStorageDriver(TestCase):
         mock_rest.return_value = None
         mock_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
-        mock_array_details.return_value = {'model': 'VMAX250F',
-                                           'ucode': '5978.221.221'}
+        mock_array_details.return_value = {
+            'model': 'VMAX250F',
+            'ucode': '5978.221.221',
+            'display_name': 'VMAX250F-00112233'}
         mock_capacity.return_value = system_capacity
 
         driver = VMAXStorageDriver(**kwargs)
@@ -136,8 +138,10 @@ class TestVMAXStorageDriver(TestCase):
         self.assertIn('Failed to get array details from VMAX',
                       str(exc.exception))
 
-        mock_array_details.side_effect = [{'model': 'VMAX250F',
-                                           'ucode': '5978.221.221'}]
+        mock_array_details.side_effect = [{
+            'model': 'VMAX250F',
+            'ucode': '5978.221.221',
+            'display_name': 'VMAX250F-00112233'}]
 
         mock_capacity.side_effect = exception.StorageBackendException
         with self.assertRaises(Exception) as exc:
