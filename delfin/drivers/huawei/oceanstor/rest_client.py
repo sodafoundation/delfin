@@ -247,8 +247,8 @@ class RestClient(object):
 
         # Result always contains error code and description
         result = self.call(url, method="DELETE", log_filter_flag=True)
-        if result['error']['code'] != 0:
-            msg = (_('Clear alert failed with reason: %s.')
-                   % result['error']['description'])
+        if result['error']['code']:
+            msg = 'Clear alert failed with reason: %s.' \
+                  % result['error']['description']
             raise exception.InvalidResults(msg)
         return result
