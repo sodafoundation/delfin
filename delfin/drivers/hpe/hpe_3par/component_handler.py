@@ -47,9 +47,6 @@ class ComponentHandler():
 
         if storage is not None:
             try:
-                # Check the hardware and software health
-                # status of the storage system
-                # return: System is healthy
                 command_str = ComponentHandler.HPE3PAR_COMMAND_CHECKHEALTH
                 reStr = self.sshclient.doexec(context, command_str)
                 if 'System is healthy' in reStr:
