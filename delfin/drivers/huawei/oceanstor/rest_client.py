@@ -244,4 +244,11 @@ class RestClient(object):
 
     def clear_alert(self, sequence_number):
         url = "/alarm/currentalarm?sequence=%s" % sequence_number
-        return self.call(url, method="DELETE", log_filter_flag=True)
+
+        # Result always contains error code and description
+        result = self.call(url, method="DELETE", log_filter_flag=True)
+        if result['error']['code']:
+            msg = 'Clear alert failed with reason: %s.' \
+                  % result['error']['description']
+            raise exception.InvalidResults(msg)
+        return result
