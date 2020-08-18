@@ -13,11 +13,11 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import os
 
 import paramiko as paramiko
 
 from oslo_log import log as logging
+from paramiko.hostkeys import HostKeyEntry
 
 from delfin import exception
 
@@ -48,17 +48,27 @@ class SSHClient(object):
         if self.ssh_private_key is None:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         else:
-            path = os.getcwd()
-            filename = path + '\\' + self.ssh_host + 'known_hosts'
-            file = open(filename, 'w')
-            file.write(self.ssh_private_key)
-            file.close()
-            self.ssh.load_host_keys(filename)
+            self.sethostkey(self.ssh, self.ssh_private_key)
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
                          password=self.ssh_password,
                          timeout=self.ssh_conn_timeout)
+
+    def sethostkey(self, ssh, line):
+        if (len(line) == 0) or (line[0] == "#"):
+            return
+        try:
+            e = HostKeyEntry.from_line(line)
+        except exception.SSHException:
+            return
+        if e is not None:
+            _hostnames = e.hostnames
+            for h in _hostnames:
+                if self.ssh._host_keys.check(h, e.key):
+                    e.hostnames.remove(h)
+            if len(e.hostnames):
+                self.ssh._host_keys._entries.append(e)
 
     def execCommand(self, command_str):
         result = None

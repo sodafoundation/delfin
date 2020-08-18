@@ -33,21 +33,18 @@ class Request:
 ACCESS_INFO = {
     "storage_id": "12345",
     "vendor": "hpe",
-    "model": "threeparstor",
+    "model": "3par",
     "rest": {
         "host": "10.0.0.1",
         "port": 8443,
         "username": "user",
-        "password": "pass",
+        "password": "pass"
     },
     "ssh": {
         "host": "110.143.132.231",
         "port": 22,
         "username": "user",
         "password": "pass"
-    },
-    "extra_attributes": {
-        "array_id": "00112233"
     }
 }
 
@@ -101,6 +98,73 @@ class TestHpe3parStorageDriver(TestCase):
             driver.sshclient.doexec(context, command_str)
         self.assertIn('Exception in SSH protocol negotiation or logic',
                       str(exc.exception))
+
+    def test_d_get_storage(self):
+        driver = create_driver()
+        expected = {
+            'name': 'hp3parf200',
+            'vendor': 'HPE',
+            'model': 'InServ F200',
+            'status': 'abnormal',
+            'serial_number': '1307327',
+            'firmware_version': '3.1.2.484',
+            'location': None,
+            'total_capacity': 8302708654080,
+            'raw_capacity': 9594956939264,
+            'subscribed_capacity': 6087847706624,
+            'used_capacity': 6597069766656,
+            'free_capacity': 1705638887424
+        }
+
+        ret = {
+            "id": 7327,
+            "name": "hp3parf200",
+            "systemVersion": "3.1.2.484",
+            "IPv4Addr": "100.157.92.213",
+            "model": "InServ F200",
+            "serialNumber": "1307327",
+            "totalNodes": 2,
+            "masterNode": 0,
+            "onlineNodes": [
+                0,
+                1
+            ],
+            "clusterNodes": [
+                0,
+                1
+            ],
+            "chunkletSizeMiB": 256,
+            "totalCapacityMiB": 9150464,
+            "allocatedCapacityMiB": 5805824,
+            "freeCapacityMiB": 1626624,
+            "failedCapacityMiB": 1718016,
+            "timeZone": "Asia/Shanghai"
+        }
+
+        RestClient.get_capacity = mock.Mock(
+            return_value={
+                "allCapacity": {
+                    "totalMiB": 9150464,
+                    "allocated": {
+                        "system": {
+                            "totalSystemMiB": 1232384,
+                            "internalMiB": 303104,
+                            "spareMiB": 929280,
+                            "spareUsedMiB": 307456,
+                            "spareUnusedMiB": 621824
+                        }
+                    }
+                }
+            }
+        )
+
+        m = mock.MagicMock(status_code=200)
+        with mock.patch.object(RestClient, 'call', return_value=m):
+            m.raise_for_status.return_value = 200
+            m.json.return_value = ret
+
+            storage = driver.get_storage(context)
+            self.assertDictEqual(storage, expected)
 
     def test_e_list_storage_pools(self):
         driver = create_driver()
@@ -282,7 +346,7 @@ class TestHpe3parStorageDriver(TestCase):
                 'description': None,
                 'status': 'normal',
                 'native_volume_id': 5115,
-                'native_storage_pool_id': 'cxd/cxd',
+                'native_storage_pool_id': 'cxd',
                 'wwn': '50002AC193FB1C9F',
                 'type': 'thin',
                 'total_capacity': 268435456,
@@ -296,7 +360,7 @@ class TestHpe3parStorageDriver(TestCase):
                 'description': None,
                 'status': 'normal',
                 'native_volume_id': 5116,
-                'native_storage_pool_id': 'cxd/cxd',
+                'native_storage_pool_id': 'cxd',
                 'wwn': '50002AC193FC1C9F',
                 'type': 'thin',
                 'total_capacity': 268435456,
@@ -469,6 +533,44 @@ class TestHpe3parStorageDriver(TestCase):
             self.assertIn('Exception from Storage Backend',
                           str(exc.exception))
 
+    def test_h_parse_alert(self):
+        """ Success flow with all necessary parameters"""
+        driver = create_driver()
+        alert = {
+            'sysUpTime': '1399844806',
+            'snmpTrapOID': 'alertNotify',
+            'component': 'test_trap',
+            'details': 'This is a test trap',
+            'nodeID': '0',
+            'severity': 'debug',
+            'timeOccurred': 'test time',
+            'id': '89',
+            'messageCode': '2555934',
+            'state': 'autofixed',
+            'serialNumber': '1307327',
+            'transport_address': '100.118.18.100',
+            'storage_id': '1c094309-70f2-4da3-ac47-e87cc1492ad5'
+        }
+
+        expected_alert_model = {
+            'alert_id': '2555934',
+            'alert_name': 'CPG growth non admin limit',
+            'severity': 'NotSpecified',
+            'category': 'Recovery',
+            'type': 'EquipmentAlarm',
+            'sequence_number': '89',
+            'description': 'This is a test trap',
+            'resource_type': 'Storage',
+            'location': 'test_trap',
+            'occur_time': '',
+            'clear_category': 'Automatic'
+        }
+        context = {}
+        alert_model = driver.parse_alert(context, alert)
+
+        # Verify that all other fields are matching
+        self.assertDictEqual(expected_alert_model, alert_model)
+
     def test_i_clear_alert(self):
         driver = create_driver()
         alert = {'storage_id': 'abcd-1234-56789',
@@ -489,7 +591,7 @@ class TestHpe3parStorageDriver(TestCase):
 
         with self.assertRaises(Exception) as exc:
             driver.clear_alert(context, alert)
-        self.assertIn('Exception from Storage Backend', str(exc.exception))
+        self.assertIn('Exception in SSH protocol', str(exc.exception))
 
     def test_j_restlogout(self):
         m = mock.MagicMock()
