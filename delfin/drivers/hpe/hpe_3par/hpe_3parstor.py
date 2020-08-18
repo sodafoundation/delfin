@@ -73,5 +73,4 @@ class Hpe3parStorDriver(driver.StorageDriver):
         return self.alert_handler.parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
-        return self.alert_handler.clear_alert(context,
-                                              self.sshclient, alert)
+        return self.alert_handler.clear_alert(context, alert)
