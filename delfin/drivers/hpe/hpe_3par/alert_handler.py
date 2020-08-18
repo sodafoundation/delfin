@@ -26,6 +26,13 @@ LOG = logging.getLogger(__name__)
 
 class AlertHandler(object):
     """Alert handling functions for Hpe3 parstor driver"""
+    OID_MESSAGECODE = 'messageCode'
+    OID_SEVERITY = 'severity'
+    OID_STATE = 'state'
+    OID_ID = 'id'
+    OID_TIMEOCCURRED = 'timeOccurred'
+    OID_DETAILS = 'details'
+    OID_COMPONENT = 'component'
 
     # Translation of trap severity to alert model severity
     SEVERITY_MAP = {"critical": constants.Severity.CRITICAL,
@@ -83,24 +90,27 @@ class AlertHandler(object):
         try:
             alert_model = dict()
             # These information are sourced from device registration info
-            alert_model['alert_id'] = alert.get('messageCode')
+            alert_model['alert_id'] = alert.get(AlertHandler.OID_MESSAGECODE)
             messagekey = \
-                (hex(int(alert.get('messageCode')))).replace('0x', '0x0')
+                (hex(int(alert.get(AlertHandler.OID_MESSAGECODE)))).replace(
+                    '0x', '0x0')
             alert_model['alert_name'] = consts.HPE3PAR_ALERT_CODE.get(
                 messagekey)
             alert_model['severity'] = self.SEVERITY_MAP.get(
-                alert.get('severity'), constants.Severity.NOT_SPECIFIED)
+                alert.get(AlertHandler.OID_SEVERITY),
+                constants.Severity.NOT_SPECIFIED)
             alert_model['category'] = self.CATEGORY_MAP.get(
-                alert.get('state'), constants.Category.NOT_SPECIFIED)
+                alert.get(AlertHandler.OID_STATE),
+                constants.Category.NOT_SPECIFIED)
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            alert_model['sequence_number'] = alert.get('id')
+            alert_model['sequence_number'] = alert.get(AlertHandler.OID_ID)
             alert_model['occur_time'] = self.get_time_stamp(
-                alert.get('timeOccurred'))
-            alert_model['description'] = alert.get('details')
+                alert.get(AlertHandler.OID_TIMEOCCURRED))
+            alert_model['description'] = alert.get(AlertHandler.OID_DETAILS)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-            alert_model['location'] = alert.get('component')
+            alert_model['location'] = alert.get(AlertHandler.OID_COMPONENT)
 
-            if alert.get('state') == 'autofixed':
+            if alert.get(AlertHandler.OID_STATE) == 'autofixed':
                 alert_model['clear_category'] = constants.ClearType.AUTOMATIC
             return alert_model
         except Exception as e:
@@ -127,7 +137,7 @@ class AlertHandler(object):
         try:
             if alert is not None:
                 command_str = AlertHandler.HPE3PAR_COMMAND_REMOVEALERT + \
-                    alert.get('sequence_number')
+                              alert.get('sequence_number')
                 re = self.sshclient.doexec(context, command_str)
                 # remove Success return ''
                 if re is None or re == '':
