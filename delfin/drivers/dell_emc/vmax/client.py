@@ -62,14 +62,14 @@ class VMAXClient(object):
             # Get array details from unisphere
             array = self.rest.get_array_detail(version=self.uni_version)
             if not array:
-                msg = "Invalid input. Failed to connect to array"
+                msg = "Failed to get array details"
                 raise exception.InvalidInput(msg)
 
             if len(array['symmetrixId']) == EMBEDDED_UNISPHERE_ARRAY_COUNT:
                 if not self.array_id:
                     self.array_id = array['symmetrixId'][0]
                 elif self.array_id != array['symmetrixId'][0]:
-                    msg = "Invalid array_id. Supported id: {}". \
+                    msg = "Invalid array_id. Expected id: {}". \
                         format(array['symmetrixId'])
                     raise exception.InvalidInput(msg)
         except Exception as err:
