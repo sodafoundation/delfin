@@ -51,18 +51,30 @@ class VMAXClient(object):
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 
+        if not self.uni_version:
+            msg = "Invalid input. Failed to get vmax unisphere version"
+            raise exception.InvalidInput(msg)
+
         self.array_id = access_info.get('extra_attributes', {}). \
             get('array_id', None)
 
-        # Get array details from unisphere
-        array = self.rest.get_array_detail(version=self.uni_version)
-        if len(array['symmetrixId']) == EMBEDDED_UNISPHERE_ARRAY_COUNT:
-            if not self.array_id:
-                self.array_id = array['symmetrixId'][0]
-            elif self.array_id != array['symmetrixId'][0]:
-                msg = "Invalid array_id. Supported id: {}". \
-                    format(array['symmetrixId'])
+        try:
+            # Get array details from unisphere
+            array = self.rest.get_array_detail(version=self.uni_version)
+            if not array:
+                msg = "Failed to get array details"
                 raise exception.InvalidInput(msg)
+
+            if len(array['symmetrixId']) == EMBEDDED_UNISPHERE_ARRAY_COUNT:
+                if not self.array_id:
+                    self.array_id = array['symmetrixId'][0]
+                elif self.array_id != array['symmetrixId'][0]:
+                    msg = "Invalid array_id. Expected id: {}". \
+                        format(array['symmetrixId'])
+                    raise exception.InvalidInput(msg)
+        except Exception as err:
+            msg = "Failed to get array details from VMAX: {}".format(err)
+            raise exception.StorageBackendException(msg)
 
         if not self.array_id:
             msg = "Input array_id is missing. Supported ids: {}". \
