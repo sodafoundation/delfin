@@ -205,3 +205,35 @@ class DuplicateExtension(DelfinException):
 
 class ImproperIPVersion(DelfinException):
     msg_fmt = _("Provided improper IP version {0}.")
+
+
+class ConnectTimeout(DelfinException):
+    msg_fmt = _("Connect timeout.")
+
+
+class InvalidUsernameOrPassword(DelfinException):
+    msg_fmt = _("Invalid username or password.")
+    code = 400
+
+
+class BadResponse(Invalid):
+    msg_fmt = _('Bad response from server')
+    code = 500
+
+
+class InvalidPrivateKey(DelfinException):
+    msg_fmt = _("not a valid RSA private key.")
+    code = 400
+
+
+class SSHConnectTimeout(DelfinException):
+    msg_fmt = _("SSH connect timeout.")
+
+
+class SSHInvalidUsernameOrPassword(DelfinException):
+    msg_fmt = _("SSH invalid username or password.")
+    code = 400
+
+
+class SSHNotFoundKnownHosts(NotFound):
+    msg_fmt = _("{0} not found in known_hosts.")
