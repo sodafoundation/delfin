@@ -26,6 +26,7 @@ LOG = logging.getLogger(__name__)
 
 class AlertHandler(object):
     """Alert handling functions for Hpe3 parstor driver"""
+    # messageCode
     OID_MESSAGECODE = 'messageCode'
     OID_SEVERITY = 'severity'
     OID_STATE = 'state'
