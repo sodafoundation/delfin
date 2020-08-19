@@ -101,7 +101,6 @@ class ComponentHandler():
             s = {
                 'status': status
             }
-            print(s)
         return s
 
     def list_storage_pools(self, context):

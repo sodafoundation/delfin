@@ -130,7 +130,7 @@ class AlertHandler(object):
                     alert.get('sequence_number')
                 re = self.sshclient.doexec(context, command_str)
                 # remove Success return ''
-                if re is None or re == '':
+                if not re:
                     re = 'Success'
                 else:
                     LOG.error('remove failed:{}'.format(re))
