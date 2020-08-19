@@ -55,6 +55,13 @@ class SSHClient(object):
                          password=self.ssh_password,
                          timeout=self.ssh_conn_timeout)
 
+    """
+    sethostkey is used to set ssh public key,because input kwargs parameter 
+    host_key is string, not a file path,we can not use load file to get pub
+    lic key, parameter line is the public key which kwargs give us,this method
+    have no return,if host key is none or if Set hostkey failed,it will Throw 
+    out abnormal
+    """
     def sethostkey(self, ssh, line):
         if (len(line) == 0) or (line[0] == "#"):
             return
