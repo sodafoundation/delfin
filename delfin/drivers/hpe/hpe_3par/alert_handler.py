@@ -129,6 +129,7 @@ class AlertHandler(object):
                 command_str = AlertHandler.HPE3PAR_COMMAND_REMOVEALERT + \
                     alert.get('sequence_number')
                 re = self.sshclient.doexec(context, command_str)
+                # remove Success return ''
                 if not re:
                     re = 'Success'
                 else:
