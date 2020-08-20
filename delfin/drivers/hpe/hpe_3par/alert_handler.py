@@ -27,42 +27,46 @@ LOG = logging.getLogger(__name__)
 class AlertHandler(object):
     """Alert handling functions for Hpe3 parstor driver"""
     # messageCode
-    OID_MESSAGECODE = 'messageCode'
-    OID_SEVERITY = 'severity'
-    OID_STATE = 'state'
-    OID_ID = 'id'
-    OID_TIMEOCCURRED = 'timeOccurred'
-    OID_DETAILS = 'details'
-    OID_COMPONENT = 'component'
+    OID_MESSAGECODE = '1.3.6.1.4.1.12925.1.7.1.8.1'
+    # severity
+    OID_SEVERITY = '1.3.6.1.4.1.12925.1.7.1.2.1'
+    # state
+    OID_STATE = '1.3.6.1.4.1.12925.1.7.1.9.1'
+    # id
+    OID_ID = '1.3.6.1.4.1.12925.1.7.1.7.1'
+    # timeOccurred
+    OID_TIMEOCCURRED = '1.3.6.1.4.1.12925.1.7.1.3.1'
+    # details
+    OID_DETAILS = '1.3.6.1.4.1.12925.1.7.1.6.1'
+    # component
+    OID_COMPONENT = '1.3.6.1.4.1.12925.1.7.1.5.1'
 
     # Translation of trap severity to alert model severity
-    SEVERITY_MAP = {"critical": constants.Severity.CRITICAL,
-                    "major": constants.Severity.MAJOR,
-                    "minor": constants.Severity.MINOR,
-                    "degraded": constants.Severity.WARNING,
-                    "fatal": constants.Severity.FATAL,
-                    "info": constants.Severity.INFORMATIONAL,
-                    "debug": constants.Severity.NOT_SPECIFIED}
+    SEVERITY_MAP = {"1": constants.Severity.CRITICAL,
+                    "2": constants.Severity.MAJOR,
+                    "3": constants.Severity.MINOR,
+                    "4": constants.Severity.WARNING,
+                    "0": constants.Severity.FATAL,
+                    "5": constants.Severity.INFORMATIONAL,
+                    "6": constants.Severity.NOT_SPECIFIED}
 
     # Translation of trap alert category to alert model category
-    CATEGORY_MAP = {"undefined": constants.Category.NOT_SPECIFIED,
-                    "new": constants.Category.FAULT,
-                    "acknowledged": constants.Category.RECOVERY,
-                    "fixed": constants.Category.RECOVERY,
-                    "removed": constants.Category.RECOVERY,
-                    "autofixed": constants.Category.RECOVERY}
+    CATEGORY_MAP = {"0": constants.Category.NOT_SPECIFIED,
+                    "1": constants.Category.FAULT,
+                    "2": constants.Category.RECOVERY,
+                    "3": constants.Category.RECOVERY,
+                    "4": constants.Category.RECOVERY,
+                    "5": constants.Category.RECOVERY}
 
     # Attributes expected in alert info to proceed with model filling
     _mandatory_alert_attributes = (
-        'component',
-        'details',
-        'nodeID',
-        'severity',
-        'timeOccurred',
-        'id',
-        'messageCode',
-        'state',
-        'serialNumber'
+        OID_MESSAGECODE,
+        OID_SEVERITY,
+        OID_STATE,
+        OID_ID,
+        OID_TIMEOCCURRED,
+        OID_DETAILS,
+        OID_COMPONENT
     )
 
     # ssh command
@@ -92,11 +96,8 @@ class AlertHandler(object):
             alert_model = dict()
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert.get(AlertHandler.OID_MESSAGECODE)
-            messagekey = \
-                (hex(int(alert.get(AlertHandler.OID_MESSAGECODE)))).replace(
-                    '0x', '0x0')
-            alert_model['alert_name'] = consts.HPE3PAR_ALERT_CODE.get(
-                messagekey)
+            alert_model['alert_name'] = self.get_alert_type(alert.get(
+                AlertHandler.OID_MESSAGECODE))
             alert_model['severity'] = self.SEVERITY_MAP.get(
                 alert.get(AlertHandler.OID_SEVERITY),
                 constants.Severity.NOT_SPECIFIED)
@@ -111,7 +112,7 @@ class AlertHandler(object):
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = alert.get(AlertHandler.OID_COMPONENT)
 
-            if alert.get(AlertHandler.OID_STATE) == 'autofixed':
+            if alert.get(AlertHandler.OID_STATE) == '5':
                 alert_model['clear_category'] = constants.ClearType.AUTOMATIC
             return alert_model
         except Exception as e:
@@ -140,8 +141,8 @@ class AlertHandler(object):
                 command_str = AlertHandler.HPE3PAR_COMMAND_REMOVEALERT + \
                               alert.get('sequence_number')
                 re = self.sshclient.doexec(context, command_str)
-                # remove Success return ''
-                if re is None or re == '':
+
+                if not re:
                     re = 'Success'
                 else:
                     LOG.error('remove failed:{}'.format(re))
@@ -212,7 +213,7 @@ class AlertHandler(object):
                         component = strinfo[1]
 
                         alert_model = {
-                            'alert_id': message_code,
+                            'alert_id': str(int(message_code, 16)),
                             'alert_name': event_type,
                             'severity': severity,
                             'category': state,
@@ -255,3 +256,21 @@ class AlertHandler(object):
             LOG.error(e)
 
         return time_stamp
+
+    def get_alert_type(self, message_code):
+        """
+        Get alert type
+
+        :param str message_code: alert's message_code.
+        :return: returns alert's type
+        """
+        re = ''
+        try:
+            if message_code is not None:
+                messagekey = \
+                    (hex(int(message_code))).replace('0x', '0x0')
+                re = consts.HPE3PAR_ALERT_CODE.get(messagekey)
+        except Exception as e:
+            LOG.error(e)
+
+        return re

@@ -25,7 +25,10 @@ class ComponentHandler():
     """Hpe3par's Component handler，Superclass,
     """
     # ssh command
-    HPE3PAR_COMMAND_CHECKHEALTH = 'checkhealth'  # return: System is healthy
+    HPE3PAR_COMMAND_CHECKHEALTH = 'checkhealth vv vlun task snmp ' \
+                                  'port pd node network ld dar cage cabling'
+    COMPONENT_HEALTH = 'The following components are healthy'
+    SYSTEM_HEALTH = 'System is healthy'
     HPE3PAR_VERSION = 'Superclass'
 
     HPE3PAR_VENDOR = 'HPE'
@@ -51,8 +54,9 @@ class ComponentHandler():
                 # status of the storage system
                 # return: System is healthy
                 command_str = ComponentHandler.HPE3PAR_COMMAND_CHECKHEALTH
-                reStr = self.sshclient.doexec(context, command_str)
-                if 'System is healthy' in reStr:
+                re_str = self.sshclient.doexec(context, command_str)
+                if ComponentHandler.COMPONENT_HEALTH in re_str \
+                        or ComponentHandler.SYSTEM_HEALTH in re_str:
                     status = constants.StorageStatus.NORMAL
                 else:
                     status = constants.StorageStatus.ABNORMAL
@@ -101,7 +105,6 @@ class ComponentHandler():
             s = {
                 'status': status
             }
-            print(s)
         return s
 
     def list_storage_pools(self, context):
@@ -198,7 +201,7 @@ class ComponentHandler():
                             orig_pool_id = volume.get('snapCPG')
                         elif volume.get('snapCPG') != orig_pool_id:
                             orig_pool_id = orig_pool_id + '/' + \
-                                volume.get('snapCPG')
+                                           volume.get('snapCPG')
 
                     compressed = True
                     deduplicated = True
@@ -209,13 +212,13 @@ class ComponentHandler():
 
                     # Virtual size of volume in MiB (10242bytes).
                     usr_used = int(volume['userSpace']['reservedMiB']) * \
-                        consts.MiB_TO_Bytes
+                               consts.MiB_TO_Bytes
                     admin_used = int(volume['adminSpace']['reservedMiB']) * \
-                        consts.MiB_TO_Bytes
+                                 consts.MiB_TO_Bytes
                     snap_used = int(volume['snapshotSpace']['reservedMiB']) \
-                        * consts.MiB_TO_Bytes
+                                * consts.MiB_TO_Bytes
                     total_cap = int(volume['sizeMiB']) * \
-                        consts.MiB_TO_Bytes
+                                consts.MiB_TO_Bytes
                     used_cap = usr_used + admin_used + snap_used
                     free_cap = total_cap - used_cap
 
