@@ -37,7 +37,7 @@ class SSHClient(object):
         self.ssh_port = ssh_access.get('port')
         self.ssh_username = ssh_access.get('username')
         self.ssh_password = ssh_access.get('password')
-        self.ssh_private_key = ssh_access.get('host_key')
+        self.ssh_public_key = ssh_access.get('host_key')
         self.ssh_conn_timeout = ssh_access.get('conn_timeout')
         if self.ssh_conn_timeout is None:
             self.ssh_conn_timeout = SSHClient.SOCKET_TIMEOUT
@@ -45,21 +45,27 @@ class SSHClient(object):
     def connect(self):
         self.ssh = paramiko.SSHClient()
 
-        if self.ssh_private_key is None:
+        if self.ssh_public_key is None:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         else:
-            self.sethostkey(self.ssh, self.ssh_private_key)
+            self.sethostkey(self.ssh_public_key)
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
                          password=self.ssh_password,
                          timeout=self.ssh_conn_timeout)
 
-    def sethostkey(self, ssh, line):
-        if (len(line) == 0) or (line[0] == "#"):
+    def sethostkey(self, host_key):
+        """
+        Set ssh_public_key,because input kwargs parameter host_key is string,
+        not a file path,we can not use load file to get public key,so we set
+        it as a string.
+        :param str host_key: the ssh_public_key which as a string
+        """
+        if (len(host_key) == 0) or (host_key[0] == "#"):
             return
         try:
-            e = HostKeyEntry.from_line(line)
+            e = HostKeyEntry.from_line(host_key)
         except exception.SSHException:
             return
         if e is not None:
