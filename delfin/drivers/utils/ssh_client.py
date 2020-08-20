@@ -57,7 +57,7 @@ class SSHClient(object):
 
     def sethostkey(self, host_key):
         """
-        set ssh_public_key,because input kwargs parameter host_key is string,
+        Set ssh_public_key,because input kwargs parameter host_key is string,
         not a file path,we can not use load file to get public key,so we set
         it as a string.
         :parameter str host_key: the ssh_public_key which as a string
