@@ -141,6 +141,9 @@ class VMAXClient(object):
     def list_volumes(self, storage_id):
 
         try:
+            # Get default SRPs assigned for the array
+            default_srps = self.rest.get_default_srps(
+                self.array_id, version=self.uni_version)
             # List all volumes except data volumes
             volumes = self.rest.get_volume_list(
                 self.array_id, version=self.uni_version,
@@ -161,6 +164,7 @@ class VMAXClient(object):
                 vol = self.rest.get_volume(self.array_id,
                                            self.uni_version, volume)
 
+                emulation_type = vol['emulation']
                 total_cap = vol['cap_mb'] * units.Mi
                 used_cap = (total_cap * vol['allocated_percent']) / 100.0
                 free_cap = total_cap - used_cap
@@ -191,8 +195,8 @@ class VMAXClient(object):
                         self.array_id, self.uni_version, sg)
                     v['native_storage_pool_id'] = sg_info['srp']
                     v['compressed'] = sg_info['compression']
-
-                # TODO: Workaround when SG is, not available/not unique
+                else:
+                    v['native_storage_pool_id'] = default_srps[emulation_type]
 
                 volume_list.append(v)
 
