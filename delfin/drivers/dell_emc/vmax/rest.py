@@ -459,13 +459,9 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: dictionary default SRPs
         """
-        default_fba_srp = None
-        default_ckd_srp = None
         symmetrix_info = self.get_system_capacity(array, version)
-        if symmetrix_info and symmetrix_info.get('default_fba_srp'):
-            default_fba_srp = symmetrix_info.get('default_fba_srp')
-        if symmetrix_info and symmetrix_info.get('default_ckd_srp'):
-            default_ckd_srp = symmetrix_info.get('default_ckd_srp')
+        default_fba_srp = symmetrix_info.get('default_fba_srp', None)
+        default_ckd_srp = symmetrix_info.get('default_ckd_srp', None)
         default_srps = {"FBA": default_fba_srp,
                         "CKD": default_ckd_srp}
         return default_srps
