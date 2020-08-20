@@ -209,6 +209,7 @@ class ImproperIPVersion(DelfinException):
 
 class ConnectTimeout(DelfinException):
     msg_fmt = _("Connect timeout.")
+    code = 500
 
 
 class InvalidUsernameOrPassword(DelfinException):
@@ -228,6 +229,7 @@ class InvalidPrivateKey(DelfinException):
 
 class SSHConnectTimeout(DelfinException):
     msg_fmt = _("SSH connect timeout.")
+    code = 500
 
 
 class SSHInvalidUsernameOrPassword(DelfinException):
@@ -237,3 +239,4 @@ class SSHInvalidUsernameOrPassword(DelfinException):
 
 class SSHNotFoundKnownHosts(NotFound):
     msg_fmt = _("{0} not found in known_hosts.")
+    code = 400
