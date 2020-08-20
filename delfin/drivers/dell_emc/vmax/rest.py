@@ -457,7 +457,7 @@ class VMaxRest(object):
         """Get the VMax array default SRPs.
         :param version: the unisphere version
         :param array: the array serial number
-        :returns: dictionary default_srps
+        :returns: dictionary default SRPs
         """
         default_fba_srp = None
         default_ckd_srp = None
