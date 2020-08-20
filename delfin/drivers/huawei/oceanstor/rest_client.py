@@ -18,17 +18,19 @@ import json
 
 import requests
 import six
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
 from oslo_log import log as logging
 
 from delfin import exception
 from delfin.drivers.huawei.oceanstor import consts
-from delfin.drivers.security import RootRestClient, HostNameIgnoreAdapter
+from delfin.drivers.security import HostNameIgnoreAdapter
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
 
 
-class RestClient(RootRestClient):
+class RestClient(object):
     """Common class for Huawei OceanStor storage system."""
 
     def __init__(self, **kwargs):
@@ -48,6 +50,10 @@ class RestClient(RootRestClient):
         self.session = None
         self.url = None
         self.device_id = None
+        urllib3.disable_warnings(InsecureRequestWarning)
+        self.enable_verify = kwargs.get('enable_verify', False)
+        self.ca_path = kwargs.get('ca_path', '')
+        self.assert_hostname = kwargs.get('assert_hostname', False)
 
     def init_http_head(self):
         self.url = None

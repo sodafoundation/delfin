@@ -14,7 +14,7 @@
 
 import os
 import ssl
-
+import json
 import requests
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 from oslo_config import cfg
@@ -25,10 +25,11 @@ from delfin import exception
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
+FILE = 'configs.json'
 
 
-class RootRestClient(object):
-    def __init__(self):
+class SecurityUtils(object):
+    def reload_certificate(self, enable_verify, ca_path):
         """
         Checking the southbound security config validation.
         As required by requests, ca_path must be a directory prepared using
@@ -37,28 +38,24 @@ class RootRestClient(object):
         If there is a CA certificate chain, all CA certificates along this
         chain should be included in a single file.
         """
-        self.enable_verify = CONF.southbound_security.enable_verify
-        self.ca_path = CONF.southbound_security.ca_path
-        self.assert_hostname = CONF.southbound_security.assert_hostname
-
-        if self.enable_verify:
-            if not os.path.exists(self.ca_path):
+        if enable_verify:
+            if not os.path.exists(ca_path):
                 LOG.error("Directory {0} could not be found.".format(
-                    self.ca_path))
-                raise exception.InvalidSouthboundCAPath(self.ca_path)
+                    ca_path))
+                raise exception.InvalidSouthboundCAPath(ca_path)
 
             suffixes = ['.pem', '.cer', '.crt', '.crl']
-            files = os.listdir(self.ca_path)
+            files = os.listdir(ca_path)
             for file in files:
                 if not os.path.isdir(file):
                     suf = os.path.splitext(file)[1]
                     if suf in suffixes:
-                        fpath = self.ca_path + file
+                        fpath = ca_path + file
                         cert_content = open(fpath, "rb").read()
                         cert = load_certificate(FILETYPE_PEM, cert_content)
                         hash_val = cert.subject_name_hash()
                         hash_hex = hex(hash_val).strip('0x') + ".0"
-                        linkfile = self.ca_path + hash_hex
+                        linkfile = ca_path + hash_hex
                         if os.path.exists(linkfile):
                             LOG.debug("Link for {0} already exist.".format(
                                 file))
@@ -66,6 +63,32 @@ class RootRestClient(object):
                             LOG.info("Create link file {0} for {1}.".format(
                                 linkfile, fpath))
                             os.symlink(fpath, linkfile)
+
+    def get_configs(self):
+        return CONF.southbound_security.reload_cert,\
+            CONF.southbound_security.enable_verify,\
+            CONF.southbound_security.ca_path,\
+            CONF.southbound_security.assert_hostname
+
+    def get_configs_from_file(self, filename=FILE):
+        """ For testing security configs from file, create file configs.json
+            with contents as below:
+            ---
+            {
+                "reload_cert": true,
+                "enable_verify": true,
+                "ca_path": "<path to certificates>",
+                "assert_hostname": false
+            }
+            ---
+        """
+        with open(filename, 'r') as f:
+            configs = json.load(f)
+            enable_verify = configs.get('enable_verify', False)
+            ca_path = configs.get('ca_path', '')
+            assert_hostname = configs.get('assert_hostname', False)
+            reload_cert = configs.get('reload_cert', False)
+            return reload_cert, enable_verify, ca_path, assert_hostname
 
 
 class HostNameIgnoreAdapter(requests.adapters.HTTPAdapter):

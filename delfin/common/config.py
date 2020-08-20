@@ -105,6 +105,10 @@ southbound_security_opts = [
                 default=True,
                 help='If enable SSL certificate verification for connecting'
                      ' to southbound devices.'),
+    cfg.BoolOpt('reload_cert',
+                default=False,
+                help='Reload certificate from the ca_path'
+                     ' in case of enable_verify is True.'),
     cfg.StrOpt('ca_path',
                default='/usr/local/share/ca-certificates/',
                help='The path for saving ca certificates.'),

@@ -22,6 +22,7 @@ from oslo_log import log
 from delfin import exception
 from delfin import utils
 from delfin.drivers import helper
+from delfin.drivers.security import SecurityUtils
 
 LOG = log.getLogger(__name__)
 
@@ -53,6 +54,18 @@ class DriverManager(stevedore.ExtensionManager):
         :type cache_on_load: bool
         :param kwargs: Parameters from access_info.
         """
+        security = SecurityUtils()
+        reload_cert, enable_verify, ca_path, assert_hostname = \
+            security.get_configs()
+
+        if reload_cert and enable_verify:
+            security.reload_certificate(enable_verify, ca_path)
+
+        kwargs['reload_cert'] = reload_cert
+        kwargs['enable_verify'] = enable_verify
+        kwargs['ca_path'] = ca_path
+        kwargs['assert_hostname'] = assert_hostname
+
         if not invoke_on_load:
             return self._get_driver_cls(**kwargs)
         else:
@@ -70,20 +83,39 @@ class DriverManager(stevedore.ExtensionManager):
             cls = self._get_driver_cls(**kwargs)
             return cls(**kwargs)
 
-        if kwargs['storage_id'] in self.driver_factory:
-            return self.driver_factory[kwargs['storage_id']]
+        # if kwargs['storage_id'] in self.driver_factory:
+        #     return self.driver_factory[kwargs['storage_id']]
 
         with self._instance_lock:
             if kwargs['storage_id'] in self.driver_factory:
+                if kwargs['reload_cert']:
+                    storage_id = kwargs['storage_id']
+                    access_info = helper.get_access_info(context, storage_id)
+                    access_info['enable_verify'] = kwargs['enable_verify']
+                    access_info['ca_path'] = kwargs['ca_path']
+                    access_info['assert_hostname'] = kwargs['assert_hostname']
+                    cls = self._get_driver_cls(**access_info)
+                    driver = cls(**access_info)
+                    self.driver_factory[storage_id] = driver
+                    return driver
+
                 return self.driver_factory[kwargs['storage_id']]
 
             access_info = copy.deepcopy(kwargs)
             storage_id = access_info.pop('storage_id')
+            access_info.pop('enable_verify')
+            access_info.pop('ca_path')
+            access_info.pop('assert_hostname')
+            access_info.pop('reload_cert')
             if access_info:
                 cls = self._get_driver_cls(**kwargs)
                 driver = cls(**kwargs)
             else:
                 access_info = helper.get_access_info(context, storage_id)
+                if kwargs.get('enable_verify'):
+                    access_info['enable_verify'] = kwargs['enable_verify']
+                    access_info['ca_path'] = kwargs['ca_path']
+                    access_info['assert_hostname'] = kwargs['assert_hostname']
                 cls = self._get_driver_cls(**access_info)
                 driver = cls(**access_info)
 
