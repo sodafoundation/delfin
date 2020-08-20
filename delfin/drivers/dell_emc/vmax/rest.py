@@ -453,6 +453,23 @@ class VMaxRest(object):
                       {'array': array})
         return capacity_details
 
+    def get_default_srps(self, array, version=U4V_VERSION):
+        """Get the VMax array default SRPs.
+        :param version: the unisphere version
+        :param array: the array serial number
+        :returns: dictionary default_srps
+        """
+        default_fba_srp = None
+        default_ckd_srp = None
+        symmetrix_info = self.get_system_capacity(array, version)
+        if symmetrix_info and symmetrix_info.get('default_fba_srp'):
+            default_fba_srp = symmetrix_info.get('default_fba_srp')
+        if symmetrix_info and symmetrix_info.get('default_ckd_srp'):
+            default_ckd_srp = symmetrix_info.get('default_ckd_srp')
+        default_srps = {"FBA": default_fba_srp,
+                        "CKD": default_ckd_srp}
+        return default_srps
+
     def get_volume(self, array, version, device_id):
         """Get a VMax volume from array.
         :param array: the array serial number
