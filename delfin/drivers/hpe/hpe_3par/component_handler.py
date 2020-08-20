@@ -195,7 +195,7 @@ class ComponentHandler():
                     if 'snapCPG' in volume:
                         if orig_pool_id == '':
                             orig_pool_id = volume.get('snapCPG')
-                        else:
+                        elif volume.get('snapCPG') != orig_pool_id:
                             orig_pool_id = orig_pool_id + '/' + \
                                 volume.get('snapCPG')
 

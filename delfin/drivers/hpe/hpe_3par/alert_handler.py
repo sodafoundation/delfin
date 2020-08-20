@@ -18,6 +18,7 @@ from oslo_log import log as logging
 
 from delfin import exception
 from delfin.common import constants
+from delfin.drivers.hpe.hpe_3par import consts
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ class AlertHandler(object):
 
     # ssh command
     # remove alert
-    hpe3par_command_removealert = 'removealert -f '
+    HPE3PAR_COMMAND_REMOVEALERT = 'removealert -f '
     # get all new alerts
     HPE3PAR_COMMAND_SHOWALERT = 'showalert -d'
     # Convert received time to epoch format
@@ -83,7 +84,10 @@ class AlertHandler(object):
             alert_model = dict()
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert.get('messageCode')
-            alert_model['alert_name'] = alert.get('messageCode')
+            messagekey = \
+                (hex(int(alert.get('messageCode')))).replace('0x', '0x0')
+            alert_model['alert_name'] = consts.HPE3PAR_ALERT_CODE.get(
+                messagekey)
             alert_model['severity'] = self.SEVERITY_MAP.get(
                 alert.get('severity'), constants.Severity.NOT_SPECIFIED)
             alert_model['category'] = self.CATEGORY_MAP.get(
@@ -115,21 +119,25 @@ class AlertHandler(object):
         # Currently not implemented
         pass
 
-    def clear_alert(self, context, sshclient, alert):
+    def clear_alert(self, context, alert):
         """Clear alert from storage system.
             Currently not implemented   removes command : removealert
         """
         re = 'Failed'
         try:
-            if alert is not None and sshclient is not None:
-                command_str = AlertHandler.hpe3par_command_removealert
-                sshclient.doexec(context, command_str)
-                # Determine the returned content to
-                # implement the result of the device
-                re = 'Success'
+            if alert is not None:
+                command_str = AlertHandler.HPE3PAR_COMMAND_REMOVEALERT + \
+                    alert.get('sequence_number')
+                re = self.sshclient.doexec(context, command_str)
+                # remove Success return ''
+                if not re:
+                    re = 'Success'
+                else:
+                    LOG.error('remove failed:{}'.format(re))
+                    raise exception.SSHException(re)
         except Exception as e:
             LOG.error(e)
-            raise exception.StorageBackendException(
+            raise exception.SSHException(
                 reason='Failed to ssh Hpe3parStor')
         return re
 
@@ -142,7 +150,7 @@ class AlertHandler(object):
                 reslist = self.sshclient.doexec(context, command_str)
             except Exception as e:
                 LOG.error(e)
-                raise exception.StorageBackendException(
+                raise exception.SSHException(
                     reason='Failed to ssh Hpe3parStor')
             message_code = ''
             event_type = ''
@@ -225,7 +233,7 @@ class AlertHandler(object):
     def get_time_stamp(self, time_str):
         """ Time stamp to time conversion
         """
-        time_stamp = None
+        time_stamp = ''
         try:
             if time_str is not None:
                 # Convert to time array first
