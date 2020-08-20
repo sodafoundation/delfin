@@ -46,10 +46,16 @@ class VMAXClient(object):
         try:
             ver, self.uni_version = self.rest.get_uni_version()
             LOG.info('Connected to Unisphere Version: {0}'.format(ver))
-        except Exception as err:
-            msg = "Failed to connect to VMAX: {}".format(err)
+        except exception.InvalidCredential as e:
+            msg = ('{}Failed to connect to VMAX. Username or Password'
+                   ' is not correct'.format(e))
             LOG.error(msg)
-            raise exception.StorageBackendException(msg)
+            raise exception.InvalidCredential(msg)
+        except Exception as err:
+            msg = ("Failed to connect to VMAX. Host or Port is not correct: "
+                   "{}".format(err))
+            LOG.error(msg)
+            raise exception.HTTPConnectionTimeout(msg)
 
         if not self.uni_version:
             msg = "Invalid input. Failed to get vmax unisphere version"
