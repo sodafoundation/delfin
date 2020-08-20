@@ -201,7 +201,7 @@ class ComponentHandler():
                             orig_pool_id = volume.get('snapCPG')
                         elif volume.get('snapCPG') != orig_pool_id:
                             orig_pool_id = orig_pool_id + '/' + \
-                                           volume.get('snapCPG')
+                                volume.get('snapCPG')
 
                     compressed = True
                     deduplicated = True
@@ -212,13 +212,13 @@ class ComponentHandler():
 
                     # Virtual size of volume in MiB (10242bytes).
                     usr_used = int(volume['userSpace']['reservedMiB']) * \
-                               consts.MiB_TO_Bytes
+                        consts.MiB_TO_Bytes
                     admin_used = int(volume['adminSpace']['reservedMiB']) * \
-                                 consts.MiB_TO_Bytes
+                        consts.MiB_TO_Bytes
                     snap_used = int(volume['snapshotSpace']['reservedMiB']) \
-                                * consts.MiB_TO_Bytes
+                        * consts.MiB_TO_Bytes
                     total_cap = int(volume['sizeMiB']) * \
-                                consts.MiB_TO_Bytes
+                        consts.MiB_TO_Bytes
                     used_cap = usr_used + admin_used + snap_used
                     free_cap = total_cap - used_cap
 
