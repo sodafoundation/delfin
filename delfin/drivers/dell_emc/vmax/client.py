@@ -206,3 +206,13 @@ class VMAXClient(object):
             msg = "Failed to get list volumes from VMAX: {}".format(err)
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
+
+    def list_alerts(self):
+        """Get all alerts from an array."""
+        return self.rest.get_alerts(version=self.uni_version,
+                                    array=self.array_id)
+
+    def clear_alert(self, sequence_number):
+        """Clear alert for given sequence number."""
+        return self.rest.clear_alert(sequence_number, version=self.uni_version,
+                                     array=self.array_id)

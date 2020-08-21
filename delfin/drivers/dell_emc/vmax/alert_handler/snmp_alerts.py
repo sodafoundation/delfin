@@ -18,13 +18,13 @@ from oslo_log import log
 
 from delfin import exception
 from delfin.common import constants
-from delfin.drivers.dell_emc.vmax import alert_mapper
+from delfin.drivers.dell_emc.vmax.alert_handler import alert_mapper
 
 LOG = log.getLogger(__name__)
 
 
 class AlertHandler(object):
-    """Alert handling functions for vmax driver"""
+    """Alert handling functions for vmax snmp traps"""
 
     # Translation of trap severity to alert model severity
     SEVERITY_MAP = {"emergency": constants.Severity.FATAL,

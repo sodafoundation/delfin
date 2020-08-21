@@ -22,7 +22,7 @@ from delfin.common import constants
 
 class AlertHandlerTestCase(unittest.TestCase):
     ALERT_HANDLER_CLASS = 'delfin.drivers.dell_emc.vmax.alert_handler' \
-                          '.AlertHandler'
+                          '.snmp_alerts.AlertHandler'
 
     def _get_alert_handler(self):
         alert_handler_class = importutils.import_class(

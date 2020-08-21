@@ -237,3 +237,11 @@ class SSHInvalidUsernameOrPassword(DelfinException):
 
 class SSHNotFoundKnownHosts(NotFound):
     msg_fmt = _("{0} not found in known_hosts.")
+
+
+class StorageClearAlertFailed(DelfinException):
+    msg_fmt = _("Failed to clear alert. Reason: {0}.")
+
+
+class StorageListAlertFailed(DelfinException):
+    msg_fmt = _("Failed to list alerts. Reason: {0}.")
