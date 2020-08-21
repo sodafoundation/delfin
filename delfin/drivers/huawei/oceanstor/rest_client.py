@@ -24,7 +24,7 @@ from oslo_log import log as logging
 
 from delfin import exception
 from delfin.drivers.huawei.oceanstor import consts
-from delfin.drivers.security import HostNameIgnoreAdapter
+from delfin.ssl_utils import HostNameIgnoreAdapter, reload_certificate
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ class RestClient(object):
         super(RestClient, self).__init__()
         # Lists of addresses to try, for authorization
         self.san_address = [
-            'https://' + self.rest_host + ':' + self.rest_port +
+            'https://' + self.rest_host + ':' + str(self.rest_port) +
             '/deviceManager/rest/']
         self.session = None
         self.url = None
@@ -54,6 +54,28 @@ class RestClient(object):
         self.enable_verify = kwargs.get('enable_verify', False)
         self.ca_path = kwargs.get('ca_path', '')
         self.assert_hostname = kwargs.get('assert_hostname', False)
+        try:
+            self.login()
+        except Exception as ex:
+            msg = "Failed to login to OceanStor: {}".format(ex)
+            LOG.error(msg)
+            raise exception.InvalidCredential(msg)
+
+    def connection_reset(self, **kwargs):
+        enable_verify = kwargs.get('enable_verify', False)
+        ca_path = kwargs.get('ca_path', '')
+        if self.enable_verify != enable_verify or \
+                self.ca_path != ca_path:
+
+            self.enable_verify = enable_verify
+            self.ca_path = ca_path
+            self.assert_hostname = kwargs.get('assert_hostname', False)
+            try:
+                self.login()
+            except Exception as ex:
+                msg = "Failed to login to OceanStor: {}".format(ex)
+                LOG.error(msg)
+                raise exception.InvalidCredential(msg)
 
     def init_http_head(self):
         self.url = None
@@ -95,6 +117,14 @@ class RestClient(object):
 
         try:
             res = func(url, **kwargs)
+        except requests.exceptions.SSLError:
+            msg = _("SSLError exception, retrying after reload certificate.")
+            LOG.error(msg)
+            reload_certificate(self.enable_verify, self.ca_path)
+            try:
+                res = func(url, **kwargs)
+            except Exception as ssl_ex:
+                raise ssl_ex
         except Exception as err:
             LOG.exception('Bad response from server: %(url)s.'
                           ' Error: %(err)s', {'url': url, 'err': err})

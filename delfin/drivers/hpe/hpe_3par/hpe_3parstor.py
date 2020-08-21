@@ -48,6 +48,10 @@ class Hpe3parStorDriver(driver.StorageDriver):
         self.alert_handler = alert_handler.AlertHandler(
             resthanlder=self.resthanlder, sshhanlder=self.sshhanlder)
 
+    def connection_reset(self, context, **kwargs):
+        # TODO: implement connection_reset
+        pass
+
     def get_storage(self, context):
         # get storage info
         return self.comhandler.get_storage(context)

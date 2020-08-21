@@ -258,5 +258,5 @@ class HTTPConnectionTimeout(DelfinException):
     msg_fmt = _("HTTP connection timeout: {0}.")
 
 
-class InvalidSouthboundCAPath(DelfinException):
+class InvalidCAPath(DelfinException):
     msg_fmt = _("Invalid southbound CA path: {0}.")

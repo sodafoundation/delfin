@@ -28,8 +28,10 @@ class OceanStorDriver(driver.StorageDriver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.client = rest_client.RestClient(**kwargs)
-        self.client.login()
         self.sector_size = consts.SECTORS_SIZE
+
+    def connection_reset(self, context, **kwargs):
+        self.client.connection_reset(**kwargs)
 
     def get_storage(self, context):
 

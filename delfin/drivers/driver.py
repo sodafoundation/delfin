@@ -29,6 +29,11 @@ class StorageDriver(object):
         self.storage_id = kwargs.get('storage_id', None)
 
     @abc.abstractmethod
+    def connection_reset(self, context, **kwargs):
+        """ Reset connection with backend with new args """
+        pass
+
+    @abc.abstractmethod
     def get_storage(self, context):
         """Get storage device information from storage system"""
         pass

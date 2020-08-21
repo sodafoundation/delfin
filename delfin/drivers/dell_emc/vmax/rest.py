@@ -25,6 +25,7 @@ import requests.exceptions as r_exc
 import six
 
 from delfin import exception
+from delfin.ssl_utils import reload_certificate
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
@@ -71,12 +72,12 @@ class VMaxRest(object):
         self.passwd = array_info['password']
         self.verify = verify
         self.ca_path = ca_path
-        ip_port = "%(ip)s:%(port)s" % {'ip': ip, 'port': port}
+        ip_port = "%(ip)s:%(port)s" % {'ip': ip, 'port': str(port)}
         self.base_uri = ("https://%(ip_port)s/univmax/restapi" % {
             'ip_port': ip_port})
-        self.session = self._establish_rest_session()
+        self.session = self.establish_rest_session()
 
-    def _establish_rest_session(self):
+    def establish_rest_session(self):
         """Establish the rest session.
         :returns: requests.session() -- session, the rest session
         """
@@ -114,7 +115,7 @@ class VMaxRest(object):
 
         url, message, status_code, response = None, None, None, None
         if not self.session:
-            self.session = self._establish_rest_session()
+            self.session = self.establish_rest_session()
 
         try:
             url = ("%(self.base_uri)s%(target_uri)s" % {
