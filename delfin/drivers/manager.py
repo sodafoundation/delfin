@@ -57,6 +57,8 @@ class DriverManager(stevedore.ExtensionManager):
         security = SecurityUtils()
         reload_cert, enable_verify, ca_path, assert_hostname = \
             security.get_configs()
+            #security.get_configs_from_file()   # uncomment and comment above
+                                                # line For dynamic SSL Configs
 
         if reload_cert and enable_verify:
             security.reload_certificate(enable_verify, ca_path)
@@ -83,12 +85,9 @@ class DriverManager(stevedore.ExtensionManager):
             cls = self._get_driver_cls(**kwargs)
             return cls(**kwargs)
 
-        # if kwargs['storage_id'] in self.driver_factory:
-        #     return self.driver_factory[kwargs['storage_id']]
-
         with self._instance_lock:
             if kwargs['storage_id'] in self.driver_factory:
-                if kwargs['reload_cert']:
+                if kwargs['enable_verify']:
                     storage_id = kwargs['storage_id']
                     access_info = helper.get_access_info(context, storage_id)
                     access_info['enable_verify'] = kwargs['enable_verify']

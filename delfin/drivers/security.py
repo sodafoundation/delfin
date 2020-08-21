@@ -51,18 +51,20 @@ class SecurityUtils(object):
                     suf = os.path.splitext(file)[1]
                     if suf in suffixes:
                         fpath = ca_path + file
-                        cert_content = open(fpath, "rb").read()
-                        cert = load_certificate(FILETYPE_PEM, cert_content)
-                        hash_val = cert.subject_name_hash()
-                        hash_hex = hex(hash_val).strip('0x') + ".0"
-                        linkfile = ca_path + hash_hex
-                        if os.path.exists(linkfile):
-                            LOG.debug("Link for {0} already exist.".format(
-                                file))
-                        else:
-                            LOG.info("Create link file {0} for {1}.".format(
-                                linkfile, fpath))
-                            os.symlink(fpath, linkfile)
+                        with open(fpath, "rb") as f:
+                            cert_content = f.read()
+                            cert = load_certificate(FILETYPE_PEM,
+                                                    cert_content)
+                            hash_val = cert.subject_name_hash()
+                            hash_hex = hex(hash_val).strip('0x') + ".0"
+                            linkfile = ca_path + hash_hex
+                            if os.path.exists(linkfile):
+                                LOG.debug("Link for {0} already exist.".
+                                          format(file))
+                            else:
+                                LOG.info("Create link file {0} for {1}.".
+                                         format(linkfile, fpath))
+                                os.symlink(fpath, linkfile)
 
     def get_configs(self):
         return CONF.southbound_security.reload_cert,\

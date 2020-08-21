@@ -38,7 +38,9 @@ class VMAXClient(object):
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
         self.rest = rest.VMaxRest()
-        self.rest.set_rest_credentials(rest_access, False)
+        verify = kwargs.get('enable_verify', False)
+        ca_path = kwargs.get('ca_path', '')
+        self.rest.set_rest_credentials(rest_access, verify, ca_path)
 
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
