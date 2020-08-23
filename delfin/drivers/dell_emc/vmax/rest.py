@@ -379,7 +379,7 @@ class VMaxRest(object):
             status_code, version_dict = self.request(pre_91_endpoint, GET)
 
         if status_code == STATUS_401:
-            raise exception.InvalidCredential
+            raise exception.InvalidCredential()
 
         if not version_dict:
             LOG.error("Unisphere version info not found.")
@@ -406,9 +406,9 @@ class VMaxRest(object):
         :returns: the VMax model
         """
         system_info = self.get_array_detail(version, array)
-        vmax_version = system_info.get('model', None)
-        vmax_ucode = system_info.get('ucode', None)
-        vmax_display_name = system_info.get('display_name', None)
+        vmax_version = system_info.get('model')
+        vmax_ucode = system_info.get('ucode')
+        vmax_display_name = system_info.get('display_name')
         array_details = {"model": vmax_version,
                          "ucode": vmax_ucode,
                          "display_name": vmax_display_name}

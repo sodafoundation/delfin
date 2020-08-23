@@ -47,8 +47,7 @@ class VMAXClient(object):
             ver, self.uni_version = self.rest.get_uni_version()
             LOG.info('Connected to Unisphere Version: {0}'.format(ver))
         except exception.InvalidCredential as e:
-            msg = ('{}Failed to connect to VMAX. Username or Password'
-                   ' is not correct'.format(e))
+            msg = "Failed to connect VMAX. Reason: {}".format(e.msg)
             LOG.error(msg)
             raise exception.InvalidCredential(msg)
         except Exception as err:

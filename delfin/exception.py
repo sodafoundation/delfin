@@ -240,4 +240,4 @@ class SSHNotFoundKnownHosts(NotFound):
 
 
 class HTTPConnectionTimeout(DelfinException):
-    msg_fmt = _("HTTP connection timeout.{0}")
+    msg_fmt = _("HTTP connection timeout: {0}.")
