@@ -205,6 +205,7 @@ class TestVMAXStorageDriver(TestCase):
         self.assertIn('Failed to get pool metrics from VMAX',
                       str(exc.exception))
 
+    @mock.patch.object(VMaxRest, 'get_system_capacity')
     @mock.patch.object(VMaxRest, 'get_storage_group')
     @mock.patch.object(VMaxRest, 'get_volume')
     @mock.patch.object(VMaxRest, 'get_volume_list')
@@ -213,7 +214,7 @@ class TestVMAXStorageDriver(TestCase):
     @mock.patch.object(VMaxRest, 'set_rest_credentials')
     def test_list_volumes(self,
                           mock_rest, mock_version, mock_array,
-                          mock_vols, mock_vol, mock_sg):
+                          mock_vols, mock_vol, mock_sg, mock_capacity):
         expected = [{
             'name': 'volume_1',
             'storage_id': '12345',
@@ -236,19 +237,47 @@ class TestVMAXStorageDriver(TestCase):
             'type': 'TDEV',
             'wwn': 'wwn123',
             'num_of_storage_groups': 1,
-            'storageGroupId': ['SG_001']
+            'storageGroupId': ['SG_001'],
+            'emulation': 'FBA'
+        }
+        volumes1 = {
+            'volumeId': '00002',
+            'cap_mb': 100,
+            'allocated_percent': 10,
+            'status': 'Ready',
+            'type': 'TDEV',
+            'wwn': 'wwn1234',
+            'num_of_storage_groups': 0,
+            'storageGroupId': [],
+            'emulation': 'FBA'
+        }
+        volumes2 = {
+            'volumeId': '00003',
+            'cap_mb': 100,
+            'allocated_percent': 10,
+            'status': 'Ready',
+            'type': 'TDEV',
+            'wwn': 'wwn1234',
+            'num_of_storage_groups': 0,
+            'storageGroupId': [],
+            'emulation': 'CKD'
         }
         storage_group_info = {
             'srp': 'SRP_1',
             'compression': True
         }
+        default_srps = {
+            'default_fba_srp': 'SRP_1',
+            'default_ckd_srp': 'SRP_2'
+        }
         kwargs = VMAX_STORAGE_CONF
         mock_rest.return_value = None
         mock_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
-        mock_vols.side_effect = [['volume_1']]
-        mock_vol.side_effect = [volumes]
+        mock_vols.side_effect = [['volume_1', 'volume_2', 'volume_3']]
+        mock_vol.side_effect = [volumes, volumes1, volumes2]
         mock_sg.side_effect = [storage_group_info]
+        mock_capacity.return_value = default_srps
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
