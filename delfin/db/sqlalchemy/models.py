@@ -23,7 +23,7 @@ SQLAlchemy models for Delfin  data.
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_db.sqlalchemy.types import JsonEncodedDict
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, BigInteger, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 from delfin.common import constants
@@ -57,7 +57,7 @@ class AccessInfo(BASE, DelfinBase):
     extra_attributes = Column(JsonEncodedDict)
 
 
-class Storage(BASE, DelfinBase, models.SoftDeleteMixin):
+class Storage(BASE, DelfinBase):
     """Represents a storage object."""
 
     __tablename__ = 'storages'
@@ -70,12 +70,14 @@ class Storage(BASE, DelfinBase, models.SoftDeleteMixin):
     serial_number = Column(String(255))
     firmware_version = Column(String(255))
     location = Column(String(255))
-    total_capacity = Column(Integer)
-    used_capacity = Column(Integer)
-    free_capacity = Column(Integer)
-    raw_capacity = Column(Integer)
-    subscribed_capacity = Column(Integer)
+    total_capacity = Column(BigInteger)
+    used_capacity = Column(BigInteger)
+    free_capacity = Column(BigInteger)
+    raw_capacity = Column(BigInteger)
+    subscribed_capacity = Column(BigInteger)
     sync_status = Column(Integer, default=constants.SyncStatus.SYNCED)
+    deleted_at = Column(DateTime)
+    deleted = Column(Boolean, default=False)
 
 
 class Volume(BASE, DelfinBase):
@@ -90,9 +92,9 @@ class Volume(BASE, DelfinBase):
     native_volume_id = Column(String(255))
     wwn = Column(String(255))
     type = Column(String(255))
-    total_capacity = Column(Integer)
-    used_capacity = Column(Integer)
-    free_capacity = Column(Integer)
+    total_capacity = Column(BigInteger)
+    used_capacity = Column(BigInteger)
+    free_capacity = Column(BigInteger)
     compressed = Column(Boolean)
     deduplicated = Column(Boolean)
 
@@ -107,10 +109,10 @@ class StoragePool(BASE, DelfinBase):
     description = Column(String(255))
     status = Column(String(255))
     storage_type = Column(String(255))
-    total_capacity = Column(Integer)
-    used_capacity = Column(Integer)
-    free_capacity = Column(Integer)
-    subscribed_capacity = Column(Integer)
+    total_capacity = Column(BigInteger)
+    used_capacity = Column(BigInteger)
+    free_capacity = Column(BigInteger)
+    subscribed_capacity = Column(BigInteger)
 
 
 class Disk(BASE, DelfinBase):
@@ -124,7 +126,7 @@ class Disk(BASE, DelfinBase):
     serial_number = Column(String(255))
     model = Column(String(255))
     media_type = Column(String(255))
-    capacity = Column(Integer)
+    capacity = Column(BigInteger)
 
 
 class AlertSource(BASE, DelfinBase):

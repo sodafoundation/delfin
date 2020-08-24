@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 from unittest import mock
 
 from oslo_utils import importutils
@@ -20,23 +19,28 @@ from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
 
 from delfin import exception
+from delfin import test
 from delfin.tests.unit.alert_manager import fakes
 
 
-class TrapReceiverTestCase(unittest.TestCase):
+class TrapReceiverTestCase(test.TestCase):
     TRAP_RECEIVER_CLASS = 'delfin.alert_manager.trap_receiver' \
                           '.TrapReceiver'
     DEF_TRAP_RECV_ADDR = '127.0.0.1'
     DEF_TRAP_RECV_PORT = '162'
-    SNMP_MIB_PATH = '/var/lib/delfin'
 
-    def _get_trap_receiver(self):
+    def setUp(self):
+        super(TrapReceiverTestCase, self).setUp()
+        self.alert_rpc_api = mock.Mock()
         trap_receiver_class = importutils.import_class(
             self.TRAP_RECEIVER_CLASS)
-        trap_receiver = trap_receiver_class(self.DEF_TRAP_RECV_ADDR,
-                                            self.DEF_TRAP_RECV_PORT,
-                                            self.SNMP_MIB_PATH)
-        return trap_receiver
+        self.trap_receiver = trap_receiver_class(self.DEF_TRAP_RECV_ADDR,
+                                                 self.DEF_TRAP_RECV_PORT)
+        self.mock_object(self.trap_receiver,
+                         'alert_rpc_api', self.alert_rpc_api)
+
+    def _get_trap_receiver(self):
+        return self.trap_receiver
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.jobStarted')
@@ -50,28 +54,10 @@ class TrapReceiverTestCase(unittest.TestCase):
         trap_receiver_inst = self._get_trap_receiver()
         trap_receiver_inst.trap_receiver_address = self.DEF_TRAP_RECV_ADDR
         trap_receiver_inst.trap_receiver_port = self.DEF_TRAP_RECV_PORT
-        trap_receiver_inst.snmp_mib_path = self.SNMP_MIB_PATH
         trap_receiver_inst.start()
 
         # Verify that snmp engine is initialised and transport config is set
         self.assertTrue(trap_receiver_inst.snmp_engine is not None)
-
-    @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
-                '.jobStarted')
-    @mock.patch('delfin.db.api.alert_source_get_all')
-    @mock.patch('pysnmp.carrier.asyncore.dgram.udp.UdpTransport'
-                '.openServerMode', mock.Mock())
-    @mock.patch('pysnmp.smi.builder.MibBuilder.getMibSources', mock.Mock())
-    def test_start_mib_lod_failure(self, mock_alert_source, mock_dispatcher):
-        mock_alert_source.return_value = {}
-        trap_receiver_inst = self._get_trap_receiver()
-        trap_receiver_inst.trap_receiver_address = self.DEF_TRAP_RECV_ADDR
-        trap_receiver_inst.trap_receiver_port = self.DEF_TRAP_RECV_PORT
-        trap_receiver_inst.snmp_mib_path = self.SNMP_MIB_PATH
-
-        self.assertRaisesRegex(ValueError,
-                               "Failed to setup for trap listener.",
-                               trap_receiver_inst.start)
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.jobStarted')
@@ -123,7 +109,6 @@ class TrapReceiverTestCase(unittest.TestCase):
         trap_receiver_inst = self._get_trap_receiver()
         trap_receiver_inst.trap_receiver_address = self.DEF_TRAP_RECV_ADDR
         trap_receiver_inst.trap_receiver_port = self.DEF_TRAP_RECV_PORT
-        trap_receiver_inst.snmp_mib_path = self.SNMP_MIB_PATH
         trap_receiver_inst.start()
         trap_receiver_inst.stop()
 
@@ -140,8 +125,11 @@ class TrapReceiverTestCase(unittest.TestCase):
         # initialised
         self.assertFalse(mock_close_dispatcher.called)
 
+    @mock.patch('delfin.cryptor.decode', mock.Mock(return_value='public'))
+    @mock.patch('delfin.alert_manager.snmp_validator.SNMPValidator.validate')
     @mock.patch('pysnmp.entity.config.addV1System')
-    def test_sync_snmp_config_add_v2_version(self, mock_add_config):
+    def test_sync_snmp_config_add_v2_version(self, mock_add_config,
+                                             mock_validator):
         ctxt = {}
         alert_config = {'storage_id': 'abcd-1234-5678',
                         'version': 'snmpv2c',
@@ -159,6 +147,7 @@ class TrapReceiverTestCase(unittest.TestCase):
                                                     'community_string'],
                                                 contextName=alert_config[
                                                     'community_string'])
+        mock_validator.assert_called_once_with(ctxt, alert_config)
 
     @mock.patch('pysnmp.entity.config.delV1System')
     def test_sync_snmp_config_del_v2_version(self, mock_del_config):
@@ -239,7 +228,6 @@ class TrapReceiverTestCase(unittest.TestCase):
     @mock.patch('pysnmp.entity.config.addV3User')
     @mock.patch('delfin.db.api.alert_source_get_all')
     def test_load_snmp_config(self, mock_alert_source_list, mock_add_config):
-        # alert_source_config = fakes.fake_v3_alert_source()
         mock_alert_source_list.return_value = fakes.fake_v3_alert_source_list()
         trap_receiver_inst = self._get_trap_receiver()
         trap_receiver_inst.snmp_engine = engine.SnmpEngine()
@@ -256,9 +244,9 @@ class TrapReceiverTestCase(unittest.TestCase):
                                  'engine_id': '800000d30300000e112245',
                                  'username': 'test1',
                                  'auth_key': 'YWJjZDEyMzQ1Njc=',
-                                 'auth_protocol': 'md5',
+                                 'auth_protocol': 'HMACMD5',
                                  'privacy_key': 'YWJjZDEyMzQ1Njc=',
-                                 'privacy_protocol': 'des'
+                                 'privacy_protocol': 'DES'
                                  }
         mock_alert_source_list.return_value = fakes. \
             fake_v3_alert_source_list_with_one()

@@ -49,9 +49,9 @@ def fake_v3_alert_source():
             'engine_id': '800000d30300000e112245',
             'username': 'test1',
             'auth_key': 'YWJjZDEyMzQ1Njc=',
-            'auth_protocol': 'md5',
+            'auth_protocol': 'HMACMD5',
             'privacy_key': 'YWJjZDEyMzQ1Njc=',
-            'privacy_protocol': 'des'
+            'privacy_protocol': 'DES'
             }
 
 
@@ -62,9 +62,9 @@ def fake_v3_alert_source_list_with_one():
          'engine_id': '800000d30300000e112245',
          'username': 'test1',
          'auth_key': 'YWJjZDEyMzQ1Njc=',
-         'auth_protocol': 'md5',
+         'auth_protocol': 'HMACMD5',
          'privacy_key': 'YWJjZDEyMzQ1Njc=',
-         'privacy_protocol': 'des'
+         'privacy_protocol': 'DES'
          }
     ]
 
@@ -80,18 +80,18 @@ def fake_v3_alert_source_list():
          'engine_id': '800000d30300000e112245',
          'username': 'test1',
          'auth_key': 'YWJjZDEyMzQ1Njc=',
-         'auth_protocol': 'md5',
+         'auth_protocol': 'HMACMD5',
          'privacy_key': 'YWJjZDEyMzQ1Njc=',
-         'privacy_protocol': 'des'
+         'privacy_protocol': 'DES'
          },
         {'storage_id': 'abcd-1234-5677',
          'version': 'snmpv3',
          'engine_id': '800000d30300000e112246',
          'username': 'test2',
          'auth_key': 'YWJjZDEyMzQ1Njc=',
-         'auth_protocol': 'md5',
+         'auth_protocol': 'HMACMD5',
          'privacy_key': 'YWJjZDEyMzQ1Njc=',
-         'privacy_protocol': 'des'
+         'privacy_protocol': 'DES'
          }
     ]
 

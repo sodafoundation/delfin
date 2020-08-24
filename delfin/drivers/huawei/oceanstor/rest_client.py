@@ -252,3 +252,11 @@ class RestClient(object):
                   % result['error']['description']
             raise exception.InvalidResults(msg)
         return result
+
+    def list_alerts(self):
+        url = "/alarm/currentalarm"
+        result_list = self.paginated_call(url,
+                                          None,
+                                          "GET",
+                                          log_filter_flag=True)
+        return result_list

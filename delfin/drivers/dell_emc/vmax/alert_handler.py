@@ -19,6 +19,7 @@ from oslo_log import log
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers.dell_emc.vmax import alert_mapper
+from delfin.drivers.dell_emc.vmax import oid_mapper
 
 LOG = log.getLogger(__name__)
 
@@ -26,16 +27,21 @@ LOG = log.getLogger(__name__)
 class AlertHandler(object):
     """Alert handling functions for vmax driver"""
 
+    def __init__(self):
+        self.oid_mapper = oid_mapper.OidMapper()
+
     # Translation of trap severity to alert model severity
-    SEVERITY_MAP = {"emergency": constants.Severity.FATAL,
-                    "alert": constants.Severity.CRITICAL,
-                    "critical": constants.Severity.CRITICAL,
-                    "error": constants.Severity.MAJOR,
-                    "warning": constants.Severity.WARNING,
-                    "notify": constants.Severity.WARNING,
-                    "info": constants.Severity.INFORMATIONAL,
-                    "debug": constants.Severity.INFORMATIONAL,
-                    "mark": constants.Severity.INFORMATIONAL}
+    # Values are: unknown=1, emergency=2, alert=3, critical=4, error=5,
+    #             warning=6, alert=3, notify=7, info=8, debug=9, mark=10
+    SEVERITY_MAP = {"2": constants.Severity.FATAL,
+                    "3": constants.Severity.CRITICAL,
+                    "4": constants.Severity.CRITICAL,
+                    "5": constants.Severity.MAJOR,
+                    "6": constants.Severity.WARNING,
+                    "7": constants.Severity.WARNING,
+                    "8": constants.Severity.INFORMATIONAL,
+                    "9": constants.Severity.INFORMATIONAL,
+                    "10": constants.Severity.INFORMATIONAL}
 
     # Attributes mandatory in alert info to proceed with model filling
     _mandatory_alert_attributes = ('emcAsyncEventCode',
@@ -46,12 +52,10 @@ class AlertHandler(object):
                                    'emcAsyncEventComponentName',
                                    'emcAsyncEventSource')
 
-    def __init__(self):
-        pass
-
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
 
+        alert = self.oid_mapper.map_oids(alert)
         # Check for mandatory alert attributes
         for attr in self._mandatory_alert_attributes:
             if not alert.get(attr):
