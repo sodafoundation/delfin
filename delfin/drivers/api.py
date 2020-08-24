@@ -102,3 +102,8 @@ class API(object):
         """Clear alert from storage system."""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.clear_alert(context, sequence_number)
+
+    def list_alerts(self, context, storage_id):
+        """List alert from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_alerts(context)

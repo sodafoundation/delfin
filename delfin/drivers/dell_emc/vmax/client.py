@@ -42,7 +42,6 @@ class VMAXClient(object):
 
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
-
         try:
             ver, self.uni_version = self.rest.get_uni_version()
             LOG.info('Connected to Unisphere Version: {0}'.format(ver))
