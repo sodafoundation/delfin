@@ -48,7 +48,7 @@ class VMAXClient(object):
         except exception.InvalidCredential as e:
             msg = "Failed to connect VMAX. Reason: {}".format(e.msg)
             LOG.error(msg)
-            raise exception.InvalidCredential()
+            raise e
         except Exception as err:
             msg = ("Failed to connect to VMAX. Host or Port is not correct: "
                    "{}".format(err))
