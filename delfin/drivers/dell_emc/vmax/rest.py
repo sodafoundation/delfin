@@ -40,6 +40,7 @@ STATUS_200 = 200
 STATUS_201 = 201
 STATUS_202 = 202
 STATUS_204 = 204
+STATUS_401 = 401
 
 
 class VMaxRest(object):
@@ -377,6 +378,9 @@ class VMaxRest(object):
         if status_code is not STATUS_200:
             status_code, version_dict = self.request(pre_91_endpoint, GET)
 
+        if status_code == STATUS_401:
+            raise exception.InvalidCredential()
+
         if not version_dict:
             LOG.error("Unisphere version info not found.")
         return version_dict
@@ -401,16 +405,10 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
-        vmax_version = None
-        vmax_ucode = None
-        vmax_display_name = None
         system_info = self.get_array_detail(version, array)
-        if system_info and system_info.get('model'):
-            vmax_version = system_info.get('model')
-        if system_info and system_info.get('ucode'):
-            vmax_ucode = system_info.get('ucode')
-        if system_info and system_info.get('display_name'):
-            vmax_display_name = system_info.get('display_name')
+        vmax_version = system_info.get('model')
+        vmax_ucode = system_info.get('ucode')
+        vmax_display_name = system_info.get('display_name')
         array_details = {"model": vmax_version,
                          "ucode": vmax_ucode,
                          "display_name": vmax_display_name}
@@ -422,15 +420,12 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
-        array_model = None
         is_next_gen = False
         system_info = self.get_array_detail(version, array)
-        if system_info and system_info.get('model'):
-            array_model = system_info.get('model')
-        if system_info:
-            ucode_version = system_info['ucode'].split('.')[0]
-            if ucode_version >= UCODE_5978:
-                is_next_gen = True
+        array_model = system_info.get('model', None)
+        ucode_version = system_info['ucode'].split('.')[0]
+        if ucode_version >= UCODE_5978:
+            is_next_gen = True
         return array_model, is_next_gen
 
     def get_storage_group(self, array, version, storage_group_name):
