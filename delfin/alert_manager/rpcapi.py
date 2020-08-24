@@ -45,3 +45,9 @@ class AlertAPI(object):
                                  'sync_snmp_config',
                                  snmp_config_to_del=snmp_config_to_del,
                                  snmp_config_to_add=snmp_config_to_add)
+
+    def check_snmp_config(self, ctxt, snmp_config):
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(ctxt,
+                                 'check_snmp_config',
+                                 snmp_config=snmp_config)

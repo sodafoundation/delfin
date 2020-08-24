@@ -28,7 +28,7 @@ from oslo_db import options as db_options
 from oslo_db.sqlalchemy import session
 from oslo_db.sqlalchemy import utils as db_utils
 from oslo_log import log
-from oslo_utils import uuidutils
+from oslo_utils import uuidutils, timeutils
 from sqlalchemy import create_engine
 
 from delfin import exception
@@ -312,7 +312,8 @@ def _process_storage_info_filters(query, filters):
 
 def storage_delete(context, storage_id):
     """Delete a storage device."""
-    _storage_get_query(context).filter_by(id=storage_id).soft_delete()
+    delete_info = {'deleted': True, 'deleted_at': timeutils.utcnow()}
+    _storage_get_query(context).filter_by(id=storage_id).update(delete_info)
 
 
 def _volume_get_query(context, session=None):
