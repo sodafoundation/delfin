@@ -25,6 +25,7 @@ import requests.exceptions as r_exc
 import six
 
 from delfin import exception
+from delfin.common import constants
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
@@ -89,12 +90,14 @@ class VMaxRest(object):
 
         return session
 
-    def request(self, target_uri, method, params=None, request_object=None):
+    def request(self, target_uri, method, params=None, request_object=None,
+                timeout=None):
         """Sends a request (GET, POST, PUT, DELETE) to the target api.
         :param target_uri: target uri (string)
         :param method: The method (GET, POST, PUT, or DELETE)
         :param params: Additional URL parameters
         :param request_object: request payload (dict)
+        :param timeout: expiration timeout(in sec)
         :returns: server response object (dict)
         :raises: StorageBackendException, Timeout, ConnectionError,
                  HTTPError, SSLError
@@ -113,13 +116,13 @@ class VMaxRest(object):
                 response = self.session.request(
                     method=method, url=url,
                     data=json.dumps(request_object, sort_keys=True,
-                                    indent=4))
+                                    indent=4), timeout=timeout)
             elif params:
                 response = self.session.request(
-                    method=method, url=url, params=params)
+                    method=method, url=url, params=params, timeout=timeout)
             else:
                 response = self.session.request(
-                    method=method, url=url)
+                    method=method, url=url, timeout=timeout)
 
             status_code = response.status_code
 
@@ -386,9 +389,11 @@ class VMaxRest(object):
         post_90_endpoint = '/version'
         pre_91_endpoint = '/system/version'
 
-        status_code, version_dict = self.request(post_90_endpoint, GET)
+        status_code, version_dict = self.request(
+            post_90_endpoint, GET, timeout=constants.VMAX_EXPIRATION_TIME)
         if status_code is not STATUS_200:
-            status_code, version_dict = self.request(pre_91_endpoint, GET)
+            status_code, version_dict = self.request(
+                pre_91_endpoint, GET, timeout=constants.VMAX_EXPIRATION_TIME)
 
         if status_code == STATUS_401:
             raise exception.InvalidCredential()
