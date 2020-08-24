@@ -208,7 +208,8 @@ class TrapReceiver(manager.Manager):
             # the storage which is sending traps.
             # context_name contains the incoming community string value
             if exec_context['securityModel'] != constants.SNMP_V3_INT \
-                    and alert_source['community_string'] != str(context_name):
+                    and cryptor.decode(alert_source['community_string']) \
+                    != str(context_name):
                 msg = (_("Community string not matching with alert source %s, "
                          "dropping it.") % source_ip)
                 raise exception.InvalidResults(msg)

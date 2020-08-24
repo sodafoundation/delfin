@@ -169,8 +169,8 @@ class SNMPValidator(object):
                 'severity': constants.Severity.MAJOR,
                 'type': constants.EventType.COMMUNICATIONS_ALARM,
                 'location': 'NetworkEntity=%s' % storage['name'],
-                'description': "SNMP connection to the source failed. "
-                               "SNMP traps from source will not be received.",
+                'description': "SNMP connection to the storage failed. "
+                               "SNMP traps from storage will not be received.",
                 'recovery_advice': "1. The network connection is abnormal. "
                                    "2. SNMP authentication parameters "
                                    "are invalid.",
