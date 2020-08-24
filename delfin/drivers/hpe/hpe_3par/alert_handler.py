@@ -69,19 +69,14 @@ class AlertHandler(object):
         OID_COMPONENT
     )
 
-    # ssh command
-    # remove alert
-    HPE3PAR_COMMAND_REMOVEALERT = 'removealert -f '
-    # get all new alerts
-    HPE3PAR_COMMAND_SHOWALERT = 'showalert -d'
     # Convert received time to epoch format
     TIME_PATTERN = '%Y-%m-%d %H:%M:%S CST'
 
     default_me_category = 'storage-subsystem'
 
-    def __init__(self, restclient=None, sshclient=None):
-        self.restclient = restclient
-        self.sshclient = sshclient
+    def __init__(self, resthanlder=None, sshhanlder=None):
+        self.resthanlder = resthanlder
+        self.sshhanlder = sshhanlder
 
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
@@ -138,10 +133,8 @@ class AlertHandler(object):
         re = 'Failed'
         try:
             if alert is not None:
-                command_str = AlertHandler.HPE3PAR_COMMAND_REMOVEALERT + \
-                    alert.get('sequence_number')
-                re = self.sshclient.doexec(context, command_str)
-
+                re = self.sshhanlder.remove_alerts(context, alert.get(
+                    'sequence_number'))
                 if not re:
                     re = 'Success'
                 else:
@@ -158,8 +151,7 @@ class AlertHandler(object):
             # Get list of Hpe3parStor alerts
             alert_list = []
             try:
-                command_str = AlertHandler.HPE3PAR_COMMAND_SHOWALERT
-                reslist = self.sshclient.doexec(context, command_str)
+                reslist = self.sshhanlder.get_all_alerts()
             except Exception as e:
                 LOG.error(e)
                 raise exception.SSHException(
