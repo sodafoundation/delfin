@@ -16,10 +16,12 @@ from oslo_log import log
 
 from delfin import context
 from delfin.drivers import driver
-from delfin.drivers.hpe.hpe_3par import rest_client
-from delfin.drivers.utils.ssh_client import SSHClient
-from delfin.drivers.hpe.hpe_3par import component_handler
 from delfin.drivers.hpe.hpe_3par import alert_handler
+from delfin.drivers.hpe.hpe_3par import component_handler
+from delfin.drivers.hpe.hpe_3par import rest_handler
+from delfin.drivers.hpe.hpe_3par import ssh_handler
+from delfin.drivers.utils.rest_client import RestClient
+from delfin.drivers.utils.ssh_client import SSHClient
 
 LOG = log.getLogger(__name__)
 
@@ -28,23 +30,23 @@ LOG = log.getLogger(__name__)
 class Hpe3parStorDriver(driver.StorageDriver):
     """Hpe3parStorDriver implement Hpe 3par Stor driver,
     """
-    # ssh command
-    hpe3par_command_checkhealth = 'checkhealth'  # return: System is healthy
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # init rest client
-        self.restclient = rest_client.RestClient(**kwargs)
-        self.restclient.login()
+        self.restclient = RestClient(**kwargs)
+        self.resthanlder = rest_handler.RestHandler(self.restclient)
+        self.resthanlder.login()
         # init ssh client
         self.sshclient = SSHClient(**kwargs)
-        self.version = self.sshclient.login(context)
+        self.sshhanlder = ssh_handler.SSHHandler(self.sshclient)
+        self.version = self.sshhanlder.login(context)
         # init component handler
         self.comhandler = component_handler.ComponentHandler(
-            restclient=self.restclient, sshclient=self.sshclient)
+            resthanlder=self.resthanlder, sshhanlder=self.sshhanlder)
         # init component handler
         self.alert_handler = alert_handler.AlertHandler(
-            restclient=self.restclient, sshclient=self.sshclient)
+            resthanlder=self.resthanlder, sshhanlder=self.sshhanlder)
 
     def get_storage(self, context):
         # get storage info
@@ -73,5 +75,4 @@ class Hpe3parStorDriver(driver.StorageDriver):
         return self.alert_handler.parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
-        return self.alert_handler.clear_alert(context,
-                                              self.sshclient, alert)
+        return self.alert_handler.clear_alert(context, alert)

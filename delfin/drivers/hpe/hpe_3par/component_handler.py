@@ -24,27 +24,24 @@ LOG = log.getLogger(__name__)
 class ComponentHandler():
     """Hpe3par's Component handler，Superclass,
     """
-    # ssh command
-    HPE3PAR_COMMAND_CHECKHEALTH = 'checkhealth vv vlun task snmp ' \
-                                  'port pd node network ld dar cage cabling'
     COMPONENT_HEALTH = 'The following components are healthy'
     SYSTEM_HEALTH = 'System is healthy'
     HPE3PAR_VERSION = 'Superclass'
 
     HPE3PAR_VENDOR = 'HPE'
 
-    def __init__(self, restclient=None, sshclient=None):
-        self.restclient = restclient
-        self.sshclient = sshclient
+    def __init__(self, resthanlder=None, sshhanlder=None):
+        self.resthanlder = resthanlder
+        self.sshhanlder = sshhanlder
 
     def set_storage_id(self, storage_id):
         self.storage_id = storage_id
 
     def get_storage(self, context):
         # get storage info
-        storage = self.restclient.get_storage()
+        storage = self.resthanlder.get_storage()
         # get capacity
-        capacity = self.restclient.get_capacity()
+        capacity = self.resthanlder.get_capacity()
         # default state is offline
         status = constants.StorageStatus.OFFLINE
 
@@ -53,8 +50,7 @@ class ComponentHandler():
                 # Check the hardware and software health
                 # status of the storage system
                 # return: System is healthy
-                command_str = ComponentHandler.HPE3PAR_COMMAND_CHECKHEALTH
-                re_str = self.sshclient.doexec(context, command_str)
+                re_str = self.sshhanlder.get_health_state()
                 if ComponentHandler.COMPONENT_HEALTH in re_str \
                         or ComponentHandler.SYSTEM_HEALTH in re_str:
                     status = constants.StorageStatus.NORMAL
@@ -110,7 +106,7 @@ class ComponentHandler():
     def list_storage_pools(self, context):
         try:
             # Get list of Hpe3parStor pool details
-            pools = self.restclient.get_all_pools()
+            pools = self.resthanlder.get_all_pools()
             pool_list = []
 
             if pools is not None:
@@ -174,7 +170,7 @@ class ComponentHandler():
     def list_volumes(self, context):
         try:
             # Get all volumes in Hpe3parStor
-            volumes = self.restclient.get_all_volumes()
+            volumes = self.resthanlder.get_all_volumes()
             volume_list = []
 
             if volumes is not None:
