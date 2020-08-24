@@ -40,7 +40,7 @@ update = {
                 'password': {'type': 'string', 'minLength': 1,
                              'maxLength': 255},
                 'pub_key': {'type': 'string', 'minLength': 1,
-                            'maxLength': 255},
+                            'maxLength': 4096},
                 'pub_key_type': parameter_types.host_key_type
             },
             'required': ['host', 'port', 'username', 'password', 'pub_key'],

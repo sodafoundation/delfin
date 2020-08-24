@@ -1086,8 +1086,6 @@ components:
         - host
         - port
         - username
-        - pub_key
-        - pub_key_type
       type: object
       properties:
         host:
