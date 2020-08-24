@@ -37,7 +37,7 @@ class SSHClient(object):
         self.ssh_port = ssh_access.get('port')
         self.ssh_username = ssh_access.get('username')
         self.ssh_password = ssh_access.get('password')
-        self.ssh_private_key = ssh_access.get('host_key')
+        self.ssh_public_key = ssh_access.get('host_key')
         self.ssh_conn_timeout = ssh_access.get('conn_timeout')
         if self.ssh_conn_timeout is None:
             self.ssh_conn_timeout = SSHClient.SOCKET_TIMEOUT
@@ -45,10 +45,10 @@ class SSHClient(object):
     def connect(self):
         self.ssh = paramiko.SSHClient()
 
-        if self.ssh_private_key is None:
+        if self.ssh_public_key is None:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         else:
-            self.sethostkey(self.ssh, self.ssh_private_key)
+            self.sethostkey(self.ssh_public_key)
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
