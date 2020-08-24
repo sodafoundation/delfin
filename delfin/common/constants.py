@@ -119,6 +119,9 @@ DEFAULT_SNMP_EXPIRATION_TIME = 2
 # OID used for snmp query, Below oid refers to sysDescr
 SNMP_QUERY_OID = '1.3.6.1.2.1.1.1.0'
 
+# Alert id for internal alerts
+INTERNAL_ALERT_ID = '19660818'
+
 # Maps to convert config values to pysnmp values
 AUTH_PROTOCOL_MAP = {"hmacsha": config.usmHMACSHAAuthProtocol,
                      "hmacmd5": config.usmHMACMD5AuthProtocol,

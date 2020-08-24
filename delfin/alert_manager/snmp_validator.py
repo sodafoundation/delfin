@@ -162,15 +162,15 @@ class SNMPValidator(object):
                 'vendor': storage['vendor'],
                 'model': storage['model'],
                 'serial_number': storage['serial_number'],
-                'alert_id': '19660818',
+                'alert_id': constants.INTERNAL_ALERT_ID,
                 'sequence_number': 0,
                 'alert_name': 'SNMP connect failed',
                 'category': constants.Category.FAULT,
                 'severity': constants.Severity.MAJOR,
                 'type': constants.EventType.COMMUNICATIONS_ALARM,
                 'location': 'NetworkEntity=%s' % storage['name'],
-                'description': "The SNMP connect the array failed. "
-                               "The alarm TRAP will receive failed.",
+                'description': "SNMP connection to the source failed. "
+                               "SNMP traps from source will not be received.",
                 'recovery_advice': "1. The network connection is abnormal. "
                                    "2. SNMP authentication parameters "
                                    "are invalid.",

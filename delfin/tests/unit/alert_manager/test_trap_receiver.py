@@ -40,10 +40,6 @@ class TrapReceiverTestCase(test.TestCase):
                          'alert_rpc_api', self.alert_rpc_api)
 
     def _get_trap_receiver(self):
-        # trap_receiver_class = importutils.import_class(
-        #     self.TRAP_RECEIVER_CLASS)
-        # trap_receiver = trap_receiver_class(self.DEF_TRAP_RECV_ADDR,
-        #                                     self.DEF_TRAP_RECV_PORT)
         return self.trap_receiver
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'

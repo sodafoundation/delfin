@@ -31,9 +31,8 @@ class AlertHandler(object):
         self.oid_mapper = oid_mapper.OidMapper()
 
     # Translation of trap severity to alert model severity
-    # (("unknown", 1), ("emergency", 2), ("alert", 3), ("critical", 4),
-    # ("error", 5), ("warning", 6), ("notify", 7), ("info", 8), ("debug", 9),
-    # ("mark", 10))
+    # Values are: unknown=1, emergency=2, alert=3, critical=4, error=5,
+    #             warning=6, alert=3, notify=7, info=8, debug=9, mark=10
     SEVERITY_MAP = {"2": constants.Severity.FATAL,
                     "3": constants.Severity.CRITICAL,
                     "4": constants.Severity.CRITICAL,
