@@ -150,6 +150,10 @@ class AlertSourceNotFoundWithHost(NotFound):
     msg_fmt = _("Alert source could not be found with host {0}.")
 
 
+class SNMPConnectionFailed(BadRequest):
+    msg_fmt = _("Connection to SNMP server failed: {0}")
+
+
 class StorageNotFound(NotFound):
     msg_fmt = _("Storage {0} could not be found.")
 

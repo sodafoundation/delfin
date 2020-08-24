@@ -120,11 +120,24 @@ DEFAULT_SNMP_EXPIRATION_TIME = 2
 SNMP_QUERY_OID = '1.3.6.1.2.1.1.1.0'
 
 # Maps to convert config values to pysnmp values
-AUTH_PROTOCOL_MAP = {"sha": config.usmHMACSHAAuthProtocol,
-                     "md5": config.usmHMACMD5AuthProtocol,
+AUTH_PROTOCOL_MAP = {"hmacsha": config.usmHMACSHAAuthProtocol,
+                     "hmacmd5": config.usmHMACMD5AuthProtocol,
+                     "hmcsha2224": config.usmHMAC128SHA224AuthProtocol,
+                     "hmcsha2256": config.usmHMAC192SHA256AuthProtocol,
+                     "hmcsha2384": config.usmHMAC256SHA384AuthProtocol,
+                     "hmcsha2512": config.usmHMAC384SHA512AuthProtocol,
                      "none": "None"}
 
 PRIVACY_PROTOCOL_MAP = {"aes": config.usmAesCfb128Protocol,
                         "des": config.usmDESPrivProtocol,
+                        "aes192": config.usmAesCfb192Protocol,
+                        "aes256": config.usmAesCfb256Protocol,
                         "3des": config.usm3DESEDEPrivProtocol,
                         "none": "None"}
+
+
+# Enumerations for clear type
+class SecurityLevel(object):
+    AUTHPRIV = 'authPriv'
+    AUTHNOPRIV = 'authNoPriv'
+    NOAUTHNOPRIV = 'noAuthnoPriv'

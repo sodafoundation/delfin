@@ -17,6 +17,7 @@ from oslo_log import log
 from delfin import context
 from delfin import db
 from delfin import exception
+from delfin.common import alert_util
 from delfin.drivers import api as driver_manager
 from delfin.exporter import base_exporter
 
@@ -40,11 +41,7 @@ class AlertProcessor(object):
                                                           alert['storage_id'],
                                                           alert)
             # Fill storage specific info
-            alert_model['storage_id'] = storage['id']
-            alert_model['storage_name'] = storage['name']
-            alert_model['vendor'] = storage['vendor']
-            alert_model['model'] = storage['model']
-            alert_model['serial_number'] = storage['serial_number']
+            alert_util.fill_storage_attributes(alert_model, storage)
         except Exception as e:
             LOG.error(e)
             raise exception.InvalidResults(

@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import re
 import six
-
 from oslo_log import log
+from oslo_service import periodic_task
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.proto.api import v2c
-from pysnmp.smi import builder, view, rfc1902
+from pysnmp.smi import builder, view
 
 from delfin import context, cryptor
 from delfin import db
@@ -29,14 +27,13 @@ from delfin import exception
 from delfin import manager
 from delfin.alert_manager import alert_processor
 from delfin.alert_manager import constants
+from delfin.alert_manager import rpcapi
+from delfin.alert_manager import snmp_validator
 from delfin.common import constants as common_constants
 from delfin.db import api as db_api
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
-
-# Mib file format to be loaded
-MIB_LOAD_FILE_FORMAT = '.py'
 
 
 class TrapReceiver(manager.Manager):
@@ -49,39 +46,45 @@ class TrapReceiver(manager.Manager):
         self.snmp_engine = kwargs.get('snmp_engine')
         self.trap_receiver_address = kwargs.get('trap_receiver_address')
         self.trap_receiver_port = kwargs.get('trap_receiver_port')
-        self.snmp_mib_path = kwargs.get('snmp_mib_path')
         self.alert_processor = alert_processor.AlertProcessor()
+        self.snmp_validator = snmp_validator.SNMPValidator()
+        self.alert_rpc_api = rpcapi.AlertAPI()
         super(TrapReceiver, self).__init__(host=kwargs.get('host'))
 
     def sync_snmp_config(self, ctxt, snmp_config_to_del=None,
                          snmp_config_to_add=None):
-        if snmp_config_to_del is not None:
+        if snmp_config_to_del:
             self._delete_snmp_config(ctxt, snmp_config_to_del)
 
-        if snmp_config_to_add is not None:
+        if snmp_config_to_add:
+            self.snmp_validator.validate(ctxt, snmp_config_to_add)
             self._add_snmp_config(ctxt, snmp_config_to_add)
 
     def _add_snmp_config(self, ctxt, new_config):
-        LOG.info("Add snmp config:%s" % new_config)
+        LOG.info("Start to add snmp trap config.")
         storage_id = new_config.get("storage_id")
         version_int = self._get_snmp_version_int(ctxt,
                                                  new_config.get("version"))
         if version_int == constants.SNMP_V2_INT or \
                 version_int == constants.SNMP_V1_INT:
-            community_string = new_config.get("community_string")
+            community_string = cryptor.decode(
+                new_config.get("community_string"))
             community_index = self._get_community_index(storage_id)
             config.addV1System(self.snmp_engine, community_index,
                                community_string, contextName=community_string)
         else:
             username = new_config.get("username")
             engine_id = new_config.get("engine_id")
+            if engine_id:
+                engine_id = v2c.OctetString(hexValue=engine_id)
+
             auth_key = new_config.get("auth_key")
             auth_protocol = new_config.get("auth_protocol")
             privacy_key = new_config.get("privacy_key")
             privacy_protocol = new_config.get("privacy_protocol")
-            if auth_key is not None:
+            if auth_key:
                 auth_key = cryptor.decode(auth_key)
-            if privacy_key is not None:
+            if privacy_key:
                 privacy_key = cryptor.decode(privacy_key)
             config.addV3User(
                 self.snmp_engine,
@@ -92,18 +95,19 @@ class TrapReceiver(manager.Manager):
                                                          auth_protocol),
                 privProtocol=self._get_usm_priv_protocol(ctxt,
                                                          privacy_protocol),
-                securityEngineId=v2c.OctetString(hexValue=engine_id))
+                securityEngineId=engine_id)
 
     def _delete_snmp_config(self, ctxt, snmp_config):
-        LOG.info("Delete snmp config:%s" % snmp_config)
+        LOG.info("Start to remove snmp trap config.")
         version_int = self._get_snmp_version_int(ctxt,
                                                  snmp_config.get("version"))
         if version_int == constants.SNMP_V3_INT:
             username = snmp_config.get('username')
             engine_id = snmp_config.get('engine_id')
+            if engine_id:
+                engine_id = v2c.OctetString(hexValue=engine_id)
             config.delV3User(self.snmp_engine, userName=username,
-                             securityEngineId=v2c.OctetString(
-                                 hexValue=engine_id))
+                             securityEngineId=engine_id)
         else:
             storage_id = snmp_config.get('storage_id')
             community_index = self._get_community_index(storage_id)
@@ -122,10 +126,10 @@ class TrapReceiver(manager.Manager):
         return version_int
 
     def _get_usm_auth_protocol(self, ctxt, auth_protocol):
-        if auth_protocol is not None:
+        if auth_protocol:
             usm_auth_protocol = common_constants.AUTH_PROTOCOL_MAP \
                 .get(auth_protocol.lower())
-            if usm_auth_protocol is not None:
+            if usm_auth_protocol:
                 return usm_auth_protocol
             else:
                 msg = "Invalid auth_protocol %s." % auth_protocol
@@ -134,10 +138,10 @@ class TrapReceiver(manager.Manager):
             return config.usmNoAuthProtocol
 
     def _get_usm_priv_protocol(self, ctxt, privacy_protocol):
-        if privacy_protocol is not None:
+        if privacy_protocol:
             usm_priv_protocol = common_constants.PRIVACY_PROTOCOL_MAP.get(
                 privacy_protocol.lower())
-            if usm_priv_protocol is not None:
+            if usm_priv_protocol:
                 return usm_priv_protocol
             else:
                 msg = "Invalid privacy_protocol %s." % privacy_protocol
@@ -148,22 +152,7 @@ class TrapReceiver(manager.Manager):
     def _mib_builder(self):
         """Loads given set of mib files from given path."""
         mib_builder = builder.MibBuilder()
-        try:
-            self.mib_view_controller = view.MibViewController(mib_builder)
-
-            # Append custom mib path to default path for loading mibs
-            mib_sources = mib_builder.getMibSources() + (builder.DirMibSource(
-                self.snmp_mib_path),)
-            mib_builder.setMibSources(*mib_sources)
-            files = []
-            for file in os.listdir(self.snmp_mib_path):
-                # Pick up all .py files, remove extenstion and load them
-                if file.endswith(MIB_LOAD_FILE_FORMAT):
-                    files.append(os.path.splitext(file)[0])
-            if len(files) > 0:
-                mib_builder.loadModules(*files)
-        except Exception:
-            raise ValueError("Mib load failed.")
+        self.mib_view_controller = view.MibViewController(mib_builder)
 
     def _add_transport(self):
         """Configures the transport parameters for the snmp engine."""
@@ -176,32 +165,6 @@ class TrapReceiver(manager.Manager):
             )
         except Exception:
             raise ValueError("Port binding failed: Port is in use.")
-
-    @staticmethod
-    def _extract_oid_value(var_bind):
-        """Extracts oid and value from var binds.
-        ex: varbind = (SNMPv2-MIB::snmpTrapOID.0 = SNMPv2-MIB::coldStart)
-        oid = snmpTrapOID
-        val = coldStart
-        """
-
-        # Separate out oid and value strings
-        var_bind_info = var_bind.prettyPrint()
-        var_bind_info = var_bind_info.split("=", 1)
-        oid = var_bind_info[0]
-        val = var_bind_info[1]
-
-        # Extract oid from oid string
-        # Example: get snmpTrapOID from SNMPv2-MIB::snmpTrapOID.0
-        oid = re.split('[::.]', oid)[2]
-
-        # Value can contain mib name also, if so, extract value from it
-        # Ex: get coldStart from SNMPv2-MIB::coldStart
-        if "::" in val:
-            val = re.split('[::]', val)[2]
-        val = val.strip()
-
-        return oid, val
 
     @staticmethod
     def _get_alert_source_by_host(source_ip):
@@ -227,14 +190,9 @@ class TrapReceiver(manager.Manager):
         """Callback function to process the incoming trap."""
         exec_context = self.snmp_engine.observer.getExecutionContext(
             'rfc3412.receiveMessage:request')
-        LOG.info('#Notification from %s \n#ContextEngineId: "%s" '
-                 '\n#ContextName: ''"%s" \n#SNMPVER "%s" \n#SecurityName "%s" '
-                 % (
-                     '@'.join(
-                         [str(x) for x in exec_context['transportAddress']]),
-                     context_engine_id.prettyPrint(),
-                     context_name.prettyPrint(), exec_context['securityModel'],
-                     exec_context['securityName']))
+        LOG.debug("Get notification from: %s" %
+                  "#".join([str(x) for x in exec_context['transportAddress']]))
+        alert = {}
 
         try:
             # transportAddress contains both ip and port, extract ip address
@@ -255,15 +213,10 @@ class TrapReceiver(manager.Manager):
                          "dropping it.") % source_ip)
                 raise exception.InvalidResults(msg)
 
-            var_binds = [rfc1902.ObjectType(
-                rfc1902.ObjectIdentity(x[0]), x[1]).resolveWithMib(
-                self.mib_view_controller) for x in var_binds]
-
-            alert = {}
-
-            for var_bind in var_binds:
-                oid, value = self._extract_oid_value(var_bind)
-                alert[oid] = value
+            for oid, val in var_binds:
+                # Fill raw oid and values
+                oid_str = str(oid)
+                alert[oid_str] = str(val)
 
             # Fill additional info to alert info
             alert['transport_address'] = source_ip
@@ -333,3 +286,16 @@ class TrapReceiver(manager.Manager):
         if self.snmp_engine:
             self.snmp_engine.transportDispatcher.closeDispatcher()
         LOG.info("Trap receiver stopped.")
+
+    @periodic_task.periodic_task(spacing=1800, run_immediately=True)
+    def heart_beat_task_spawn(self, ctxt):
+        """Periodical task to spawn snmp heart beat check."""
+        LOG.info("Spawn the snmp heart beat check task.")
+        alert_source_list = db.alert_source_get_all(ctxt)
+        for alert_source in alert_source_list:
+            self.alert_rpc_api.check_snmp_config(ctxt, alert_source)
+
+    def check_snmp_config(self, ctxt, snmp_config):
+        LOG.info("Received snmp config checking request for "
+                 "storage: %s", snmp_config['storage_id'])
+        self.snmp_validator.validate(ctxt, snmp_config)
