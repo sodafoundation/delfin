@@ -252,3 +252,7 @@ class StorageClearAlertFailed(DelfinException):
 
 class StorageListAlertFailed(DelfinException):
     msg_fmt = _("Failed to list alerts. Reason: {0}.")
+
+
+class HTTPConnectionTimeout(DelfinException):
+    msg_fmt = _("HTTP connection timeout: {0}.")
