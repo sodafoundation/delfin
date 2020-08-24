@@ -68,9 +68,6 @@ service_opts = [
     cfg.PortOpt('trap_receiver_port',
                 default=162,
                 help='Port at which trap receiver listens.'),
-    cfg.StrOpt('snmp_mib_path',
-               default='/var/lib/delfin/mibs',
-               help='Path at which mib files to be loaded are placed.'),
 ]
 
 CONF = cfg.CONF
@@ -229,7 +226,6 @@ class AlertService(Service):
                coordination=False, *args, **kwargs):
         kwargs['trap_receiver_address'] = CONF.trap_receiver_address
         kwargs['trap_receiver_port'] = CONF.trap_receiver_port
-        kwargs['snmp_mib_path'] = CONF.snmp_mib_path
 
         service_obj = super(AlertService, cls).create(
             host=host, binary=binary, topic=topic, manager=manager,
