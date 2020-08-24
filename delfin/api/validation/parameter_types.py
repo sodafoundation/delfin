@@ -167,8 +167,7 @@ hostname_or_ip_address = {
 }
 
 tcp_udp_port = {
-    'type': ['integer', 'string'],
-    'pattern': '^[0-9]*$',
+    'type': 'integer',
     'minimum': 0, 'maximum': 65535
 }
 

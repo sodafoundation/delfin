@@ -225,10 +225,8 @@ class _SchemaValidator(object):
                 raise ex.cause
             elif len(ex.path) > 0:
                 detail = _("Invalid input for field/attribute %(path)s."
-                           " Value: %(value)s. %(message)s") % {
-                    'path': ex.path.pop(), 'value': ex.instance,
-                    'message': ex.message
-                }
+                           " %(message)s") % {'path': ex.path.pop(),
+                                              'message': ex.message}
             else:
                 detail = ex.message
             raise exception.InvalidInput(detail)
