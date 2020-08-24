@@ -18,8 +18,9 @@ import unittest
 from delfin import exception
 from delfin import context
 from delfin.drivers.hpe.hpe_3par.hpe_3parstor import Hpe3parStorDriver
-from delfin.drivers.hpe.hpe_3par.rest_client import RestClient
-from delfin.drivers.utils.ssh_client import SSHClient
+from delfin.drivers.hpe.hpe_3par.rest_handler import RestHandler
+from delfin.drivers.hpe.hpe_3par.ssh_handler import SSHHandler
+from delfin.drivers.utils.rest_client import RestClient
 
 from requests import Session
 
@@ -52,7 +53,7 @@ ACCESS_INFO = {
 def create_driver():
     kwargs = ACCESS_INFO
 
-    SSHClient.login = mock.Mock(
+    SSHHandler.login = mock.Mock(
         return_value={"result": "success", "reason": "null"})
 
     m = mock.MagicMock(status_code=201)
@@ -88,14 +89,15 @@ class TestHpe3parStorageDriver(TestCase):
             kwargs = ACCESS_INFO
             with self.assertRaises(Exception) as exc:
                 rc = RestClient(**kwargs)
-                rc.login()
+                rh = RestHandler(rc)
+                rh.login()
             self.assertIn('Unacceptable parameters', str(exc.exception))
 
     def test_c_initssh(self):
         driver = create_driver()
         with self.assertRaises(Exception) as exc:
             command_str = 'ls -l'
-            driver.sshclient.doexec(context, command_str)
+            driver.sshhanlder.sshclient.doexec(context, command_str)
         self.assertIn('Exception in SSH protocol negotiation or logic',
                       str(exc.exception))
 
@@ -141,7 +143,7 @@ class TestHpe3parStorageDriver(TestCase):
             "timeZone": "Asia/Shanghai"
         }
 
-        RestClient.get_capacity = mock.Mock(
+        RestHandler.get_capacity = mock.Mock(
             return_value={
                 "allCapacity": {
                     "totalMiB": 9150464,
@@ -159,7 +161,7 @@ class TestHpe3parStorageDriver(TestCase):
         )
 
         m = mock.MagicMock(status_code=200)
-        with mock.patch.object(RestClient, 'call', return_value=m):
+        with mock.patch.object(RestHandler, 'call', return_value=m):
             m.raise_for_status.return_value = 200
             m.json.return_value = ret
 
@@ -310,13 +312,13 @@ class TestHpe3parStorageDriver(TestCase):
             }
         ]
 
-        with mock.patch.object(RestClient, 'get_resinfo_call',
+        with mock.patch.object(RestHandler, 'get_resinfo_call',
                                side_effect=ret):
             pools = driver.list_storage_pools(context)
             self.assertDictEqual(pools[0], expected[0])
             self.assertDictEqual(pools[1], expected[1])
 
-        with mock.patch.object(RestClient, 'get_all_pools',
+        with mock.patch.object(RestHandler, 'get_all_pools',
                                side_effect=exception.DelfinException):
             with self.assertRaises(Exception) as exc:
                 driver.list_storage_pools(context)
@@ -520,13 +522,13 @@ class TestHpe3parStorageDriver(TestCase):
                 ]
             }
         ]
-        with mock.patch.object(RestClient, 'get_resinfo_call',
+        with mock.patch.object(RestHandler, 'get_resinfo_call',
                                side_effect=ret):
             volumes = driver.list_volumes(context)
             self.assertDictEqual(volumes[0], expected[0])
             self.assertDictEqual(volumes[1], expected[1])
 
-        with mock.patch.object(RestClient, 'get_all_volumes',
+        with mock.patch.object(RestHandler, 'get_all_volumes',
                                side_effect=exception.DelfinException):
             with self.assertRaises(Exception) as exc:
                 driver.list_volumes(context)
@@ -601,7 +603,8 @@ class TestHpe3parStorageDriver(TestCase):
             kwargs = ACCESS_INFO
 
             rc = RestClient(**kwargs)
-            re = rc.logout()
+            rh = RestHandler(rc)
+            re = rh.logout()
             self.assertIsNone(re)
 
 

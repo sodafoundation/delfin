@@ -15,7 +15,6 @@
 #    under the License.
 
 import paramiko as paramiko
-
 from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
 
@@ -126,38 +125,3 @@ class SSHClient(object):
         finally:
             self.close()
         return re
-
-    def login(self, context):
-        """Test SSH connection """
-        version = ''
-        try:
-            command_str = 'showwsapi'
-            re = self.doexec(context, command_str)
-            wsapiinfos = re.split('\n')
-            version = self.get_version(context, wsapiinfos)
-        except Exception as e:
-            LOG.error('login error:{}'.format(e))
-            raise e
-        return version
-
-    def get_version(self, context, wsapiinfos):
-        """get wsapi version """
-        version = ''
-        try:
-            if wsapiinfos is not None and wsapiinfos != '':
-                versionseat = 7
-                for wsapiinfo in wsapiinfos:
-                    strline = wsapiinfo
-                    if strline is not None and strline != '':
-                        if '-Version-' in strline:
-                            continue
-                        else:
-                            wsapivalues = strline.split(' ')
-                            for subinfo in wsapivalues:
-                                if subinfo is not None and subinfo != '':
-                                    versionseat -= 1
-                                    if versionseat == 0:
-                                        version = subinfo
-        except Exception as e:
-            LOG.error('get_version error:{}'.format(e))
-        return version
