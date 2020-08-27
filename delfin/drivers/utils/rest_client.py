@@ -44,8 +44,8 @@ class RestClient(object):
         self.session = None
         self.device_id = None
         # test
-        self.enable_verify = False
-        self.ca_path = 'certificate verification file path'
+        self.enable_verify = kwargs.get('enable_verify', False)
+        self.ca_path = kwargs.get('ca_path', '')
         self.rest_auth_token = None
 
     def init_http_head(self):
