@@ -25,7 +25,6 @@ import requests.exceptions as r_exc
 import six
 
 from delfin import exception
-from delfin.common import constants
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
