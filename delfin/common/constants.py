@@ -104,9 +104,6 @@ class EventType(object):
     NOT_SPECIFIED = 'NotSpecified'
 
 
-# Default expiration time(in sec) for vmax connect request
-VMAX_EXPIRATION_TIME = 30
-
 # Default resource type for alert
 DEFAULT_RESOURCE_TYPE = 'Storage'
 

@@ -43,6 +43,9 @@ STATUS_202 = 202
 STATUS_204 = 204
 STATUS_401 = 401
 
+# Default expiration time(in sec) for vmax connect request
+VERSION_GET_TIME_OUT = 10
+
 
 class VMaxRest(object):
     """Rest class based on Unisphere for VMax Rest API."""
@@ -390,10 +393,10 @@ class VMaxRest(object):
         pre_91_endpoint = '/system/version'
 
         status_code, version_dict = self.request(
-            post_90_endpoint, GET, timeout=constants.VMAX_EXPIRATION_TIME)
+            post_90_endpoint, GET, timeout=VERSION_GET_TIME_OUT)
         if status_code is not STATUS_200:
             status_code, version_dict = self.request(
-                pre_91_endpoint, GET, timeout=constants.VMAX_EXPIRATION_TIME)
+                pre_91_endpoint, GET, timeout=VERSION_GET_TIME_OUT)
 
         if status_code == STATUS_401:
             raise exception.InvalidCredential()
