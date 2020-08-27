@@ -151,7 +151,7 @@ class AlertHandler(object):
             # Get list of Hpe3parStor alerts
             alert_list = []
             try:
-                reslist = self.sshhanlder.get_all_alerts()
+                reslist = self.sshhanlder.get_all_alerts(context)
             except Exception as e:
                 LOG.error(e)
                 raise exception.SSHException(

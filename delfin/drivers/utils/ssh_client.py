@@ -25,7 +25,7 @@ LOG = logging.getLogger(__name__)
 
 class SSHClient(object):
     """Common class for Hpe 3parStor storage system."""
-    SOCKET_TIMEOUT = 30
+    SOCKET_TIMEOUT = 10
 
     def __init__(self, **kwargs):
 
