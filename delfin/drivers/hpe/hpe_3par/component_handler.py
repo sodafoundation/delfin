@@ -50,7 +50,7 @@ class ComponentHandler():
                 # Check the hardware and software health
                 # status of the storage system
                 # return: System is healthy
-                re_str = self.sshhanlder.get_health_state()
+                re_str = self.sshhanlder.get_health_state(context)
                 if ComponentHandler.COMPONENT_HEALTH in re_str \
                         or ComponentHandler.SYSTEM_HEALTH in re_str:
                     status = constants.StorageStatus.NORMAL
