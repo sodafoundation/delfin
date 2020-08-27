@@ -25,7 +25,6 @@ import requests.exceptions as r_exc
 import six
 
 from delfin import exception
-from delfin.ssl_utils import reload_certificate
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)

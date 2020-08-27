@@ -82,7 +82,8 @@ class DriverManager(stevedore.ExtensionManager):
         with self._instance_lock:
             if kwargs['storage_id'] in self.driver_factory:
                 driver = self.driver_factory[kwargs['storage_id']]
-                driver.connection_reset(context, **kwargs)
+                # TODO: Check to reset session, if ssl config changes
+                # driver.connection_reset(context, **kwargs)
                 return driver
 
             reload_certificate(kwargs.get('enable_verify', False),

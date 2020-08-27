@@ -44,12 +44,9 @@ class VMAXClient(object):
 
     def reset_connection(self, **kwargs):
         """ Reset connection to VMAX storage with new configs """
-        verify = kwargs.get('enable_verify', False)
-        ca_path = kwargs.get('ca_path', '')
-        if self.rest.verify != verify or self.rest.ca_path != ca_path:
-            self.rest.verify = verify
-            self.rest.ca_path = ca_path
-            self.rest.establish_rest_session()
+        self.rest.verify = kwargs.get('enable_verify', False)
+        self.rest.ca_path = kwargs.get('ca_path', '')
+        self.rest.establish_rest_session()
 
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
