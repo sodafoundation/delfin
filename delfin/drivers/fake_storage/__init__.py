@@ -95,7 +95,7 @@ class FakeStorageDriver(driver.StorageDriver):
             CONF.fake_driver.fake_volume_range, int)
         PAGE_LIMIT = int(CONF.fake_driver.fake_page_query_limit)
 
-    def connection_reset(self, context, **kwargs):
+    def reset_connection(self, context, **kwargs):
         pass
 
     @wait_random(MIN_WAIT, MAX_WAIT)

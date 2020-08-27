@@ -29,7 +29,7 @@ class StorageDriver(object):
         self.storage_id = kwargs.get('storage_id', None)
 
     @abc.abstractmethod
-    def connection_reset(self, context, **kwargs):
+    def reset_connection(self, context, **kwargs):
         """ Reset connection with backend with new args """
         pass
 

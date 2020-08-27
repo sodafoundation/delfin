@@ -15,10 +15,10 @@
 import os
 import ssl
 import requests
-from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 from oslo_config import cfg
 from oslo_log import log
 from urllib3 import PoolManager
+from OpenSSL.crypto import load_certificate, FILETYPE_PEM
 
 from delfin import exception
 
@@ -27,48 +27,50 @@ CONF = cfg.CONF
 FILE = 'configs.json'
 
 
-def reload_certificate(enable_verify, ca_path):
+def get_storage_ca_path():
+    return CONF.storage_driver.ca_path
+
+
+def verify_ca_path(ca_path):
     """
-    Checking the southbound security config validation.
+    Checking the ca_path exists
+    """
+    if not os.path.exists(ca_path):
+        LOG.error("Directory {0} could not be found.".format(ca_path))
+        raise exception.InvalidCAPath(ca_path)
+
+
+def reload_certificate(ca_path):
+    """
+    Checking the driver security config validation.
     As required by requests, ca_path must be a directory prepared using
     the c_rehash tool included with OpenSSL.
     Once new certificate added, this function can be called for update.
     If there is a CA certificate chain, all CA certificates along this
     chain should be included in a single file.
     """
-    if enable_verify:
-        if not os.path.exists(ca_path):
-            LOG.error("Directory {0} could not be found.".format(
-                ca_path))
-            raise exception.InvalidCAPath(ca_path)
 
-        suffixes = ['.pem', '.cer', '.crt', '.crl']
-        files = os.listdir(ca_path)
-        for file in files:
-            if not os.path.isdir(file):
-                suf = os.path.splitext(file)[1]
-                if suf in suffixes:
-                    fpath = ca_path + file
-                    with open(fpath, "rb") as f:
-                        cert_content = f.read()
-                        cert = load_certificate(FILETYPE_PEM,
-                                                cert_content)
-                        hash_val = cert.subject_name_hash()
-                        hash_hex = hex(hash_val).strip('0x') + ".0"
-                        linkfile = ca_path + hash_hex
-                        if os.path.exists(linkfile):
-                            LOG.debug("Link for {0} already exist.".
-                                      format(file))
-                        else:
-                            LOG.info("Create link file {0} for {1}.".
-                                     format(linkfile, fpath))
-                            os.symlink(fpath, linkfile)
-
-
-def get_configs():
-    return CONF.southbound_security.enable_verify,\
-        CONF.southbound_security.ca_path,\
-        CONF.southbound_security.assert_hostname
+    suffixes = ['.pem', '.cer', '.crt', '.crl']
+    files = os.listdir(ca_path)
+    for file in files:
+        if not os.path.isdir(file):
+            suf = os.path.splitext(file)[1]
+            if suf in suffixes:
+                fpath = ca_path + file
+                with open(fpath, "rb") as f:
+                    cert_content = f.read()
+                    cert = load_certificate(FILETYPE_PEM,
+                                            cert_content)
+                    hash_val = cert.subject_name_hash()
+                    hash_hex = hex(hash_val).strip('0x') + ".0"
+                    linkfile = ca_path + hash_hex
+                    if os.path.exists(linkfile):
+                        LOG.debug("Link for {0} already exist.".
+                                  format(file))
+                    else:
+                        LOG.info("Create link file {0} for {1}.".
+                                 format(linkfile, fpath))
+                        os.symlink(fpath, linkfile)
 
 
 class HostNameIgnoreAdapter(requests.adapters.HTTPAdapter):

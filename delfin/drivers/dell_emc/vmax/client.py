@@ -38,14 +38,12 @@ class VMAXClient(object):
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
         self.rest = rest.VMaxRest()
-        verify = kwargs.get('enable_verify', False)
-        ca_path = kwargs.get('ca_path', '')
-        self.rest.set_rest_credentials(rest_access, verify, ca_path)
+        self.rest.set_rest_credentials(rest_access)
+        self.reset_connection(**kwargs)
 
     def reset_connection(self, **kwargs):
         """ Reset connection to VMAX storage with new configs """
-        self.rest.verify = kwargs.get('enable_verify', False)
-        self.rest.ca_path = kwargs.get('ca_path', '')
+        self.rest.verify = kwargs.get('verify', False)
         self.rest.establish_rest_session()
 
     def init_connection(self, access_info):

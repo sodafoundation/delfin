@@ -42,29 +42,20 @@ class RestClient(object):
         self.rest_port = rest_access.get('port')
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
-        super(RestClient, self).__init__()
+
         # Lists of addresses to try, for authorization
-        self.san_address = [
-            'https://' + self.rest_host + ':' + str(self.rest_port) +
-            '/deviceManager/rest/']
+        address = 'https://%(host)s:%(port)s/deviceManager/rest/' % \
+                  {'host': self.rest_host, 'port': str(self.rest_port)}
+        self.san_address = [address]
         self.session = None
         self.url = None
         self.device_id = None
+        self.verify = None
         urllib3.disable_warnings(InsecureRequestWarning)
-        self.enable_verify = kwargs.get('enable_verify', False)
-        self.ca_path = kwargs.get('ca_path', '')
-        self.assert_hostname = kwargs.get('assert_hostname', False)
-        try:
-            self.login()
-        except Exception as ex:
-            msg = "Failed to login to OceanStor: {}".format(ex)
-            LOG.error(msg)
-            raise exception.InvalidCredential(msg)
+        self.reset_connection(**kwargs)
 
-    def connection_reset(self, **kwargs):
-        self.enable_verify = kwargs.get('enable_verify', False)
-        self.ca_path = kwargs.get('ca_path', '')
-        self.assert_hostname = kwargs.get('assert_hostname', False)
+    def reset_connection(self, **kwargs):
+        self.verify = kwargs.get('verify', False)
         try:
             self.login()
         except Exception as ex:
@@ -78,14 +69,13 @@ class RestClient(object):
         self.session.headers.update({
             "Connection": "keep-alive",
             "Content-Type": "application/json"})
-        if not self.enable_verify:
+        if not self.verify:
             self.session.verify = False
         else:
-            LOG.debug("Enable certificate verification, ca_path: {0}".format(
-                self.ca_path))
-            self.session.verify = self.ca_path
-            if not self.assert_hostname:
-                self.session.mount("https://", HostNameIgnoreAdapter())
+            LOG.debug("Enable certificate verification, verify: {0}".format(
+                self.verify))
+            self.session.verify = self.verify
+            self.session.mount("https://", HostNameIgnoreAdapter())
 
         self.session.trust_env = False
 

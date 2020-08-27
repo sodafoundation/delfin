@@ -100,21 +100,14 @@ global_opts = [
 CONF.register_opts(global_opts)
 
 
-southbound_security_opts = [
-    cfg.BoolOpt('enable_verify',
-                default=False,
-                help='If enable SSL certificate verification for connecting'
-                     ' to southbound devices.'),
+storage_driver_opts = [
     cfg.StrOpt('ca_path',
-               default='/usr/local/share/ca-certificates/',
-               help='The path for saving ca certificates.'),
-    cfg.BoolOpt('assert_hostname',
-                default=False,
-                help='If assert hostname or not during the process of '
-                     'certificate verification.')
+               default='',
+               help='"": Disable SSL certificate verification, '
+                    '/path/to/file: Use SSL certificate from file location')
 ]
 
-CONF.register_opts(southbound_security_opts, group='southbound_security')
+CONF.register_opts(storage_driver_opts, group='storage_driver')
 
 
 def set_middleware_defaults():

@@ -55,26 +55,19 @@ class VMaxRest(object):
         self.user = None
         self.passwd = None
         self.verify = None
-        self.ca_path = None
-        self.cert = None
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def set_rest_credentials(self, array_info, verify, ca_path):
+    def set_rest_credentials(self, array_info):
         """Given the array record set the rest server credentials.
         :param array_info: record
-        :param verify: SSL enable/disable
-        :param ca_path: certificate path
         """
         ip = array_info['host']
         port = array_info['port']
         self.user = array_info['username']
         self.passwd = array_info['password']
-        self.verify = verify
-        self.ca_path = ca_path
-        ip_port = "%(ip)s:%(port)s" % {'ip': ip, 'port': str(port)}
+        ip_port = "%(ip)s:%(port)d" % {'ip': ip, 'port': port}
         self.base_uri = ("https://%(ip_port)s/univmax/restapi" % {
             'ip_port': ip_port})
-        self.session = self.establish_rest_session()
 
     def establish_rest_session(self):
         """Establish the rest session.
@@ -94,8 +87,8 @@ class VMaxRest(object):
             session.verify = False
         else:
             LOG.debug("Enable certificate verification, ca_path: {0}".format(
-                self.ca_path))
-            session.verify = self.ca_path
+                self.verify))
+            session.verify = self.verify
 
         return session
 

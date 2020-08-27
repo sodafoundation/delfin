@@ -32,7 +32,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         self.client = client.VMAXClient(**kwargs)
         self.client.init_connection(kwargs)
 
-    def connection_reset(self, context, **kwargs):
+    def reset_connection(self, context, **kwargs):
         self.client.reset_connection(**kwargs)
 
     def get_storage(self, context):
