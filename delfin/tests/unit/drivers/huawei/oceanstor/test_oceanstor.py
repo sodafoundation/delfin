@@ -88,7 +88,7 @@ class TestOceanStorStorageDriver(TestCase):
             kwargs = ACCESS_INFO
             with self.assertRaises(Exception) as exc:
                 OceanStorDriver(**kwargs)
-            self.assertIn('Exception from Storage Backend', str(exc.exception))
+            self.assertIn('The credentials are invalid', str(exc.exception))
 
     def test_get_storage(self):
         driver = create_driver()

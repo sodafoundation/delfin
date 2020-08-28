@@ -133,8 +133,8 @@ class AlertHandler(object):
         re = 'Failed'
         try:
             if alert is not None:
-                re = self.sshhanlder.remove_alerts(context, alert.get(
-                    'sequence_number'))
+                # alert is sequence number here
+                re = self.sshhanlder.remove_alerts(context, alert)
                 if not re:
                     re = 'Success'
                 else:
