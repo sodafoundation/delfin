@@ -150,6 +150,10 @@ class AlertSourceNotFoundWithHost(NotFound):
     msg_fmt = _("Alert source could not be found with host {0}.")
 
 
+class SNMPConnectionFailed(BadRequest):
+    msg_fmt = _("Connection to SNMP server failed: {0}")
+
+
 class StorageNotFound(NotFound):
     msg_fmt = _("Storage {0} could not be found.")
 
@@ -240,3 +244,15 @@ class SSHInvalidUsernameOrPassword(DelfinException):
 class SSHNotFoundKnownHosts(NotFound):
     msg_fmt = _("{0} not found in known_hosts.")
     code = 400
+
+
+class StorageClearAlertFailed(DelfinException):
+    msg_fmt = _("Failed to clear alert. Reason: {0}.")
+
+
+class StorageListAlertFailed(DelfinException):
+    msg_fmt = _("Failed to list alerts. Reason: {0}.")
+
+
+class HTTPConnectionTimeout(DelfinException):
+    msg_fmt = _("HTTP connection timeout: {0}.")

@@ -185,3 +185,10 @@ class OceanStorDriver(driver.StorageDriver):
 
     def clear_alert(self, context, sequence_number):
         return self.client.clear_alert(sequence_number)
+
+    def list_alerts(self, context):
+        # First query alerts and then translate to model
+        alert_list = self.client.list_alerts()
+        alert_model_list = alert_handler.AlertHandler()\
+            .parse_queried_alerts(alert_list)
+        return alert_model_list

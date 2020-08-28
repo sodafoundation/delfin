@@ -172,13 +172,13 @@ def fake_sync(self, req, id):
 def fake_v3_alert_source_config():
     return {'host': '127.0.0.1',
             'version': 'snmpv3',
-            'security_level': 'AuthPriv',
+            'security_level': 'authPriv',
             'engine_id': '800000d30300000e112245',
             'username': 'test1',
             'auth_key': 'abcd123456',
-            'auth_protocol': 'md5',
+            'auth_protocol': 'HMACMD5',
             'privacy_key': 'abcd123456',
-            'privacy_protocol': 'des',
+            'privacy_protocol': 'DES',
             'context_name': 'NA',
             'retry_num': 2,
             'expiration': 2,
@@ -205,9 +205,9 @@ def fake_v3_alert_source():
     alert_source.engine_id = '800000d30300000e112245'
     alert_source.username = 'test1'
     alert_source.auth_key = 'YWJjZDEyMzQ1Njc='
-    alert_source.auth_protocol = 'md5'
+    alert_source.auth_protocol = 'HMACMD5'
     alert_source.privacy_key = 'YWJjZDEyMzQ1Njc='
-    alert_source.privacy_protocol = 'des'
+    alert_source.privacy_protocol = 'DES'
     alert_source.port = 161
     alert_source.context_name = ""
     alert_source.retry_num = 1
@@ -222,7 +222,7 @@ def fake_v3_alert_source_noauth_nopriv():
     alert_source.host = '127.0.0.1'
     alert_source.storage_id = 'abcd-1234-5678'
     alert_source.version = 'snmpv3'
-    alert_source.security_level = 'NoAuthNoPriv'
+    alert_source.security_level = 'noAuthnoPriv'
     alert_source.engine_id = '800000d30300000e112245'
     alert_source.username = 'test1'
     alert_source.port = 161
@@ -239,8 +239,8 @@ def fake_v3_alert_source_auth_nopriv():
     alert_source.host = '127.0.0.1'
     alert_source.storage_id = 'abcd-1234-5678'
     alert_source.version = 'snmpv3'
-    alert_source.security_level = 'AuthNoPriv'
-    alert_source.auth_protocol = 'md5'
+    alert_source.security_level = 'authNoPriv'
+    alert_source.auth_protocol = 'HMACMD5'
     alert_source.engine_id = '800000d30300000e112245'
     alert_source.username = 'test1'
     alert_source.port = 161

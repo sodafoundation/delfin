@@ -15,7 +15,6 @@
 #    under the License.
 
 import paramiko as paramiko
-
 from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
 
@@ -25,8 +24,7 @@ LOG = logging.getLogger(__name__)
 
 
 class SSHClient(object):
-    """Common class for Hpe 3parStor storage system."""
-    SOCKET_TIMEOUT = 30
+    SOCKET_TIMEOUT = 10
 
     def __init__(self, **kwargs):
 
@@ -37,7 +35,8 @@ class SSHClient(object):
         self.ssh_port = ssh_access.get('port')
         self.ssh_username = ssh_access.get('username')
         self.ssh_password = ssh_access.get('password')
-        self.ssh_public_key = ssh_access.get('host_key')
+        self.ssh_pub_key_type = ssh_access.get('pub_key_type')
+        self.ssh_pub_key = ssh_access.get('pub_key')
         self.ssh_conn_timeout = ssh_access.get('conn_timeout')
         if self.ssh_conn_timeout is None:
             self.ssh_conn_timeout = SSHClient.SOCKET_TIMEOUT
@@ -45,10 +44,12 @@ class SSHClient(object):
     def connect(self):
         self.ssh = paramiko.SSHClient()
 
-        if self.ssh_public_key is None:
+        if self.ssh_pub_key is None:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         else:
-            self.sethostkey(self.ssh_public_key)
+            host_key = (self.ssh_host + ' ' + self.ssh_pub_key_type
+                        + ' ' + self.ssh_pub_key)
+            self.sethostkey(host_key)
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
@@ -57,10 +58,10 @@ class SSHClient(object):
 
     def sethostkey(self, host_key):
         """
-        Set ssh_public_key,because input kwargs parameter host_key is string,
+        Set public key,because input kwargs parameter host_key is string,
         not a file path,we can not use load file to get public key,so we set
         it as a string.
-        :param str host_key: the ssh_public_key which as a string
+        :param str host_key: the public key which as a string
         """
         if (len(host_key) == 0) or (host_key[0] == "#"):
             return
@@ -100,7 +101,7 @@ class SSHClient(object):
             LOG.error(e)
 
     def doexec(self, context, command_str):
-        """Clear alert from storage system."""
+        """Execute command"""
         re = None
         try:
             if command_str is not None:
@@ -126,38 +127,3 @@ class SSHClient(object):
         finally:
             self.close()
         return re
-
-    def login(self, context):
-        """Test SSH connection """
-        version = ''
-        try:
-            command_str = 'showwsapi'
-            re = self.doexec(context, command_str)
-            wsapiinfos = re.split('\n')
-            version = self.get_version(context, wsapiinfos)
-        except Exception as e:
-            LOG.error('login error:{}'.format(e))
-            raise e
-        return version
-
-    def get_version(self, context, wsapiinfos):
-        """get wsapi version """
-        version = ''
-        try:
-            if wsapiinfos is not None and wsapiinfos != '':
-                versionseat = 7
-                for wsapiinfo in wsapiinfos:
-                    strline = wsapiinfo
-                    if strline is not None and strline != '':
-                        if '-Version-' in strline:
-                            continue
-                        else:
-                            wsapivalues = strline.split(' ')
-                            for subinfo in wsapivalues:
-                                if subinfo is not None and subinfo != '':
-                                    versionseat -= 1
-                                    if versionseat == 0:
-                                        version = subinfo
-        except Exception as e:
-            LOG.error('get_version error:{}'.format(e))
-        return version

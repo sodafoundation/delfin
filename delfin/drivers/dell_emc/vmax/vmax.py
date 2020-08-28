@@ -15,7 +15,8 @@
 from oslo_log import log
 from oslo_utils import units
 from delfin.common import constants
-from delfin.drivers.dell_emc.vmax import alert_handler
+from delfin.drivers.dell_emc.vmax.alert_handler import snmp_alerts
+from delfin.drivers.dell_emc.vmax.alert_handler import unisphere_alerts
 from delfin.drivers.dell_emc.vmax import client
 from delfin.drivers import driver
 
@@ -81,7 +82,13 @@ class VMAXStorageDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        return alert_handler.AlertHandler().parse_alert(context, alert)
+        return snmp_alerts.AlertHandler().parse_alert(context, alert)
 
-    def clear_alert(self, context, alert):
-        pass
+    def clear_alert(self, context, sequence_number):
+        return self.client.clear_alert(sequence_number)
+
+    def list_alerts(self, context):
+        alert_list = self.client.list_alerts()
+        alert_model_list = unisphere_alerts.AlertHandler()\
+            .parse_queried_alerts(alert_list)
+        return alert_model_list

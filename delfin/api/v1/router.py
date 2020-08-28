@@ -70,6 +70,11 @@ class APIRouter(common.APIRouter):
                        action="delete",
                        conditions={"method": ["DELETE"]})
 
+        mapper.connect("storages", "/storages/{id}/alerts",
+                       controller=self.resources['alerts'],
+                       action="show",
+                       conditions={"method": ["GET"]})
+
         self.resources['storage-pools'] = storage_pools.create_resource()
         mapper.resource("storage-pool", "storage-pools",
                         controller=self.resources['storage-pools'])

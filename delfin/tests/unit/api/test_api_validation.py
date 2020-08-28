@@ -261,18 +261,18 @@ class StringTestCase(APIValidationTestCase):
                          self.post(body={'foo': ''}, req=FakeRequest()))
 
     def test_validate_string_fails(self):
-        detail = ("Invalid input for field/attribute foo. Value: 1."
-                  " 1 is not of type 'string'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "1 is not of type 'string'")
         self.check_validation_error(self.post, body={'foo': 1},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 1.5."
-                  " 1.5 is not of type 'string'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "1.5 is not of type 'string'")
         self.check_validation_error(self.post, body={'foo': 1.5},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: True."
-                  " True is not of type 'string'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "True is not of type 'string'")
         self.check_validation_error(self.post, body={'foo': True},
                                     expected_detail=detail)
 
@@ -300,12 +300,12 @@ class StringLengthTestCase(APIValidationTestCase):
                                    req=FakeRequest()))
 
     def test_validate_string_length_fails(self):
-        detail = ("Invalid input for field/attribute foo. Value: ."
+        detail = ("Invalid input for field/attribute foo."
                   " '' is too short")
         self.check_validation_error(self.post, body={'foo': ''},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 0123456789a."
+        detail = ("Invalid input for field/attribute foo."
                   " '0123456789a' is too long")
         self.check_validation_error(self.post, body={'foo': '0123456789a'},
                                     expected_detail=detail)
@@ -335,28 +335,28 @@ class IntegerTestCase(APIValidationTestCase):
                                    req=FakeRequest()))
 
     def test_validate_integer_fails(self):
-        detail = ("Invalid input for field/attribute foo. Value: abc."
-                  " 'abc' does not match '^[0-9]+$'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "'abc' does not match '^[0-9]+$'")
         self.check_validation_error(self.post, body={'foo': 'abc'},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: True."
-                  " True is not of type 'integer', 'string'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "True is not of type 'integer', 'string'")
         self.check_validation_error(self.post, body={'foo': True},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 0xffff."
-                  " '0xffff' does not match '^[0-9]+$'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "'0xffff' does not match '^[0-9]+$'")
         self.check_validation_error(self.post, body={'foo': '0xffff'},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 1.0."
-                  " 1.0 is not of type 'integer', 'string'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "1.0 is not of type 'integer', 'string'")
         self.check_validation_error(self.post, body={'foo': 1.0},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 1.0."
-                  " '1.0' does not match '^[0-9]+$'")
+        detail = ("Invalid input for field/attribute foo. "
+                  "'1.0' does not match '^[0-9]+$'")
         self.check_validation_error(self.post, body={'foo': '1.0'},
                                     expected_detail=detail)
 
@@ -386,23 +386,23 @@ class IntegerRangeTestCase(APIValidationTestCase):
                          self.post(body={'foo': '1'}, req=FakeRequest()))
 
     def test_validate_integer_range_fails(self):
-        detail = ("Invalid input for field/attribute foo. Value: 0."
-                  " 0 is less than the minimum of 1")
+        detail = ("Invalid input for field/attribute foo. "
+                  "0 is less than the minimum of 1")
         self.check_validation_error(self.post, body={'foo': 0},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 11."
-                  " 11 is greater than the maximum of 10")
+        detail = ("Invalid input for field/attribute foo. "
+                  "11 is greater than the maximum of 10")
         self.check_validation_error(self.post, body={'foo': 11},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 0."
-                  " 0 is less than the minimum of 1")
+        detail = ("Invalid input for field/attribute foo. "
+                  "0 is less than the minimum of 1")
         self.check_validation_error(self.post, body={'foo': '0'},
                                     expected_detail=detail)
 
-        detail = ("Invalid input for field/attribute foo. Value: 11."
-                  " 11 is greater than the maximum of 10")
+        detail = ("Invalid input for field/attribute foo. "
+                  "11 is greater than the maximum of 10")
         self.check_validation_error(self.post, body={'foo': '11'},
                                     expected_detail=detail)
 

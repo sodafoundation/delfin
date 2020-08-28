@@ -35,8 +35,8 @@ MiB_TO_Bytes = 1024 * 1024
 # Page size per page at default paging
 QUERY_PAGE_SIZE = 150
 # Connection timeout
-LOGIN_SOCKET_TIMEOUT = 4
-SOCKET_TIMEOUT = 30
+LOGIN_SOCKET_TIMEOUT = 10
+SOCKET_TIMEOUT = 10
 # 403  The client request has an invalid session key.
 # The request came from a different IP address
 ERROR_SESSION_INVALID_CODE = 403

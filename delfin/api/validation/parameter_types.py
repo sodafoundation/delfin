@@ -167,8 +167,7 @@ hostname_or_ip_address = {
 }
 
 tcp_udp_port = {
-    'type': ['integer', 'string'],
-    'pattern': '^[0-9]*$',
+    'type': 'integer',
     'minimum': 0, 'maximum': 65535
 }
 
@@ -179,17 +178,18 @@ snmp_version = {
 
 snmp_auth_protocol = {
     'type': 'string',
-    'enum': ['SHA', 'sha', 'MD5', 'md5'],
+    'enum': ['HMACSHA', 'HMACMD5', 'HMCSHA2224',
+             'HMCSHA2256', 'HMCSHA2384', 'HMCSHA2512'],
 }
 
 snmp_privacy_protocol = {
     'type': 'string',
-    'enum': ['AES', 'aes', 'DES', 'des', '3DES', '3des'],
+    'enum': ['DES', 'AES', 'AES192', 'AES256', '3DES'],
 }
 
 snmp_security_level = {
     'type': 'string',
-    'enum': ['AuthPriv', 'AuthNoPriv', 'NoAuthNoPriv'],
+    'enum': ['authPriv', 'authNoPriv', 'noAuthnoPriv'],
 }
 
 host_key_type = {

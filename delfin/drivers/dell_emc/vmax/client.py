@@ -42,14 +42,18 @@ class VMAXClient(object):
 
     def init_connection(self, access_info):
         """ Given the access_info get a connection to VMAX storage """
-
         try:
             ver, self.uni_version = self.rest.get_uni_version()
             LOG.info('Connected to Unisphere Version: {0}'.format(ver))
-        except Exception as err:
-            msg = "Failed to connect to VMAX: {}".format(err)
+        except exception.InvalidCredential as e:
+            msg = "Failed to connect VMAX. Reason: {}".format(e.msg)
             LOG.error(msg)
-            raise exception.StorageBackendException(msg)
+            raise e
+        except Exception as err:
+            msg = ("Failed to connect to VMAX. Host or Port is not correct: "
+                   "{}".format(err))
+            LOG.error(msg)
+            raise exception.HTTPConnectionTimeout(msg)
 
         if not self.uni_version:
             msg = "Invalid input. Failed to get vmax unisphere version"
@@ -206,3 +210,13 @@ class VMAXClient(object):
             msg = "Failed to get list volumes from VMAX: {}".format(err)
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
+
+    def list_alerts(self):
+        """Get all alerts from an array."""
+        return self.rest.get_alerts(version=self.uni_version,
+                                    array=self.array_id)
+
+    def clear_alert(self, sequence_number):
+        """Clear alert for given sequence number."""
+        return self.rest.clear_alert(sequence_number, version=self.uni_version,
+                                     array=self.array_id)

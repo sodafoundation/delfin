@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import copy
-from delfin import cryptor
 
 
-def build_alert_source(value):
-    view = copy.deepcopy(value)
-    view.pop("auth_key")
-    view.pop("privacy_key")
-    version = view['version']
-    if version.lower() != 'snmpv3':
-        view['community_string'] = cryptor.decode(view['community_string'])
+def build_alerts(alerts):
+    # Build list of alerts
+    views = [build_alert(alert)
+             for alert in alerts]
+    return dict(alerts=views)
+
+
+def build_alert(alert):
+    view = copy.deepcopy(alert)
     return dict(view)

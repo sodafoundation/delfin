@@ -40,6 +40,10 @@ STATUS_200 = 200
 STATUS_201 = 201
 STATUS_202 = 202
 STATUS_204 = 204
+STATUS_401 = 401
+
+# Default expiration time(in sec) for vmax connect request
+VERSION_GET_TIME_OUT = 10
 
 
 class VMaxRest(object):
@@ -88,12 +92,14 @@ class VMaxRest(object):
 
         return session
 
-    def request(self, target_uri, method, params=None, request_object=None):
+    def request(self, target_uri, method, params=None, request_object=None,
+                timeout=None):
         """Sends a request (GET, POST, PUT, DELETE) to the target api.
         :param target_uri: target uri (string)
         :param method: The method (GET, POST, PUT, or DELETE)
         :param params: Additional URL parameters
         :param request_object: request payload (dict)
+        :param timeout: expiration timeout(in sec)
         :returns: server response object (dict)
         :raises: StorageBackendException, Timeout, ConnectionError,
                  HTTPError, SSLError
@@ -112,13 +118,13 @@ class VMaxRest(object):
                 response = self.session.request(
                     method=method, url=url,
                     data=json.dumps(request_object, sort_keys=True,
-                                    indent=4))
+                                    indent=4), timeout=timeout)
             elif params:
                 response = self.session.request(
-                    method=method, url=url, params=params)
+                    method=method, url=url, params=params, timeout=timeout)
             else:
                 response = self.session.request(
-                    method=method, url=url)
+                    method=method, url=url, timeout=timeout)
 
             status_code = response.status_code
 
@@ -323,6 +329,18 @@ class VMaxRest(object):
             resource_object = self.list_pagination(resource_object)
         return resource_object
 
+    def get_alert_request(self, target_uri):
+        """Send a GET request to the array.
+        :param target_uri: the target uri
+        :returns: resource_object -- dict or None
+        """
+        sc, message = self.request(target_uri, GET, params=None)
+        if sc != STATUS_200:
+            raise exception.StorageListAlertFailed(message)
+        resource_object = message
+        resource_object = self.list_pagination(resource_object)
+        return resource_object
+
     def get_resource(self, array, category, resource_type,
                      resource_name=None, params=None, private=False,
                      version=U4V_VERSION):
@@ -373,9 +391,14 @@ class VMaxRest(object):
         post_90_endpoint = '/version'
         pre_91_endpoint = '/system/version'
 
-        status_code, version_dict = self.request(post_90_endpoint, GET)
+        status_code, version_dict = self.request(
+            post_90_endpoint, GET, timeout=VERSION_GET_TIME_OUT)
         if status_code is not STATUS_200:
-            status_code, version_dict = self.request(pre_91_endpoint, GET)
+            status_code, version_dict = self.request(
+                pre_91_endpoint, GET, timeout=VERSION_GET_TIME_OUT)
+
+        if status_code == STATUS_401:
+            raise exception.InvalidCredential()
 
         if not version_dict:
             LOG.error("Unisphere version info not found.")
@@ -401,16 +424,10 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
-        vmax_version = None
-        vmax_ucode = None
-        vmax_display_name = None
         system_info = self.get_array_detail(version, array)
-        if system_info and system_info.get('model'):
-            vmax_version = system_info.get('model')
-        if system_info and system_info.get('ucode'):
-            vmax_ucode = system_info.get('ucode')
-        if system_info and system_info.get('display_name'):
-            vmax_display_name = system_info.get('display_name')
+        vmax_version = system_info.get('model')
+        vmax_ucode = system_info.get('ucode')
+        vmax_display_name = system_info.get('display_name')
         array_details = {"model": vmax_version,
                          "ucode": vmax_ucode,
                          "display_name": vmax_display_name}
@@ -422,15 +439,12 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
-        array_model = None
         is_next_gen = False
         system_info = self.get_array_detail(version, array)
-        if system_info and system_info.get('model'):
-            array_model = system_info.get('model')
-        if system_info:
-            ucode_version = system_info['ucode'].split('.')[0]
-            if ucode_version >= UCODE_5978:
-                is_next_gen = True
+        array_model = system_info.get('model', None)
+        ucode_version = system_info['ucode'].split('.')[0]
+        if ucode_version >= UCODE_5978:
+            is_next_gen = True
         return array_model, is_next_gen
 
     def get_storage_group(self, array, version, storage_group_name):
@@ -566,3 +580,46 @@ class VMaxRest(object):
                 pass
 
         return iterator_result
+
+    def get_alerts(self, array, version):
+        """Get all alerts with given version and arrayid
+        :param array: the array serial number
+        :param version: the unisphere version
+        :returns: alert_list -- dict or None
+        """
+        target_uri = '/%s/system/symmetrix/%s/alert?acknowledged=false' \
+                     % (version, array)
+
+        # First get list of all alert ids
+        alert_id_list = self.get_alert_request(target_uri)
+        if not alert_id_list:
+            # No current alert ids found
+            return []
+
+        # For each alert id, get details of alert
+        # Above list is prefixed with 'alertId'
+        alert_id_list = alert_id_list['alertId']
+        alert_list = []
+        for alert_id in alert_id_list:
+            target_uri = '/%s/system/symmetrix/%s/alert/%s' \
+                         % (version, array, alert_id)
+            alert = self.get_alert_request(target_uri)
+            if alert is not None:
+                alert_list.append(alert)
+
+        return alert_list
+
+    def clear_alert(self, sequence_number, array, version):
+        """Clears alert for given sequence number
+        :param sequence_number: unique id of the alert
+        :param array: the array serial number
+        :param version: the unisphere version
+        :returns: result -- success/failure
+        """
+        target_uri = '/%s/system/symmetrix/%s/alert/%s' \
+                     % (version, array, sequence_number)
+
+        status, message = self.request(target_uri, DELETE, params=None)
+        if status != STATUS_204:
+            raise exception.StorageClearAlertFailed(message)
+        return status
