@@ -14,10 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import json
-
-import requests
-
 from oslo_log import log as logging
 
 from delfin import exception
@@ -27,7 +23,7 @@ from delfin.i18n import _
 LOG = logging.getLogger(__name__)
 
 
-class RestClient(object):
+class RestHandler(object):
     """Common class for Hpe 3parStor storage system."""
     # https://<storage_system>:8080/api/v1/credentials
     REST_AUTH_URL = '/api/v1/credentials'  # POST
@@ -43,73 +39,8 @@ class RestClient(object):
     # X-HP3PAR-WSAPI-SessionKey
     REST_AUTH_KEY = 'X-HP3PAR-WSAPI-SessionKey'
 
-    def __init__(self, **kwargs):
-
-        rest_access = kwargs.get('rest')
-        if rest_access is None:
-            raise exception.InvalidInput('Input rest_access is missing')
-        self.rest_host = rest_access.get('host')
-        self.rest_port = rest_access.get('port')
-        self.rest_username = rest_access.get('username')
-        self.rest_password = rest_access.get('password')
-        # Lists of addresses to try, for authorization
-        self.san_address = 'https://' + self.rest_host + ':' + \
-                           str(self.rest_port)
-        self.session = None
-        self.device_id = None
-        # test
-        self.enable_verify = False
-        self.ca_path = 'certificate verification file path'
-        self.REST_AUTH_TOKEN = None
-
-    def init_http_head(self):
-        self.session = requests.Session()
-        self.session.headers.update({
-            "Connection": "keep-alive",
-            'Accept': 'application/json',
-            "Content-Type": "application/json"})
-        self.session.verify = False
-        if not self.enable_verify:
-            self.session.verify = False
-        else:
-            LOG.debug("Enable certificate verification, ca_path: {0}".format(
-                self.ca_path))
-            self.session.verify = self.ca_path
-        self.session.trust_env = False
-
-    def do_call(self, url, data, method,
-                calltimeout=consts.SOCKET_TIMEOUT):
-        """Send requests to Hpe3par storage server.
-        """
-        if 'http' not in url:
-            if self.san_address:
-                url = self.san_address + url
-
-        kwargs = {'timeout': calltimeout}
-        if data:
-            kwargs['data'] = json.dumps(data)
-
-        if method in ('POST', 'PUT', 'GET', 'DELETE'):
-            func = getattr(self.session, method.lower())
-        else:
-            msg = _("Request method %s is invalid.") % method
-            LOG.error(msg)
-            raise exception.StorageBackendException(reason=msg)
-        res = None
-        try:
-            res = func(url, **kwargs)
-        except requests.exceptions.ConnectTimeout as ct:
-            LOG.error('ConnectTimeout err: {}'.format(ct))
-            raise exception.ConnectTimeout()
-        except Exception as err:
-            LOG.exception('Bad response from server: %(url)s.'
-                          ' Error: %(err)s', {'url': url, 'err': err})
-            if 'WSAETIMEDOUT' in str(err):
-                raise exception.ConnectTimeout()
-            else:
-                raise exception.BadResponse()
-
-        return res
+    def __init__(self, restclient):
+        self.restclient = restclient
 
     def call(self, url, data=None, method=None):
         """Send requests to server.
@@ -117,15 +48,15 @@ class RestClient(object):
         Increase the judgment of token invalidation
         """
 
-        if self.session is None:
-            self.init_http_head()
-            if self.REST_AUTH_TOKEN is not None:
+        if self.restclient.session is None:
+            self.restclient.init_http_head()
+            if self.restclient.rest_auth_token is not None:
                 # set taken in the header，key is X-HP3PAR-WSAPI-SessionKey
-                self.session.headers[
-                    RestClient.REST_AUTH_KEY] = self.REST_AUTH_TOKEN
+                self.restclient.session.headers[RestHandler.REST_AUTH_KEY] = \
+                    self.restclient.rest_auth_token
 
-        res = self.do_call(url, data, method)
-
+        res = self.restclient.do_call(url, data, method,
+                                      calltimeout=consts.SOCKET_TIMEOUT)
         # Judge whether the access failure is caused by
         # the token invalidation.
         # If the token fails, it will be retrieved again,
@@ -147,18 +78,19 @@ class RestClient(object):
                 except Exception as err:
                     LOG.error('logout error:{}'.format(err))
 
-                self.REST_AUTH_TOKEN = None
+                self.restclient.rest_auth_token = None
                 access_session = self.login()
                 # if get token，Revisit url
                 if access_session is not None:
-                    res = self.do_call(url, data, method)
+                    res = self.restclient. \
+                        do_call(url, data, method,
+                                calltimeout=consts.SOCKET_TIMEOUT)
         else:
             LOG.error('login res is None')
         return res
 
-    def get_resinfo_call(self, url, data=None, method=None, resName=None):
+    def get_resinfo_call(self, url, data=None, method=None):
         rejson = None
-
         # visit url
         res = self.call(url, data, method)
         if res is not None:
@@ -168,18 +100,19 @@ class RestClient(object):
 
     def login(self):
         """Login Hpe3par storage array."""
-        access_session = self.REST_AUTH_TOKEN
+        access_session = self.restclient.rest_auth_token
 
         if access_session is None:
-            if self.san_address:
-                url = RestClient.REST_AUTH_URL
+            if self.restclient.san_address:
+                url = RestHandler.REST_AUTH_URL
 
-                data = {"user": self.rest_username,
-                        "password": self.rest_password
+                data = {"user": self.restclient.rest_username,
+                        "password": self.restclient.rest_password
                         }
-                self.init_http_head()
-                res = self.do_call(url, data, 'POST',
-                                   calltimeout=consts.SOCKET_TIMEOUT)
+                self.restclient.init_http_head()
+                res = self.restclient. \
+                    do_call(url, data, 'POST',
+                            calltimeout=consts.SOCKET_TIMEOUT)
 
                 if res is not None:
                     # check login status 201
@@ -187,11 +120,11 @@ class RestClient(object):
                         result = res.json()
 
                         access_session = result.get('key')
-                        self.REST_AUTH_TOKEN = access_session
+                        self.restclient.rest_auth_token = access_session
                         # set taken in the header，
                         # key is X-HP3PAR-WSAPI-SessionKey
-                        self.session.headers[
-                            RestClient.REST_AUTH_KEY] = access_session
+                        self.restclient.session.headers[
+                            RestHandler.REST_AUTH_KEY] = access_session
                     else:
                         LOG.error("Login error. URL: %(url)s\n"
                                   "Reason: %(reason)s.",
@@ -219,11 +152,11 @@ class RestClient(object):
     def logout(self):
         """Logout the session."""
         try:
-            url = RestClient.REST_LOGOUT_URL
-            if self.REST_AUTH_TOKEN is not None:
-                url = url + self.REST_AUTH_TOKEN
-            self.REST_AUTH_TOKEN = None
-            if self.san_address:
+            url = RestHandler.REST_LOGOUT_URL
+            if self.restclient.rest_auth_token is not None:
+                url = url + self.restclient.rest_auth_token
+            self.restclient.rest_auth_token = None
+            if self.restclient.san_address:
                 self.call(url, method='DELETE')
         except Exception as err:
             LOG.error('logout error:{}'.format(err))
@@ -231,27 +164,21 @@ class RestClient(object):
                 reason='Failed to Logout from restful')
 
     def get_storage(self):
-        rejson = self.get_resinfo_call(RestClient.REST_STORAGE_URL,
-                                       method='GET', resName='storage')
+        rejson = self.get_resinfo_call(RestHandler.REST_STORAGE_URL,
+                                       method='GET')
         return rejson
 
     def get_capacity(self):
-        rejson = self.get_resinfo_call(RestClient.REST_CAPACITY_URL,
-                                       method='GET', resName='capacity')
+        rejson = self.get_resinfo_call(RestHandler.REST_CAPACITY_URL,
+                                       method='GET')
         return rejson
 
     def get_all_pools(self):
-        rejson = self.get_resinfo_call(RestClient.REST_POOLS_URL, method='GET',
-                                       resName='pool')
+        rejson = self.get_resinfo_call(RestHandler.REST_POOLS_URL,
+                                       method='GET')
         return rejson
 
     def get_all_volumes(self):
-        rejson = self.get_resinfo_call(RestClient.REST_VOLUMES_URL,
-                                       method='GET',
-                                       resName='volume paginated')
-        return rejson
-
-    def get_all_alerts(self):
-        rejson = self.get_resinfo_call(RestClient.REST_ALERTS_URL,
-                                       method='GET', resName='pool')
+        rejson = self.get_resinfo_call(RestHandler.REST_VOLUMES_URL,
+                                       method='GET')
         return rejson
