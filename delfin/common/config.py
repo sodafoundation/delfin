@@ -100,6 +100,16 @@ global_opts = [
 CONF.register_opts(global_opts)
 
 
+storage_driver_opts = [
+    cfg.StrOpt('ca_path',
+               default='',
+               help='"": Disable SSL certificate verification, '
+                    '/path/to/file: Use SSL certificate from file location')
+]
+
+CONF.register_opts(storage_driver_opts, group='storage_driver')
+
+
 def set_middleware_defaults():
     """Update default configuration options for oslo.middleware."""
     cors.set_defaults(
