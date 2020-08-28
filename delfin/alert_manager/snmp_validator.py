@@ -34,6 +34,7 @@ LOG = log.getLogger(__name__)
 class SNMPValidator(object):
     def __init__(self):
         self.exporter = base_exporter.AlertExporterManager()
+        self.snmp_error_flag = {}
 
     def validate(self, ctxt, alert_source):
         alert_source = dict(alert_source)
@@ -45,12 +46,18 @@ class SNMPValidator(object):
             # engine id if engine id is empty. Therefore, engine id
             # should be saved in database.
             if not engine_id and alert_source.get('engine_id'):
-                db.access_info_update(ctxt,
-                                      alert_source.get('storage_id'),
-                                      alert_source)
 
+                alert_source_dict = {
+                    'engine_id': alert_source.get('engine_id')}
+                db.alert_source_update(ctxt,
+                                       alert_source.get('storage_id'),
+                                       alert_source_dict)
+            self._handle_validation_result(ctxt,
+                                           alert_source.get('storage_id'),
+                                           constants.Category.RECOVERY)
         except exception.SNMPConnectionFailed:
-            self._handle_validation_error(ctxt, alert_source.get('storage_id'))
+            self._handle_validation_result(ctxt,
+                                           alert_source.get('storage_id'))
         except Exception as e:
             msg = six.text_type(e)
             LOG.error("Failed to check snmp config. Reason: %s", msg)
@@ -153,31 +160,42 @@ class SNMPValidator(object):
                   "reason: %s." % msg)
         raise exception.SNMPConnectionFailed(msg)
 
-    def _handle_validation_error(self, ctxt, storage_id):
+    def _handle_validation_result(self, ctxt, storage_id,
+                                  category=constants.Category.FAULT):
         try:
             storage = db.storage_get(ctxt, storage_id)
-            alert = {
-                'storage_id': storage['id'],
-                'storage_name': storage['name'],
-                'vendor': storage['vendor'],
-                'model': storage['model'],
-                'serial_number': storage['serial_number'],
-                'alert_id': constants.INTERNAL_ALERT_ID,
-                'sequence_number': 0,
-                'alert_name': 'SNMP connect failed',
-                'category': constants.Category.FAULT,
-                'severity': constants.Severity.MAJOR,
-                'type': constants.EventType.COMMUNICATIONS_ALARM,
-                'location': 'NetworkEntity=%s' % storage['name'],
-                'description': "SNMP connection to the storage failed. "
-                               "SNMP traps from storage will not be received.",
-                'recovery_advice': "1. The network connection is abnormal. "
-                                   "2. SNMP authentication parameters "
-                                   "are invalid.",
-                'occur_time': int(datetime.utcnow().timestamp()) * 1000,
-            }
-            self.exporter.dispatch(ctxt, alert)
+            serial_number = storage.get('serial_number')
+            if category == constants.Category.FAULT:
+                self.snmp_error_flag[serial_number] = True
+                self._dispatch_snmp_validation_alert(ctxt, storage, category)
+            elif self.snmp_error_flag.get(serial_number, True):
+                self.snmp_error_flag[serial_number] = False
+                self._dispatch_snmp_validation_alert(ctxt, storage, category)
         except Exception as e:
             msg = six.text_type(e)
             LOG.error("Exception occurred when handling validation "
                       "error: %s ." % msg)
+
+    def _dispatch_snmp_validation_alert(self, ctxt, storage, category):
+
+        alert = {
+            'storage_id': storage['id'],
+            'storage_name': storage['name'],
+            'vendor': storage['vendor'],
+            'model': storage['model'],
+            'serial_number': storage['serial_number'],
+            'alert_id': constants.SNMP_CONNECTION_FAILED_ALERT_ID,
+            'sequence_number': 0,
+            'alert_name': 'SNMP connect failed',
+            'category': category,
+            'severity': constants.Severity.MAJOR,
+            'type': constants.EventType.COMMUNICATIONS_ALARM,
+            'location': 'NetworkEntity=%s' % storage['name'],
+            'description': "SNMP connection to the storage failed. "
+                           "SNMP traps from storage will not be received.",
+            'recovery_advice': "1. The network connection is abnormal. "
+                               "2. SNMP authentication parameters "
+                               "are invalid.",
+            'occur_time': int(datetime.utcnow().timestamp()) * 1000,
+        }
+        self.exporter.dispatch(ctxt, alert)

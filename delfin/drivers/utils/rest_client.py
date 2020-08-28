@@ -44,8 +44,7 @@ class RestClient(object):
         self.session = None
         self.device_id = None
         # test
-        self.enable_verify = kwargs.get('enable_verify', False)
-        self.ca_path = kwargs.get('ca_path', '')
+        self.verify = kwargs.get('verify', False)
         self.rest_auth_token = None
 
     def init_http_head(self):
@@ -54,13 +53,12 @@ class RestClient(object):
             "Connection": "keep-alive",
             'Accept': 'application/json',
             "Content-Type": "application/json"})
-        self.session.verify = False
-        if not self.enable_verify:
+        if not self.verify:
             self.session.verify = False
         else:
             LOG.debug("Enable certificate verification, ca_path: {0}".format(
-                self.ca_path))
-            self.session.verify = self.ca_path
+                self.verify))
+            self.session.verify = self.verify
         self.session.trust_env = False
 
     def do_call(self, url, data, method,
