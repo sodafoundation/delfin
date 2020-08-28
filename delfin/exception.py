@@ -256,3 +256,7 @@ class StorageListAlertFailed(DelfinException):
 
 class HTTPConnectionTimeout(DelfinException):
     msg_fmt = _("HTTP connection timeout: {0}.")
+
+
+class InvalidCAPath(DelfinException):
+    msg_fmt = _("Invalid CA path: {0}.")

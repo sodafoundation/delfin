@@ -55,25 +55,21 @@ class VMaxRest(object):
         self.user = None
         self.passwd = None
         self.verify = None
-        self.cert = None
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def set_rest_credentials(self, array_info, verify):
+    def set_rest_credentials(self, array_info):
         """Given the array record set the rest server credentials.
         :param array_info: record
-        :param extra_attrib: record
         """
         ip = array_info['host']
         port = array_info['port']
         self.user = array_info['username']
         self.passwd = array_info['password']
-        self.verify = verify
-        ip_port = "%(ip)s:%(port)s" % {'ip': ip, 'port': port}
+        ip_port = "%(ip)s:%(port)d" % {'ip': ip, 'port': port}
         self.base_uri = ("https://%(ip_port)s/univmax/restapi" % {
             'ip_port': ip_port})
-        self.session = self._establish_rest_session()
 
-    def _establish_rest_session(self):
+    def establish_rest_session(self):
         """Establish the rest session.
         :returns: requests.session() -- session, the rest session
         """
@@ -87,7 +83,11 @@ class VMaxRest(object):
                            'Application-Type': 'delfin'}
         session.auth = requests.auth.HTTPBasicAuth(self.user, self.passwd)
 
-        if self.verify is not None:
+        if not self.verify:
+            session.verify = False
+        else:
+            LOG.debug("Enable certificate verification, ca_path: {0}".format(
+                self.verify))
             session.verify = self.verify
 
         return session
@@ -107,7 +107,7 @@ class VMaxRest(object):
 
         url, message, status_code, response = None, None, None, None
         if not self.session:
-            self.session = self._establish_rest_session()
+            self.session = self.establish_rest_session()
 
         try:
             url = ("%(self.base_uri)s%(target_uri)s" % {

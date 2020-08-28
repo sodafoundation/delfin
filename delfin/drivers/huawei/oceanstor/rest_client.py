@@ -16,13 +16,16 @@
 
 import json
 
-from oslo_log import log as logging
 import requests
 import six
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
+from oslo_log import log as logging
 
 from delfin import exception
-from delfin.i18n import _
 from delfin.drivers.huawei.oceanstor import consts
+from delfin.ssl_utils import HostNameIgnoreAdapter
+from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
 
@@ -39,13 +42,26 @@ class RestClient(object):
         self.rest_port = rest_access.get('port')
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
+
         # Lists of addresses to try, for authorization
-        self.san_address = [
-            'https://' + self.rest_host + ':' + self.rest_port +
-            '/deviceManager/rest/']
+        address = 'https://%(host)s:%(port)s/deviceManager/rest/' % \
+                  {'host': self.rest_host, 'port': str(self.rest_port)}
+        self.san_address = [address]
         self.session = None
         self.url = None
         self.device_id = None
+        self.verify = None
+        urllib3.disable_warnings(InsecureRequestWarning)
+        self.reset_connection(**kwargs)
+
+    def reset_connection(self, **kwargs):
+        self.verify = kwargs.get('verify', False)
+        try:
+            self.login()
+        except Exception as ex:
+            msg = "Failed to login to OceanStor: {}".format(ex)
+            LOG.error(msg)
+            raise exception.InvalidCredential(msg)
 
     def init_http_head(self):
         self.url = None
@@ -53,7 +69,14 @@ class RestClient(object):
         self.session.headers.update({
             "Connection": "keep-alive",
             "Content-Type": "application/json"})
-        self.session.verify = False
+        if not self.verify:
+            self.session.verify = False
+        else:
+            LOG.debug("Enable certificate verification, verify: {0}".format(
+                self.verify))
+            self.session.verify = self.verify
+            self.session.mount("https://", HostNameIgnoreAdapter())
+
         self.session.trust_env = False
 
     def do_call(self, url, data, method,
@@ -79,6 +102,11 @@ class RestClient(object):
 
         try:
             res = func(url, **kwargs)
+        except requests.exceptions.SSLError as ssl_exc:
+            LOG.exception('SSLError exception from server: %(url)s.'
+                          ' Error: %(err)s', {'url': url, 'err': ssl_exc})
+            return {"error": {"code": consts.ERROR_CONNECT_TO_SERVER,
+                              "description": "Retry with valid certificate."}}
         except Exception as err:
             LOG.exception('Bad response from server: %(url)s.'
                           ' Error: %(err)s', {'url': url, 'err': err})
