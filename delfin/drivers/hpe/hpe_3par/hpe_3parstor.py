@@ -49,8 +49,9 @@ class Hpe3parStorDriver(driver.StorageDriver):
             resthanlder=self.resthanlder, sshhanlder=self.sshhanlder)
 
     def reset_connection(self, context, **kwargs):
-        # TODO: implement reset_connection
-        pass
+        self.resthanlder.logout()
+        self.restclient.verify = kwargs.get('verify', False)
+        self.resthanlder.login()
 
     def get_storage(self, context):
         # get storage info
