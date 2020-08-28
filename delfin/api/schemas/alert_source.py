@@ -14,7 +14,8 @@
 
 from delfin.api.validation import parameter_types
 
-
+# engineId is in range (5-32) octet which is 10-64 hex characters
+# If it is odd length, 0 will be prefixed to last octet, so minimum length is 9
 put = {
     'type': 'object',
     'properties': {
@@ -22,15 +23,15 @@ put = {
         'version': parameter_types.snmp_version,
         'community_string': {'type': 'string',
                              'minLength': 1,
-                             'maxLength': 255},
-        'username': {'type': 'string', 'minLength': 1, 'maxLength': 255},
+                             'maxLength': 32},
+        'username': {'type': 'string', 'minLength': 1, 'maxLength': 32},
         'security_level': parameter_types.snmp_security_level,
-        'auth_key': {'type': 'string', 'minLength': 1, 'maxLength': 255},
+        'auth_key': {'type': 'string', 'minLength': 8, 'maxLength': 65535},
         'auth_protocol': parameter_types.snmp_auth_protocol,
         'privacy_protocol': parameter_types.snmp_privacy_protocol,
-        'privacy_key': {'type': 'string', 'minLength': 1, 'maxLength': 255},
-        'engine_id': {'type': 'string', 'minLength': 1, 'maxLength': 255},
-        'context_name': {'type': 'string'},
+        'privacy_key': {'type': 'string', 'minLength': 8, 'maxLength': 65535},
+        'engine_id': {'type': 'string', 'minLength': 9, 'maxLength': 64},
+        'context_name': {'type': 'string', 'minLength': 0, 'maxLength': 32},
         'retry_num': {'type': 'integer'},
         'expiration': {'type': 'integer'},
         'port': parameter_types.tcp_udp_port
