@@ -36,11 +36,11 @@ class Hpe3parStorDriver(driver.StorageDriver):
 
         self.rest_client = RestClient(**kwargs)
         self.rest_handler = rest_handler.RestHandler(self.rest_client)
-        self.rest_handler.login()
+        self.rest_handler.login(context)
 
         self.ssh_client = SSHClient(**kwargs)
         self.ssh_handler = ssh_handler.SSHHandler(self.ssh_client)
-        self.version = self.ssh_handler.login()
+        self.version = self.ssh_handler.login(context)
 
         self.comhandler = component_handler.ComponentHandler(
             rest_handler=self.rest_handler, ssh_handler=self.ssh_handler)
@@ -51,18 +51,18 @@ class Hpe3parStorDriver(driver.StorageDriver):
     def reset_connection(self, context, **kwargs):
         self.rest_handler.logout()
         self.rest_client.verify = kwargs.get('verify', False)
-        self.rest_handler.login()
+        self.rest_handler.login(context)
 
     def get_storage(self, context):
-        return self.comhandler.get_storage()
+        return self.comhandler.get_storage(context)
 
     def list_storage_pools(self, context):
         self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_storage_pools()
+        return self.comhandler.list_storage_pools(context)
 
     def list_volumes(self, context):
         self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_volumes()
+        return self.comhandler.list_volumes(context)
 
     def list_alerts(self, context):
         return self.alert_handler.list_alerts()

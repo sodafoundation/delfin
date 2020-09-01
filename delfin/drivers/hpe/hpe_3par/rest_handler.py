@@ -95,7 +95,7 @@ class RestHandler(object):
                 rejson = res.json()
         return rejson
 
-    def login(self):
+    def login(self, context):
         """Login Hpe3par storage array."""
         access_session = self.rest_client.rest_auth_token
 

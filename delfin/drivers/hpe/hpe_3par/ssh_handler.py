@@ -31,7 +31,7 @@ class SSHHandler(object):
     def __init__(self, ssh_client):
         self.ssh_client = ssh_client
 
-    def login(self):
+    def login(self, context):
         """SSH connection """
         version = ''
         try:

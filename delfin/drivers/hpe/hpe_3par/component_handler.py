@@ -36,7 +36,7 @@ class ComponentHandler():
     def set_storage_id(self, storage_id):
         self.storage_id = storage_id
 
-    def get_storage(self):
+    def get_storage(self, context):
         # get storage info
         storage = self.rest_handler.get_storage()
         # get capacity
@@ -102,7 +102,7 @@ class ComponentHandler():
             }
         return s
 
-    def list_storage_pools(self):
+    def list_storage_pools(self, context):
         try:
             # Get list of Hpe3parStor pool details
             pools = self.rest_handler.get_all_pools()
@@ -166,7 +166,7 @@ class ComponentHandler():
             raise exception.StorageBackendException(
                 reason='Failed to get pool metrics from Hpe3parStor')
 
-    def list_volumes(self):
+    def list_volumes(self, context):
         try:
             # Get all volumes in Hpe3parStor
             volumes = self.rest_handler.get_all_volumes()
