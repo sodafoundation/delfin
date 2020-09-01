@@ -90,7 +90,7 @@ class TestHpe3parStorageDriver(TestCase):
             with self.assertRaises(Exception) as exc:
                 rc = RestClient(**kwargs)
                 rh = RestHandler(rc)
-                rh.login()
+                rh.login(context)
             self.assertIn('Unacceptable parameters', str(exc.exception))
 
     def test_c_initssh(self):
