@@ -23,22 +23,15 @@ from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
 
-
 class AlertHandler(object):
     """Alert handling functions for Hpe3 parstor driver"""
-    # messageCode
+
     OID_MESSAGECODE = '1.3.6.1.4.1.12925.1.7.1.8.1'
-    # severity
     OID_SEVERITY = '1.3.6.1.4.1.12925.1.7.1.2.1'
-    # state
     OID_STATE = '1.3.6.1.4.1.12925.1.7.1.9.1'
-    # id
     OID_ID = '1.3.6.1.4.1.12925.1.7.1.7.1'
-    # timeOccurred
     OID_TIMEOCCURRED = '1.3.6.1.4.1.12925.1.7.1.3.1'
-    # details
     OID_DETAILS = '1.3.6.1.4.1.12925.1.7.1.6.1'
-    # component
     OID_COMPONENT = '1.3.6.1.4.1.12925.1.7.1.5.1'
 
     # Translation of trap severity to alert model severity
@@ -72,13 +65,11 @@ class AlertHandler(object):
     # Convert received time to epoch format
     TIME_PATTERN = '%Y-%m-%d %H:%M:%S CST'
 
-    default_me_category = 'storage-subsystem'
+    def __init__(self, rest_handler=None, ssh_handler=None):
+        self.rest_handler = rest_handler
+        self.ssh_handler = ssh_handler
 
-    def __init__(self, resthanlder=None, sshhanlder=None):
-        self.resthanlder = resthanlder
-        self.sshhanlder = sshhanlder
-
-    def parse_alert(self, context, alert):
+    def parse_alert(self, alert):
         """Parse alert data got from alert manager and fill the alert model."""
         # Check for mandatory alert attributes
         for attr in self._mandatory_alert_attributes:
@@ -126,15 +117,14 @@ class AlertHandler(object):
         # Currently not implemented
         pass
 
-    def clear_alert(self, context, alert):
+    def clear_alert(self, alert):
         """Clear alert from storage system.
-            Currently not implemented   removes command : removealert
         """
         re = 'Failed'
         try:
             if alert is not None:
                 # alert is sequence number here
-                re = self.sshhanlder.remove_alerts(context, alert)
+                re = self.ssh_handler.remove_alerts(alert)
                 if not re:
                     re = 'Success'
                 else:
@@ -146,12 +136,12 @@ class AlertHandler(object):
                 reason='Failed to ssh Hpe3parStor')
         return re
 
-    def list_alerts(self, context):
+    def list_alerts(self):
         try:
             # Get list of Hpe3parStor alerts
             alert_list = []
             try:
-                reslist = self.sshhanlder.get_all_alerts(context)
+                reslist = self.ssh_handler.get_all_alerts()
             except Exception as e:
                 LOG.error(e)
                 raise exception.SSHException(
@@ -170,7 +160,6 @@ class AlertHandler(object):
             for alertinfo in alertlist:
                 strline = alertinfo
                 if strline is not None and strline != '':
-                    # strline = strline.replace(" ", "")
                     strinfo = strline.split(': ', 1)
                     strinfo[0] = strinfo[0].replace(" ", "")
                     if strinfo[0] == 'Id':
@@ -230,9 +219,9 @@ class AlertHandler(object):
 
         except Exception as err:
             LOG.error(
-                "Failed to get pool metrics from Hpe3parStor: {}".format(err))
+                "Failed to get alerts from Hpe3parStor: {}".format(err))
             raise exception.StorageBackendException(
-                reason='Failed to get pool metrics from Hpe3parStor')
+                reason='Failed to get alerts from Hpe3parStor')
 
     def get_time_stamp(self, time_str):
         """ Time stamp to time conversion
@@ -259,9 +248,9 @@ class AlertHandler(object):
         re = ''
         try:
             if message_code is not None:
-                messagekey = \
+                message_key = \
                     (hex(int(message_code))).replace('0x', '0x0')
-                re = consts.HPE3PAR_ALERT_CODE.get(messagekey)
+                re = consts.HPE3PAR_ALERT_CODE.get(message_key)
         except Exception as e:
             LOG.error(e)
 

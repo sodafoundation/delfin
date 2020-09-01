@@ -22,26 +22,25 @@ LOG = log.getLogger(__name__)
 
 
 class ComponentHandler():
-    """Hpe3par's Component handler，Superclass,
-    """
+
     COMPONENT_HEALTH = 'The following components are healthy'
     SYSTEM_HEALTH = 'System is healthy'
     HPE3PAR_VERSION = 'Superclass'
 
     HPE3PAR_VENDOR = 'HPE'
 
-    def __init__(self, resthanlder=None, sshhanlder=None):
-        self.resthanlder = resthanlder
-        self.sshhanlder = sshhanlder
+    def __init__(self, rest_handler=None, ssh_handler=None):
+        self.rest_handler = rest_handler
+        self.ssh_handler = ssh_handler
 
     def set_storage_id(self, storage_id):
         self.storage_id = storage_id
 
-    def get_storage(self, context):
+    def get_storage(self):
         # get storage info
-        storage = self.resthanlder.get_storage()
+        storage = self.rest_handler.get_storage()
         # get capacity
-        capacity = self.resthanlder.get_capacity()
+        capacity = self.rest_handler.get_capacity()
         # default state is offline
         status = constants.StorageStatus.OFFLINE
 
@@ -50,7 +49,7 @@ class ComponentHandler():
                 # Check the hardware and software health
                 # status of the storage system
                 # return: System is healthy
-                re_str = self.sshhanlder.get_health_state(context)
+                re_str = self.ssh_handler.get_health_state()
                 if ComponentHandler.COMPONENT_HEALTH in re_str \
                         or ComponentHandler.SYSTEM_HEALTH in re_str:
                     status = constants.StorageStatus.NORMAL
@@ -103,10 +102,10 @@ class ComponentHandler():
             }
         return s
 
-    def list_storage_pools(self, context):
+    def list_storage_pools(self):
         try:
             # Get list of Hpe3parStor pool details
-            pools = self.resthanlder.get_all_pools()
+            pools = self.rest_handler.get_all_pools()
             pool_list = []
 
             if pools is not None:
@@ -167,10 +166,10 @@ class ComponentHandler():
             raise exception.StorageBackendException(
                 reason='Failed to get pool metrics from Hpe3parStor')
 
-    def list_volumes(self, context):
+    def list_volumes(self):
         try:
             # Get all volumes in Hpe3parStor
-            volumes = self.resthanlder.get_all_volumes()
+            volumes = self.rest_handler.get_all_volumes()
             volume_list = []
 
             if volumes is not None:

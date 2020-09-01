@@ -97,7 +97,7 @@ class TestHpe3parStorageDriver(TestCase):
         driver = create_driver()
         with self.assertRaises(Exception) as exc:
             command_str = 'ls -l'
-            driver.sshhanlder.sshclient.doexec(context, command_str)
+            driver.ssh_handler.ssh_client.do_exec(command_str)
         self.assertIn('Exception in SSH protocol negotiation or logic',
                       str(exc.exception))
 

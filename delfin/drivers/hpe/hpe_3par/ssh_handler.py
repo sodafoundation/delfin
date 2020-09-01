@@ -22,52 +22,51 @@ LOG = logging.getLogger(__name__)
 class SSHHandler(object):
     """Common class for Hpe 3parStor storage system."""
 
-    # ssh command
     HPE3PAR_COMMAND_SHOWWSAPI = 'showwsapi'
     HPE3PAR_COMMAND_CHECKHEALTH = 'checkhealth vv vlun task snmp ' \
                                   'port pd node network ld dar cage cabling'
     HPE3PAR_COMMAND_SHOWALERT = 'showalert -d'
     HPE3PAR_COMMAND_REMOVEALERT = 'removealert -f '
 
-    def __init__(self, sshclient):
-        self.sshclient = sshclient
+    def __init__(self, ssh_client):
+        self.ssh_client = ssh_client
 
-    def login(self, context):
-        """Test SSH connection """
+    def login(self):
+        """SSH connection """
         version = ''
         try:
-            re = self.sshclient.doexec(context,
+            re = self.ssh_client.do_exec(
                                        SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
-            wsapiinfos = re.split('\n')
-            version = self.get_version(context, wsapiinfos)
+            wsapi_infos = re.split('\n')
+            version = self.get_version(wsapi_infos)
         except Exception as e:
-            LOG.error('login error:{}'.format(e))
+            LOG.error('Login error:{}'.format(e))
             raise e
         return version
 
-    def get_version(self, context, wsapiinfos):
+    def get_version(self, wsapi_infos):
         """get wsapi version """
         version = ''
         try:
-            if wsapiinfos is not None and wsapiinfos != '':
-                versionseat = 7
-                for wsapiinfo in wsapiinfos:
-                    strline = wsapiinfo
-                    if strline is not None and strline != '':
-                        if '-Version-' in strline:
+            if wsapi_infos is not None and wsapi_infos != '':
+                version_seat = 7
+                for wsapi_info in wsapi_infos:
+                    str_line = wsapi_info
+                    if str_line is not None and str_line != '':
+                        if '-Version-' in str_line:
                             continue
                         else:
-                            wsapivalues = strline.split(' ')
-                            for subinfo in wsapivalues:
-                                if subinfo is not None and subinfo != '':
-                                    versionseat -= 1
-                                    if versionseat == 0:
-                                        version = subinfo
+                            wsapi_values = str_line.split(' ')
+                            for sub_info in wsapi_values:
+                                if sub_info is not None and sub_info != '':
+                                    version_seat -= 1
+                                    if version_seat == 0:
+                                        version = sub_info
         except Exception as e:
-            LOG.error('get_version error:{}'.format(e))
+            LOG.error('Get version error:{}'.format(e))
         return version
 
-    def get_health_state(self, context):
+    def get_health_state(self):
         """Check the hardware and software health
            status of the storage system
 
@@ -75,36 +74,35 @@ class SSHHandler(object):
         """
         re = ''
         try:
-            re = self.sshclient.doexec(context,
+            re = self.ssh_client.do_exec(
                                        SSHHandler.HPE3PAR_COMMAND_CHECKHEALTH)
         except Exception as e:
             LOG.error('Get health state error:{}'.format(e))
             raise e
         return re
 
-    def get_all_alerts(self, context):
+    def get_all_alerts(self):
         """Get list of Hpe3parStor alerts
            return: all alerts
         """
         re = ''
         try:
-            re = self.sshclient.doexec(context,
+            re = self.ssh_client.do_exec(
                                        SSHHandler.HPE3PAR_COMMAND_SHOWALERT)
         except Exception as e:
             LOG.error('Get all alerts error:{}'.format(e))
             raise e
         return re
 
-    def remove_alerts(self, context, alert_id):
+    def remove_alerts(self, alert_id):
         """Clear alert from storage system.
-            Currently not implemented   removes command : removealert
         """
         re = ''
         try:
             command_str = SSHHandler.HPE3PAR_COMMAND_REMOVEALERT + \
                 alert_id
-            re = self.sshclient.doexec(context, command_str)
+            re = self.ssh_client.do_exec(command_str)
         except Exception as e:
-            LOG.error('Get all alerts error:{}'.format(e))
+            LOG.error('Clear alert error:{}'.format(e))
             raise e
         return re

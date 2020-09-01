@@ -27,10 +27,8 @@ LOG = logging.getLogger(__name__)
 
 
 class RestClient(object):
-    """Common class for Hpe 3parStor storage system."""
 
     def __init__(self, **kwargs):
-
         rest_access = kwargs.get('rest')
         if rest_access is None:
             raise exception.InvalidInput('Input rest_access is missing')
@@ -38,12 +36,11 @@ class RestClient(object):
         self.rest_port = rest_access.get('port')
         self.rest_username = rest_access.get('username')
         self.rest_password = rest_access.get('password')
-        # Lists of addresses to try, for authorization
         self.san_address = 'https://' + self.rest_host + ':' + \
                            str(self.rest_port)
         self.session = None
         self.device_id = None
-        # test
+
         self.verify = kwargs.get('verify', False)
         self.rest_auth_token = None
 
@@ -63,8 +60,6 @@ class RestClient(object):
 
     def do_call(self, url, data, method,
                 calltimeout=consts.SOCKET_TIMEOUT):
-        """Send requests to Hpe3par storage server.
-        """
         if 'http' not in url:
             if self.san_address:
                 url = self.san_address + url
@@ -83,7 +78,7 @@ class RestClient(object):
         try:
             res = func(url, **kwargs)
         except requests.exceptions.ConnectTimeout as ct:
-            LOG.error('ConnectTimeout err: {}'.format(ct))
+            LOG.error('Connect Timeout err: {}'.format(ct))
             raise exception.ConnectTimeout()
         except Exception as err:
             LOG.exception('Bad response from server: %(url)s.'

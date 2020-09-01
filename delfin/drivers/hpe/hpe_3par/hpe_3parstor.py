@@ -33,42 +33,39 @@ class Hpe3parStorDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # init rest client
-        self.restclient = RestClient(**kwargs)
-        self.resthanlder = rest_handler.RestHandler(self.restclient)
-        self.resthanlder.login()
-        # init ssh client
-        self.sshclient = SSHClient(**kwargs)
-        self.sshhanlder = ssh_handler.SSHHandler(self.sshclient)
-        self.version = self.sshhanlder.login(context)
-        # init component handler
+
+        self.rest_client = RestClient(**kwargs)
+        self.rest_handler = rest_handler.RestHandler(self.rest_client)
+        self.rest_handler.login()
+
+        self.ssh_client = SSHClient(**kwargs)
+        self.ssh_handler = ssh_handler.SSHHandler(self.ssh_client)
+        self.version = self.ssh_handler.login()
+
         self.comhandler = component_handler.ComponentHandler(
-            resthanlder=self.resthanlder, sshhanlder=self.sshhanlder)
-        # init component handler
+            rest_handler=self.rest_handler, ssh_handler=self.ssh_handler)
+
         self.alert_handler = alert_handler.AlertHandler(
-            resthanlder=self.resthanlder, sshhanlder=self.sshhanlder)
+            rest_handler=self.rest_handler, ssh_handler=self.ssh_handler)
 
     def reset_connection(self, context, **kwargs):
-        self.resthanlder.logout()
-        self.restclient.verify = kwargs.get('verify', False)
-        self.resthanlder.login()
+        self.rest_handler.logout()
+        self.rest_client.verify = kwargs.get('verify', False)
+        self.rest_handler.login()
 
     def get_storage(self, context):
-        # get storage info
-        return self.comhandler.get_storage(context)
+        return self.comhandler.get_storage()
 
     def list_storage_pools(self, context):
-        # Get list of Hpe3parStor pool details
         self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_storage_pools(context)
+        return self.comhandler.list_storage_pools()
 
     def list_volumes(self, context):
         self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_volumes(context)
+        return self.comhandler.list_volumes()
 
     def list_alerts(self, context):
-        # Get list of Hpe3parStor alerts
-        return self.alert_handler.list_alerts(context)
+        return self.alert_handler.list_alerts()
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -77,7 +74,7 @@ class Hpe3parStorDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        return self.alert_handler.parse_alert(context, alert)
+        return self.alert_handler.parse_alert(alert)
 
     def clear_alert(self, context, alert):
-        return self.alert_handler.clear_alert(context, alert)
+        return self.alert_handler.clear_alert(alert)

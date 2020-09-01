@@ -27,7 +27,6 @@ class SSHClient(object):
     SOCKET_TIMEOUT = 10
 
     def __init__(self, **kwargs):
-
         ssh_access = kwargs.get('ssh')
         if ssh_access is None:
             raise exception.InvalidInput('Input ssh_access is missing')
@@ -49,14 +48,14 @@ class SSHClient(object):
         else:
             host_key = (self.ssh_host + ' ' + self.ssh_pub_key_type
                         + ' ' + self.ssh_pub_key)
-            self.sethostkey(host_key)
+            self.set_host_key(host_key)
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
                          password=self.ssh_password,
                          timeout=self.ssh_conn_timeout)
 
-    def sethostkey(self, host_key):
+    def set_host_key(self, host_key):
         """
         Set public key,because input kwargs parameter host_key is string,
         not a file path,we can not use load file to get public key,so we set
@@ -70,14 +69,14 @@ class SSHClient(object):
         except exception.SSHException:
             return
         if e is not None:
-            _hostnames = e.hostnames
-            for h in _hostnames:
+            host_names = e.hostnames
+            for h in host_names:
                 if self.ssh._host_keys.check(h, e.key):
                     e.hostnames.remove(h)
             if len(e.hostnames):
                 self.ssh._host_keys._entries.append(e)
 
-    def execCommand(self, command_str):
+    def exec_command(self, command_str):
         result = None
         try:
             if command_str is not None:
@@ -100,13 +99,13 @@ class SSHClient(object):
         except Exception as e:
             LOG.error(e)
 
-    def doexec(self, context, command_str):
+    def do_exec(self, command_str):
         """Execute command"""
         re = None
         try:
             if command_str is not None:
                 self.connect()
-                re = self.execCommand(command_str)
+                re = self.exec_command(command_str)
         except paramiko.AuthenticationException as ae:
             LOG.error('doexec Authentication error:{}'.format(ae))
             raise exception.InvalidUsernameOrPassword()
