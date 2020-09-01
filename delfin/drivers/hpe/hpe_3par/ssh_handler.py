@@ -35,8 +35,7 @@ class SSHHandler(object):
         """SSH connection """
         version = ''
         try:
-            re = self.ssh_client.do_exec(
-                                       SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
+            re = self.ssh_client.do_exec(SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
             wsapi_infos = re.split('\n')
             version = self.get_version(wsapi_infos)
         except Exception as e:
@@ -75,7 +74,7 @@ class SSHHandler(object):
         re = ''
         try:
             re = self.ssh_client.do_exec(
-                                       SSHHandler.HPE3PAR_COMMAND_CHECKHEALTH)
+                SSHHandler.HPE3PAR_COMMAND_CHECKHEALTH)
         except Exception as e:
             LOG.error('Get health state error:{}'.format(e))
             raise e
@@ -87,8 +86,7 @@ class SSHHandler(object):
         """
         re = ''
         try:
-            re = self.ssh_client.do_exec(
-                                       SSHHandler.HPE3PAR_COMMAND_SHOWALERT)
+            re = self.ssh_client.do_exec(SSHHandler.HPE3PAR_COMMAND_SHOWALERT)
         except Exception as e:
             LOG.error('Get all alerts error:{}'.format(e))
             raise e
@@ -99,8 +97,7 @@ class SSHHandler(object):
         """
         re = ''
         try:
-            command_str = SSHHandler.HPE3PAR_COMMAND_REMOVEALERT + \
-                alert_id
+            command_str = SSHHandler.HPE3PAR_COMMAND_REMOVEALERT + alert_id
             re = self.ssh_client.do_exec(command_str)
         except Exception as e:
             LOG.error('Clear alert error:{}'.format(e))

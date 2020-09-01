@@ -23,6 +23,7 @@ from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
 
+
 class AlertHandler(object):
     """Alert handling functions for Hpe3 parstor driver"""
 
@@ -69,7 +70,7 @@ class AlertHandler(object):
         self.rest_handler = rest_handler
         self.ssh_handler = ssh_handler
 
-    def parse_alert(self, alert):
+    def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
         # Check for mandatory alert attributes
         for attr in self._mandatory_alert_attributes:
@@ -117,7 +118,7 @@ class AlertHandler(object):
         # Currently not implemented
         pass
 
-    def clear_alert(self, alert):
+    def clear_alert(self, context, alert):
         """Clear alert from storage system.
         """
         re = 'Failed'

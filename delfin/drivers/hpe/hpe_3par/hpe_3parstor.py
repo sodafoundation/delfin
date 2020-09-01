@@ -74,7 +74,7 @@ class Hpe3parStorDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        return self.alert_handler.parse_alert(alert)
+        return self.alert_handler.parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
-        return self.alert_handler.clear_alert(alert)
+        return self.alert_handler.clear_alert(context, alert)

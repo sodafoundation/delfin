@@ -54,7 +54,7 @@ class RestHandler(object):
                     self.rest_client.rest_auth_token
 
         res = self.rest_client.do_call(url, data, method,
-                                      calltimeout=consts.SOCKET_TIMEOUT)
+                                       calltimeout=consts.SOCKET_TIMEOUT)
         # Judge whether the access failure is caused by
         # the token invalidation.
         # If the token fails, it will be retrieved again,
