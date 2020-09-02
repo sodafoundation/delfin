@@ -45,6 +45,8 @@ class RestClient(object):
         self.rest_auth_token = None
 
     def init_http_head(self):
+        if self.session:
+            self.session.close()
         self.session = requests.Session()
         self.session.headers.update({
             "Connection": "keep-alive",

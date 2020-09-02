@@ -206,11 +206,11 @@ class ComponentHandler():
                         vol_type = constants.VolumeType.THIN
 
                     # Virtual size of volume in MiB (10242bytes).
-                    usr_used = int(volume['userSpace']['reservedMiB']) * \
+                    usr_used = int(volume['userSpace']['usedMiB']) * \
                         consts.MiB_TO_Bytes
-                    admin_used = int(volume['adminSpace']['reservedMiB']) * \
+                    admin_used = int(volume['adminSpace']['usedMiB']) * \
                         consts.MiB_TO_Bytes
-                    snap_used = int(volume['snapshotSpace']['reservedMiB']) \
+                    snap_used = int(volume['snapshotSpace']['usedMiB']) \
                         * consts.MiB_TO_Bytes
                     total_cap = int(volume['sizeMiB']) * \
                         consts.MiB_TO_Bytes

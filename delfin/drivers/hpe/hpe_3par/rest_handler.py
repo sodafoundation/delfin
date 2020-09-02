@@ -153,6 +153,8 @@ class RestHandler(object):
             self.rest_client.rest_auth_token = None
             if self.rest_client.san_address:
                 self.call(url, method='DELETE')
+            if self.rest_client.session:
+                self.rest_client.session.close()
         except Exception as err:
             LOG.error('logout error:{}'.format(err))
             raise exception.StorageBackendException(
