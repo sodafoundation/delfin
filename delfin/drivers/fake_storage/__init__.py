@@ -171,6 +171,9 @@ class FakeStorageDriver(driver.StorageDriver):
     def clear_alert(self, context, alert):
         pass
 
+    def list_alerts(self, context, query_para=None):
+        pass
+
     @wait_random(MIN_WAIT, MAX_WAIT)
     def _get_volume_range(self, start, end):
         volume_list = []

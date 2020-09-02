@@ -86,8 +86,13 @@ class StorageDriver(object):
 
         pass
 
-    def list_alerts(self, context):
+    @abc.abstractmethod
+    def list_alerts(self, context, query_para=None):
         """List all current alerts from storage system."""
+        """
+        query_para is an optional para which contains 'begin_time' and
+        'end_time' which is to be used to filter alerts at driver
+        """
         pass
 
     @abc.abstractmethod
