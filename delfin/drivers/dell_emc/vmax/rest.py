@@ -424,10 +424,15 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
+        vmax_version = None
+        vmax_ucode = None
+        vmax_display_name = None
         system_info = self.get_array_detail(version, array)
-        vmax_version = system_info.get('model')
-        vmax_ucode = system_info.get('ucode')
-        vmax_display_name = system_info.get('display_name')
+        if system_info:
+            vmax_version = system_info.get('model')
+            vmax_ucode = system_info.get('ucode')
+            vmax_display_name = system_info.get('display_name')
+
         array_details = {"model": vmax_version,
                          "ucode": vmax_ucode,
                          "display_name": vmax_display_name}
@@ -439,12 +444,14 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
+        array_model = None
         is_next_gen = False
         system_info = self.get_array_detail(version, array)
-        array_model = system_info.get('model', None)
-        ucode_version = system_info['ucode'].split('.')[0]
-        if ucode_version >= UCODE_5978:
-            is_next_gen = True
+        if system_info:
+            array_model = system_info.get('model', None)
+            ucode_version = system_info['ucode'].split('.')[0]
+            if ucode_version >= UCODE_5978:
+                is_next_gen = True
         return array_model, is_next_gen
 
     def get_storage_group(self, array, version, storage_group_name):
