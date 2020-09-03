@@ -368,8 +368,9 @@ class VMaxRest(object):
         target_uri = '/%s/system/symmetrix/%s' % (version, array)
         array_details = self.get_request(target_uri, 'system')
         if not array_details:
-            LOG.error("Cannot connect to array %(array)s.",
-                      {'array': array})
+            msg = "Cannot connect to array {}.".format(array)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
         return array_details
 
     def get_uni_version(self):
@@ -402,6 +403,8 @@ class VMaxRest(object):
 
         if not version_dict:
             LOG.error("Unisphere version info not found.")
+            msg = "Failed to get Unisphere version."
+            raise exception.StorageBackendException(msg)
         return version_dict
 
     def get_srp_by_name(self, array, version, srp=None):
@@ -416,6 +419,10 @@ class VMaxRest(object):
         srp_details = self.get_resource(array, SLOPROVISIONING, 'srp',
                                         resource_name=srp, version=version,
                                         params=None)
+        if not srp_details:
+            msg = "Failed to get SRP details."
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
         return srp_details
 
     def get_vmax_array_details(self, version=U4V_VERSION, array=''):
@@ -424,14 +431,10 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
-        vmax_version = None
-        vmax_ucode = None
-        vmax_display_name = None
         system_info = self.get_array_detail(version, array)
-        if system_info:
-            vmax_version = system_info.get('model')
-            vmax_ucode = system_info.get('ucode')
-            vmax_display_name = system_info.get('display_name')
+        vmax_version = system_info.get('model')
+        vmax_ucode = system_info.get('ucode')
+        vmax_display_name = system_info.get('display_name')
 
         array_details = {"model": vmax_version,
                          "ucode": vmax_ucode,
@@ -444,14 +447,12 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: the VMax model
         """
-        array_model = None
         is_next_gen = False
         system_info = self.get_array_detail(version, array)
-        if system_info:
-            array_model = system_info.get('model', None)
-            ucode_version = system_info['ucode'].split('.')[0]
-            if ucode_version >= UCODE_5978:
-                is_next_gen = True
+        array_model = system_info.get('model')
+        ucode_version = system_info['ucode'].split('.')[0]
+        if ucode_version >= UCODE_5978:
+            is_next_gen = True
         return array_model, is_next_gen
 
     def get_storage_group(self, array, version, storage_group_name):
@@ -461,17 +462,23 @@ class VMaxRest(object):
         :param storage_group_name: the name of the storage group
         :returns: storage group dict or None
         """
-        return self.get_resource(
+        storage_group = self.get_resource(
             array, SLOPROVISIONING, 'storagegroup',
             version=version,
             resource_name=storage_group_name)
+        if not storage_group:
+            msg = "Failed to get storage group details."
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
+        return storage_group
 
     def get_system_capacity(self, array, version):
         target_uri = '/%s/sloprovisioning/symmetrix/%s' % (version, array)
         capacity_details = self.get_request(target_uri, None)
         if not capacity_details:
-            LOG.error("Cannot connect to array %(array)s.",
-                      {'array': array})
+            msg = "Failed to get system capacity from {}.".format(array)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
         return capacity_details
 
     def get_default_srps(self, array, version=U4V_VERSION):
@@ -480,11 +487,10 @@ class VMaxRest(object):
         :param array: the array serial number
         :returns: dictionary default SRPs
         """
+        default_srps = {}
         symmetrix_info = self.get_system_capacity(array, version)
-        default_fba_srp = symmetrix_info.get('default_fba_srp', None)
-        default_ckd_srp = symmetrix_info.get('default_ckd_srp', None)
-        default_srps = {"FBA": default_fba_srp,
-                        "CKD": default_ckd_srp}
+        default_srps["FBA"] = symmetrix_info.get('default_fba_srp', None)
+        default_srps["CKD"] = symmetrix_info.get('default_ckd_srp', None)
         return default_srps
 
     def get_volume(self, array, version, device_id):
@@ -517,6 +523,10 @@ class VMaxRest(object):
         device_ids = []
         volume_dict_list = self.get_resource(
             array, SLOPROVISIONING, 'volume', version=version, params=params)
+        if not volume_dict_list:
+            msg = "Failed to get volume list from {}.".format(array)
+            LOG.error(msg)
+            raise exception.StorageBackendException(msg)
         try:
             for vol_dict in volume_dict_list:
                 device_id = vol_dict['volumeId']
