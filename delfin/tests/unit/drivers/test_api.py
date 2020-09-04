@@ -16,12 +16,11 @@
 import copy
 from unittest import TestCase, mock
 
-from delfin import context
-from delfin import exception
-
 import sys
 sys.modules['delfin.cryptor'] = mock.Mock()
 
+from delfin import context
+from delfin import exception
 from delfin.drivers.api import API
 from delfin.drivers.fake_storage import FakeStorageDriver
 
