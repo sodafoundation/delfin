@@ -62,7 +62,7 @@ def get_range_val(range_str, t):
         min_val = t(rng[0])
         max_val = t(rng[1])
         return min_val, max_val
-    except exception:
+    except Exception:
         LOG.error("Invalid range: {0}".format(range_str))
         raise exception.InvalidInput
 
