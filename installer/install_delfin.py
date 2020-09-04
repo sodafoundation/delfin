@@ -19,7 +19,7 @@ import subprocess
 from subprocess import CalledProcessError
 import traceback as tb
 from installer.helper import copy_files, create_dir, \
-    logger, logfile,delfin_log_dir
+    logger, logfile, delfin_log_dir
 
 delfin_source_path = ''
 delfin_etc_dir = '/etc/delfin'

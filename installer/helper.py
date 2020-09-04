@@ -40,11 +40,8 @@ def init_logging():
     except OSError:
         pass
     logfile = delfin_log_dir + log_filename
-    server_log_file = RotatingFileHandler(
-                                            logfile,
-                                            maxBytes=10000,
-                                            backupCount=5
-                                        )
+    server_log_file = RotatingFileHandler(logfile, maxBytes=10000,
+                                          backupCount=5)
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter(LOGGING_FORMAT)
