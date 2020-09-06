@@ -106,4 +106,4 @@ class API(object):
     def list_alerts(self, context, storage_id, query_para=None):
         """List alert from storage system."""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
-        return driver.list_alerts(context)
+        return driver.list_alerts(context, query_para)

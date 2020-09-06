@@ -91,7 +91,8 @@ class StorageDriver(object):
         """List all current alerts from storage system."""
         """
         query_para is an optional para which contains 'begin_time' and
-        'end_time' which is to be used to filter alerts at driver
+        'end_time' (in milliseconds) which is to be used to filter
+        alerts at driver
         """
         pass
 
