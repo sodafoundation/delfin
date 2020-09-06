@@ -34,6 +34,7 @@ class AlertControllerTestCase(unittest.TestCase):
 
     @mock.patch('delfin.db.storage_get', fakes.fake_storages_get_all)
     @mock.patch('delfin.drivers.api.API.clear_alert')
+    @mock.patch('delfin.task_manager.rpcapi.TaskAPI', mock.Mock())
     def test_delete_alert_success(self, mock_clear_alert):
         req = fakes.HTTPRequest.blank('/storages/fake_id/alerts'
                                       '/fake_sequence_number')
@@ -48,6 +49,7 @@ class AlertControllerTestCase(unittest.TestCase):
 
     @mock.patch('delfin.db.storage_get', fakes.fake_storage_get_exception)
     @mock.patch('delfin.drivers.api.API.clear_alert', mock.Mock())
+    @mock.patch('delfin.task_manager.rpcapi.TaskAPI', mock.Mock())
     def test_delete_alert_failure_storage_not_found(self):
         req = fakes.HTTPRequest.blank('/storages/fake_id/alerts'
                                       '/fake_sequence_number')

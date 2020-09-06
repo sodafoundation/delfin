@@ -59,3 +59,10 @@ class TaskAPI(object):
         return call_context.cast(context,
                                  'remove_storage_in_cache',
                                  storage_id=storage_id)
+
+    def sync_storage_alerts(self, context, storage_id, query_para):
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(context,
+                                 'sync_storage_alerts',
+                                 storage_id=storage_id,
+                                 query_para=query_para)
