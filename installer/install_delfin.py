@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys, os, shutil, subprocess
+import os
+import subprocess
 from subprocess import CalledProcessError
 import traceback as tb
-from helper import *
+from installer.helper import copy_files, create_dir, \
+    logger, logfile, delfin_log_dir
 
 delfin_source_path = ''
 delfin_etc_dir = '/etc/delfin'
@@ -26,37 +28,46 @@ conf_file = os.path.join(delfin_etc_dir, 'delfin.conf')
 proj_name = 'delfin'
 DEVNULL = '/dev/null'
 
+
 def _activate():
-    path_to_activate = os.path.join(delfin_source_path , 'installer', proj_name, 'bin/activate')
-    command = '. ' +  path_to_activate    
-    os.system(command) 
+    path_to_activate = os.path.join(delfin_source_path, 'installer',
+                                    proj_name, 'bin/activate')
+    command = '. ' + path_to_activate
+    os.system(command)
+
 
 # Initialize the settings first
 def init():
-    #_activate()
+    # _activate()
     pass
-    
+
+
 def create_delfin_db():
     try:
-        db_path = os.path.join(delfin_source_path, 'installer', 'create_db.py')
-        subprocess.check_call(['python3', db_path, '--config-file', conf_file])
+        db_path = os.path.join(delfin_source_path, 'installer',
+                               'create_db.py')
+        subprocess.check_call(['python3', db_path, '--config-file',
+                               conf_file])
     except CalledProcessError as cpe:
         logger.error("Got CPE error [%s]:[%s]" % (cpe, tb.print_exc()))
         return
     logger.info('db created ')
-        
+
+
 def start_processes():
     # start api process
     proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'api.py')
-    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
-# >/dev/null 2>&1
+    command = 'python3 ' + proc_path + ' --config-file ' +\
+              conf_file + ' >' + DEVNULL + ' 2>&1 &'
+    # >/dev/null 2>&1
     logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("API process_started")
 
-    #start task process
+    # Start task process
     proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'task.py')
-    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL + ' 2>&1 &'
+    command = 'python3 ' + proc_path + ' --config-file ' +\
+              conf_file + ' >' + DEVNULL + ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
 
@@ -64,37 +75,40 @@ def start_processes():
 
     # Start alert process
     proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'alert.py')
-    command = 'python3 ' + proc_path + ' --config-file ' + conf_file  + ' >' + DEVNULL +  ' 2>&1 &'
+    command = 'python3 ' + proc_path + ' --config-file ' +\
+              conf_file + ' >' + DEVNULL + ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("ALERT process_started")
-    
-    
+
+
 def install_delfin():
-    python_setup_comm = ['build', 'install'] 
+    python_setup_comm = ['build', 'install']
     req_logs = os.path.join(delfin_log_dir, 'requirements.log')
-    command='pip3 install -r requirements.txt >' + req_logs+ ' 2>&1'
+    command = 'pip3 install -r requirements.txt >' + req_logs + ' 2>&1'
     logger.info("Executing [%s]", command)
     os.system(command)
-    
-    setup_file=os.path.join(delfin_source_path, 'setup.py')
+
+    setup_file = os.path.join(delfin_source_path, 'setup.py')
     for command in python_setup_comm:
         try:
-            command = 'python3 ' + setup_file + ' ' + command + ' >>' + logfile
+            command = 'python3 ' + setup_file + ' ' +\
+                      command + ' >>' + logfile
             logger.info("Executing [%s]", command)
             os.system(command)
         except CalledProcessError as cpe:
             logger.error("Got CPE error [%s]:[%s]" % (cpe, tb.print_exc()))
             return
 
+
 def main():
     global delfin_source_path
     cwd = os.getcwd()
-    logger.info("Current dir is %s" % (cwd))
+    logger.info("Current dir is %s" % cwd)
     this_file_dir = os.path.dirname(os.path.realpath(__file__))
-    delfin_source_path = os.path.join(this_file_dir, "../" )
+    delfin_source_path = os.path.join(this_file_dir, "../")
 
-    logger.info("delfins [%s]" % (delfin_source_path))
+    logger.info("delfins [%s]" % delfin_source_path)
     os.chdir(delfin_source_path)
     logger.info(os.getcwd())
 
@@ -104,12 +118,14 @@ def main():
 
     # Copy required files
     # Copy api-paste.ini
-    ini_file_src = os.path.join(delfin_source_path, 'etc', 'delfin', 'api-paste.ini')
+    ini_file_src = os.path.join(delfin_source_path, 'etc',
+                                'delfin', 'api-paste.ini')
     ini_file_dest = os.path.join(delfin_etc_dir, 'api-paste.ini')
     copy_files(ini_file_src, ini_file_dest)
 
     # Copy the conf file
-    conf_file_src = os.path.join(delfin_source_path, 'etc', 'delfin', 'delfin.conf')
+    conf_file_src = os.path.join(delfin_source_path, 'etc',
+                                 'delfin', 'delfin.conf')
     copy_files(conf_file_src, conf_file)
 
     # install
@@ -120,7 +136,6 @@ def main():
 
     # start
     start_processes()
-
 
 
 if __name__ == "__main__":

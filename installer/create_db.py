@@ -19,13 +19,10 @@
 
 """db create  script for delfin """
 
-
-
 import sys
 
 from oslo_config import cfg
-
-from delfin import  db
+from delfin import db
 from delfin import version
 
 CONF = cfg.CONF
