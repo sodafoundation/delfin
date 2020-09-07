@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
 from oslo_log import log
 
 from delfin import db
@@ -34,24 +35,23 @@ class AlertSyncTask(object):
 
         LOG.info('Syncing alerts for storage id:{0}'.format(storage_id))
         try:
-            storage = db.storage_get_all(ctx, storage_id)
+            storage = db.storage_get(ctx, storage_id)
 
             current_alert_list = self.driver_manager.list_alerts(ctx,
                                                                  storage_id,
                                                                  query_para)
             if not len(current_alert_list):
                 # No alerts to sync
-                LOG.info("No alerts to sync from storage device")
+                LOG.info('No alerts to sync from storage device for '
+                         'storage id:{0}'.format(storage_id))
                 return
 
             for alert in current_alert_list:
                 alert_util.fill_storage_attributes(alert, storage)
             self.alert_export_manager.dispatch(ctx, current_alert_list)
-        except AttributeError as e:
-            LOG.error(e)
+            LOG.info('Syncing storage alerts successful for storage id:{0}'
+                     .format(storage_id))
         except Exception as e:
             msg = _('Failed to sync alerts from storage device: {0}'
-                    .format(e))
+                    .format(six.text_type(e)))
             LOG.error(msg)
-        else:
-            LOG.info("Syncing storage alerts successful")
