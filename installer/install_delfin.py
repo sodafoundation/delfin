@@ -44,10 +44,9 @@ def init():
 
 def create_delfin_db():
     try:
-        db_path = os.path.join(delfin_source_path, 'installer',
-                               'create_db.py')
-        subprocess.check_call(['python3', db_path, '--config-file',
-                               conf_file])
+        db_path = os.path.join(delfin_source_path, 'script', 'create_db.py')
+        subprocess.check_call(['python3', db_path,
+                               '--config-file', conf_file])
     except CalledProcessError as cpe:
         logger.error("Got CPE error [%s]:[%s]" % (cpe, tb.print_exc()))
         return
