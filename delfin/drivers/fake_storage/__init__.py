@@ -62,7 +62,7 @@ def get_range_val(range_str, t):
         min_val = t(rng[0])
         max_val = t(rng[1])
         return min_val, max_val
-    except exception:
+    except Exception:
         LOG.error("Invalid range: {0}".format(range_str))
         raise exception.InvalidInput
 
@@ -169,6 +169,9 @@ class FakeStorageDriver(driver.StorageDriver):
         pass
 
     def clear_alert(self, context, alert):
+        pass
+
+    def list_alerts(self, context, query_para=None):
         pass
 
     @wait_random(MIN_WAIT, MAX_WAIT)
