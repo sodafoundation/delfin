@@ -23,6 +23,7 @@ from oslo_utils import importutils
 
 from delfin import manager
 from delfin.drivers import manager as driver_manager
+from delfin.task_manager.tasks import alerts
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -35,6 +36,7 @@ class TaskManager(manager.Manager):
     RPC_API_VERSION = '1.0'
 
     def __init__(self, service_name=None, *args, **kwargs):
+        self.alert_sync = alerts.AlertSyncTask()
         super(TaskManager, self).__init__(*args, **kwargs)
 
     def sync_storage_resource(self, context, storage_id, resource_task):
@@ -54,3 +56,8 @@ class TaskManager(manager.Manager):
                  .format(storage_id))
         drivers = driver_manager.DriverManager()
         drivers.remove_driver(storage_id)
+
+    def sync_storage_alerts(self, context, storage_id, query_para):
+        LOG.info('Alert sync called for storage id:{0}'
+                 .format(storage_id))
+        self.alert_sync.sync_alerts(context, storage_id, query_para)
