@@ -217,9 +217,9 @@ class VMAXClient(object):
             LOG.error(msg)
             raise exception.StorageBackendException(msg)
 
-    def list_alerts(self):
+    def list_alerts(self, query_para):
         """Get all alerts from an array."""
-        return self.rest.get_alerts(version=self.uni_version,
+        return self.rest.get_alerts(query_para, version=self.uni_version,
                                     array=self.array_id)
 
     def clear_alert(self, sequence_number):
