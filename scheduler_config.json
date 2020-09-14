@@ -1,0 +1,38 @@
+{
+    "storage_id1": {
+      "id": "4b6f216f-93d2-4c8e-895d-c0fcbecd1958",
+      "array_polling": {
+      "perf_collection": true,
+      "interval": 30,
+      "history_collection": false
+    },
+    "pool_polling": {
+      "perf_collection": true,
+      "interval": 0,
+      "history_collection": false
+    },
+    "volume_polling": {
+      "perf_collection": false,
+      "interval": 30,
+      "history_collection": false
+    }
+
+    },
+    "storage_id2": {
+     "id": "4b6f216f-93d2-4c8e-895d-c0fcbecd1959",
+    "array_polling": {
+      "perf_collection": true,
+      "interval": 30,
+      "history_collection": false
+    },
+    "pool_polling": {
+      "perf_collection": true,
+      "interval": 35,
+      "history_collection": false
+    },
+    "volume_polling": {
+      "perf_collection": true,
+      "interval": 7,
+      "history_collection": false
+    }
+}}

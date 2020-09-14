@@ -18,7 +18,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
 
-from delfin import coordination
+from delfin import coordination, context
 from delfin import db
 from delfin import exception
 from delfin.api import api_utils
@@ -161,6 +161,17 @@ class StorageController(wsgi.Controller):
                 ctxt,
                 storage['id'],
                 subclass.__module__ + '.' + subclass.__name__)
+
+    def perf_collect(self, storage_id, interval, is_history, resource):
+        ctxt = context.RequestContext()
+
+        LOG.debug("Request received to create task for storage_id:{0} and"
+                  " resource_type:{1}".format(storage_id, resource))
+
+        self.task_rpcapi.performance_metrics_collection(
+                ctxt, storage_id, interval, is_history,
+                resources.PerformanceCollectionTask.__module__ +
+                '.' + constants.RESOURCE_CLASS_TYPE.get(resource))
 
     def _storage_exist(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)

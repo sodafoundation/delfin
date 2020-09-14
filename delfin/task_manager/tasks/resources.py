@@ -22,6 +22,7 @@ from delfin import db
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import api as driverapi
+from delfin.exporter import api as exporterapi
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
@@ -239,3 +240,97 @@ class StorageVolumeTask(StorageResourceTask):
     def remove(self):
         LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
         db.volume_delete_by_storage(self.context, self.storage_id)
+
+
+class PerformanceCollectionTask(object):
+
+    def __init__(self, context, storage_id, interval, is_history):
+        self.context = context
+        self.storage_id = storage_id
+        self.interval = interval
+        self.is_history = is_history
+        self.driver_api = driverapi.API()
+        self.exporter_api = exporterapi.API()
+
+
+class ArrayPerformanceCollection(PerformanceCollectionTask):
+    def __init__(self, context, storage_id, interval, is_history):
+        super(ArrayPerformanceCollection, self).__init__(context, storage_id,
+                                                         interval, is_history)
+
+    def collect(self):
+        """
+        :return:
+        """
+        LOG.info('Collecting array performance metrics for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the performance metrics from driver and push to
+            # prometheus exporter api
+            storage_metrics = self.driver_api.collect_array_metrics(
+                self.context, self.storage_id, self.interval, self.is_history)
+
+            self.exporter_api.push_storage_metrics(storage_metrics)
+
+        except Exception as e:
+            msg = _('Failed to collect array performance metrics from '
+                    'driver: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Array performance metrics collection done!!!")
+
+
+class VolumePerformanceCollection(PerformanceCollectionTask):
+    def __init__(self, context, storage_id, interval, is_history):
+        super(VolumePerformanceCollection, self).__init__(context, storage_id,
+                                                          interval, is_history
+                                                          )
+
+    def collect(self):
+        """
+        :return:
+        """
+        LOG.info('Collecting volume performance metrics for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the performance metrics from driver and push to
+            # prometheus exporter api
+            storage_metrics = self.driver_api.collect_volume_metrics(
+                self.context, self.storage_id, self.interval, self.is_history)
+
+            self.exporter_api.push_storage_metrics(storage_metrics)
+
+        except Exception as e:
+            msg = _('Failed to collect volume performance metrics from '
+                    'driver: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Volume performance metrics collection done!!!")
+
+
+class PoolPerformanceCollection(PerformanceCollectionTask):
+    def __init__(self, context, storage_id, interval, is_history):
+        super(PoolPerformanceCollection, self).__init__(context, storage_id,
+                                                        interval, is_history
+                                                        )
+
+    def collect(self):
+        """
+        :return:
+        """
+        LOG.info('Collecting pool performance metrics for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the performance metrics from driver and push to
+            # prometheus exporter api
+            storage_metrics = self.driver_api.collect_pool_metrics(
+                self.context, self.storage_id, self.interval, self.is_history)
+
+            self.exporter_api.push_storage_metrics(storage_metrics)
+
+        except Exception as e:
+            msg = _('Failed to collect pool performance metrics from '
+                    'driver: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Pool performance metrics collection done!!!")

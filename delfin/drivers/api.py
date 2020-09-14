@@ -107,3 +107,15 @@ class API(object):
         """List alert from storage system."""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_alerts(context, query_para)
+
+    def collect_array_metrics(self, context, storage_id, interval, is_history):
+        """Collect array performance metrics"""
+        pass
+
+    def collect_volume_metrics(self, context, storage_id, interval, is_history):
+        """Collect volume performance metrics"""
+        pass
+
+    def collect_pool_metrics(self, context, storage_id, interval, is_history):
+        """Collect pool performance metrics"""
+        pass
