@@ -31,7 +31,6 @@ from delfin.api.v1.storages import StorageController
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
-# CONF.import_opt('periodic_interval', 'delfin.service')
 
 scheduler_opts = [
     cfg.StrOpt('config_path',
@@ -65,7 +64,7 @@ class TaskManager(manager.Manager):
             schedule.clear(tag)
 
     def periodic_performance_collect(self):
-        LOG.info("Scheduled perf-sync operation starting.")
+        LOG.info("Scheduled performance collection operation starting.")
         try:
             with open(CONF.scheduler.config_path) as f:
                 data = json.load(f)

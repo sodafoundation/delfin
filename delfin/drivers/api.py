@@ -72,17 +72,20 @@ class API(object):
 
     def get_storage(self, context, storage_id):
         """Get storage device information from storage system"""
-        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                storage_id=storage_id)
         return driver.get_storage(context)
 
     def list_storage_pools(self, context, storage_id):
         """List all storage pools from storage system."""
-        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                storage_id=storage_id)
         return driver.list_storage_pools(context)
 
     def list_volumes(self, context, storage_id):
         """List all storage volumes from storage system."""
-        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                storage_id=storage_id)
         return driver.list_volumes(context)
 
     def add_trap_config(self, context, storage_id, trap_config):
@@ -95,27 +98,33 @@ class API(object):
 
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
-        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                storage_id=storage_id)
         return driver.parse_alert(context, alert)
 
     def clear_alert(self, context, storage_id, sequence_number):
         """Clear alert from storage system."""
-        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                storage_id=storage_id)
         return driver.clear_alert(context, sequence_number)
 
     def list_alerts(self, context, storage_id, query_para=None):
         """List alert from storage system."""
-        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                storage_id=storage_id)
         return driver.list_alerts(context, query_para)
 
-    def collect_array_metrics(self, context, storage_id, interval, is_history):
+    def collect_array_metrics(self, context, storage_id, interval,
+                              is_history):
         """Collect array performance metrics"""
         pass
 
-    def collect_volume_metrics(self, context, storage_id, interval, is_history):
+    def collect_volume_metrics(self, context, storage_id, interval,
+                               is_history):
         """Collect volume performance metrics"""
         pass
 
-    def collect_pool_metrics(self, context, storage_id, interval, is_history):
+    def collect_pool_metrics(self, context, storage_id, interval,
+                             is_history):
         """Collect pool performance metrics"""
         pass
