@@ -239,3 +239,55 @@ class StorageVolumeTask(StorageResourceTask):
     def remove(self):
         LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
         db.volume_delete_by_storage(self.context, self.storage_id)
+
+
+class PerformanceCollectionTask(object):
+
+    def __init__(self, context, storage_id, interval, is_historic):
+        self.context = context
+        self.storage_id = storage_id
+        self.interval = interval
+        self.is_historic = is_historic
+        self.driver_api = driverapi.API()
+
+
+class ArrayPerformanceCollection(PerformanceCollectionTask):
+    def __init__(self, context, storage_id, interval, is_historic):
+        super(ArrayPerformanceCollection, self).__init__(context, storage_id,
+                                                         interval, is_historic)
+
+    def collect(self):
+        """
+        :return:
+        """
+        LOG.info('Collecting array performance metrics for storage id:{0}'
+                 .format(self.storage_id))
+        pass
+
+
+class VolumePerformanceCollection(PerformanceCollectionTask):
+    def __init__(self, context, storage_id, interval, is_historic):
+        super(VolumePerformanceCollection, self).__init__(context, storage_id,
+                                                          interval, is_historic
+                                                          )
+
+    def collect(self):
+        """
+        :return:
+        """
+        pass
+
+
+class PoolPerformanceCollection(PerformanceCollectionTask):
+    def __init__(self, context, storage_id, interval, is_historic):
+        super(PoolPerformanceCollection, self).__init__(context, storage_id,
+                                                        interval, is_historic
+                                                        )
+
+    def collect(self):
+        """
+        :return:
+        """
+        LOG.info('Collecting pool performance metrics for storage id:{0}'
+                 .format(self.storage_id))
+        pass

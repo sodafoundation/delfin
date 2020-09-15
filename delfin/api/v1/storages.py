@@ -18,7 +18,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
 
-from delfin import coordination
+from delfin import coordination, context
 from delfin import db
 from delfin import exception
 from delfin.api import api_utils
@@ -193,7 +193,15 @@ class StorageController(wsgi.Controller):
         return False
 
     def perf_collect(self, storage_id, interval, is_historic, resource):
-        pass
+        ctxt = context.RequestContext()
+
+        LOG.debug("Request received to create task for storage_id:{0} and"
+                  " resource_type:{1}".format(storage_id, resource))
+
+        self.task_rpcapi.performance_metrics_collection(
+            ctxt, storage_id, interval, is_historic,
+            resources.PerformanceCollectionTask.__module__ +
+            '.' + constants.RESOURCE_CLASS_TYPE.get(resource))
 
 
 def create_resource():
