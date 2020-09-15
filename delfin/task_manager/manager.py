@@ -114,3 +114,11 @@ class TaskManager(manager.Manager):
         LOG.info('Alert sync called for storage id:{0}'
                  .format(storage_id))
         self.alert_sync.sync_alerts(context, storage_id, query_para)
+
+    def performance_metrics_collection(self, context, storage_id, interval,
+                                       is_historic, resource_task):
+        LOG.debug("Received the performance collection task: {0} request"
+                  "for storage_id:{1}".format(resource_task, storage_id))
+        cls = importutils.import_class(resource_task)
+        device_obj = cls(context, storage_id, interval, is_historic)
+        device_obj.collect()
