@@ -16,18 +16,28 @@
 **periodical task manager**
 
 """
-
+import json
+from datetime import datetime
+from apscheduler.schedulers.blocking import BlockingScheduler
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
 
-from delfin import manager
+from delfin import manager, exception
+from delfin.api.v1.storages import StorageController
 from delfin.drivers import manager as driver_manager
 from delfin.task_manager.tasks import alerts
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
-CONF.import_opt('periodic_interval', 'delfin.service')
+
+MIN_INTERVAL = 5
+scheduler_opts = [
+    cfg.StrOpt('config_path', default='scheduler',
+               help='The config path for scheduler'),
+]
+
+CONF.register_opts(scheduler_opts, "scheduler")
 
 
 class TaskManager(manager.Manager):
@@ -38,6 +48,49 @@ class TaskManager(manager.Manager):
     def __init__(self, service_name=None, *args, **kwargs):
         self.alert_sync = alerts.AlertSyncTask()
         super(TaskManager, self).__init__(*args, **kwargs)
+
+    def periodic_performance_collect(self):
+        LOG.info("Scheduled perf-sync operation starting.")
+
+        # Load the scheduler configuration file
+        try:
+            with open(CONF.scheduler.config_path) as f:
+                data = json.load(f)
+        except FileNotFoundError as e:
+            raise exception.ConfigNotFound(e)
+
+        # create the object of periodic scheduler
+        schedule = BlockingScheduler()
+
+        # create the objet to StorageController class, so that
+        # methods of that class can be called by scheduler
+        storage_cls = StorageController()
+
+        # parse the scheduler configuration file and start the task
+        # for each storage
+        for storage in data.get("storages"):
+            storage_id = storage.get('id')
+            for resource in storage.keys():
+
+                if resource == 'id':
+                    continue
+
+                resource_type = storage.get(resource)
+                if (resource_type.get('perf_collection') and
+                        resource_type.get('interval') > MIN_INTERVAL):
+                    is_historic = resource_type.get('is_historic')
+                    interval = resource_type.get('interval')
+
+                    # add the task to scheduler(basically, it calls the
+                    # perf_collect method from StorageController class ) and
+                    # execute the task immediate and after every interval
+                    schedule.add_job(storage_cls.perf_collect, 'interval',
+                                     args=[storage_id, interval, is_historic,
+                                           resource], seconds=interval,
+                                     next_run_time=datetime.now())
+
+        # start the scheduler
+        schedule.start()
 
     def sync_storage_resource(self, context, storage_id, resource_task):
         LOG.debug("Received the sync_storage task: {0} request for storage"

@@ -192,6 +192,9 @@ class StorageController(wsgi.Controller):
 
         return False
 
+    def perf_collect(self, storage_id, interval, is_historic, resource):
+        pass
+
 
 def create_resource():
     return wsgi.Resource(StorageController())
