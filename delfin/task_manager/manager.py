@@ -50,7 +50,7 @@ class TaskManager(manager.Manager):
         super(TaskManager, self).__init__(*args, **kwargs)
 
     def periodic_performance_collect(self):
-        LOG.info("Scheduled perf-sync operation starting.")
+        LOG.info("Scheduled performance collection starting.")
 
         # Load the scheduler configuration file
         try:
