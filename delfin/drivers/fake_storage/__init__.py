@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import random
-
+import datetime
 import decorator
 import math
 import six
@@ -44,14 +44,16 @@ fake_opts = [
 
 CONF.register_opts(fake_opts, "fake_driver")
 
-
 LOG = log.getLogger(__name__)
-
 
 MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
 PAGE_LIMIT = 500
+MIN_STORAGE, MAX_STORAGE = 3, 4
+
+metrics_keys = ['response_time', 'throughput', 'bandwidth', 'read_throughput',
+                'write_throughput', 'read_bandwidth', 'write_bandwidth']
 
 
 def get_range_val(range_str, t):
@@ -94,6 +96,25 @@ class FakeStorageDriver(driver.StorageDriver):
         MIN_VOLUME, MAX_VOLUME = get_range_val(
             CONF.fake_driver.fake_volume_range, int)
         PAGE_LIMIT = int(CONF.fake_driver.fake_page_query_limit)
+
+    def _get_random_capacity(self):
+        total = random.randint(1000, 2000)
+        used = int(random.randint(0, 100) * total / 100)
+        free = total - used
+        return total, used, free
+
+    def _get_random_performance(self):
+        timestamp = int(float(datetime.datetime.now().timestamp()) * 1000)
+        performance_params = {
+            'response_time': {timestamp: random.uniform(1, 10)},
+            'throughput': {timestamp: random.uniform(1, 100)},
+            'read_throughput': {timestamp: random.uniform(1, 100)},
+            'write_throughput': {timestamp: random.uniform(1, 100)},
+            'bandwidth': {timestamp: random.uniform(1, 100)},
+            'read_bandwidth': {timestamp: random.uniform(1, 100)},
+            'write_bandwidth': {timestamp: random.uniform(1, 100)}
+        }
+        return performance_params
 
     def reset_connection(self, context, **kwargs):
         pass
@@ -194,8 +215,83 @@ class FakeStorageDriver(driver.StorageDriver):
             volume_list.append(v)
         return volume_list
 
-    def _get_random_capacity(self):
-        total = random.randint(1000, 2000)
-        used = int(random.randint(0, 100) * total / 100)
-        free = total - used
-        return total, used, free
+    @wait_random(MIN_WAIT, MAX_WAIT)
+    def collect_array_metrics(self, ctx, storage_id, interval, is_history):
+        rd_array_count = random.randint(MIN_STORAGE, MAX_STORAGE)
+        LOG.info("Fake_array_metrics number for %s: %d" % (
+            storage_id, rd_array_count))
+        perf_params = self._get_random_performance()
+        sn = six.text_type(uuidutils.generate_uuid())
+
+        array_metrics = []
+        for id in range(rd_array_count):
+            metric = {
+                "name": "fake_array_" + str(id),
+                "storage_id": storage_id,
+                'serial_number': sn,
+                'native_port_id': 'FF1:00' + str(id),
+                'native_controller_id': 'CTRL' + str(id),
+                'response_time': perf_params.get('response_time'),
+                'throughput': perf_params.get('throughput'),
+                'read_throughput': perf_params.get('read_throughput'),
+                'write_throughput': perf_params.get('write_throughput'),
+                'bandwidth': perf_params.get('bandwidth'),
+                'read_bandwidth': perf_params.get('read_bandwidth'),
+                'write_bandwidth': perf_params.get('write_bandwidth'),
+            }
+            array_metrics.append(metric)
+        return array_metrics
+
+    @wait_random(MIN_WAIT, MAX_WAIT)
+    def collect_pool_metrics(self, ctx, storage_id, interval, is_history):
+        rd_array_count = random.randint(MIN_STORAGE, MAX_STORAGE)
+        LOG.info("Fake_pool_metrics number for %s: %d" % (
+            storage_id, rd_array_count))
+        perf_params = self._get_random_performance()
+        sn = six.text_type(uuidutils.generate_uuid())
+
+        pool_metrics = []
+        for id in range(rd_array_count):
+            metric = {
+                "name": "fake_array_" + str(id),
+                "storage_id": storage_id,
+                'serial_number': sn,
+                'native_port_id': 'FF1:00' + str(id),
+                'native_controller_id': 'CTRL' + str(id),
+                'response_time': perf_params.get('response_time'),
+                'throughput': perf_params.get('throughput'),
+                'read_throughput': perf_params.get('read_throughput'),
+                'write_throughput': perf_params.get('write_throughput'),
+                'bandwidth': perf_params.get('bandwidth'),
+                'read_bandwidth': perf_params.get('read_bandwidth'),
+                'write_bandwidth': perf_params.get('write_bandwidth'),
+            }
+            pool_metrics.append(metric)
+        return pool_metrics
+
+    @wait_random(MIN_WAIT, MAX_WAIT)
+    def collect_volume_metrics(self, ctx, storage_id, interval, is_history):
+        rd_array_count = random.randint(MIN_STORAGE, MAX_STORAGE)
+        LOG.info("Fake_volume_metrics number for %s: %d" % (
+            storage_id, rd_array_count))
+        perf_params = self._get_random_performance()
+        sn = six.text_type(uuidutils.generate_uuid())
+
+        volume_metrics = []
+        for id in range(rd_array_count):
+            metric = {
+                "name": "fake_array_" + str(id),
+                "storage_id": storage_id,
+                'serial_number': sn,
+                'native_port_id': 'FF1:00' + str(id),
+                'native_controller_id': 'CTRL' + str(id),
+                'response_time': perf_params.get('response_time'),
+                'throughput': perf_params.get('throughput'),
+                'read_throughput': perf_params.get('read_throughput'),
+                'write_throughput': perf_params.get('write_throughput'),
+                'bandwidth': perf_params.get('bandwidth'),
+                'read_bandwidth': perf_params.get('read_bandwidth'),
+                'write_bandwidth': perf_params.get('write_bandwidth'),
+            }
+            volume_metrics.append(metric)
+        return volume_metrics

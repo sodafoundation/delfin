@@ -267,10 +267,10 @@ class ArrayPerformanceCollection(PerformanceCollectionTask):
         try:
             # collect the performance metrics from driver and push to
             # prometheus exporter api
-            storage_metrics = self.driver_api.collect_array_metrics(
+            array_metrics = self.driver_api.collect_array_metrics(
                 self.context, self.storage_id, self.interval, self.is_history)
 
-            self.exporter_api.push_storage_metrics(storage_metrics)
+            self.exporter_api.push_storage_metrics(array_metrics)
 
         except Exception as e:
             msg = _('Failed to collect array performance metrics from '
@@ -295,10 +295,10 @@ class VolumePerformanceCollection(PerformanceCollectionTask):
         try:
             # collect the performance metrics from driver and push to
             # prometheus exporter api
-            storage_metrics = self.driver_api.collect_volume_metrics(
+            volume_metrics = self.driver_api.collect_volume_metrics(
                 self.context, self.storage_id, self.interval, self.is_history)
 
-            self.exporter_api.push_storage_metrics(storage_metrics)
+            self.exporter_api.push_storage_metrics(volume_metrics)
 
         except Exception as e:
             msg = _('Failed to collect volume performance metrics from '
@@ -323,10 +323,10 @@ class PoolPerformanceCollection(PerformanceCollectionTask):
         try:
             # collect the performance metrics from driver and push to
             # prometheus exporter api
-            storage_metrics = self.driver_api.collect_pool_metrics(
+            pool_metrics = self.driver_api.collect_pool_metrics(
                 self.context, self.storage_id, self.interval, self.is_history)
 
-            self.exporter_api.push_storage_metrics(storage_metrics)
+            self.exporter_api.push_storage_metrics(pool_metrics)
 
         except Exception as e:
             msg = _('Failed to collect pool performance metrics from '

@@ -93,6 +93,7 @@ class TaskManager(manager.Manager):
 
         while True:
             schedule.run_pending()
+            time.sleep(1)
 
     def sync_storage_resource(self, context, storage_id, resource_task):
         LOG.debug("Received the sync_storage task: {0} request for storage"

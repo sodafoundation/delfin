@@ -169,9 +169,9 @@ class StorageController(wsgi.Controller):
                   " resource_type:{1}".format(storage_id, resource))
 
         self.task_rpcapi.performance_metrics_collection(
-                ctxt, storage_id, interval, is_history,
-                resources.PerformanceCollectionTask.__module__ +
-                '.' + constants.RESOURCE_CLASS_TYPE.get(resource))
+            ctxt, storage_id, interval, is_history,
+            resources.PerformanceCollectionTask.__module__ +
+            '.' + constants.PERF_POLLING_TYPE.get(resource))
 
     def _storage_exist(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)
