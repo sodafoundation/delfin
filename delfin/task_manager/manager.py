@@ -50,12 +50,17 @@ class TaskManager(manager.Manager):
         super(TaskManager, self).__init__(*args, **kwargs)
 
     def periodic_performance_collect(self):
-        LOG.info("Scheduled performance collection starting.")
-
+        """
+        """
         # Load the scheduler configuration file
         try:
             with open(CONF.scheduler.config_path) as f:
                 data = json.load(f)
+        except json.decoder.JSONDecodeError as e:
+            msg = ("scheduler_config.json file is not correct."
+                   "Please check the scheduler configuration file")
+            LOG.error(msg)
+            raise exception.InvalidInput(e.msg)
         except FileNotFoundError as e:
             raise exception.ConfigNotFound(e)
 
