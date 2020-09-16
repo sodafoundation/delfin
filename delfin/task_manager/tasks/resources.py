@@ -21,6 +21,7 @@ from delfin import coordination
 from delfin import db
 from delfin import exception
 from delfin.common import constants
+from delfin.exporter import base_exporter
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
 
@@ -164,7 +165,7 @@ class StoragePoolTask(StorageResourceTask):
                                                                self.storage_id)
             db_pools = db.storage_pool_get_all(self.context,
                                                filters={"storage_id":
-                                                        self.storage_id})
+                                                            self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools, 'native_storage_pool_id'
@@ -209,7 +210,7 @@ class StorageVolumeTask(StorageResourceTask):
                                                            self.storage_id)
             db_volumes = db.volume_get_all(self.context,
                                            filters={"storage_id":
-                                                    self.storage_id})
+                                                        self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_volumes, db_volumes, 'native_volume_id'
@@ -243,18 +244,18 @@ class StorageVolumeTask(StorageResourceTask):
 
 class PerformanceCollectionTask(object):
 
-    def __init__(self, context, storage_id, interval, is_historic):
-        self.context = context
-        self.storage_id = storage_id
-        self.interval = interval
-        self.is_historic = is_historic
+    def __init__(self):
         self.driver_api = driverapi.API()
+        self.perf_exporter = base_exporter.PerformanceExporterManager()
 
 
 class ArrayPerformanceCollection(PerformanceCollectionTask):
     def __init__(self, context, storage_id, interval, is_historic):
-        super(ArrayPerformanceCollection, self).__init__(context, storage_id,
-                                                         interval, is_historic)
+        super(ArrayPerformanceCollection, self).__init__()
+        self.context = context
+        self.storage_id = storage_id
+        self.interval = interval
+        self.is_historic = is_historic
 
     def collect(self):
         """
@@ -262,32 +263,18 @@ class ArrayPerformanceCollection(PerformanceCollectionTask):
         """
         LOG.info('Collecting array performance metrics for storage id:{0}'
                  .format(self.storage_id))
-        pass
+        try:
+            # collect the performance metrics from driver and push to
+            # prometheus exporter api
+            array_metrics = self.driver_api.collect_array_metrics(
+                self.context, self.storage_id, self.interval,
+                self.is_historic)
 
+            self.perf_exporter.dispatch(self.context, array_metrics)
 
-class VolumePerformanceCollection(PerformanceCollectionTask):
-    def __init__(self, context, storage_id, interval, is_historic):
-        super(VolumePerformanceCollection, self).__init__(context, storage_id,
-                                                          interval, is_historic
-                                                          )
-
-    def collect(self):
-        """
-        :return:
-        """
-        pass
-
-
-class PoolPerformanceCollection(PerformanceCollectionTask):
-    def __init__(self, context, storage_id, interval, is_historic):
-        super(PoolPerformanceCollection, self).__init__(context, storage_id,
-                                                        interval, is_historic
-                                                        )
-
-    def collect(self):
-        """
-        :return:
-        """
-        LOG.info('Collecting pool performance metrics for storage id:{0}'
-                 .format(self.storage_id))
-        pass
+        except Exception as e:
+            msg = _('Failed to collect array performance metrics from '
+                    'driver: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Array performance metrics collection done!!!")
