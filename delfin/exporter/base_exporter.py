@@ -100,5 +100,8 @@ class PerformanceExporterManager(BaseManager):
     def __init__(self):
         super(PerformanceExporterManager, self).__init__(self.NAMESPACE)
 
+    def dispatch(self, ctxt, data):
+        pass
+
     def _get_configured_exporters(self):
         return CONF.performance_exporters
