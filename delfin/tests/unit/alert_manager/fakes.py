@@ -106,3 +106,7 @@ def load_config_exception(para):
 
 def mock_add_transport(snmpEngine, transportDomain, transport):
     snmpEngine.transportDispatcher = AsyncoreDispatcher()
+
+
+def config_delv3_exception(snmp_engine, username, securityEngineId):
+    raise exception.InvalidResults("Config delete failed.")
