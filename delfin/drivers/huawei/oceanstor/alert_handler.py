@@ -17,6 +17,7 @@ from datetime import datetime
 from oslo_log import log
 
 from delfin import exception
+from delfin.common import alert_util
 from delfin.common import constants
 from delfin.drivers.huawei.oceanstor import oid_mapper
 from delfin.i18n import _
@@ -140,12 +141,18 @@ class AlertHandler(object):
                      "in alert message."))
             raise exception.InvalidResults(msg)
 
-    def parse_queried_alerts(self, alert_list):
+    def parse_queried_alerts(self, alert_list, query_para):
         """Parses list alert data and fill the alert model."""
         # List contains all the current alarms of given storage id
         alert_model_list = []
         for alert in alert_list:
             try:
+                occur_time = alert['startTime']
+                # skip if alert not in input time range
+                if not alert_util.is_alert_in_time_range(query_para,
+                                                         occur_time):
+                    continue
+
                 alert_model = dict()
                 alert_model['alert_id'] = alert['eventID']
                 alert_model['alert_name'] = alert['name']
@@ -155,7 +162,6 @@ class AlertHandler(object):
                     alert['eventType'], constants.Category.NOT_SPECIFIED)
                 alert_model['type'] = constants.EventType.NOT_SPECIFIED
                 alert_model['sequence_number'] = alert['sequence']
-                occur_time = alert['startTime']
                 alert_model['occur_time'] = int(occur_time * 1000)
                 alert_model['description'] = alert['description']
 

@@ -106,8 +106,13 @@ class TrapReceiver(manager.Manager):
             engine_id = snmp_config.get('engine_id')
             if engine_id:
                 engine_id = v2c.OctetString(hexValue=engine_id)
-            config.delV3User(self.snmp_engine, userName=username,
-                             securityEngineId=engine_id)
+            try:
+                config.delV3User(self.snmp_engine, userName=username,
+                                 securityEngineId=engine_id)
+            except Exception as e:
+                msg = six.text_type(e)
+                LOG.warning("Snmp trap configuration to be "
+                            "deleted could not be found. Reason: %s", msg)
         else:
             storage_id = snmp_config.get('storage_id')
             community_index = self._get_community_index(storage_id)

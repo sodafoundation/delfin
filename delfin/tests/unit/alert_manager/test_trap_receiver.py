@@ -203,6 +203,17 @@ class TrapReceiverTestCase(test.TestCase):
         # Verify that delV3User to del config from engine
         self.assertTrue(mock_del_config.called)
 
+    @mock.patch('pysnmp.entity.config.delV3User', fakes.config_delv3_exception)
+    @mock.patch('logging.LoggerAdapter.warning')
+    def test_sync_snmp_config_del_exception(self, mock_log_warning):
+        ctxt = {}
+        alert_config = fakes.fake_v3_alert_source()
+        trap_receiver_inst = self._get_trap_receiver()
+        trap_receiver_inst.snmp_engine = engine.SnmpEngine()
+        trap_receiver_inst.sync_snmp_config(ctxt,
+                                            snmp_config_to_del=alert_config)
+        self.assertTrue(mock_log_warning.called)
+
     def test_sync_snmp_config_invalid_auth_protocol(self):
         ctxt = {}
         alert_source_config = fakes.fake_v3_alert_source()
