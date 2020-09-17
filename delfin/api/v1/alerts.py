@@ -36,8 +36,32 @@ class AlertController(wsgi.Controller):
     @wsgi.response(200)
     def show(self, req, id):
         ctx = req.environ['delfin.context']
+
+        query_para = {}
+        query_para.update(req.GET)
+
+        try:
+            begin_time = None
+            end_time = None
+
+            if query_para.get('begin_time'):
+                begin_time = int(query_para.get('begin_time'))
+
+            if query_para.get('end_time'):
+                end_time = int(query_para.get('end_time'))
+        except Exception:
+            msg = "begin_time and end_time should be integer values in " \
+                  "milliseconds."
+            raise exception.InvalidInput(msg)
+
+        # When both begin_time and end_time are provided, end_time should
+        # be greater than begin_time
+        if begin_time and end_time and end_time <= begin_time:
+            msg = "end_time should be greater than begin_time."
+            raise exception.InvalidInput(msg)
+
         storage = db.storage_get(ctx, id)
-        alert_list = self.driver_manager.list_alerts(ctx, id)
+        alert_list = self.driver_manager.list_alerts(ctx, id, query_para)
 
         # Update storage attributes in each alert model
         for alert in alert_list:
