@@ -18,6 +18,7 @@ import paramiko as paramiko
 from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
 
+from delfin import cryptor
 from delfin import exception
 
 LOG = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class SSHClient(object):
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
-                         password=self.ssh_password,
+                         password=cryptor.decode(self.ssh_password),
                          timeout=self.ssh_conn_timeout)
 
     def sethostkey(self, host_key):

@@ -22,6 +22,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 from oslo_log import log as logging
 
+from delfin import cryptor
 from delfin import exception
 from delfin.drivers.huawei.oceanstor import consts
 from delfin.ssl_utils import HostNameIgnoreAdapter
@@ -138,7 +139,7 @@ class RestClient(object):
         for item_url in self.san_address:
             url = item_url + "xx/sessions"
             data = {"username": self.rest_username,
-                    "password": self.rest_password,
+                    "password": cryptor.decode(self.rest_password),
                     "scope": "0"}
             self.init_http_head()
             result = self.do_call(url, data, 'POST',

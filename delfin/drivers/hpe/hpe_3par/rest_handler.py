@@ -16,6 +16,7 @@
 
 from oslo_log import log as logging
 
+from delfin import cryptor
 from delfin import exception
 from delfin.drivers.hpe.hpe_3par import consts
 from delfin.i18n import _
@@ -107,7 +108,8 @@ class RestHandler(object):
                 url = RestHandler.REST_AUTH_URL
 
                 data = {"user": self.restclient.rest_username,
-                        "password": self.restclient.rest_password
+                        "password":
+                            cryptor.decode(self.restclient.rest_password)
                         }
                 self.restclient.init_http_head()
                 res = self.restclient. \
