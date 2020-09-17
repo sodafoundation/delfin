@@ -165,7 +165,7 @@ class StoragePoolTask(StorageResourceTask):
                                                                self.storage_id)
             db_pools = db.storage_pool_get_all(self.context,
                                                filters={"storage_id":
-                                                            self.storage_id})
+                                                        self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools, 'native_storage_pool_id'
@@ -210,7 +210,7 @@ class StorageVolumeTask(StorageResourceTask):
                                                            self.storage_id)
             db_volumes = db.volume_get_all(self.context,
                                            filters={"storage_id":
-                                                        self.storage_id})
+                                                    self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_volumes, db_volumes, 'native_volume_id'
