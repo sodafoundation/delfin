@@ -18,11 +18,11 @@
 """
 import json
 from datetime import datetime
-from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
-
+from delfin.common import constants
 from delfin import manager, exception
 from delfin.api.v1.storages import StorageController
 from delfin.drivers import manager as driver_manager
@@ -31,7 +31,6 @@ from delfin.task_manager.tasks import alerts
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
-MIN_INTERVAL = 5
 scheduler_opts = [
     cfg.StrOpt('config_path', default='scheduler',
                help='The config path for scheduler'),
@@ -65,7 +64,7 @@ class TaskManager(manager.Manager):
             raise exception.ConfigNotFound(e)
 
         # create the object of periodic scheduler
-        schedule = BlockingScheduler()
+        schedule = BackgroundScheduler()
 
         # create the objet to StorageController class, so that
         # methods of that class can be called by scheduler
@@ -82,7 +81,8 @@ class TaskManager(manager.Manager):
 
                 resource_type = storage.get(resource)
                 if (resource_type.get('perf_collection') and
-                        resource_type.get('interval') > MIN_INTERVAL):
+                        resource_type.get('interval') > constants.
+                        SCHEDULING_MIN_INTERVAL):
                     is_historic = resource_type.get('is_historic')
                     interval = resource_type.get('interval')
 
