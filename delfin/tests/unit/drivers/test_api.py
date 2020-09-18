@@ -21,6 +21,7 @@ sys.modules['delfin.cryptor'] = mock.Mock()
 
 from delfin import context
 from delfin import exception
+from delfin.common import config # noqa
 from delfin.drivers.api import API
 from delfin.drivers.fake_storage import FakeStorageDriver
 
@@ -156,7 +157,7 @@ class TestDriverAPI(TestCase):
         mock_storage_update.assert_called_with(
             context, storage_id, storage)
 
-        access_info_new['rest']['password'] = mock.Mock()
+        access_info_new['rest']['password'] = "cGFzc3dvcmQ="
         self.assertDictEqual(access_info_new, updated)
 
         # Case: Wrong storage serial number
