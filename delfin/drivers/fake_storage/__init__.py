@@ -44,9 +44,7 @@ fake_opts = [
 
 CONF.register_opts(fake_opts, "fake_driver")
 
-
 LOG = log.getLogger(__name__)
-
 
 MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
@@ -103,8 +101,8 @@ class FakeStorageDriver(driver.StorageDriver):
         # Do something here
         sn = six.text_type(uuidutils.generate_uuid())
         total, used, free = self._get_random_capacity()
-        raw = random.randint(2000, 3000)
-        subscribed = random.randint(3000, 4000)
+        raw = random.randint(3004960000, 4194960000)
+        subscribed = random.randint(4194960000, 4294960000)
         return {
             'name': 'fake_driver',
             'description': 'fake driver.',
@@ -172,7 +170,52 @@ class FakeStorageDriver(driver.StorageDriver):
         pass
 
     def list_alerts(self, context, query_para=None):
-        pass
+        alert_list = [{
+            'alert_id': '19660818',
+            'sequence_number': 100,
+            'alert_name': 'SNMP connect failed',
+            'category': 'Fault',
+            'severity': 'Major',
+            'type': 'OperationalViolation',
+            'location': 'NetworkEntity=entity1',
+            'description': "SNMP connection to the storage failed.",
+            'recovery_advice': "Check snmp configurations.",
+            'occur_time': 13445566902
+        }, {
+            'alert_id': '19660819',
+            'sequence_number': 101,
+            'alert_name': 'Link state down',
+            'category': 'Fault',
+            'severity': 'Critical',
+            'type': 'CommunicationsAlarm',
+            'location': 'NetworkEntity=entity2',
+            'description': "Backend link has gone down",
+            'recovery_advice': "Recheck the network configuration setting.",
+            'occur_time': 13445566900
+        }, {
+            'alert_id': '19660820',
+            'sequence_number': 102,
+            'alert_name': 'Power failure',
+            'category': 'Fault',
+            'severity': 'Fatal',
+            'type': 'OperationalViolation',
+            'location': 'NetworkEntity=entity3',
+            'description': "Power failure occurred. ",
+            'recovery_advice': "Investigate power connection.",
+            'occur_time': 13445558900
+        }, {
+            'alert_id': '19660821',
+            'sequence_number': 103,
+            'alert_name': 'Communication failure',
+            'category': 'Fault',
+            'severity': 'Critical',
+            'type': 'CommunicationsAlarm',
+            'location': 'NetworkEntity=network1',
+            'description': "Communication link gone down",
+            'recovery_advice': "Consult network administrator",
+            'occur_time': 17445544900
+        }]
+        return alert_list
 
     @wait_random(MIN_WAIT, MAX_WAIT)
     def _get_volume_range(self, start, end):
@@ -195,7 +238,7 @@ class FakeStorageDriver(driver.StorageDriver):
         return volume_list
 
     def _get_random_capacity(self):
-        total = random.randint(1000, 2000)
+        total = random.randint(1004960000, 3004960000)
         used = int(random.randint(0, 100) * total / 100)
         free = total - used
         return total, used, free
