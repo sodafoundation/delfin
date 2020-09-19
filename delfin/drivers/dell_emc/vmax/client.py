@@ -245,8 +245,8 @@ class VMAXClient(object):
                 map_array_perf_metrics_to_delfin_metrics(metrics_value_map)
             metrics_array = []
             for key in constants.DELFIN_ARRAY_METRICS:
-                m = constants.MetricStruct(name=key, labels=labels,
-                                           values=delfin_metrics[key])
+                m = constants.metric_struct(name=key, labels=labels,
+                                            values=delfin_metrics[key])
                 metrics_array.append(m)
             return metrics_array
         except Exception as err:

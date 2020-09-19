@@ -381,166 +381,167 @@ class TestVMAXStorageDriver(TestCase):
             }
         }
 
-        expected_historic = [constants.MetricStruct(name='response_time',
-                                                    labels={
-                                                        'storage_id': '12345',
-                                                        'resource_type':
-                                                            'array'},
-                                                    values={
-                                                        1598875800000:
-                                                            9.1405992,
-                                                        1598876400000:
-                                                            9.2676263,
-                                                        1598876100000:
-                                                            9.1774695}
-                                                    ),
-                             constants.MetricStruct(name='throughput',
-                                                    labels={
-                                                        'storage_id': '12345',
-                                                        'resource_type':
-                                                            'array'},
-                                                    values={
-                                                        1598875800000: 296.1,
-                                                        1598876100000:
-                                                            350.22998,
-                                                        1598876400000:
-                                                            297.63333}
-                                                    ),
-                             constants.MetricStruct(name='read_throughput',
-                                                    labels={
-                                                        'storage_id': '12345',
-                                                        'resource_type':
-                                                            'array'},
-                                                    values={
-                                                        1598875800000:
-                                                            14.056666,
-                                                        1598876100000:
-                                                            13.213333,
-                                                        1598876400000:
-                                                            13.176666}
-                                                    ),
-                             constants.MetricStruct(name='write_throughput',
-                                                    labels={
-                                                        'storage_id': '12345',
-                                                        'resource_type':
-                                                            'array'},
-                                                    values={
-                                                        1598875800000: 25.78,
-                                                        1598876100000:
-                                                            45.97333,
-                                                        1598876400000:
-                                                            28.643333}
-                                                    ),
-                             constants.MetricStruct(name='bandwidth',
-                                                    labels={
-                                                        'storage_id': '12345',
-                                                        'resource_type':
-                                                            'array'},
-                                                    values={
-                                                        1598875800000:
-                                                        0.36879882999999997,
-                                                        1598876400000:
-                                                            0.293219385,
-                                                        1598876100000:
-                                                            0.446360664}
-                                                    ),
-                             constants.MetricStruct(name='read_bandwidth',
-                                                    labels={
-                                                        'storage_id': '12345',
-                                                        'resource_type':
-                                                            'array'},
-                                                    values={
-                                                        1598875800000:
-                                                            0.05016927,
-                                                        1598876100000:
-                                                            0.043291014,
-                                                        1598876400000:
-                                                            0.042753905}
-                                                    ),
-                             constants.MetricStruct(name='write_bandwidth',
-                                                    labels={
-                                                        'storage_id': '12345',
-                                                        'resource_type':
-                                                            'array'},
-                                                    values={
-                                                        1598875800000:
-                                                            0.31862956,
-                                                        1598876100000:
-                                                            0.40306965,
-                                                        1598876400000:
-                                                            0.25046548}
-                                                    )
-                             ]
+        expected_historic = [
+            constants.metric_struct(name='response_time',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            9.1405992,
+                                        1598876400000:
+                                            9.2676263,
+                                        1598876100000:
+                                            9.1774695}
+                                    ),
+            constants.metric_struct(name='throughput',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 296.1,
+                                        1598876100000:
+                                            350.22998,
+                                        1598876400000:
+                                            297.63333}
+                                    ),
+            constants.metric_struct(name='read_throughput',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            14.056666,
+                                        1598876100000:
+                                            13.213333,
+                                        1598876400000:
+                                            13.176666}
+                                    ),
+            constants.metric_struct(name='write_throughput',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 25.78,
+                                        1598876100000:
+                                            45.97333,
+                                        1598876400000:
+                                            28.643333}
+                                    ),
+            constants.metric_struct(name='bandwidth',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            0.36879882999999997,
+                                        1598876400000:
+                                            0.293219385,
+                                        1598876100000:
+                                            0.446360664}
+                                    ),
+            constants.metric_struct(name='read_bandwidth',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            0.05016927,
+                                        1598876100000:
+                                            0.043291014,
+                                        1598876400000:
+                                            0.042753905}
+                                    ),
+            constants.metric_struct(name='write_bandwidth',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            0.31862956,
+                                        1598876100000:
+                                            0.40306965,
+                                        1598876400000:
+                                            0.25046548}
+                                    )
+        ]
 
         expected_realtime = [
-            constants.MetricStruct(name='response_time',
-                                   labels={
-                                       'storage_id': '12345',
-                                       'resource_type':
-                                           'array'},
-                                   values={
-                                       1598875800000:
-                                           9.1405992
-                                   }
-                                   ),
-            constants.MetricStruct(name='throughput',
-                                   labels={
-                                       'storage_id': '12345',
-                                       'resource_type':
-                                           'array'},
-                                   values={
-                                       1598875800000: 296.1
-                                   }
-                                   ),
-            constants.MetricStruct(name='read_throughput',
-                                   labels={
-                                       'storage_id': '12345',
-                                       'resource_type':
-                                           'array'},
-                                   values={
-                                       1598875800000:
-                                           14.056666
-                                   }
-                                   ),
-            constants.MetricStruct(name='write_throughput',
-                                   labels={
-                                       'storage_id': '12345',
-                                       'resource_type':
-                                           'array'},
-                                   values={
-                                       1598875800000: 25.78
-                                   }
-                                   ),
-            constants.MetricStruct(name='bandwidth',
-                                   labels={
-                                       'storage_id': '12345',
-                                       'resource_type':
-                                           'array'},
-                                   values={
-                                       1598875800000:
-                                           0.36879882999999997
-                                   }
-                                   ),
-            constants.MetricStruct(name='read_bandwidth',
-                                   labels={
-                                       'storage_id': '12345',
-                                       'resource_type':
-                                           'array'},
-                                   values={
-                                       1598875800000:
-                                           0.05016927
-                                   }
-                                   ),
-            constants.MetricStruct(name='write_bandwidth',
-                                   labels={
-                                       'storage_id': '12345',
-                                       'resource_type': 'array'
-                                   },
-                                   values={
-                                       1598875800000: 0.31862956
+            constants.metric_struct(name='response_time',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            9.1405992
+                                    }
+                                    ),
+            constants.metric_struct(name='throughput',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 296.1
+                                    }
+                                    ),
+            constants.metric_struct(name='read_throughput',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            14.056666
+                                    }
+                                    ),
+            constants.metric_struct(name='write_throughput',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 25.78
+                                    }
+                                    ),
+            constants.metric_struct(name='bandwidth',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            0.36879882999999997
+                                    }
+                                    ),
+            constants.metric_struct(name='read_bandwidth',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            0.05016927
+                                    }
+                                    ),
+            constants.metric_struct(name='write_bandwidth',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type': 'array'
+                                    },
+                                    values={
+                                        1598875800000: 0.31862956
 
-                                   }
-                                   )
+                                    }
+                                    )
         ]
 
         kwargs = VMAX_STORAGE_CONF

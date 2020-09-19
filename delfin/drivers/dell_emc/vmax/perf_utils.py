@@ -14,19 +14,9 @@
 
 import time
 
-# minimum interval supported by VMAX
-VMAX_PERF_MIN_INTERVAL = 5
+from collections import Counter
 
-ARRAY_METRICS = ["HostIOs",
-                 "HostMBWritten",
-                 "ReadResponseTime",
-                 "HostMBReads",
-                 "HostReads",
-                 "HostWrites",
-                 "WriteResponseTime"
-                 ]
-
-VMAX_REST_TARGET_URI_ARRAY_PERF = '/performance/Array/metrics'
+from delfin.drivers.dell_emc.vmax import constants
 
 
 def epoch_time_ms_now():
@@ -37,7 +27,7 @@ def epoch_time_ms_now():
     return ms
 
 
-def epoch_time_interval_ago(interval_seconds=VMAX_PERF_MIN_INTERVAL):
+def epoch_time_interval_ago(interval_seconds=constants.VMAX_PERF_MIN_INTERVAL):
     """Get epoch time in milliseconds  before an interval
     :param interval_seconds: interval in seconds
     :returns: epoch time in milliseconds
@@ -80,23 +70,22 @@ def map_array_perf_metrics_to_delfin_metrics(metrics_value_map):
             containing {timestamp: value} for a the timestamps available
         """
     # read and write response_time
-    read_response_values_dict = metrics_value_map['ReadResponseTime']
-    write_response_values_dict = metrics_value_map['WriteResponseTime']
-    # response_time_values is sum of read and write response
-    response_time_values_dict = {
-        x: read_response_values_dict.get(x, 0)
-        + write_response_values_dict.get(x, 0) for x in
-        set(read_response_values_dict).union(write_response_values_dict)}
+    read_response_values_dict = metrics_value_map.get('ReadResponseTime')
+    write_response_values_dict = metrics_value_map.get('WriteResponseTime')
+    if read_response_values_dict or write_response_values_dict:
+        response_time_values_dict = \
+            Counter(read_response_values_dict) + \
+            Counter(write_response_values_dict)
     # bandwidth metrics
-    read_bandwidth_values_dict = metrics_value_map['HostMBReads']
-    write_bandwidth_values_dict = metrics_value_map['HostMBWritten']
-    bandwidth_values_dict = {
-        x: read_bandwidth_values_dict.get(x, 0)
-        + write_bandwidth_values_dict.get(x, 0) for x in
-        set(read_bandwidth_values_dict).union(write_bandwidth_values_dict)}
-    throughput_values_dict = metrics_value_map['HostIOs']
-    read_throughput_values_dict = metrics_value_map['HostReads']
-    write_throughput_values_dict = metrics_value_map['HostWrites']
+    read_bandwidth_values_dict = metrics_value_map.get('HostMBReads')
+    write_bandwidth_values_dict = metrics_value_map.get('HostMBWritten')
+    if read_bandwidth_values_dict or write_bandwidth_values_dict:
+        bandwidth_values_dict = \
+            Counter(read_bandwidth_values_dict) +\
+            Counter(write_bandwidth_values_dict)
+    throughput_values_dict = metrics_value_map.get('HostIOs')
+    read_throughput_values_dict = metrics_value_map.get('HostReads')
+    write_throughput_values_dict = metrics_value_map.get('HostWrites')
     # map values to delfin metrics spec
     delfin_metrics = {'response_time': response_time_values_dict,
                       'read_bandwidth': read_bandwidth_values_dict,

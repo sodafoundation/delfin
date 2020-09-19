@@ -26,7 +26,7 @@ from oslo_log import log as logging
 
 from delfin import exception
 from delfin.common import alert_util
-from delfin.drivers.dell_emc.vmax import perf_utils
+from delfin.drivers.dell_emc.vmax import perf_utils, constants
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
@@ -529,7 +529,7 @@ class VMaxRest(object):
 
         status_code, message = self.request(target_uri, POST,
                                             request_object=payload)
-        operation = 'Performance query for URL' % {target_uri}
+        operation = 'POST request for URL' % {target_uri}
         self.check_status_code_success(
             operation, status_code, message)
         return status_code, message
@@ -542,9 +542,9 @@ class VMaxRest(object):
         :returns: message -- response from unipshere REST API
          """
 
-        target_uri = perf_utils.VMAX_REST_TARGET_URI_ARRAY_PERF
+        target_uri = constants.VMAX_REST_TARGET_URI_ARRAY_PERF
         payload = perf_utils.generate_performance_payload(
-            array, interval, perf_utils.ARRAY_METRICS)
+            array, interval, constants.ARRAY_METRICS)
 
         status_code, message = self.post_request(target_uri, payload)
         # Expected 200 when POST request has metrics in response body

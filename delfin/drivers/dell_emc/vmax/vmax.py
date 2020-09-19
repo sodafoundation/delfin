@@ -17,7 +17,7 @@ from oslo_utils import units
 from delfin.common import constants
 from delfin.drivers.dell_emc.vmax.alert_handler import snmp_alerts
 from delfin.drivers.dell_emc.vmax.alert_handler import unisphere_alerts
-from delfin.drivers.dell_emc.vmax import client, perf_utils
+from delfin.drivers.dell_emc.vmax import client, constants as vmax_const
 from delfin.drivers import driver
 
 LOG = log.getLogger(__name__)
@@ -99,6 +99,6 @@ class VMAXStorageDriver(driver.StorageDriver):
     def collect_array_metrics(self, context, storage_id,
                               interval, is_historic):
         if not is_historic:
-            interval = perf_utils.VMAX_PERF_MIN_INTERVAL
+            interval = vmax_const.VMAX_PERF_MIN_INTERVAL
         return self.client.get_array_performance_metrics(self.storage_id,
                                                          interval=interval)

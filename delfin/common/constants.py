@@ -150,7 +150,7 @@ class SecurityLevel(object):
 
 # Performance collection constants and common models
 # Metric model
-MetricStruct = namedtuple("Metric", "name labels values")
+metric_struct = namedtuple("Metric", "name labels values")
 
 
 # Unified Array metrics model
