@@ -18,7 +18,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
 
-from delfin import coordination, context
+from delfin import coordination
 from delfin import db
 from delfin import exception
 from delfin.api import api_utils
