@@ -24,7 +24,7 @@ from oslo_log import log
 from oslo_utils import importutils
 from delfin.common import constants
 from delfin import manager, exception
-from delfin.api.v1.storages import StorageController
+from delfin.api.v1.performance import PerformanceController
 from delfin.drivers import manager as driver_manager
 from delfin.task_manager.tasks import alerts
 
@@ -68,7 +68,7 @@ class TaskManager(manager.Manager):
 
         # create the objet to StorageController class, so that
         # methods of that class can be called by scheduler
-        storage_cls = StorageController()
+        storage_cls = PerformanceController()
 
         # parse the scheduler configuration file and start the task
         # for each storage

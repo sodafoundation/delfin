@@ -192,27 +192,6 @@ class StorageController(wsgi.Controller):
 
         return False
 
-    def perf_collect(self, storage_id, interval, is_historic, resource):
-        """
-        This function received the request from scheduler to create tasks
-        and push those tasks to rabbitmq.
-        :param storage_id: The registered storage_id
-        :param interval: collection interval period
-        :param is_historic: to enable historic collection
-        :param resource: resource type, ex: array, pool, volume etc.
-        :return:
-        """
-        ctxt = context.RequestContext()
-
-        LOG.debug("Request received to create perf_collect task for storage_"
-                  "id :{0} and resource_type:{1}".format(storage_id, resource)
-                  )
-
-        self.task_rpcapi.performance_metrics_collection(
-            ctxt, storage_id, interval, is_historic,
-            resources.PerformanceCollectionTask.__module__ +
-            '.' + constants.RESOURCE_CLASS_TYPE.get(resource))
-
 
 def create_resource():
     return wsgi.Resource(StorageController())
