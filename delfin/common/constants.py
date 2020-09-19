@@ -144,3 +144,9 @@ class SecurityLevel(object):
     AUTHPRIV = 'authPriv'
     AUTHNOPRIV = 'authNoPriv'
     NOAUTHNOPRIV = 'noAuthnoPriv'
+
+
+class ResourceSync(object):
+    START = 100
+    SUCCEED = 100
+    FAILED = 101

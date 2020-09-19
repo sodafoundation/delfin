@@ -33,21 +33,17 @@ class AlertHandler(object):
     TIME_PATTERN = "%Y-%m-%d,%H:%M:%S.%f"
 
     # Translation of trap severity to alert model severity
-    # Values are: criticalAlarm=1, majorAlarm=2, minorAlarm=3, warningAlarm=4
     SEVERITY_MAP = {"1": constants.Severity.CRITICAL,
                     "2": constants.Severity.MAJOR,
                     "3": constants.Severity.MINOR,
                     "4": constants.Severity.WARNING}
 
     # Translation of trap alert category to alert model category
-    # Values are: faultAlarm=1, resumeAlarm=2, eventAlarm=3
     CATEGORY_MAP = {"1": constants.Category.FAULT,
                     "2": constants.Category.RECOVERY,
                     "3": constants.Category.EVENT}
 
     # Translation of trap alert category to alert type
-    # Values are: communicationQuality=1, equipmentFault=2, processError=3
-    #             serviceQuality=4, environmentFault=5, performanceLimit=6
     TYPE_MAP = {
         "1": constants.EventType.COMMUNICATIONS_ALARM,
         "2": constants.EventType.EQUIPMENT_ALARM,

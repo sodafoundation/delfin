@@ -33,10 +33,6 @@ class VMAXClient(object):
         rest_access = kwargs.get('rest')
         if rest_access is None:
             raise exception.InvalidInput('Input rest_access is missing')
-        self.rest_host = rest_access.get('host')
-        self.rest_port = rest_access.get('port')
-        self.rest_username = rest_access.get('username')
-        self.rest_password = rest_access.get('password')
         self.rest = rest.VMaxRest()
         self.rest.set_rest_credentials(rest_access)
         self.reset_connection(**kwargs)
@@ -55,6 +51,12 @@ class VMAXClient(object):
             msg = "Failed to connect VMAX. Reason: {}".format(e.msg)
             LOG.error(msg)
             raise e
+        except (exception.SSLCertificateFailed,
+                exception.WrongTlsVersion,
+                exception.CipherNotMatch) as e:
+            msg = ("Failed to connect to VMAX: {}".format(e))
+            LOG.error(msg)
+            raise
         except Exception as err:
             msg = ("Failed to connect to VMAX. Host or Port is not correct: "
                    "{}".format(err))
@@ -82,6 +84,9 @@ class VMAXClient(object):
                     msg = "Invalid array_id. Expected id: {}". \
                         format(array['symmetrixId'])
                     raise exception.InvalidInput(msg)
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when init connection for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get array details from VMAX: {}".format(err)
             raise exception.StorageBackendException(msg)
@@ -96,6 +101,9 @@ class VMAXClient(object):
             # Get the VMAX array properties
             return self.rest.get_vmax_array_details(version=self.uni_version,
                                                     array=self.array_id)
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when get array info for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get array details from VMAX: {}".format(err)
             LOG.error(msg)
@@ -106,6 +114,10 @@ class VMAXClient(object):
             storage_info = self.rest.get_system_capacity(
                 self.array_id, self.uni_version)
             return storage_info
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when '
+                      'get storage capacity for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get capacity from VMAX: {}".format(err)
             LOG.error(msg)
@@ -143,6 +155,9 @@ class VMAXClient(object):
 
             return pool_list
 
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when list pools for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get pool metrics from VMAX: {}".format(err)
             LOG.error(msg)
@@ -186,8 +201,12 @@ class VMAXClient(object):
                 if vol['type'] == 'TDEV':
                     description = "Dell EMC VMAX 'thin device' volume"
 
+                name = volume
+                if vol.get('volume_identifier'):
+                    name = volume + ':' + vol['volume_identifier']
+
                 v = {
-                    "name": volume,
+                    "name": name,
                     "storage_id": storage_id,
                     "description": description,
                     "status": status,
@@ -212,6 +231,9 @@ class VMAXClient(object):
 
             return volume_list
 
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when list volumes for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get list volumes from VMAX: {}".format(err)
             LOG.error(msg)

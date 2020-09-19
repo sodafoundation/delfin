@@ -19,10 +19,10 @@ import threading
 
 from oslo_log import log
 
+from delfin import db
 from delfin import exception
 from delfin import utils
 from delfin import ssl_utils
-from delfin.drivers import helper
 
 LOG = log.getLogger(__name__)
 
@@ -54,6 +54,7 @@ class DriverManager(stevedore.ExtensionManager):
         :type cache_on_load: bool
         :param kwargs: Parameters from access_info.
         """
+        kwargs = copy.deepcopy(kwargs)
         kwargs['verify'] = False
         ca_path = ssl_utils.get_storage_ca_path()
         if ca_path:
@@ -79,10 +80,12 @@ class DriverManager(stevedore.ExtensionManager):
             cls = self._get_driver_cls(**kwargs)
             return cls(**kwargs)
 
+        if kwargs['storage_id'] in self.driver_factory:
+            return self.driver_factory[kwargs['storage_id']]
+
         with self._instance_lock:
             if kwargs['storage_id'] in self.driver_factory:
-                driver = self.driver_factory[kwargs['storage_id']]
-                return driver
+                return self.driver_factory[kwargs['storage_id']]
 
             if kwargs['verify']:
                 ssl_utils.reload_certificate(kwargs['verify'])
@@ -93,7 +96,8 @@ class DriverManager(stevedore.ExtensionManager):
                 cls = self._get_driver_cls(**kwargs)
                 driver = cls(**kwargs)
             else:
-                access_info = helper.get_access_info(context, storage_id)
+                access_info = db.access_info_get(
+                    context, storage_id).to_dict()
                 access_info['verify'] = kwargs.get('verify')
                 cls = self._get_driver_cls(**access_info)
                 driver = cls(**access_info)

@@ -15,18 +15,23 @@
 #    under the License.
 
 import json
+import ssl
 import sys
 
+from oslo_log import log as logging
 import requests
 import requests.auth
 import requests.exceptions as r_exc
 import six
 import urllib3
-from oslo_log import log as logging
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
 
+from delfin import cryptor
 from delfin import exception
 from delfin.common import alert_util
 from delfin.i18n import _
+from delfin import ssl_utils
 
 LOG = logging.getLogger(__name__)
 SLOPROVISIONING = 'sloprovisioning'
@@ -45,6 +50,24 @@ STATUS_401 = 401
 
 # Default expiration time(in sec) for vmax connect request
 VERSION_GET_TIME_OUT = 10
+
+
+class HostNameIgnoringAdapter(HTTPAdapter):
+
+    def cert_verify(self, conn, url, verify, cert):
+        conn.assert_hostname = False
+        return super(HostNameIgnoringAdapter, self).cert_verify(
+            conn, url, verify, cert)
+
+    def init_poolmanager(self, connections, maxsize, block=False,
+                         **pool_kwargs):
+        self._pool_connections = connections
+        self._pool_maxsize = maxsize
+        self._pool_block = block
+        self.poolmanager = PoolManager(num_pools=connections, maxsize=maxsize,
+                                       block=block, strict=True,
+                                       ssl_version=ssl.PROTOCOL_TLSv1,
+                                       **pool_kwargs)
 
 
 class VMaxRest(object):
@@ -82,7 +105,8 @@ class VMaxRest(object):
         session.headers = {'content-type': 'application/json',
                            'accept': 'application/json',
                            'Application-Type': 'delfin'}
-        session.auth = requests.auth.HTTPBasicAuth(self.user, self.passwd)
+        session.auth = requests.auth.HTTPBasicAuth(
+            self.user, cryptor.decode(self.passwd))
 
         if not self.verify:
             session.verify = False
@@ -90,7 +114,11 @@ class VMaxRest(object):
             LOG.debug("Enable certificate verification, ca_path: {0}".format(
                 self.verify))
             session.verify = self.verify
+        session.mount("https://", ssl_utils.HostNameIgnoreAdapter())
 
+        self.session = session
+        # Check whether the session be able to working
+        self.get_unisphere_version()
         return session
 
     def request(self, target_uri, method, params=None, request_object=None,
@@ -108,7 +136,7 @@ class VMaxRest(object):
 
         url, message, status_code, response = None, None, None, None
         if not self.session:
-            self.session = self.establish_rest_session()
+            self.establish_rest_session()
 
         try:
             url = ("%(self.base_uri)s%(target_uri)s" % {
@@ -146,8 +174,18 @@ class VMaxRest(object):
             msg = _("The connection to %(base_uri)s has encountered an "
                     "SSL error. Please check your SSL config or supplied "
                     "SSL cert in Delfin configuration. SSL Exception "
-                    "message: %(e)s")
-            raise r_exc.SSLError(msg, {'base_uri': self.base_uri, 'e': e})
+                    "message: %(e)s") % {'base_uri': self.base_uri, 'e': e}
+            LOG.error(msg)
+            err_str = six.text_type(e)
+            if 'wrong ssl version' in err_str or \
+                    'sslv3 alert handshake failure' in err_str:
+                raise exception.WrongTlsVersion()
+            elif 'no cipher match' in err_str:
+                raise exception.CipherNotMatch()
+            elif 'certificate verify failed' in err_str:
+                raise exception.SSLCertificateFailed()
+            else:
+                raise e
 
         except (r_exc.Timeout, r_exc.ConnectionError,
                 r_exc.HTTPError) as e:

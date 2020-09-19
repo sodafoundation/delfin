@@ -30,16 +30,6 @@ def encrypt_password(context, access_info):
                 access_info[access]['password'])
 
 
-def get_access_info(context, storage_id):
-    access_info = db.access_info_get(context, storage_id)
-    access_info_dict = access_info.to_dict()
-    for access in constants.ACCESS_TYPE:
-        if access_info.get(access):
-            access_info[access]['password'] = cryptor.decode(
-                access_info[access]['password'])
-    return access_info_dict
-
-
 def create_access_info(context, access_info):
     encrypt_password(context, access_info)
     return db.access_info_create(context, access_info)

@@ -32,7 +32,12 @@ def set_synced_after():
     def _set_synced_after(func, *args, **kwargs):
         call_args = inspect.getcallargs(func, *args, **kwargs)
         self = call_args['self']
-        ret = func(*args, **kwargs)
+        sync_result = constants.ResourceSync.SUCCEED
+        ret = None
+        try:
+            ret = func(*args, **kwargs)
+        except Exception:
+            sync_result = constants.ResourceSync.FAILED
         lock = coordination.Lock(self.storage_id)
         with lock:
             try:
@@ -45,7 +50,7 @@ def set_synced_after():
                 # When sync status get to 0
                 # means all the sync tasks are completed
                 if storage['sync_status'] != constants.SyncStatus.SYNCED:
-                    storage['sync_status'] -= 1
+                    storage['sync_status'] -= sync_result
                     db.storage_update(self.context, self.storage_id, storage)
 
         return ret
@@ -59,7 +64,7 @@ def check_deleted():
         call_args = inspect.getcallargs(func, *args, **kwargs)
         self = call_args['self']
         ret = func(*args, **kwargs)
-        # When context.read_deleted = 'yes', db.storage_get would
+        # When context.read_deleted is 'yes', db.storage_get would
         # only get the storage whose 'deleted' tag is not default value
         self.context.read_deleted = 'yes'
         try:
@@ -126,12 +131,11 @@ class StorageDeviceTask(StorageResourceTask):
                                                   self.storage_id)
 
             db.storage_update(self.context, self.storage_id, storage)
-        except AttributeError as e:
-            LOG.error(e)
         except Exception as e:
             msg = _('Failed to update storage entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing storage successful!!!")
 
@@ -169,6 +173,7 @@ class StoragePoolTask(StorageResourceTask):
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools, 'native_storage_pool_id'
             )
+
             if delete_id_list:
                 db.storage_pools_delete(self.context, delete_id_list)
 
@@ -177,12 +182,11 @@ class StoragePoolTask(StorageResourceTask):
 
             if add_list:
                 db.storage_pools_create(self.context, add_list)
-        except AttributeError as e:
-            LOG.error(e)
         except Exception as e:
             msg = _('Failed to sync pools entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing storage pools successful!!!")
 
@@ -227,12 +231,11 @@ class StorageVolumeTask(StorageResourceTask):
 
             if add_list:
                 db.volumes_create(self.context, add_list)
-        except AttributeError as e:
-            LOG.error(e)
         except Exception as e:
             msg = _('Failed to sync volumes entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing volumes successful!!!")
 
