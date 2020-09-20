@@ -30,7 +30,7 @@ from delfin.common import constants
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
 from delfin.task_manager import rpcapi as task_rpcapi
-from delfin.task_manager.tasks import task
+from delfin.task_manager.tasks import resources
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -93,6 +93,10 @@ class StorageController(wsgi.Controller):
         # Registration success, sync resource collection for this storage
         try:
             self.sync(req, storage['id'])
+
+            # Post registration, trigger alert sync
+            self.task_rpcapi.sync_storage_alerts(ctxt, storage['id'],
+                                                 query_para=None)
         except Exception as e:
             # Unexpected error occurred, while syncing resources.
             msg = _('Failed to sync resources for storage: %(storage)s. '
@@ -105,7 +109,7 @@ class StorageController(wsgi.Controller):
         ctxt = req.environ['delfin.context']
         storage = db.storage_get(ctxt, id)
 
-        for subclass in task.StorageResourceTask.__subclasses__():
+        for subclass in resources.StorageResourceTask.__subclasses__():
             self.task_rpcapi.remove_storage_resource(
                 ctxt,
                 storage['id'],
@@ -125,7 +129,7 @@ class StorageController(wsgi.Controller):
         storages = db.storage_get_all(ctxt)
         LOG.debug("Total {0} registered storages found in database".
                   format(len(storages)))
-        resource_count = len(task.StorageResourceTask.__subclasses__())
+        resource_count = len(resources.StorageResourceTask.__subclasses__())
 
         for storage in storages:
             try:
@@ -135,7 +139,7 @@ class StorageController(wsgi.Controller):
                          % (storage['id'], e.msg))
                 continue
             else:
-                for subclass in task.StorageResourceTask.__subclasses__():
+                for subclass in resources.StorageResourceTask.__subclasses__():
                     self.task_rpcapi.sync_storage_resource(
                         ctxt,
                         storage['id'],
@@ -150,9 +154,9 @@ class StorageController(wsgi.Controller):
         """
         ctxt = req.environ['delfin.context']
         storage = db.storage_get(ctxt, id)
-        resource_count = len(task.StorageResourceTask.__subclasses__())
+        resource_count = len(resources.StorageResourceTask.__subclasses__())
         _set_synced_if_ok(ctxt, storage['id'], resource_count)
-        for subclass in task.StorageResourceTask.__subclasses__():
+        for subclass in resources.StorageResourceTask.__subclasses__():
             self.task_rpcapi.sync_storage_resource(
                 ctxt,
                 storage['id'],

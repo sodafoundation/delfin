@@ -958,6 +958,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/{storage_id}/alerts/sync':
+    post:
+      tags:
+        - Alerts
+      description: Sync alerts from storage device
+      operationId: syncStorageAlerts
+      parameters:
+        - name: storage_id
+          in: path
+          description: Database ID created for a storage backend .
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/StorageBackendAlertSync'
+      responses:
+        '200':
+          description: 'Accepted, '
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '409':
+          description: An item already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+
 components:
   schemas:
     BaseModel:
@@ -1492,6 +1543,22 @@ components:
                 Port for connecting to alert source
                 By default, set to 161
               example: 20162
+    StorageBackendAlertSync:
+      type: object
+      properties:
+        begin_time:
+          type: integer
+          format: int64
+            Start time(in milliseconds) for alert sync. It is optional.
+            If not provided, alerts are fetched without filtering start time
+          example: 13577777777777766
+        end_time:
+          type: integer
+          format: int64
+          description: >-
+            End time(in milliseconds) for alert sync. It is optional.
+            If not provided, alerts are fetched without filtering end time
+          example: 13577777777777777
     ErrorSpec:
       required:
         - error_code
@@ -1613,3 +1680,8 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/AlertSourceUpdateSpec'
+    StorageBackendAlertSync:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/StorageBackendAlertSync'

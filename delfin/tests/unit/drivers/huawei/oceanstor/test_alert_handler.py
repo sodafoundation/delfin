@@ -67,6 +67,21 @@ class AlertHandlerTestCase(unittest.TestCase):
 
         return alert_info
 
+    def _get_fake_queried_alert(self):
+        alert_info = [{
+            'eventID': 1234,
+            'name': 'sample-event',
+            'level': 2,
+            'eventType': 0,
+            'sequence': '1234',
+            'startTime': 13200000,
+            'description': 'This is just for  testing.Please ignore it',
+            'suggestion': 'Sample advice',
+            'location': 'location1'
+        }]
+
+        return alert_info
+
     def test_parse_alert_with_all_necessary_info(self):
         """ Success flow with all necessary parameters"""
         alert_handler_inst = self._get_alert_handler()
@@ -106,3 +121,56 @@ class AlertHandlerTestCase(unittest.TestCase):
                                "hwIsmReportingAlarmNodeCode missing in alert "
                                "message.",
                                alert_handler_inst.parse_alert, context, alert)
+
+    def test_parse_queried_alerts_inside_range(self):
+        """ Success flow with all necessary parameters"""
+        alert_handler_inst = self._get_alert_handler()
+        alert = self._get_fake_queried_alert()
+
+        expected_alert_model = [{
+            'alert_id': alert[0]['eventID'],
+            'alert_name': alert[0]['name'],
+            'severity': constants.Severity.INFORMATIONAL,
+            'category': constants.Category.EVENT,
+            'type': constants.EventType.NOT_SPECIFIED,
+            'sequence_number': alert[0]['sequence'],
+            'description': alert[0]['description'],
+            'recovery_advice': alert[0]['suggestion'],
+            'resource_type': constants.DEFAULT_RESOURCE_TYPE,
+            'location': alert[0]['location'],
+            'occur_time': alert[0]['startTime'] * 1000
+        }]
+
+        # With both valid begin_time and end_time
+        query_para = {'begin_time': 13100000, 'end_time': 13300000}
+        alert_model = alert_handler_inst.parse_queried_alerts(alert,
+                                                              query_para)
+        # Verify that all other fields are matching
+        self.assertDictEqual(expected_alert_model[0], alert_model[0])
+
+        # With only valid begin_time
+        query_para = {'begin_time': 13100000}
+        alert_model = alert_handler_inst.parse_queried_alerts(alert,
+                                                              query_para)
+        # Verify that all other fields are matching
+        self.assertDictEqual(expected_alert_model[0], alert_model[0])
+
+        # With only valid end_time
+        query_para = {'end_time': 13300000}
+        alert_model = alert_handler_inst.parse_queried_alerts(alert,
+                                                              query_para)
+        # Verify that all other fields are matching
+        self.assertDictEqual(expected_alert_model[0], alert_model[0])
+
+    def test_parse_queried_alerts_outside_range(self):
+        """ Success flow with all necessary parameters"""
+        alert_handler_inst = self._get_alert_handler()
+        alert = self._get_fake_queried_alert()
+
+        query_para = {'begin_time': 13300000, 'end_time': 13400000}
+        alert_model = alert_handler_inst.parse_queried_alerts(alert,
+                                                              query_para)
+
+        # Verify that when input alert is out of begin and end time,
+        # it is skipped
+        self.assertEqual(len(alert_model), 0)

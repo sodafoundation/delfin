@@ -16,8 +16,8 @@
 from unittest import mock
 
 from delfin.drivers import fake_storage
-from delfin.task_manager.tasks import task
-from delfin.task_manager.tasks.task import StorageDeviceTask
+from delfin.task_manager.tasks import resources
+from delfin.task_manager.tasks.resources import StorageDeviceTask
 
 from delfin import test, context, coordination
 
@@ -82,7 +82,7 @@ class TestStorageDeviceTask(test.TestCase):
     def test_sync_successful(self, alert_source_delete, access_info_delete,
                              mock_storage_delete, mock_storage_get,
                              mock_storage_update, mock_get_storage, get_lock):
-        storage_obj = task.StorageDeviceTask(
+        storage_obj = resources.StorageDeviceTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
 
         storage_obj.sync()
@@ -102,7 +102,7 @@ class TestStorageDeviceTask(test.TestCase):
     @mock.patch('delfin.db.storage_delete')
     @mock.patch('delfin.db.alert_source_delete')
     def test_successful_remove(self, mock_alert_del, mock_strg_del):
-        storage_obj = task.StorageDeviceTask(
+        storage_obj = resources.StorageDeviceTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         storage_obj.remove()
 
@@ -122,7 +122,7 @@ class TestStoragePoolTask(test.TestCase):
     def test_sync_successful(self, mock_pool_create, mock_pool_update,
                              mock_pool_del, mock_pool_get_all,
                              mock_list_pools, get_lock):
-        pool_obj = task.StoragePoolTask(
+        pool_obj = resources.StoragePoolTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         pool_obj.sync()
 
@@ -154,7 +154,7 @@ class TestStoragePoolTask(test.TestCase):
 
     @mock.patch('delfin.db.storage_pool_delete_by_storage')
     def test_remove(self, mock_pool_del):
-        pool_obj = task.StoragePoolTask(
+        pool_obj = resources.StoragePoolTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         pool_obj.remove()
         self.assertTrue(mock_pool_del.called)
@@ -170,7 +170,7 @@ class TestStorageVolumeTask(test.TestCase):
     def test_sync_successful(self, mock_vol_create, mock_vol_update,
                              mock_vol_del, mock_vol_get_all, mock_list_vols,
                              get_lock):
-        vol_obj = task.StorageVolumeTask(
+        vol_obj = resources.StorageVolumeTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         vol_obj.sync()
         self.assertTrue(mock_list_vols.called)
@@ -200,7 +200,7 @@ class TestStorageVolumeTask(test.TestCase):
 
     @mock.patch('delfin.db.volume_delete_by_storage')
     def test_remove(self, mock_vol_del):
-        vol_obj = task.StorageVolumeTask(
+        vol_obj = resources.StorageVolumeTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         vol_obj.remove()
         self.assertTrue(mock_vol_del.called)

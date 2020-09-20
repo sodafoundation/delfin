@@ -17,14 +17,15 @@
 import json
 import sys
 
-from oslo_log import log as logging
 import requests
-import urllib3
 import requests.auth
 import requests.exceptions as r_exc
 import six
+import urllib3
+from oslo_log import log as logging
 
 from delfin import exception
+from delfin.common import alert_util
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
@@ -598,8 +599,9 @@ class VMaxRest(object):
 
         return iterator_result
 
-    def get_alerts(self, array, version):
+    def get_alerts(self, query_para, array, version):
         """Get all alerts with given version and arrayid
+        :param query_para: Contains optional begin and end time
         :param array: the array serial number
         :param version: the unisphere version
         :returns: alert_list -- dict or None
@@ -621,7 +623,8 @@ class VMaxRest(object):
             target_uri = '/%s/system/symmetrix/%s/alert/%s' \
                          % (version, array, alert_id)
             alert = self.get_alert_request(target_uri)
-            if alert is not None:
+            if alert is not None and alert_util.is_alert_in_time_range(
+                    query_para, alert['created_date_milliseconds']):
                 alert_list.append(alert)
 
         return alert_list
