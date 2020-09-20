@@ -16,7 +16,6 @@
 **periodical task manager**
 
 """
-import json
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from oslo_config import cfg
@@ -86,7 +85,7 @@ class TaskManager(manager.Manager):
                             storage_cls.perf_collect, 'interval', args=[
                                 storage_id, interval, is_historic, resource],
                             seconds=interval,
-                            next_run_time=datetime.now(), id="pravin1")
+                            next_run_time=datetime.now())
 
         except TypeError as e:
             LOG.error("Error occurred during parsing of config file")
@@ -94,7 +93,6 @@ class TaskManager(manager.Manager):
         else:
             # start the scheduler
             schedule.start()
-            print("get_manager_all_jobs=:", schedule.get_jobs())
 
     def sync_storage_resource(self, context, storage_id, resource_task):
         LOG.debug("Received the sync_storage task: {0} request for storage"
