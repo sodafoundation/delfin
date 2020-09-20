@@ -13,6 +13,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from collections import namedtuple
+
 from pysnmp.entity import config
 
 # The maximum value a signed INT type may have
@@ -147,3 +149,20 @@ class SecurityLevel(object):
     AUTHPRIV = 'authPriv'
     AUTHNOPRIV = 'authNoPriv'
     NOAUTHNOPRIV = 'noAuthnoPriv'
+
+
+# Performance collection constants and common models
+# Metric model
+metric_struct = namedtuple("Metric", "name labels values")
+
+
+# Unified Array metrics model
+DELFIN_ARRAY_METRICS = [
+    "response_time",
+    "throughput",
+    "read_throughput",
+    "write_throughput",
+    "bandwidth",
+    "read_bandwidth",
+    "write_bandwidth"
+]

@@ -260,3 +260,7 @@ class HTTPConnectionTimeout(DelfinException):
 
 class InvalidCAPath(DelfinException):
     msg_fmt = _("Invalid CA path: {0}.")
+
+
+class StoragePerformanceCollectionFailed(DelfinException):
+    msg_fmt = _("Failed to collect performance metrics. Reason: {0}.")

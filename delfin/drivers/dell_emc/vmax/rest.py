@@ -26,6 +26,7 @@ from oslo_log import log as logging
 
 from delfin import exception
 from delfin.common import alert_util
+from delfin.drivers.dell_emc.vmax import perf_utils, constants
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
@@ -518,6 +519,38 @@ class VMaxRest(object):
         except (KeyError, TypeError):
             pass
         return device_ids
+
+    def post_request(self, target_uri, payload):
+        """Generate  a POST request.
+        :param target_uri: the uri to query from unipshere REST API
+        :param payload: the payload
+        :returns: status_code -- int, message -- string, server response
+        """
+
+        status_code, message = self.request(target_uri, POST,
+                                            request_object=payload)
+        operation = 'POST request for URL' % {target_uri}
+        self.check_status_code_success(
+            operation, status_code, message)
+        return status_code, message
+
+    def get_array_performance_metrics(self, array, interval):
+        """Get a array performance metrics from VMAX unipshere REST API.
+        :param array: the array serial number
+        :param interval: difference between start and end time
+
+        :returns: message -- response from unipshere REST API
+         """
+
+        target_uri = constants.VMAX_REST_TARGET_URI_ARRAY_PERF
+        payload = perf_utils.generate_performance_payload(
+            array, interval, constants.ARRAY_METRICS)
+
+        status_code, message = self.post_request(target_uri, payload)
+        # Expected 200 when POST request has metrics in response body
+        if status_code != STATUS_200:
+            raise exception.StoragePerformanceCollectionFailed(message)
+        return message
 
     def list_pagination(self, list_info):
         """Process lists under or over the maxPageSize
