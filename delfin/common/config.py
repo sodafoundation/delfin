@@ -24,18 +24,19 @@ The idea is to move fully to cfg eventually, and this wrapper is a
 stepping stone.
 
 """
-
+import json
 import socket
-
+from oslo_log import log
+from delfin import exception
 from oslo_config import cfg
 from oslo_log import log
 from oslo_middleware import cors
 from oslo_utils import netutils
 
+LOG = log.getLogger(__name__)
 
 CONF = cfg.CONF
 log.register_options(CONF)
-
 
 core_opts = [
     cfg.StrOpt('state_path',
@@ -99,7 +100,6 @@ global_opts = [
 
 CONF.register_opts(global_opts)
 
-
 storage_driver_opts = [
     cfg.StrOpt('ca_path',
                default='',
@@ -130,3 +130,19 @@ def set_middleware_defaults():
                        'DELETE',
                        'PATCH']
     )
+
+
+def load_json_file(config_file):
+    try:
+        with open(config_file) as f:
+            data = json.load(f)
+            f.close()
+            return data
+    except json.decoder.JSONDecodeError as e:
+        msg = ("{0} file is not correct. Please check the configuration file"
+               .format(config_file))
+        LOG.error(msg)
+        raise exception.InvalidInput(e.msg)
+    except FileNotFoundError as e:
+        LOG.error(e)
+        raise exception.ConfigNotFound(e)
