@@ -21,6 +21,9 @@ DB_MAX_INT = 0x7FFFFFFF
 # Valid access type supported currently.
 ACCESS_TYPE = ['rest', 'ssh']
 
+RESOURCE_CLASS_TYPE = {'array_polling': 'ArrayPerformanceCollection'}
+SCHEDULING_MIN_INTERVAL = 5
+
 
 # Custom fields for Delfin objects
 class StorageStatus(object):

@@ -199,3 +199,14 @@ class FakeStorageDriver(driver.StorageDriver):
         used = int(random.randint(0, 100) * total / 100)
         free = total - used
         return total, used, free
+
+    def collect_array_metrics(self, context, storage_id, interval,
+                              is_historic):
+        """
+        :param context:
+        :param storage_id:
+        :param interval:
+        :param is_historic:
+        :return:
+        """
+        pass
