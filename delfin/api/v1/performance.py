@@ -19,7 +19,6 @@ from delfin import db
 from delfin import context, exception
 from delfin.api.common import wsgi
 from delfin.common import constants, config
-from apscheduler.schedulers.background import BackgroundScheduler
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.tasks import resources
 from delfin.api import validation
@@ -58,7 +57,8 @@ class PerformanceController(wsgi.Controller):
         metrics_config_dict = body
         metrics_config_dict.update(body)
 
-        schedule = BackgroundScheduler()
+        # get scheduler object
+        schedule = config.Scheduler.getInstance()
 
         try:
             # Load the scheduler configuration file
@@ -76,11 +76,18 @@ class PerformanceController(wsgi.Controller):
                         interval = storage_dict.get('interval')
                         is_historic = storage_dict.get('is_historic')
 
-                        schedule.add_job(
-                            self.perf_collect, 'interval', args=[
-                                id, interval, is_historic, resource],
-                            seconds=interval,
-                            next_run_time=datetime.now())
+                        job_id = id + resource
+
+                        if schedule.get_job(job_id):
+                            schedule.reschedule_job(
+                                job_id=job_id, trigger='interval',
+                                seconds=interval)
+                        else:
+                            schedule.add_job(
+                                self.perf_collect, 'interval', args=[
+                                    id, interval, is_historic, resource],
+                                seconds=interval,
+                                next_run_time=datetime.now(), id=job_id)
 
                         storage_found = True
 
@@ -94,11 +101,13 @@ class PerformanceController(wsgi.Controller):
                     interval = resource_dict.get('interval')
                     is_historic = resource_dict.get('is_historic')
 
+                    job_id = id + resource
+
                     schedule.add_job(
                         self.perf_collect, 'interval', args=[
                             id, interval, is_historic, resource],
-                        seconds=interval,
-                        next_run_time=datetime.now())
+                        seconds=interval, next_run_time=datetime.now(),
+                        id=job_id)
 
             with open(config_file, "w") as jsonFile:
                 json.dump(data, jsonFile)
@@ -107,9 +116,8 @@ class PerformanceController(wsgi.Controller):
         except TypeError as e:
             LOG.error("Error occurred during parsing of config file")
             raise exception.InvalidContentType(e)
+
         else:
-            # start the scheduler
-            schedule.start()
             return metrics_config_dict
 
     def perf_collect(self, storage_id, interval, is_historic, resource):

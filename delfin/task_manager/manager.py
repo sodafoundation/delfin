@@ -55,7 +55,7 @@ class TaskManager(manager.Manager):
             data = config.load_json_file(CONF.scheduler.config_path)
 
             # create the object of periodic scheduler
-            schedule = BackgroundScheduler()
+            schedule = config.Scheduler.getInstance()
 
             # create the objet to StorageController class, so that
             # methods of that class can be called by scheduler
@@ -81,11 +81,12 @@ class TaskManager(manager.Manager):
                         # perf_collect method from PerformanceController class
                         # ) and execute the task immediate and after every
                         # interval
+                        job_id = storage_id + resource
                         schedule.add_job(
                             storage_cls.perf_collect, 'interval', args=[
                                 storage_id, interval, is_historic, resource],
-                            seconds=interval,
-                            next_run_time=datetime.now())
+                            seconds=interval, next_run_time=datetime.now(),
+                            id=job_id)
 
         except TypeError as e:
             LOG.error("Error occurred during parsing of config file")
