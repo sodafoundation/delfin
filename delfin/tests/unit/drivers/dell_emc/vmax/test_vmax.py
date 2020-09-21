@@ -48,11 +48,13 @@ class TestVMAXStorageDriver(TestCase):
 
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
-    def test_init(self,
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_init(self, mock_unisphere_version,
                   mock_version, mock_array):
         kwargs = VMAX_STORAGE_CONF
 
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
 
         driver = VMAXStorageDriver(**kwargs)
@@ -75,7 +77,8 @@ class TestVMAXStorageDriver(TestCase):
     @mock.patch.object(VMaxRest, 'get_vmax_array_details')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
-    def test_get_storage(self,
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_get_storage(self, mock_unisphere_version,
                          mock_version, mock_array,
                          mock_array_details, mock_capacity):
         expected = {
@@ -107,6 +110,7 @@ class TestVMAXStorageDriver(TestCase):
         kwargs = VMAX_STORAGE_CONF
 
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
         mock_array_details.return_value = {
             'model': 'VMAX250F',
@@ -144,7 +148,8 @@ class TestVMAXStorageDriver(TestCase):
     @mock.patch.object(VMaxRest, 'get_srp_by_name')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
-    def test_list_storage_pools(self,
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_storage_pools(self, mock_unisphere_version,
                                 mock_version,
                                 mock_array, mock_srp):
         expected = [{
@@ -169,6 +174,7 @@ class TestVMAXStorageDriver(TestCase):
         }
         kwargs = VMAX_STORAGE_CONF
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
         mock_srp.side_effect = [{'srpId': ['SRP_1']}, pool_info]
 
@@ -200,7 +206,8 @@ class TestVMAXStorageDriver(TestCase):
     @mock.patch.object(VMaxRest, 'get_volume_list')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
-    def test_list_volumes(self,
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_volumes(self, mock_unisphere_version,
                           mock_version, mock_array,
                           mock_vols, mock_vol, mock_sg, mock_capacity):
         expected = [{
@@ -274,6 +281,7 @@ class TestVMAXStorageDriver(TestCase):
         }
         kwargs = VMAX_STORAGE_CONF
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
         mock_vols.side_effect = [['volume_1', 'volume_2', 'volume_3']]
         mock_vol.side_effect = [volumes, volumes1, volumes2]
@@ -317,12 +325,14 @@ class TestVMAXStorageDriver(TestCase):
     @mock.patch.object(Session, 'request')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
-    def test_rest(self,
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_rest(self, mock_unisphere_version,
                   mock_version, mock_array,
                   mock_request):
         kwargs = VMAX_STORAGE_CONF
 
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
 
         driver = VMAXStorageDriver(**kwargs)

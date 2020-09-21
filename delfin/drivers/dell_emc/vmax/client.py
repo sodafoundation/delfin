@@ -51,6 +51,12 @@ class VMAXClient(object):
             msg = "Failed to connect VMAX. Reason: {}".format(e.msg)
             LOG.error(msg)
             raise e
+        except (exception.SSLCertificateFailed,
+                exception.WrongTlsVersion,
+                exception.CipherNotMatch) as e:
+            msg = ("Failed to connect to VMAX: {}".format(e))
+            LOG.error(msg)
+            raise
         except Exception as err:
             msg = ("Failed to connect to VMAX. Host or Port is not correct: "
                    "{}".format(err))
@@ -78,6 +84,9 @@ class VMAXClient(object):
                     msg = "Invalid array_id. Expected id: {}". \
                         format(array['symmetrixId'])
                     raise exception.InvalidInput(msg)
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when init connection for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get array details from VMAX: {}".format(err)
             raise exception.StorageBackendException(msg)
@@ -92,6 +101,9 @@ class VMAXClient(object):
             # Get the VMAX array properties
             return self.rest.get_vmax_array_details(version=self.uni_version,
                                                     array=self.array_id)
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when get array info for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get array details from VMAX: {}".format(err)
             LOG.error(msg)
@@ -102,6 +114,10 @@ class VMAXClient(object):
             storage_info = self.rest.get_system_capacity(
                 self.array_id, self.uni_version)
             return storage_info
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when '
+                      'get storage capacity for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get capacity from VMAX: {}".format(err)
             LOG.error(msg)
@@ -139,6 +155,9 @@ class VMAXClient(object):
 
             return pool_list
 
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when list pools for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get pool metrics from VMAX: {}".format(err)
             LOG.error(msg)
@@ -212,6 +231,9 @@ class VMAXClient(object):
 
             return volume_list
 
+        except exception.SSLCertificateFailed:
+            LOG.error('SSL certificate failed when list volumes for VMax')
+            raise
         except Exception as err:
             msg = "Failed to get list volumes from VMAX: {}".format(err)
             LOG.error(msg)

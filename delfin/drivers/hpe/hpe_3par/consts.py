@@ -30,8 +30,6 @@ THIN_LUNTYPE = 2  # TPVV 2	• TPVV,
 STATUS_COMPRESSION_YES = 1  # Compression is enabled on the volume
 # VOLUME's deduplication status
 STATUS_DEDUPLICATIONSTATE_YES = 1  # Enables deduplication on the volume
-# MIB to Bytes
-MiB_TO_Bytes = 1024 * 1024
 # Page size per page at default paging
 QUERY_PAGE_SIZE = 150
 # Connection timeout
