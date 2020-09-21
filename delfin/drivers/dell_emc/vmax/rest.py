@@ -91,7 +91,7 @@ class VMaxRest(object):
                 self.verify))
             session.verify = self.verify
 
-        return session
+        self.session = session
 
     def request(self, target_uri, method, params=None, request_object=None,
                 timeout=None):
@@ -108,7 +108,7 @@ class VMaxRest(object):
 
         url, message, status_code, response = None, None, None, None
         if not self.session:
-            self.session = self.establish_rest_session()
+            self.establish_rest_session()
 
         try:
             url = ("%(self.base_uri)s%(target_uri)s" % {

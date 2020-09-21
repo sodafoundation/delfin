@@ -14,6 +14,7 @@
 
 
 from unittest import TestCase, mock
+from requests.sessions import Session
 from delfin import exception
 from delfin import context
 from delfin.drivers.dell_emc.vmax.vmax import VMAXStorageDriver
@@ -32,7 +33,7 @@ VMAX_STORAGE_CONF = {
     "model": "vmax",
     "rest": {
         "host": "10.0.0.1",
-        "port": "8443",
+        "port": 8443,
         "username": "user",
         "password": "pass"
     },
@@ -326,3 +327,26 @@ class TestVMAXStorageDriver(TestCase):
 
         self.assertIn('Failed to get list volumes from VMAX',
                       str(exc.exception))
+
+    @mock.patch.object(Session, 'request')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    def test_rest(self,
+                  mock_version, mock_array,
+                  mock_request):
+        kwargs = VMAX_STORAGE_CONF
+
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.client.uni_version, '90')
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+
+        mock_request.return_value = mock.Mock()
+        mock_request.return_value.json = mock.Mock(return_value={})
+        driver.reset_connection(context, **kwargs)
+        driver.client.rest.session = None
+        driver.client.rest.request('/session', 'GET')
+        self.assertEqual(driver.client.uni_version, '90')
