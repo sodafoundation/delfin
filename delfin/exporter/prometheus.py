@@ -43,14 +43,14 @@ class PrometheusExporter(object):
             unit = metric.get('unit', 'IOPS')
             value_type = metric.get('value_type', 'gauge')
 
-            storage_labels = (
-                    "storage_id=\"%s\",resource_type=\"%s\","
-                    "native_port_id=\"%s\",native_controller_id="
-                    "\"%s\",type=\"%s\",unit=\"%s\",value_type="
-                    "\"%s\"" % (storage_id, resource_type,
-                                native_port_id, native_controller_id,
-                                type, unit, value_type)
-            )
+            storage_labels = ("storage_id=\"%s\",resource_type=\"%s\","
+                              "native_port_id=\"%s\",native_controller_id="
+                              "\"%s\",type=\"%s\",unit=\"%s\",value_type="
+                              "\"%s\"" % (
+                                  storage_id, resource_type,
+                                  native_port_id, native_controller_id,
+                                  type, unit, value_type)
+                              )
 
             storage_metric[storage_labels] = storage_labels
             for name in metrics_name:
