@@ -17,7 +17,6 @@
 
 """
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
