@@ -20,6 +20,7 @@ from stevedore import extension
 
 from delfin import exception
 from delfin.i18n import _
+from delfin.exporter import prometheus
 
 LOG = log.getLogger(__name__)
 
@@ -101,7 +102,10 @@ class PerformanceExporterManager(BaseManager):
         super(PerformanceExporterManager, self).__init__(self.NAMESPACE)
 
     def dispatch(self, ctxt, data):
-        pass
+        # create object of prometheus class and push to prometheus
+        # exporter to translate into time-series format
+        prometheus_obj = prometheus.PrometheusExporter()
+        prometheus_obj.push_to_prometheus(data)
 
     def _get_configured_exporters(self):
         return CONF.performance_exporters

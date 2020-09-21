@@ -52,7 +52,7 @@ MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
 PAGE_LIMIT = 500
-MIN_STORAGE, MAX_STORAGE = 3, 4
+MIN_STORAGE, MAX_STORAGE = 10, 40
 
 
 def get_range_val(range_str, t):
@@ -226,6 +226,7 @@ class FakeStorageDriver(driver.StorageDriver):
         for id in range(rd_array_count):
             metric = {
                 "name": "fake_array_" + str(id),
+                "resource_type": "storage",
                 "storage_id": storage_id,
                 'serial_number': sn,
                 'native_port_id': 'FF1:00' + str(id),
