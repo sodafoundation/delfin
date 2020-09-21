@@ -114,7 +114,7 @@ class OceanStorDriver(driver.StorageDriver):
             LOG.error(
                 "Failed to get pool metrics from OceanStor: {}".format(err))
             raise exception.StorageBackendException(
-                reason='Failed to get pool metrics from OceanStor')
+                'Failed to get pool metrics from OceanStor')
 
     def _get_orig_pool_id(self, pools, volume):
         for pool in pools:
@@ -177,7 +177,7 @@ class OceanStorDriver(driver.StorageDriver):
             LOG.error(
                 "Failed to get list volumes from OceanStor: {}".format(err))
             raise exception.StorageBackendException(
-                reason='Failed to get list volumes from OceanStor')
+                'Failed to get list volumes from OceanStor')
 
     def add_trap_config(self, context, trap_config):
         pass

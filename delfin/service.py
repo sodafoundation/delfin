@@ -361,7 +361,6 @@ class WSGIService(service.ServiceBase):
 
 
 def process_launcher():
-    # return service.ProcessLauncher(CONF, restart_method='mutate')
     return service.ServiceLauncher(CONF, restart_method='reload')
 
 

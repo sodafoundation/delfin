@@ -186,8 +186,12 @@ class VMAXClient(object):
                 if vol['type'] == 'TDEV':
                     description = "Dell EMC VMAX 'thin device' volume"
 
+                name = volume
+                if vol.get('volume_identifier'):
+                    name = volume + ':' + vol['volume_identifier']
+
                 v = {
-                    "name": volume,
+                    "name": name,
                     "storage_id": storage_id,
                     "description": description,
                     "status": status,

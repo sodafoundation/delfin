@@ -38,7 +38,6 @@ def _activate():
 
 # Initialize the settings first
 def init():
-    # _activate()
     pass
 
 

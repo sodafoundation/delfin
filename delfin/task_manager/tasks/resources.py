@@ -59,7 +59,7 @@ def check_deleted():
         call_args = inspect.getcallargs(func, *args, **kwargs)
         self = call_args['self']
         ret = func(*args, **kwargs)
-        # When context.read_deleted = 'yes', db.storage_get would
+        # When context.read_deleted is 'yes', db.storage_get would
         # only get the storage whose 'deleted' tag is not default value
         self.context.read_deleted = 'yes'
         try:
