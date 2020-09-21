@@ -17,6 +17,7 @@ import unittest
 
 from delfin import exception
 from delfin import context
+from delfin.common import config # noqa
 from delfin.drivers.hpe.hpe_3par.hpe_3parstor import Hpe3parStorDriver
 from delfin.drivers.hpe.hpe_3par.rest_handler import RestHandler
 from delfin.drivers.hpe.hpe_3par.ssh_handler import SSHHandler
@@ -39,13 +40,13 @@ ACCESS_INFO = {
         "host": "10.0.0.1",
         "port": 8443,
         "username": "user",
-        "password": "pass"
+        "password": "cGFzc3dvcmQ="
     },
     "ssh": {
         "host": "110.143.132.231",
         "port": 22,
         "username": "user",
-        "password": "pass"
+        "password": "cGFzc3dvcmQ="
     }
 }
 

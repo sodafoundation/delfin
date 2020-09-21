@@ -33,10 +33,6 @@ class VMAXClient(object):
         rest_access = kwargs.get('rest')
         if rest_access is None:
             raise exception.InvalidInput('Input rest_access is missing')
-        self.rest_host = rest_access.get('host')
-        self.rest_port = rest_access.get('port')
-        self.rest_username = rest_access.get('username')
-        self.rest_password = rest_access.get('password')
         self.rest = rest.VMaxRest()
         self.rest.set_rest_credentials(rest_access)
         self.reset_connection(**kwargs)

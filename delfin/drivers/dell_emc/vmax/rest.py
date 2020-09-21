@@ -24,6 +24,7 @@ import six
 import urllib3
 from oslo_log import log as logging
 
+from delfin import cryptor
 from delfin import exception
 from delfin.common import alert_util
 from delfin.i18n import _
@@ -82,7 +83,8 @@ class VMaxRest(object):
         session.headers = {'content-type': 'application/json',
                            'accept': 'application/json',
                            'Application-Type': 'delfin'}
-        session.auth = requests.auth.HTTPBasicAuth(self.user, self.passwd)
+        session.auth = requests.auth.HTTPBasicAuth(
+            self.user, cryptor.decode(self.passwd))
 
         if not self.verify:
             session.verify = False
