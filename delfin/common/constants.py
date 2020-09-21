@@ -13,6 +13,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from collections import namedtuple
+
 from pysnmp.entity import config
 
 # The maximum value a signed INT type may have
@@ -20,6 +22,9 @@ DB_MAX_INT = 0x7FFFFFFF
 
 # Valid access type supported currently.
 ACCESS_TYPE = ['rest', 'ssh']
+
+RESOURCE_CLASS_TYPE = {'array_polling': 'ArrayPerformanceCollection'}
+SCHEDULING_MIN_INTERVAL = 5
 
 
 # Custom fields for Delfin objects
@@ -146,7 +151,18 @@ class SecurityLevel(object):
     NOAUTHNOPRIV = 'noAuthnoPriv'
 
 
-class ResourceSync(object):
-    START = 100
-    SUCCEED = 100
-    FAILED = 101
+# Performance collection constants and common models
+# Metric model
+metric_struct = namedtuple("Metric", "name labels values")
+
+
+# Unified Array metrics model
+DELFIN_ARRAY_METRICS = [
+    "response_time",
+    "throughput",
+    "read_throughput",
+    "write_throughput",
+    "bandwidth",
+    "read_bandwidth",
+    "write_bandwidth"
+]

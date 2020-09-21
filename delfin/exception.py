@@ -262,23 +262,5 @@ class InvalidCAPath(DelfinException):
     msg_fmt = _("Invalid CA path: {0}.")
 
 
-class SSLCertificateFailed(Invalid):
-    msg_fmt = _("SSL Certificate Failed.")
-    code = 400
-
-
-class CipherNotMatch(Invalid):
-    msg_fmt = _("Cipher Not Match.")
-
-
-class WrongTlsVersion(Invalid):
-    msg_fmt = _("Wrong TLS Version.")
-
-
-class StorageIsSyncing(Invalid):
-    msg_fmt = _("Storage {0} is syncing now, please try again later.")
-
-
-class InvalidIpOrPort(DelfinException):
-    msg_fmt = _("Ip or Port Error.")
-    code = 400
+class StoragePerformanceCollectionFailed(DelfinException):
+    msg_fmt = _("Failed to collect performance metrics. Reason: {0}.")
