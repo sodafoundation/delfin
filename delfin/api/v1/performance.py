@@ -60,9 +60,11 @@ class PerformanceController(wsgi.Controller):
         # get scheduler object
         schedule = config.Scheduler.getInstance()
 
+        # The path of scheduler config file
+        config_file = CONF.scheduler.config_path
+
         try:
             # Load the scheduler configuration file
-            config_file = CONF.scheduler.config_path
             data = config.load_json_file(config_file)
             storage_found = False
             for storage in data.get("storages"):
@@ -116,7 +118,11 @@ class PerformanceController(wsgi.Controller):
         except TypeError as e:
             LOG.error("Error occurred during parsing of config file")
             raise exception.InvalidContentType(e)
-
+        except json.decoder.JSONDecodeError as e:
+            msg = ("Not able to open the config file: {0}"
+                   .format(config_file))
+            LOG.error(msg)
+            raise exception.InvalidInput(e.msg)
         else:
             return metrics_config_dict
 

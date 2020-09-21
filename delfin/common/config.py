@@ -136,7 +136,6 @@ def load_json_file(config_file):
     try:
         with open(config_file) as f:
             data = json.load(f)
-            f.close()
             return data
     except json.decoder.JSONDecodeError as e:
         msg = ("{0} file is not correct. Please check the configuration file"
