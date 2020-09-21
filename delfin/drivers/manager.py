@@ -54,6 +54,7 @@ class DriverManager(stevedore.ExtensionManager):
         :type cache_on_load: bool
         :param kwargs: Parameters from access_info.
         """
+        kwargs = copy.deepcopy(kwargs)
         kwargs['verify'] = False
         ca_path = ssl_utils.get_storage_ca_path()
         if ca_path:
@@ -81,8 +82,7 @@ class DriverManager(stevedore.ExtensionManager):
 
         with self._instance_lock:
             if kwargs['storage_id'] in self.driver_factory:
-                driver = self.driver_factory[kwargs['storage_id']]
-                return driver
+                return self.driver_factory[kwargs['storage_id']]
 
             if kwargs['verify']:
                 ssl_utils.reload_certificate(kwargs['verify'])

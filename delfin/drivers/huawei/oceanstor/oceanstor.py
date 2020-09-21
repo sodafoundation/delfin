@@ -132,7 +132,6 @@ class OceanStorDriver(driver.StorageDriver):
             for volume in volumes:
                 # Get pool id of volume
                 orig_pool_id = self._get_orig_pool_id(pools, volume)
-
                 compressed = False
                 if volume['ENABLECOMPRESSION'] != 'false':
                     compressed = True
