@@ -30,6 +30,7 @@ from delfin.alert_manager import constants
 from delfin.alert_manager import rpcapi
 from delfin.alert_manager import snmp_validator
 from delfin.common import constants as common_constants
+from delfin.drivers import manager as driver_manager
 from delfin.db import api as db_api
 from delfin.i18n import _
 
@@ -49,6 +50,7 @@ class TrapReceiver(manager.Manager):
         self.alert_processor = alert_processor.AlertProcessor()
         self.snmp_validator = snmp_validator.SNMPValidator()
         self.alert_rpc_api = rpcapi.AlertAPI()
+        self.driver_mgr = driver_manager.DriverManager()
         super(TrapReceiver, self).__init__(host=kwargs.get('host'))
 
     def sync_snmp_config(self, ctxt, snmp_config_to_del=None,
@@ -305,3 +307,8 @@ class TrapReceiver(manager.Manager):
         LOG.info("Received snmp config checking request for "
                  "storage: %s", snmp_config['storage_id'])
         self.snmp_validator.validate(ctxt, snmp_config)
+
+    def remove_storage(self, ctxt, storage_id):
+        LOG.info('Remove storage device in memory for storage id:{0}'
+                 .format(storage_id))
+        self.driver_mgr.remove_driver(context, storage_id)

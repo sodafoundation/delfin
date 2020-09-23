@@ -13,7 +13,7 @@
 #    under the License.
 
 """
-Client side of the alert manager RPC API.
+Client side of the api manager RPC API.
 """
 
 import oslo_messaging as messaging
@@ -24,8 +24,8 @@ from delfin import rpc
 CONF = cfg.CONF
 
 
-class AlertAPI(object):
-    """Client side of the alert manager rpc API.
+class ManagerAPI(object):
+    """Client side of the API manager rpc API.
 
     API version history:
         1.0 - Initial version.
@@ -34,23 +34,10 @@ class AlertAPI(object):
     RPC_API_VERSION = '1.0'
 
     def __init__(self):
-        super(AlertAPI, self).__init__()
-        target = messaging.Target(topic=CONF.delfin_alert_topic,
+        super(ManagerAPI, self).__init__()
+        target = messaging.Target(topic=CONF.delfin_api_topic,
                                   version=self.RPC_API_VERSION)
         self.client = rpc.get_client(target, version_cap=self.RPC_API_VERSION)
-
-    def sync_snmp_config(self, ctxt, snmp_config_to_del, snmp_config_to_add):
-        call_context = self.client.prepare(version='1.0', fanout=True)
-        return call_context.cast(ctxt,
-                                 'sync_snmp_config',
-                                 snmp_config_to_del=snmp_config_to_del,
-                                 snmp_config_to_add=snmp_config_to_add)
-
-    def check_snmp_config(self, ctxt, snmp_config):
-        call_context = self.client.prepare(version='1.0')
-        return call_context.cast(ctxt,
-                                 'check_snmp_config',
-                                 snmp_config=snmp_config)
 
     def remove_storage(self, ctxt, storage_id):
         call_context = self.client.prepare(version='1.0')

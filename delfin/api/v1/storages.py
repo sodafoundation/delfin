@@ -30,6 +30,8 @@ from delfin.common import constants
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
 from delfin.task_manager import rpcapi as task_rpcapi
+from delfin.api_manager import rpcapi as api_rpcapi
+from delfin.alert_manager import rpcapi as alert_rpcapi
 from delfin.task_manager.tasks import resources
 
 LOG = log.getLogger(__name__)
@@ -40,6 +42,8 @@ class StorageController(wsgi.Controller):
     def __init__(self):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
+        self.alert_rpcapi = alert_rpcapi.AlertAPI()
+        self.api_rpcapi = api_rpcapi.ManagerAPI()
         self.driver_api = driverapi.API()
         self.search_options = ['name', 'vendor', 'model', 'status',
                                'serial_number']
@@ -114,6 +118,8 @@ class StorageController(wsgi.Controller):
                 storage['id'],
                 subclass.__module__ + '.' + subclass.__name__)
         self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
+        self.api_rpcapi.remove_storage(ctxt, storage['id'])
+        self.alert_rpcapi.remove_storage(ctxt, storage['id'])
 
     @wsgi.response(202)
     def sync_all(self, req):

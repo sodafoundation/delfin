@@ -260,6 +260,7 @@ class WSGIService(service.ServiceBase):
 
         """
         self.name = name
+        self.rpcserver = None
         self.manager = self._get_manager()
         self.loader = loader or wsgi.Loader(CONF)
         if not rpc.initialized():
@@ -318,6 +319,11 @@ class WSGIService(service.ServiceBase):
         if self.coordinator:
             coordination.LOCK_COORDINATOR.start()
         if self.manager:
+            target = messaging.Target(topic=CONF.delfin_api_topic,
+                                      server=self.host)
+            endpoints = [self.manager]
+            self.rpcserver = rpc.get_server(target, endpoints)
+            self.rpcserver.start()
             self.manager.init_host()
         self.server.start()
         self.port = self.server.port
