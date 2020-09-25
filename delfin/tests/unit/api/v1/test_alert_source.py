@@ -42,7 +42,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
         fake_storage_id = 'abcd-1234-5678'
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
                                  'host': '127.0.0.1',
-                                 'community_string': None,
                                  'version': 'snmpv3',
                                  'engine_id': '800000d30300000e112245',
                                  'security_level': None,
@@ -81,7 +80,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
             fake_v3_alert_source_noauth_nopriv()
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
                                  'host': '127.0.0.1',
-                                 'community_string': None,
                                  'version': 'snmpv3',
                                  'engine_id': '800000d30300000e112245',
                                  'security_level': 'noAuthnoPriv',
@@ -118,7 +116,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
             fake_v3_alert_source_auth_nopriv()
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
                                  'host': '127.0.0.1',
-                                 'community_string': None,
                                  'version': 'snmpv3',
                                  'engine_id': '800000d30300000e112245',
                                  'security_level': 'authNoPriv',
@@ -156,15 +153,9 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                  'host': '127.0.0.1',
                                  'community_string': 'public',
                                  'version': 'snmpv2c',
-                                 'engine_id': None,
-                                 'security_level': None,
-                                 'username': None,
-                                 'auth_protocol': None,
-                                 'privacy_protocol': None,
                                  'port': 161,
-                                 'context_name': "",
-                                 'retry_num': 1,
-                                 'expiration': 1,
+                                 "retry_num": 1,
+                                 "expiration": 1,
                                  "created_at": '2020-06-15T09:50:31.698956',
                                  "updated_at": '2020-06-15T09:50:31.698956'
                                  }
@@ -215,7 +206,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
                                  'host': '127.0.0.1',
-                                 'community_string': None,
                                  'version': 'snmpv3',
                                  'engine_id': '800000d30300000e112245',
                                  'security_level': None,
@@ -403,7 +393,6 @@ class AlertSourceControllerTestCase(unittest.TestCase):
             fake_v3_alert_source_auth_nopriv()
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
                                  'host': '127.0.0.1',
-                                 'community_string': None,
                                  'version': 'snmpv3',
                                  'engine_id': '800000d30300000e112245',
                                  'security_level': 'authNoPriv',

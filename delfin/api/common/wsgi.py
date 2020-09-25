@@ -18,8 +18,6 @@ import inspect
 
 from oslo_log import log
 from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
-from oslo_utils import strutils
 import six
 import webob
 import webob.exc
@@ -709,22 +707,6 @@ class Resource(wsgi.Application):
             ex = exception.ConvertedException(ex)
             return Fault(ex)
 
-        try:
-            method_name = meth.__qualname__
-        except AttributeError:
-            method_name = 'Controller: %s Method: %s' % (
-                six.text_type(self.controller), meth.__name__)
-
-        if body:
-            decoded_body = encodeutils.safe_decode(body, errors='ignore')
-            msg = ("Action: '%(action)s', calling method: %(meth)s, body: "
-                   "%(body)s") % {'action': action,
-                                  'body': decoded_body,
-                                  'meth': method_name}
-            LOG.debug(strutils.mask_password(msg))
-        else:
-            LOG.debug("Calling method '%(meth)s'", {'meth': method_name})
-
         # Now, deserialize the request body...
         try:
             if content_type:
@@ -961,6 +943,8 @@ class Fault(webob.exc.HTTPException):
             'error_code': self.wrapped_exc.error_code,
             'error_msg': self.wrapped_exc.explanation,
             'error_args': self.wrapped_exc.error_args}
+        LOG.info("Exception response code: %(code)s, reason: %(reason)s",
+                 {'code': status_code, 'reason': fault_data})
         if status_code == 413:
             retry = self.wrapped_exc.headers['Retry-After']
             fault_data['retryAfter'] = '%s' % retry

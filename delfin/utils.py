@@ -241,7 +241,7 @@ def monkey_patch():
     # Get list of modules and decorators
     for module_and_decorator in CONF.monkey_patch_modules:
         module, decorator_name = module_and_decorator.split(':')
-        # import decorator function
+        # Get decorator function
         decorator = importutils.import_class(decorator_name)
         __import__(module)
         # Retrieve module information using pyclbr

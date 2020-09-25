@@ -164,7 +164,6 @@ class FakeStorageDriver(driver.StorageDriver):
 
     def list_volumes(self, ctx):
         # Get a random number as the volume count.
-        # rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
         rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
         LOG.info("###########fake_volumes number for %s: %d" % (
             self.storage_id, rd_volumes_count))
