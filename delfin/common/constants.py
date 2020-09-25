@@ -166,3 +166,5 @@ DELFIN_ARRAY_METRICS = [
     "read_bandwidth",
     "write_bandwidth"
 ]
+
+PROMETHEUS_EXPORTER_FILE = "/var/lib/delfin/delfin_exporter.txt"
