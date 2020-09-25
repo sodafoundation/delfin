@@ -213,33 +213,36 @@ class TestVMAXStorageDriver(TestCase):
     def test_list_volumes(self, mock_unisphere_version,
                           mock_version, mock_array,
                           mock_vols, mock_vol, mock_sg, mock_capacity):
-        expected = [{
-            'name': 'volume_1',
-            'storage_id': '12345',
-            'description': "Dell EMC VMAX 'thin device' volume",
-            'type': 'thin',
-            'status': 'available',
-            'native_volume_id': '00001',
-            'wwn': 'wwn123',
-            'total_capacity': 104857600,
-            'used_capacity': 10485760,
-            'free_capacity': 94371840,
-            'native_storage_pool_id': 'SRP_1',
-            'compressed': True
-        },
-            {
-                'name': 'volume_2:id',
-                'storage_id': '12345',
-                'description': "Dell EMC VMAX 'thin device' volume",
-                'type': 'thin',
-                'status': 'available',
-                'native_volume_id': '00002',
-                'wwn': 'wwn1234',
-                'total_capacity': 104857600,
-                'used_capacity': 10485760,
-                'free_capacity': 94371840,
-                'native_storage_pool_id': 'SRP_1'
-            }]
+        expected = \
+            [
+                {
+                    'name': 'volume_1',
+                    'storage_id': '12345',
+                    'description': "Dell EMC VMAX 'thin device' volume",
+                    'type': 'thin',
+                    'status': 'available',
+                    'native_volume_id': '00001',
+                    'wwn': 'wwn123',
+                    'total_capacity': 104857600,
+                    'used_capacity': 10485760,
+                    'free_capacity': 94371840,
+                    'native_storage_pool_id': 'SRP_1',
+                    'compressed': True
+                },
+                {
+                    'name': 'volume_2:id',
+                    'storage_id': '12345',
+                    'description': "Dell EMC VMAX 'thin device' volume",
+                    'type': 'thin',
+                    'status': 'available',
+                    'native_volume_id': '00002',
+                    'wwn': 'wwn1234',
+                    'total_capacity': 104857600,
+                    'used_capacity': 10485760,
+                    'free_capacity': 94371840,
+                    'native_storage_pool_id': 'SRP_1'
+                }
+            ]
         volumes = {
             'volumeId': '00001',
             'cap_mb': 100,
@@ -326,12 +329,14 @@ class TestVMAXStorageDriver(TestCase):
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'post_request')
+    @mock.patch.object(VMaxRest, 'get_vmax_array_details')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
-    @mock.patch.object(VMaxRest, 'set_rest_credentials')
-    def test_get_storage_performance(self,
-                                     mock_rest, mock_version,
-                                     mock_array, mock_performnace):
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_get_storage_performance(self, mock_unisphere_version,
+                                     mock_version, mock_array,
+                                     mock_array_details,
+                                     mock_performnace):
         vmax_array_perf_resp_historic = {
             "expirationTime": 1600172441701,
             "count": 4321,
@@ -557,9 +562,13 @@ class TestVMAXStorageDriver(TestCase):
         ]
 
         kwargs = VMAX_STORAGE_CONF
-        mock_rest.return_value = None
         mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_array_details.return_value = {
+            'model': 'VMAX250F',
+            'ucode': '5978.221.221',
+            'display_name': 'VMAX250F-00112233'}
         mock_performnace.return_value = 200, vmax_array_perf_resp_historic
 
         driver = VMAXStorageDriver(**kwargs)
