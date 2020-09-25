@@ -16,7 +16,7 @@
 from delfin.common import constants
 
 """"
-The metrics received from driver is should be in this format 
+The metrics received from driver is should be in this format
 storage_metrics = [Metric(name='response_time',
      labels={'storage_id': '1', 'resource_type': 'array'},
      values={16009988175: 74.10422968341392, 16009988180: 74.10422968341392}),
@@ -60,9 +60,9 @@ class PrometheusExporter(object):
                 unit = unit_of_metric.get(name)
                 value_type = labels.get('value_type', 'gauge')
                 storage_labels = (
-                        "storage_id=\"%s\",resource_type=\"%s\","
-                        "type=\"%s\",unit=\"%s\",value_type=\"%s\"" %
-                        (storage_id, resource_type, 'RAW', unit, value_type))
+                    "storage_id=\"%s\",resource_type=\"%s\","
+                    "type=\"%s\",unit=\"%s\",value_type=\"%s\"" %
+                    (storage_id, resource_type, 'RAW', unit, value_type))
 
                 self._write_to_prometheus_format(f, name, storage_labels,
                                                  values)
