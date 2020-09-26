@@ -171,8 +171,8 @@ PROMETHEUS_EXPORTER_FILE = "/var/lib/delfin/delfin_exporter.txt"
 BLOCK_SIZE = 4096
 METRICS_SERVER_PORT = 8195
 
+
 class ResourceSync(object):
     START = 100
     SUCCEED = 100
     FAILED = 101
-
