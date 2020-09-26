@@ -51,8 +51,8 @@ MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
 PAGE_LIMIT = 500
-MIN_STORAGE, MAX_STORAGE = 3, 4
-MIN_VALUES, MAX_VALUES = 1, 4
+MIN_STORAGE, MAX_STORAGE = 1, 10
+MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
 
 
 def get_range_val(range_str, t):
@@ -204,7 +204,7 @@ class FakeStorageDriver(driver.StorageDriver):
     def _get_random_performance(self):
         def get_random_timestamp_value():
             rtv = {}
-            for i in range(MIN_VALUES, MAX_VALUES):
+            for i in range(MIN_PERF_VALUES, MAX_PERF_VALUES):
                 timestamp = int(float(datetime.datetime.now().timestamp()
                                       ) * 1000)
                 rtv[timestamp] = random.uniform(1, 100)
