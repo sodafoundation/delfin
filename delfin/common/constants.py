@@ -168,3 +168,5 @@ DELFIN_ARRAY_METRICS = [
 ]
 
 PROMETHEUS_EXPORTER_FILE = "/var/lib/delfin/delfin_exporter.txt"
+BLOCK_SIZE = 4096
+SERVER_PORT = 8195
