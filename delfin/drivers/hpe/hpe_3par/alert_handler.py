@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
 import time
 
 from oslo_log import log as logging
@@ -26,19 +27,13 @@ LOG = logging.getLogger(__name__)
 
 class AlertHandler(object):
     """Alert handling functions for Hpe3 parstor driver"""
-    # messageCode
+
     OID_MESSAGECODE = '1.3.6.1.4.1.12925.1.7.1.8.1'
-    # severity
     OID_SEVERITY = '1.3.6.1.4.1.12925.1.7.1.2.1'
-    # state
     OID_STATE = '1.3.6.1.4.1.12925.1.7.1.9.1'
-    # id
     OID_ID = '1.3.6.1.4.1.12925.1.7.1.7.1'
-    # timeOccurred
     OID_TIMEOCCURRED = '1.3.6.1.4.1.12925.1.7.1.3.1'
-    # details
     OID_DETAILS = '1.3.6.1.4.1.12925.1.7.1.6.1'
-    # component
     OID_COMPONENT = '1.3.6.1.4.1.12925.1.7.1.5.1'
 
     # Translation of trap severity to alert model severity
@@ -58,6 +53,25 @@ class AlertHandler(object):
                     "4": constants.Category.RECOVERY,
                     "5": constants.Category.RECOVERY}
 
+    ALERT_KEY_MAP = {"Id": "sequence_number",
+                     "State": "category",
+                     "MessageCode": "message_code",
+                     "Time": "occur_time",
+                     "Severity": "severity",
+                     "Type": "alert_name",
+                     "Message": "description",
+                     "Component": "location"
+                     }
+
+    ALERT_LEVEL_MAP = {"Critical": constants.Severity.CRITICAL,
+                       "Major": constants.Severity.MAJOR,
+                       "Minor": constants.Severity.MINOR,
+                       "Degraded": constants.Severity.WARNING,
+                       "Fatal": constants.Severity.FATAL,
+                       "Informational": constants.Severity.INFORMATIONAL,
+                       "Debug": constants.Severity.NOT_SPECIFIED
+                       }
+
     # Attributes expected in alert info to proceed with model filling
     _mandatory_alert_attributes = (
         OID_MESSAGECODE,
@@ -72,11 +86,9 @@ class AlertHandler(object):
     # Convert received time to epoch format
     TIME_PATTERN = '%Y-%m-%d %H:%M:%S CST'
 
-    default_me_category = 'storage-subsystem'
-
-    def __init__(self, resthanlder=None, sshhanlder=None):
-        self.resthanlder = resthanlder
-        self.sshhanlder = sshhanlder
+    def __init__(self, rest_handler=None, ssh_handler=None):
+        self.rest_handler = rest_handler
+        self.ssh_handler = ssh_handler
 
     def parse_alert(self, context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
@@ -128,111 +140,97 @@ class AlertHandler(object):
 
     def clear_alert(self, context, alert):
         """Clear alert from storage system.
-            Currently not implemented   removes command : removealert
+           Remove command: removealert
         """
-        re = 'Failed'
         try:
-            if alert is not None:
-                # alert is sequence number here
-                re = self.sshhanlder.remove_alerts(context, alert)
-                if not re:
-                    re = 'Success'
-                else:
-                    LOG.error('remove failed:{}'.format(re))
-                    raise exception.SSHException(re)
+            if alert:
+                self.ssh_handler.remove_alerts(alert)
+                LOG.info("Clear alert %s successfully." % alert)
+        except exception.DelfinException as e:
+            err_msg = "Remove alert %s failed: %s" % (alert, e.msg)
+            LOG.error(err_msg)
+            raise e
         except Exception as e:
-            LOG.error(e)
-            raise exception.SSHException(
-                reason='Failed to ssh Hpe3parStor')
-        return re
+            err_msg = "Remove alert %s failed: %s" % (alert, six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
-    def list_alerts(self, context):
+    def judge_alert_time(self, map, query_para):
+        if len(map) <= 1:
+            return False
+        if query_para is None and len(map) > 1:
+            return True
+        occur_time = self.get_time_stamp(map.get('occur_time'))
+        if query_para.get('begin_time') and query_para.get('end_time'):
+            if occur_time >= int(query_para.get('begin_time')) and \
+                    occur_time <= int(query_para.get('end_time')):
+                return True
+        elif query_para.get('begin_time'):
+            if occur_time >= int(query_para.get('begin_time')):
+                return True
+        elif query_para.get('end_time'):
+            if occur_time <= int(query_para.get('end_time')):
+                return True
+        return False
+
+    def handle_alters(self, alertlist, query_para):
+        map = {}
+        alert_list = []
+        for alertinfo in alertlist:
+            strline = alertinfo
+            if strline is not None and strline != '':
+                strinfo = strline.split(': ', 1)
+                strinfo[0] = strinfo[0].replace(" ", "")
+                key = self.ALERT_KEY_MAP.get(
+                    strinfo[0]) and self.ALERT_KEY_MAP.get(
+                    strinfo[0]) or ''
+                value = self.ALERT_KEY_MAP.get(
+                    strinfo[0]) and strinfo[1] or ''
+                map[key] = value
+            elif self.judge_alert_time(map, query_para):
+                severity = self.ALERT_LEVEL_MAP.get(map.get('severity'))
+                category = map.get('category') == 'New' and 'Fault' or ''
+                occur_time = self.get_time_stamp(map.get('occur_time'))
+                alert_id = map.get('message_code') and str(int(map.get(
+                    'message_code'), 16)) or ''
+                alert_model = {
+                    'alert_id': alert_id,
+                    'alert_name': map.get('alert_name'),
+                    'severity': severity,
+                    'category': category,
+                    'type': constants.EventType.EQUIPMENT_ALARM,
+                    'sequence_number': map.get('sequence_number'),
+                    'occur_time': occur_time,
+                    'description': map.get('description'),
+                    'resource_type': constants.DEFAULT_RESOURCE_TYPE,
+                    'location': map.get('location')
+                }
+                alert_list.append(alert_model)
+                map = {}
+        return alert_list
+
+    def list_alerts(self, context, query_para):
         try:
             # Get list of Hpe3parStor alerts
-            alert_list = []
             try:
-                reslist = self.sshhanlder.get_all_alerts(context)
+                reslist = self.ssh_handler.get_all_alerts()
             except Exception as e:
-                LOG.error(e)
-                raise exception.SSHException(
-                    reason='Failed to ssh Hpe3parStor')
-            message_code = ''
-            event_type = ''
-            severity = ''
-            state = ''
-            alarm_id = ''
-            occur_time = ''
-            alert_message = ''
-            component = ''
+                err_msg = "Failed to ssh Hpe3parStor: %s" % \
+                          (six.text_type(e))
+                LOG.error(err_msg)
+                raise exception.SSHException(err_msg)
 
             alertlist = reslist.split('\n')
 
-            for alertinfo in alertlist:
-                strline = alertinfo
-                if strline is not None and strline != '':
-                    # strline = strline.replace(" ", "")
-                    strinfo = strline.split(': ', 1)
-                    strinfo[0] = strinfo[0].replace(" ", "")
-                    if strinfo[0] == 'Id':
-                        alarm_id = strinfo[1]
-                    elif strinfo[0] == 'State':
-                        if strinfo[1] == 'New':
-                            state = constants.Category.FAULT
-                    elif strinfo[0] == 'MessageCode':
-                        message_code = strinfo[1]
-                    elif strinfo[0] == 'Time':
-                        occur_time = strinfo[1]
-                    elif strinfo[0] == 'Severity':
-                        if strinfo[1] == 'Major':
-                            severity = constants.Severity.MAJOR
-                        elif strinfo[1] == 'Minor':
-                            severity = constants.Severity.MINOR
-                        elif strinfo[1] == 'Critical':
-                            severity = constants.Severity.CRITICAL
-                        elif strinfo[1] == 'Degraded':
-                            severity = constants.Severity.WARNING
-                        elif strinfo[1] == 'Fatal':
-                            severity = constants.Severity.FATAL
-                        elif strinfo[1] == 'Informational':
-                            severity = constants.Severity.INFORMATIONAL
-                        elif strinfo[1] == 'Debug':
-                            severity = constants.Severity.NOT_SPECIFIED
-                    elif strinfo[0] == 'Type':
-                        event_type = strinfo[1]
-                    elif strinfo[0] == 'Message':
-                        alert_message = strinfo[1]
-                    elif strinfo[0] == 'Component':
-                        component = strinfo[1]
-
-                        alert_model = {
-                            'alert_id': str(int(message_code, 16)),
-                            'alert_name': event_type,
-                            'severity': severity,
-                            'category': state,
-                            'type': constants.EventType.EQUIPMENT_ALARM,
-                            'sequence_number': alarm_id,
-                            'occur_time': self.get_time_stamp(occur_time),
-                            'description': alert_message,
-                            'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                            'location': component
-                        }
-
-                        alert_list.append(alert_model)
-                        message_code = ''
-                        event_type = ''
-                        severity = ''
-                        state = ''
-                        alarm_id = ''
-                        occur_time = ''
-                        alert_message = ''
-                        component = ''
-            return alert_list
-
-        except Exception as err:
-            LOG.error(
-                "Failed to get pool metrics from Hpe3parStor: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get pool metrics from Hpe3parStor')
+            return self.handle_alters(alertlist, query_para)
+        except exception.DelfinException as e:
+            err_msg = "Get alerts failed: %s" % (e.msg)
+            LOG.error(err_msg)
+            raise e
+        except Exception as e:
+            err_msg = "Get alert failed: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
     def get_time_stamp(self, time_str):
         """ Time stamp to time conversion
@@ -259,9 +257,9 @@ class AlertHandler(object):
         re = ''
         try:
             if message_code is not None:
-                messagekey = \
+                message_key = \
                     (hex(int(message_code))).replace('0x', '0x0')
-                re = consts.HPE3PAR_ALERT_CODE.get(messagekey)
+                re = consts.HPE3PAR_ALERT_CODE.get(message_key)
         except Exception as e:
             LOG.error(e)
 

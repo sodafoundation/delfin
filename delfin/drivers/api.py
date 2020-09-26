@@ -17,6 +17,7 @@ import six
 from oslo_log import log
 from oslo_utils import uuidutils
 
+from delfin import db
 from delfin.drivers import helper
 from delfin.drivers import manager
 
@@ -29,6 +30,7 @@ class API(object):
 
     def discover_storage(self, context, access_info):
         """Discover a storage system with access information."""
+        helper.encrypt_password(context, access_info)
         if 'storage_id' not in access_info:
             access_info['storage_id'] = six.text_type(
                 uuidutils.generate_uuid())
@@ -40,9 +42,9 @@ class API(object):
 
         # Need to validate storage response from driver
         helper.check_storage_repetition(context, storage)
-        access_info = helper.create_access_info(context, access_info)
+        access_info = db.access_info_create(context, access_info)
         storage['id'] = access_info['storage_id']
-        storage = helper.create_storage(context, storage)
+        storage = db.storage_create(context, storage)
         self.driver_manager.update_driver(storage['id'], driver)
 
         LOG.info("Storage found successfully.")
@@ -50,6 +52,7 @@ class API(object):
 
     def update_access_info(self, context, access_info):
         """Validate and update access information."""
+        helper.encrypt_password(context, access_info)
         driver = self.driver_manager.get_driver(context,
                                                 cache_on_load=False,
                                                 **access_info)
@@ -58,9 +61,8 @@ class API(object):
         # Need to validate storage response from driver
         storage_id = access_info['storage_id']
         helper.check_storage_consistency(context, storage_id, storage_new)
-        access_info = helper.update_access_info(context,
-                                                storage_id, access_info)
-        helper.update_storage(context, storage_id, storage_new)
+        access_info = db.access_info_update(context, storage_id, access_info)
+        db.storage_update(context, storage_id, storage_new)
         self.driver_manager.update_driver(storage_id, driver)
 
         LOG.info("Access information updated successfully.")
@@ -101,7 +103,7 @@ class API(object):
     def clear_alert(self, context, storage_id, sequence_number):
         """Clear alert from storage system."""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
-        return driver.clear_alert(context, sequence_number)
+        driver.clear_alert(context, sequence_number)
 
     def list_alerts(self, context, storage_id, query_para=None):
         """List alert from storage system."""

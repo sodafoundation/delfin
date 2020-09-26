@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from delfin import db
+from delfin import cryptor
 from delfin.api import validation
 from delfin.api.common import wsgi
 from delfin.api.schemas import access_info as schema_access_info
@@ -39,11 +40,12 @@ class AccessInfoController(wsgi.Controller):
         ctxt = req.environ.get('delfin.context')
         access_info = db.access_info_get(ctxt, id)
         for access in constants.ACCESS_TYPE:
-            if not body.get(access):
-                body[access] = None
-        access_info.update(body)
+            if access_info.get(access):
+                access_info[access]['password'] = cryptor.decode(
+                    access_info[access]['password'])
+            if body.get(access):
+                access_info[access].update(body[access])
         access_info = self.driver_api.update_access_info(ctxt, access_info)
-
         return self._view_builder.show(access_info)
 
 

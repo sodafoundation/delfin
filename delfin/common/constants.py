@@ -155,7 +155,6 @@ class SecurityLevel(object):
 # Metric model
 metric_struct = namedtuple("Metric", "name labels values")
 
-
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [
     "response_time",
@@ -166,3 +165,9 @@ DELFIN_ARRAY_METRICS = [
     "read_bandwidth",
     "write_bandwidth"
 ]
+
+
+class ResourceSync(object):
+    START = 100
+    SUCCEED = 100
+    FAILED = 101
