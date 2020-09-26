@@ -40,6 +40,23 @@ def verify_ca_path(ca_path):
         raise exception.InvalidCAPath(ca_path)
 
 
+def _load_cert(fpath, file, ca_path):
+    with open(fpath, "rb") as f:
+        cert_content = f.read()
+        cert = load_certificate(FILETYPE_PEM,
+                                cert_content)
+        hash_val = cert.subject_name_hash()
+        hash_hex = hex(hash_val).strip('0x') + ".0"
+        linkfile = ca_path + hash_hex
+        if os.path.exists(linkfile):
+            LOG.debug("Link for {0} already exist.".
+                      format(file))
+        else:
+            LOG.info("Create link file {0} for {1}.".
+                     format(linkfile, fpath))
+            os.symlink(fpath, linkfile)
+
+
 def reload_certificate(ca_path):
     """
     Checking the driver security config validation.
@@ -57,20 +74,7 @@ def reload_certificate(ca_path):
             suf = os.path.splitext(file)[1]
             if suf in suffixes:
                 fpath = ca_path + file
-                with open(fpath, "rb") as f:
-                    cert_content = f.read()
-                    cert = load_certificate(FILETYPE_PEM,
-                                            cert_content)
-                    hash_val = cert.subject_name_hash()
-                    hash_hex = hex(hash_val).strip('0x') + ".0"
-                    linkfile = ca_path + hash_hex
-                    if os.path.exists(linkfile):
-                        LOG.debug("Link for {0} already exist.".
-                                  format(file))
-                    else:
-                        LOG.info("Create link file {0} for {1}.".
-                                 format(linkfile, fpath))
-                        os.symlink(fpath, linkfile)
+                _load_cert(fpath, file, ca_path)
 
 
 class HostNameIgnoreAdapter(requests.adapters.HTTPAdapter):

@@ -16,6 +16,7 @@
 from unittest import TestCase, mock
 from delfin import exception
 from delfin import context
+from delfin.common import config # noqa
 from delfin.drivers.huawei.oceanstor.oceanstor import OceanStorDriver, consts
 from delfin.drivers.huawei.oceanstor.rest_client import RestClient
 from requests import Session
@@ -35,7 +36,7 @@ ACCESS_INFO = {
         "host": "10.0.0.1",
         "port": "8443",
         "username": "user",
-        "password": "pass",
+        "password": "cGFzc3dvcmQ=",
     },
     "extra_attributes": {
         "array_id": "00112233"

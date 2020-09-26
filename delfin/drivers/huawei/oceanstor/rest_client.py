@@ -22,6 +22,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 from oslo_log import log as logging
 
+from delfin import cryptor
 from delfin import exception
 from delfin.drivers.huawei.oceanstor import consts
 from delfin.ssl_utils import HostNameIgnoreAdapter
@@ -98,7 +99,7 @@ class RestClient(object):
         else:
             msg = _("Request method %s is invalid.") % method
             LOG.error(msg)
-            raise exception.StorageBackendException(reason=msg)
+            raise exception.StorageBackendException(msg)
 
         try:
             res = func(url, **kwargs)
@@ -138,7 +139,7 @@ class RestClient(object):
         for item_url in self.san_address:
             url = item_url + "xx/sessions"
             data = {"username": self.rest_username,
-                    "password": self.rest_password,
+                    "password": cryptor.decode(self.rest_password),
                     "scope": "0"}
             self.init_http_head()
             result = self.do_call(url, data, 'POST',
@@ -162,13 +163,13 @@ class RestClient(object):
                 msg = _("Password has expired or has been reset, "
                         "please change the password.")
                 LOG.error(msg)
-                raise exception.StorageBackendException(reason=msg)
+                raise exception.StorageBackendException(msg)
             break
 
         if device_id is None:
             msg = _("Failed to login with all rest URLs.")
             LOG.error(msg)
-            raise exception.StorageBackendException(reason=msg)
+            raise exception.StorageBackendException(msg)
 
         return device_id
 
@@ -234,13 +235,13 @@ class RestClient(object):
             msg = (_('%(err)s\nresult: %(res)s.') % {'err': err_str,
                                                      'res': result})
             LOG.error(msg)
-            raise exception.StorageBackendException(reason=msg)
+            raise exception.StorageBackendException(msg)
 
     def _assert_data_in_result(self, result, msg):
         if 'data' not in result:
             err_msg = _('%s "data" is not in result.') % msg
             LOG.error(err_msg)
-            raise exception.StorageBackendException(reason=err_msg)
+            raise exception.StorageBackendException(err_msg)
 
     def get_storage(self):
         url = "/system/"

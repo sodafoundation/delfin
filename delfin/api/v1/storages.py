@@ -78,17 +78,16 @@ class StorageController(wsgi.Controller):
         # Lock to avoid synchronous creating.
         for access in constants.ACCESS_TYPE:
             if access_info_dict.get(access) is not None:
-                host = access_info_dict.get('rest').get('host')
-                port = access_info_dict.get('rest').get('port')
+                host = access_info_dict.get(access).get('host')
                 break
-        lock_name = 'storage-create-' + host + '-' + str(port)
-        coordination.synchronized(lock_name)
+        lock_name = 'storage-create-' + host
+        lock = coordination.Lock(lock_name)
 
-        if self._storage_exist(ctxt, access_info_dict):
-            raise exception.StorageAlreadyExists()
-
-        storage = self.driver_api.discover_storage(ctxt,
-                                                   access_info_dict)
+        with lock:
+            if self._storage_exist(ctxt, access_info_dict):
+                raise exception.StorageAlreadyExists()
+            storage = self.driver_api.discover_storage(ctxt,
+                                                       access_info_dict)
 
         # Registration success, sync resource collection for this storage
         try:
@@ -139,7 +138,8 @@ class StorageController(wsgi.Controller):
                          % (storage['id'], e.msg))
                 continue
             else:
-                for subclass in resources.StorageResourceTask.__subclasses__():
+                for subclass in \
+                        resources.StorageResourceTask.__subclasses__():
                     self.task_rpcapi.sync_storage_resource(
                         ctxt,
                         storage['id'],
@@ -211,11 +211,10 @@ def _set_synced_if_ok(context, storage_id, resource_count):
         interval = (current_time - last_update).seconds
         # If last synchronization was within
         # CONF.sync_task_expiration(in seconds), and the sync status
-        # is not SYNCED, it means some sync task is still running,
+        # is bigger than 0, it means some sync task is still running,
         # the new sync task should not launch
         if interval < CONF.sync_task_expiration and \
-                storage['sync_status'] != constants.SyncStatus.SYNCED:
-            msg = 'Sync task is running for %s' % storage['id']
-            raise exception.InvalidInput(message=msg)
-        storage['sync_status'] = resource_count
+                storage['sync_status'] > 0:
+            raise exception.StorageIsSyncing(storage['id'])
+        storage['sync_status'] = resource_count * constants.ResourceSync.START
         db.storage_update(context, storage['id'], storage)

@@ -114,7 +114,13 @@ class OceanStorDriver(driver.StorageDriver):
             LOG.error(
                 "Failed to get pool metrics from OceanStor: {}".format(err))
             raise exception.StorageBackendException(
-                reason='Failed to get pool metrics from OceanStor')
+                'Failed to get pool metrics from OceanStor')
+
+    def _get_orig_pool_id(self, pools, volume):
+        for pool in pools:
+            if volume['PARENTNAME'] == pool['NAME']:
+                return pool['ID']
+        return ''
 
     def list_volumes(self, context):
         try:
@@ -125,11 +131,7 @@ class OceanStorDriver(driver.StorageDriver):
             volume_list = []
             for volume in volumes:
                 # Get pool id of volume
-                orig_pool_id = ''
-                for pool in pools:
-                    if volume['PARENTNAME'] == pool['NAME']:
-                        orig_pool_id = pool['ID']
-
+                orig_pool_id = self._get_orig_pool_id(pools, volume)
                 compressed = False
                 if volume['ENABLECOMPRESSION'] != 'false':
                     compressed = True
@@ -174,7 +176,7 @@ class OceanStorDriver(driver.StorageDriver):
             LOG.error(
                 "Failed to get list volumes from OceanStor: {}".format(err))
             raise exception.StorageBackendException(
-                reason='Failed to get list volumes from OceanStor')
+                'Failed to get list volumes from OceanStor')
 
     def add_trap_config(self, context, trap_config):
         pass

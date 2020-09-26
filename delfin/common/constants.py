@@ -155,7 +155,6 @@ class SecurityLevel(object):
 # Metric model
 metric_struct = namedtuple("Metric", "name labels values")
 
-
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [
     "response_time",
@@ -167,6 +166,13 @@ DELFIN_ARRAY_METRICS = [
     "write_bandwidth"
 ]
 
+
 PROMETHEUS_EXPORTER_FILE = "/var/lib/delfin/delfin_exporter.txt"
 BLOCK_SIZE = 4096
 METRICS_SERVER_PORT = 8195
+
+class ResourceSync(object):
+    START = 100
+    SUCCEED = 100
+    FAILED = 101
+
