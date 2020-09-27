@@ -68,13 +68,13 @@ Note: If you don't have python3 in your system, you may follow below steps to se
 
   1. [Download the latest binaries from here](https://prometheus.io/download/) and run the below steps.
 
-    ```sh
+
     1. tar xvfz prometheus-*.tar.gz
 
     2. cd prometheus-*
 
     3. ./prometheus
-    ```
+
   Example:
   ```sh
   root@root:/prometheus/prometheus-2.20.0.linux-amd64$ ./prometheus
@@ -82,9 +82,8 @@ Note: If you don't have python3 in your system, you may follow below steps to se
 
   2. Edit the prometheus.yml and set the appropriate target, interval and metrics_api path. Below is sample example of prometheus.yml
 
-    ###### prometheus.yml
+   ###### prometheus.yml
 
-    ```sh
     global:
       scrape_interval: 900s
     scrape_configs:
@@ -93,7 +92,6 @@ Note: If you don't have python3 in your system, you may follow below steps to se
      static_configs:
       - targets:
               - localhost:8195
-    ```
 
 # Supported OS
 Ubuntu 16.04, Ubuntu 18.04
@@ -165,12 +163,10 @@ root@root1:~/delfin-demo/delfin$ installer/install
 # Uninstall
 Running the uninstall script will stop all delfin processes and do cleanup
     
-```sh
-   installer/uninstall
+    installer/uninstall
     
-   # Example
-   root@root1:~/delfin-demo/delfin$ installer/uninstall
-```
+    # Example
+    root@root1:~/delfin-demo/delfin$ installer/uninstall
 
 
 # Test the running delfin setup
