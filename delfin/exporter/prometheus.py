@@ -12,49 +12,57 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-metrics_name = ['response_time', 'throughput', 'read_throughput',
-                'write_throughput', 'bandwidth', 'read_bandwidth',
-                'write_bandwidth']
+
+from delfin.common import constants
+
+""""
+The metrics received from driver is should be in this format
+storage_metrics = [Metric(name='response_time',
+     labels={'storage_id': '1', 'resource_type': 'array'},
+     values={16009988175: 74.10422968341392, 16009988180: 74.10422968341392}),
+     Metric(name='throughput',
+     labels={'storage_id': '1', 'resource_type': 'array'},
+     values={16009988188: 68.57886608255163, 16009988190: 68.57886608255163}),
+     Metric(name='read_throughput',
+     labels={'storage_id': '1', 'resource_type': 'array'},
+     values={1600998817585: 76.60140757331934}),
+     Metric(name='write_throughput',
+     labels={'storage_id': '1', 'resource_type': 'array'},
+     values={1600998817585: 20.264160223426305})]
+"""
+
+unit_of_metric = {'response_time': 'ms', 'throughput': 'IOPS',
+                  'read_throughput': 'IOPS', 'write_throughput': 'IOPS',
+                  'bandwidth': 'MBps', 'read_bandwidth': 'MBps',
+                  'write_bandwidth': 'MBps'
+                  }
 
 
 class PrometheusExporter(object):
+
     # Print metrics in Prometheus format.
-    def _write_to_prometheus_format(self, f, metric, labels, value, timestamp):
+    def _write_to_prometheus_format(self, f, metric, labels, values):
         f.write("# HELP storage_%s storage metric for %s\n" % (metric, metric))
         f.write("# TYPE storage_%s gauge\n" % metric)
-        for label in labels:
-            if label is None:
-                f.write("storage_%s %f\n" % (metric, labels[label]))
-            else:
-                f.write("storage_%s{%s} %f %d\n" % (metric, labels[label],
-                                                    value, timestamp))
+
+        for timestamp, value in values.items():
+            f.write("storage_%s{%s} %f %d\n" % (metric, labels,
+                                                value, timestamp))
 
     def push_to_prometheus(self, storage_metrics):
-        f = open("/var/lib/delfin/delfin_exporter.txt", "w+")
+        with open(constants.PROMETHEUS_EXPORTER_FILE, "a+") as f:
+            for metric in storage_metrics:
+                name = metric.name
+                labels = metric.labels
+                values = metric.values
+                storage_id = labels.get('storage_id')
+                resource_type = labels.get('resource_type')
+                unit = unit_of_metric.get(name)
+                value_type = labels.get('value_type', 'gauge')
+                storage_labels = (
+                    "storage_id=\"%s\",resource_type=\"%s\","
+                    "type=\"%s\",unit=\"%s\",value_type=\"%s\"" %
+                    (storage_id, resource_type, 'RAW', unit, value_type))
 
-        storage_metric = {}
-        for metric in storage_metrics:
-
-            storage_id = metric.get('storage_id')
-            resource_type = metric.get('resource_type')
-            native_port_id = metric.get('native_port_id')
-            native_controller_id = metric.get('native_controller_id')
-            type = metric.get('type', 'RAW')
-            unit = metric.get('unit', 'IOPS')
-            value_type = metric.get('value_type', 'gauge')
-
-            storage_labels = ("storage_id=\"%s\",resource_type=\"%s\","
-                              "native_port_id=\"%s\",native_controller_id="
-                              "\"%s\",type=\"%s\",unit=\"%s\",value_type="
-                              "\"%s\"" % (
-                                  storage_id, resource_type,
-                                  native_port_id, native_controller_id,
-                                  type, unit, value_type)
-                              )
-
-            storage_metric[storage_labels] = storage_labels
-            for name in metrics_name:
-                for timestamp, value in metric.get(name).items():
-                    self._write_to_prometheus_format(f, name, storage_metric,
-                                                     value, timestamp)
-        f.close()
+                self._write_to_prometheus_format(f, name, storage_labels,
+                                                 values)

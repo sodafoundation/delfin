@@ -23,6 +23,7 @@ from oslo_log import log
 from oslo_utils import uuidutils
 
 from delfin import exception
+from delfin.common import constants
 from delfin.drivers import driver
 
 CONF = cfg.CONF
@@ -44,15 +45,14 @@ fake_opts = [
 
 CONF.register_opts(fake_opts, "fake_driver")
 
-
 LOG = log.getLogger(__name__)
-
 
 MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
 PAGE_LIMIT = 500
-MIN_STORAGE, MAX_STORAGE = 10, 40
+MIN_STORAGE, MAX_STORAGE = 1, 10
+MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
 
 
 def get_range_val(range_str, t):
@@ -101,19 +101,6 @@ class FakeStorageDriver(driver.StorageDriver):
         used = int(random.randint(0, 100) * total / 100)
         free = total - used
         return total, used, free
-
-    def _get_random_performance(self):
-        timestamp = int(float(datetime.datetime.now().timestamp()) * 1000)
-        performance_params = {
-            'response_time': {timestamp: random.uniform(1, 10)},
-            'throughput': {timestamp: random.uniform(1, 100)},
-            'read_throughput': {timestamp: random.uniform(1, 100)},
-            'write_throughput': {timestamp: random.uniform(1, 100)},
-            'bandwidth': {timestamp: random.uniform(1, 100)},
-            'read_bandwidth': {timestamp: random.uniform(1, 100)},
-            'write_bandwidth': {timestamp: random.uniform(1, 100)}
-        }
-        return performance_params
 
     def reset_connection(self, context, **kwargs):
         pass
@@ -213,30 +200,35 @@ class FakeStorageDriver(driver.StorageDriver):
             volume_list.append(v)
         return volume_list
 
+    def _get_random_performance(self):
+        def get_random_timestamp_value():
+            rtv = {}
+            for i in range(MIN_PERF_VALUES, MAX_PERF_VALUES):
+                timestamp = int(float(datetime.datetime.now().timestamp()
+                                      ) * 1000)
+                rtv[timestamp] = random.uniform(1, 100)
+            return rtv
+
+        # The sample performance_params after filling looks like,
+        # performance_params = {timestamp1: value1, timestamp2: value2}
+        performance_params = {}
+        for key in constants.DELFIN_ARRAY_METRICS:
+            performance_params[key] = get_random_timestamp_value()
+        return performance_params
+
     @wait_random(MIN_WAIT, MAX_WAIT)
     def collect_array_metrics(self, ctx, storage_id, interval, is_history):
         rd_array_count = random.randint(MIN_STORAGE, MAX_STORAGE)
         LOG.info("Fake_array_metrics number for %s: %d" % (
             storage_id, rd_array_count))
-        perf_params = self._get_random_performance()
-        sn = six.text_type(uuidutils.generate_uuid())
-
         array_metrics = []
-        for id in range(rd_array_count):
-            metric = {
-                "name": "fake_array_" + str(id),
-                "resource_type": "storage",
-                "storage_id": storage_id,
-                'serial_number': sn,
-                'native_port_id': 'FF1:00' + str(id),
-                'native_controller_id': 'CTRL' + str(id),
-                'response_time': perf_params.get('response_time'),
-                'throughput': perf_params.get('throughput'),
-                'read_throughput': perf_params.get('read_throughput'),
-                'write_throughput': perf_params.get('write_throughput'),
-                'bandwidth': perf_params.get('bandwidth'),
-                'read_bandwidth': perf_params.get('read_bandwidth'),
-                'write_bandwidth': perf_params.get('write_bandwidth'),
-            }
-            array_metrics.append(metric)
+        labels = {'storage_id': storage_id, 'resource_type': 'array'}
+        fake_metrics = self._get_random_performance()
+
+        for _ in range(rd_array_count):
+            for key in constants.DELFIN_ARRAY_METRICS:
+                m = constants.metric_struct(name=key, labels=labels,
+                                            values=fake_metrics[key])
+                array_metrics.append(m)
+
         return array_metrics
