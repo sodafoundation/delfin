@@ -79,6 +79,15 @@ def start_processes():
     os.system(command)
     logger.info("ALERT process_started")
 
+    # Start exporter server process
+    proc_path = os.path.join(delfin_source_path, 'delfin', 'exporter',
+                             'exporter_server.py')
+    command = 'python3 ' + proc_path + ' --config-file ' +\
+              conf_file + ' >' + DEVNULL + ' 2>&1 &'
+    logger.info("Executing command [%s]", command)
+    os.system(command)
+    logger.info("Exporter process_started")
+
 
 def install_delfin():
     python_setup_comm = ['build', 'install']
@@ -113,6 +122,10 @@ def main():
     # create required directories
     create_dir(delfin_etc_dir)
     create_dir(delfin_var_dir)
+
+    # Create blank prometheus exporter file
+    command = 'touch' + ' ' + delfin_var_dir + '/' + 'delfin_exporter.txt'
+    os.system(command)
 
     # Copy required files
     # Copy api-paste.ini

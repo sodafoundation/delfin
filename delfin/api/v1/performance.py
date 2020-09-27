@@ -125,6 +125,11 @@ class PerformanceController(wsgi.Controller):
             raise exception.InvalidInput(e.msg)
         else:
             return metrics_config_dict
+        finally:
+            try:
+                schedule.start()
+            except Exception as e:
+                LOG.debug("Scheduler is already running")
 
     def perf_collect(self, storage_id, interval, is_historic, resource):
         """
