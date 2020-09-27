@@ -117,8 +117,6 @@ class VMaxRest(object):
         session.mount("https://", ssl_utils.HostNameIgnoreAdapter())
 
         self.session = session
-        # Check whether the session be able to working
-        self.get_unisphere_version()
         return session
 
     def request(self, target_uri, method, params=None, request_object=None,
@@ -437,7 +435,7 @@ class VMaxRest(object):
                 pre_91_endpoint, GET, timeout=VERSION_GET_TIME_OUT)
 
         if status_code == STATUS_401:
-            raise exception.InvalidCredential()
+            raise exception.InvalidUsernameOrPassword()
 
         if not version_dict:
             LOG.error("Unisphere version info not found.")
