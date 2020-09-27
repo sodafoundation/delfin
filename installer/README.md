@@ -33,7 +33,7 @@ Note: If you don't have python3 in your system, you may follow below steps to se
   # Example
   root@root1:~/delfin-demo/delfin$ virtualenv -p /usr/bin/python3.6 project_delfin
   ```
-3. Activate your project
+4. Activate your project
 
   ```sh
   source project_delfin/bin/activate
@@ -42,7 +42,7 @@ Note: If you don't have python3 in your system, you may follow below steps to se
   root@root1:~/delfin-demo/delfin$ source project_delfin/bin/activate
   # (project_delfin) root@root1:~/delfin-demo/delfin$
   ```
-4. Install all requirements using Pip
+5. Install all requirements using Pip
 
   ```sh
   pip install -r requirements.txt
@@ -50,11 +50,51 @@ Note: If you don't have python3 in your system, you may follow below steps to se
   # Example
   (project_delfin) root@root1:~/delfin-demo/delfin$ pip install -r requirements.txt
   ```
-5. set PYTHONPATH to working directory
+6. set PYTHONPATH to working directory
 
   ```sh
   export PYTHONPATH=$(pwd)
   ```
+  
+
+#### How to setup prometheus to monitor performance metric
+
+  Follow the below steps to setup delfin with prometheus. Once your setup is ready, you can register the storage devices for performance monitoring. Later, the performance metrics can be viewed on prometheus server. This example also guides you to configure and update the targets and interval for scraping the metrics.
+
+  Alternatively, you can also watch this [video]((https://drive.google.com/file/d/1WMmLXQeNlToZd0DP5hCFtDZ1IbNJpO6B/view?usp=drivesdk) for more detail.
+
+
+  step1: Install and start prometheus server
+
+  1. [Download the latest binaries from here](https://prometheus.io/download/) and run the below steps.
+
+    ```sh
+    1. tar xvfz prometheus-*.tar.gz
+
+    2. cd prometheus-*
+
+    3. ./prometheus
+    ```
+  Example:
+  ```sh
+  root@root:/prometheus/prometheus-2.20.0.linux-amd64$ ./prometheus
+  ```
+
+  2. Edit the prometheus.yml and set the appropriate target, interval and metrics_api path. Below is sample example of prometheus.yml
+
+    ###### prometheus.yml
+
+    ```sh
+    global:
+      scrape_interval: 900s
+    scrape_configs:
+     - job_name: delfin-prometheus
+     metrics_path: /metrics
+     static_configs:
+      - targets:
+              - localhost:8195
+    ```
+
 # Supported OS
 Ubuntu 16.04, Ubuntu 18.04
 
@@ -124,24 +164,66 @@ root@root1:~/delfin-demo/delfin$ installer/install
 
 # Uninstall
 Running the uninstall script will stop all delfin processes and do cleanup
+    
 ```sh
-installer/uninstall
-
-# Example
-root@root1:~/delfin-demo/delfin$ installer/uninstall
+   installer/uninstall
+    
+   # Example
+   root@root1:~/delfin-demo/delfin$ installer/uninstall
 ```
 
 
 # Test the running delfin setup
 1. Make sure all delfin process are up and running
 
-```
-ps -ef|grep delfin
+    ```
+    ps -ef|grep delfin
 
-# Example
-(project_delfin) root@root1:~/delfin-demo/delfin# ps -ef |grep delfin
-root      326432    3216 28 13:05 pts/6    00:00:01 python3 /root/delfin-demo/delfin/installer/../delfin/cmd/api.py --config-file /etc/delfin/delfin.conf
-root      326434    3216 23 13:05 pts/6    00:00:01 python3 /root/delfin-demo/delfin/installer/../delfin/cmd/task.py --config-file /etc/delfin/delfin.conf
-root      326436    3216 24 13:05 pts/6    00:00:01 python3 /root/delfin-demo/delfin/installer/../delfin/cmd/alert.py --config-file /etc/delfin/delfin.conf
-root      326452  266646  0 13:05 pts/6    00:00:00 grep delfin
-```
+    # Example
+    root@root1:~/delfin-demo/delfin# ps -ef |grep delfin
+    root       25856    3570  0 00:21 pts/0    00:00:04 python3 /root/delfin-demo/delfin/installer/../delfin/cmd/api.py --config-file /etc/delfin/delfin.conf
+    root       25858    3570  0 00:21 pts/0    00:00:09 python3 /root/delfin-demo/delfin/installer/../delfin/cmd/task.py --config-file /etc/delfin/delfin.conf
+    root       25860    3570  0 00:21 pts/0    00:00:06 python3 /root/delfin-demo/delfin/installer/../delfin/cmd/alert.py --config-file /etc/delfin/delfin.conf
+    root       25862    3570  0 00:21 pts/0    00:00:00 python3 /root/delfin-demo/delfin/installer/../delfin/exporter/exporter_server.py --config-file /etc/delfin/delfin.conf
+
+    ```
+
+2. Register storages
+
+    POST http://localhost:8190/v1/storages
+
+    body :
+  
+    ```
+      {
+        "vendor": "fake_storage",
+        "model": "fake_driver",
+        "rest": {
+        "host": "127.0.0.1",
+        "port": 8088,
+        "username": "admin",
+        "password": "pass"
+        },
+        "extra_attributes": {
+            "array_id": "12345"
+        }
+       }
+
+    ```
+3. Register storage for performance collection
+
+   PUT http://localhost:8190/v1/storage_id/metrics-config
+
+   body :
+      ```
+      {
+    "array_polling": {
+    "perf_collection": true,
+    "interval": 900,
+    "is_historic": true
+    }
+    }
+      ```
+4. Monitor the performance metrics on prometheus server at default location
+
+   http://localhost:9090/graph
