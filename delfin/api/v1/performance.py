@@ -129,7 +129,7 @@ class PerformanceController(wsgi.Controller):
             try:
                 schedule.start()
             except Exception as e:
-                LOG.debug("Scheduler is already running.".format(e))
+                LOG.debug("Scheduler is already running.{0}".format(e))
 
     def perf_collect(self, storage_id, interval, is_historic, resource):
         """
