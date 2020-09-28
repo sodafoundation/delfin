@@ -32,5 +32,4 @@ def build_alert_source(value):
     elif version.lower() == 'snmpv3':
         # Remove the key not belong to snmpv3
         view.pop('community_string')
-        pass
     return dict(view)

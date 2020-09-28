@@ -43,7 +43,7 @@ update = {
                             'maxLength': 4096},
                 'pub_key_type': parameter_types.host_key_type
             },
-            'required': ['host', 'port', 'username', 'password', 'pub_key'],
+            'required': ['host', 'port', 'username'],
             'additionalProperties': False
         },
         'extra_attributes': {

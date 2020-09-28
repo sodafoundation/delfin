@@ -63,15 +63,14 @@ class TestVMAXStorageDriver(TestCase):
         self.assertEqual(driver.client.array_id, "00112233")
 
         with self.assertRaises(Exception) as exc:
-            mock_version.side_effect = exception.StorageBackendException
+            mock_version.side_effect = exception.InvalidIpOrPort
             VMAXStorageDriver(**kwargs)
-        self.assertIn('Exception from Storage Backend', str(exc.exception))
+        self.assertIn('Invalid ip or port', str(exc.exception))
 
         with self.assertRaises(Exception) as exc:
-            mock_version.side_effect = ['V9.0.2.7', '90']
-            mock_array.side_effect = exception.StorageBackendException
+            mock_version.side_effect = exception.InvalidUsernameOrPassword
             VMAXStorageDriver(**kwargs)
-        self.assertIn('Failed to connect to VMAX', str(exc.exception))
+        self.assertIn('Invalid username or password.', str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_system_capacity')
     @mock.patch.object(VMaxRest, 'get_vmax_array_details')
