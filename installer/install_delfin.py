@@ -19,7 +19,7 @@ import subprocess
 from subprocess import CalledProcessError
 import traceback as tb
 from installer.helper import copy_files, create_dir, \
-    logger, logfile, delfin_log_dir
+    logger, logfile, delfin_log_dir, create_file
 
 delfin_source_path = ''
 delfin_etc_dir = '/etc/delfin'
@@ -124,8 +124,8 @@ def main():
     create_dir(delfin_var_dir)
 
     # Create blank prometheus exporter file
-    command = 'touch' + ' ' + delfin_var_dir + '/' + 'delfin_exporter.txt'
-    os.system(command)
+    filename = delfin_var_dir + '/' + 'delfin_exporter.txt'
+    create_file(filename)
 
     # Copy required files
     # Copy api-paste.ini

@@ -21,10 +21,11 @@ import logging
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 
-log_filename = 'delfin_installer.log' +\
+log_filename = 'delfin_installer.log' + \
                datetime.now().strftime("%d_%m_%Y_%H_%M_%s")
 LOGGING_FORMAT = "[%(asctime)s] [%(levelname)s] [%(filename)s] " \
-    "[%(funcName)s():%(lineno)s] [PID:%(process)d TID:%(thread)d] %(message)s"
+                 "[%(funcName)s():%(lineno)s] [PID:%(process)d" \
+                 "TID:%(thread)d] %(message)s"
 LOGGING_LEVEL = "INFO"
 logger = None
 logfile = ''
@@ -58,6 +59,11 @@ def create_dir(dirname=None):
     except Exception as e:
         logger.error("Error in creating Directory [%s] [%s]" % (dirname, e))
         return
+
+
+def create_file(filename):
+    if not os.path.isfile(filename):
+        os.mknod(filename, 0o777)
 
 
 def copy_files(src=None, dest=None):

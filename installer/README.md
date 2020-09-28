@@ -206,9 +206,15 @@ Running the uninstall script will stop all delfin processes and do cleanup
        }
 
     ```
-3. Register storage for performance collection
+3. Run the GET API to get the registered storages. 
+    
+    GET http://localhost:8190/v1/storages
+    
+    use storage_id for registering storage for performance collection or alert monitoring
 
-   PUT http://localhost:8190/v1/storage_id/metrics-config
+4. Register storage for performance collection
+
+   PUT http://localhost:8190/v1/<storage_id>/metrics-config
 
    body :
       ```
@@ -220,6 +226,6 @@ Running the uninstall script will stop all delfin processes and do cleanup
     }
     }
       ```
-4. Monitor the performance metrics on prometheus server at default location
+5. Monitor the performance metrics on prometheus server at default location
 
    http://localhost:9090/graph
