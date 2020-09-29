@@ -267,6 +267,9 @@ class StoragePerformanceCollectionFailed(DelfinException):
 
 
 class SSLCertificateFailed(Invalid):
+
+class SSLCertificateFailed(DelfinException):
+
     msg_fmt = _("SSL Certificate Failed.")
     code = 400
 
@@ -284,5 +287,5 @@ class StorageIsSyncing(Invalid):
 
 
 class InvalidIpOrPort(DelfinException):
-    msg_fmt = _("Ip or Port Error.")
+    msg_fmt = _("Invalid ip or port.")
     code = 400
