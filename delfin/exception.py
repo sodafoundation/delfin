@@ -267,9 +267,6 @@ class StoragePerformanceCollectionFailed(DelfinException):
 
 
 class SSLCertificateFailed(Invalid):
-
-class SSLCertificateFailed(DelfinException):
-
     msg_fmt = _("SSL Certificate Failed.")
     code = 400
 
