@@ -33,6 +33,7 @@ from oslo_utils import importutils
 from delfin import context
 from delfin import coordination
 from delfin import rpc
+from delfin.task_manager.manager import TaskManager
 
 LOG = log.getLogger(__name__)
 
@@ -117,6 +118,9 @@ class Service(service.Service):
         self.rpcserver.start()
 
         self.manager.init_host()
+
+        task_manager = TaskManager()
+        task_manager.periodic_performance_collect()
 
         if self.periodic_interval:
             if self.periodic_fuzzy_delay:

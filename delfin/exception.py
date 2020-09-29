@@ -262,7 +262,11 @@ class InvalidCAPath(DelfinException):
     msg_fmt = _("Invalid CA path: {0}.")
 
 
-class SSLCertificateFailed(DelfinException):
+class StoragePerformanceCollectionFailed(DelfinException):
+    msg_fmt = _("Failed to collect performance metrics. Reason: {0}.")
+
+
+class SSLCertificateFailed(Invalid):
     msg_fmt = _("SSL Certificate Failed.")
     code = 400
 

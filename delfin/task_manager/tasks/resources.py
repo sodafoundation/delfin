@@ -21,6 +21,7 @@ from delfin import coordination
 from delfin import db
 from delfin import exception
 from delfin.common import constants
+from delfin.exporter import base_exporter
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
 
@@ -242,3 +243,41 @@ class StorageVolumeTask(StorageResourceTask):
     def remove(self):
         LOG.info('Remove volumes for storage id:{0}'.format(self.storage_id))
         db.volume_delete_by_storage(self.context, self.storage_id)
+
+
+class PerformanceCollectionTask(object):
+
+    def __init__(self):
+        self.driver_api = driverapi.API()
+        self.perf_exporter = base_exporter.PerformanceExporterManager()
+
+
+class ArrayPerformanceCollection(PerformanceCollectionTask):
+    def __init__(self, context, storage_id, interval, is_historic):
+        super(ArrayPerformanceCollection, self).__init__()
+        self.context = context
+        self.storage_id = storage_id
+        self.interval = interval
+        self.is_historic = is_historic
+
+    def collect(self):
+        """
+        :return:
+        """
+        LOG.info('Collecting array performance metrics for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the performance metrics from driver and push to
+            # prometheus exporter api
+            array_metrics = self.driver_api.collect_array_metrics(
+                self.context, self.storage_id, self.interval,
+                self.is_historic)
+
+            self.perf_exporter.dispatch(self.context, array_metrics)
+
+        except Exception as e:
+            msg = _('Failed to collect array performance metrics from '
+                    'driver: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Array performance metrics collection done!!!")

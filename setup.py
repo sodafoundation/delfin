@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="delfin",
-    version="0.4.0",
+    version="1.0.0",
     author="SODA Authors",
     author_email="Opensds-tech-discuss@lists.opensds.io",
     license="Apache 2.0",

@@ -17,10 +17,12 @@ curr_dir=$(dirname "$0")
 API_PROC_PATH=${curr_dir}/../delfin/cmd/api.py
 ALERT_PROC_PATH=${curr_dir}/../delfin/cmd/alert.py
 TASK_PROC_PATH=${curr_dir}/../delfin/cmd/task.py
+EXPORTER_SERVER_PATH=${curr_dir}/../delfin/
 
 mapfile -t api_proc_id < <( ps -eaf |grep ${API_PROC_PATH} | grep -v grep |awk '{print $2}' )
 mapfile -t alert_proc_id < <( ps -eaf |grep ${ALERT_PROC_PATH} | grep -v grep |awk '{print $2}' )
 mapfile -t task_proc_id < <( ps -eaf |grep ${TASK_PROC_PATH} | grep -v grep |awk '{print $2}' )
+mapfile -t exporter_server_id < <( ps -eaf |grep ${EXPORTER_SERVER_PATH} | grep -v grep |awk '{print $2}' )
 
 
 for i in "${api_proc_id[@]}"
@@ -40,6 +42,14 @@ do
 done
 
 for i in "${alert_proc_id[@]}"
+do
+    if [ ! $i == "" ]; then
+        echo "Killing delfin process ${i}"
+        $(kill -9 $i)
+    fi
+done
+
+for i in "${exporter_server_id[@]}"
 do
     if [ ! $i == "" ]; then
         echo "Killing delfin process ${i}"

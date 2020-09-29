@@ -20,6 +20,7 @@ from delfin.api.v1 import alerts
 from delfin.api.v1 import storage_pools
 from delfin.api.v1 import storages
 from delfin.api.v1 import volumes
+from delfin.api.v1 import performance
 
 
 class APIRouter(common.APIRouter):
@@ -38,6 +39,12 @@ class APIRouter(common.APIRouter):
                        controller=self.resources['storages'],
                        action="sync_all",
                        conditions={"method": ["POST"]})
+
+        self.resources['performance'] = performance.create_resource()
+        mapper.connect("storages", "/storages/{id}/metrics-config",
+                       controller=self.resources['performance'],
+                       action="metrics_config",
+                       conditions={"method": ["PUT"]})
 
         self.resources['access_info'] = access_info.create_resource()
         mapper.connect("storages", "/storages/{id}/access-info",
