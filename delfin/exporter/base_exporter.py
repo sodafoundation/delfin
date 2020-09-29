@@ -20,7 +20,7 @@ from stevedore import extension
 
 from delfin import exception
 from delfin.i18n import _
-from delfin.exporter import prometheus
+from delfin.exporter import prometheus, kafka
 
 LOG = log.getLogger(__name__)
 
@@ -106,6 +106,10 @@ class PerformanceExporterManager(BaseManager):
         # exporter to translate into time-series format
         prometheus_obj = prometheus.PrometheusExporter()
         prometheus_obj.push_to_prometheus(data)
+
+        # kafka exporter
+        kafka_obj = kafka.KafkaExporter()
+        kafka_obj.push_to_kafka(data)
 
     def _get_configured_exporters(self):
         return CONF.performance_exporters
