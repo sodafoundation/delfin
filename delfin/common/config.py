@@ -24,7 +24,6 @@ The idea is to move fully to cfg eventually, and this wrapper is a
 stepping stone.
 
 """
-import os
 import json
 import socket
 from delfin import exception
@@ -135,9 +134,7 @@ def set_middleware_defaults():
 
 def load_json_file(config_file):
     try:
-        abs_path = os.getcwd().split('/')[:-2]
-        scheduler_config = '/'.join(abs_path) + config_file
-        with open(scheduler_config) as f:
+        with open(config_file) as f:
             data = json.load(f)
             return data
     except json.decoder.JSONDecodeError as e:
