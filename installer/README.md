@@ -214,18 +214,29 @@ Running the uninstall script will stop all delfin processes and do cleanup
 
 4. Register storage for performance collection
 
-   PUT http://localhost:8190/v1/<storage_id>/metrics-config
+   a. There are two exporters supported as of now for performance collection, prometheus and kafka. To enable the exporters,
+   environment variable need to set as True. Whichever value is set as True, will be enabled for collection
 
-   body :
-      ```
-      {
+   Ex:
+
+   export KAFKA=True
+
+   export PROMETHEUS=True
+
+    b. Use API to register the storages for performance collection
+
+    PUT http://localhost:8190/v1/storages/<storage_id>/metrics-config
+
+    body:
+    ```
+    {
     "array_polling": {
     "perf_collection": true,
     "interval": 900,
     "is_historic": true
     }
     }
-      ```
+   ```
 5. Monitor the performance metrics on prometheus server at default location
 
    http://localhost:9090/graph

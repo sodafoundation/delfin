@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import os
 from oslo_config import cfg
 from oslo_log import log
 import six
@@ -20,7 +21,7 @@ from stevedore import extension
 
 from delfin import exception
 from delfin.i18n import _
-from delfin.exporter import prometheus
+from delfin.exporter import prometheus, kafka
 
 LOG = log.getLogger(__name__)
 
@@ -101,11 +102,25 @@ class PerformanceExporterManager(BaseManager):
     def __init__(self):
         super(PerformanceExporterManager, self).__init__(self.NAMESPACE)
 
+    def exporter_enable(self, exporter):
+        try:
+            if os.environ[exporter] == "True":
+                return True
+            return False
+        except KeyError:
+            os.environ[exporter] = "False"
+
     def dispatch(self, ctxt, data):
         # create object of prometheus class and push to prometheus
         # exporter to translate into time-series format
-        prometheus_obj = prometheus.PrometheusExporter()
-        prometheus_obj.push_to_prometheus(data)
+        if self.exporter_enable("PROMETHEUS"):
+            prometheus_obj = prometheus.PrometheusExporter()
+            prometheus_obj.push_to_prometheus(data)
+
+        # kafka exporter
+        if self.exporter_enable("KAFKA"):
+            kafka_obj = kafka.KafkaExporter()
+            kafka_obj.push_to_kafka(data)
 
     def _get_configured_exporters(self):
         return CONF.performance_exporters
