@@ -214,7 +214,7 @@ Running the uninstall script will stop all delfin processes and do cleanup
 
 4. Register storage for performance collection
 
-   PUT http://localhost:8190/v1/<storage_id>/metrics-config
+   PUT http://localhost:8190/v1/storages/<storage_id>/metrics-config
 
    body :
       ```
