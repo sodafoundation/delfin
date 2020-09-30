@@ -13,7 +13,8 @@
 # limitations under the License.
 
 import json
-from delfin.common import constants
+from oslo_config import cfg
+from oslo_log import log
 from kafka import KafkaProducer
 
 """"
@@ -40,13 +41,31 @@ unit_of_metric = {'response_time': 'ms', 'throughput': 'IOPS',
                   }
 """
 
+LOG = log.getLogger(__name__)
+CONF = cfg.CONF
+
+kafka_opts = [
+    cfg.StrOpt('kafka_topic_name', default='delfin-kafka',
+               help='The topic of kafka'),
+    cfg.StrOpt('kafka_ip', default='localhost',
+               help='The kafka server IP'),
+    cfg.StrOpt('kafka_port', default='9092',
+               help='The kafka server port'),
+]
+
+CONF.register_opts(kafka_opts, "KAFKA")
+kafka = CONF.KAFKA
+
 
 class KafkaExporter(object):
 
     def push_to_kafka(self, data):
-        bootstrap_server = constants.KAFKA_IP + ':' + constants.KAFKA_PORT
+        topic = kafka.kafka_topic_name
+        ip = kafka.kafka_ip
+        port = kafka.kafka_port
+        bootstrap_server = ip + ':' + port
         producer = KafkaProducer(
             bootstrap_servers=[bootstrap_server],
             value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
-        producer.send(constants.KAFKA_TOPIC_NAME, value=data)
+        producer.send(topic, value=data)

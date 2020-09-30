@@ -170,10 +170,6 @@ PROMETHEUS_EXPORTER_FILE = "/var/lib/delfin/delfin_exporter.txt"
 BLOCK_SIZE = 4096
 METRICS_SERVER_PORT = 8195
 
-KAFKA_TOPIC_NAME = "delfin-kafka"
-KAFKA_IP = 'localhost'
-KAFKA_PORT = '9092'
-
 
 class ResourceSync(object):
     START = 100
