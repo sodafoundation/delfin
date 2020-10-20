@@ -15,12 +15,10 @@
 #    under the License.
 
 import json
-import ssl
-import six
+
 import requests
+import six
 from oslo_log import log as logging
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.poolmanager import PoolManager
 
 from delfin import exception
 from delfin import ssl_utils
@@ -28,24 +26,6 @@ from delfin.drivers.hpe.hpe_3par import consts
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
-
-
-class HostNameIgnoringAdapter(HTTPAdapter):
-
-    def cert_verify(self, conn, url, verify, cert):
-        conn.assert_hostname = False
-        return super(HostNameIgnoringAdapter, self).cert_verify(
-            conn, url, verify, cert)
-
-    def init_poolmanager(self, connections, maxsize, block=False,
-                         **pool_kwargs):
-        self._pool_connections = connections
-        self._pool_maxsize = maxsize
-        self._pool_block = block
-        self.poolmanager = PoolManager(num_pools=connections, maxsize=maxsize,
-                                       block=block, strict=False,
-                                       ssl_version=ssl.PROTOCOL_TLSv1,
-                                       **pool_kwargs)
 
 
 class RestClient(object):
@@ -81,7 +61,8 @@ class RestClient(object):
                 self.verify))
             self.session.verify = self.verify
         self.session.trust_env = False
-        self.session.mount("https://", ssl_utils.HostNameIgnoreAdapter())
+        self.session.mount("https://",
+                           ssl_utils.get_host_name_ignore_adapter())
 
     def do_call(self, url, data, method,
                 calltimeout=consts.SOCKET_TIMEOUT):
@@ -108,15 +89,10 @@ class RestClient(object):
         except requests.exceptions.SSLError as e:
             LOG.error('SSLError for %s %s' % (method, url))
             err_str = six.text_type(e)
-            if 'wrong ssl version' in err_str or \
-                    'sslv3 alert handshake failure' in err_str:
-                raise exception.WrongTlsVersion()
-            elif 'no cipher match' in err_str:
-                raise exception.CipherNotMatch()
-            elif 'certificate verify failed' in err_str:
+            if 'certificate verify failed' in err_str:
                 raise exception.SSLCertificateFailed()
             else:
-                raise e
+                raise exception.SSLHandshakeFailed()
         except Exception as err:
             LOG.exception('Bad response from server: %(url)s.'
                           ' Error: %(err)s', {'url': url, 'err': err})

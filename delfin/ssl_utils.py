@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import ssl
 import requests
 from oslo_config import cfg
 from oslo_log import log
@@ -77,6 +76,10 @@ def reload_certificate(ca_path):
                 _load_cert(fpath, file, ca_path)
 
 
+def get_host_name_ignore_adapter():
+    return HostNameIgnoreAdapter()
+
+
 class HostNameIgnoreAdapter(requests.adapters.HTTPAdapter):
     def cert_verify(self, conn, url, verify, cert):
         conn.assert_hostname = False
@@ -89,6 +92,4 @@ class HostNameIgnoreAdapter(requests.adapters.HTTPAdapter):
         self._pool_maxsize = maxsize
         self._pool_block = block
         self.poolmanager = PoolManager(num_pools=connections, maxsize=maxsize,
-                                       block=block, strict=True,
-                                       ssl_version=ssl.PROTOCOL_TLSv1_2,
-                                       **pool_kwargs)
+                                       block=block, strict=True, **pool_kwargs)

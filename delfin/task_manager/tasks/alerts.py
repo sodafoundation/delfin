@@ -55,3 +55,20 @@ class AlertSyncTask(object):
             msg = _('Failed to sync alerts from storage device: {0}'
                     .format(six.text_type(e)))
             LOG.error(msg)
+
+    def clear_alerts(self, ctx, storage_id, sequence_number_list):
+        """ Clear alert from storage """
+
+        LOG.info('Clear alert for storage id:{0}'.format(storage_id))
+        sequence_number_list = sequence_number_list or []
+        failure_list = []
+        for sequence_number in sequence_number_list:
+            try:
+                self.driver_manager.clear_alert(ctx, storage_id,
+                                                sequence_number)
+            except Exception as e:
+                LOG.error("Failed to clear alert with sequence number: %s "
+                          "for storage: %s, reason: %s.",
+                          sequence_number, storage_id, six.text_type(e))
+                failure_list.append(sequence_number)
+        return failure_list

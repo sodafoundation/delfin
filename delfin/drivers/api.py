@@ -45,7 +45,6 @@ class API(object):
         access_info = db.access_info_create(context, access_info)
         storage['id'] = access_info['storage_id']
         storage = db.storage_create(context, storage)
-        self.driver_manager.update_driver(storage['id'], driver)
 
         LOG.info("Storage found successfully.")
         return storage
@@ -63,7 +62,6 @@ class API(object):
         helper.check_storage_consistency(context, storage_id, storage_new)
         access_info = db.access_info_update(context, storage_id, access_info)
         db.storage_update(context, storage_id, storage_new)
-        self.driver_manager.update_driver(storage_id, driver)
 
         LOG.info("Access information updated successfully.")
         return access_info
@@ -97,7 +95,10 @@ class API(object):
 
     def parse_alert(self, context, storage_id, alert):
         """Parse alert data got from snmp trap server."""
-        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        access_info = db.access_info_get(context, storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                invoke_on_load=False,
+                                                **access_info)
         return driver.parse_alert(context, alert)
 
     def clear_alert(self, context, storage_id, sequence_number):

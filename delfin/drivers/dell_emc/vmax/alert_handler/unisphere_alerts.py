@@ -51,7 +51,7 @@ class AlertHandler(object):
                     alert['severity'], constants.Severity.NOT_SPECIFIED)
 
                 # category and type are not part of queried alerts
-                alert_model['category'] = constants.Category.EVENT
+                alert_model['category'] = constants.Category.FAULT
                 alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
 
                 alert_model['sequence_number'] = alert['alertId']

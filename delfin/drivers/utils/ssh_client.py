@@ -14,11 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import paramiko as paramiko
+import paramiko
 from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
-from delfin import cryptor
 
+from delfin import cryptor
 from delfin import exception
 
 LOG = logging.getLogger(__name__)

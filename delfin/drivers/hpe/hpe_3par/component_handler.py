@@ -68,9 +68,9 @@ class ComponentHandler():
                 status = constants.StorageStatus.ABNORMAL
                 LOG.error('SSH check health Failed!')
 
-            used_cap = int(storage.get('totalCapacityMiB')) * units.Mi
             free_cap = int(storage.get('freeCapacityMiB')) * units.Mi
-            total_cap = used_cap + free_cap
+            used_cap = int(storage.get('allocatedCapacityMiB')) * units.Mi
+            total_cap = free_cap + used_cap
             raw_cap = int(storage.get('totalCapacityMiB')) * units.Mi
             result = {
                 'name': storage.get('name'),
