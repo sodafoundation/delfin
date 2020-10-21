@@ -24,4 +24,6 @@ python3 delfin/cmd/api.py --config-file /etc/delfin/delfin.conf > /var/log/delfi
 
 python3 delfin/cmd/task.py --config-file /etc/delfin/delfin.conf > /var/log/delfin/task.log 2>&1 &
 
-python3 delfin/cmd/alert.py --config-file /etc/delfin/delfin.conf > /var/log/delfin/alert.log 2>&1
+python3 delfin/cmd/alert.py --config-file /etc/delfin/delfin.conf > /var/log/delfin/alert.log 2>&1 &
+
+python3 delfin/exporter/exporter_server.py --config-file /etc/delfin/delfin.conf > /var/log/delfin/exporter.log 2>&1

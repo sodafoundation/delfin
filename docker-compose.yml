@@ -13,6 +13,29 @@
 # limitations under the License.
 
 
+# Installation Steps:
+# ------------------
+#
+# 1. Create the 'sodafoundation/delfin' docker image with Dockerfile in
+#    delfin project using command below. (Note: In future we will upload
+#    this image to docker-hub and it can be downloaded with out this step)
+#
+#    $ docker build -t sodafoundation/delfin .
+#
+# 2. Export environment vars for IP addresses and rabbitmq credentials. Eg.
+#
+#    $ export DELFIN_RABBITMQ_USER=delfinuser
+#    $ export DELFIN_RABBITMQ_PASS=delfinpass
+#    $ export DELFIN_HOST_IP=192.168.0.2
+#
+# 3. Bring up delfin project using following command
+#
+#    $ docker-compose up -d
+#
+# 4. When finished using delfin project, bring down containers using following command
+#
+#    $ docker-compose down
+
 version: '2'
 
 services:

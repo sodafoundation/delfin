@@ -30,6 +30,7 @@ RUN pip3 install -r requirements.txt
 
 COPY etc/delfin/api-paste.ini /etc/delfin/api-paste.ini
 COPY etc/delfin/delfin.conf /etc/delfin/delfin.conf
+COPY etc/scheduler_config.json /etc/delfin/scheduler_config.json
 
 COPY script/start.sh start.sh
 
