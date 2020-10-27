@@ -18,6 +18,7 @@ from oslo_service import periodic_task
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import ntfrcv
+from pysnmp.error import PySnmpError
 from pysnmp.proto.api import v2c
 from pysnmp.smi import builder, view
 
@@ -280,7 +281,7 @@ class TrapReceiver(manager.Manager):
 
         try:
             LOG.info("Starting trap receiver.")
-            snmp_engine.transportDispatcher.runDispatcher()
+            self.run_dispatcher(snmp_engine)
         except Exception:
             snmp_engine.transportDispatcher.closeDispatcher()
             raise ValueError("Failed to start trap listener.")
@@ -292,6 +293,19 @@ class TrapReceiver(manager.Manager):
         if self.snmp_engine:
             self.snmp_engine.transportDispatcher.closeDispatcher()
         LOG.info("Trap receiver stopped.")
+
+    def run_dispatcher(self, snmp_engine):
+        """Runs dispatcher continuously."""
+
+        # If pysnmp encounters errors, dispatcher can exit.
+        # Make sure to restart dispatcher under such circumstances
+        try:
+            snmp_engine.transportDispatcher.runDispatcher()
+        except PySnmpError:
+            LOG.debug("Incorrect trap received, ignored.")
+            self.run_dispatcher(snmp_engine)
+        except Exception:
+            raise
 
     @periodic_task.periodic_task(spacing=1800, run_immediately=True)
     def heart_beat_task_spawn(self, ctxt):
