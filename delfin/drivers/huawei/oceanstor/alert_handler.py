@@ -188,7 +188,8 @@ class AlertHandler(object):
         """Clear alert from storage system."""
         pass
 
-    def _is_hex(self, value):
+    @staticmethod
+    def _is_hex(value):
         try:
             int(value, 16)
         except ValueError:

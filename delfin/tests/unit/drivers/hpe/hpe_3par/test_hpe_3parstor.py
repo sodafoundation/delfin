@@ -114,9 +114,9 @@ class TestHpe3parStorageDriver(TestCase):
             'serial_number': '1307327',
             'firmware_version': '3.1.2.484',
             'location': None,
-            'total_capacity': 11300595826688,
+            'total_capacity': 7793486594048,
             'raw_capacity': 9594956939264,
-            'used_capacity': 9594956939264,
+            'used_capacity': 6087847706624,
             'free_capacity': 1705638887424
         }
 
