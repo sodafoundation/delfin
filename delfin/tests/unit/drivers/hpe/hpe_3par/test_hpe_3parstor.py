@@ -577,7 +577,7 @@ class TestHpe3parStorageDriver(TestCase):
         # Verify that all other fields are matching
         self.assertDictEqual(expected_alert_model, alert_model)
 
-    def test_i_clear_alert(self):
+    def test_clear_alert(self):
         driver = create_driver()
         alert_id = '230584300921369'
 
