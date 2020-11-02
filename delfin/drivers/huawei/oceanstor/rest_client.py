@@ -103,11 +103,14 @@ class RestClient(object):
 
         try:
             res = func(url, **kwargs)
-        except requests.exceptions.SSLError as ssl_exc:
-            LOG.exception('SSLError exception from server: %(url)s.'
-                          ' Error: %(err)s', {'url': url, 'err': ssl_exc})
-            return {"error": {"code": consts.ERROR_CONNECT_TO_SERVER,
-                              "description": "Retry with valid certificate."}}
+        except requests.exceptions.SSLError as e:
+            LOG.error('SSLError exception from server: %(url)s.'
+                      ' Error: %(err)s', {'url': url, 'err': e})
+            err_str = six.text_type(e)
+            if 'certificate verify failed' in err_str:
+                raise exception.SSLCertificateFailed()
+            else:
+                raise exception.SSLHandshakeFailed()
         except Exception as err:
             LOG.exception('Bad response from server: %(url)s.'
                           ' Error: %(err)s', {'url': url, 'err': err})

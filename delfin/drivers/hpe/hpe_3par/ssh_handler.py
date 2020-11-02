@@ -18,6 +18,7 @@ import six
 from oslo_log import log as logging
 
 from delfin import exception
+from delfin import utils
 
 from delfin.drivers.utils.ssh_client import SSHClient
 
@@ -98,6 +99,7 @@ class SSHHandler(object):
             Currently not implemented   removes command : removealert
         """
         ssh_client = SSHClient(**self.kwargs)
+        utils.check_ssh_injection([alert_id])
         command_str = SSHHandler.HPE3PAR_COMMAND_REMOVEALERT % alert_id
         res = ssh_client.do_exec(command_str)
         if res:

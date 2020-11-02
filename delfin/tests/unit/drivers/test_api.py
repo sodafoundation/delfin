@@ -202,8 +202,10 @@ class TestDriverAPI(TestCase):
         api.discover_storage(context, ACCESS_INFO)
 
         storage_id = '12345'
+
+        # Verify that driver instance not added to factory
         driver = api.driver_manager.driver_factory.get(storage_id, None)
-        self.assertIsNotNone(driver)
+        self.assertIsNone(driver)
 
         api.remove_storage(context, storage_id)
 
@@ -211,89 +213,58 @@ class TestDriverAPI(TestCase):
         self.assertIsNone(driver)
 
     @mock.patch.object(FakeStorageDriver, 'get_storage')
-    @mock.patch('delfin.db.storage_create')
-    @mock.patch('delfin.db.access_info_create')
-    @mock.patch('delfin.db.storage_get_all')
-    def test_get_storage(self, mock_storage, mock_access_info,
-                         mock_storage_create, mock_fake):
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_get_storage(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
         storage = copy.deepcopy(STORAGE)
         storage['id'] = '12345'
-        mock_storage.return_value = None
-        mock_access_info.return_value = ACCESS_INFO
-        mock_storage_create.return_value = storage
         mock_fake.return_value = storage
         api = API()
-        api.discover_storage(context, ACCESS_INFO)
 
         storage_id = '12345'
-        driver = api.driver_manager.driver_factory.get(storage_id, None)
-        self.assertIsNotNone(driver)
 
         api.get_storage(context, storage_id)
+        driver_manager.assert_called_once()
         mock_fake.assert_called()
 
     @mock.patch.object(FakeStorageDriver, 'list_storage_pools')
-    @mock.patch('delfin.db.storage_create')
-    @mock.patch('delfin.db.access_info_create')
-    @mock.patch('delfin.db.storage_get_all')
-    def test_list_storage_pools(self, mock_storage, mock_access_info,
-                                mock_storage_create, mock_fake):
-        storage = copy.deepcopy(STORAGE)
-        storage['id'] = '12345'
-        mock_storage.return_value = None
-        mock_access_info.return_value = ACCESS_INFO
-        mock_storage_create.return_value = storage
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_storage_pools(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
         mock_fake.return_value = []
         api = API()
-        api.discover_storage(context, ACCESS_INFO)
 
         storage_id = '12345'
-        driver = api.driver_manager.driver_factory.get(storage_id, None)
-        self.assertIsNotNone(driver)
 
         api.list_storage_pools(context, storage_id)
+        driver_manager.assert_called_once()
         mock_fake.assert_called_once()
 
     @mock.patch.object(FakeStorageDriver, 'list_volumes')
-    @mock.patch('delfin.db.storage_create')
-    @mock.patch('delfin.db.access_info_create')
-    @mock.patch('delfin.db.storage_get_all')
-    def test_list_volumes(self, mock_storage, mock_access_info,
-                          mock_storage_create, mock_fake):
-        storage = copy.deepcopy(STORAGE)
-        storage['id'] = '12345'
-        mock_storage.return_value = None
-        mock_access_info.return_value = ACCESS_INFO
-        mock_storage_create.return_value = storage
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_volumes(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
         mock_fake.return_value = []
         api = API()
-        api.discover_storage(context, ACCESS_INFO)
-
         storage_id = '12345'
-        driver = api.driver_manager.driver_factory.get(storage_id, None)
-        self.assertIsNotNone(driver)
 
         api.list_volumes(context, storage_id)
+        driver_manager.assert_called_once()
         mock_fake.assert_called_once()
 
     @mock.patch.object(FakeStorageDriver, 'parse_alert')
-    @mock.patch('delfin.db.storage_create')
-    @mock.patch('delfin.db.access_info_create')
-    @mock.patch('delfin.db.storage_get_all')
-    def test_parse_alert(self, mock_storage, mock_access_info,
-                         mock_storage_create, mock_fake):
-        storage = copy.deepcopy(STORAGE)
-        storage['id'] = '12345'
-        mock_storage.return_value = None
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    @mock.patch('delfin.db.access_info_get')
+    def test_parse_alert(self, mock_access_info,
+                         driver_manager, mock_fake):
         mock_access_info.return_value = ACCESS_INFO
-        mock_storage_create.return_value = storage
+        driver_manager.return_value = FakeStorageDriver()
         mock_fake.return_value = []
         api = API()
-        api.discover_storage(context, ACCESS_INFO)
 
         storage_id = '12345'
-        driver = api.driver_manager.driver_factory.get(storage_id, None)
-        self.assertIsNotNone(driver)
 
         api.parse_alert(context, storage_id, 'alert')
+        mock_access_info.assert_called_once()
+        driver_manager.assert_called_once()
         mock_fake.assert_called_once()

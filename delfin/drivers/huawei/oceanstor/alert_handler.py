@@ -27,8 +27,6 @@ LOG = log.getLogger(__name__)
 
 class AlertHandler(object):
     """Alert handling functions for huawei oceanstor driver"""
-    def __init__(self):
-        self.oid_mapper = oid_mapper.OidMapper()
 
     TIME_PATTERN = "%Y-%m-%d,%H:%M:%S.%f"
 
@@ -76,13 +74,14 @@ class AlertHandler(object):
                                    'hwIsmReportingAlarmFaultTime'
                                    )
 
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def parse_alert(context, alert):
         """Parse alert data and fill the alert model."""
         # Check for mandatory alert attributes
-        alert = self.oid_mapper.map_oids(alert)
+        alert = oid_mapper.OidMapper.map_oids(alert)
         LOG.info("Get alert from storage: %s", alert)
 
-        for attr in self._mandatory_alert_attributes:
+        for attr in AlertHandler._mandatory_alert_attributes:
             if not alert.get(attr):
                 msg = "Mandatory information %s missing in alert message. " \
                       % attr
@@ -93,29 +92,29 @@ class AlertHandler(object):
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert['hwIsmReportingAlarmAlarmID']
             alert_model['alert_name'] = alert['hwIsmReportingAlarmFaultTitle']
-            alert_model['severity'] = self.SEVERITY_MAP.get(
+            alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
                 alert['hwIsmReportingAlarmFaultLevel'],
                 constants.Severity.NOT_SPECIFIED)
-            alert_model['category'] = self.CATEGORY_MAP.get(
+            alert_model['category'] = AlertHandler.CATEGORY_MAP.get(
                 alert['hwIsmReportingAlarmFaultCategory'],
                 constants.Category.NOT_SPECIFIED)
-            alert_model['type'] = self.TYPE_MAP.get(
+            alert_model['type'] = AlertHandler.TYPE_MAP.get(
                 alert['hwIsmReportingAlarmFaultType'],
                 constants.EventType.NOT_SPECIFIED)
             alert_model['sequence_number'] \
                 = alert['hwIsmReportingAlarmSerialNo']
             occur_time = datetime.strptime(
                 alert['hwIsmReportingAlarmFaultTime'],
-                self.TIME_PATTERN)
+                AlertHandler.TIME_PATTERN)
             alert_model['occur_time'] = int(occur_time.timestamp() * 1000)
 
             description = alert['hwIsmReportingAlarmAdditionInfo']
-            if self._is_hex(description):
+            if AlertHandler._is_hex(description):
                 description = bytes.fromhex(description[2:]).decode('ascii')
             alert_model['description'] = description
 
             recovery_advice = alert['hwIsmReportingAlarmRestoreAdvice']
-            if self._is_hex(recovery_advice):
+            if AlertHandler._is_hex(recovery_advice):
                 recovery_advice = bytes.fromhex(
                     recovery_advice[2:]).decode('ascii')
 
@@ -189,7 +188,8 @@ class AlertHandler(object):
         """Clear alert from storage system."""
         pass
 
-    def _is_hex(self, value):
+    @staticmethod
+    def _is_hex(value):
         try:
             int(value, 16)
         except ValueError:

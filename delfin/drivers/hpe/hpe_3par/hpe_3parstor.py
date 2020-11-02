@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
 from oslo_log import log
 
 from delfin import context
@@ -48,7 +49,11 @@ class Hpe3parStorDriver(driver.StorageDriver):
             rest_handler=self.rest_handler, ssh_handler=self.ssh_handler)
 
     def reset_connection(self, context, **kwargs):
-        self.rest_handler.logout()
+        try:
+            self.rest_handler.logout()
+        except Exception as e:
+            LOG.warning('logout failed when resetting connection, '
+                        'reason is %s' % six.text_type(e))
         self.rest_client.verify = kwargs.get('verify', False)
         self.rest_handler.login()
 
@@ -75,8 +80,9 @@ class Hpe3parStorDriver(driver.StorageDriver):
     def remove_trap_config(self, context, trap_config):
         pass
 
-    def parse_alert(self, context, alert):
-        return self.alert_handler.parse_alert(context, alert)
+    @staticmethod
+    def parse_alert(context, alert):
+        return alert_handler.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
         return self.alert_handler.clear_alert(context, alert)

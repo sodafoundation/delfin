@@ -90,10 +90,11 @@ class AlertHandler(object):
         self.rest_handler = rest_handler
         self.ssh_handler = ssh_handler
 
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def parse_alert(context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
         # Check for mandatory alert attributes
-        for attr in self._mandatory_alert_attributes:
+        for attr in AlertHandler._mandatory_alert_attributes:
             if not alert.get(attr):
                 msg = "Mandatory information %s missing in alert message. " \
                       % attr
@@ -103,17 +104,17 @@ class AlertHandler(object):
             alert_model = dict()
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert.get(AlertHandler.OID_MESSAGECODE)
-            alert_model['alert_name'] = self.get_alert_type(alert.get(
+            alert_model['alert_name'] = AlertHandler.get_alert_type(alert.get(
                 AlertHandler.OID_MESSAGECODE))
-            alert_model['severity'] = self.SEVERITY_MAP.get(
+            alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
                 alert.get(AlertHandler.OID_SEVERITY),
                 constants.Severity.NOT_SPECIFIED)
-            alert_model['category'] = self.CATEGORY_MAP.get(
+            alert_model['category'] = AlertHandler.CATEGORY_MAP.get(
                 alert.get(AlertHandler.OID_STATE),
                 constants.Category.NOT_SPECIFIED)
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['sequence_number'] = alert.get(AlertHandler.OID_ID)
-            alert_model['occur_time'] = self.get_time_stamp(
+            alert_model['occur_time'] = AlertHandler.get_time_stamp(
                 alert.get(AlertHandler.OID_TIMEOCCURRED))
             alert_model['description'] = alert.get(AlertHandler.OID_DETAILS)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
@@ -155,12 +156,13 @@ class AlertHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def judge_alert_time(self, map, query_para):
+    @staticmethod
+    def judge_alert_time(map, query_para):
         if len(map) <= 1:
             return False
         if query_para is None and len(map) > 1:
             return True
-        occur_time = self.get_time_stamp(map.get('occur_time'))
+        occur_time = AlertHandler.get_time_stamp(map.get('occur_time'))
         if query_para.get('begin_time') and query_para.get('end_time'):
             if occur_time >= int(query_para.get('begin_time')) and \
                     occur_time <= int(query_para.get('end_time')):
@@ -187,10 +189,10 @@ class AlertHandler(object):
                 value = self.ALERT_KEY_MAP.get(
                     strinfo[0]) and strinfo[1] or ''
                 map[key] = value
-            elif self.judge_alert_time(map, query_para):
+            elif AlertHandler.judge_alert_time(map, query_para):
                 severity = self.ALERT_LEVEL_MAP.get(map.get('severity'))
                 category = map.get('category') == 'New' and 'Fault' or ''
-                occur_time = self.get_time_stamp(map.get('occur_time'))
+                occur_time = AlertHandler.get_time_stamp(map.get('occur_time'))
                 alert_id = map.get('message_code') and str(int(map.get(
                     'message_code'), 16)) or ''
                 alert_model = {
@@ -232,7 +234,8 @@ class AlertHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def get_time_stamp(self, time_str):
+    @staticmethod
+    def get_time_stamp(time_str):
         """ Time stamp to time conversion
         """
         time_stamp = ''
@@ -247,7 +250,8 @@ class AlertHandler(object):
 
         return time_stamp
 
-    def get_alert_type(self, message_code):
+    @staticmethod
+    def get_alert_type(message_code):
         """
         Get alert type
 
