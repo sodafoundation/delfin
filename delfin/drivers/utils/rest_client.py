@@ -19,11 +19,13 @@ import json
 import requests
 import six
 from oslo_log import log as logging
+from urllib3.exceptions import InsecureRequestWarning
 
 from delfin import exception
 from delfin import ssl_utils
 from delfin.drivers.hpe.hpe_3par import consts
 from delfin.i18n import _
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 LOG = logging.getLogger(__name__)
 
