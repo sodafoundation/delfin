@@ -283,12 +283,8 @@ class SSLCertificateFailed(Invalid):
     code = 400
 
 
-class CipherNotMatch(Invalid):
-    msg_fmt = _("Cipher Not Match.")
-
-
-class WrongTlsVersion(Invalid):
-    msg_fmt = _("Wrong TLS Version.")
+class SSLHandshakeFailed(Invalid):
+    msg_fmt = _("SSL handshake failure.")
 
 
 class StorageIsSyncing(Invalid):

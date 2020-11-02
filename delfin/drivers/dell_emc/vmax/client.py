@@ -52,8 +52,7 @@ class VMAXClient(object):
             LOG.error(msg)
             raise e
         except (exception.SSLCertificateFailed,
-                exception.WrongTlsVersion,
-                exception.CipherNotMatch) as e:
+                exception.SSLHandshakeFailed) as e:
             msg = ("Failed to connect to VMAX: {}".format(e))
             LOG.error(msg)
             raise

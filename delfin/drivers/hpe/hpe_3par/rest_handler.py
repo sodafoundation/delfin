@@ -88,7 +88,8 @@ class RestHandler(object):
                 LOG.error('Rest exec failed')
 
             return res
-
+        except exception.SSLCertificateFailed:
+            raise
         except Exception as e:
             err_msg = "Get RestHandler.call failed: %s" % (six.text_type(e))
             LOG.error(err_msg)

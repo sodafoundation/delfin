@@ -37,7 +37,6 @@ class SNMPValidator(object):
         self.snmp_error_flag = {}
 
     def validate(self, ctxt, alert_source):
-        alert_source = dict(alert_source)
         engine_id = alert_source.get('engine_id')
         try:
             alert_source = self.validate_connectivity(alert_source)

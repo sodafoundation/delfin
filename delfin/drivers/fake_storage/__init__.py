@@ -273,7 +273,8 @@ class FakeStorageDriver(driver.StorageDriver):
     def remove_trap_config(self, context, trap_config):
         pass
 
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def parse_alert(context, alert):
         pass
 
     def clear_alert(self, context, alert):

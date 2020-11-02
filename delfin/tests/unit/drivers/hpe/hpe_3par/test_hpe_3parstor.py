@@ -114,9 +114,9 @@ class TestHpe3parStorageDriver(TestCase):
             'serial_number': '1307327',
             'firmware_version': '3.1.2.484',
             'location': None,
-            'total_capacity': 11300595826688,
+            'total_capacity': 7793486594048,
             'raw_capacity': 9594956939264,
-            'used_capacity': 9594956939264,
+            'used_capacity': 6087847706624,
             'free_capacity': 1705638887424
         }
 
@@ -577,26 +577,12 @@ class TestHpe3parStorageDriver(TestCase):
         # Verify that all other fields are matching
         self.assertDictEqual(expected_alert_model, alert_model)
 
-    def test_i_clear_alert(self):
+    def test_clear_alert(self):
         driver = create_driver()
-        alert = {'storage_id': 'abcd-1234-56789',
-                 'storage_name': 'storage1', 'vendor': 'fake vendor',
-                 'model': 'fake model',
-                 'hwIsmReportingAlarmLocationInfo': 'location1',
-                 'hwIsmReportingAlarmFaultTitle': 'Trap Test Alarm',
-                 'hwIsmReportingAlarmFaultType': 'equipmentFault',
-                 'hwIsmReportingAlarmFaultLevel': 'criticalAlarm',
-                 'hwIsmReportingAlarmAlarmID': '4294967294',
-                 'hwIsmReportingAlarmSerialNo': '4294967295',
-                 'hwIsmReportingAlarmAdditionInfo': 'This is just for '
-                                                    'testing.Please '
-                                                    'ignore it',
-                 'hwIsmReportingAlarmLocationAlarmID': '230584300921369',
-                 'hwIsmReportingAlarmFaultTime': '2020-6-25,1:42:26.0'
-                 }
+        alert_id = '230584300921369'
 
         with self.assertRaises(Exception) as exc:
-            driver.clear_alert(context, alert)
+            driver.clear_alert(context, alert_id)
         self.assertIn('Exception in SSH protocol', str(exc.exception))
 
     """

@@ -76,3 +76,10 @@ class TaskAPI(object):
                                  interval=interval,
                                  is_historic=is_historic,
                                  resource_task=resource_task)
+
+    def clear_storage_alerts(self, context, storage_id, sequence_number_list):
+        call_context = self.client.prepare(version='1.0')
+        return call_context.call(context,
+                                 'clear_storage_alerts',
+                                 storage_id=storage_id,
+                                 sequence_number_list=sequence_number_list)
