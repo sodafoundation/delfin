@@ -17,7 +17,7 @@ from oslo_log import log
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin import exception
-from delfin.drivers.hds.vsp import rest_handler
+from delfin.drivers.hds.vsp import rest_handler, alert_handler
 from delfin.drivers.utils.rest_client import RestClient
 from delfin.drivers.hds.vsp import consts
 
@@ -251,8 +251,9 @@ class HdsVspDriver(driver.StorageDriver):
     def remove_trap_config(self, context, trap_config):
         pass
 
+    @staticmethod
     def parse_alert(self, context, alert):
-        pass
+        return alert_handler.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
         pass
