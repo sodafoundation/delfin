@@ -57,6 +57,7 @@ class NaviHandler(object):
         self.navi_port = ssh_access.get('port')
         self.navi_username = ssh_access.get('username')
         self.navi_password = ssh_access.get('password')
+        # self.navi_password = cryptor.decode(ssh_access.get('password'))
         self.navi_timeout = ssh_access.get('conn_timeout')
         if self.navi_timeout is None:
             self.navi_timeout = NaviClient.SOCKET_TIMEOUT
@@ -69,6 +70,7 @@ class NaviHandler(object):
         self.navi_port = ssh_access.get('port')
         self.navi_username = ssh_access.get('username')
         self.navi_password = ssh_access.get('password')
+        # self.navi_password = cryptor.decode(ssh_access.get('password'))
         self.navi_timeout = ssh_access.get('conn_timeout')
         if self.navi_timeout is None:
             self.navi_timeout = NaviClient.SOCKET_TIMEOUT
