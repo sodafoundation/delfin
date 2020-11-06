@@ -30,6 +30,9 @@ class IbmDriver(driver.StorageDriver):
         self.ssh_hanlder = ssh_handler.SSHHandler(**kwargs)
         self.version = self.ssh_hanlder.login(context)
 
+    def reset_connection(self, context, **kwargs):
+        self.version = self.ssh_hanlder.login(context)
+
     def get_storage(self, context):
         return self.ssh_hanlder.get_storage(context)
 
