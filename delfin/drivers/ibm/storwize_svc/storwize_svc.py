@@ -12,37 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from oslo_log import log
 from delfin.drivers import driver
-from delfin.drivers.ibm.v7000 import ssh_handler
-from delfin.drivers.utils.ssh_client import SSHClient
-from delfin import context
-
-LOG = log.getLogger(__name__)
+from delfin.drivers.ibm.storwize_svc import ssh_handler
 
 
-class IbmDriver(driver.StorageDriver):
+class StorwizeSVCDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # init ssh client
-        self.ssh_client = SSHClient(**kwargs)
         self.ssh_hanlder = ssh_handler.SSHHandler(**kwargs)
-        self.version = self.ssh_hanlder.login(context)
+        self.ssh_hanlder.login()
+
+    def reset_connection(self, context, **kwargs):
+        self.ssh_hanlder.login()
 
     def get_storage(self, context):
-        return self.ssh_hanlder.get_storage(context)
+        return self.ssh_hanlder.get_storage()
 
     def list_storage_pools(self, context):
-        self.ssh_hanlder.set_storage_id(self.storage_id)
-        return self.ssh_hanlder.list_storage_pools(context)
+        return self.ssh_hanlder.list_storage_pools(self.storage_id)
 
     def list_volumes(self, context):
-        self.ssh_hanlder.set_storage_id(self.storage_id)
-        return self.ssh_hanlder.list_volumes(context)
+        return self.ssh_hanlder.list_volumes(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
-        return self.ssh_hanlder.list_alerts(context, query_para)
+        return self.ssh_hanlder.list_alerts(query_para)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -50,8 +44,9 @@ class IbmDriver(driver.StorageDriver):
     def remove_trap_config(self, context, trap_config):
         pass
 
-    def parse_alert(self, context, alert):
-        pass
+    @staticmethod
+    def parse_alert(context, alert):
+        return ssh_handler.SSHHandler().parse_alert(alert)
 
     def clear_alert(self, context, alert):
         pass

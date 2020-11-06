@@ -278,13 +278,3 @@ class StorageIsSyncing(Invalid):
 class InvalidIpOrPort(DelfinException):
     msg_fmt = _("Invalid ip or port.")
     code = 400
-
-
-class NaviCallerNotPrivileged(DelfinException):
-    msg_fmt = _("Caller not privileged.")
-    code = 500
-
-
-class NaviCliConnectTimeout(DelfinException):
-    msg_fmt = _("NaviCli connect timeout: {0}")
-    code = 500
