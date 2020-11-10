@@ -27,6 +27,7 @@ class ComponentHandler():
     HPE3PAR_VERSION = 'Superclass'
 
     EMCVNX_VENDOR = 'DELL EMC'
+    RAID_GROUP_ID_PREFIX = 'raid_group_'
 
     STATUS_MAP = {'Ready': constants.StoragePoolStatus.NORMAL,
                   'Offline': constants.StoragePoolStatus.OFFLINE,
@@ -63,6 +64,8 @@ class ComponentHandler():
                 if free_map:
                     raw_cap = free_map.get('raw_cap')
                     free_cap = free_map.get('free_cap')
+                    if free_cap == 0:
+                        status = constants.StorageStatus.ABNORMAL
             except Exception:
                 LOG.error('Get storage free capacity and raw capacity failed!')
 
@@ -71,6 +74,8 @@ class ComponentHandler():
                 print('used_map=={}'.format(used_map))
                 if used_map:
                     used_cap = used_map.get('used_cap')
+                    if used_cap == 0:
+                        status = constants.StorageStatus.ABNORMAL
             except Exception:
                 LOG.error('Get storage used capacity failed!')
 
@@ -177,8 +182,9 @@ class ComponentHandler():
                         p = {
                             'name': 'RAID Group %s' % raid.get('raidgroup_id'),
                             'storage_id': self.storage_id,
-                            'native_storage_pool_id': 'RAID Group %s' %
-                                                      raid.get('raidgroup_id'),
+                            'native_storage_pool_id': '%s%s' % (
+                                self.RAID_GROUP_ID_PREFIX,
+                                raid.get('raidgroup_id')),
                             'description': 'RAID Group %s' %
                                            raid.get('raidgroup_id'),
                             'status': status,
@@ -410,7 +416,6 @@ class ComponentHandler():
             # Get storage_free capacity
             free_cap = 0
             raw_cap = 0
-            disk_free = 0
             pool_free = 0
             raid_free = 0
             try:
@@ -418,7 +423,6 @@ class ComponentHandler():
                 print('disk_map=={}'.format(disk_map))
                 if disk_map:
                     raw_cap = disk_map.get('obj_sum')
-                    disk_free = disk_map.get('obj_free')
             except Exception:
                 LOG.error('Get disk capacity failed!')
 
@@ -438,7 +442,7 @@ class ComponentHandler():
             except Exception:
                 LOG.error('Get raid group capacity failed!')
 
-            free_cap = disk_free + pool_free + raid_free
+            free_cap = pool_free + raid_free
 
             map = {
                 'raw_cap': raw_cap,
