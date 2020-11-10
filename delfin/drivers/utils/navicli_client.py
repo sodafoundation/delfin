@@ -33,9 +33,12 @@ class NaviClient(object):
             re = os.popen(command_str)
             if re:
                 result = re.read()
-                print('result===={}'.format(result))
                 if 'Caller not privileged' in result:
                     raise exception.NaviCallerNotPrivileged
+                elif 'Security file not found' in result:
+                    raise exception.NaviCallerNotPrivileged
+                elif 'error occurred while trying to connect' in result:
+                    raise exception.NaviCliConnectTimeout(result)
                 elif 'connection refused' in result:
                     raise exception.NaviCliConnectTimeout(result)
         except Exception as e:

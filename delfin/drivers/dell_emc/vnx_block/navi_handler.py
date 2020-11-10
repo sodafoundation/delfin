@@ -86,14 +86,11 @@ class NaviHandler(object):
             command_str = self.USER_SECURITY_API % {
                 'username': self.navi_username, 'password': self.navi_password,
                 'host': host_ip, 'timeout': self.navi_timeout}
-            # print(command_str)
             if self.navi_port:
                 command_str = '%s -port %d' % (command_str, self.navi_port)
-                print(command_str)
             navi_client.exec(command_str)
             command_str = self.GET_AGENT_API % {'host': host_ip}
             command_str = 'echo 2 | %s' % command_str
-            print(command_str)
             result = navi_client.exec(command_str)
             if result:
                 agent_model = self.arrange_resource_obj(result)
@@ -112,7 +109,6 @@ class NaviHandler(object):
             navi_client = NaviClient()
             command_str = self.REMOVEUSERSECURITY_API % {
                 'host': self.navi_host}
-            # print(command_str)
             navi_client.exec(command_str)
         except exception.NaviCallerNotPrivileged as e:
             err_msg = "Logout error: %s" % (six.text_type(e))
@@ -128,7 +124,6 @@ class NaviHandler(object):
         agent_model = {}
         try:
             command_str = self.GET_AGENT_API % {'host': self.navi_host}
-            # print(command_str)
             result = self.navi_exe(command_str)
             if result:
                 agent_model = self.arrange_resource_obj(result)
@@ -142,7 +137,6 @@ class NaviHandler(object):
         domain_model = {}
         try:
             command_str = self.GET_DOMAIN_API % {'host': self.navi_host}
-            # print(command_str)
             result = self.navi_exe(command_str)
             if result:
                 domain_model = self.arrange_domain_obj(result)
@@ -156,7 +150,6 @@ class NaviHandler(object):
         pool_list = []
         try:
             command_str = self.GET_STORAGEPOOL_API % {'host': self.navi_host}
-            # print(command_str)
             result = self.navi_exe(command_str)
             if result:
                 pool_list = self.arrange_resource_list(result)
@@ -170,7 +163,6 @@ class NaviHandler(object):
         disk_list = []
         try:
             command_str = self.GET_DISK_API % {'host': self.navi_host}
-            # print(command_str)
             result = self.navi_exe(command_str)
             if result:
                 disk_list = self.arrange_resource_list(result)
@@ -184,12 +176,11 @@ class NaviHandler(object):
         raid_list = []
         try:
             command_str = self.GET_RAIDGROUP_API % {'host': self.navi_host}
-            # print(command_str)
             result = self.navi_exe(command_str)
             if result:
                 raid_list = self.arrange_raid_list(result)
         except Exception as e:
-            LOG.error("get raid info error: %s", six.text_type(e))
+            LOG.error("get raid group info error: %s", six.text_type(e))
             raise e
         return raid_list
 
@@ -198,7 +189,6 @@ class NaviHandler(object):
         lun_list = []
         try:
             command_str = self.GET_LUN_API % {'host': self.navi_host}
-            # print(command_str)
             result = self.navi_exe(command_str)
             if result:
                 lun_list = self.arrange_resource_list(result)
@@ -212,7 +202,6 @@ class NaviHandler(object):
         lun_list = []
         try:
             command_str = self.GET_GETALLLUN_API % {'host': self.navi_host}
-            # print(command_str)
             result = self.navi_exe(command_str)
             if result:
                 lun_list = self.arrange_lun_list(result)
@@ -239,7 +228,7 @@ class NaviHandler(object):
                     end_time = tools.get_time_str(query_para.get('end_time'),
                                                   self.DATE_PATTERN)
             if begin_time == '':
-                # 取得当前时间与30天前
+                # Get the current time and 10 days ago
                 tmp_begin = (time.time() - (9 * self.ONE_DAY_SCE)) * 1000
                 tmp_end = (time.time() + self.ONE_DAY_SCE) * 1000
                 begin_time = tools.get_time_str(tmp_begin, self.DATE_PATTERN)
@@ -250,7 +239,6 @@ class NaviHandler(object):
             command_str = self.GET_LOG_API % {
                 'host': host_ip, 'begin_time': begin_time,
                 'end_time': end_time}
-            print(command_str)
             result = self.navi_exe(command_str, host_ip)
             if result:
                 log_list = self.arrange_log_list(result)
@@ -498,6 +486,8 @@ class NaviHandler(object):
             navi_client = NaviClient()
             result = navi_client.exec(command_str)
             return result
+        except exception.NaviCliConnectTimeout as e:
+            raise e
         except Exception as e:
             err_msg = six.text_type(e)
             raise exception.InvalidResults(err_msg)

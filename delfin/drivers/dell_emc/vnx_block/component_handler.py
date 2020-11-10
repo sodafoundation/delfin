@@ -198,12 +198,12 @@ class ComponentHandler():
             return raid_list
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid group metrics from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid group metrics from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -248,19 +248,14 @@ class ComponentHandler():
                             volume.get('is_compressed').lower())
                     }
                     volume_list.append(v)
-            print('pool lun=={}'.format(volume_list))
-            print('pool lun len=={}'.format(len(volume_list)))
         raid_volumes = self.handler_raid_volume()
         if raid_volumes:
-            print('raid lun=={}'.format(raid_volumes))
-            print('raid lun len=={}'.format(len(raid_volumes)))
             volume_list.extend(raid_volumes)
         return volume_list
 
     def handler_raid_volume(self):
         volume_list = []
         volumes = self.navi_handler.get_all_lun()
-        print('volumes=={}'.format(volumes))
         if volumes:
             for volume in volumes:
                 if volume.get('raidgroup_id') is not None and volume.get(
@@ -346,12 +341,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get disk capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get disk capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -373,12 +368,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get pool capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get pool capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -401,12 +396,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid group capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid group capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -421,7 +416,6 @@ class ComponentHandler():
             raid_free = 0
             try:
                 disk_map = self.handler_disk_capacity()
-                print('disk_map=={}'.format(disk_map))
                 if disk_map:
                     raw_cap = disk_map.get('obj_sum')
             except Exception:
@@ -429,7 +423,6 @@ class ComponentHandler():
 
             try:
                 pool_map = self.handler_pool_capacity()
-                print('pool_map=={}'.format(pool_map))
                 if pool_map:
                     pool_free = pool_map.get('obj_free')
             except Exception:
@@ -437,7 +430,6 @@ class ComponentHandler():
 
             try:
                 raid_group_map = self.handler_raid_group_capacity()
-                print('raid_group_map=={}'.format(raid_group_map))
                 if raid_group_map:
                     raid_free = raid_group_map.get('obj_free')
             except Exception:
@@ -452,12 +444,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get storage capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get storage capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -484,12 +476,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get lun capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get lun capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -513,12 +505,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid lun capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid lun capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -532,7 +524,6 @@ class ComponentHandler():
             raid_lun_cap = 0
             try:
                 pool_lun_map = self.handler_pool_lun_capacity()
-                print('pool_lun_map=={}'.format(pool_lun_map))
                 if pool_lun_map:
                     pool_lun_cap = pool_lun_map.get('obj_used')
             except Exception:
@@ -540,7 +531,6 @@ class ComponentHandler():
 
             try:
                 raid_lun_map = self.handler_raid_lun_capacity()
-                print('raid_lun_map=={}'.format(raid_lun_map))
                 if raid_lun_map:
                     raid_lun_cap = raid_lun_map.get('obj_used')
             except Exception:
@@ -553,12 +543,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get pool lun capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get pool lun capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)

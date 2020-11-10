@@ -67,8 +67,7 @@ class VnxBlockStorDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        pass
-        # return self.alert_handler.parse_alert(context, alert)
+        return self.alert_handler.parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
         pass
