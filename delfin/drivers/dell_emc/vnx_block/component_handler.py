@@ -198,12 +198,12 @@ class ComponentHandler():
             return raid_list
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get raid group metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid group info from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get raid group metrics from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid group info from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -396,12 +396,12 @@ class ComponentHandler():
             return map
 
         except exception.DelfinException as e:
-            err_msg = "Failed to get raid group capacity from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid capacity from EmcVnxStor: %s" % (
                 e.msg)
             LOG.error(err_msg)
             raise e
         except Exception as e:
-            err_msg = "Failed to get raid group capacity from EmcVnxStor: %s" % (
+            err_msg = "Failed to get raid capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
