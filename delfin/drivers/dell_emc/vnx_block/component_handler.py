@@ -287,8 +287,9 @@ class ComponentHandler():
                         'status': status,
                         'native_volume_id': str(
                             volume.get('logical_unit_number')),
-                        'native_storage_pool_id': 'RAID Group %s' % volume.get(
-                            'raidgroup_id'),
+                        'native_storage_pool_id': '%s%s' % (
+                            self.RAID_GROUP_ID_PREFIX,
+                            volume.get('raidgroup_id')),
                         # 'wwn': '',
                         'type': vol_type,
                         'total_capacity': total_cap,

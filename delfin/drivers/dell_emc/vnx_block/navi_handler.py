@@ -46,6 +46,7 @@ class NaviHandler(object):
                   '-date %(begin_time)s %(end_time)s'
 
     TIME_PATTERN = '%m/%d/%Y %H:%M:%S'
+    DATE_PATTERN = '%m/%d/%Y'
     ONE_DAY_SCE = 24 * 60 * 60
     SOCKET_TIMEOUT = 5
 
@@ -234,15 +235,15 @@ class NaviHandler(object):
             if query_para is not None and len(query_para) > 1:
                 if query_para.get('begin_time') and query_para.get('end_time'):
                     begin_time = tools.get_time_str(
-                        query_para.get('begin_time'), self.TIME_PATTERN)
+                        query_para.get('begin_time'), self.DATE_PATTERN)
                     end_time = tools.get_time_str(query_para.get('end_time'),
-                                                  self.TIME_PATTERN)
+                                                  self.DATE_PATTERN)
             if begin_time == '':
                 # 取得当前时间与30天前
-                tmp_begin = (time.time() - (10 * self.ONE_DAY_SCE)) * 1000
-                tmp_end = time.time() * 1000
-                begin_time = tools.get_time_str(tmp_begin, self.TIME_PATTERN)
-                end_time = tools.get_time_str(tmp_end, self.TIME_PATTERN)
+                tmp_begin = (time.time() - (9 * self.ONE_DAY_SCE)) * 1000
+                tmp_end = (time.time() + self.ONE_DAY_SCE) * 1000
+                begin_time = tools.get_time_str(tmp_begin, self.DATE_PATTERN)
+                end_time = tools.get_time_str(tmp_end, self.DATE_PATTERN)
 
             if host_ip is None or host_ip == '':
                 host_ip = self.navi_host

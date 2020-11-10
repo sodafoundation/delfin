@@ -36850,6 +36850,7 @@ class TestVnxBlocktorageDriver(TestCase):
             'begin_time': 1585115924000 - (1 * 24 * 60 * 60 * 1000),
             'end_time': 1585115924000
         }
+        # query_para = None
         alerts = self.driver.list_alerts(context, query_para)
         print('alerts:{}'.format(alerts))
         print('alerts len:{}'.format(len(alerts)))
