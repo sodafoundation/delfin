@@ -138,11 +138,6 @@ class ComponentHandler():
                 pool_list.extend(raid_groups)
             return pool_list
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get pool metrics from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -192,11 +187,6 @@ class ComponentHandler():
                         raid_list.append(p)
             return raid_list
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get raid group info from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get raid group info from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -298,11 +288,6 @@ class ComponentHandler():
 
             return self.handler_volume(volumes, pool_ids)
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get list volumes from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get list volumes from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -331,11 +316,6 @@ class ComponentHandler():
                 }
             return map
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get disk capacity from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get disk capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -358,11 +338,6 @@ class ComponentHandler():
                 }
             return map
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get pool capacity from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get pool capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -386,11 +361,6 @@ class ComponentHandler():
                 }
             return map
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get raid capacity from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get raid capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -434,11 +404,6 @@ class ComponentHandler():
             }
             return map
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get storage capacity from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get storage capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -466,11 +431,6 @@ class ComponentHandler():
                 }
             return map
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get lun capacity from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get lun capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -495,11 +455,6 @@ class ComponentHandler():
                 }
             return map
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get raid lun capacity from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get raid lun capacity from EmcVnxStor: %s" % (
                 six.text_type(e))
@@ -533,11 +488,6 @@ class ComponentHandler():
             }
             return map
 
-        except exception.DelfinException as e:
-            err_msg = "Failed to get pool lun capacity from EmcVnxStor: %s" % (
-                e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Failed to get pool lun capacity from EmcVnxStor: %s" % (
                 six.text_type(e))

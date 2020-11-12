@@ -119,10 +119,6 @@ class AlertHandler(object):
             if alert_lists:
                 alert_lists = self.arrange_alerts(alert_lists)
             return alert_lists
-        except exception.DelfinException as e:
-            err_msg = "Get alerts failed: %s" % (e.msg)
-            LOG.error(err_msg)
-            raise e
         except Exception as e:
             err_msg = "Get alert failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
