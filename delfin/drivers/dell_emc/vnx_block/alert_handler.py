@@ -81,21 +81,6 @@ class AlertHandler(object):
                      "in alert message."))
             raise exception.InvalidResults(msg)
 
-    def add_trap_config(self, context, storage_id, trap_config):
-        """Config the trap receiver in storage system."""
-        # Currently not implemented
-        pass
-
-    def remove_trap_config(self, context, storage_id, trap_config):
-        """Remove trap receiver configuration from storage system."""
-        # Currently not implemented
-        pass
-
-    def clear_alert(self, context, alert):
-        """Clear alert from storage system.
-        """
-        pass
-
     def handle_alters(self, alertlist):
         alert_list = []
         for alertinfo in alertlist:

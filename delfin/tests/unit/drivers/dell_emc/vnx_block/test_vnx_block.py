@@ -36866,6 +36866,25 @@ class TestVnxBlocktorageDriver(TestCase):
         alerts = self.driver.parse_alert(context, alert)
         print('alert_model:{}'.format(alerts))
 
+    def test_h_close_connection(self):
+        NaviClient.exec = mock.Mock(return_value={})
+        self.driver.close_connection()
+
+    def test_i_reset_connection(self):
+        kwargs = ACCESS_INFO
+        NaviClient.exec = mock.Mock(
+            side_effect=[{}, {"05.33.000.5.038_test"}])
+        self.driver.reset_connection(context, **kwargs)
+
+    def test_j_add_trap_config(self):
+        self.driver.add_trap_config(context,None)
+
+    def test_k_remove_trap_config(self):
+        self.driver.remove_trap_config(context,None)
+
+    def test_l_clear_alert(self):
+        self.driver.clear_alert(context,None)
+
 
 if __name__ == '__main__':
     unittest.main()
