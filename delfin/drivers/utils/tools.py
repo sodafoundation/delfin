@@ -16,6 +16,7 @@
 
 import time
 from oslo_log import log as logging
+from oslo_utils import units
 
 LOG = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class Tools(object):
                 # Convert to time array first
                 time_array = time.strptime(time_str, time_pattern)
                 # Convert to timestamps to milliseconds
-                time_stamp = int(time.mktime(time_array) * 1000)
+                time_stamp = int(time.mktime(time_array) * units.k)
         except Exception as e:
             LOG.error(e)
 
@@ -46,7 +47,7 @@ class Tools(object):
         time_str = ''
         try:
             if time_stamp is not None:
-                time_stamp = time_stamp / 1000
+                time_stamp = time_stamp / units.k
                 timeArray = time.localtime(time_stamp)
                 time_str = time.strftime(time_pattern, timeArray)
         except Exception as e:
