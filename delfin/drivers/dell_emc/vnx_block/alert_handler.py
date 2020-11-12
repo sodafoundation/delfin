@@ -16,6 +16,7 @@ import time
 import six
 
 from oslo_log import log as logging
+from oslo_utils import units
 
 from delfin import exception
 from delfin.common import constants
@@ -27,13 +28,8 @@ LOG = logging.getLogger(__name__)
 class AlertHandler(object):
     """Alert handling functions for vnx stor driver"""
 
-    OID_MESSAGECODE = '1.3.6.1.4.1.12925.1.7.1.8.1'
-    OID_SEVERITY = '1.3.6.1.4.1.12925.1.7.1.2.1'
-    OID_STATE = '1.3.6.1.4.1.12925.1.7.1.9.1'
-    OID_ID = '1.3.6.1.4.1.12925.1.7.1.7.1'
-    OID_TIMEOCCURRED = '1.3.6.1.4.1.12925.1.7.1.3.1'
-    OID_DETAILS = '1.3.6.1.4.1.12925.1.7.1.6.1'
-    OID_COMPONENT = '1.3.6.1.4.1.12925.1.7.1.5.1'
+    OID_MESSAGECODE = '1.3.6.1.4.1.1981.1.4.5'
+    OID_DETAILS = '1.3.6.1.4.1.1981.1.4.6'
 
     # Translation of trap severity to alert model severity
     SEVERITY_MAP = {"76": constants.Severity.CRITICAL,
@@ -48,12 +44,7 @@ class AlertHandler(object):
     # Attributes expected in alert info to proceed with model filling
     _mandatory_alert_attributes = (
         OID_MESSAGECODE,
-        OID_SEVERITY,
-        OID_STATE,
-        OID_ID,
-        OID_TIMEOCCURRED,
-        OID_DETAILS,
-        OID_COMPONENT
+        OID_DETAILS
     )
 
     def __init__(self, navi_handler=None):
@@ -73,23 +64,17 @@ class AlertHandler(object):
             alert_model = dict()
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert.get(AlertHandler.OID_MESSAGECODE)
-            alert_model['alert_name'] = AlertHandler.get_alert_type(alert.get(
-                AlertHandler.OID_MESSAGECODE))
+            alert_model['alert_name'] = alert.get(AlertHandler.OID_DETAILS)
             alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
-                alert.get(AlertHandler.OID_SEVERITY),
-                constants.Severity.NOT_SPECIFIED)
-            alert_model['category'] = '' # AlertHandler.CATEGORY_MAP.get(alert.get(AlertHandler.OID_STATE), constants.Category.NOT_SPECIFIED)
+                alert.get(AlertHandler.OID_MESSAGECODE)[0:2])
+            alert_model['category'] = constants.Category.EVENT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            alert_model['sequence_number'] = alert.get(AlertHandler.OID_ID)
-            alert_model['occur_time'] = AlertHandler.get_time_stamp(
-                alert.get(AlertHandler.OID_TIMEOCCURRED))
+            alert_model['occur_time'] = time.time() * units.k
             alert_model['description'] = alert.get(AlertHandler.OID_DETAILS)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-            alert_model['location'] = alert.get(AlertHandler.OID_COMPONENT)
 
-            if alert.get(AlertHandler.OID_STATE) == '5':
-                alert_model['clear_category'] = constants.ClearType.AUTOMATIC
             return alert_model
+
         except Exception as e:
             LOG.error(e)
             msg = (_("Failed to build alert model as some attributes missing "
@@ -121,11 +106,9 @@ class AlertHandler(object):
                     alertinfo.get('event_code')[0:2]),
                 'category': constants.Category.EVENT,
                 'type': constants.EventType.EQUIPMENT_ALARM,
-                # 'sequence_number': map.get('sequence_number'),
                 'occur_time': alertinfo.get('log_time_stamp'),
                 'description': alertinfo.get('message'),
                 'resource_type': constants.DEFAULT_RESOURCE_TYPE
-                # 'location': map.get('location')
             }
             alert_list.append(alert_model)
         return alert_list
@@ -188,42 +171,3 @@ class AlertHandler(object):
             err_msg = "arrange alert failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
-
-
-
-    @staticmethod
-    def get_time_stamp(time_str):
-        """ Time stamp to time conversion
-        """
-        time_stamp = ''
-        try:
-            if time_str is not None:
-                # Convert to time array first
-                time_array = time.strptime(time_str, AlertHandler.TIME_PATTERN)
-                # Convert to timestamps to milliseconds
-                time_stamp = int(time.mktime(time_array) * 1000)
-        except Exception as e:
-            LOG.error(e)
-
-        return time_stamp
-
-    @staticmethod
-    def get_alert_type(message_code):
-        """
-        Get alert type
-
-        :param str message_code: alert's message_code.
-        :return: returns alert's type
-        """
-        re = ''
-        try:
-            if message_code is not None:
-                message_key = \
-                    (hex(int(message_code))).replace('0x', '0x0')
-                re = '' # consts.HPE3PAR_ALERT_CODE.get(message_key)
-        except Exception as e:
-            LOG.error(e)
-
-        return re
-
-    TIME_PATTERN = '%Y-%m-%d %H:%M:%S CST'

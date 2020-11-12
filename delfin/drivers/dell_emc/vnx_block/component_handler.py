@@ -22,9 +22,6 @@ LOG = log.getLogger(__name__)
 
 
 class ComponentHandler():
-    COMPONENT_HEALTH = 'The following components are healthy'
-    SYSTEM_HEALTH = 'System is healthy'
-    HPE3PAR_VERSION = 'Superclass'
 
     EMCVNX_VENDOR = 'DELL EMC'
     RAID_GROUP_ID_PREFIX = 'raid_group_'
@@ -83,12 +80,10 @@ class ComponentHandler():
             result = {
                 'name': storage.get('node'),
                 'vendor': ComponentHandler.EMCVNX_VENDOR,
-                # 'description': '',
                 'model': storage.get('model'),
                 'status': status,
                 'serial_number': storage.get('serial_no'),
                 'firmware_version': storage.get('revision'),
-                # 'location': storage.get('location'),
                 'total_capacity': total_cap,
                 'raw_capacity': raw_cap,
                 'used_capacity': used_cap,
@@ -215,7 +210,6 @@ class ComponentHandler():
                 if volume.get('name') is not None:
                     status = self.STATUS_MAP.get(volume.get('current_state'))
                     orig_pool_name = volume.get('pool_name')
-                    # deduplicated = False
                     vol_type = self.VOL_TYPE_MAP.get(
                         volume.get('is_thin_lun').lower())
 
@@ -238,12 +232,10 @@ class ComponentHandler():
                         'native_volume_id': str(volume.get('lun_id')),
                         'native_storage_pool_id': pool_ids.get(orig_pool_name,
                                                                ''),
-                        # 'wwn': '',
                         'type': vol_type,
                         'total_capacity': total_cap,
                         'used_capacity': used_cap,
                         'free_capacity': free_cap,
-                        # 'deduplicated': deduplicated,
                         'compressed': self.VOL_COMPRESSED_MAP.get(
                             volume.get('is_compressed').lower())
                     }
@@ -285,7 +277,6 @@ class ComponentHandler():
                         'native_storage_pool_id': '%s%s' % (
                             self.RAID_GROUP_ID_PREFIX,
                             volume.get('raidgroup_id')),
-                        # 'wwn': '',
                         'type': vol_type,
                         'total_capacity': total_cap,
                         'used_capacity': used_cap,

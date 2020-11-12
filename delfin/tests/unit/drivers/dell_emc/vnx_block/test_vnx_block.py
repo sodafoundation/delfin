@@ -36855,6 +36855,18 @@ class TestVnxBlocktorageDriver(TestCase):
         print('alerts:{}'.format(alerts))
         print('alerts len:{}'.format(len(alerts)))
 
+    def test_g_parse_alert(self):
+        alert = {
+            '1.3.6.1.4.1.1981.1.4.3': 'A-CETV2135000041',
+            '1.3.6.1.4.1.1981.1.4.4': 'K10',
+            '1.3.6.1.4.1.1981.1.4.5': '761f',
+            '1.3.6.1.4.1.1981.1.4.6': 'Unisphere can no longer manage',
+            '1.3.6.1.4.1.1981.1.4.7': 'VNX5400'
+        }
+
+        alerts = self.driver.parse_alert(context, alert)
+        print('alert_model:{}'.format(alerts))
+
 
 if __name__ == '__main__':
     unittest.main()

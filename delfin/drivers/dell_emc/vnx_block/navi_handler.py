@@ -19,6 +19,7 @@ import re
 import time
 import six
 from oslo_log import log as logging
+from oslo_utils import units
 
 # from delfin import cryptor
 from delfin import exception
@@ -229,8 +230,8 @@ class NaviHandler(object):
                                                   self.DATE_PATTERN)
             if begin_time == '':
                 # Get the current time and 10 days ago
-                tmp_begin = (time.time() - (9 * self.ONE_DAY_SCE)) * 1000
-                tmp_end = (time.time() + self.ONE_DAY_SCE) * 1000
+                tmp_begin = (time.time() - (9 * self.ONE_DAY_SCE)) * units.k
+                tmp_end = (time.time() + self.ONE_DAY_SCE) * units.k
                 begin_time = tools.get_time_str(tmp_begin, self.DATE_PATTERN)
                 end_time = tools.get_time_str(tmp_end, self.DATE_PATTERN)
 
