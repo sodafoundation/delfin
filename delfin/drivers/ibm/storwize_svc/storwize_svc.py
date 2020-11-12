@@ -14,19 +14,16 @@
 
 from oslo_log import log
 from delfin.drivers import driver
-from delfin.drivers.ibm.v7000 import ssh_handler, alert_handler
-from delfin.drivers.utils.ssh_client import SSHClient
+from delfin.drivers.ibm.storwize_svc import ssh_handler, alert_handler
 from delfin import context
 
 LOG = log.getLogger(__name__)
 
 
-class IbmDriver(driver.StorageDriver):
+class StorwizeSVCDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # init ssh client
-        self.ssh_client = SSHClient(**kwargs)
         self.ssh_hanlder = ssh_handler.SSHHandler(**kwargs)
         self.version = self.ssh_hanlder.login(context)
 
@@ -54,7 +51,7 @@ class IbmDriver(driver.StorageDriver):
         pass
 
     @staticmethod
-    def parse_alert(self, context, alert):
+    def parse_alert(context, alert):
         return alert_handler.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, alert):

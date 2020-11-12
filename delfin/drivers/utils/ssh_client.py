@@ -1,5 +1,6 @@
 # Copyright 2020 The SODA Authors.
 # Copyright (c) 2016 Huawei Technologies Co., Ltd.
+# Copyright 2011 OpenStack LLC
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,11 +16,14 @@
 #    under the License.
 
 import paramiko
+import six
+from eventlet import pools
 from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
 
-# from delfin import cryptor
+from delfin import cryptor
 from delfin import exception
+from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
 
@@ -53,8 +57,7 @@ class SSHClient(object):
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
-                         # password=cryptor.decode(self.ssh_password),
-                         password=self.ssh_password,
+                         password=cryptor.decode(self.ssh_password),
                          timeout=self.ssh_conn_timeout)
 
     def set_host_key(self, host_key):
@@ -128,3 +131,105 @@ class SSHClient(object):
         finally:
             self.close()
         return re
+
+
+class SSHPool(pools.Pool):
+    SOCKET_TIMEOUT = 10
+
+    def __init__(self, **kwargs):
+        ssh_access = kwargs.get('ssh')
+        if ssh_access is None:
+            raise exception.InvalidInput('Input ssh_access is missing')
+        self.ssh_host = ssh_access.get('host')
+        self.ssh_port = ssh_access.get('port')
+        self.ssh_username = ssh_access.get('username')
+        self.ssh_password = ssh_access.get('password')
+        self.ssh_pub_key_type = ssh_access.get('pub_key_type')
+        self.ssh_pub_key = ssh_access.get('pub_key')
+        self.ssh_conn_timeout = ssh_access.get('conn_timeout')
+        self.conn_timeout = self.SOCKET_TIMEOUT
+        if self.ssh_conn_timeout is None:
+            self.ssh_conn_timeout = SSHPool.SOCKET_TIMEOUT
+        super(SSHPool, self).__init__(min_size=0, max_size=3)
+
+    def set_host_key(self, host_key, ssh):
+        """
+        Set public key,because input kwargs parameter host_key is string,
+        not a file path,we can not use load file to get public key,so we set
+        it as a string.
+        :param str host_key: the public key which as a string
+        """
+        if (len(host_key) == 0) or (host_key[0] == "#"):
+            return
+        try:
+            e = HostKeyEntry.from_line(host_key)
+        except exception.SSHException:
+            return
+        if e is not None:
+            host_names = e.hostnames
+            for h in host_names:
+                if ssh._host_keys.check(h, e.key):
+                    e.hostnames.remove(h)
+            if len(e.hostnames):
+                ssh._host_keys._entries.append(e)
+
+    def create(self):
+        ssh = paramiko.SSHClient()
+        try:
+            if self.ssh_pub_key is None:
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            else:
+                host_key = '%s %s %s' % \
+                           (self.ssh_host, self.ssh_pub_key_type,
+                            self.ssh_pub_key)
+                self.set_host_key(host_key, ssh)
+
+            ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
+                        username=self.ssh_username,
+                        password=cryptor.decode(self.ssh_password),
+                        timeout=self.ssh_conn_timeout)
+            if self.conn_timeout:
+                transport = ssh.get_transport()
+                transport.set_keepalive(self.SOCKET_TIMEOUT)
+            return ssh
+        except Exception as e:
+            msg = _("Check whether private key or password are correctly "
+                    "set. Error connecting via ssh: %s") % (six.text_type(e))
+            LOG.error(msg)
+            raise exception.SSHException(msg)
+
+    def get(self):
+        """Return an item from the pool, when one is available.
+
+        This may cause the calling greenthread to block. Check if a
+        connection is active before returning it. For dead connections
+        create and return a new connection.
+        """
+        if self.free_items:
+            conn = self.free_items.popleft()
+            if conn:
+                if conn.get_transport().is_active():
+                    return conn
+                else:
+                    conn.close()
+            return self.create()
+        if self.current_size < self.max_size:
+            created = self.create()
+            self.current_size += 1
+            return created
+        return self.channel.get()
+
+    def remove(self, ssh):
+        """Close an ssh client and remove it from free_items."""
+        ssh.close()
+        if ssh in self.free_items:
+            self.free_items.remove(ssh)
+            if self.current_size > 0:
+                self.current_size -= 1
+
+    def put(self, conn):
+        if self.current_size > self.max_size:
+            conn.close()
+            self.current_size -= 1
+            return
+        super(SSHPool, self).put(conn)

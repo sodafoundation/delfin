@@ -16,6 +16,7 @@ import time
 from oslo_log import log
 from delfin.common import constants
 from delfin import exception
+from delfin.drivers.ibm.storwize_svc import consts
 
 LOG = log.getLogger(__name__)
 
@@ -29,46 +30,65 @@ class AlertHandler(object):
     OID_LAST_TIME = '1.3.6.1.4.1.2.6.190.4.10'
     OID_OBJ_TYPE = '1.3.6.1.4.1.2.6.190.4.11'
     OID_OBJ_ID = '1.3.6.1.4.1.2.6.190.4.12'
-    OID_OBJ_NAME = '1.3.6.1.4.1.2.6.190.4.19'
-    OID_ERR_DESC = '1.3.6.1.4.1.2.6.190.4.13'
+    OID_SYS_NAME = '1.3.6.1.4.1.2.6.190.4.7'
 
     _mandatory_alert_attributes = (
         OID_ERR_ID,
-        OID_ERR_CODE,
         OID_SEQ_NUMBER,
         OID_LAST_TIME,
         OID_OBJ_TYPE,
-        OID_OBJ_ID,
-        OID_OBJ_NAME
+        OID_SYS_NAME
     )
+
+    TIME_PATTERN = '%a %b %d %H:%M:%S %Y'
 
     def __init__(self):
         pass
 
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def handle_split(split_str, split_char, arr_number):
+        split_value = ''
+        if split_str is not None:
+            tmp_value = split_str.split(split_char, 1)
+            split_value = tmp_value[arr_number] and tmp_value[arr_number]\
+                .strip() or ''
+        return split_value
+
+    @staticmethod
+    def parse_alert(context, alert):
         for attr in AlertHandler._mandatory_alert_attributes:
             if not alert.get(attr):
-                msg = "Mandatory information %s missing in alert message. " \
+                msg = "Mandatory information %s missing in alert message." \
                       % attr
                 raise exception.InvalidInput(msg)
 
         try:
             alert_model = dict()
-            alert_model['alert_id'] = alert.get(AlertHandler.OID_ERR_CODE)
-            alert_model['alert_name'] = alert.get(AlertHandler.OID_ERR_DESC)
-            alert_model['severity'] = constants.Severity.INFORMATIONAL
-            alert_model['category'] = constants.Category.NOT_SPECIFIED
+            alert_name = AlertHandler.handle_split(alert.get(
+                AlertHandler.OID_ERR_ID), ':', 1)
+            error_info = AlertHandler.handle_split(alert.get(
+                AlertHandler.OID_ERR_ID), ':', 0)
+            alert_id = AlertHandler.handle_split(error_info, '=', 1)
+            severity = consts.EVENT_ID_INFO.\
+                get(alert_id, constants.Severity.INFORMATIONAL)
+            alert_model['alert_id'] = str(alert_id)
+            alert_model['alert_name'] = alert_name
+            alert_model['severity'] = severity
+            alert_model['category'] = 'Fault'
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            alert_model['sequence_number'] = alert.get(
-                AlertHandler.OID_SEQ_NUMBER)
-            pattern = '%Y-%m-%d %H:%M:%S'
+            alert_model['sequence_number'] = AlertHandler.\
+                handle_split(alert.get(AlertHandler.OID_SEQ_NUMBER), '=', 1)
+            timestamp = AlertHandler.\
+                handle_split(alert.get(AlertHandler.OID_LAST_TIME), '=', 1)
             occur_time = int(time.mktime(time.strptime(
-                AlertHandler.OID_LAST_TIME,
-                pattern)))
+                timestamp,
+                AlertHandler.TIME_PATTERN)))
             alert_model['occur_time'] = int(occur_time * 1000)
-            alert_model['description'] = alert.get(AlertHandler.OID_ERR_DESC)
-            alert_model['resource_type'] = alert.get(AlertHandler.OID_OBJ_TYPE)
-            alert_model['location'] = alert.get(AlertHandler.OID_OBJ_NAME)
+            alert_model['description'] = alert_name
+            alert_model['resource_type'] = AlertHandler.handle_split(alert.get(
+                AlertHandler.OID_OBJ_TYPE), '=', 1)
+            alert_model['location'] = AlertHandler.handle_split(alert.get(
+                AlertHandler.OID_SYS_NAME), '=', 1)
             return alert_model
         except Exception as e:
             LOG.error(e)
