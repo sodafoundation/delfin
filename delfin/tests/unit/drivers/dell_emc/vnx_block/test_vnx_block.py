@@ -36877,13 +36877,13 @@ class TestVnxBlocktorageDriver(TestCase):
         self.driver.reset_connection(context, **kwargs)
 
     def test_j_add_trap_config(self):
-        self.driver.add_trap_config(context,None)
+        self.driver.add_trap_config(context, None)
 
     def test_k_remove_trap_config(self):
-        self.driver.remove_trap_config(context,None)
+        self.driver.remove_trap_config(context, None)
 
     def test_l_clear_alert(self):
-        self.driver.clear_alert(context,None)
+        self.driver.clear_alert(context, None)
 
 
 if __name__ == '__main__':
