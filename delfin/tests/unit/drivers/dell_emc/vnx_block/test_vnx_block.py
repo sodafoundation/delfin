@@ -36814,10 +36814,9 @@ class TestVnxBlocktorageDriver(TestCase):
         print(vbsd.version)
 
     def test_b_initssh(self):
-        with self.assertRaises(Exception) as exc:
-            self.driver.navi_handler.get_agent()
-        self.assertIn('Caller not privileged',
-                      str(exc.exception))
+        NaviClient.exec = mock.Mock(return_value=agent_infos)
+        agent = self.driver.navi_handler.get_agent()
+        print('agent:{}'.format(agent))
 
     def test_c_get_storage(self):
 
