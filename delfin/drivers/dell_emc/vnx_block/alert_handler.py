@@ -64,14 +64,24 @@ class AlertHandler(object):
             alert_model = dict()
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert.get(AlertHandler.OID_MESSAGECODE)
-            alert_model['alert_name'] = alert.get(AlertHandler.OID_DETAILS)
-            alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
-                alert.get(AlertHandler.OID_MESSAGECODE)[0:2])
-            alert_model['category'] = constants.Category.EVENT
+            # alert_model['alert_name'] = AlertHandler.get_alert_type(alert.get(
+            #     AlertHandler.OID_MESSAGECODE))
+            # alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
+            #     alert.get(AlertHandler.OID_SEVERITY),
+            #     constants.Severity.NOT_SPECIFIED)
+            # alert_model['category'] = AlertHandler.CATEGORY_MAP.get(
+            #     alert.get(AlertHandler.OID_STATE),
+            #     constants.Category.NOT_SPECIFIED)
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            alert_model['occur_time'] = time.time() * units.k
+            # alert_model['sequence_number'] = alert.get(AlertHandler.OID_ID)
+            # alert_model['occur_time'] = AlertHandler.get_time_stamp(
+            #     alert.get(AlertHandler.OID_TIMEOCCURRED))
             alert_model['description'] = alert.get(AlertHandler.OID_DETAILS)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
+            # alert_model['location'] = alert.get(AlertHandler.OID_COMPONENT)
+
+            # if alert.get(AlertHandler.OID_STATE) == '5':
+            alert_model['clear_category'] = constants.ClearType.AUTOMATIC
 
             return alert_model
 
