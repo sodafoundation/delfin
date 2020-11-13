@@ -47,7 +47,6 @@ class NaviHandler(object):
                   '-date %(begin_time)s %(end_time)s'
 
     TIME_PATTERN = '%m/%d/%Y %H:%M:%S'
-    DATE_PATTERN = '%m/%d/%Y'
     ONE_DAY_SCE = 24 * 60 * 60
     SOCKET_TIMEOUT = 5
 
@@ -225,15 +224,15 @@ class NaviHandler(object):
             if query_para is not None and len(query_para) > 1:
                 if query_para.get('begin_time') and query_para.get('end_time'):
                     begin_time = tools.get_time_str(
-                        query_para.get('begin_time'), self.DATE_PATTERN)
+                        query_para.get('begin_time'), self.TIME_PATTERN)
                     end_time = tools.get_time_str(query_para.get('end_time'),
-                                                  self.DATE_PATTERN)
+                                                  self.TIME_PATTERN)
             if begin_time == '':
                 # Get the current time and 10 days ago
                 tmp_begin = (time.time() - (9 * self.ONE_DAY_SCE)) * units.k
                 tmp_end = (time.time() + self.ONE_DAY_SCE) * units.k
-                begin_time = tools.get_time_str(tmp_begin, self.DATE_PATTERN)
-                end_time = tools.get_time_str(tmp_end, self.DATE_PATTERN)
+                begin_time = tools.get_time_str(tmp_begin, self.TIME_PATTERN)
+                end_time = tools.get_time_str(tmp_end, self.TIME_PATTERN)
 
             if host_ip is None or host_ip == '':
                 host_ip = self.navi_host
@@ -263,8 +262,6 @@ class NaviHandler(object):
                         if len(strinfo) > 1:
                             key = strinfo[0]
                             value = strinfo[1]
-                        elif len(strinfo) == 1:
-                            key = strinfo[0]
                         obj_model[key] = value
 
         except Exception as e:
@@ -296,8 +293,6 @@ class NaviHandler(object):
                     if len(strinfo) > 1:
                         key = strinfo[0]
                         value = strinfo[1]
-                    elif len(strinfo) == 1:
-                        key = strinfo[0]
                     map[key] = value
                 else:
                     if len(map) > 0:
@@ -333,8 +328,6 @@ class NaviHandler(object):
                     if len(strinfo) > 1:
                         key = strinfo[0]
                         value = strinfo[1]
-                    elif len(strinfo) == 1:
-                        key = strinfo[0]
                     map[key] = value
 
             if len(map) > 0:
@@ -417,8 +410,6 @@ class NaviHandler(object):
                     if len(strinfo) > 1:
                         key = strinfo[0]
                         value = strinfo[1]
-                    elif len(strinfo) == 1:
-                        key = strinfo[0]
                     map[key] = value
 
             if len(map) > 0:
@@ -436,15 +427,13 @@ class NaviHandler(object):
         obj_list = []
         try:
             tools = Tools()
-            pattern = re.compile(r'\(7[0-7]([a-f]|[0-9]){2}\)')
+            pattern = re.compile(r'\(7[0-7]([a-z]|[0-9]){2}\)')
             obj_infos = resource_info.split('\n')
             for obj_info in obj_infos:
                 strline = obj_info.strip()
                 if strline and strline != '':
                     searchObj = pattern.search(strline)
                     if searchObj:
-                        strline = strline.replace(
-                            'See alerts for details.', '')
                         strinfos = strline.split(searchObj.group())
                         str_0 = strinfos[0].strip()
                         log_time = str_0[0:str_0.rindex(' ')]
@@ -452,8 +441,6 @@ class NaviHandler(object):
                             .replace('(', '').replace(')', '')
                         map = {
                             'log_time': log_time,
-                            'log_time_stamp': tools.get_time_stamp(
-                                log_time, self.TIME_PATTERN),
                             'event_code': event_code,
                             'message': strinfos[1].strip()
                         }
