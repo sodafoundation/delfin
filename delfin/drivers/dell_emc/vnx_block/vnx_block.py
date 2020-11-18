@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from oslo_log import log
-
 from delfin import context
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.vnx_block.navi_handler import NaviHandler
@@ -35,16 +33,13 @@ class VnxBlockStorDriver(driver.StorageDriver):
         self.version = self.navi_handler.login()
 
         self.comhandler = ComponentHandler(navi_handler=self.navi_handler)
-
         self.alert_handler = AlertHandler(navi_handler=self.navi_handler)
 
     def reset_connection(self, context, **kwargs):
-        self.navi_handler.logout(context)
-        self.navi_handler.set_kwargs(**kwargs)
-        self.navi_handler.login()
+        pass
 
     def close_connection(self):
-        self.navi_handler.logout(context)
+        pass
 
     def get_storage(self, context):
         return self.comhandler.get_storage(context)

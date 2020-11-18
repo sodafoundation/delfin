@@ -15,13 +15,11 @@
 #    under the License.
 import copy
 import re
-
 import time
 import six
 from oslo_log import log as logging
 from oslo_utils import units
-
-# from delfin import cryptor
+from delfin import cryptor
 from delfin import exception
 from delfin.drivers.utils.navicli_client import NaviClient
 from delfin.drivers.utils.tools import Tools
@@ -58,21 +56,7 @@ class NaviHandler(object):
         self.navi_host = ssh_access.get('host')
         self.navi_port = ssh_access.get('port')
         self.navi_username = ssh_access.get('username')
-        self.navi_password = ssh_access.get('password')
-        # self.navi_password = cryptor.decode(ssh_access.get('password'))
-        self.navi_timeout = ssh_access.get('conn_timeout')
-        if self.navi_timeout is None:
-            self.navi_timeout = NaviClient.SOCKET_TIMEOUT
-
-    def set_kwargs(self, **kwargs):
-        ssh_access = kwargs.get('ssh')
-        if ssh_access is None:
-            raise exception.InvalidInput('Input navicli_access is missing')
-        self.navi_host = ssh_access.get('host')
-        self.navi_port = ssh_access.get('port')
-        self.navi_username = ssh_access.get('username')
-        self.navi_password = ssh_access.get('password')
-        # self.navi_password = cryptor.decode(ssh_access.get('password'))
+        self.navi_password = cryptor.decode(ssh_access.get('password'))
         self.navi_timeout = ssh_access.get('conn_timeout')
         if self.navi_timeout is None:
             self.navi_timeout = NaviClient.SOCKET_TIMEOUT

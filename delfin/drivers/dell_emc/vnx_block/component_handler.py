@@ -14,7 +14,6 @@
 import six
 from oslo_log import log
 from oslo_utils import units
-
 from delfin import exception
 from delfin.common import constants
 
@@ -84,10 +83,10 @@ class ComponentHandler():
                 'status': status,
                 'serial_number': storage.get('serial_no'),
                 'firmware_version': storage.get('revision'),
-                'total_capacity': total_cap,
-                'raw_capacity': raw_cap,
-                'used_capacity': used_cap,
-                'free_capacity': free_cap
+                'total_capacity': int(total_cap),
+                'raw_capacity': int(raw_cap),
+                'used_capacity': int(used_cap),
+                'free_capacity': int(free_cap)
             }
         else:
             # If no data is returned, it indicates that there
@@ -127,10 +126,10 @@ class ComponentHandler():
                             'description': pool.get('description'),
                             'status': status,
                             'storage_type': pool_type,
-                            'total_capacity': total_cap,
-                            'subscribed_capacity': subscribed_cap,
-                            'used_capacity': used_cap,
-                            'free_capacity': free_cap
+                            'total_capacity': int(total_cap),
+                            'subscribed_capacity': int(subscribed_cap),
+                            'used_capacity': int(used_cap),
+                            'free_capacity': int(free_cap)
                         }
                         pool_list.append(p)
             raid_groups = self.handler_raids()
@@ -179,10 +178,10 @@ class ComponentHandler():
                                            raid.get('raidgroup_id'),
                             'status': status,
                             'storage_type': pool_type,
-                            'total_capacity': total_cap,
-                            'subscribed_capacity': subscribed_cap,
-                            'used_capacity': used_cap,
-                            'free_capacity': free_cap
+                            'total_capacity': int(total_cap),
+                            'subscribed_capacity': int(subscribed_cap),
+                            'used_capacity': int(used_cap),
+                            'free_capacity': int(free_cap)
                         }
                         raid_list.append(p)
             return raid_list
@@ -223,9 +222,9 @@ class ComponentHandler():
                         'native_storage_pool_id': pool_ids.get(orig_pool_name,
                                                                ''),
                         'type': vol_type,
-                        'total_capacity': total_cap,
-                        'used_capacity': used_cap,
-                        'free_capacity': free_cap,
+                        'total_capacity': int(total_cap),
+                        'used_capacity': int(used_cap),
+                        'free_capacity': int(free_cap),
                         'compressed': self.VOL_COMPRESSED_MAP.get(
                             volume.get('is_compressed').lower())
                     }
@@ -268,9 +267,9 @@ class ComponentHandler():
                             self.RAID_GROUP_ID_PREFIX,
                             volume.get('raidgroup_id')),
                         'type': vol_type,
-                        'total_capacity': total_cap,
-                        'used_capacity': used_cap,
-                        'free_capacity': free_cap
+                        'total_capacity': int(total_cap),
+                        'used_capacity': int(used_cap),
+                        'free_capacity': int(free_cap)
                     }
                     volume_list.append(v)
         return volume_list
