@@ -30,20 +30,19 @@ LOG = logging.getLogger(__name__)
 class NaviHandler(object):
     """Common class for EMC VNX storage system."""
 
-    USER_SECURITY_API = ['naviseccli', '-AddUserSecurity', '-User',
-                         '(username)', '-password', '(password)', '-h',
-                         '(host)', '-scope', '0', '-t', '(timeout)']
-    REMOVEUSERSECURITY_API = ['naviseccli', '-RemoveUserSecurity']
-    GET_AGENT_API = ['naviseccli', '-h', '(host)', 'getagent']
-    GET_DOMAIN_API = ['naviseccli', '-h', '(host)', 'domain', '-list']
-    GET_STORAGEPOOL_API = ['naviseccli', '-h', '(host)', 'storagepool',
-                           '-list']
-    GET_RAIDGROUP_API = ['naviseccli', '-h', '(host)', 'getall', '-rg']
-    GET_DISK_API = ['naviseccli', '-h', '(host)', 'getdisk']
-    GET_LUN_API = ['naviseccli', '-h', '(host)', 'lun', '-list']
-    GET_GETALLLUN_API = ['naviseccli', '-h', '(host)', 'getall', '-lun']
-    GET_LOG_API = ['naviseccli', '-h', '(host)', 'getlog', '-date',
-                   '(begin_time)', '(end_time)']
+    USER_SECURITY_API = 'naviseccli -AddUserSecurity -User %(username)s ' \
+                        '-password %(password)s -h %(host)s -scope 0 ' \
+                        '-t %(timeout)d'
+    REMOVEUSERSECURITY_API = 'naviseccli -h %(host)s -RemoveUserSecurity'
+    GET_AGENT_API = 'naviseccli -h %(host)s getagent'
+    GET_DOMAIN_API = 'naviseccli -h %(host)s domain -list'
+    GET_STORAGEPOOL_API = 'naviseccli -h %(host)s storagepool -list'
+    GET_RAIDGROUP_API = 'naviseccli -h %(host)s getall -rg'
+    GET_DISK_API = 'naviseccli -h %(host)s getdisk'
+    GET_LUN_API = 'naviseccli -h %(host)s lun -list'
+    GET_GETALLLUN_API = 'naviseccli -h %(host)s getall -lun'
+    GET_LOG_API = 'naviseccli -h %(host)s getlog ' \
+                  '-date %(begin_time)s %(end_time)s'
 
     TIME_PATTERN = '%m/%d/%Y %H:%M:%S'
     DATE_PATTERN = '%m/%d/%Y'
@@ -69,21 +68,14 @@ class NaviHandler(object):
             if host_ip is None:
                 host_ip = self.navi_host
             navi_client = NaviClient()
-            command_str = [item.replace('(username)', self.navi_username) for
-                           item in self.USER_SECURITY_API]
-            command_str = [item.replace('(password)', self.navi_password) for
-                           item in command_str]
-            command_str = [item.replace('(host)', host_ip) for item in
-                           command_str]
-            command_str = [item.replace('(timeout)', str(self.navi_timeout))
-                           for item in command_str]
+            command_str = self.USER_SECURITY_API % {
+                'username': self.navi_username, 'password': self.navi_password,
+                'host': host_ip, 'timeout': self.navi_timeout}
             if self.navi_port:
-                command_str.append('-port')
-                command_str.append(str(self.navi_port))
-            navi_client.exec(command_str)
-            command_str = [item.replace('(host)', host_ip) for item in
-                           self.GET_AGENT_API]
-            result = navi_client.exec(command_str)
+                command_str = '%s -port %d' % (command_str, self.navi_port)
+            navi_client.exec(command_str.split())
+            command_str = self.GET_AGENT_API % {'host': host_ip}
+            result = navi_client.exec(command_str.split())
             if result:
                 agent_model = self.arrange_resource_obj(result)
                 if agent_model:
@@ -99,9 +91,9 @@ class NaviHandler(object):
         """Logout."""
         try:
             navi_client = NaviClient()
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.REMOVEUSERSECURITY_API]
-            navi_client.exec(command_str)
+            command_str = self.REMOVEUSERSECURITY_API % {
+                'host': self.navi_host}
+            navi_client.exec(command_str.split())
         except exception.NaviCallerNotPrivileged as e:
             err_msg = "Logout error: %s" % (six.text_type(e))
             LOG.error(err_msg)
@@ -115,9 +107,8 @@ class NaviHandler(object):
         """get agent info"""
         agent_model = {}
         try:
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.GET_AGENT_API]
-            result = self.navi_exe(command_str)
+            command_str = self.GET_AGENT_API % {'host': self.navi_host}
+            result = self.navi_exe(command_str.split())
             if result:
                 agent_model = self.arrange_resource_obj(result)
         except Exception as e:
@@ -129,9 +120,8 @@ class NaviHandler(object):
         """get domain info"""
         domain_model = {}
         try:
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.GET_DOMAIN_API]
-            result = self.navi_exe(command_str)
+            command_str = self.GET_DOMAIN_API % {'host': self.navi_host}
+            result = self.navi_exe(command_str.split())
             if result:
                 domain_model = self.arrange_domain_obj(result)
         except Exception as e:
@@ -143,9 +133,8 @@ class NaviHandler(object):
         """get storage pools info"""
         pool_list = []
         try:
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.GET_STORAGEPOOL_API]
-            result = self.navi_exe(command_str)
+            command_str = self.GET_STORAGEPOOL_API % {'host': self.navi_host}
+            result = self.navi_exe(command_str.split())
             if result:
                 pool_list = self.arrange_resource_list(result)
         except Exception as e:
@@ -157,9 +146,8 @@ class NaviHandler(object):
         """get storage disks info"""
         disk_list = []
         try:
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.GET_DISK_API]
-            result = self.navi_exe(command_str)
+            command_str = self.GET_DISK_API % {'host': self.navi_host}
+            result = self.navi_exe(command_str.split())
             if result:
                 disk_list = self.arrange_resource_list(result)
         except Exception as e:
@@ -171,9 +159,8 @@ class NaviHandler(object):
         """get storage raids info"""
         raid_list = []
         try:
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.GET_RAIDGROUP_API]
-            result = self.navi_exe(command_str)
+            command_str = self.GET_RAIDGROUP_API % {'host': self.navi_host}
+            result = self.navi_exe(command_str.split())
             if result:
                 raid_list = self.arrange_raid_list(result)
         except Exception as e:
@@ -185,9 +172,8 @@ class NaviHandler(object):
         """get storage luns info"""
         lun_list = []
         try:
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.GET_LUN_API]
-            result = self.navi_exe(command_str)
+            command_str = self.GET_LUN_API % {'host': self.navi_host}
+            result = self.navi_exe(command_str.split())
             if result:
                 lun_list = self.arrange_resource_list(result)
         except Exception as e:
@@ -199,9 +185,8 @@ class NaviHandler(object):
         """get all luns info"""
         lun_list = []
         try:
-            command_str = [item.replace('(host)', self.navi_host) for item in
-                           self.GET_GETALLLUN_API]
-            result = self.navi_exe(command_str)
+            command_str = self.GET_GETALLLUN_API % {'host': self.navi_host}
+            result = self.navi_exe(command_str.split())
             if result:
                 lun_list = self.arrange_lun_list(result)
         except Exception as e:
@@ -235,13 +220,10 @@ class NaviHandler(object):
 
             if host_ip is None or host_ip == '':
                 host_ip = self.navi_host
-            command_str = [item.replace('(host)', host_ip) for item in
-                           self.GET_LOG_API]
-            command_str = [item.replace('(begin_time)', begin_time) for item in
-                           command_str]
-            command_str = [item.replace('(end_time)', end_time) for item in
-                           command_str]
-            result = self.navi_exe(command_str, host_ip)
+            command_str = self.GET_LOG_API % {
+                'host': host_ip, 'begin_time': begin_time,
+                'end_time': end_time}
+            result = self.navi_exe(command_str.split(), host_ip)
             if result:
                 log_list = self.arrange_log_list(result)
         except Exception as e:
