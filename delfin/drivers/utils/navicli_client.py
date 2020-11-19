@@ -26,11 +26,16 @@ class NaviClient(object):
     def __init__(self):
         pass
 
-    def exec(self, command_str):
+    def exec(self, command_str, stdin_value=None):
         result = None
         try:
-            p = Popen(command_str, stdout=PIPE, stderr=PIPE, shell=False)
-            out, err = p.communicate(input=bytes('2\r\n', encoding='utf-8'))
+            p = Popen(command_str, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                      shell=False)
+            if stdin_value and stdin_value != '':
+                out, err = p.communicate(
+                    input=bytes(stdin_value, encoding='utf-8'))
+            else:
+                out = p.stdout.read()
             if isinstance(out, bytes):
                 out = out.decode("utf-8")
             re = out.strip()

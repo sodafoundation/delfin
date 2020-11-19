@@ -75,7 +75,7 @@ class NaviHandler(object):
                 command_str = '%s -port %d' % (command_str, self.navi_port)
             navi_client.exec(command_str.split())
             command_str = self.GET_AGENT_API % {'host': host_ip}
-            result = navi_client.exec(command_str.split())
+            result = navi_client.exec(command_str.split(), stdin_value='2\r\n')
             if result:
                 agent_model = self.arrange_resource_obj(result)
                 if agent_model:
