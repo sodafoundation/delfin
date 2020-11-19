@@ -82,6 +82,8 @@ class NaviHandler(object):
                     version = agent_model.get("revision")
         except exception.NaviCliConnectTimeout as e:
             raise e
+        except exception.InvalidUsernameOrPassword as e:
+            raise e
         except Exception as e:
             err_msg = "Login error: %s" % (six.text_type(e))
             raise exception.InvalidResults(err_msg)

@@ -49,6 +49,8 @@ class NaviClient(object):
                     raise exception.NaviCliConnectTimeout(result)
                 elif 'connection refused' in result:
                     raise exception.NaviCliConnectTimeout(result)
+                elif 'invalid username, password and/or scope' in result:
+                    raise exception.InvalidUsernameOrPassword(result)
         except Exception as e:
             raise e
         return result
