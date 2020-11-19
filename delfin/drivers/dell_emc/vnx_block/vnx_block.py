@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from oslo_log import log
-from delfin import context
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.vnx_block.navi_handler import NaviHandler
 from delfin.drivers.dell_emc.vnx_block.component_handler import \

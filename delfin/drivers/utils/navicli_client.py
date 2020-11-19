@@ -13,7 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import os
+from subprocess import Popen, PIPE
 from oslo_log import log as logging
 from delfin import exception
 
@@ -29,9 +29,13 @@ class NaviClient(object):
     def exec(self, command_str):
         result = None
         try:
-            re = os.popen(command_str)
+            p = Popen(command_str, stdout=PIPE, stderr=PIPE, shell=False)
+            out = p.stdout.read()
+            if isinstance(out, bytes):
+                out = out.decode("utf-8")
+            re = out.strip()
             if re:
-                result = re.read()
+                result = re
                 if 'Caller not privileged' in result:
                     raise exception.NaviCallerNotPrivileged
                 elif 'Security file not found' in result:

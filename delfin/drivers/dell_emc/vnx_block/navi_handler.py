@@ -30,19 +30,20 @@ LOG = logging.getLogger(__name__)
 class NaviHandler(object):
     """Common class for EMC VNX storage system."""
 
-    USER_SECURITY_API = 'naviseccli -AddUserSecurity -User %(username)s ' \
-                        '-password "%(password)s" -h %(host)s -scope 0 ' \
-                        '-t %(timeout)d'
-    REMOVEUSERSECURITY_API = 'naviseccli -h %(host)s -RemoveUserSecurity'
-    GET_AGENT_API = 'naviseccli -h %(host)s getagent'
-    GET_DOMAIN_API = 'naviseccli -h %(host)s domain -list'
-    GET_STORAGEPOOL_API = 'naviseccli -h %(host)s storagepool -list'
-    GET_RAIDGROUP_API = 'naviseccli -h %(host)s getall -rg'
-    GET_DISK_API = 'naviseccli -h %(host)s getdisk'
-    GET_LUN_API = 'naviseccli -h %(host)s lun -list'
-    GET_GETALLLUN_API = 'naviseccli -h %(host)s getall -lun'
-    GET_LOG_API = 'naviseccli -h %(host)s getlog ' \
-                  '-date %(begin_time)s %(end_time)s'
+    USER_SECURITY_API = ['naviseccli', '-AddUserSecurity', '-User',
+                         '(username)', '-password', '(password)', '-h',
+                         '(host)', '-scope', '0', '-t', '(timeout)']
+    REMOVEUSERSECURITY_API = ['naviseccli', '-RemoveUserSecurity']
+    GET_AGENT_API = ['naviseccli', '-h', '(host)', 'getagent']
+    GET_DOMAIN_API = ['naviseccli', '-h', '(host)', 'domain', '-list']
+    GET_STORAGEPOOL_API = ['naviseccli', '-h', '(host)', 'storagepool',
+                           '-list']
+    GET_RAIDGROUP_API = ['naviseccli', '-h', '(host)', 'getall', '-rg']
+    GET_DISK_API = ['naviseccli', '-h', '(host)', 'getdisk']
+    GET_LUN_API = ['naviseccli', '-h', '(host)', 'lun', '-list']
+    GET_GETALLLUN_API = ['naviseccli', '-h', '(host)', 'getall', '-lun']
+    GET_LOG_API = ['naviseccli', '-h', '(host)', 'getlog', '-date',
+                   '(begin_time)', '(end_time)']
 
     TIME_PATTERN = '%m/%d/%Y %H:%M:%S'
     DATE_PATTERN = '%m/%d/%Y'
@@ -68,14 +69,20 @@ class NaviHandler(object):
             if host_ip is None:
                 host_ip = self.navi_host
             navi_client = NaviClient()
-            command_str = self.USER_SECURITY_API % {
-                'username': self.navi_username, 'password': self.navi_password,
-                'host': host_ip, 'timeout': self.navi_timeout}
+            command_str = [item.replace('(username)', self.navi_username) for
+                           item in self.USER_SECURITY_API]
+            command_str = [item.replace('(password)', self.navi_password) for
+                           item in command_str]
+            command_str = [item.replace('(host)', host_ip) for item in
+                           command_str]
+            command_str = [item.replace('(timeout)', str(self.navi_timeout))
+                           for item in command_str]
             if self.navi_port:
-                command_str = '%s -port %d' % (command_str, self.navi_port)
+                command_str.append('-port')
+                command_str.append(str(self.navi_port))
             navi_client.exec(command_str)
-            command_str = self.GET_AGENT_API % {'host': host_ip}
-            command_str = 'echo 2 | %s' % command_str
+            command_str = [item.replace('(host)', host_ip) for item in
+                           self.GET_AGENT_API]
             result = navi_client.exec(command_str)
             if result:
                 agent_model = self.arrange_resource_obj(result)
@@ -92,8 +99,8 @@ class NaviHandler(object):
         """Logout."""
         try:
             navi_client = NaviClient()
-            command_str = self.REMOVEUSERSECURITY_API % {
-                'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.REMOVEUSERSECURITY_API]
             navi_client.exec(command_str)
         except exception.NaviCallerNotPrivileged as e:
             err_msg = "Logout error: %s" % (six.text_type(e))
@@ -108,7 +115,8 @@ class NaviHandler(object):
         """get agent info"""
         agent_model = {}
         try:
-            command_str = self.GET_AGENT_API % {'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.GET_AGENT_API]
             result = self.navi_exe(command_str)
             if result:
                 agent_model = self.arrange_resource_obj(result)
@@ -121,7 +129,8 @@ class NaviHandler(object):
         """get domain info"""
         domain_model = {}
         try:
-            command_str = self.GET_DOMAIN_API % {'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.GET_DOMAIN_API]
             result = self.navi_exe(command_str)
             if result:
                 domain_model = self.arrange_domain_obj(result)
@@ -134,7 +143,8 @@ class NaviHandler(object):
         """get storage pools info"""
         pool_list = []
         try:
-            command_str = self.GET_STORAGEPOOL_API % {'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.GET_STORAGEPOOL_API]
             result = self.navi_exe(command_str)
             if result:
                 pool_list = self.arrange_resource_list(result)
@@ -147,7 +157,8 @@ class NaviHandler(object):
         """get storage disks info"""
         disk_list = []
         try:
-            command_str = self.GET_DISK_API % {'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.GET_DISK_API]
             result = self.navi_exe(command_str)
             if result:
                 disk_list = self.arrange_resource_list(result)
@@ -160,7 +171,8 @@ class NaviHandler(object):
         """get storage raids info"""
         raid_list = []
         try:
-            command_str = self.GET_RAIDGROUP_API % {'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.GET_RAIDGROUP_API]
             result = self.navi_exe(command_str)
             if result:
                 raid_list = self.arrange_raid_list(result)
@@ -173,7 +185,8 @@ class NaviHandler(object):
         """get storage luns info"""
         lun_list = []
         try:
-            command_str = self.GET_LUN_API % {'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.GET_LUN_API]
             result = self.navi_exe(command_str)
             if result:
                 lun_list = self.arrange_resource_list(result)
@@ -186,7 +199,8 @@ class NaviHandler(object):
         """get all luns info"""
         lun_list = []
         try:
-            command_str = self.GET_GETALLLUN_API % {'host': self.navi_host}
+            command_str = [item.replace('(host)', self.navi_host) for item in
+                           self.GET_GETALLLUN_API]
             result = self.navi_exe(command_str)
             if result:
                 lun_list = self.arrange_lun_list(result)
@@ -221,9 +235,12 @@ class NaviHandler(object):
 
             if host_ip is None or host_ip == '':
                 host_ip = self.navi_host
-            command_str = self.GET_LOG_API % {
-                'host': host_ip, 'begin_time': begin_time,
-                'end_time': end_time}
+            command_str = [item.replace('(host)', host_ip) for item in
+                           self.GET_LOG_API]
+            command_str = [item.replace('(begin_time)', begin_time) for item in
+                           command_str]
+            command_str = [item.replace('(end_time)', end_time) for item in
+                           command_str]
             result = self.navi_exe(command_str, host_ip)
             if result:
                 log_list = self.arrange_log_list(result)
@@ -347,7 +364,8 @@ class NaviHandler(object):
                         map = {}
                 if strline and strline != '':
                     if 'Master' in strline:
-                        strline = 'Master:True'
+                        strline = strline.replace('(Master)', '')
+                        map['master'] = 'True'
                     strinfo = self.get_strinfo(strline)
                     if strline and strline.startswith('Node:'):
                         node_value = strinfo[1]
@@ -432,7 +450,7 @@ class NaviHandler(object):
                         strinfos = strline.split(searchObj.group())
                         str_0 = strinfos[0].strip()
                         log_time = str_0[0:str_0.rindex(' ')]
-                        event_code = searchObj.group()\
+                        event_code = searchObj.group() \
                             .replace('(', '').replace(')', '')
                         map = {
                             'log_time': log_time,
@@ -453,7 +471,7 @@ class NaviHandler(object):
         if strline and strline != '':
             strinfo = strline.split(':', 1)
             strinfo[0] = strinfo[0].strip()
-            strinfo[0] = strinfo[0].replace(" ", "_")\
+            strinfo[0] = strinfo[0].replace(" ", "_") \
                 .replace("(", "").replace(")", "").lower()
             if len(strinfo) > 1:
                 strinfo[1] = strinfo[1].strip()
