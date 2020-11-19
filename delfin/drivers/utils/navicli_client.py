@@ -30,7 +30,7 @@ class NaviClient(object):
         result = None
         try:
             p = Popen(command_str, stdout=PIPE, stderr=PIPE, shell=False)
-            out = p.stdout.read()
+            out, err = p.communicate(input=bytes('2\r\n', encoding='utf-8'))
             if isinstance(out, bytes):
                 out = out.decode("utf-8")
             re = out.strip()
