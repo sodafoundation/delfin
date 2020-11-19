@@ -305,7 +305,10 @@ class NaviHandler(object):
                         objmap = copy.deepcopy(map)
                         obj_list.append(objmap)
                         map = {}
-
+            if len(map) > 0:
+                objmap = copy.deepcopy(map)
+                obj_list.append(objmap)
+                map = {}
         except Exception as e:
             err_msg = "arrange resource info error: %s", six.text_type(e)
             LOG.error(err_msg)
