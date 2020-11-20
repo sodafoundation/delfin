@@ -43,7 +43,7 @@ class ComponentHandler():
     def set_storage_id(self, storage_id):
         self.storage_id = storage_id
 
-    def get_storage(self, context):
+    def get_storage(self):
         # get storage info
         storage = self.navi_handler.get_agent()
         # default state is offline
@@ -98,7 +98,7 @@ class ComponentHandler():
             }
         return result
 
-    def list_storage_pools(self, context):
+    def list_storage_pools(self):
         try:
             # Get list of pool details
             pools = self.navi_handler.get_pools()
@@ -275,7 +275,7 @@ class ComponentHandler():
                     volume_list.append(v)
         return volume_list
 
-    def list_volumes(self, context):
+    def list_volumes(self):
         try:
             volumes = self.navi_handler.get_pool_lun()
 

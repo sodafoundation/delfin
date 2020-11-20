@@ -42,18 +42,18 @@ class VnxBlockStorDriver(driver.StorageDriver):
         pass
 
     def get_storage(self, context):
-        return self.comhandler.get_storage(context)
+        return self.comhandler.get_storage()
 
     def list_storage_pools(self, context):
         self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_storage_pools(context)
+        return self.comhandler.list_storage_pools()
 
     def list_volumes(self, context):
         self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_volumes(context)
+        return self.comhandler.list_volumes()
 
     def list_alerts(self, context, query_para=None):
-        return self.alert_handler.list_alerts(context, query_para)
+        return self.alert_handler.list_alerts(query_para)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -62,7 +62,7 @@ class VnxBlockStorDriver(driver.StorageDriver):
         pass
 
     def parse_alert(self, context, alert):
-        return self.alert_handler.parse_alert(context, alert)
+        return self.alert_handler.parse_alert(alert)
 
     def clear_alert(self, context, alert):
         pass

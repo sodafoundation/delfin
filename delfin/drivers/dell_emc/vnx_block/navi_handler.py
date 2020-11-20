@@ -91,22 +91,6 @@ class NaviHandler(object):
             raise exception.InvalidResults(err_msg)
         return version
 
-    def logout(self, context):
-        """Logout."""
-        try:
-            navi_client = NaviClient()
-            command_str = self.REMOVEUSERSECURITY_API % {
-                'host': self.navi_host}
-            navi_client.exec(command_str.split())
-        except exception.NaviCallerNotPrivileged as e:
-            err_msg = "Logout error: %s" % (six.text_type(e))
-            LOG.error(err_msg)
-            raise e
-        except Exception as e:
-            err_msg = "Logout error: %s" % (six.text_type(e))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
-
     def get_agent(self):
         """get agent info"""
         agent_model = {}

@@ -50,7 +50,7 @@ class AlertHandler(object):
         self.navi_handler = navi_handler
 
     @staticmethod
-    def parse_alert(context, alert):
+    def parse_alert(alert):
         """Parse alert data got from alert manager and fill the alert model."""
         # Check for mandatory alert attributes
         for attr in AlertHandler._mandatory_alert_attributes:
@@ -97,7 +97,7 @@ class AlertHandler(object):
             alert_list.append(alert_model)
         return alert_list
 
-    def list_alerts(self, context, query_para):
+    def list_alerts(self, query_para):
         try:
             alert_lists = []
             host_ip = self.navi_handler.navi_host
