@@ -16,9 +16,11 @@
 import copy
 import re
 import time
+
 import six
 from oslo_log import log as logging
 from oslo_utils import units
+
 from delfin import cryptor
 from delfin import exception
 from delfin.drivers.utils.navicli_client import NaviClient

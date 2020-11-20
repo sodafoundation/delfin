@@ -14,7 +14,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 from subprocess import Popen, PIPE
+
 from oslo_log import log as logging
+
 from delfin import exception
 
 LOG = logging.getLogger(__name__)

@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import time
+
 import six
 from oslo_log import log as logging
 from oslo_utils import units
+
 from delfin import exception
 from delfin.common import constants
 from delfin.i18n import _

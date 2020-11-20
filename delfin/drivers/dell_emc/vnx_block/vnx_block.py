@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from oslo_log import log
+
 from delfin.drivers import driver
-from delfin.drivers.dell_emc.vnx_block.navi_handler import NaviHandler
+from delfin.drivers.dell_emc.vnx_block.alert_handler import AlertHandler
 from delfin.drivers.dell_emc.vnx_block.component_handler import \
     ComponentHandler
-from delfin.drivers.dell_emc.vnx_block.alert_handler import AlertHandler
+from delfin.drivers.dell_emc.vnx_block.navi_handler import NaviHandler
 
 LOG = log.getLogger(__name__)
 
