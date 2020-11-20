@@ -45,12 +45,10 @@ class VnxBlockStorDriver(driver.StorageDriver):
         return self.comhandler.get_storage()
 
     def list_storage_pools(self, context):
-        self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_storage_pools()
+        return self.comhandler.list_storage_pools(self.storage_id)
 
     def list_volumes(self, context):
-        self.comhandler.set_storage_id(self.storage_id)
-        return self.comhandler.list_volumes()
+        return self.comhandler.list_volumes(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
         return self.alert_handler.list_alerts(query_para)

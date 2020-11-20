@@ -40,9 +40,6 @@ class ComponentHandler():
     def __init__(self, navi_handler=None):
         self.navi_handler = navi_handler
 
-    def set_storage_id(self, storage_id):
-        self.storage_id = storage_id
-
     def get_storage(self):
         # get storage info
         storage = self.navi_handler.get_agent()
@@ -98,7 +95,7 @@ class ComponentHandler():
             }
         return result
 
-    def list_storage_pools(self):
+    def list_storage_pools(self, storage_id):
         try:
             # Get list of pool details
             pools = self.navi_handler.get_pools()
@@ -122,7 +119,7 @@ class ComponentHandler():
 
                         p = {
                             'name': pool.get('pool_name'),
-                            'storage_id': self.storage_id,
+                            'storage_id': storage_id,
                             'native_storage_pool_id': str(pool.get('pool_id')),
                             'description': pool.get('description'),
                             'status': status,
@@ -133,7 +130,7 @@ class ComponentHandler():
                             'free_capacity': int(free_cap)
                         }
                         pool_list.append(p)
-            raid_groups = self.handler_raids()
+            raid_groups = self.handler_raids(storage_id)
             if raid_groups:
                 pool_list.extend(raid_groups)
             return pool_list
@@ -144,7 +141,7 @@ class ComponentHandler():
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def handler_raids(self):
+    def handler_raids(self, storage_id):
         try:
             # Get list of raid group details
             raid_groups = self.navi_handler.get_raid_group()
@@ -171,7 +168,7 @@ class ComponentHandler():
 
                         p = {
                             'name': 'RAID Group %s' % raid.get('raidgroup_id'),
-                            'storage_id': self.storage_id,
+                            'storage_id': storage_id,
                             'native_storage_pool_id': '%s%s' % (
                                 self.RAID_GROUP_ID_PREFIX,
                                 raid.get('raidgroup_id')),
@@ -193,7 +190,7 @@ class ComponentHandler():
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def handler_volume(self, volumes, pool_ids):
+    def handler_volume(self, volumes, pool_ids, storage_id):
         volume_list = []
         if volumes:
             for volume in volumes:
@@ -215,7 +212,7 @@ class ComponentHandler():
 
                     v = {
                         'name': volume.get('name'),
-                        'storage_id': self.storage_id,
+                        'storage_id': storage_id,
                         'description': '%s %s' % (volume.get('lun_id'),
                                                   volume.get('name')),
                         'status': status,
@@ -230,12 +227,12 @@ class ComponentHandler():
                             volume.get('is_compressed').lower())
                     }
                     volume_list.append(v)
-        raid_volumes = self.handler_raid_volume()
+        raid_volumes = self.handler_raid_volume(storage_id)
         if raid_volumes:
             volume_list.extend(raid_volumes)
         return volume_list
 
-    def handler_raid_volume(self):
+    def handler_raid_volume(self, storage_id):
         volume_list = []
         volumes = self.navi_handler.get_all_lun()
         if volumes:
@@ -256,7 +253,7 @@ class ComponentHandler():
 
                     v = {
                         'name': volume.get('name'),
-                        'storage_id': self.storage_id,
+                        'storage_id': storage_id,
                         'description': '%s %s' % (volume.get(
                             'logical_unit_number'), volume.get('name')),
                         'status': status,
@@ -273,7 +270,7 @@ class ComponentHandler():
                     volume_list.append(v)
         return volume_list
 
-    def list_volumes(self):
+    def list_volumes(self, storage_id):
         try:
             volumes = self.navi_handler.get_pool_lun()
 
@@ -284,7 +281,7 @@ class ComponentHandler():
                     if pool.get('pool_name') is not None:
                         pool_ids[pool.get('pool_name')] = pool.get('pool_id')
 
-            return self.handler_volume(volumes, pool_ids)
+            return self.handler_volume(volumes, pool_ids, storage_id)
 
         except Exception as e:
             err_msg = "Failed to get list volumes from EmcVnxStor: %s" % (
