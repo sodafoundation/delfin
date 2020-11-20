@@ -298,7 +298,7 @@ class ComponentHandler():
             objs = self.navi_handler.get_disks()
             obj_sum = 0
             obj_free = 0
-            map = {}
+            obj_model = {}
             if objs:
                 for obj in objs:
                     if obj.get('disk_id') is not None:
@@ -308,11 +308,11 @@ class ComponentHandler():
                         obj_sum += capacity
                         if status == 'Unbound':
                             obj_free += capacity
-                map = {
+                obj_model = {
                     'obj_sum': obj_sum * units.Mi,
                     'obj_free': obj_free * units.Mi
                 }
-            return map
+            return obj_model
 
         except Exception as e:
             err_msg = "Failed to get disk capacity from EmcVnxStor: %s" % (
@@ -325,16 +325,16 @@ class ComponentHandler():
             # Get pool capacity
             objs = self.navi_handler.get_pools()
             obj_free = 0
-            map = {}
+            obj_model = {}
             if objs:
                 for obj in objs:
                     if obj.get('pool_name') is not None:
                         capacity = float(obj.get("available_capacity_gbs", 0))
                         obj_free += capacity
-                map = {
+                obj_model = {
                     'obj_free': obj_free * units.Gi
                 }
-            return map
+            return obj_model
 
         except Exception as e:
             err_msg = "Failed to get pool capacity from EmcVnxStor: %s" % (
@@ -347,17 +347,17 @@ class ComponentHandler():
             # Get raid_group capacity
             objs = self.navi_handler.get_raid_group()
             obj_free = 0
-            map = {}
+            obj_model = {}
             if objs:
                 for obj in objs:
                     if obj.get('raidgroup_id') is not None:
                         capacity = float(
                             obj.get("free_capacity_blocks,non-contiguous", 0))
                         obj_free += capacity
-                map = {
+                obj_model = {
                     'obj_free': obj_free * (units.Ki / 2)
                 }
-            return map
+            return obj_model
 
         except Exception as e:
             err_msg = "Failed to get raid capacity from EmcVnxStor: %s" % (
@@ -367,7 +367,7 @@ class ComponentHandler():
 
     def handler_storage_free_capacity(self):
         try:
-            map = {}
+            obj_model = {}
             # Get storage_free capacity
             free_cap = 0
             raw_cap = 0
@@ -396,11 +396,11 @@ class ComponentHandler():
 
             free_cap = pool_free + raid_free
 
-            map = {
+            obj_model = {
                 'raw_cap': raw_cap,
                 'free_cap': free_cap
             }
-            return map
+            return obj_model
 
         except Exception as e:
             err_msg = "Failed to get storage capacity from EmcVnxStor: %s" % (
@@ -413,7 +413,7 @@ class ComponentHandler():
             # Get pool lun capacity
             objs = self.navi_handler.get_pool_lun()
             obj_used = 0
-            map = {}
+            obj_model = {}
             if objs:
                 for obj in objs:
                     if obj.get('name') is not None:
@@ -424,10 +424,10 @@ class ComponentHandler():
                                     and volume_used_cap_str != 'N/A':
                                 capacity = float(volume_used_cap_str)
                                 obj_used += capacity
-                map = {
+                obj_model = {
                     'obj_used': obj_used * units.Gi
                 }
-            return map
+            return obj_model
 
         except Exception as e:
             err_msg = "Failed to get lun capacity from EmcVnxStor: %s" % (
@@ -440,7 +440,7 @@ class ComponentHandler():
             # Get raid lun capacity
             objs = self.navi_handler.get_all_lun()
             obj_used = 0
-            map = {}
+            obj_model = {}
             if objs:
                 for obj in objs:
                     if obj.get('raidgroup_id') is not None and obj.get(
@@ -448,10 +448,10 @@ class ComponentHandler():
                         if obj.get('state') == 'Bound':
                             capacity = float(obj.get('lun_capacitymegabytes'))
                             obj_used += capacity
-                map = {
+                obj_model = {
                     'obj_used': obj_used * units.Mi
                 }
-            return map
+            return obj_model
 
         except Exception as e:
             err_msg = "Failed to get raid lun capacity from EmcVnxStor: %s" % (
@@ -461,7 +461,7 @@ class ComponentHandler():
 
     def handler_storage_used_capacity(self):
         try:
-            map = {}
+            obj_model = {}
             # Get storage_used capacity
             used_cap = 0
             pool_lun_cap = 0
@@ -481,10 +481,10 @@ class ComponentHandler():
                 LOG.error('Get pool lun capacity failed!')
 
             used_cap = pool_lun_cap + raid_lun_cap
-            map = {
+            obj_model = {
                 'used_cap': used_cap
             }
-            return map
+            return obj_model
 
         except Exception as e:
             err_msg = "Failed to get pool lun capacity from EmcVnxStor: %s" % (

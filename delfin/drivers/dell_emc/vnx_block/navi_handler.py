@@ -247,7 +247,7 @@ class NaviHandler(object):
     def arrange_resource_list(self, resource_info):
         """arrange resource info"""
         obj_list = []
-        map = {}
+        obj_model = {}
         try:
             obj_infos = resource_info.split('\n')
             for obj_info in obj_infos:
@@ -269,16 +269,16 @@ class NaviHandler(object):
                         value = strinfo[1]
                     elif len(strinfo) == 1:
                         key = strinfo[0]
-                    map[key] = value
+                    obj_model[key] = value
                 else:
-                    if len(map) > 0:
-                        objmap = copy.deepcopy(map)
+                    if len(obj_model) > 0:
+                        objmap = copy.deepcopy(obj_model)
                         obj_list.append(objmap)
-                        map = {}
-            if len(map) > 0:
-                objmap = copy.deepcopy(map)
+                        obj_model = {}
+            if len(obj_model) > 0:
+                objmap = copy.deepcopy(obj_model)
                 obj_list.append(objmap)
-                map = {}
+                obj_model = {}
         except Exception as e:
             err_msg = "arrange resource info error: %s", six.text_type(e)
             LOG.error(err_msg)
@@ -288,16 +288,16 @@ class NaviHandler(object):
     def arrange_raid_list(self, resource_info):
         """arrange resource info"""
         obj_list = []
-        map = {}
+        obj_model = {}
         try:
             obj_infos = resource_info.split('\n')
             for obj_info in obj_infos:
                 strline = obj_info.strip()
                 if strline and strline.startswith('RaidGroup ID:'):
-                    if len(map) > 0:
-                        objmap = copy.deepcopy(map)
+                    if len(obj_model) > 0:
+                        objmap = copy.deepcopy(obj_model)
                         obj_list.append(objmap)
-                        map = {}
+                        obj_model = {}
                 if strline and strline != '':
                     if ':' not in strline:
                         continue
@@ -309,12 +309,12 @@ class NaviHandler(object):
                         value = strinfo[1]
                     elif len(strinfo) == 1:
                         key = strinfo[0]
-                    map[key] = value
+                    obj_model[key] = value
 
-            if len(map) > 0:
-                objmap = copy.deepcopy(map)
+            if len(obj_model) > 0:
+                objmap = copy.deepcopy(obj_model)
                 obj_list.append(objmap)
-                map = {}
+                obj_model = {}
         except Exception as e:
             err_msg = "arrange resource info error: %s", six.text_type(e)
             LOG.error(err_msg)
@@ -324,27 +324,27 @@ class NaviHandler(object):
     def arrange_domain_obj(self, resource_info):
         """arrange domain info"""
         obj_list = []
-        map = {}
+        obj_model = {}
         try:
             obj_infos = resource_info.split('\n')
             node_value = ''
             for obj_info in obj_infos:
                 strline = obj_info.strip()
                 if strline and strline.startswith('IP Address:'):
-                    if len(map) > 0:
-                        objmap = copy.deepcopy(map)
+                    if len(obj_model) > 0:
+                        objmap = copy.deepcopy(obj_model)
                         obj_list.append(objmap)
-                        map = {}
+                        obj_model = {}
                 if strline and strline != '':
                     if 'Master' in strline:
                         strline = strline.replace('(Master)', '')
-                        map['master'] = 'True'
+                        obj_model['master'] = 'True'
                     strinfo = self.get_strinfo(strline)
                     if strline and strline.startswith('Node:'):
                         node_value = strinfo[1]
                         continue
                     if strline and strline.startswith('IP Address:'):
-                        map['node'] = node_value
+                        obj_model['node'] = node_value
                     key = None
                     value = None
                     if len(strinfo) > 1:
@@ -352,12 +352,12 @@ class NaviHandler(object):
                         value = strinfo[1]
                     elif len(strinfo) == 1:
                         key = strinfo[0]
-                    map[key] = value
+                    obj_model[key] = value
 
-            if len(map) > 0:
-                objmap = copy.deepcopy(map)
+            if len(obj_model) > 0:
+                objmap = copy.deepcopy(obj_model)
                 obj_list.append(objmap)
-                map = {}
+                obj_model = {}
         except Exception as e:
             err_msg = "arrange domain info error: %s", six.text_type(e)
             LOG.error(err_msg)
@@ -367,16 +367,16 @@ class NaviHandler(object):
     def arrange_lun_list(self, resource_info):
         """arrange resource info"""
         obj_list = []
-        map = {}
+        obj_model = {}
         try:
             obj_infos = resource_info.split('\n')
             for obj_info in obj_infos:
                 strline = obj_info.strip()
                 if strline and strline.startswith('LOGICAL UNIT NUMBER '):
-                    if len(map) > 0:
-                        objmap = copy.deepcopy(map)
+                    if len(obj_model) > 0:
+                        objmap = copy.deepcopy(obj_model)
                         obj_list.append(objmap)
-                        map = {}
+                        obj_model = {}
                 if strline and strline != '':
                     if strline.startswith('LOGICAL UNIT NUMBER '):
                         strline = strline.replace('LOGICAL UNIT NUMBER ',
@@ -394,12 +394,12 @@ class NaviHandler(object):
                         value = strinfo[1]
                     elif len(strinfo) == 1:
                         key = strinfo[0]
-                    map[key] = value
+                    obj_model[key] = value
 
-            if len(map) > 0:
-                objmap = copy.deepcopy(map)
+            if len(obj_model) > 0:
+                objmap = copy.deepcopy(obj_model)
                 obj_list.append(objmap)
-                map = {}
+                obj_model = {}
         except Exception as e:
             err_msg = "arrange resource info error: %s", six.text_type(e)
             LOG.error(err_msg)
@@ -425,14 +425,14 @@ class NaviHandler(object):
                         log_time = str_0[0:str_0.rindex(' ')]
                         event_code = searchObj.group() \
                             .replace('(', '').replace(')', '')
-                        map = {
+                        obj_model = {
                             'log_time': log_time,
                             'log_time_stamp': tools.get_time_stamp(
                                 log_time, self.TIME_PATTERN),
                             'event_code': event_code,
                             'message': strinfos[1].strip()
                         }
-                        obj_list.append(map)
+                        obj_list.append(obj_model)
         except Exception as e:
             err_msg = "arrange resource info error: %s", six.text_type(e)
             LOG.error(err_msg)
