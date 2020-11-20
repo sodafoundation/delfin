@@ -249,12 +249,10 @@ class ComponentHandler():
                     vol_type = self.VOL_TYPE_MAP.get(
                         volume.get('is_thin_lun').lower())
 
-                    used_cap = 0
                     total_cap = float(
                         volume.get('lun_capacitymegabytes')) * units.Mi
-                    free_cap = total_cap - used_cap
-                    if free_cap < 0:
-                        free_cap = 0
+                    used_cap = total_cap
+                    free_cap = 0
 
                     v = {
                         'name': volume.get('name'),
