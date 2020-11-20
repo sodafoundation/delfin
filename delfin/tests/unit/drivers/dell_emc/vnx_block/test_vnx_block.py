@@ -38,7 +38,7 @@ ACCESS_INFO = {
         "password": "cGFzc3dvcmQ="
     }
 }
-agent_infos = """
+AGENT_INFOS = """
 
         Agent Rev:           7.33.1 (0.38)
         Name:                K10
@@ -58,7 +58,7 @@ agent_infos = """
         Cabinet:             DPE9
 
         """
-domain_infos = """
+DOMAIN_INFOS = """
 Node: APM00011111111
 IP Address: 111.222.33.55
 (Master)
@@ -70,7 +70,7 @@ Name: CX300I_33_44
 Port: 80
 Secure Port: 443
 """
-disk_infos = """
+DISK_INFOS = """
         Bus 0 Enclosure 0  Disk 0
         Vendor Id:               HITACHI
         Product Id:              HUC10906 CLAR600
@@ -868,7 +868,7 @@ disk_infos = """
         Bus 0 Enclosure 0  Disk 24
         State:                   Removed
         """
-pool_infos = """
+POOL_INFOS = """
         Pool Name:  Pool 1
         Pool ID:  1
         Raid Type:  r_5
@@ -1060,7 +1060,7 @@ pool_infos = """
 
 
         """
-raid_infos = """
+RAID_INFOS = """
 
         Server IP Address:       8.44.162.248
         Agent Rev:           7.33.1 (0.38)
@@ -1115,7 +1115,7 @@ raid_infos = """
 
 
         """
-lun_infos = """
+LUN_INFOS = """
         LOGICAL UNIT NUMBER 239
         Name:  sun_data_VNX_2
         UID:  28:F0:36:00:4D:77:DC:BE:2B:F7:EA:11
@@ -6232,7 +6232,7 @@ lun_infos = """
         N/A
 
         """
-getalllun_infos = """
+GETALLLUN_INFOS = """
         Server IP Address:       8.44.162.248
         Agent Rev:           7.33.1 (0.38)
 
@@ -36726,7 +36726,7 @@ getalllun_infos = """
 
 
         """
-log_infos = """
+LOG_INFOS = """
 03/25/2020 00:00:01 N/A                  (4600)'ioportconfig'  (50.64.164.45)
 03/25/2020 00:00:26 N/A                  (4600)'ioportconfig'  (50.64.166.20)
 03/25/2020 00:00:36 N/A                  (4600)'spcollect' called by '
@@ -36774,7 +36774,7 @@ log_infos = """
 03/25/2020 14:01:53 N/A                  (1b7c)The Application Experience ser
 
 """
-log2_infos = """
+LOG2_INFOS = """
 03/25/2020 00:13:02 N/A                  (4600)'convertemlog' called by '' (1
 03/25/2020 00:13:03 N/A                  (4600)'Capture the array configurati
 03/25/2020 13:30:17 N/A                  (76cc)Navisphere Agent, version 7.33
@@ -36803,58 +36803,47 @@ def create_driver():
 
 
 class TestVnxBlocktorageDriver(TestCase):
-
     driver = create_driver()
 
-    def test_a_init(self):
+    def test_init(self):
         NaviHandler.login = mock.Mock(
             return_value={"05.33.000.5.038_test"})
         kwargs = ACCESS_INFO
-        vbsd = VnxBlockStorDriver(**kwargs)
-        print(vbsd.version)
+        VnxBlockStorDriver(**kwargs)
 
-    def test_b_initssh(self):
-        NaviClient.exec = mock.Mock(return_value=agent_infos)
-        agent = self.driver.navi_handler.get_agent()
-        print('agent:{}'.format(agent))
+    def test_initssh(self):
+        NaviClient.exec = mock.Mock(return_value=AGENT_INFOS)
+        self.driver.navi_handler.get_agent()
 
-    def test_c_get_storage(self):
-
+    def test_get_storage(self):
         NaviClient.exec = mock.Mock(
-            side_effect=[agent_infos, disk_infos, pool_infos, raid_infos,
-                         lun_infos, getalllun_infos])
+            side_effect=[AGENT_INFOS, DISK_INFOS, POOL_INFOS, RAID_INFOS,
+                         LUN_INFOS, GETALLLUN_INFOS])
 
-        storage = self.driver.get_storage(context)
-        print('storage:{}'.format(storage))
+        self.driver.get_storage(context)
 
-    def test_d_get_pools(self):
-        NaviClient.exec = mock.Mock(side_effect=[pool_infos, raid_infos])
+    def test_get_pools(self):
+        NaviClient.exec = mock.Mock(side_effect=[POOL_INFOS, RAID_INFOS])
 
-        pools = self.driver.list_storage_pools(context)
-        print('pools:{}'.format(pools))
-        print('pools len:{}'.format(len(pools)))
+        self.driver.list_storage_pools(context)
 
-    def test_e_get_volumes(self):
+    def test_get_volumes(self):
         NaviClient.exec = mock.Mock(
-            side_effect=[lun_infos, pool_infos, getalllun_infos])
+            side_effect=[LUN_INFOS, POOL_INFOS, GETALLLUN_INFOS])
 
-        volumes = self.driver.list_volumes(context)
-        print('volumes:{}'.format(volumes))
-        print('volumes len:{}'.format(len(volumes)))
+        self.driver.list_volumes(context)
 
-    def test_f_get_alerts(self):
+    def test_get_alerts(self):
         NaviClient.exec = mock.Mock(
-            side_effect=[domain_infos, log_infos, log2_infos])
+            side_effect=[DOMAIN_INFOS, LOG_INFOS, LOG2_INFOS])
         query_para = {
             'begin_time': 1585115924000 - (1 * 24 * 60 * 60 * 1000),
             'end_time': 1585115924000
         }
         # query_para = None
-        alerts = self.driver.list_alerts(context, query_para)
-        print('alerts:{}'.format(alerts))
-        print('alerts len:{}'.format(len(alerts)))
+        self.driver.list_alerts(context, query_para)
 
-    def test_g_parse_alert(self):
+    def test_parse_alert(self):
         alert = {
             '1.3.6.1.4.1.1981.1.4.3': 'A-CETV2135000041',
             '1.3.6.1.4.1.1981.1.4.4': 'K10',
@@ -36862,29 +36851,23 @@ class TestVnxBlocktorageDriver(TestCase):
             '1.3.6.1.4.1.1981.1.4.6': 'Unisphere can no longer manage',
             '1.3.6.1.4.1.1981.1.4.7': 'VNX5400'
         }
+        self.driver.parse_alert(context, alert)
 
-        alerts = self.driver.parse_alert(context, alert)
-        print('alert_model:{}'.format(alerts))
-
-    def test_h_close_connection(self):
+    def test_close_connection(self):
         NaviClient.exec = mock.Mock(return_value={})
         self.driver.close_connection()
 
-    def test_i_reset_connection(self):
+    def test_reset_connection(self):
         kwargs = ACCESS_INFO
         NaviClient.exec = mock.Mock(
             side_effect=[{}, {"05.33.000.5.038_test"}])
         self.driver.reset_connection(context, **kwargs)
 
-    def test_j_add_trap_config(self):
+    def test_add_trap_config(self):
         self.driver.add_trap_config(context, None)
 
-    def test_k_remove_trap_config(self):
+    def test_remove_trap_config(self):
         self.driver.remove_trap_config(context, None)
 
-    def test_l_clear_alert(self):
+    def test_clear_alert(self):
         self.driver.clear_alert(context, None)
-
-
-if __name__ == '__main__':
-    unittest.main()
