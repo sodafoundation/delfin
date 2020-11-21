@@ -42,8 +42,8 @@ ACCESS_INFO = {
         "password": "password",
         "host_key": "weqewrerwerwerwe"
     },
-    "vendor": "dell_emc",
-    "model": "vmax",
+    "vendor": "hitachi",
+    "model": "vsp",
     "extra_attributes": {
         "array_id": "00112233"
     }

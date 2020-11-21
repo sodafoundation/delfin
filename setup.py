@@ -35,7 +35,6 @@ setup(
             'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
             'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
             'hpe 3par = delfin.drivers.hpe.hpe_3par.hpe_3parstor:Hpe3parStorDriver',
-            'ibm v7000 = delfin.drivers.ibm.v7000.v7000stor:IbmDriver',
             'huawei oceanstor = delfin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver'
         ]
     },
