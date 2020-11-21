@@ -177,9 +177,6 @@ class RestHandler(object):
             LOG.error("Get device id error: %s", six.text_type(e))
             raise e
 
-    def get_storage(self):
-        pass
-
     def get_specific_storage(self):
         url = '%s%s' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
@@ -214,14 +211,6 @@ class RestHandler(object):
         rejson = self.get_resinfo_call(url,
                                        method='GET',
                                        resName='volume paginated')
-        return rejson
-
-    def get_alerts(self, param):
-        url = '%s%s/alerts?%s' % (RestHandler.HDSVSP_COMM_URL,
-                                  RestHandler.STORAGE_DEVICE_ID,
-                                  param)
-        rejson = self.get_resinfo_call(url,
-                                       method='GET', resName='ports paginated')
         return rejson
 
     def get_system_info(self):
