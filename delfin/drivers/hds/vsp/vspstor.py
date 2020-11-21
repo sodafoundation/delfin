@@ -13,24 +13,22 @@
 # limitations under the License.
 import time
 
+import six
 from oslo_log import log
+from oslo_utils import units
+
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin import exception
-from delfin.drivers.hds.vsp import rest_handler, alert_handler
-from delfin.drivers.utils.rest_client import RestClient
 from delfin.drivers.hds.vsp import consts
+from delfin.drivers.hds.vsp import rest_handler
+from delfin.drivers.utils.rest_client import RestClient
 
 LOG = log.getLogger(__name__)
 
 
 class HdsVspDriver(driver.StorageDriver):
-    ALERT_LEVEL_MAP = {"Acute": constants.Severity.CRITICAL,
-                       "Serious": constants.Severity.MAJOR,
-                       "Moderate": constants.Severity.WARNING,
-                       "Service": constants.Severity.INFORMATIONAL
-                       }
-    POOL_STATUS_MAP = {"POLN": consts.StoragePoolStatus.NORMAL,
+    POOL_STATUS_MAP = {"POLN": constants.StoragePoolStatus.NORMAL,
                        "POLF": constants.StoragePoolStatus.ABNORMAL,
                        "POLS": constants.StoragePoolStatus.ABNORMAL,
                        "POLE": constants.StoragePoolStatus.OFFLINE
@@ -38,110 +36,132 @@ class HdsVspDriver(driver.StorageDriver):
 
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
 
+    REFCODE_OID = '1.3.6.1.4.1.116.5.11.4.2.3'
+    DESC_OID = '1.3.6.1.4.1.116.5.11.4.2.7'
+    TRAP_TIME_OID = '1.3.6.1.4.1.116.5.11.4.2.6'
+    TRAP_DATE_OID = '1.3.6.1.4.1.116.5.11.4.2.5'
+    TRAP_NICKNAME_OID = '1.3.6.1.4.1.116.5.11.4.2.2'
+    LOCATION_OID = '1.3.6.1.4.1.116.5.11.4.2.4'
+    SECONDS_TO_MS = 1000
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.restclient = RestClient(**kwargs)
-        self.resthanlder = rest_handler.RestHandler(self.restclient)
-        self.resthanlder.get_device_id()
-        self.resthanlder.login()
+        self.rest_client = RestClient(**kwargs)
+        self.rest_handler = rest_handler.RestHandler(self.rest_client)
+        self.rest_handler.get_device_id()
+        self.rest_handler.login()
 
     def reset_connection(self, context, **kwargs):
         self.rest_handler.logout()
         self.rest_client.verify = kwargs.get('verify', False)
-        self.resthanlder.get_device_id()
+        self.rest_handler.get_device_id()
         self.rest_handler.login()
 
     def close_connection(self):
         self.rest_handler.logout()
 
     def get_storage(self, context):
-        self.resthanlder.get_device_id()
-        if self.resthanlder.device_model in consts.VSP_MODEL_NOT_USE_SVPIP:
-            system_name = self.resthanlder.get_system_by_snmp()
+        free_total = 0
+        total_total = 0
+        used_total = 0
+        self.rest_handler.get_device_id()
+        if self.rest_handler.DEVICE_MODEL in consts.VSP_MODEL_NOT_USE_SVPIP:
+            capacity_json = self.rest_handler.get_capacity()
+            free_total = capacity_json.get("total").get("freeSpace") * units.Ki
+            total_total = capacity_json.get("total").get("totalCapacity") * \
+                units.Ki
+            used_total = total_total - free_total
         else:
-            system_name = self.resthanlder.get_summaries_system()
-        capacityjson = self.resthanlder.get_capacity()
+            pools_info = self.rest_handler.get_all_pools()
+            if pools_info is not None:
+                pools = pools_info.get('data')
+                for pool in pools:
+                    total_cap = \
+                        int(pool.get(
+                            'totalPoolCapacity')) * units.Mi
+                    free_cap = int(
+                        pool.get(
+                            'availableVolumeCapacity')) * units.Mi
+                    free_total = free_total + free_cap
+                    total_total = total_total + total_cap
+                used_total = total_total - free_total
+        firmware_version = self.rest_handler.get_specific_storage()
         status = constants.StorageStatus.OFFLINE
-        if system_name is not None:
-            status = consts.StorageStatus.NORMAL
+        if firmware_version is not None:
+            status = constants.StorageStatus.NORMAL
+        system_name = '%s_%s' % (self.rest_handler.DEVICE_MODEL,
+                                 self.rest_client.rest_host)
 
         s = {
             'name': system_name,
             'vendor': 'Hitachi',
             'description': 'Hitachi VSP Storage',
-            'model': self.resthanlder.device_model,
+            'model': str(self.rest_handler.DEVICE_MODEL),
             'status': status,
-            'serial_number': self.resthanlder.serialNumber,
-            'firmware_version': '',
+            'serial_number': str(self.rest_handler.SERIALNUMBER),
+            'firmware_version': str(firmware_version),
             'location': '',
-            'raw_capacity': capacityjson["internal"]["totalCapacity"]
-                        * consts.KB_TO_Bytes,
-            'subscribed_capacity': capacityjson["internal"]["totalCapacity"]
-                        * consts.KB_TO_Bytes -
-            capacityjson["internal"]["freeSpace"] * consts.KB_TO_Bytes,
-            'total_capacity': capacityjson["total"]["totalCapacity"]
-                        * consts.KB_TO_Bytes,
-            'used_capacity': capacityjson["total"]["totalCapacity"]
-                        * consts.KB_TO_Bytes -
-            capacityjson["total"]["freeSpace"] * consts.KB_TO_Bytes,
-            'free_capacity': capacityjson["total"]["freeSpace"]
-                        * consts.KB_TO_Bytes
+            'raw_capacity': int(total_total),
+            'total_capacity': int(total_total),
+            'used_capacity': int(used_total),
+            'free_capacity': int(free_total)
         }
         return s
 
     def list_storage_pools(self, context):
         try:
-            poolsinfo = self.resthanlder.get_all_pools()
+            pools_info = self.rest_handler.get_all_pools()
             pool_list = []
-            if poolsinfo is not None:
-                pools = poolsinfo.get('data')
+            if pools_info is not None:
+                pools = pools_info.get('data')
             else:
                 return pool_list
 
             for pool in pools:
                 status = self.POOL_STATUS_MAP.get(
                     pool.get('poolStatus'),
-                    constants.StoragePoolStatus.OFFLINE
+                    constants.StoragePoolStatus.ABNORMAL
                 )
-                storage_type = consts.StorageType.FILE
+                storage_type = constants.StorageType.BLOCK
                 total_cap = \
-                    int(pool.get('totalPoolCapacity')) * consts.MiB_TO_Bytes
+                    int(pool.get('totalPoolCapacity')) * units.Mi
                 free_cap = int(
-                    pool.get('availableVolumeCapacity')) * consts.MiB_TO_Bytes
+                    pool.get('availableVolumeCapacity')) * units.Mi
                 used_cap = total_cap - free_cap
-                subscribed_capacity = int(pool['totalReservedCapacity']) \
-                    * consts.MiB_TO_Bytes
-
                 p = {
                     'name': pool.get('poolName'),
                     'storage_id': self.storage_id,
-                    'native_storage_pool_id': pool.get('poolId'),
+                    'native_storage_pool_id': str(pool.get('poolId')),
                     'description': 'Hitachi VSP Pool',
                     'status': status,
                     'storage_type': storage_type,
-                    'subscribed_capacity': subscribed_capacity,
-                    'total_capacity': total_cap,
-                    'used_capacity': used_cap,
-                    'free_capacity': free_cap,
+                    'subscribed_capacity': int(total_cap),
+                    'total_capacity': int(total_cap),
+                    'used_capacity': int(used_cap),
+                    'free_capacity': int(free_cap),
                 }
                 pool_list.append(p)
 
             return pool_list
-
-        except Exception as err:
-            LOG.error(
-                "Failed to get pool metrics from hdsvspttor: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get pool metrics from hdsvspttor')
+        except exception.DelfinException as err:
+            err_msg = "Failed to get pool metrics from hitachi vsp: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+        except Exception as e:
+            err_msg = "Failed to get pool metrics from hitachi vsp: %s" % \
+                      (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
     def list_volumes(self, context):
         try:
             wwn = ''
-            volumesinfo = self.resthanlder.get_all_volumes()
+            volumes_info = self.rest_handler.get_all_volumes()
 
             volume_list = []
-            if volumesinfo is not None:
-                volumes = volumesinfo.get('data')
+            if volumes_info is not None:
+                volumes = volumes_info.get('data')
             else:
                 return volume_list
 
@@ -157,36 +177,32 @@ class HdsVspDriver(driver.StorageDriver):
                     compressed = True
                 if volume.get('dataReductionMode') == 'compression':
                     compressed = True
-                status = 'offline'
                 if volume.get('status') == 'NML':
                     status = 'normal'
                 else:
                     status = 'abnormal'
 
-                # for port in volume.get('ports'):
-                #     if 'wwn' in port:
-                #         if wwn is None:
-                #             wwn = '''%s''' % (port.get('wwn'))
-                #         else:
-                #             wwn = '''%s,%s''' % (wwn, port.get('wwn'))
-
-                vol_type = consts.VolumeType.THICK
+                vol_type = constants.VolumeType.THICK
                 for voltype in volume.get('attributes'):
                     if voltype == 'HTI':
-                        vol_type = consts.VolumeType.THIN
+                        vol_type = constants.VolumeType.THIN
 
                 total_cap = \
                     int(volume.get('blockCapacity')) * consts.Block_Size
                 used_cap = \
-                    int(volume.get('numOfUsedBlock')) * consts.Block_Size
+                    int(volume.get('blockCapacity')) * consts.Block_Size
                 free_cap = total_cap - used_cap
+                if volume.get('label'):
+                    name = volume.get('label')
+                else:
+                    name = 'ldev_%s' % str(volume.get('ldevId'))
 
                 v = {
-                    'name': volume.get('label'),
+                    'name': name,
                     'storage_id': self.storage_id,
                     'description': 'Hitachi VSP volume',
                     'status': status,
-                    'native_volume_id': volume.get('ldevId'),
+                    'native_volume_id': str(volume.get('ldevId')),
                     'native_storage_pool_id': orig_pool_id,
                     'wwn': wwn,
                     'type': vol_type,
@@ -200,50 +216,19 @@ class HdsVspDriver(driver.StorageDriver):
                 volume_list.append(v)
 
             return volume_list
+        except exception.DelfinException as err:
+            err_msg = "Failed to get volumes metrics from hitachi vsp: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+        except Exception as e:
+            err_msg = "Failed to get volumes metrics from hitachi vsp: %s" % \
+                      (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
-        except Exception as err:
-            LOG.error(
-                "Failed to get list volumes from OceanStor: {}".format(err))
-            raise exception.StorageBackendException(
-                reason='Failed to get list volumes from hitachi')
-
-    def handle_alert(self, alerts, alert_list):
-        if alerts is not None:
-            alerts = alerts.get('data')
-        else:
-            return alert_list
-
-        for alert in alerts:
-            occur_time = int(time.mktime(time.strptime(
-                alert.get('occurenceTime'),
-                self.TIME_PATTERN)))
-            a = {
-                'location': alert.get('location'),
-                'alarm_id': alert.get('alertId'),
-                'sequence_number': alert.get('alertIndex'),
-                'description': alert.get('errorDetail'),
-                'alert_name': alert.get('errorSection'),
-                'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                'occur_time': int(occur_time * 1000),
-                'category': 'Fault',
-                'type': constants.EventType.EQUIPMENT_ALARM,
-                'severity': self.ALERT_LEVEL_MAP.get(
-                    alert.get('errorLevel'),
-                    constants.Severity.NOT_SPECIFIED
-                ),
-            }
-            alert_list.append(a)
-
-    def list_alerts(self, context):
-        alerts_info_ctl1 = self.resthanlder.get_alerts('type=CTL1')
-        alerts_info_ctl2 = self.resthanlder.get_alerts('type=CTL2')
-        alerts_info_dkc = self.resthanlder.get_alerts('type=DKC')
-        alert_list = []
-        self.handle_alert(alerts_info_ctl1, alert_list)
-        self.handle_alert(alerts_info_ctl2, alert_list)
-        self.handle_alert(alerts_info_dkc, alert_list)
-
-        return alert_list
+    def list_alerts(self, context, query_para=None):
+        pass
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -252,8 +237,30 @@ class HdsVspDriver(driver.StorageDriver):
         pass
 
     @staticmethod
-    def parse_alert(self, context, alert):
-        return alert_handler.AlertHandler().parse_alert(context, alert)
+    def parse_alert(context, alert):
+        try:
+            alert_model = dict()
+            alert_model['alert_id'] = alert.get(HdsVspDriver.REFCODE_OID)
+            alert_model['alert_name'] = alert.get(HdsVspDriver.DESC_OID)
+            alert_model['severity'] = constants.Severity.INFORMATIONAL
+            alert_model['category'] = constants.Category.NOT_SPECIFIED
+            alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
+            aler_time = '%s %s' % (alert.get(HdsVspDriver.TRAP_DATE_OID),
+                                   alert.get(HdsVspDriver.TRAP_TIME_OID))
+            pattern = '%Y-%m-%d %H:%M:%S'
+            occur_time = time.strptime(aler_time, pattern)
+            alert_model['occur_time'] = int(time.mktime(occur_time) *
+                                            HdsVspDriver.SECONDS_TO_MS)
+            alert_model['description'] = alert.get(HdsVspDriver.DESC_OID)
+            alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
+            alert_model['location'] = alert.get(HdsVspDriver.LOCATION_OID)
+
+            return alert_model
+        except Exception as e:
+            LOG.error(e)
+            msg = ("Failed to build alert model as some attributes missing in"
+                   " alert message:%s") % (six.text_type(e))
+            raise exception.InvalidResults(msg)
 
     def clear_alert(self, context, alert):
         pass
