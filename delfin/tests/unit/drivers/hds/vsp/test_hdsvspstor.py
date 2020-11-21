@@ -33,7 +33,7 @@ ACCESS_INFO = {
         "host": "110.143.132.231",
         "port": "8443",
         "username": "username",
-        "password": "huawei123"
+        "password": "cGFzc3dvcmQ="
     },
     "ssh": {
         "host": "110.143.132.231",
