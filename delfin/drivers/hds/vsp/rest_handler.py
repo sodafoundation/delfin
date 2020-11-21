@@ -99,8 +99,8 @@ class RestHandler(object):
                         self.rest_client.init_http_head()
                     self.rest_client.session.auth = requests.auth.\
                         HTTPBasicAuth(self.rest_client.rest_username,
-                                      cryptor.decode(
-                                          self.rest_client.rest_password))
+                                      cryptor.decode(self.rest_client.
+                                                     rest_password))
                     res = self.rest_client. \
                         do_call(url, data, 'POST',
                                 calltimeout=consts.SOCKET_TIMEOUT)
