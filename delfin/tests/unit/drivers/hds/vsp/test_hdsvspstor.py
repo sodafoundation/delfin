@@ -268,12 +268,12 @@ GET_ALL_VOLUMES = {
 ALERT_INFO = {
     "1.3.6.1.2.1.1.3.0": "0",
     '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.2.6.190.3',
-    '1.3.6.1.4.1.116.5.11.4.2.3': 'dddddd',
+    '1.3.6.1.4.1.116.5.11.4.2.3': 'eeeeeeeee',
     '1.3.6.1.4.1.116.5.11.4.2.7': 'ddddddd',
     '1.3.6.1.4.1.116.5.11.4.2.6': '14:10:10',
     '1.3.6.1.4.1.116.5.11.4.2.5': '2020-11-20',
     '1.3.6.1.4.1.116.5.11.4.2.2': ' System Version = 7.4.0.11 ',
-    '1.3.6.1.4.1.116.5.11.4.2.3': '# FRU = None '
+    '1.3.6.1.4.1.116.5.11.4.2.4': '# FRU = None '
 }
 
 
@@ -361,7 +361,7 @@ class TestHdsVspStorStorageDriver(TestCase):
         with mock.patch.object(Session, 'get', return_value=m):
             m.raise_for_status.return_value = 200
             m.json.return_value = GET_ALL_VOLUMES
-            pools = self.driver.list_volumes(context)
+            self.driver.list_volumes(context)
 
     def test_add_trap_config(self):
         self.driver.add_trap_config(context, None)
