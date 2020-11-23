@@ -20,7 +20,7 @@ from oslo_log import log as logging
 
 from delfin import cryptor
 from delfin import exception
-from delfin.drivers.hds.vsp import consts
+from delfin.drivers.hitachi.vsp import consts
 
 LOG = logging.getLogger(__name__)
 STATUS_200 = 200

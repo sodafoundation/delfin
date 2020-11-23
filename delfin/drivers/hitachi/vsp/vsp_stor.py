@@ -20,14 +20,14 @@ from oslo_utils import units
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.hds.vsp import consts
-from delfin.drivers.hds.vsp import rest_handler
+from delfin.drivers.hitachi.vsp import consts
+from delfin.drivers.hitachi.vsp import rest_handler
 from delfin.drivers.utils.rest_client import RestClient
 
 LOG = log.getLogger(__name__)
 
 
-class HdsVspDriver(driver.StorageDriver):
+class HitachiVspDriver(driver.StorageDriver):
     POOL_STATUS_MAP = {"POLN": constants.StoragePoolStatus.NORMAL,
                        "POLF": constants.StoragePoolStatus.ABNORMAL,
                        "POLS": constants.StoragePoolStatus.ABNORMAL,
@@ -231,20 +231,20 @@ class HdsVspDriver(driver.StorageDriver):
     def parse_alert(context, alert):
         try:
             alert_model = dict()
-            alert_model['alert_id'] = alert.get(HdsVspDriver.REFCODE_OID)
-            alert_model['alert_name'] = alert.get(HdsVspDriver.DESC_OID)
+            alert_model['alert_id'] = alert.get(HitachiVspDriver.REFCODE_OID)
+            alert_model['alert_name'] = alert.get(HitachiVspDriver.DESC_OID)
             alert_model['severity'] = constants.Severity.INFORMATIONAL
             alert_model['category'] = constants.Category.NOT_SPECIFIED
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            aler_time = '%s %s' % (alert.get(HdsVspDriver.TRAP_DATE_OID),
-                                   alert.get(HdsVspDriver.TRAP_TIME_OID))
+            aler_time = '%s %s' % (alert.get(HitachiVspDriver.TRAP_DATE_OID),
+                                   alert.get(HitachiVspDriver.TRAP_TIME_OID))
             pattern = '%Y-%m-%d %H:%M:%S'
             occur_time = time.strptime(aler_time, pattern)
             alert_model['occur_time'] = int(time.mktime(occur_time) *
-                                            HdsVspDriver.SECONDS_TO_MS)
-            alert_model['description'] = alert.get(HdsVspDriver.DESC_OID)
+                                            HitachiVspDriver.SECONDS_TO_MS)
+            alert_model['description'] = alert.get(HitachiVspDriver.DESC_OID)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-            alert_model['location'] = alert.get(HdsVspDriver.LOCATION_OID)
+            alert_model['location'] = alert.get(HitachiVspDriver.LOCATION_OID)
 
             return alert_model
         except Exception as e:

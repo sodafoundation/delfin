@@ -16,8 +16,8 @@ from unittest import TestCase, mock
 from requests import Session
 
 from delfin import context
-from delfin.drivers.hds.vsp.rest_handler import RestHandler
-from delfin.drivers.hds.vsp.vspstor import HdsVspDriver
+from delfin.drivers.hitachi.vsp.rest_handler import RestHandler
+from delfin.drivers.hitachi.vsp.vsp_stor import HitachiVspDriver
 from delfin.drivers.utils.rest_client import RestClient
 
 
@@ -289,10 +289,10 @@ def create_driver():
             "token": "97c13b8082444b36bc2103026205fa64",
             "sessionId": 9
         }
-        return HdsVspDriver(**kwargs)
+        return HitachiVspDriver(**kwargs)
 
 
-class TestHdsVspStorStorageDriver(TestCase):
+class TestHitachiVspStorStorageDriver(TestCase):
     driver = create_driver()
 
     def test_initrest(self):
