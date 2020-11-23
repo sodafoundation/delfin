@@ -46,14 +46,13 @@ class HdsVspDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.rest_client = RestClient(**kwargs)
-        self.rest_handler = rest_handler.RestHandler(self.rest_client)
+        self.rest_handler = rest_handler.RestHandler(RestClient(**kwargs))
         self.rest_handler.get_device_id()
         self.rest_handler.login()
 
     def reset_connection(self, context, **kwargs):
         self.rest_handler.logout()
-        self.rest_client.verify = kwargs.get('verify', False)
+        self.rest_handler.rest_client.verify = kwargs.get('verify', False)
         self.rest_handler.get_device_id()
         self.rest_handler.login()
 
@@ -90,7 +89,7 @@ class HdsVspDriver(driver.StorageDriver):
         if firmware_version is not None:
             status = constants.StorageStatus.NORMAL
         system_name = '%s_%s' % (self.rest_handler.device_model,
-                                 self.rest_client.rest_host)
+                                 self.rest_handler.rest_client.rest_host)
 
         s = {
             'name': system_name,
@@ -112,11 +111,7 @@ class HdsVspDriver(driver.StorageDriver):
         try:
             pools_info = self.rest_handler.get_all_pools()
             pool_list = []
-            if pools_info is not None:
-                pools = pools_info.get('data')
-            else:
-                return pool_list
-
+            pools = pools_info.get('data')
             for pool in pools:
                 status = self.POOL_STATUS_MAP.get(
                     pool.get('poolStatus'),
@@ -160,11 +155,7 @@ class HdsVspDriver(driver.StorageDriver):
             volumes_info = self.rest_handler.get_all_volumes()
 
             volume_list = []
-            if volumes_info is not None:
-                volumes = volumes_info.get('data')
-            else:
-                return volume_list
-
+            volumes = volumes_info.get('data')
             for volume in volumes:
                 if volume.get('emulationType') == 'NOT DEFINED':
                     continue

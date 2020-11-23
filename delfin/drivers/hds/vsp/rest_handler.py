@@ -49,28 +49,25 @@ class RestHandler(object):
         try:
             res = self.rest_client.do_call(url, data, method,
                                            calltimeout=consts.SOCKET_TIMEOUT)
-            if res is not None:
-                if (res.status_code == consts.ERROR_SESSION_INVALID_CODE
-                        or res.status_code ==
-                        consts.ERROR_SESSION_IS_BEING_USED_CODE):
-                    LOG.error("Failed to get token=={0}=={1},get token again"
-                              .format(res.status_code, res.text))
-                    # if method is logout,return immediately
-                    if method == 'DELETE' and RestHandler.\
-                            HDSVSP_LOGOUT_URL in url:
-                        return res
-                    self.rest_client.rest_auth_token = None
-                    access_session = self.login()
-                    if access_session is not None:
-                        res = self.rest_client. \
-                            do_call(url, data, method,
-                                    calltimeout=consts.SOCKET_TIMEOUT)
-                    else:
-                        LOG.error('Login res is None')
-                elif res.status_code == 503:
-                    raise exception.InvalidResults(res.text)
-            else:
-                LOG.error('Rest exec failed,the result in none')
+            if (res.status_code == consts.ERROR_SESSION_INVALID_CODE
+                    or res.status_code ==
+                    consts.ERROR_SESSION_IS_BEING_USED_CODE):
+                LOG.error("Failed to get token=={0}=={1},get token again"
+                          .format(res.status_code, res.text))
+                # if method is logout,return immediately
+                if method == 'DELETE' and RestHandler. \
+                        HDSVSP_LOGOUT_URL in url:
+                    return res
+                self.rest_client.rest_auth_token = None
+                access_session = self.login()
+                if access_session is not None:
+                    res = self.rest_client. \
+                        do_call(url, data, method,
+                                calltimeout=consts.SOCKET_TIMEOUT)
+                else:
+                    LOG.error('Login res is None')
+            elif res.status_code == 503:
+                raise exception.InvalidResults(res.text)
 
             return res
 
@@ -79,9 +76,9 @@ class RestHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def get_resinfo_call(self, url, data=None, method=None, resName=None):
+    def get_resinfo_call(self, url, data=None, resName=None):
         result_json = None
-        res = self.call(url, data, method)
+        res = self.call(url, data, 'GET')
         if res is not None:
             if res.status_code == STATUS_200:
                 result_json = res.json()
@@ -108,11 +105,6 @@ class RestHandler(object):
                     res = self.rest_client. \
                         do_call(url, data, 'POST',
                                 calltimeout=consts.SOCKET_TIMEOUT)
-
-                    if res is None:
-                        LOG.error('Login res is None')
-                        raise exception.InvalidResults('Res is None in login')
-
                     if res.status_code == STATUS_200:
                         result = res.json()
                         self.hdsvsp_session_id = result.get('sessionId')
