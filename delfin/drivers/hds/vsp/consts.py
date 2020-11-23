@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-ERROR_CONNECT_TO_SERVER = -403
 SOCKET_TIMEOUT = 52
-LOGIN_SOCKET_TIMEOUT = 4
 ERROR_SESSION_INVALID_CODE = 403
 ERROR_SESSION_IS_BEING_USED_CODE = 409
 # block size

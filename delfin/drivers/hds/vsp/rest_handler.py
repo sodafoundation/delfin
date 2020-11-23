@@ -29,6 +29,7 @@ STATUS_202 = 202
 STATUS_204 = 204
 STATUS_401 = 401
 
+
 class RestHandler(object):
     HDSVSP_SYSTEM_URL = '/ConfigurationManager/v1/objects/storages'
     HDSVSP_LOGOUT_URL = '/ConfigurationManager/v1/objects/sessions/'
