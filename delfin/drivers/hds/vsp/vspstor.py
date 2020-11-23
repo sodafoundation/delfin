@@ -65,7 +65,7 @@ class HdsVspDriver(driver.StorageDriver):
         total_total = 0
         used_total = 0
         self.rest_handler.get_device_id()
-        if self.rest_handler.DEVICE_MODEL in consts.VSP_MODEL_NOT_USE_SVPIP:
+        if self.rest_handler.device_model in consts.VSP_MODEL_NOT_USE_SVPIP:
             capacity_json = self.rest_handler.get_capacity()
             free_total = capacity_json.get("total").get("freeSpace") * units.Ki
             total_total = capacity_json.get("total").get("totalCapacity") * \
@@ -89,16 +89,16 @@ class HdsVspDriver(driver.StorageDriver):
         status = constants.StorageStatus.OFFLINE
         if firmware_version is not None:
             status = constants.StorageStatus.NORMAL
-        system_name = '%s_%s' % (self.rest_handler.DEVICE_MODEL,
+        system_name = '%s_%s' % (self.rest_handler.device_model,
                                  self.rest_client.rest_host)
 
         s = {
             'name': system_name,
             'vendor': 'Hitachi',
             'description': 'Hitachi VSP Storage',
-            'model': str(self.rest_handler.DEVICE_MODEL),
+            'model': str(self.rest_handler.device_model),
             'status': status,
-            'serial_number': str(self.rest_handler.SERIALNUMBER),
+            'serial_number': str(self.rest_handler.serial_number),
             'firmware_version': str(firmware_version),
             'location': '',
             'raw_capacity': int(total_total),
