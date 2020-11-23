@@ -182,8 +182,8 @@ class RestHandler(object):
         url = '%s%s' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
         result_json = self.get_resinfo_call(url,
-                                       method='GET',
-                                       resName='Specific_Storage')
+                                            method='GET',
+                                            resName='Specific_Storage')
         if result_json is None:
             return None
         firmware_version = result_json.get('dkcMicroVersion')
@@ -194,28 +194,29 @@ class RestHandler(object):
         url = '%s%s/total-capacities/instance' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
         result_json = self.get_resinfo_call(url,
-                                       method='GET',
-                                       resName='capacity')
+                                            method='GET',
+                                            resName='capacity')
         return result_json
 
     def get_all_pools(self):
         url = '%s%s/pools' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
-        rejson = self.get_resinfo_call(url,
-                                       method='GET',
-                                       resName='pool')
-        return rejson
+        result_json = self.get_resinfo_call(url,
+                                            method='GET',
+                                            resName='pool')
+        return result_json
 
     def get_all_volumes(self):
         url = '%s%s/ldevs' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
         result_json = self.get_resinfo_call(url,
-                                       method='GET',
-                                       resName='volume paginated')
+                                            method='GET',
+                                            resName='volume paginated')
         return result_json
 
     def get_system_info(self):
         result_json = self.get_resinfo_call(RestHandler.HDSVSP_SYSTEM_URL,
-                                       method='GET', resName='ports paginated')
+                                            method='GET',
+                                            resName='ports paginated')
 
         return result_json
