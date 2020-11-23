@@ -27,7 +27,7 @@ LOG = logging.getLogger(__name__)
 class AlertHandler(object):
     """Alert handling functions for vnx stor driver"""
 
-    OID_MESSAGECODE = '1.3.6.1.4.1.1981.1.4.5'
+    OID_MESSAGECODE = '1.3.6.1.4.1.1981.1.4.51.3.6.1.4.1.1981.1.4.51.3.6.1.4.1.1981.1.4.51.3.6.1.4.1.1981.1.4.5'
     OID_DETAILS = '1.3.6.1.4.1.1981.1.4.6'
 
     # Translation of trap severity to alert model severity
