@@ -1,5 +1,4 @@
 # Copyright 2020 The SODA Authors.
-# Copyright (c) 2016 Huawei Technologies Co., Ltd.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -53,7 +52,7 @@ class RestHandler(object):
                               .format(res.status_code, res.text))
                     # if method is logout,return immediately
                     if method == 'DELETE' and RestHandler.\
-                            REST_LOGOUT_URL in url:
+                            HDSVSP_LOGOUT_URL in url:
                         return res
                     self.rest_client.rest_auth_token = None
                     access_session = self.login()
@@ -66,7 +65,7 @@ class RestHandler(object):
                 elif res.status_code == 503:
                     raise exception.InvalidResults(res.text)
             else:
-                LOG.error('Rest exec failed')
+                LOG.error('Rest exec failed,the result in none')
 
             return res
 
@@ -140,9 +139,11 @@ class RestHandler(object):
                       (RestHandler.HDSVSP_COMM_URL,
                        RestHandler.STORAGE_DEVICE_ID,
                        RestHandler.HDSVSP_SESSION_ID)
-            self.rest_client.rest_auth_token = None
-            if self.rest_client.san_address:
-                self.call(url, method='DELETE')
+                if self.rest_client.san_address:
+                    self.call(url, method='DELETE')
+                    self.rest_client.rest_auth_token = None
+            else:
+                LOG.error('logout error:session id no found')
         except Exception as err:
             LOG.error('logout error:{}'.format(err))
             raise exception.StorageBackendException(
@@ -180,22 +181,22 @@ class RestHandler(object):
     def get_specific_storage(self):
         url = '%s%s' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
-        rejson = self.get_resinfo_call(url,
+        result_json = self.get_resinfo_call(url,
                                        method='GET',
                                        resName='Specific_Storage')
-        if rejson is None:
+        if result_json is None:
             return None
-        firmware_version = rejson.get('dkcMicroVersion')
+        firmware_version = result_json.get('dkcMicroVersion')
 
         return firmware_version
 
     def get_capacity(self):
         url = '%s%s/total-capacities/instance' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
-        rejson = self.get_resinfo_call(url,
+        result_json = self.get_resinfo_call(url,
                                        method='GET',
                                        resName='capacity')
-        return rejson
+        return result_json
 
     def get_all_pools(self):
         url = '%s%s/pools' % \
@@ -208,13 +209,13 @@ class RestHandler(object):
     def get_all_volumes(self):
         url = '%s%s/ldevs' % \
               (RestHandler.HDSVSP_COMM_URL, RestHandler.STORAGE_DEVICE_ID)
-        rejson = self.get_resinfo_call(url,
+        result_json = self.get_resinfo_call(url,
                                        method='GET',
                                        resName='volume paginated')
-        return rejson
+        return result_json
 
     def get_system_info(self):
-        rejson = self.get_resinfo_call(RestHandler.HDSVSP_SYSTEM_URL,
+        result_json = self.get_resinfo_call(RestHandler.HDSVSP_SYSTEM_URL,
                                        method='GET', resName='ports paginated')
 
-        return rejson
+        return result_json
