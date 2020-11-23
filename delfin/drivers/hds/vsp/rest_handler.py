@@ -65,7 +65,7 @@ class RestHandler(object):
                         do_call(url, data, method,
                                 calltimeout=consts.SOCKET_TIMEOUT)
                 else:
-                    LOG.error('Login res is None')
+                    LOG.error('Login error,get access_session failed')
             elif res.status_code == 503:
                 raise exception.InvalidResults(res.text)
 
@@ -94,8 +94,6 @@ class RestHandler(object):
                 data = {}
 
                 with self.session_lock:
-                    if self.rest_client.rest_auth_token is not None:
-                        return self.rest_client.rest_auth_token
                     if self.rest_client.session is None:
                         self.rest_client.init_http_head()
                     self.rest_client.session.auth = \
@@ -151,8 +149,6 @@ class RestHandler(object):
             if self.rest_client.session is None:
                 self.rest_client.init_http_head()
             storage_systems = self.get_system_info()
-            if storage_systems is None:
-                return
             system_info = storage_systems.get('data')
             for system in system_info:
                 if system.get('model') in consts.VSP_MODEL_NOT_USE_SVPIP:
@@ -173,11 +169,10 @@ class RestHandler(object):
             LOG.error("Get device id error: %s", six.text_type(e))
             raise e
 
-    def get_specific_storage(self):
+    def get_storage(self):
         url = '%s%s' % \
               (RestHandler.HDSVSP_COMM_URL, self.storage_device_id)
         result_json = self.get_resinfo_call(url,
-                                            method='GET',
                                             resName='Specific_Storage')
         if result_json is None:
             return None
@@ -189,7 +184,6 @@ class RestHandler(object):
         url = '%s%s/total-capacities/instance' % \
               (RestHandler.HDSVSP_COMM_URL, self.storage_device_id)
         result_json = self.get_resinfo_call(url,
-                                            method='GET',
                                             resName='capacity')
         return result_json
 
@@ -197,7 +191,6 @@ class RestHandler(object):
         url = '%s%s/pools' % \
               (RestHandler.HDSVSP_COMM_URL, self.storage_device_id)
         result_json = self.get_resinfo_call(url,
-                                            method='GET',
                                             resName='pool')
         return result_json
 
@@ -205,13 +198,11 @@ class RestHandler(object):
         url = '%s%s/ldevs' % \
               (RestHandler.HDSVSP_COMM_URL, self.storage_device_id)
         result_json = self.get_resinfo_call(url,
-                                            method='GET',
                                             resName='volume paginated')
         return result_json
 
     def get_system_info(self):
         result_json = self.get_resinfo_call(RestHandler.HDSVSP_SYSTEM_URL,
-                                            method='GET',
                                             resName='ports paginated')
 
         return result_json

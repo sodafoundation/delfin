@@ -84,7 +84,7 @@ class HdsVspDriver(driver.StorageDriver):
                     free_total = free_total + free_cap
                     total_total = total_total + total_cap
                 used_total = total_total - free_total
-        firmware_version = self.rest_handler.get_specific_storage()
+        firmware_version = self.rest_handler.get_storage()
         status = constants.StorageStatus.OFFLINE
         if firmware_version is not None:
             status = constants.StorageStatus.NORMAL
@@ -179,9 +179,9 @@ class HdsVspDriver(driver.StorageDriver):
                         vol_type = constants.VolumeType.THIN
 
                 total_cap = \
-                    int(volume.get('blockCapacity')) * consts.Block_Size
+                    int(volume.get('blockCapacity')) * consts.BLOCK_SIZE
                 used_cap = \
-                    int(volume.get('blockCapacity')) * consts.Block_Size
+                    int(volume.get('blockCapacity')) * consts.BLOCK_SIZE
                 free_cap = total_cap - used_cap
                 if volume.get('label'):
                     name = volume.get('label')
