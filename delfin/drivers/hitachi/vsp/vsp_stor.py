@@ -248,7 +248,8 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def list_alerts(self, context, query_para=None):
         alert_list = []
-        if self.rest_handler.device_model in consts.VSP_FXXX_GXXX_SERIES:
+        if self.rest_handler.device_model in consts.\
+                VSP_F_G_350_370_700_900_SERIES:
             alerts_info_ctl1 = self.resthanlder.get_alerts('type=CTL1')
             alerts_info_ctl2 = self.resthanlder.get_alerts('type=CTL2')
             alerts_info_dkc = self.resthanlder.get_alerts('type=DKC')
