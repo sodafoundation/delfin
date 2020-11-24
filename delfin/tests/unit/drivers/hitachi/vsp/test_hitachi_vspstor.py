@@ -274,15 +274,17 @@ TRAP_INFO = {
     '1.3.6.1.4.1.116.5.11.4.2.2': ' System Version = 7.4.0.11 ',
     '1.3.6.1.4.1.116.5.11.4.2.4': '# FRU = None '
 }
-ALERT_INFO = {
-    'location': "test",
-    'alertId': '223232',
-    'alertIndex': '1111111',
-    'errorDetail': 'test alert',
-    'errorSection': 'someting wrong',
-    'occurenceTime': '2020-11-20T10:10:10',
-    'errorLevel': 'Serious'
-}
+ALERT_INFO = [
+    {
+        'location': "test",
+        'alertId': '223232',
+        'alertIndex': '1111111',
+        'errorDetail': 'test alert',
+        'errorSection': 'someting wrong',
+        'occurenceTime': '2020-11-20T10:10:10',
+        'errorLevel': 'Serious'
+    }
+]
 
 
 def create_driver():
