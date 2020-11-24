@@ -51,7 +51,7 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.rest_handler = rest_handler.RestHandler(kwargs)
+        self.rest_handler = rest_handler.RestHandler(**kwargs)
         self.rest_handler.login()
 
     def reset_connection(self, context, **kwargs):
