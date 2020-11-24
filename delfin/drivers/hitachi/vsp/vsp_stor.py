@@ -56,7 +56,7 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def reset_connection(self, context, **kwargs):
         self.rest_handler.logout()
-        self.rest_handler.rest_client.verify = kwargs.get('verify', False)
+        self.rest_handler.verify = kwargs.get('verify', False)
         self.rest_handler.login()
 
     def close_connection(self):
