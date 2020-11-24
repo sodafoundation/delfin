@@ -21,7 +21,7 @@ from oslo_log import log as logging
 from delfin import cryptor
 from delfin import exception
 from delfin.drivers.hitachi.vsp import consts
-from drivers.utils.rest_client import RestClient
+from delfin.drivers.utils.rest_client import RestClient
 
 LOG = logging.getLogger(__name__)
 

@@ -332,6 +332,10 @@ class TestHitachiVspStorStorageDriver(TestCase):
         RestHandler.get_resinfo_call = mock.Mock(return_value=ALERT_INFO)
         self.driver.list_alerts(context)
 
+    def test_parse_queried_alerts(self):
+        alert_list = []
+        HitachiVspDriver.parse_queried_alerts(ALERT_INFO, alert_list)
+
     def test_parse_alert(self):
         self.driver.parse_alert(context, TRAP_INFO)
 
