@@ -67,8 +67,8 @@ class HitachiVspDriver(driver.StorageDriver):
             capacity_json = self.rest_handler.get_capacity()
             free_capacity = capacity_json.get("total").get("freeSpace") * \
                 units.Ki
-            total_capacity = capacity_json.get("total").get("totalCapacity") * \
-                units.Ki
+            total_capacity = \
+                capacity_json.get("total").get("totalCapacity") * units.Ki
         else:
             free_capacity = 0
             total_capacity = 0
