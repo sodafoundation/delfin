@@ -14,15 +14,15 @@
 import time
 
 import six
-from oslo_log import log
-from oslo_utils import units
-
 from delfin import exception
+from delfin.common import alert_util
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.hitachi.vsp import consts
 from delfin.drivers.hitachi.vsp import rest_handler
 from delfin.drivers.utils.rest_client import RestClient
+from oslo_log import log
+from oslo_utils import units
 
 LOG = log.getLogger(__name__)
 
@@ -32,6 +32,11 @@ class HitachiVspDriver(driver.StorageDriver):
                        "POLF": constants.StoragePoolStatus.ABNORMAL,
                        "POLS": constants.StoragePoolStatus.ABNORMAL,
                        "POLE": constants.StoragePoolStatus.OFFLINE
+                       }
+    ALERT_LEVEL_MAP = {"Acute": constants.Severity.CRITICAL,
+                       "Serious": constants.Severity.MAJOR,
+                       "Moderate": constants.Severity.WARNING,
+                       "Service": constants.Severity.INFORMATIONAL
                        }
 
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
@@ -47,24 +52,18 @@ class HitachiVspDriver(driver.StorageDriver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rest_handler = rest_handler.RestHandler(RestClient(**kwargs))
-        self.rest_handler.get_device_id()
         self.rest_handler.login()
 
     def reset_connection(self, context, **kwargs):
         self.rest_handler.logout()
-        self.rest_handler.rest_client.verify = kwargs.get('verify', False)
-        self.rest_handler.get_device_id()
         self.rest_handler.login()
 
     def close_connection(self):
         self.rest_handler.logout()
 
     def get_storage(self, context):
-        free_total = 0
-        total_total = 0
-        used_total = 0
         self.rest_handler.get_device_id()
-        if self.rest_handler.device_model in consts.VSP_MODEL_NOT_USE_SVPIP:
+        if self.rest_handler.device_model in consts.VSP_FXXX_GXXX_SERIES:
             capacity_json = self.rest_handler.get_capacity()
             free_total = capacity_json.get("total").get("freeSpace") * units.Ki
             total_total = capacity_json.get("total").get("totalCapacity") * \
@@ -151,7 +150,6 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def list_volumes(self, context):
         try:
-            wwn = ''
             volumes_info = self.rest_handler.get_all_volumes()
 
             volume_list = []
@@ -195,7 +193,6 @@ class HitachiVspDriver(driver.StorageDriver):
                     'status': status,
                     'native_volume_id': str(volume.get('ldevId')),
                     'native_storage_pool_id': orig_pool_id,
-                    'wwn': wwn,
                     'type': vol_type,
                     'total_capacity': total_cap,
                     'used_capacity': used_cap,
@@ -218,8 +215,46 @@ class HitachiVspDriver(driver.StorageDriver):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
+    @staticmethod
+    def parse_queried_alerts(alerts, alert_list, query_para=None):
+        for alert in alerts:
+            occur_time = int(time.mktime(time.strptime(
+                alert.get('occurenceTime'),
+                HitachiVspDriver.TIME_PATTERN)))
+            if not alert_util.is_alert_in_time_range(query_para,
+                                                     occur_time):
+                continue
+            a = {
+                'location': alert.get('location'),
+                'alarm_id': alert.get('alertId'),
+                'sequence_number': alert.get('alertIndex'),
+                'description': alert.get('errorDetail'),
+                'alert_name': alert.get('errorSection'),
+                'resource_type': constants.DEFAULT_RESOURCE_TYPE,
+                'occur_time': int(occur_time * 1000),
+                'category': 'Fault',
+                'type': constants.EventType.EQUIPMENT_ALARM,
+                'severity': HitachiVspDriver.ALERT_LEVEL_MAP.get(
+                    alert.get('errorLevel'),
+                    constants.Severity.INFORMATIONAL
+                ),
+            }
+            alert_list.append(a)
+
     def list_alerts(self, context, query_para=None):
-        pass
+        alert_list = []
+        if self.rest_handler.device_model in consts.VSP_FXXX_GXXX_SERIES:
+            alerts_info_ctl1 = self.resthanlder.get_alerts('type=CTL1')
+            alerts_info_ctl2 = self.resthanlder.get_alerts('type=CTL2')
+            alerts_info_dkc = self.resthanlder.get_alerts('type=DKC')
+            HitachiVspDriver.parse_queried_alerts(alerts_info_ctl1,
+                                                  alert_list, query_para)
+            HitachiVspDriver.parse_queried_alerts(alerts_info_ctl2,
+                                                  alert_list, query_para)
+            HitachiVspDriver.parse_queried_alerts(alerts_info_dkc,
+                                                  alert_list, query_para)
+
+        return alert_list
 
     def add_trap_config(self, context, trap_config):
         pass

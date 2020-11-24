@@ -52,7 +52,7 @@ GET_DEVICE_ID = {
     "data": [
         {
             "storageDeviceId": "800000011633",
-            "model": "VSP F1500",
+            "model": "VSP G350",
             "serialNumber": 11633,
             "svpIp": "110.143.132.231"
         }
@@ -128,7 +128,7 @@ GET_ALL_POOLS = {
 }
 GET_SPECIFIC_STORAGE = {
     "storageDeviceId": "800000011633",
-    "model": "VSP F1500",
+    "model": "VSP G350",
     "serialNumber": 11633,
     "svpIp": "51.10.192.90",
     "rmiPort": 1099,
@@ -265,7 +265,7 @@ GET_ALL_VOLUMES = {
         }
     ]
 }
-ALERT_INFO = {
+TRAP_INFO = {
     "1.3.6.1.2.1.1.3.0": "0",
     '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.2.6.190.3',
     '1.3.6.1.4.1.116.5.11.4.2.3': 'eeeeeeeee',
@@ -274,6 +274,15 @@ ALERT_INFO = {
     '1.3.6.1.4.1.116.5.11.4.2.5': '2020-11-20',
     '1.3.6.1.4.1.116.5.11.4.2.2': ' System Version = 7.4.0.11 ',
     '1.3.6.1.4.1.116.5.11.4.2.4': '# FRU = None '
+}
+ALERT_INFO = {
+    'location': "test",
+    'alertId': '223232',
+    'alertIndex': '1111111',
+    'errorDetail': 'test alert',
+    'errorSection': 'someting wrong',
+    'occurenceTime': '2020-11-20T10:10:10',
+    'errorLevel': 'Serious'
 }
 
 
@@ -319,8 +328,14 @@ class TestHitachiVspStorStorageDriver(TestCase):
         RestHandler.get_resinfo_call = mock.Mock(return_value=GET_ALL_VOLUMES)
         self.driver.list_volumes(context)
 
+    def test_list_alerts(self):
+        RestHandler.get_resinfo_call = mock.Mock(return_value=ALERT_INFO)
+        RestHandler.get_resinfo_call = mock.Mock(return_value=ALERT_INFO)
+        RestHandler.get_resinfo_call = mock.Mock(return_value=ALERT_INFO)
+        self.driver.list_alerts(context)
+
     def test_parse_alert(self):
-        self.driver.parse_alert(context, ALERT_INFO)
+        self.driver.parse_alert(context, TRAP_INFO)
 
     def test_close_connection(self):
         m = mock.MagicMock(status_code=200)
