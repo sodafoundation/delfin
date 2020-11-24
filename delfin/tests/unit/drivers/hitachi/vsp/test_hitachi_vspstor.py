@@ -13,12 +13,11 @@
 # limitations under the License.
 from unittest import TestCase, mock
 
-from requests import Session
-
 from delfin import context
 from delfin.drivers.hitachi.vsp.rest_handler import RestHandler
 from delfin.drivers.hitachi.vsp.vsp_stor import HitachiVspDriver
 from delfin.drivers.utils.rest_client import RestClient
+from requests import Session
 
 
 class Request:

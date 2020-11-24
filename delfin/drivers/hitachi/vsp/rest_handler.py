@@ -16,11 +16,10 @@ import threading
 
 import requests
 import six
-from oslo_log import log as logging
-
 from delfin import cryptor
 from delfin import exception
 from delfin.drivers.hitachi.vsp import consts
+from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
@@ -164,7 +163,7 @@ class RestHandler(object):
             LOG.error("Get device id error: %s", six.text_type(e))
             raise e
 
-    def get_storage(self):
+    def get_firmware_version(self):
         url = '%s%s' % \
               (RestHandler.COMM_URL, self.storage_device_id)
         result_json = self.get_resinfo_call(url)

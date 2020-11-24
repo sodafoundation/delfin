@@ -70,6 +70,9 @@ class HitachiVspDriver(driver.StorageDriver):
                 units.Ki
             used_total = total_total - free_total
         else:
+            free_total = 0
+            total_total = 0
+            used_total = 0
             pools_info = self.rest_handler.get_all_pools()
             if pools_info is not None:
                 pools = pools_info.get('data')
@@ -83,7 +86,7 @@ class HitachiVspDriver(driver.StorageDriver):
                     free_total = free_total + free_cap
                     total_total = total_total + total_cap
                 used_total = total_total - free_total
-        firmware_version = self.rest_handler.get_storage()
+        firmware_version = self.rest_handler.get_firmware_version()
         status = constants.StorageStatus.OFFLINE
         if firmware_version is not None:
             status = constants.StorageStatus.NORMAL
