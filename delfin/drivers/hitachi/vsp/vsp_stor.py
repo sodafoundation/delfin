@@ -14,15 +14,15 @@
 import time
 
 import six
+from oslo_log import log
+from oslo_utils import units
+
 from delfin import exception
 from delfin.common import alert_util
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.hitachi.vsp import consts
 from delfin.drivers.hitachi.vsp import rest_handler
-from delfin.drivers.utils.rest_client import RestClient
-from oslo_log import log
-from oslo_utils import units
 
 LOG = log.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.rest_handler = rest_handler.RestHandler(RestClient(**kwargs))
+        self.rest_handler = rest_handler.RestHandler(kwargs)
         self.rest_handler.login()
 
     def reset_connection(self, context, **kwargs):
@@ -91,7 +91,7 @@ class HitachiVspDriver(driver.StorageDriver):
         if firmware_version is not None:
             status = constants.StorageStatus.NORMAL
         system_name = '%s_%s' % (self.rest_handler.device_model,
-                                 self.rest_handler.rest_client.rest_host)
+                                 self.rest_handler.rest_host)
 
         s = {
             'name': system_name,

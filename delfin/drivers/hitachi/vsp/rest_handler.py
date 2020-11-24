@@ -16,23 +16,25 @@ import threading
 
 import requests
 import six
+from oslo_log import log as logging
+
 from delfin import cryptor
 from delfin import exception
 from delfin.drivers.hitachi.vsp import consts
-from oslo_log import log as logging
+from drivers.utils.rest_client import RestClient
 
 LOG = logging.getLogger(__name__)
 
 
-class RestHandler(object):
+class RestHandler(RestClient):
     SYSTEM_URL = '/ConfigurationManager/v1/objects/storages'
     LOGOUT_URL = '/ConfigurationManager/v1/objects/sessions/'
     COMM_URL = '/ConfigurationManager/v1/objects/storages/'
 
     AUTH_KEY = 'Authorization'
 
-    def __init__(self, rest_client):
-        self.rest_client = rest_client
+    def __init__(self, **kwargs):
+        super(RestHandler, self).__init__(**kwargs)
         self.session_lock = threading.Lock()
         self.session_id = None
         self.storage_device_id = None
@@ -41,7 +43,7 @@ class RestHandler(object):
 
     def call(self, url, data=None, method=None):
         try:
-            res = self.rest_client.do_call(url, data, method,
+            res = self.do_call(url, data, method,
                                            calltimeout=consts.SOCKET_TIMEOUT)
             if (res.status_code == consts.ERROR_SESSION_INVALID_CODE
                     or res.status_code ==
@@ -52,10 +54,10 @@ class RestHandler(object):
                 if method == 'DELETE' and RestHandler. \
                         LOGOUT_URL in url:
                     return res
-                self.rest_client.rest_auth_token = None
+                self.rest_auth_token = None
                 access_session = self.login()
                 if access_session is not None:
-                    res = self.rest_client. \
+                    res = self. \
                         do_call(url, data, method,
                                 calltimeout=consts.SOCKET_TIMEOUT)
                 else:
@@ -80,29 +82,29 @@ class RestHandler(object):
     def login(self):
         try:
             self.get_device_id()
-            access_session = self.rest_client.rest_auth_token
-            if self.rest_client.san_address:
+            access_session = self.rest_auth_token
+            if self.san_address:
                 url = '%s%s/sessions' % \
                       (RestHandler.COMM_URL,
                        self.storage_device_id)
                 data = {}
 
                 with self.session_lock:
-                    if self.rest_client.session is None:
-                        self.rest_client.init_http_head()
-                    self.rest_client.session.auth = \
+                    if self.session is None:
+                        self.init_http_head()
+                    self.session.auth = \
                         requests.auth.HTTPBasicAuth(
-                            self.rest_client.rest_username,
-                            cryptor.decode(self.rest_client.rest_password))
-                    res = self.rest_client. \
+                            self.rest_username,
+                            cryptor.decode(self.rest_password))
+                    res = self. \
                         do_call(url, data, 'POST',
                                 calltimeout=consts.SOCKET_TIMEOUT)
                     if res.status_code == 200:
                         result = res.json()
                         self.session_id = result.get('sessionId')
                         access_session = 'Session %s' % result.get('token')
-                        self.rest_client.rest_auth_token = access_session
-                        self.rest_client.session.headers[
+                        self.rest_auth_token = access_session
+                        self.session.headers[
                             RestHandler.AUTH_KEY] = access_session
                     else:
                         LOG.error("Login error. URL: %(url)s\n"
@@ -128,9 +130,9 @@ class RestHandler(object):
                       (RestHandler.COMM_URL,
                        self.storage_device_id,
                        self.session_id)
-                if self.rest_client.san_address:
+                if self.san_address:
                     self.call(url, method='DELETE')
-                    self.rest_client.rest_auth_token = None
+                    self.rest_auth_token = None
             else:
                 LOG.error('logout error:session id not found')
         except Exception as err:
@@ -140,19 +142,19 @@ class RestHandler(object):
 
     def get_device_id(self):
         try:
-            if self.rest_client.session is None:
-                self.rest_client.init_http_head()
+            if self.session is None:
+                self.init_http_head()
             storage_systems = self.get_system_info()
             system_info = storage_systems.get('data')
             for system in system_info:
                 if system.get('model') in consts.VSP_FXXX_GXXX_SERIES:
-                    if system.get('ctl1Ip') == self.rest_client.rest_host or \
-                            system.get('ctl2Ip') == self.rest_client.rest_host:
+                    if system.get('ctl1Ip') == self.rest_host or \
+                            system.get('ctl2Ip') == self.rest_host:
                         self.storage_device_id = system.get('storageDeviceId')
                         self.device_model = system.get('model')
                         self.serial_number = system.get('serialNumber')
                         break
-                elif system.get('svpIp') == self.rest_client.rest_host:
+                elif system.get('svpIp') == self.rest_host:
                     self.storage_device_id = system.get('storageDeviceId')
                     self.device_model = system.get('model')
                     self.serial_number = system.get('serialNumber')

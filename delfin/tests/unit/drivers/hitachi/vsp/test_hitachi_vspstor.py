@@ -13,11 +13,11 @@
 # limitations under the License.
 from unittest import TestCase, mock
 
+from requests import Session
+
 from delfin import context
 from delfin.drivers.hitachi.vsp.rest_handler import RestHandler
 from delfin.drivers.hitachi.vsp.vsp_stor import HitachiVspDriver
-from delfin.drivers.utils.rest_client import RestClient
-from requests import Session
 
 
 class Request:
@@ -309,8 +309,7 @@ class TestHitachiVspStorStorageDriver(TestCase):
             m.raise_for_status.return_value = 200
             m.json.return_value = GET_DEVICE_ID
             kwargs = ACCESS_INFO
-            rc = RestClient(**kwargs)
-            rh = RestHandler(rc)
+            rh = RestHandler(**kwargs)
             rh.get_device_id()
 
     def test_get_storage(self):
