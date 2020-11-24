@@ -64,7 +64,8 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def get_storage(self, context):
         self.rest_handler.get_device_id()
-        if self.rest_handler.device_model in consts.VSP_FXXX_GXXX_SERIES:
+        if self.rest_handler.device_model in consts.\
+                VSP_F_G_350_370_700_900_SERIES:
             capacity_json = self.rest_handler.get_capacity()
             free_capacity = capacity_json.get("total").get("freeSpace") * \
                 units.Ki
@@ -182,7 +183,7 @@ class HitachiVspDriver(driver.StorageDriver):
                     int(volume.get('blockCapacity')) * consts.BLOCK_SIZE
                 used_cap = \
                     int(volume.get('blockCapacity')) * consts.BLOCK_SIZE
-                # Because there is noly subscribed capacity in device,so free
+                # Because there is only subscribed capacity in device,so free
                 # capacity always 0
                 free_cap = 0
                 if volume.get('label'):

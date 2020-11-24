@@ -147,7 +147,8 @@ class RestHandler(RestClient):
             storage_systems = self.get_system_info()
             system_info = storage_systems.get('data')
             for system in system_info:
-                if system.get('model') in consts.VSP_FXXX_GXXX_SERIES:
+                if system.get('model') in consts.\
+                        VSP_F_G_350_370_700_900_SERIES:
                     if system.get('ctl1Ip') == self.rest_host or \
                             system.get('ctl2Ip') == self.rest_host:
                         self.storage_device_id = system.get('storageDeviceId')
