@@ -65,14 +65,13 @@ class HitachiVspDriver(driver.StorageDriver):
         self.rest_handler.get_device_id()
         if self.rest_handler.device_model in consts.VSP_FXXX_GXXX_SERIES:
             capacity_json = self.rest_handler.get_capacity()
-            free_total = capacity_json.get("total").get("freeSpace") * units.Ki
-            total_total = capacity_json.get("total").get("totalCapacity") * \
+            free_capacity = capacity_json.get("total").get("freeSpace") * \
                 units.Ki
-            used_total = total_total - free_total
+            total_capacity = capacity_json.get("total").get("totalCapacity") * \
+                units.Ki
         else:
-            free_total = 0
-            total_total = 0
-            used_total = 0
+            free_capacity = 0
+            total_capacity = 0
             pools_info = self.rest_handler.get_all_pools()
             if pools_info is not None:
                 pools = pools_info.get('data')
@@ -83,9 +82,8 @@ class HitachiVspDriver(driver.StorageDriver):
                     free_cap = int(
                         pool.get(
                             'availableVolumeCapacity')) * units.Mi
-                    free_total = free_total + free_cap
-                    total_total = total_total + total_cap
-                used_total = total_total - free_total
+                    free_capacity = free_capacity + free_cap
+                    total_capacity = total_capacity + total_cap
         firmware_version = self.rest_handler.get_firmware_version()
         status = constants.StorageStatus.OFFLINE
         if firmware_version is not None:
@@ -102,10 +100,10 @@ class HitachiVspDriver(driver.StorageDriver):
             'serial_number': str(self.rest_handler.serial_number),
             'firmware_version': str(firmware_version),
             'location': '',
-            'raw_capacity': int(total_total),
-            'total_capacity': int(total_total),
-            'used_capacity': int(used_total),
-            'free_capacity': int(free_total)
+            'raw_capacity': int(total_capacity),
+            'total_capacity': int(total_capacity),
+            'used_capacity': int(total_capacity - free_capacity),
+            'free_capacity': int(free_capacity)
         }
         return s
 
@@ -183,7 +181,9 @@ class HitachiVspDriver(driver.StorageDriver):
                     int(volume.get('blockCapacity')) * consts.BLOCK_SIZE
                 used_cap = \
                     int(volume.get('blockCapacity')) * consts.BLOCK_SIZE
-                free_cap = total_cap - used_cap
+                # Because there is noly subscribed capacity in device,so free
+                # capacity always 0
+                free_cap = 0
                 if volume.get('label'):
                     name = volume.get('label')
                 else:

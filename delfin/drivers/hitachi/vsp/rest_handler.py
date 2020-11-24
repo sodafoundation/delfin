@@ -44,7 +44,7 @@ class RestHandler(RestClient):
     def call(self, url, data=None, method=None):
         try:
             res = self.do_call(url, data, method,
-                                           calltimeout=consts.SOCKET_TIMEOUT)
+                               calltimeout=consts.SOCKET_TIMEOUT)
             if (res.status_code == consts.ERROR_SESSION_INVALID_CODE
                     or res.status_code ==
                     consts.ERROR_SESSION_IS_BEING_USED_CODE):
