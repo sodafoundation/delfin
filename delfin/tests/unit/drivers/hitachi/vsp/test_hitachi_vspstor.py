@@ -349,6 +349,16 @@ class TestHitachiVspStorStorageDriver(TestCase):
             re = self.driver.close_connection()
             self.assertIsNone(re)
 
+    def test_rest_handler_cal(self):
+        m = mock.MagicMock(status_code=403)
+        with self.assertRaises(Exception) as exc:
+            with mock.patch.object(Session, 'get', return_value=m):
+                m.raise_for_status.return_value = 403
+                m.json.return_value = None
+                url = 'http://test'
+                self.driver.rest_handler.call(url, '', 'GET')
+        self.assertIn('Invalid ip or port', str(exc.exception))
+
     def test_reset_connection(self):
         RestHandler.logout = mock.Mock(return_value={})
         RestHandler.get_system_info = mock.Mock(return_value=GET_DEVICE_ID)
