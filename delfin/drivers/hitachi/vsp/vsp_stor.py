@@ -224,7 +224,8 @@ class HitachiVspDriver(driver.StorageDriver):
         for alert in alerts:
             occur_time = int(time.mktime(time.strptime(
                 alert.get('occurenceTime'),
-                HitachiVspDriver.TIME_PATTERN)))
+                HitachiVspDriver.TIME_PATTERN))) * \
+                HitachiVspDriver.SECONDS_TO_MS
             if not alert_util.is_alert_in_time_range(query_para,
                                                      occur_time):
                 continue
@@ -235,7 +236,7 @@ class HitachiVspDriver(driver.StorageDriver):
                 'description': alert.get('errorDetail'),
                 'alert_name': alert.get('errorSection'),
                 'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                'occur_time': int(occur_time * 1000),
+                'occur_time': occur_time,
                 'category': 'Fault',
                 'type': constants.EventType.EQUIPMENT_ALARM,
                 'severity': HitachiVspDriver.ALERT_LEVEL_MAP.get(
