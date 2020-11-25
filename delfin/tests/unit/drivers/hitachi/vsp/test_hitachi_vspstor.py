@@ -341,7 +341,7 @@ class TestHitachiVspStorStorageDriver(TestCase):
     def test_parse_alert(self):
         self.driver.parse_alert(context, TRAP_INFO)
 
-    def test_close_connection(self):
+    def test_rest_close_connection(self):
         m = mock.MagicMock(status_code=200)
         with mock.patch.object(Session, 'delete', return_value=m):
             m.raise_for_status.return_value = 200
