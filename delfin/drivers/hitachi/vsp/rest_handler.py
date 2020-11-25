@@ -27,9 +27,8 @@ LOG = logging.getLogger(__name__)
 
 
 class RestHandler(RestClient):
-    SYSTEM_URL = '/ConfigurationManager/v1/objects/storages'
+    COMM_URL = '/ConfigurationManager/v1/objects/storages'
     LOGOUT_URL = '/ConfigurationManager/v1/objects/sessions/'
-    COMM_URL = '/ConfigurationManager/v1/objects/storages/'
 
     AUTH_KEY = 'Authorization'
 
@@ -72,7 +71,7 @@ class RestHandler(RestClient):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def get_resinfo_call(self, url, data=None):
+    def get_rest_info(self, url, data=None):
         result_json = None
         res = self.call(url, data, 'GET')
         if res.status_code == 200:
@@ -84,7 +83,7 @@ class RestHandler(RestClient):
             self.get_device_id()
             access_session = self.rest_auth_token
             if self.san_address:
-                url = '%s%s/sessions' % \
+                url = '%s/%s/sessions' % \
                       (RestHandler.COMM_URL,
                        self.storage_device_id)
                 data = {}
@@ -126,12 +125,17 @@ class RestHandler(RestClient):
         try:
             url = RestHandler.LOGOUT_URL
             if self.session_id is not None:
-                url = '%s%s/sessions/%s' % \
+                url = '%s/%s/sessions/%s' % \
                       (RestHandler.COMM_URL,
                        self.storage_device_id,
                        self.session_id)
                 if self.san_address:
                     self.call(url, method='DELETE')
+                    self.session_id = None
+                    self.storage_device_id = None
+                    self.device_model = None
+                    self.serial_number = None
+                    self.session = None
                     self.rest_auth_token = None
             else:
                 LOG.error('logout error:session id not found')
@@ -147,8 +151,7 @@ class RestHandler(RestClient):
             storage_systems = self.get_system_info()
             system_info = storage_systems.get('data')
             for system in system_info:
-                if system.get('model') in consts.\
-                        VSP_F_G_350_370_700_900_SERIES:
+                if system.get('model') in consts.SUPPORTED_VSP_SERIES:
                     if system.get('ctl1Ip') == self.rest_host or \
                             system.get('ctl2Ip') == self.rest_host:
                         self.storage_device_id = system.get('storageDeviceId')
@@ -167,9 +170,9 @@ class RestHandler(RestClient):
             raise e
 
     def get_firmware_version(self):
-        url = '%s%s' % \
+        url = '%s/%s' % \
               (RestHandler.COMM_URL, self.storage_device_id)
-        result_json = self.get_resinfo_call(url)
+        result_json = self.get_rest_info(url)
         if result_json is None:
             return None
         firmware_version = result_json.get('dkcMicroVersion')
@@ -177,24 +180,24 @@ class RestHandler(RestClient):
         return firmware_version
 
     def get_capacity(self):
-        url = '%s%s/total-capacities/instance' % \
+        url = '%s/%s/total-capacities/instance' % \
               (RestHandler.COMM_URL, self.storage_device_id)
-        result_json = self.get_resinfo_call(url)
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_all_pools(self):
-        url = '%s%s/pools' % \
+        url = '%s/%s/pools' % \
               (RestHandler.COMM_URL, self.storage_device_id)
-        result_json = self.get_resinfo_call(url)
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_all_volumes(self):
-        url = '%s%s/ldevs' % \
+        url = '%s/%s/ldevs' % \
               (RestHandler.COMM_URL, self.storage_device_id)
-        result_json = self.get_resinfo_call(url)
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_system_info(self):
-        result_json = self.get_resinfo_call(RestHandler.SYSTEM_URL)
+        result_json = self.get_rest_info(RestHandler.COMM_URL)
 
         return result_json

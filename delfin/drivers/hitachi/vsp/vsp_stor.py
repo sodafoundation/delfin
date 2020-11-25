@@ -64,8 +64,7 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def get_storage(self, context):
         self.rest_handler.get_device_id()
-        if self.rest_handler.device_model in consts.\
-                VSP_F_G_350_370_700_900_SERIES:
+        if self.rest_handler.device_model in consts.SUPPORTED_VSP_SERIES:
             capacity_json = self.rest_handler.get_capacity()
             free_capacity = capacity_json.get("total").get("freeSpace") * \
                 units.Ki
@@ -248,8 +247,7 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def list_alerts(self, context, query_para=None):
         alert_list = []
-        if self.rest_handler.device_model in consts.\
-                VSP_F_G_350_370_700_900_SERIES:
+        if self.rest_handler.device_model in consts.SUPPORTED_VSP_SERIES:
             alerts_info_ctl1 = self.resthanlder.get_alerts('type=CTL1')
             alerts_info_ctl2 = self.resthanlder.get_alerts('type=CTL2')
             alerts_info_dkc = self.resthanlder.get_alerts('type=DKC')

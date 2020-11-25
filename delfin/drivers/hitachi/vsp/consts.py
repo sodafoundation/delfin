@@ -16,6 +16,5 @@ ERROR_SESSION_INVALID_CODE = 403
 ERROR_SESSION_IS_BEING_USED_CODE = 409
 BLOCK_SIZE = 512
 
-VSP_F_G_350_370_700_900_SERIES = ('VSP G350', 'VSP G370', 'VSP G700',
-                                  'VSP G900', 'VSP F350', 'VSP F370',
-                                  'VSP F700', 'VSP F900')
+SUPPORTED_VSP_SERIES = ('VSP G350', 'VSP G370', 'VSP G700', 'VSP G900',
+                        'VSP F350', 'VSP F370', 'VSP F700', 'VSP F900')

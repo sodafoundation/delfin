@@ -316,22 +316,22 @@ class TestHitachiVspStorStorageDriver(TestCase):
 
     def test_get_storage(self):
         RestHandler.get_system_info = mock.Mock(return_value=GET_DEVICE_ID)
-        RestHandler.get_resinfo_call = mock.Mock(
+        RestHandler.get_rest_info = mock.Mock(
             side_effect=[GET_ALL_POOLS, GET_SPECIFIC_STORAGE])
         self.driver.get_storage(context)
 
     def test_list_storage_pools(self):
-        RestHandler.get_resinfo_call = mock.Mock(return_value=GET_ALL_POOLS)
+        RestHandler.get_rest_info = mock.Mock(return_value=GET_ALL_POOLS)
         self.driver.list_storage_pools(context)
 
     def test_list_volumes(self):
-        RestHandler.get_resinfo_call = mock.Mock(return_value=GET_ALL_VOLUMES)
+        RestHandler.get_rest_info = mock.Mock(return_value=GET_ALL_VOLUMES)
         self.driver.list_volumes(context)
 
     def test_list_alerts(self):
-        RestHandler.get_resinfo_call = mock.Mock(return_value=ALERT_INFO)
-        RestHandler.get_resinfo_call = mock.Mock(return_value=ALERT_INFO)
-        RestHandler.get_resinfo_call = mock.Mock(return_value=ALERT_INFO)
+        RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
+        RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
+        RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
         self.driver.list_alerts(context)
 
     def test_parse_queried_alerts(self):
