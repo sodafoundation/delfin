@@ -69,7 +69,7 @@ class RestHandler(RestClient):
         except Exception as e:
             err_msg = "Get RestHandler.call failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+            raise e
 
     def get_rest_info(self, url, data=None):
         result_json = None
@@ -109,7 +109,7 @@ class RestHandler(RestClient):
                         LOG.error("Login error. URL: %(url)s\n"
                                   "Reason: %(reason)s.",
                                   {"url": url, "reason": res.text})
-                        if 'invalid username or password' in res.text:
+                        if 'authentication failed' in res.text:
                             raise exception.InvalidUsernameOrPassword()
                         else:
                             raise exception.BadResponse(res.text)
@@ -117,6 +117,8 @@ class RestHandler(RestClient):
                 LOG.error('Login Parameter error')
 
             return access_session
+        except exception.SSLCertificateFailed:
+            raise
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
