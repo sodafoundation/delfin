@@ -192,7 +192,7 @@ class RestHandler(RestClient):
         return result_json
 
     def get_all_volumes(self):
-        url = '%s/%s/ldevs' % \
+        url = '%s/%s/ldevs?ldevOption=defined&count=16383' % \
               (RestHandler.COMM_URL, self.storage_device_id)
         result_json = self.get_rest_info(url)
         return result_json
