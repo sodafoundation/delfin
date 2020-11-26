@@ -117,8 +117,6 @@ class RestHandler(RestClient):
                 LOG.error('Login Parameter error')
 
             return access_session
-        except exception.SSLCertificateFailed:
-            raise
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
