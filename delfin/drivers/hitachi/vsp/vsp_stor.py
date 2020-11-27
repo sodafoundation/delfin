@@ -287,7 +287,7 @@ class HitachiVspDriver(driver.StorageDriver):
             alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             aler_time = '%s%s' % (alert.get(HitachiVspDriver.TRAP_DATE_OID),
-                                   alert.get(HitachiVspDriver.TRAP_TIME_OID))
+                                  alert.get(HitachiVspDriver.TRAP_TIME_OID))
             pattern = '%Y/%m/%d%H:%M:%S'
             occur_time = time.strptime(aler_time, pattern)
             alert_model['occur_time'] = int(time.mktime(occur_time) *
