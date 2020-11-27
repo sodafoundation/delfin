@@ -77,7 +77,7 @@ class SSHHandler(object):
             alert_model['alert_id'] = str(alert_id)
             alert_model['alert_name'] = alert_name
             alert_model['severity'] = severity
-            alert_model['category'] = 'Fault'
+            alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['sequence_number'] = SSHHandler. \
                 handle_split(alert.get(SSHHandler.OID_SEQ_NUMBER), '=', 1)
@@ -130,7 +130,7 @@ class SSHHandler(object):
                 raise exception.SSHConnectTimeout()
             elif 'No authentication methods available' in err \
                     or 'Authentication failed' in err:
-                raise exception.SSHInvalidUsernameOrPassword()
+                raise exception.InvalidUsernameOrPassword()
             elif 'not a valid RSA private key file' in err:
                 raise exception.InvalidPrivateKey()
             else:
@@ -192,7 +192,7 @@ class SSHHandler(object):
             raw_capacity = self.parse_string(storage_map.get(
                 'total_drive_raw_capacity'))
             subscribed_capacity = self.parse_string(storage_map.get(
-                'total_allocated_extent_capacity'))
+                'virtual_capacity'))
             s = {
                 'name': storage_map.get('name'),
                 'vendor': 'IBM',
@@ -248,8 +248,6 @@ class SSHHandler(object):
                 total_cap = self.parse_string(pool_map.get('capacity'))
                 free_cap = self.parse_string(pool_map.get('free_capacity'))
                 used_cap = self.parse_string(pool_map.get('used_capacity'))
-                subscribed_cap = self.parse_string(pool_map.
-                                                   get('real_capacity'))
                 p = {
                     'name': pool_map.get('name'),
                     'storage_id': storage_id,
@@ -258,7 +256,6 @@ class SSHHandler(object):
                     'status': status,
                     'storage_type': constants.StorageType.BLOCK,
                     'total_capacity': int(total_cap),
-                    'subscribed_capacity': int(subscribed_cap),
                     'used_capacity': int(used_cap),
                     'free_capacity': int(free_cap)
                 }
@@ -380,7 +377,7 @@ class SSHHandler(object):
                     'alert_id': event_id,
                     'alert_name': alert_name,
                     'severity': severity,
-                    'category': 'Fault',
+                    'category': constants.Category.FAULT,
                     'type': 'EquipmentAlarm',
                     'sequence_number': alert_map.get('sequence_number'),
                     'occur_time': time_stamp,

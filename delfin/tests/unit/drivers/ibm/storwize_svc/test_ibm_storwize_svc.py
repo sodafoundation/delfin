@@ -405,7 +405,7 @@ class TestStorwizeSvcStorageDriver(TestCase):
         ssh_pool.remove(ssh)
 
     def test_parse_alert(self):
-        SSHHandler.parse_alert(trap_info)
+        self.driver.parse_alert(context, trap_info)
 
     def test_reset_connection(self):
         self.driver.reset_connection(context, **ACCESS_INFO)
