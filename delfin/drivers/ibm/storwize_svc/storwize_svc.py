@@ -47,7 +47,7 @@ class StorwizeSVCDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_alert(context, alert):
-        return SSHHandler().parse_alert(alert)
+        return SSHHandler.parse_alert(alert)
 
     def clear_alert(self, context, alert):
         pass
