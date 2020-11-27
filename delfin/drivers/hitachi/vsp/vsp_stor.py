@@ -29,7 +29,7 @@ LOG = log.getLogger(__name__)
 
 class HitachiVspDriver(driver.StorageDriver):
     POOL_STATUS_MAP = {"POLN": constants.StoragePoolStatus.NORMAL,
-                       "POLF": constants.StoragePoolStatus.ABNORMAL,
+                       "POLF": constants.StoragePoolStatus.NORMAL,
                        "POLS": constants.StoragePoolStatus.ABNORMAL,
                        "POLE": constants.StoragePoolStatus.OFFLINE
                        }
@@ -131,7 +131,6 @@ class HitachiVspDriver(driver.StorageDriver):
                     'description': 'Hitachi VSP Pool',
                     'status': status,
                     'storage_type': storage_type,
-                    'subscribed_capacity': int(total_cap),
                     'total_capacity': int(total_cap),
                     'used_capacity': int(used_cap),
                     'free_capacity': int(free_cap),
@@ -237,7 +236,7 @@ class HitachiVspDriver(driver.StorageDriver):
                 'alert_name': alert.get('errorSection'),
                 'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                 'occur_time': occur_time,
-                'category': 'Fault',
+                'category': constants.Category.FAULT,
                 'type': constants.EventType.EQUIPMENT_ALARM,
                 'severity': HitachiVspDriver.ALERT_LEVEL_MAP.get(
                     alert.get('errorLevel'),
@@ -274,7 +273,7 @@ class HitachiVspDriver(driver.StorageDriver):
             alert_model['alert_id'] = alert.get(HitachiVspDriver.REFCODE_OID)
             alert_model['alert_name'] = alert.get(HitachiVspDriver.DESC_OID)
             alert_model['severity'] = constants.Severity.INFORMATIONAL
-            alert_model['category'] = constants.Category.NOT_SPECIFIED
+            alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             aler_time = '%s %s' % (alert.get(HitachiVspDriver.TRAP_DATE_OID),
                                    alert.get(HitachiVspDriver.TRAP_TIME_OID))
