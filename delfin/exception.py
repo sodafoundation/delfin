@@ -236,6 +236,11 @@ class SSHConnectTimeout(DelfinException):
     code = 500
 
 
+class SSHInvalidUsernameOrPassword(DelfinException):
+    msg_fmt = _("SSH invalid username or password.")
+    code = 400
+
+
 class SSHNotFoundKnownHosts(NotFound):
     msg_fmt = _("{0} not found in known_hosts.")
     code = 400
