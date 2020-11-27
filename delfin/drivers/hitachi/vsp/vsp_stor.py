@@ -38,6 +38,12 @@ class HitachiVspDriver(driver.StorageDriver):
                        "Moderate": constants.Severity.WARNING,
                        "Service": constants.Severity.INFORMATIONAL
                        }
+    TRAP_ALERT_LEVEL_MAP = {
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.1": constants.Severity.CRITICAL,
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.2": constants.Severity.MAJOR,
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.3": constants.Severity.WARNING,
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.4": constants.Severity.INFORMATIONAL
+    }
 
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
 
@@ -47,6 +53,7 @@ class HitachiVspDriver(driver.StorageDriver):
     TRAP_DATE_OID = '1.3.6.1.4.1.116.5.11.4.2.5'
     TRAP_NICKNAME_OID = '1.3.6.1.4.1.116.5.11.4.2.2'
     LOCATION_OID = '1.3.6.1.4.1.116.5.11.4.2.4'
+    OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
     SECONDS_TO_MS = 1000
 
     def __init__(self, **kwargs):
@@ -272,12 +279,16 @@ class HitachiVspDriver(driver.StorageDriver):
             alert_model = dict()
             alert_model['alert_id'] = alert.get(HitachiVspDriver.REFCODE_OID)
             alert_model['alert_name'] = alert.get(HitachiVspDriver.DESC_OID)
-            alert_model['severity'] = constants.Severity.INFORMATIONAL
+            severity = HitachiVspDriver.TRAP_ALERT_LEVEL_MAP.get(
+                alert.get(HitachiVspDriver.OID_SEVERITY),
+                constants.Severity.INFORMATIONAL
+            )
+            alert_model['severity'] = severity
             alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            aler_time = '%s %s' % (alert.get(HitachiVspDriver.TRAP_DATE_OID),
+            aler_time = '%s%s' % (alert.get(HitachiVspDriver.TRAP_DATE_OID),
                                    alert.get(HitachiVspDriver.TRAP_TIME_OID))
-            pattern = '%Y-%m-%d %H:%M:%S'
+            pattern = '%Y/%m/%d%H:%M:%S'
             occur_time = time.strptime(aler_time, pattern)
             alert_model['occur_time'] = int(time.mktime(occur_time) *
                                             HitachiVspDriver.SECONDS_TO_MS)
