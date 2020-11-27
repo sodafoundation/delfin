@@ -77,7 +77,7 @@ class SSHHandler(object):
             alert_model['alert_id'] = str(alert_id)
             alert_model['alert_name'] = alert_name
             alert_model['severity'] = severity
-            alert_model['category'] = 'Fault'
+            alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['sequence_number'] = SSHHandler. \
                 handle_split(alert.get(SSHHandler.OID_SEQ_NUMBER), '=', 1)
@@ -377,7 +377,7 @@ class SSHHandler(object):
                     'alert_id': event_id,
                     'alert_name': alert_name,
                     'severity': severity,
-                    'category': 'Fault',
+                    'category': constants.Category.FAULT,
                     'type': 'EquipmentAlarm',
                     'sequence_number': alert_map.get('sequence_number'),
                     'occur_time': time_stamp,
