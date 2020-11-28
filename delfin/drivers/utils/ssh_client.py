@@ -117,7 +117,7 @@ class SSHClient(object):
                 raise exception.SSHConnectTimeout()
             elif 'No authentication methods available' in str(e) \
                     or 'Authentication failed' in str(e):
-                raise exception.SSHInvalidUsernameOrPassword()
+                raise exception.InvalidUsernameOrPassword()
             elif 'not a valid RSA private key file' in str(e):
                 raise exception.InvalidPrivateKey()
             elif 'not found in known_hosts' in str(e):
@@ -196,7 +196,7 @@ class SSHPool(pools.Pool):
                 raise exception.SSHConnectTimeout()
             elif 'No authentication methods available' in err \
                     or 'Authentication failed' in err:
-                raise exception.SSHInvalidUsernameOrPassword()
+                raise exception.InvalidUsernameOrPassword()
             elif 'not a valid RSA private key file' in err:
                 raise exception.InvalidPrivateKey()
             elif 'not found in known_hosts' in err:

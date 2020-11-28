@@ -29,7 +29,7 @@ LOG = log.getLogger(__name__)
 
 class HitachiVspDriver(driver.StorageDriver):
     POOL_STATUS_MAP = {"POLN": constants.StoragePoolStatus.NORMAL,
-                       "POLF": constants.StoragePoolStatus.ABNORMAL,
+                       "POLF": constants.StoragePoolStatus.NORMAL,
                        "POLS": constants.StoragePoolStatus.ABNORMAL,
                        "POLE": constants.StoragePoolStatus.OFFLINE
                        }
@@ -38,6 +38,12 @@ class HitachiVspDriver(driver.StorageDriver):
                        "Moderate": constants.Severity.WARNING,
                        "Service": constants.Severity.INFORMATIONAL
                        }
+    TRAP_ALERT_LEVEL_MAP = {
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.1": constants.Severity.CRITICAL,
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.2": constants.Severity.MAJOR,
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.3": constants.Severity.WARNING,
+        "1.3.6.1.4.1.116.3.11.4.1.1.0.4": constants.Severity.INFORMATIONAL
+    }
 
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
 
@@ -47,6 +53,7 @@ class HitachiVspDriver(driver.StorageDriver):
     TRAP_DATE_OID = '1.3.6.1.4.1.116.5.11.4.2.5'
     TRAP_NICKNAME_OID = '1.3.6.1.4.1.116.5.11.4.2.2'
     LOCATION_OID = '1.3.6.1.4.1.116.5.11.4.2.4'
+    OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
     SECONDS_TO_MS = 1000
 
     def __init__(self, **kwargs):
@@ -131,7 +138,6 @@ class HitachiVspDriver(driver.StorageDriver):
                     'description': 'Hitachi VSP Pool',
                     'status': status,
                     'storage_type': storage_type,
-                    'subscribed_capacity': int(total_cap),
                     'total_capacity': int(total_cap),
                     'used_capacity': int(used_cap),
                     'free_capacity': int(free_cap),
@@ -237,7 +243,7 @@ class HitachiVspDriver(driver.StorageDriver):
                 'alert_name': alert.get('errorSection'),
                 'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                 'occur_time': occur_time,
-                'category': 'Fault',
+                'category': constants.Category.FAULT,
                 'type': constants.EventType.EQUIPMENT_ALARM,
                 'severity': HitachiVspDriver.ALERT_LEVEL_MAP.get(
                     alert.get('errorLevel'),
@@ -273,12 +279,16 @@ class HitachiVspDriver(driver.StorageDriver):
             alert_model = dict()
             alert_model['alert_id'] = alert.get(HitachiVspDriver.REFCODE_OID)
             alert_model['alert_name'] = alert.get(HitachiVspDriver.DESC_OID)
-            alert_model['severity'] = constants.Severity.INFORMATIONAL
-            alert_model['category'] = constants.Category.NOT_SPECIFIED
+            severity = HitachiVspDriver.TRAP_ALERT_LEVEL_MAP.get(
+                alert.get(HitachiVspDriver.OID_SEVERITY),
+                constants.Severity.INFORMATIONAL
+            )
+            alert_model['severity'] = severity
+            alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            aler_time = '%s %s' % (alert.get(HitachiVspDriver.TRAP_DATE_OID),
-                                   alert.get(HitachiVspDriver.TRAP_TIME_OID))
-            pattern = '%Y-%m-%d %H:%M:%S'
+            aler_time = '%s%s' % (alert.get(HitachiVspDriver.TRAP_DATE_OID),
+                                  alert.get(HitachiVspDriver.TRAP_TIME_OID))
+            pattern = '%Y/%m/%d%H:%M:%S'
             occur_time = time.strptime(aler_time, pattern)
             alert_model['occur_time'] = int(time.mktime(occur_time) *
                                             HitachiVspDriver.SECONDS_TO_MS)

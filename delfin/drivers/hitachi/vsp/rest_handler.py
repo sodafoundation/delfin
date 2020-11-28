@@ -69,7 +69,7 @@ class RestHandler(RestClient):
         except Exception as e:
             err_msg = "Get RestHandler.call failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+            raise e
 
     def get_rest_info(self, url, data=None):
         result_json = None
@@ -109,7 +109,7 @@ class RestHandler(RestClient):
                         LOG.error("Login error. URL: %(url)s\n"
                                   "Reason: %(reason)s.",
                                   {"url": url, "reason": res.text})
-                        if 'invalid username or password' in res.text:
+                        if 'authentication failed' in res.text:
                             raise exception.InvalidUsernameOrPassword()
                         else:
                             raise exception.BadResponse(res.text)
@@ -192,8 +192,9 @@ class RestHandler(RestClient):
         return result_json
 
     def get_all_volumes(self):
-        url = '%s/%s/ldevs' % \
-              (RestHandler.COMM_URL, self.storage_device_id)
+        url = '%s/%s/ldevs?ldevOption=defined&count=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id,
+               consts.MAX_LDEV_NUMBER_OF_RESTAPI)
         result_json = self.get_rest_info(url)
         return result_json
 
