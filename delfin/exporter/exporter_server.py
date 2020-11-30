@@ -28,4 +28,4 @@ def getfile():
 
 
 if __name__ == '__main__':
-    app.run(host='', port=constants.METRICS_SERVER_PORT)
+    app.run(host=constants.METRICS_SERVER_HOST, port=constants.METRICS_SERVER_PORT)
