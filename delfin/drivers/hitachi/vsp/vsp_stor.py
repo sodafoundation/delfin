@@ -52,7 +52,6 @@ class HitachiVspDriver(driver.StorageDriver):
     TRAP_TIME_OID = '1.3.6.1.4.1.116.5.11.4.2.6'
     TRAP_DATE_OID = '1.3.6.1.4.1.116.5.11.4.2.5'
     TRAP_NICKNAME_OID = '1.3.6.1.4.1.116.5.11.4.2.2'
-    LOCATION_OID = '1.3.6.1.4.1.116.5.11.4.2.4'
     OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
     SECONDS_TO_MS = 1000
 
@@ -294,7 +293,8 @@ class HitachiVspDriver(driver.StorageDriver):
                                             HitachiVspDriver.SECONDS_TO_MS)
             alert_model['description'] = alert.get(HitachiVspDriver.DESC_OID)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-            alert_model['location'] = alert.get(HitachiVspDriver.LOCATION_OID)
+            alert_model['location'] = alert.get(HitachiVspDriver.
+                                                TRAP_NICKNAME_OID)
 
             return alert_model
         except Exception as e:
