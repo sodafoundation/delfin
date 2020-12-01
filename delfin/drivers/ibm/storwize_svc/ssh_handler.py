@@ -350,7 +350,7 @@ class SSHHandler(object):
                 alert_map = {}
                 self.handle_detail(deltail_info, alert_map, split=' ')
                 occur_time = int(alert_map.get('last_timestamp_epoch')) * \
-                             self.SECONDS_TO_MS
+                    self.SECONDS_TO_MS
                 if not alert_util.is_alert_in_time_range(query_para,
                                                          occur_time):
                     continue
