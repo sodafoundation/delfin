@@ -193,13 +193,16 @@ class SSHHandler(object):
                 'total_drive_raw_capacity'))
             subscribed_capacity = self.parse_string(storage_map.get(
                 'virtual_capacity'))
+            firmware_version = ''
+            if storage_map.get('code_level') is not None:
+                firmware_version = storage_map.get('code_level').split(' ')[0]
             s = {
                 'name': storage_map.get('name'),
                 'vendor': 'IBM',
                 'model': storage_map.get('product_name'),
                 'status': status,
                 'serial_number': serial_number,
-                'firmware_version': storage_map.get('code_level'),
+                'firmware_version': firmware_version,
                 'location': location,
                 'total_capacity': int(free_capacity + used_capacity),
                 'raw_capacity': int(raw_capacity),
@@ -248,6 +251,8 @@ class SSHHandler(object):
                 total_cap = self.parse_string(pool_map.get('capacity'))
                 free_cap = self.parse_string(pool_map.get('free_capacity'))
                 used_cap = self.parse_string(pool_map.get('used_capacity'))
+                subscribed_capacity = self.parse_string(pool_map.get(
+                    'virtual_capacity'))
                 p = {
                     'name': pool_map.get('name'),
                     'storage_id': storage_id,
@@ -255,6 +260,7 @@ class SSHHandler(object):
                     'description': '',
                     'status': status,
                     'storage_type': constants.StorageType.BLOCK,
+                    'subscribed_capacity': int(subscribed_capacity),
                     'total_capacity': int(total_cap),
                     'used_capacity': int(used_cap),
                     'free_capacity': int(free_cap)
