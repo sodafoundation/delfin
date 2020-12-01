@@ -20,7 +20,7 @@ from oslo_log import log as logging
 from oslo_utils import units
 
 from delfin import exception, utils
-from delfin.common import constants
+from delfin.common import constants, alert_util
 from delfin.drivers.utils.ssh_client import SSHPool
 
 LOG = logging.getLogger(__name__)
@@ -335,25 +335,6 @@ class SSHHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def judge_alert_time(self, alert_map, query_para):
-        if len(alert_map) <= 1:
-            return False
-        if query_para is None and len(alert_map) > 1:
-            return True
-        occur_time = int(alert_map.get('last_timestamp_epoch')) * \
-            self.SECONDS_TO_MS
-        if query_para.get('begin_time') and query_para.get('end_time'):
-            if occur_time >= int(query_para.get('begin_time')) and \
-                    occur_time <= int(query_para.get('end_time')):
-                return True
-        if query_para.get('begin_time'):
-            if occur_time >= int(query_para.get('begin_time')):
-                return True
-        if query_para.get('end_time'):
-            if occur_time <= int(query_para.get('end_time')):
-                return True
-        return False
-
     def list_alerts(self, query_para):
         try:
             alert_list = []
@@ -368,10 +349,11 @@ class SSHHandler(object):
                 deltail_info = self.exec_ssh_command(detail_command)
                 alert_map = {}
                 self.handle_detail(deltail_info, alert_map, split=' ')
-                if self.judge_alert_time(alert_map, query_para) is False:
+                occur_time = int(alert_map.get('last_timestamp_epoch')) * \
+                             self.SECONDS_TO_MS
+                if not alert_util.is_alert_in_time_range(query_para,
+                                                         occur_time):
                     continue
-                time_stamp = int(alert_map.get('last_timestamp_epoch')) * \
-                    self.SECONDS_TO_MS
                 alert_name = alert_map.get('event_id_text', '')
                 event_id = alert_map.get('event_id')
                 location = alert_map.get('object_name', '')
@@ -386,7 +368,7 @@ class SSHHandler(object):
                     'category': constants.Category.FAULT,
                     'type': 'EquipmentAlarm',
                     'sequence_number': alert_map.get('sequence_number'),
-                    'occur_time': time_stamp,
+                    'occur_time': occur_time,
                     'description': alert_name,
                     'resource_type': resource_type,
                     'location': location
