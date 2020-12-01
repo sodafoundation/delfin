@@ -193,7 +193,7 @@ class SSHPool(pools.Pool):
             err = six.text_type(e)
             LOG.error('doexec InvalidUsernameOrPassword error')
             if 'timed out' in err:
-                raise exception.SSHConnectTimeout()
+                raise exception.InvalidIpOrPort()
             elif 'No authentication methods available' in err \
                     or 'Authentication failed' in err:
                 raise exception.InvalidUsernameOrPassword()
