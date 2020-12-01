@@ -344,7 +344,7 @@ class SSHHandler(object):
                 if alert_res[i] is None or alert_res[i] == '':
                     continue
                 alert_str = ' '.join(alert_res[i].split())
-                strinfo = alert_str.split(' ', 9)
+                strinfo = alert_str.split(' ', 1)
                 detail_command = 'lseventlog %s' % strinfo[0]
                 deltail_info = self.exec_ssh_command(detail_command)
                 alert_map = {}
