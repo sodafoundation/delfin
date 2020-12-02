@@ -701,7 +701,6 @@ def controller_delete_by_storage(context, storage_id):
 def controller_get_all(context, marker=None, limit=None, sort_keys=None,
                        sort_dirs=None, filters=None, offset=None):
     """Retrieves all controllers."""
-
     session = get_session()
     with session.begin():
         # Generate the query
@@ -720,6 +719,148 @@ def _process_controller_info_filters(query, filters):
     """Common filter processing for controllers queries."""
     if filters:
         if not is_valid_model_filters(models.Controller, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def ports_create(context, ports):
+    """Create multiple ports."""
+    session = get_session()
+    ports_refs = []
+    with session.begin():
+
+        for port in ports:
+            LOG.debug('adding new port for native_port_id {0}:'
+                      .format(port.get('native_port_id')))
+            if not port.get('id'):
+                port['id'] = uuidutils.generate_uuid()
+
+            port_ref = models.Port()
+            port_ref.update(port)
+            ports_refs.append(port_ref)
+
+        session.add_all(ports_refs)
+
+    return ports_refs
+
+
+def ports_update(context, ports):
+    """Update multiple ports."""
+    session = get_session()
+
+    with session.begin():
+        port_refs = []
+
+        for port in ports:
+            LOG.debug('updating port {0}:'.format(
+                port.get('id')))
+            query = _port_get_query(context, session)
+            result = query.filter_by(id=port.get('id')
+                                     ).update(port)
+
+            if not result:
+                LOG.error(exception.PortNotFound(port.get(
+                    'id')))
+            else:
+                port_refs.append(result)
+
+    return port_refs
+
+
+def ports_delete(context, ports_id_list):
+    """Delete multiple ports."""
+    session = get_session()
+    with session.begin():
+        for port_id in ports_id_list:
+            LOG.debug('deleting port {0}:'.format(port_id))
+            query = _port_get_query(context, session)
+            result = query.filter_by(id=port_id).delete()
+
+            if not result:
+                LOG.error(exception.PortNotFound(port_id))
+    return
+
+
+def _port_get_query(context, session=None):
+    return model_query(context, models.Port, session=session)
+
+
+def _port_get(context, port_id, session=None):
+    result = (_port_get_query(context, session=session)
+              .filter_by(id=port_id)
+              .first())
+
+    if not result:
+        raise exception.PortNotFound(port_id)
+
+    return result
+
+
+def port_create(context, values):
+    """Create a port from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    port_ref = models.Port()
+    port_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(port_ref)
+
+    return _port_get(context,
+                     port_ref['id'],
+                     session=session)
+
+
+def port_update(context, port_id, values):
+    """Update a port with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _port_get_query(context, session)
+        result = query.filter_by(id=port_id).update(values)
+
+        if not result:
+            raise exception.PortNotFound(port_id)
+
+    return result
+
+
+def port_get(context, port_id):
+    """Get a port or raise an exception if it does not exist."""
+    return _port_get(context, port_id)
+
+
+def port_delete_by_storage(context, storage_id):
+    """Delete port or raise an exception if it does not exist."""
+    _port_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def port_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all ports."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Port,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Port would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Port)
+def _process_port_info_filters(query, filters):
+    """Common filter processing for ports queries."""
+    if filters:
+        if not is_valid_model_filters(models.Port, filters):
             return
         query = query.filter_by(**filters)
 
@@ -860,6 +1001,7 @@ PAGINATION_HELPERS = {
     models.Controller: (_controller_get_query,
                         _process_controller_info_filters,
                         _controller_get),
+    models.Port: (_port_get_query, _process_port_info_filters, _port_get),
 }
 
 

@@ -296,6 +296,55 @@ class StorageControllerTask(StorageResourceTask):
                  .format(self.storage_id))
         db.controller_delete_by_storage(self.context, self.storage_id)
 
+class StoragePortTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StoragePortTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing ports for storage id:{0}'.format(self.storage_id))
+        try:
+            # collect the ports list from driver and database
+            storage_ports = self.driver_api.list_ports(self.context,
+                                                       self.storage_id)
+            db_ports = db.port_get_all(self.context,
+                                       filters={"storage_id":
+                                                self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_ports, db_ports, 'native_port_id'
+            )
+
+            LOG.info('###StoragePortTask for {0}:add={1},delete={2},'
+                     'update={3}'.format(self.storage_id,
+                                         len(add_list),
+                                         len(delete_id_list),
+                                         len(update_list)))
+            if delete_id_list:
+                db.ports_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.ports_update(self.context, update_list)
+
+            if add_list:
+                db.ports_create(self.context, add_list)
+        except AttributeError as e:
+            LOG.error(e)
+        except Exception as e:
+            msg = _('Failed to sync ports entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing ports successful!!!")
+
+    def remove(self):
+        LOG.info('Remove ports for storage id:{0}'.format(self.storage_id))
+        db.port_delete_by_storage(self.context, self.storage_id)
+
 
 class PerformanceCollectionTask(object):
 
