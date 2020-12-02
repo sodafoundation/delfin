@@ -129,6 +129,20 @@ class Disk(BASE, DelfinBase):
     capacity = Column(BigInteger)
 
 
+class Controller(BASE, DelfinBase):
+    """Represents a controller object."""
+    __tablename__ = 'controllers'
+    id = Column(String(36), primary_key=True)
+    native_controller_id = Column(String(255))
+    name = Column(String(255))
+    status = Column(String(255))
+    location = Column(String(255))
+    soft_version = Column(String(255))
+    cpu_info = Column(String(255))
+    memory_size = Column(BigInteger)
+    storage_id = Column(String(36))
+
+
 class AlertSource(BASE, DelfinBase):
     """Represents an alert source configuration."""
     __tablename__ = 'alert_source'

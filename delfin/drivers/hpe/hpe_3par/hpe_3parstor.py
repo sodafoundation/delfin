@@ -66,6 +66,9 @@ class Hpe3parStorDriver(driver.StorageDriver):
         self.comhandler.set_storage_id(self.storage_id)
         return self.comhandler.list_volumes(context)
 
+    def list_controllers(self, context):
+        pass
+
     def list_alerts(self, context, query_para=None):
         return self.alert_handler.list_alerts(context, query_para)
 

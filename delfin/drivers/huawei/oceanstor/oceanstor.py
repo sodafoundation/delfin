@@ -178,6 +178,9 @@ class OceanStorDriver(driver.StorageDriver):
             raise exception.StorageBackendException(
                 'Failed to get list volumes from OceanStor')
 
+    def list_controllers(self, context):
+        pass
+
     def add_trap_config(self, context, trap_config):
         pass
 

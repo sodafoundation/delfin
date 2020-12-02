@@ -50,6 +50,7 @@ LOG = log.getLogger(__name__)
 MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
+MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
 MIN_STORAGE, MAX_STORAGE = 1, 10
 MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
@@ -164,6 +165,28 @@ class FakeStorageDriver(driver.StorageDriver):
             vs = self._get_volume_range(start, end)
             volume_list = volume_list + vs
         return volume_list
+
+    def list_controllers(self, ctx):
+        rd_controllers_count = random.randint(MIN_CONTROLLERS, MAX_CONTROLLERS)
+        LOG.info("###########fake_controllers for %s: %d" %
+                 (self.storage_id, rd_controllers_count))
+        ctrl_list = []
+        for idx in range(rd_controllers_count):
+            total, used, free = self._get_random_capacity()
+            cpu = ["Intel Xenon", "Intel Core ix", "ARM"]
+            sts = ["normal", "offline", "unknown"]
+            c = {
+                "name": "fake_ctrl_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_controller_id": "fake_original_id_" + str(idx),
+                "location": "loc_" + str(random.randint(0, 99)),
+                "status": sts[random.randint(0, 2)],
+                "memory_size": total,
+                "cpu_info": cpu[random.randint(0, 2)],
+                "soft_version": "ver_" + str(random.randint(0, 999)),
+            }
+            ctrl_list.append(c)
+        return ctrl_list
 
     def add_trap_config(self, context, trap_config):
         pass

@@ -170,6 +170,10 @@ class VolumeNotFound(NotFound):
     msg_fmt = _("Volume {0} could not be found.")
 
 
+class ControllerNotFound(NotFound):
+    msg_fmt = _("Controller {0} could not be found.")
+
+
 class StorageDriverNotFound(NotFound):
     msg_fmt = _("Storage driver '{0}'could not be found.")
 
