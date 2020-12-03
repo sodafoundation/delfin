@@ -50,6 +50,7 @@ LOG = log.getLogger(__name__)
 MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
 MIN_PORTS, MAX_PORTS = 1, 10
+MIN_DISK, MAX_DISK = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
 MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
@@ -230,6 +231,37 @@ class FakeStorageDriver(driver.StorageDriver):
             }
             port_list.append(c)
         return port_list
+
+    def list_disks(self, ctx):
+        rd_disks_count = random.randint(MIN_DISK, MAX_DISK)
+        LOG.info("###########fake_disks for %s: %d" % (self.storage_id,
+                                                       rd_disks_count))
+        disk_list = []
+        for idx in range(rd_disks_count):
+            max_s, normal, remain = self._get_random_capacity()
+            manufacturer = ["Intel", "Seagate", "WD", "Crucial", "HP"]
+            sts = ["normal", "abnormal", "offline"]
+            physical_type = ["sata", "sas", "ssd", "nl-ssd", "unknown"]
+            logic_type = ["free", "member", "hotspare", "cache"]
+            c = {
+                "name": "fake_disk_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_disk_id": "fake_original_id_" + str(idx),
+                "serial_number": "serial_" + str(random.randint(0, 9999)),
+                "manufacturer": manufacturer[random.randint(0, 4)],
+                "model": "model_" + str(random.randint(0, 9999)),
+                "firmware": "firmware_" + str(random.randint(0, 9999)),
+                "speed": normal,
+                "capacity": max_s,
+                "status": sts[random.randint(0, 2)],
+                "physical_type": physical_type[random.randint(0, 4)],
+                "logical_type": logic_type[random.randint(0, 3)],
+                "health_score": random.randint(0, 100),
+                "native_diskgroup_id": "dg_id_" + str(random.randint(0, 99)),
+                "location": "location_" + str(random.randint(0, 99)),
+            }
+            disk_list.append(c)
+        return disk_list
 
     def add_trap_config(self, context, trap_config):
         pass

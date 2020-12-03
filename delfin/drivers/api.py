@@ -99,6 +99,12 @@ class API(object):
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_ports(context)
 
+    def list_disks(self, context, storage_id):
+        """List all disks from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_disks(context)
+
+
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
         pass

@@ -344,6 +344,21 @@ def port_get_all(context, marker=None, limit=None, sort_keys=None,
                              sort_dirs, filters, offset)
 
 
+def disks_create(context, values):
+    """Create multiple disks."""
+    return IMPL.disks_create(context, values)
+
+
+def disks_update(context, values):
+    """Update multiple disks."""
+    return IMPL.disks_update(context, values)
+
+
+def disks_delete(context, values):
+    """Delete multiple disks."""
+    return IMPL.disks_delete(context, values)
+
+
 def disk_create(context, values):
     """Create a disk from the values dictionary."""
     return IMPL.disk_create(context, values)
@@ -351,12 +366,17 @@ def disk_create(context, values):
 
 def disk_update(context, disk_id, values):
     """Update a disk withe the values dictionary."""
-    return IMPL.disk_create(context, disk_id, values)
+    return IMPL.disk_update(context, disk_id, values)
 
 
 def disk_get(context, disk_id):
     """Get a disk or raise an exception if it does not exist."""
     return IMPL.disk_get(context, disk_id)
+
+
+def disk_delete_by_storage(context, storage_id):
+    """Delete a disk or raise an exception if it does not exist."""
+    return IMPL.disk_delete_by_storage(context, storage_id)
 
 
 def disk_get_all(context, marker=None, limit=None, sort_keys=None,
