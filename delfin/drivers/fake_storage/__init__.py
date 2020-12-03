@@ -240,9 +240,12 @@ class FakeStorageDriver(driver.StorageDriver):
         for idx in range(rd_disks_count):
             max_s, normal, remain = self._get_random_capacity()
             manufacturer = ["Intel", "Seagate", "WD", "Crucial", "HP"]
-            sts = ["normal", "abnormal", "offline"]
-            physical_type = ["sata", "sas", "ssd", "nl-ssd", "unknown"]
-            logic_type = ["free", "member", "hotspare", "cache"]
+            sts = list(constants.DiskStatus.ALL)
+            sts_len = len(constants.DiskStatus.ALL) - 1
+            physical_type = list(constants.DiskPhysicalType.ALL)
+            physical_type_len = len(constants.DiskPhysicalType.ALL) - 1
+            logic_type = list(constants.DiskLogicalType.ALL)
+            logic_type_len = len(constants.DiskLogicalType.ALL) - 1
             c = {
                 "name": "fake_disk_" + str(idx),
                 "storage_id": self.storage_id,
@@ -253,9 +256,10 @@ class FakeStorageDriver(driver.StorageDriver):
                 "firmware": "firmware_" + str(random.randint(0, 9999)),
                 "speed": normal,
                 "capacity": max_s,
-                "status": sts[random.randint(0, 2)],
-                "physical_type": physical_type[random.randint(0, 4)],
-                "logical_type": logic_type[random.randint(0, 3)],
+                "status": sts[random.randint(0, sts_len)],
+                "physical_type": physical_type[
+                    random.randint(0, physical_type_len)],
+                "logical_type": logic_type[random.randint(0, logic_type_len)],
                 "health_score": random.randint(0, 100),
                 "native_diskgroup_id": "dg_id_" + str(random.randint(0, 99)),
                 "location": "location_" + str(random.randint(0, 99)),

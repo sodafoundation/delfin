@@ -98,6 +98,24 @@ controllers_list = [{
     "memory_size": 200000,
 }
 ]
+disks_list = [{
+    'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "name": "fake_pool_" + str(id),
+    "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "native_disk_id": "fake_original_id_" + str(id),
+    "serial_number": "serial_3299",
+    "manufacturer": "Intel",
+    "model": "model_4565",
+    "firmware": "firmware_9541",
+    "speed": 751,
+    "capacity": 1074,
+    "status": "offline",
+    "physical_type": "sata",
+    "logical_type": "cache",
+    "health_score": 34,
+    "native_disk_group_id": "",
+}
+]
 
 
 class TestStorageDeviceTask(test.TestCase):
@@ -335,3 +353,49 @@ class TestStoragePortTask(test.TestCase):
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         port_obj.remove()
         self.assertTrue(mock_port_del.called)
+
+
+class TestStorageDiskTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_disks')
+    @mock.patch('delfin.db.disk_get_all')
+    @mock.patch('delfin.db.disks_delete')
+    @mock.patch('delfin.db.disks_update')
+    @mock.patch('delfin.db.disks_create')
+    def test_sync_successful(self, mock_disk_create, mock_disk_update,
+                             mock_disk_del, mock_disk_get_all, mock_list_disks,
+                             get_lock):
+        disk_obj = resources.StorageDiskTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        disk_obj.sync()
+        self.assertTrue(mock_list_disks.called)
+        self.assertTrue(mock_disk_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the disks from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the disks to DB
+        mock_list_disks.return_value = fake_storage_obj.list_disks(context)
+        mock_disk_get_all.return_value = list()
+        disk_obj.sync()
+        self.assertTrue(mock_disk_create.called)
+
+        # update the disks to DB
+        mock_list_disks.return_value = disks_list
+        mock_disk_get_all.return_value = disks_list
+        disk_obj.sync()
+        self.assertTrue(mock_disk_update.called)
+
+        # delete the disks to DB
+        mock_list_disks.return_value = list()
+        mock_disk_get_all.return_value = disks_list
+        disk_obj.sync()
+        self.assertTrue(mock_disk_del.called)
+
+    @mock.patch('delfin.db.disk_delete_by_storage')
+    def test_remove(self, mock_disk_del):
+        disk_obj = resources.StorageDiskTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        disk_obj.remove()
+        self.assertTrue(mock_disk_del.called)
