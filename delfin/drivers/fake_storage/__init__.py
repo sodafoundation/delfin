@@ -174,13 +174,14 @@ class FakeStorageDriver(driver.StorageDriver):
         for idx in range(rd_controllers_count):
             total, used, free = self._get_random_capacity()
             cpu = ["Intel Xenon", "Intel Core ix", "ARM"]
-            sts = ["normal", "offline", "unknown"]
+            sts = list(constants.ControllerStatus.ALL)
+            sts_len = len(constants.ControllerStatus.ALL) - 1
             c = {
                 "name": "fake_ctrl_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_controller_id": "fake_original_id_" + str(idx),
                 "location": "loc_" + str(random.randint(0, 99)),
-                "status": sts[random.randint(0, 2)],
+                "status": sts[random.randint(0, sts_len)],
                 "memory_size": total,
                 "cpu_info": cpu[random.randint(0, 2)],
                 "soft_version": "ver_" + str(random.randint(0, 999)),
