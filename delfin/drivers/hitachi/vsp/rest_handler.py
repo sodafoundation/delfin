@@ -40,10 +40,10 @@ class RestHandler(RestClient):
         self.device_model = None
         self.serial_number = None
 
-    def call(self, url, data=None, method=None):
+    def call(self, url, data=None, method=None,
+             calltimeout=consts.SOCKET_TIMEOUT):
         try:
-            res = self.do_call(url, data, method,
-                               calltimeout=consts.SOCKET_TIMEOUT)
+            res = self.do_call(url, data, method, calltimeout)
             if (res.status_code == consts.ERROR_SESSION_INVALID_CODE
                     or res.status_code ==
                     consts.ERROR_SESSION_IS_BEING_USED_CODE):
@@ -57,8 +57,7 @@ class RestHandler(RestClient):
                 access_session = self.login()
                 if access_session is not None:
                     res = self. \
-                        do_call(url, data, method,
-                                calltimeout=consts.SOCKET_TIMEOUT)
+                        do_call(url, data, method, calltimeout)
                 else:
                     LOG.error('Login error,get access_session failed')
             elif res.status_code == 503:
@@ -69,11 +68,11 @@ class RestHandler(RestClient):
         except Exception as e:
             err_msg = "Get RestHandler.call failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+            raise e
 
-    def get_rest_info(self, url, data=None):
+    def get_rest_info(self, url, timeout=consts.SOCKET_TIMEOUT, data=None):
         result_json = None
-        res = self.call(url, data, 'GET')
+        res = self.call(url, data, 'GET', timeout)
         if res.status_code == 200:
             result_json = res.json()
         return result_json
@@ -96,8 +95,7 @@ class RestHandler(RestClient):
                             self.rest_username,
                             cryptor.decode(self.rest_password))
                     res = self. \
-                        do_call(url, data, 'POST',
-                                calltimeout=consts.SOCKET_TIMEOUT)
+                        do_call(url, data, 'POST', 10)
                     if res.status_code == 200:
                         result = res.json()
                         self.session_id = result.get('sessionId')
@@ -109,7 +107,7 @@ class RestHandler(RestClient):
                         LOG.error("Login error. URL: %(url)s\n"
                                   "Reason: %(reason)s.",
                                   {"url": url, "reason": res.text})
-                        if 'invalid username or password' in res.text:
+                        if 'authentication failed' in res.text:
                             raise exception.InvalidUsernameOrPassword()
                         else:
                             raise exception.BadResponse(res.text)
@@ -192,12 +190,13 @@ class RestHandler(RestClient):
         return result_json
 
     def get_all_volumes(self):
-        url = '%s/%s/ldevs' % \
-              (RestHandler.COMM_URL, self.storage_device_id)
+        url = '%s/%s/ldevs?ldevOption=defined&count=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id,
+               consts.MAX_LDEV_NUMBER_OF_RESTAPI)
         result_json = self.get_rest_info(url)
         return result_json
 
     def get_system_info(self):
-        result_json = self.get_rest_info(RestHandler.COMM_URL)
+        result_json = self.get_rest_info(RestHandler.COMM_URL, timeout=10)
 
         return result_json

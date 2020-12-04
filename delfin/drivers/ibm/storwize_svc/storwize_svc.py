@@ -14,6 +14,7 @@
 
 from delfin.drivers import driver
 from delfin.drivers.ibm.storwize_svc import ssh_handler
+from delfin.drivers.ibm.storwize_svc.ssh_handler import SSHHandler
 
 
 class StorwizeSVCDriver(driver.StorageDriver):
@@ -46,7 +47,7 @@ class StorwizeSVCDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_alert(context, alert):
-        return ssh_handler.SSHHandler().parse_alert(alert)
+        return SSHHandler.parse_alert(alert)
 
     def clear_alert(self, context, alert):
         pass
