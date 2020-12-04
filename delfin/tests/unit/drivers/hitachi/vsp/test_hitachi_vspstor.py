@@ -391,12 +391,3 @@ class TestHitachiVspStorStorageDriver(TestCase):
             m.raise_for_status.return_value = 200
             m.json.return_value = GET_ALL_VOLUMES
             self.driver.list_volumes(context)
-
-    def test_add_trap_config(self):
-        self.driver.add_trap_config(context, None)
-
-    def test_remove_trap_config(self):
-        self.driver.remove_trap_config(context, None)
-
-    def test_clear_alert(self):
-        self.driver.clear_alert(context, None)
