@@ -51,9 +51,9 @@ GET_DEVICE_ID = {
     "data": [
         {
             "storageDeviceId": "800000011633",
-            "model": "VSP G350",
+            "model": "VSP F1500",
             "serialNumber": 11633,
-            "svpIp": "110.143.132.231"
+            "svpIp": "110.143.132.231",
         }
     ]
 }
@@ -159,10 +159,10 @@ ALERT_INFO = [
 ]
 
 storage_result = {
-    'name': 'VSP G350_110.143.132.231',
+    'name': 'VSP F1500_110.143.132.231',
     'vendor': 'Hitachi',
     'description': 'Hitachi VSP Storage',
-    'model': 'VSP G350',
+    'model': 'VSP F1500',
     'status': 'normal',
     'serial_number': '11633',
     'firmware_version': '80-06-70/00',
@@ -176,7 +176,7 @@ storage_result = {
 volume_result = [
     {
         'name': 'ldev_0',
-        'storage_id': 12345,
+        'storage_id': '12345',
         'description': 'Hitachi VSP volume',
         'status': 'normal',
         'native_volume_id': '0',
@@ -185,15 +185,15 @@ volume_result = [
         'total_capacity': 2835691339776,
         'used_capacity': 2835691339776,
         'free_capacity': 0,
-        'compressed': True,
-        'deduplicated': True,
+        'compressed': False,
+        'deduplicated': False,
     }
 ]
 
 pool_result = [
     {
         'name': 'p3-1',
-        'storage_id': 12345,
+        'storage_id': '12345',
         'native_storage_pool_id': '0',
         'description': 'Hitachi VSP Pool',
         'status': 'normal',
@@ -203,6 +203,34 @@ pool_result = [
         'free_capacity': 8175312961536,
     }
 ]
+
+alert_result = [
+    {
+        'location': 'test',
+        'alarm_id': '223232',
+        'sequence_number': '1111111',
+        'description': 'test alert',
+        'alert_name': 'someting wrong',
+        'resource_type': 'Storage',
+        'occur_time': 1605838210000,
+        'category': 'Fault',
+        'type': 'EquipmentAlarm',
+        'severity': 'Major',
+    }
+]
+
+trap_alert_result = {
+    'alert_id': 'eeeeeeeee',
+    'alert_name': 'ddddddd',
+    'severity': 'Critical',
+    'category': 'Fault',
+    'type': 'EquipmentAlarm',
+    'occur_time': 1605852610000,
+    'description': 'ddddddd',
+    'resource_type': 'Storage',
+    'location': ' System Version = 7.4.0.11 '
+}
+
 
 def create_driver():
     kwargs = ACCESS_INFO
@@ -236,30 +264,34 @@ class TestHitachiVspStorStorageDriver(TestCase):
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[GET_ALL_POOLS, GET_SPECIFIC_STORAGE])
         storage = self.driver.get_storage(context)
-        self.assertEqual(storage, storage_result)
+        self.assertDictEqual(storage, storage_result)
 
     def test_list_storage_pools(self):
         RestHandler.get_rest_info = mock.Mock(return_value=GET_ALL_POOLS)
         pool = self.driver.list_storage_pools(context)
-        self.assertEqual(pool, pool_result)
+        self.assertDictEqual(pool[0], pool_result[0])
 
     def test_list_volumes(self):
         RestHandler.get_rest_info = mock.Mock(return_value=GET_ALL_VOLUMES)
         volume = self.driver.list_volumes(context)
-        self.assertEqual(volume, volume_result)
+        self.assertDictEqual(volume[0], volume_result[0])
 
     def test_list_alerts(self):
+        result_list = []
         RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
         RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
         RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
-        self.driver.list_alerts(context)
+        alert_list = self.driver.list_alerts(context)
+        self.assertEqual(alert_list, result_list)
 
     def test_parse_queried_alerts(self):
         alert_list = []
         HitachiVspDriver.parse_queried_alerts(ALERT_INFO, alert_list)
+        self.assertDictEqual(alert_list[0], alert_result[0])
 
     def test_parse_alert(self):
-        self.driver.parse_alert(context, TRAP_INFO)
+        trap_alert = self.driver.parse_alert(context, TRAP_INFO)
+        self.assertDictEqual(trap_alert, trap_alert_result)
 
     def test_rest_close_connection(self):
         m = mock.MagicMock(status_code=200)
