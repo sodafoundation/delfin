@@ -197,21 +197,27 @@ class FakeStorageDriver(driver.StorageDriver):
         port_list = []
         for idx in range(rd_ports_count):
             max_s, normal, remain = self._get_random_capacity()
-            conn_sts = ["connected", "disconnected", "unknown"]
-            health_sts = ["normal", "abnormal", "unknown"]
-            port_type = ["FC", "ISCSI", "FICON", "FCoE", "ETH",
-                         "SAS", "OTHER", "IB"]
-            logic_type = ["frontend", "backend", "service", "management",
-                          "internal", "maintenance", "interconnect", "other"]
+            conn_sts = list(constants.PortConnectionStatus.ALL)
+            conn_sts_len = len(constants.PortConnectionStatus.ALL) - 1
+            health_sts = list(constants.PortHealthStatus.ALL)
+            health_sts_len = len(constants.PortHealthStatus.ALL) - 1
+            port_type = list(constants.PortType.ALL)
+            port_type_len = len(constants.PortType.ALL) - 1
+            logic_type = list(constants.PortLogicalType.ALL)
+            logic_type_len = len(constants.PortLogicalType.ALL) - 1
             c = {
                 "name": "fake_port_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_port_id": "fake_original_id_" + str(idx),
                 "location": "location_" + str(random.randint(0, 99)),
-                "connection_status": conn_sts[random.randint(0, 2)],
-                "health_status": health_sts[random.randint(0, 2)],
-                "type": port_type[random.randint(0, 7)],
-                "logical_type": logic_type[random.randint(0, 7)],
+                "connection_status": conn_sts[
+                    random.randint(0, conn_sts_len)],
+                "health_status": health_sts[
+                    random.randint(0, health_sts_len)],
+                "type": port_type[
+                    random.randint(0, port_type_len)],
+                "logical_type": logic_type[
+                    random.randint(0, logic_type_len)],
                 "speed": normal,
                 "max_speed": max_s,
                 "native_parent_id": "parent_id_" + str(random.randint(0, 99)),

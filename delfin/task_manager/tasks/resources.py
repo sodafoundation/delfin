@@ -296,6 +296,7 @@ class StorageControllerTask(StorageResourceTask):
                  .format(self.storage_id))
         db.controller_delete_by_storage(self.context, self.storage_id)
 
+
 class StoragePortTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StoragePortTask, self).__init__(context, storage_id)

@@ -308,7 +308,7 @@ def port_create(context, values):
 
 def port_update(context, port_id, values):
     """Update a port with the values dictionary."""
-    return IMPL.port_create(context, port_id, values)
+    return IMPL.port_update(context, port_id, values)
 
 
 def port_get(context, port_id):
