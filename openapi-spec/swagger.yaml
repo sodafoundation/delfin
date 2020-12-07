@@ -587,6 +587,166 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
+  /v1/controllers:
+    get:
+      tags:
+        - Controllers
+      description: List all controllers.
+      parameters:
+        - name: limit
+          in: query
+          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The controller name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a controller.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_controller_id
+          in: query
+          description: Actual ID of the controller in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: storage_id
+          in: query
+          description: Database ID created for a storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: The controller status
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - normal
+              - offline
+              - unknown
+      responses:
+        '200':
+          description: List controllers query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - controllers
+                additionalProperties: true
+                properties:
+                  controllers:
+                    type: array
+                    title: the controllers schema
+                    items:
+                      $ref: '#/components/schemas/ControllerSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/controllers/{id}':
+    get:
+      tags:
+        - Controllers
+      description: Get controller detail by controller ID.
+      parameters:
+        - name: id
+          in: path
+          description: Database ID created for a controller.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControllerSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '404':
+          description: The resource does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
   /v1/volumes:
     get:
       tags:
@@ -1322,6 +1482,47 @@ components:
             free_capacity:
               type: integer
               format: int64
+
+    ControllerSpec:
+      description: >-
+        A controller is discovered and updated by task manager.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - required:
+            - id
+            - name
+          type: object
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_controller_id:
+              type: string
+              readOnly: true
+              example: Controller_A
+            soft_version:
+              type: string
+            location:
+              type: string
+            status:
+              type: string
+              enum:
+                - normal
+                - offline
+                - unknown
+            cpu_info:
+              type: string
+            memory_size:
+              type: integer
+              format: int64
+
     VolumeRespSpec:
       description:
         Volume is an device created by storage service, it can be attached to
