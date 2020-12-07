@@ -317,6 +317,82 @@ trap_info = {
     'storage_id': '4992d7f5-4f73-4123-a27b-6e27889f3852'
 }
 
+storage_result = {
+    'name': 'Cluster_192.168.70.125',
+    'vendor': 'IBM',
+    'model': 'IBM Storwize V7000',
+    'status': 'normal',
+    'serial_number': '78N16G4',
+    'firmware_version': '7.4.0.11',
+    'location': 'local',
+    'total_capacity': 8961019766374,
+    'raw_capacity': 12006666975313,
+    'subscribed_capacity': 0,
+    'used_capacity': 5552533720268,
+    'free_capacity': 3408486046105
+}
+
+pool_result = [
+    {
+        'name': 'mdiskgrp0',
+        'storage_id': '12345',
+        'native_storage_pool_id': '1',
+        'description': '',
+        'status': 'normal',
+        'storage_type': 'block',
+        'subscribed_capacity': 6058309069045,
+        'total_capacity': 8939029533818,
+        'used_capacity': 5552533720268,
+        'free_capacity': 3364505580994
+    }
+]
+
+volume_result = [
+    {
+        'description': '',
+        'status': 'normal',
+        'total_capacity': 53687091200,
+        'used_capacity': 53687091200,
+        'type': 'thick',
+        'free_capacity': 0,
+        'native_volume_id': '0',
+        'deduplicated': True,
+        'native_storage_pool_id': '1',
+        'wwn': '60050768028401F87C00000000000000',
+        'compressed': False,
+        'name': 'V7000LUN_Mig',
+        'storage_id': '12345'
+    }
+]
+
+alert_result = [
+    {
+        'type': 'EquipmentAlarm',
+        'location': 'node1',
+        'category': 'Fault',
+        'occur_time': 1605085070000,
+        'sequence_number': '101',
+        'resource_type': 'node',
+        'alert_name': 'Error log cleared',
+        'severity': 'Informational',
+        'alert_id': '980221',
+        'description': 'Error log cleared'
+    }
+]
+
+trap_alert_result = {
+    'alert_id': '981004',
+    'type': 'EquipmentAlarm',
+    'severity': 'Informational',
+    'sequence_number': '165',
+    'description': 'FC discovery occurred, no configuration changes were detected',
+    'occur_time': 1604970507000,
+    'alert_name': 'FC discovery occurred, no configuration changes were detected',
+    'resource_type': 'cluster',
+    'location': 'Cluster_192.168.70.125',
+    'category': 'Fault'
+}
+
 
 def create_driver():
 
@@ -339,32 +415,36 @@ class TestStorwizeSvcStorageDriver(TestCase):
             return_value={paramiko.SSHClient()})
         SSHHandler.do_exec = mock.Mock(
             side_effect=[system_info, enclosure_info])
-        self.driver.get_storage(context)
+        storage = self.driver.get_storage(context)
+        self.assertDictEqual(storage, storage_result)
 
     def test_list_storage_pools(self):
         SSHPool.get = mock.Mock(
             return_value={paramiko.SSHClient()})
         SSHHandler.do_exec = mock.Mock(
             side_effect=[pools_info, pool_info])
-        self.driver.list_storage_pools(context)
+        pool = self.driver.list_storage_pools(context)
+        self.assertDictEqual(pool[0], pool_result[0])
 
     def test_list_volumes(self):
         SSHPool.get = mock.Mock(
             return_value={paramiko.SSHClient()})
         SSHHandler.do_exec = mock.Mock(
             side_effect=[volumes_info, volume_info])
-        self.driver.list_volumes(context)
+        volume = self.driver.list_volumes(context)
+        self.assertDictEqual(volume[0], volume_result[0])
 
     def test_list_alerts(self):
         query_para = {
-            "begin_time": 160508506000,
-            "end_time": 160508507000
+            "begin_time": 1605085070000,
+            "end_time": 1605085070000
         }
         SSHPool.get = mock.Mock(
             return_value={paramiko.SSHClient()})
         SSHHandler.do_exec = mock.Mock(
             side_effect=[alerts_info, alert_info])
-        self.driver.list_alerts(context, query_para)
+        alert = self.driver.list_alerts(context, query_para)
+        self.assertDictEqual(alert[0], alert_result[0])
 
     def test_list_storage_with_error(self):
         with self.assertRaises(Exception) as exc:
@@ -405,19 +485,8 @@ class TestStorwizeSvcStorageDriver(TestCase):
         ssh_pool.remove(ssh)
 
     def test_parse_alert(self):
-        self.driver.parse_alert(context, trap_info)
+        alert = self.driver.parse_alert(context, trap_info)
+        self.assertDictEqual(alert, trap_alert_result)
 
     def test_reset_connection(self):
         self.driver.reset_connection(context, **ACCESS_INFO)
-
-    def test_add_trap_config(self):
-        trap_config = ''
-        self.driver.add_trap_config(context, trap_config)
-
-    def test_remove_trap_config(self):
-        trap_config = ''
-        self.driver.remove_trap_config(context, trap_config)
-
-    def test_clear_alert(self):
-        alert = ''
-        self.driver.clear_alert(context, alert)
