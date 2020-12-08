@@ -272,6 +272,18 @@ class ArrayPerformanceCollection(PerformanceCollectionTask):
             array_metrics = self.driver_api.collect_array_metrics(
                 self.context, self.storage_id, self.interval,
                 self.is_historic)
+            # fill extra labels to metric by fetching metadata from resource DB
+            try:
+                array_details = db.storage_get(self.context, storage_id=self
+                                               .storage_id)
+                for m in array_metrics:
+                    m.labels["name"] = array_details.name
+                    m.labels["serial_number"] = array_details.serial_number
+
+            except Exception as e:
+                msg = _('Failed to add extra labels to array performance '
+                        'metrics: {0}'.format(e))
+                LOG.error(msg)
 
             self.perf_exporter.dispatch(self.context, array_metrics)
 
