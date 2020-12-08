@@ -17,9 +17,9 @@ import requests
 import six
 from oslo_log import log as logging
 
+from delfin import cryptor
 from delfin import exception
 from delfin import ssl_utils
-# from delfin import cryptor
 from delfin.drivers.dell_emc.unity import consts
 from delfin.drivers.utils.rest_client import RestClient
 
@@ -54,8 +54,7 @@ class RestHandler(RestClient):
                 LOG.error(
                     "Failed to get token=={0}=={1},get it again".format(
                         res.status_code, res.text))
-                if method == 'DELETE' and RestHandler. \
-                        REST_LOGOUT_URL in url:
+                if RestHandler.REST_LOGOUT_URL in url:
                     return res
                 self.rest_auth_token = None
                 access_session = self.login()
@@ -69,15 +68,13 @@ class RestHandler(RestClient):
                     LOG.error('Login res is None')
             elif res.status_code == 503:
                 raise exception.InvalidResults(res.text)
-
             return res
-
         except Exception as e:
             err_msg = "Get RestHandler.call failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+            raise e
 
-    def get_rest_info(self, url, data=None, method=None, params=None):
+    def get_rest_info(self, url, data=None, method='GET', params=None):
         result_json = None
         res = self.call(url, data, method, params)
         if res.status_code == 200:
@@ -94,8 +91,7 @@ class RestHandler(RestClient):
             "X-EMC-REST-CLIENT": "true"})
         self.session.auth = requests.auth.HTTPBasicAuth(
             self.rest_username,
-            # cryptor.decode(self.rest_client.rest_password))
-            self.rest_password)
+            cryptor.decode(self.rest_password))
         if not self.verify:
             self.session.verify = False
         else:
@@ -130,7 +126,6 @@ class RestHandler(RestClient):
                         raise exception.BadResponse(res.text)
             else:
                 LOG.error('Login Parameter error')
-
             return access_session
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
@@ -160,7 +155,7 @@ class RestHandler(RestClient):
             "fields": "name,model,serialNumber,health"
         }
         result_json = self.get_rest_info(RestHandler.REST_STORAGE_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def get_capacity(self):
@@ -169,7 +164,7 @@ class RestHandler(RestClient):
                       "sizeSubscribed,totalLogicalSize"
         }
         result_json = self.get_rest_info(RestHandler.REST_CAPACITY_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def get_all_pools(self):
@@ -178,7 +173,7 @@ class RestHandler(RestClient):
                       "sizeTotal,sizeUsed,sizeSubscribed"
         }
         result_json = self.get_rest_info(RestHandler.REST_POOLS_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def get_all_luns(self):
@@ -187,7 +182,7 @@ class RestHandler(RestClient):
                       "sizeTotal,sizeUsed,pool,wwn,isThinEnabled"
         }
         result_json = self.get_rest_info(RestHandler.REST_LUNS_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def get_all_filesystem(self):
@@ -196,7 +191,7 @@ class RestHandler(RestClient):
                       "sizeTotal,sizeUsed,pool,wwn,isThinEnabled"
         }
         result_json = self.get_rest_info(RestHandler.REST_FILESYSTEM_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def get_all_alerts(self, page_size):
@@ -206,7 +201,7 @@ class RestHandler(RestClient):
             "page": page_size
         }
         result_json = self.get_rest_info(RestHandler.REST_ALERTS_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def get_soft_version(self):
@@ -214,7 +209,7 @@ class RestHandler(RestClient):
             "fields": "version"
         }
         result_json = self.get_rest_info(RestHandler.REST_SOFT_VERSION_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def get_disk_info(self):
@@ -222,7 +217,7 @@ class RestHandler(RestClient):
             "fields": "rawSize"
         }
         result_json = self.get_rest_info(RestHandler.REST_DISK_URL,
-                                         method='GET', params=params)
+                                         params=params)
         return result_json
 
     def remove_alert(self, alert_id):

@@ -48,7 +48,8 @@ ACCESS_INFO = {
     }
 }
 GET_STORAGE = {
-    "@base": "https://8.44.162.244/api/types/system/instances?fields=name,model,serialNumber,health&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/system/instances?fields=name,"
+             "model,serialNumber,health&per_page=2000",
     "updated": "2020-10-19T08:38:21.009Z",
     "links": [
         {
@@ -74,13 +75,13 @@ GET_STORAGE = {
                         "ALRT_SYSTEM_MAJOR_FAILURE"
                     ],
                     "descriptions": [
-                        "The system has experienced one or more major failures, which have significant impact on the system. You need to take immediate action. Check related alerts and fix the underlying problems."
+                        "The system has experienced one or more major failures"
                     ],
                     "resolutionIds": [
                         "fix_problems"
                     ],
                     "resolutions": [
-                        "/help/webhelp/en_US/index.html?#unity_t_fix_underlying_problems.html"
+                        "/help/webhelp/en_US/index.html?#unity_t_fix_"
                     ]
                 },
                 "name": "CETV3182000026",
@@ -91,7 +92,7 @@ GET_STORAGE = {
     ]
 }
 GET_CAPACITY = {
-    "@base": "https://8.44.162.244/api/types/systemCapacity/instances?fields=sizeFree,sizeTotal,sizeUsed,sizeSubscribed,totalLogicalSize&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/systemCapacity/instances",
     "updated": "2020-10-19T08:42:43.788Z",
     "links": [
         {
@@ -121,7 +122,7 @@ GET_CAPACITY = {
     ]
 }
 GET_SOFT_VERSION = {
-    "@base": "https://8.44.162.244/api/types/installedSoftwareVersion/instances?fields=id&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/installedSoftwareVersion",
     "updated": "2020-10-19T08:42:43.788Z",
     "links": [
         {
@@ -131,7 +132,7 @@ GET_SOFT_VERSION = {
     ],
     "entries": [
         {
-            "@base": "https://8.44.162.244/api/instances/installedSoftwareVersion",
+            "@base": "https://8.44.162.244/api/instances",
             "updated": "2020-10-19T08:42:43.788Z",
             "links": [
                 {
@@ -146,7 +147,7 @@ GET_SOFT_VERSION = {
     ]
 }
 GET_DISK_INFO = {
-    "@base": "https://8.44.162.244/api/types/disk/instances?fields=rawSize&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/disk/instances?fields=rawSize",
     "updated": "2020-10-19T08:42:43.788Z",
     "links": [
         {
@@ -172,7 +173,7 @@ GET_DISK_INFO = {
     ]
 }
 GET_ALL_POOLS = {
-    "@base": "https://8.44.162.244/api/types/pool/instances?fields=id,name,health,type,sizeFree,sizeTotal,sizeUsed,sizeSubscribed&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/pool/instances",
     "updated": "2020-10-19T08:45:43.217Z",
     "links": [
         {
@@ -201,15 +202,13 @@ GET_ALL_POOLS = {
                         "ALRT_POOL_DRIVE_EOL_IN_60_DAYS"
                     ],
                     "descriptions": [
-                        "This storage pool has exceeded the capacity threshold you specified. To allocate more storage space, add additional disks to your system.",
-                        "Pool has one or more drives predicted to wear out in less than 90 days. The storage system will automatically replace the affected drives with no data loss when they reach end-of-life.",
-                        "The pool has Flash drives of a specific type that are predicted to exceed end-of-life thresholds within 60 days. The storage system does not have enough free drives of the same type to replace them. Add the required drives to the pool."
+                        "This storage pool has exceeded the capacity",
                     ],
                     "resolutionIds": [
                         "pool_add_space"
                     ],
                     "resolutions": [
-                        "/help/webhelp/en_US/index.html?#unity_c_storage_pool_at_or_near_full_capacity.html"
+                        "/help/webhelp/en_US/index.html"
                     ]
                 },
                 "name": "pool1",
@@ -222,7 +221,7 @@ GET_ALL_POOLS = {
     ]
 }
 GET_ALL_LUNS = {
-    "@base": "https://8.44.162.244/api/types/lun/instances?fields=id,name,health,type,sizeAllocated,sizeTotal,sizeUsed,pool,wwn&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/lun/instances",
     "updated": "2020-10-19T08:55:15.776Z",
     "links": [
         {
@@ -294,7 +293,7 @@ GET_ALL_LUNS = {
     ]
 }
 GET_ALL_ALERTS = {
-    "@base": "https://8.44.162.244/api/types/alert/instances?fields=id,timestamp,severity,component,messageId,message,description,descriptionId,resolution,resolutionId&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/alert/instances",
     "updated": "2020-10-19T09:02:57.980Z",
     "links": [
         {
@@ -325,11 +324,12 @@ GET_ALL_ALERTS = {
                     "resource": "host"
                 },
                 "messageId": "14:608fe",
-                "message": "Host hpux11iv2 does not have any initiators logged into the storage system.",
+                "message": "Host hpux11iv2 does not have any initiators"
+                           " logged into the storage system.",
                 "descriptionId": "ALRT_HOST_NO_LOGGED_IN_INITIATORS",
-                "description": "The host does not have any initiators logged into the storage system. Register one or more initiators on the host to the storage system. This may also require zoning changes on the switches.",
+                "description": "The host does not have any initiators.",
                 "resolutionId": "AddIntrWiz",
-                "resolution": "/help/webhelp/en_US/index.html?#unity_t_add_initiators.html"
+                "resolution": "/help/webhelp/en_US/index.html"
             }
         },
         {
@@ -352,7 +352,7 @@ GET_ALL_ALERTS = {
                 "messageId": "14:608fc",
                 "message": "Host hpux11iv2 is operating normally.",
                 "descriptionId": "ALRT_COMPONENT_OK",
-                "description": "The component is operating normally. No action is required.",
+                "description": "The component is operating normally.",
                 "resolutionId": "0",
                 "resolution": "0"
             }
@@ -360,7 +360,7 @@ GET_ALL_ALERTS = {
     ]
 }
 GET_ALL_ALERTS_NULL = {
-    "@base": "https://8.44.162.244/api/types/alert/instances?fields=id,timestamp,severity,component,messageId,message,description,descriptionId,resolution,resolutionId&per_page=2000",
+    "@base": "https://8.44.162.244/api/types/alert/instances",
     "updated": "2020-10-19T09:02:57.980Z",
     "links": [
         {
@@ -489,10 +489,11 @@ alert_result = [
         'occur_time': 1602464992000,
         'type': 'EquipmentAlarm',
         'sequence_number': 'alert_31523',
-        'alert_name': 'Host hpux11iv2 does not have any initiators logged into the storage system.',
+        'alert_name': 'Host hpux11iv2 does not have any initiators '
+                      'logged into the storage system.',
         'resource_type': 'Storage',
         'alert_id': '14:608fe',
-        'description': 'The host does not have any initiators logged into the storage system. Register one or more initiators on the host to the storage system. This may also require zoning changes on the switches.',
+        'description': 'The host does not have any initiators.',
         'category': 'Fault'
     }, {
         'severity': 'Informational',
@@ -503,7 +504,7 @@ alert_result = [
         'alert_name': 'Host hpux11iv2 is operating normally.',
         'resource_type': 'Storage',
         'alert_id': '14:608fc',
-        'description': 'The component is operating normally. No action is required.',
+        'description': 'The component is operating normally.',
         'category': 'Fault'
     }
 ]

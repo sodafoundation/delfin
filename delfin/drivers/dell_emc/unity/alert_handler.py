@@ -80,7 +80,8 @@ class AlertHandler(object):
             occur_time = time.strptime(occur_time, pattern)
             alert_model['occur_time'] = int(time.mktime(occur_time) *
                                             AlertHandler.SECONDS_TO_MS)
-            alert_model['description'] = alert.get(AlertHandler.OID_SYMPTOMTEXT)
+            alert_model['description'] = alert.get(
+                AlertHandler.OID_SYMPTOMTEXT)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = alert.get(AlertHandler.OID_NODE)
 
@@ -118,8 +119,8 @@ class AlertHandler(object):
                     'content').get('message')
                 alert_model['severity'] = self.ALERT_LEVEL_MAP.get(
                     alert.get('content').get('severity'),
-                    constants.Severity.NOT_SPECIFIED)
-                alert_model['category'] = 'Fault'
+                    constants.Severity.INFORMATIONAL)
+                alert_model['category'] = constants.Category.FAULT
                 alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
                 alert_model['sequence_number'] = alert.get('content').get('id')
                 alert_model['occur_time'] = int(occur_time *
