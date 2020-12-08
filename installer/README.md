@@ -10,10 +10,11 @@ Note: If you don't have python3 in your system, you may follow below steps to se
 
 ##### How to setup python3 virtual environment and delfin project
 
-1. Install python-virtual environment package
+1. Install python-virtual environment package and python3-dev package.
 
   ```sh
   apt-get install python-virtualenv
+  apt-get install python3-dev
   ```
 2. Clone delfin repo
 
