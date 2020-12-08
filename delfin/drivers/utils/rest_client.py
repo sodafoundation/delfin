@@ -65,7 +65,7 @@ class RestClient(object):
                            ssl_utils.get_host_name_ignore_adapter())
 
     def do_call(self, url, data, method,
-                calltimeout=consts.SOCKET_TIMEOUT):
+                calltimeout=consts.SOCKET_TIMEOUT, params=None):
         if 'http' not in url:
             if self.san_address:
                 url = '%s%s' % (self.san_address, url)
@@ -73,6 +73,8 @@ class RestClient(object):
         kwargs = {'timeout': calltimeout}
         if data:
             kwargs['data'] = json.dumps(data)
+        if params:
+            kwargs['params'] = params
 
         if method in ('POST', 'PUT', 'GET', 'DELETE'):
             func = getattr(self.session, method.lower())
