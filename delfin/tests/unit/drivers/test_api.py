@@ -281,7 +281,7 @@ class TestDriverAPI(TestCase):
     @mock.patch('delfin.db.access_info_create')
     @mock.patch('delfin.db.storage_get_all')
     def test_list_controllers(self, mock_storage, mock_access_info,
-                          mock_storage_create, mock_fake):
+                              mock_storage_create, mock_fake):
         storage = copy.deepcopy(STORAGE)
         storage['id'] = '12345'
         mock_storage.return_value = None

@@ -22,9 +22,8 @@ class ControllerController(wsgi.Controller):
 
     def __init__(self):
         super(ControllerController, self).__init__()
-        self.search_options = ['name', 'status', 'id', 'storage_id', 'wwn',
-                               'native_controller_id',
-                               'native_storage_pool_id']
+        self.search_options = ['name', 'status', 'id', 'storage_id',
+                               'native_controller_id']
 
     def _get_controllers_search_options(self):
         """Return controllers search options allowed ."""
