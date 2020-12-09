@@ -38,7 +38,7 @@ class OceanStorDriver(driver.StorageDriver):
         storage = self.client.get_storage()
 
         # Get firmware version
-        controller = self.client.get_controller()
+        controller = self.client.get_all_controllers()
         firmware_ver = controller[0]['SOFTVER']
 
         # Get status
@@ -179,7 +179,37 @@ class OceanStorDriver(driver.StorageDriver):
                 'Failed to get list volumes from OceanStor')
 
     def list_controllers(self, context):
-        pass
+        try:
+            # Get list of OceanStor controller details
+            controllers = self.client.get_all_controllers()
+
+            controller_list = []
+            for controller in controllers:
+                status = constants.ControllerStatus.NORMAL
+                if controller['RUNNINGSTATUS'] == consts.STATUS_CTRLR_UNKNOWN:
+                    status = constants.ControllerStatus.UNKNOWN
+                if controller['RUNNINGSTATUS'] == consts.STATUS_CTRLR_OFFLINE:
+                    status = constants.ControllerStatus.OFFLINE
+
+                c = {
+                    'name': controller['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_controller_id': controller['ID'],
+                    'status': status,
+                    'location': controller['LOCATION'],
+                    'soft_version': controller['SOFTVER'],
+                    'cpu_info': controller['CPUINFO'],
+                    'memory_size': controller['MEMORYSIZE'],
+                }
+                controller_list.append(c)
+
+            return controller_list
+
+        except Exception as err:
+            LOG.error("Failed to get controller metrics from OceanStor: {}"
+                      .format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get controller metrics from OceanStor')
 
     def list_ports(self, context):
         pass

@@ -253,7 +253,7 @@ class RestClient(object):
 
         return result['data']
 
-    def get_controller(self):
+    def get_all_controllers(self):
         url = "/controller"
         result = self.call(url, method='GET', log_filter_flag=True)
 
