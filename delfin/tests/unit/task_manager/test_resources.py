@@ -85,7 +85,6 @@ ports_list = [{
 }
 ]
 
-
 controllers_list = [{
     'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a222',
     "name": "fake_controller_" + str(id),
@@ -98,6 +97,7 @@ controllers_list = [{
     "memory_size": 200000,
 }
 ]
+
 disks_list = [{
     'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
     "name": "fake_pool_" + str(id),

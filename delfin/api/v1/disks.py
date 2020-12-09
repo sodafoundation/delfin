@@ -22,8 +22,8 @@ class DiskController(wsgi.Controller):
 
     def __init__(self):
         super(DiskController, self).__init__()
-        self.search_options = ['name', 'status', 'id', 'storage_id', 'wwn',
-                               'native_controller_id', 'native_disk_id']
+        self.search_options = ['name', 'status', 'id', 'storage_id',
+                               'native_disk_id']
 
     def _get_disks_search_options(self):
         """Return disks search options allowed ."""

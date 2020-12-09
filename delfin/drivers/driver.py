@@ -56,6 +56,7 @@ class StorageDriver(object):
     @abc.abstractmethod
     def list_ports(self, context):
         """List all ports from storage system."""
+        pass
 
     @abc.abstractmethod
     def list_disks(self, context):

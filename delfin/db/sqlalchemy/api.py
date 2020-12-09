@@ -923,7 +923,6 @@ def disks_delete(context, disks_id_list):
             if not result:
                 LOG.error(exception.DiskNotFound(disk_id))
 
-
     return
 
 
