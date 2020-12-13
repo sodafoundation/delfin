@@ -212,7 +212,102 @@ class OceanStorDriver(driver.StorageDriver):
                 reason='Failed to get controller metrics from OceanStor')
 
     def list_ports(self, context):
-        pass
+        try:
+            # Get list of OceanStor port details
+            ports = self.client.get_all_ports()
+            logic_type_dict = {
+                consts.PORT_LOGICTYPE_HOST: constants.PortLogicalType.SERVICE,
+                consts.PORT_LOGICTYPE_EXPANSION: constants.PortLogicalType.OTHER,
+                consts.PORT_LOGICTYPE_MANAGEMENT: constants.PortLogicalType.MANAGEMENT,
+                consts.PORT_LOGICTYPE_INTERNAL: constants.PortLogicalType.INTERNAL,
+                consts.PORT_LOGICTYPE_MAINTENANCE: constants.PortLogicalType.MAINTENANCE,
+                consts.PORT_LOGICTYPE_SERVICE: constants.PortLogicalType.SERVICE,
+                consts.PORT_LOGICTYPE_MAINTENANCE2: constants.PortLogicalType.MAINTENANCE,
+                consts.PORT_LOGICTYPE_INTERCONNECT: constants.PortLogicalType.INTERCONNECT,
+            }
+
+            port_list = []
+            for port in ports:
+                port_type = constants.PortType.OTHER
+                health_status = constants.PortHealthStatus.ABNORMAL
+                conn_status = constants.PortConnectionStatus.CONNECTED
+
+                logical_type = logic_type_dict.get(
+                    port.get('LOGICTYPE'), constants.PortLogicalType.OTHER)
+
+                if port['HEALTHSTATUS'] == consts.PORT_HEALTH_UNKNOWN:
+                    health_status = constants.PortHealthStatus.UNKNOWN
+                if port['HEALTHSTATUS'] == consts.PORT_HEALTH_NORMAL:
+                    health_status = constants.PortHealthStatus.UNKNOWN
+
+                if port['RUNNINGSTATUS'] == consts.PORT_RUNNINGSTS_UNKNOWN:
+                    conn_status = constants.PortConnectionStatus.UNKNOWN
+                if port['RUNNINGSTATUS'] == consts.PORT_RUNNINGSTS_LINKDOWN:
+                    conn_status = constants.PortConnectionStatus.DISCONNECTED
+
+                speed = port.get('RUNSPEED')        # ether -1 or M bits/sec
+                if speed != -1:
+                    speed = None
+                max_speed = port.get('MAXSPEED')
+
+
+                # FC
+                if port['TYPE'] == consts.PORT_TYPE_FC:
+                    port_type = constants.PortType.FC
+                    max_speed = port['MAXSUPPORTSPEED']     # in 1000 M bits/s
+
+                # FCoE
+                if port['TYPE'] == consts.PORT_TYPE_FCOE:
+                    port_type = constants.PortType.FCOE
+
+                # Ethernet
+                if port['TYPE'] == consts.PORT_TYPE_ETH:
+                    port_type = constants.PortType.ETH
+                    max_speed = port['maxSpeed']        # in M bits/s
+                    speed = port['SPEED']               # in M bits/s
+
+                # PCIE
+                if port['TYPE'] == consts.PORT_TYPE_PCIE:
+                    port_type = constants.PortType.OTHER
+                    speed = port['PCIESPEED']
+                    logical_type = constants.PortLogicalType.OTHER
+
+                # SAS
+                if port['TYPE'] == consts.PORT_TYPE_SAS:
+                    port_type = constants.PortType.SAS
+
+                # BOND
+                if port['TYPE'] == consts.PORT_TYPE_BOND:
+                    port_type = constants.PortType.OTHER
+
+                p = {
+                    'name': port['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_port_id': port['ID'],
+                    'location': port.get('LOCATION'),
+                    'connection_status': conn_status,
+                    'health_status': health_status,
+                    'type': port_type,
+                    'logical_type': logical_type,
+                    'speed': speed,
+                    'max_speed': max_speed,
+                    'native_parent_id': port.get('PARENTID'),
+                    'wwn': port.get('WWN'),
+                    'mac_address': port.get('MACADDRESS'),
+                    'ipv4': port.get('IPV4ADDR'),
+                    'ipv4_mask': port.get('IPV4MASK'),
+                    'ipv6': port.get('IPV6ADDR'),
+                    'ipv6_mask': port.get('IPV6MASK'),
+                }
+                port_list.append(p)
+
+            return port_list
+
+        except Exception as err:
+            LOG.error(
+                "Failed to get port metrics from OceanStor: {}".format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get port metrics from OceanStor')
 
     def list_disks(self, context):
         pass

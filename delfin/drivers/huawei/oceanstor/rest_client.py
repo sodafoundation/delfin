@@ -263,6 +263,34 @@ class RestClient(object):
 
         return result['data']
 
+    def get_all_ports(self):
+        url = "/fc_port"
+        fc_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/fcoe_port"
+        fcoe_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/eth_port"
+        eth_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/pcie_port"
+        pcie_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/bond_port"
+        bond_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/sas_port"
+        sas_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        return fc_ports + fcoe_ports + eth_ports\
+            + pcie_ports + bond_ports + sas_ports
+
     def get_all_volumes(self):
         url = "/lun"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
