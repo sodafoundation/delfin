@@ -295,6 +295,10 @@ class RestClient(object):
         url = "/lun"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
 
+    def get_all_disks(self):
+        url = "/disk"
+        return self.paginated_call(url, None, "GET", log_filter_flag=True)
+
     def get_all_pools(self):
         url = "/storagepool"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)

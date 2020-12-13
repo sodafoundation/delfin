@@ -216,14 +216,22 @@ class OceanStorDriver(driver.StorageDriver):
             # Get list of OceanStor port details
             ports = self.client.get_all_ports()
             logic_type_dict = {
-                consts.PORT_LOGICTYPE_HOST: constants.PortLogicalType.SERVICE,
-                consts.PORT_LOGICTYPE_EXPANSION: constants.PortLogicalType.OTHER,
-                consts.PORT_LOGICTYPE_MANAGEMENT: constants.PortLogicalType.MANAGEMENT,
-                consts.PORT_LOGICTYPE_INTERNAL: constants.PortLogicalType.INTERNAL,
-                consts.PORT_LOGICTYPE_MAINTENANCE: constants.PortLogicalType.MAINTENANCE,
-                consts.PORT_LOGICTYPE_SERVICE: constants.PortLogicalType.SERVICE,
-                consts.PORT_LOGICTYPE_MAINTENANCE2: constants.PortLogicalType.MAINTENANCE,
-                consts.PORT_LOGICTYPE_INTERCONNECT: constants.PortLogicalType.INTERCONNECT,
+                consts.PORT_LOGICTYPE_HOST:
+                    constants.PortLogicalType.SERVICE,
+                consts.PORT_LOGICTYPE_EXPANSION:
+                    constants.PortLogicalType.OTHER,
+                consts.PORT_LOGICTYPE_MANAGEMENT:
+                    constants.PortLogicalType.MANAGEMENT,
+                consts.PORT_LOGICTYPE_INTERNAL:
+                    constants.PortLogicalType.INTERNAL,
+                consts.PORT_LOGICTYPE_MAINTENANCE:
+                    constants.PortLogicalType.MAINTENANCE,
+                consts.PORT_LOGICTYPE_SERVICE:
+                    constants.PortLogicalType.SERVICE,
+                consts.PORT_LOGICTYPE_MAINTENANCE2:
+                    constants.PortLogicalType.MAINTENANCE,
+                consts.PORT_LOGICTYPE_INTERCONNECT:
+                    constants.PortLogicalType.INTERCONNECT,
             }
 
             port_list = []
@@ -249,7 +257,6 @@ class OceanStorDriver(driver.StorageDriver):
                 if speed != -1:
                     speed = None
                 max_speed = port.get('MAXSPEED')
-
 
                 # FC
                 if port['TYPE'] == consts.PORT_TYPE_FC:
@@ -310,7 +317,69 @@ class OceanStorDriver(driver.StorageDriver):
                 reason='Failed to get port metrics from OceanStor')
 
     def list_disks(self, context):
-        pass
+        try:
+            # Get list of OceanStor disks details
+            disks = self.client.get_all_disks()
+
+            physical_type_dict = {
+                consts.DISK_TYPE_SATA: constants.DiskPhysicalType.SATA,
+                consts.DISK_TYPE_SAS: constants.DiskPhysicalType.SAS,
+                consts.DISK_TYPE_SSD: constants.DiskPhysicalType.SSD,
+            }
+
+            logical_type_dict = {
+                consts.DISK_LOGICTYPE_FREE:
+                    constants.DiskLogicalType.FREE,
+                consts.DISK_LOGICTYPE_MEMBER:
+                    constants.DiskLogicalType.MEMBER,
+                consts.DISK_LOGICTYPE_HOTSPARE:
+                    constants.DiskLogicalType.HOTSPARE,
+                consts.DISK_LOGICTYPE_CACHE:
+                    constants.DiskLogicalType.CACHE,
+            }
+
+            disk_list = []
+            for disk in disks:
+                status = constants.DiskStatus.NORMAL
+                if disk['RUNNINGSTATUS'] == consts.DISK_STATUS_OFFLINE:
+                    status = constants.DiskStatus.OFFLINE
+                if disk['RUNNINGSTATUS'] == consts.DISK_STATUS_UNKNOWN:
+                    status = constants.DiskStatus.ABNORMAL
+
+                physical_type = physical_type_dict.get(
+                    disk['DISKTYPE'], constants.DiskPhysicalType.UNKNOWN)
+
+                logical_type = logical_type_dict.get(
+                    disk['LOGICTYPE'], constants.DiskLogicalType.UNKNOWN)
+
+                health_score = disk['HEALTHMARK']
+
+                d = {
+                    'name': disk['MODEL'] + ':' + disk['SERIALNUMBER'],
+                    'storage_id': self.storage_id,
+                    'native_disk_id': disk['ID'],
+                    'serial_number': disk['SERIALNUMBER'],
+                    'manufacturer': disk['MANUFACTURER'],
+                    'model': disk['MODEL'],
+                    'firmware': disk['FIRMWAREVER'],
+                    'speed': disk['SPEEDRPM'],
+                    'capacity': disk['manuCapacity'],
+                    'status': status,
+                    'physical_type': physical_type,
+                    'logical_type': logical_type,
+                    'health_score': health_score,
+                    'native_disk_group_id': None,
+                    'location': disk['LOCATION'],
+                }
+                disk_list.append(d)
+
+            return disk_list
+
+        except Exception as err:
+            LOG.error("Failed to get disk metrics from OceanStor: {}"
+                      .format(err))
+            raise exception.StorageBackendException(
+                reason='Failed to get disk metrics from OceanStor')
 
     def add_trap_config(self, context, trap_config):
         pass
