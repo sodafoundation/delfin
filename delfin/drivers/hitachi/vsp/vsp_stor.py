@@ -263,7 +263,10 @@ class HitachiVspDriver(driver.StorageDriver):
                                                   alert_list, query_para)
             HitachiVspDriver.parse_queried_alerts(alerts_info_dkc,
                                                   alert_list, query_para)
-
+        else:
+            err_msg = "list_alerts is not supported in model %s" % \
+                      self.rest_handler.device_model
+            raise exception.StorageListAlertFailed(err_msg)
         return alert_list
 
     def add_trap_config(self, context, trap_config):
