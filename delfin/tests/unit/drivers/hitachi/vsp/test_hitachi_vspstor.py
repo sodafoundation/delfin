@@ -342,4 +342,5 @@ class TestHitachiVspStorStorageDriver(TestCase):
         with mock.patch.object(Session, 'get', return_value=m):
             m.raise_for_status.return_value = 200
             m.json.return_value = GET_ALL_VOLUMES
-            self.driver.list_volumes(context)
+            volume = self.driver.list_volumes(context)
+            self.assertDictEqual(volume[0], volume_result[0])
