@@ -207,7 +207,7 @@ pool_result = [
 alert_result = [
     {
         'location': 'test',
-        'alarm_id': '223232',
+        'alert_id': '223232',
         'sequence_number': '1111111',
         'description': 'test alert',
         'alert_name': 'someting wrong',
@@ -288,8 +288,8 @@ class TestHitachiVspStorStorageDriver(TestCase):
     def test_parse_queried_alerts(self):
         alert_list = []
         HitachiVspDriver.parse_queried_alerts(ALERT_INFO, alert_list)
-        self.assertEqual(alert_list[0].get('alarm_id'),
-                             alert_result[0].get('alarm_id'))
+        self.assertEqual(alert_list[0].get('alert_id'),
+                         alert_result[0].get('alert_id'))
 
     def test_parse_alert(self):
         trap_alert = self.driver.parse_alert(context, TRAP_INFO)

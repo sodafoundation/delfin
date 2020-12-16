@@ -236,7 +236,7 @@ class HitachiVspDriver(driver.StorageDriver):
                 continue
             a = {
                 'location': alert.get('location'),
-                'alarm_id': alert.get('alertId'),
+                'alert_id': alert.get('alertId'),
                 'sequence_number': alert.get('alertIndex'),
                 'description': alert.get('errorDetail'),
                 'alert_name': alert.get('errorSection'),
