@@ -444,7 +444,8 @@ class TestStorwizeSvcStorageDriver(TestCase):
         SSHHandler.do_exec = mock.Mock(
             side_effect=[alerts_info, alert_info])
         alert = self.driver.list_alerts(context, query_para)
-        self.assertDictEqual(alert[0], alert_result[0])
+        self.assertEqual(alert[0].get('alert_id'),
+                         alert_result[0].get('alert_id'))
 
     def test_list_storage_with_error(self):
         with self.assertRaises(Exception) as exc:
@@ -486,7 +487,8 @@ class TestStorwizeSvcStorageDriver(TestCase):
 
     def test_parse_alert(self):
         alert = self.driver.parse_alert(context, trap_info)
-        self.assertDictEqual(alert, trap_alert_result)
+        self.assertEqual(alert.get('alert_id'),
+                         trap_alert_result.get('alert_id'))
 
     def test_reset_connection(self):
         self.driver.reset_connection(context, **ACCESS_INFO)
