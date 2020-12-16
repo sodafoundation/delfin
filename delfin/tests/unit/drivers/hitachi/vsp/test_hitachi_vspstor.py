@@ -287,11 +287,13 @@ class TestHitachiVspStorStorageDriver(TestCase):
     def test_parse_queried_alerts(self):
         alert_list = []
         HitachiVspDriver.parse_queried_alerts(ALERT_INFO, alert_list)
-        self.assertDictEqual(alert_list[0], alert_result[0])
+        self.assertEqual(alert_list[0].get('alarm_id'),
+                             alert_result[0].get('alarm_id'))
 
     def test_parse_alert(self):
         trap_alert = self.driver.parse_alert(context, TRAP_INFO)
-        self.assertDictEqual(trap_alert, trap_alert_result)
+        self.assertEqual(trap_alert.get('alert_id'),
+                         trap_alert_result.get('alert_id'))
 
     def test_rest_close_connection(self):
         m = mock.MagicMock(status_code=200)
