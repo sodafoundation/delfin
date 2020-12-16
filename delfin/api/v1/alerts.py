@@ -61,7 +61,12 @@ class AlertController(wsgi.Controller):
             raise exception.InvalidInput(msg)
 
         storage = db.storage_get(ctx, id)
-        alert_list = self.driver_manager.list_alerts(ctx, id, query_para)
+
+        try:
+            alert_list = self.driver_manager.list_alerts(ctx, id, query_para)
+        except NotImplementedError:
+            msg = "Method not supported by the storage backend."
+            raise exception.MethodNotAllowed(msg)
 
         # Update storage attributes in each alert model
         for alert in alert_list:

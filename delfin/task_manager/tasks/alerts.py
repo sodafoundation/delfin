@@ -51,6 +51,10 @@ class AlertSyncTask(object):
             self.alert_export_manager.dispatch(ctx, current_alert_list)
             LOG.info('Syncing storage alerts successful for storage id:{0}'
                      .format(storage_id))
+        except NotImplementedError:
+            msg = _('Not performed sync alerts as the method not supported by '
+                    'storage id:{0}'.format(storage_id))
+            LOG.info(msg)
         except Exception as e:
             msg = _('Failed to sync alerts from storage device: {0}'
                     .format(six.text_type(e)))

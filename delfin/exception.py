@@ -78,6 +78,11 @@ class NotAuthorized(DelfinException):
     code = 403
 
 
+class MethodNotAllowed(DelfinException):
+    msg_fmt = _("Method not allowed.")
+    code = 405
+
+
 class Invalid(DelfinException):
     msg_fmt = _("Unacceptable parameters.")
     code = 400

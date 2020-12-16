@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
 import abc
+
+import six
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -93,8 +94,9 @@ class StorageDriver(object):
         query_para is an optional para which contains 'begin_time' and
         'end_time' (in milliseconds) which is to be used to filter
         alerts at driver
+        If not supported, NotImplementedError is expected to return
         """
-        pass
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def clear_alert(self, context, sequence_number):

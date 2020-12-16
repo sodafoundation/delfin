@@ -50,6 +50,10 @@ def fake_storage_info():
     }
 
 
+def list_alert_exception(self, ctx, fake_storage_id, query_para):
+    raise NotImplementedError()
+
+
 class AlertControllerTestCase(unittest.TestCase):
     ALERT_CONTROLLER_CLASS = 'delfin.api.v1.alerts.AlertController'
 
@@ -140,5 +144,20 @@ class AlertControllerTestCase(unittest.TestCase):
         self.assertRaisesRegex(exception.InvalidInput, "end_time should be "
                                                        "greater than "
                                                        "begin_time",
+                               alert_controller_inst.show, req,
+                               fake_storage_id)
+
+    @mock.patch('delfin.db.storage_get')
+    @mock.patch('delfin.task_manager.rpcapi.TaskAPI', mock.Mock())
+    @mock.patch('delfin.drivers.api.API.list_alerts', list_alert_exception)
+    def test_list_alert_not_implemented(self, mock_fake_storage):
+        req = fakes.HTTPRequest.blank('/storages/fake_id/alerts')
+        req.GET['begin_time'] = '123400000'
+        req.GET['end_time'] = '123500000'
+        fake_storage_id = 'abcd-1234-5678'
+
+        mock_fake_storage.return_value = fake_storage_info()
+        alert_controller_inst = self._get_alert_controller()
+        self.assertRaisesRegex(exception.MethodNotAllowed, "",
                                alert_controller_inst.show, req,
                                fake_storage_id)
