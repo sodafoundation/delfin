@@ -385,9 +385,11 @@ trap_alert_result = {
     'type': 'EquipmentAlarm',
     'severity': 'Informational',
     'sequence_number': '165',
-    'description': 'FC discovery occurred, no configuration changes were detected',
+    'description': 'FC discovery occurred, no configuration changes '
+                   'were detected',
     'occur_time': 1604970507000,
-    'alert_name': 'FC discovery occurred, no configuration changes were detected',
+    'alert_name': 'FC discovery occurred, no configuration changes '
+                  'were detected',
     'resource_type': 'cluster',
     'location': 'Cluster_192.168.70.125',
     'category': 'Fault'
