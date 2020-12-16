@@ -170,7 +170,7 @@ Running the uninstall script will stop all delfin processes and do cleanup
     root@root1:~/delfin-demo/delfin$ installer/uninstall
 
 
-# Test the running delfin setup
+# Test the running delfin setup/process
 1. Make sure all delfin process are up and running
 
     ```
