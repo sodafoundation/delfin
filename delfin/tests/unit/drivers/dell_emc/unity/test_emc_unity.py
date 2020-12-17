@@ -540,7 +540,8 @@ class TestUNITYStorDriver(TestCase):
         with mock.patch.object(Session, 'get', return_value=m):
             m.raise_for_status.return_value = 200
             kwargs = ACCESS_INFO
-            RestHandler(**kwargs)
+            re = RestHandler(**kwargs)
+            self.assertIsNotNone(re)
 
     def test_get_storage(self):
         RestHandler.get_rest_info = mock.Mock(
@@ -567,9 +568,9 @@ class TestUNITYStorDriver(TestCase):
             GET_ALL_ALERTS, GET_ALL_ALERTS_NULL])
         alert = self.driver.list_alerts(context)
         self.assertEqual(alert[0].get('alert_id'),
-                             alert_result[0].get('alert_id'))
+                         alert_result[0].get('alert_id'))
         self.assertEqual(alert[1].get('alert_id'),
-                             alert_result[1].get('alert_id'))
+                         alert_result[1].get('alert_id'))
 
     def test_parse_alert(self):
         trap = self.driver.parse_alert(context, TRAP_INFO)
@@ -605,15 +606,9 @@ class TestUNITYStorDriver(TestCase):
             re = self.driver.reset_connection(context, **kwargs)
             self.assertIsNone(re)
 
-    def test_err_storage_pools_err(self):
+    def test_err_storage_pools(self):
         with self.assertRaises(Exception) as exc:
             self.driver.list_storage_pools(context)
-        self.assertIn('Bad response from server',
-                      str(exc.exception))
-
-    def test_err_volumes(self):
-        with self.assertRaises(Exception) as exc:
-            self.driver.list_volumes(context)
         self.assertIn('Bad response from server',
                       str(exc.exception))
 
@@ -622,4 +617,8 @@ class TestUNITYStorDriver(TestCase):
         with mock.patch.object(Session, 'get', return_value=m):
             m.raise_for_status.return_value = 200
             m.json.return_value = GET_ALL_LUNS
-            self.driver.list_volumes(context)
+            volume = self.driver.list_volumes(context)
+            self.assertDictEqual(volume[0], volume_result[0])
+            self.assertDictEqual(volume[1], volume_result[1])
+            self.assertDictEqual(volume[2], volume_result[2])
+            self.assertDictEqual(volume[3], volume_result[3])
