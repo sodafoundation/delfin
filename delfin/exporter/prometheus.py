@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-from delfin.common import constants
 from oslo_config import cfg
 
 grp = cfg.OptGroup('PROMETHEUS_EXPORTER')

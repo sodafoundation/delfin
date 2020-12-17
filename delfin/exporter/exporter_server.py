@@ -43,5 +43,5 @@ def getfile():
 
 
 if __name__ == '__main__':
-    app.run(host=cfg.CONF.PROMETHEUS_EXPORTER.metric_server_ip, port=
-    cfg.CONF.PROMETHEUS_EXPORTER.metric_server_port)
+    app.run(host=cfg.CONF.PROMETHEUS_EXPORTER.metric_server_ip,
+            port=cfg.CONF.PROMETHEUS_EXPORTER.metric_server_port)

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-import os
 from oslo_config import cfg
 from oslo_log import log
 import six
