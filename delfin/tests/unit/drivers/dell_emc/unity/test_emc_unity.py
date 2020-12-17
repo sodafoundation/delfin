@@ -566,12 +566,14 @@ class TestUNITYStorDriver(TestCase):
         RestHandler.get_rest_info = mock.Mock(side_effect=[
             GET_ALL_ALERTS, GET_ALL_ALERTS_NULL])
         alert = self.driver.list_alerts(context)
-        self.assertDictEqual(alert[0], alert_result[0])
-        self.assertDictEqual(alert[1], alert_result[1])
+        self.assertEqual(alert[0].get('alert_id'),
+                             alert_result[0].get('alert_id'))
+        self.assertEqual(alert[1].get('alert_id'),
+                             alert_result[1].get('alert_id'))
 
     def test_parse_alert(self):
         trap = self.driver.parse_alert(context, TRAP_INFO)
-        self.assertDictEqual(trap, trap_result)
+        self.assertEqual(trap.get('alert_id'), trap_result.get('alert_id'))
 
     def test_rest_close_connection(self):
         m = mock.MagicMock(status_code=200)

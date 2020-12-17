@@ -75,11 +75,8 @@ class AlertHandler(object):
                 constants.Severity.INFORMATIONAL)
             alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            occur_time = alert.get(AlertHandler.OID_TIMESTAMP)
-            pattern = '%Y/%m/%d %H:%M:%S'
-            occur_time = time.strptime(occur_time, pattern)
-            alert_model['occur_time'] = int(time.mktime(occur_time) *
-                                            AlertHandler.SECONDS_TO_MS)
+            occur_time = int(time.time()) * AlertHandler.SECONDS_TO_MS
+            alert_model['occur_time'] = occur_time
             alert_model['description'] = alert.get(
                 AlertHandler.OID_SYMPTOMTEXT)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
