@@ -14,18 +14,34 @@
 
 
 from flask import Flask
-from delfin.common import constants
+from oslo_config import cfg
+import sys
 
 app = Flask(__name__)
+
+grp = cfg.OptGroup('PROMETHEUS_EXPORTER')
+
+prometheus_opts = [
+    cfg.StrOpt('metric_server_ip', default='0.0.0.0',
+               help='The exporter server host  ip'),
+    cfg.IntOpt('metric_server_port', default=8195,
+               help='The exporter server port'),
+    cfg.StrOpt('metrics_cache_file', default='/var/lib/delfin/delfin_exporter'
+                                             '.txt',
+               help='The temp cache file used for persisting metrics'),
+]
+cfg.CONF.register_opts(prometheus_opts, group=grp)
+cfg.CONF(sys.argv[1:])
 
 
 @app.route("/metrics", methods=['GET'])
 def getfile():
-    with open(constants.PROMETHEUS_EXPORTER_FILE, "r+") as f:
+    with open(cfg.CONF.PROMETHEUS_EXPORTER.metrics_cache_file, "r+") as f:
         data = f.read()
         f.truncate(0)
     return data
 
 
 if __name__ == '__main__':
-    app.run(host='', port=constants.METRICS_SERVER_PORT)
+    app.run(host=cfg.CONF.PROMETHEUS_EXPORTER.metric_server_ip, port=
+    cfg.CONF.PROMETHEUS_EXPORTER.metric_server_port)

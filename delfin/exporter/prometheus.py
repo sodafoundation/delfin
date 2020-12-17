@@ -14,6 +14,17 @@
 
 
 from delfin.common import constants
+from oslo_config import cfg
+
+grp = cfg.OptGroup('PROMETHEUS_EXPORTER')
+
+prometheus_opts = [
+    cfg.StrOpt('metrics_cache_file', default='/var/lib/delfin/delfin_exporter'
+                                             '.txt',
+               help='The temp cache file used for persisting metrics'),
+]
+cfg.CONF.register_opts(prometheus_opts, group=grp)
+
 
 """"
 The metrics received from driver is should be in this format
@@ -50,7 +61,7 @@ class PrometheusExporter(object):
                                                 value, timestamp))
 
     def push_to_prometheus(self, storage_metrics):
-        with open(constants.PROMETHEUS_EXPORTER_FILE, "a+") as f:
+        with open(cfg.CONF.PROMETHEUS_EXPORTER.metrics_cache_file, "a+") as f:
             for metric in storage_metrics:
                 name = metric.name
                 labels = metric.labels
