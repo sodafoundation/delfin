@@ -78,6 +78,9 @@ class VMAXStorageDriver(driver.StorageDriver):
     def list_volumes(self, context):
         return self.client.list_volumes(self.storage_id)
 
+    def list_controllers(self, context):
+        pass
+
     def add_trap_config(self, context, trap_config):
         pass
 

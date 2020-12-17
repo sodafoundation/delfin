@@ -87,6 +87,12 @@ class API(object):
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_volumes(context)
 
+    def list_controllers(self, context, storage_id):
+        """List all storage controllers from storage system."""
+
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_controllers(context)
+
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
         pass

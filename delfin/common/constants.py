@@ -51,6 +51,14 @@ class VolumeStatus(object):
     ALL = (AVAILABLE, ERROR)
 
 
+class ControllerStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (NORMAL, OFFLINE, UNKNOWN)
+
+
 class StorageType(object):
     BLOCK = 'block'
     FILE = 'file'

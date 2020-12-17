@@ -583,6 +583,149 @@ def _process_storage_pool_info_filters(query, filters):
     return query
 
 
+def controllers_create(context, controllers):
+    """Create multiple controllers."""
+    session = get_session()
+    controllers_refs = []
+    with session.begin():
+
+        for controller in controllers:
+            LOG.debug('adding new controller for native_controller_id {0}:'
+                      .format(controller.get('native_controller_id')))
+            if not controller.get('id'):
+                controller['id'] = uuidutils.generate_uuid()
+
+            controller_ref = models.Controller()
+            controller_ref.update(controller)
+            controllers_refs.append(controller_ref)
+
+        session.add_all(controllers_refs)
+
+    return controllers_refs
+
+
+def controllers_update(context, controllers):
+    """Update multiple controllers."""
+    session = get_session()
+
+    with session.begin():
+        controller_refs = []
+
+        for controller in controllers:
+            LOG.debug('updating controller {0}:'.format(
+                controller.get('id')))
+            query = _controller_get_query(context, session)
+            result = query.filter_by(id=controller.get('id')
+                                     ).update(controller)
+
+            if not result:
+                LOG.error(exception.ControllerNotFound(controller.get(
+                    'id')))
+            else:
+                controller_refs.append(result)
+
+    return controller_refs
+
+
+def controllers_delete(context, controllers_id_list):
+    """Delete multiple controllers."""
+    session = get_session()
+    with session.begin():
+        for controller_id in controllers_id_list:
+            LOG.debug('deleting controller {0}:'.format(controller_id))
+            query = _controller_get_query(context, session)
+            result = query.filter_by(id=controller_id).delete()
+
+            if not result:
+                LOG.error(exception.ControllerNotFound(controller_id))
+
+    return
+
+
+def _controller_get_query(context, session=None):
+    return model_query(context, models.Controller, session=session)
+
+
+def _controller_get(context, controller_id, session=None):
+    result = (_controller_get_query(context, session=session)
+              .filter_by(id=controller_id)
+              .first())
+
+    if not result:
+        raise exception.ControllerNotFound(controller_id)
+
+    return result
+
+
+def controller_create(context, values):
+    """Create a controller from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    controller_ref = models.Controller()
+    controller_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(controller_ref)
+
+    return _controller_get(context,
+                           controller_ref['id'],
+                           session=session)
+
+
+def controller_update(context, controller_id, values):
+    """Update a controller with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _controller_get_query(context, session)
+        result = query.filter_by(id=controller_id).update(values)
+
+        if not result:
+            raise exception.ControllerNotFound(controller_id)
+
+    return result
+
+
+def controller_get(context, controller_id):
+    """Get a controller or raise an exception if it does not exist."""
+    return _controller_get(context, controller_id)
+
+
+def controller_delete_by_storage(context, storage_id):
+    """Delete a controller or raise an exception if it does not exist."""
+    _controller_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def controller_get_all(context, marker=None, limit=None, sort_keys=None,
+                       sort_dirs=None, filters=None, offset=None):
+    """Retrieves all controllers."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Controller,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Controller would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Controller)
+def _process_controller_info_filters(query, filters):
+    """Common filter processing for controllers queries."""
+    if filters:
+        if not is_valid_model_filters(models.Controller, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def disk_create(context, values):
     """Create a disk from the values dictionary."""
     return NotImplemented
@@ -714,6 +857,9 @@ PAGINATION_HELPERS = {
                          _alert_source_get),
     models.Volume: (_volume_get_query, _process_volume_info_filters,
                     _volume_get),
+    models.Controller: (_controller_get_query,
+                        _process_controller_info_filters,
+                        _controller_get),
 }
 
 
