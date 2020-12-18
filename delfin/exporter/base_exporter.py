@@ -35,7 +35,7 @@ prometheus_opts = [
 
 kafka_opts = [
     cfg.BoolOpt('enable', default=False,
-                help='Prometheus alert manager exporter is enabled or not'),
+                help='Kafka exporter is enabled or not'),
 
 ]
 
