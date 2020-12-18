@@ -14,7 +14,7 @@
 
 
 from unittest import mock
-
+from delfin.common import config # noqa
 from delfin.drivers import fake_storage
 from delfin.task_manager.tasks import resources
 from delfin.task_manager.tasks.resources import StorageDeviceTask
@@ -60,6 +60,20 @@ vols_list = [{
     "total_capacity": 1024 * 1024,
     "used_capacity": 3126,
     "free_capacity": 1045449,
+}
+]
+
+
+controllers_list = [{
+    'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a222',
+    "name": "fake_controller_" + str(id),
+    "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "native_controller_id": "fake_original_id_" + str(id),
+    "status": "normal",
+    "location": "loc_100",
+    "soft_version": "ver_321",
+    "cpu_info": "Intel Xenon",
+    "memory_size": 200000,
 }
 ]
 
@@ -204,3 +218,52 @@ class TestStorageVolumeTask(test.TestCase):
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         vol_obj.remove()
         self.assertTrue(mock_vol_del.called)
+
+
+class TestStoragecontrollerTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_controllers')
+    @mock.patch('delfin.db.controller_get_all')
+    @mock.patch('delfin.db.controllers_delete')
+    @mock.patch('delfin.db.controllers_update')
+    @mock.patch('delfin.db.controllers_create')
+    def test_sync_successful(self,
+                             mock_controller_create, mock_controller_update,
+                             mock_controller_del, mock_controller_get_all,
+                             mock_list_controllers, get_lock):
+        controller_obj = resources.StorageControllerTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        controller_obj.sync()
+
+        self.assertTrue(mock_list_controllers.called)
+        self.assertTrue(mock_controller_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the controllers from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the new controller to DB
+        mock_list_controllers.return_value = \
+            fake_storage_obj.list_controllers(context)
+        mock_controller_get_all.return_value = list()
+        controller_obj.sync()
+        self.assertTrue(mock_controller_create.called)
+
+        # update the new controller of DB
+        mock_list_controllers.return_value = controllers_list
+        mock_controller_get_all.return_value = controllers_list
+        controller_obj.sync()
+        self.assertTrue(mock_controller_update.called)
+
+        # delete the new controller to DB
+        mock_list_controllers.return_value = list()
+        mock_controller_get_all.return_value = controllers_list
+        controller_obj.sync()
+        self.assertTrue(mock_controller_del.called)
+
+    @mock.patch('delfin.db.controller_delete_by_storage')
+    def test_remove(self, mock_controller_del):
+        controller_obj = resources.StorageControllerTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        controller_obj.remove()
+        self.assertTrue(mock_controller_del.called)

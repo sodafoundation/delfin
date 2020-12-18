@@ -215,6 +215,67 @@ class TestSIMDBAPI(test.TestCase):
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_controller_get(self, mock_session):
+        fake_controller = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_controller
+        result = db_api.controller_get(ctxt,
+                                       'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_controllers_update(self, mock_session):
+        controllers = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = controllers
+        result = db_api.controllers_update(ctxt, controllers)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_controller_update(self, mock_session):
+        controllers = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = controllers
+        result = db_api.controller_update(
+            ctxt, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', controllers)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_controllers_delete(self, mock_session):
+        fake_controller = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_controller
+        result = db_api.controllers_delete(ctxt, fake_controller)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_controllers_create(self, mock_session):
+        fake_controller = [models.Volume()]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_controller
+        result = db_api.controllers_create(ctxt, fake_controller)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_controller_create(self, mock_session):
+        fake_controller = models.Volume()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_controller
+        result = db_api.controller_create(ctxt, fake_controller)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_controller_get_all(self, mock_session):
+        fake_controller = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_controller
+        result = db_api.controller_get_all(ctxt)
+        assert len(result) == 0
+
+        result = db_api.controller_get_all(ctxt, filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
     def test_access_info_get_all(self, mock_session):
         fake_access_info = []
         mock_session.return_value.__enter__.return_value.query.return_value \
