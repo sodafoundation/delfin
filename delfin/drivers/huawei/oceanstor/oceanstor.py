@@ -243,7 +243,7 @@ class OceanStorDriver(driver.StorageDriver):
                     conn_status = constants.PortConnectionStatus.DISCONNECTED
 
                 speed = port.get('RUNSPEED')        # ether -1 or M bits/sec
-                if speed != -1:
+                if speed == '-1':
                     speed = None
                 max_speed = port.get('MAXSPEED')
 
@@ -319,6 +319,8 @@ class OceanStorDriver(driver.StorageDriver):
 
                 health_score = disk['HEALTHMARK']
 
+                capacity = int(disk['SECTORS']) * int(disk['SECTORSIZE'])
+
                 d = {
                     'name': disk['MODEL'] + ':' + disk['SERIALNUMBER'],
                     'storage_id': self.storage_id,
@@ -327,8 +329,8 @@ class OceanStorDriver(driver.StorageDriver):
                     'manufacturer': disk['MANUFACTURER'],
                     'model': disk['MODEL'],
                     'firmware': disk['FIRMWAREVER'],
-                    'speed': disk['SPEEDRPM'],
-                    'capacity': disk['manuCapacity'],
+                    'speed': int(disk['SPEEDRPM']),
+                    'capacity': capacity,
                     'status': status,
                     'physical_type': physical_type,
                     'logical_type': logical_type,
