@@ -84,6 +84,9 @@ class VMAXStorageDriver(driver.StorageDriver):
     def list_ports(self, context):
         pass
 
+    def list_disks(self, context):
+        pass
+
     def add_trap_config(self, context, trap_config):
         pass
 

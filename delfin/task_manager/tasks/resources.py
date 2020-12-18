@@ -347,6 +347,56 @@ class StoragePortTask(StorageResourceTask):
         db.port_delete_by_storage(self.context, self.storage_id)
 
 
+class StorageDiskTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageDiskTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing disks for storage id:{0}'.format(self.storage_id))
+        try:
+            # collect the disks list from driver and database
+            storage_disks = self.driver_api.list_disks(self.context,
+                                                       self.storage_id)
+            db_disks = db.disk_get_all(self.context,
+                                       filters={"storage_id":
+                                                self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_disks, db_disks, 'native_disk_id'
+            )
+
+            LOG.info('###StorageDiskTask for {0}:add={1},delete={2},'
+                     'update={3}'.format(self.storage_id,
+                                         len(add_list),
+                                         len(delete_id_list),
+                                         len(update_list)))
+            if delete_id_list:
+                db.disks_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.disks_update(self.context, update_list)
+
+            if add_list:
+                db.disks_create(self.context, add_list)
+        except AttributeError as e:
+            LOG.error(e)
+        except Exception as e:
+            msg = _('Failed to sync disks entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing disks successful!!!")
+
+    def remove(self):
+        LOG.info('Remove disks for storage id:{0}'.format(self.storage_id))
+        db.disk_delete_by_storage(self.context, self.storage_id)
+
+
 class PerformanceCollectionTask(object):
 
     def __init__(self):

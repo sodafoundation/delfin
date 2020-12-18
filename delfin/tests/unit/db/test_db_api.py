@@ -338,6 +338,68 @@ class TestSIMDBAPI(test.TestCase):
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_disk_get(self, mock_session):
+        fake_disk = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_disk
+        result = db_api.disk_get(ctxt,
+                                 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_disks_update(self, mock_session):
+        disks = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = disks
+        result = db_api.disks_update(ctxt, disks)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_disk_update(self, mock_session):
+        disks = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = disks
+        result = db_api.disk_update(ctxt,
+                                    'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
+                                    disks)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_disks_delete(self, mock_session):
+        fake_disk = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_disk
+        result = db_api.disks_delete(ctxt, fake_disk)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_disks_create(self, mock_session):
+        fake_disk = [models.Volume()]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_disk
+        result = db_api.disks_create(ctxt, fake_disk)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_disk_create(self, mock_session):
+        fake_disk = models.Volume()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_disk
+        result = db_api.disk_create(ctxt, fake_disk)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_disk_get_all(self, mock_session):
+        fake_disk = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_disk
+        result = db_api.disk_get_all(ctxt)
+        assert len(result) == 0
+
+        result = db_api.disk_get_all(ctxt, filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
     def test_access_info_get_all(self, mock_session):
         fake_access_info = []
         mock_session.return_value.__enter__.return_value.query.return_value \

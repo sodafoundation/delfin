@@ -119,14 +119,21 @@ class Disk(BASE, DelfinBase):
     """Represents a disk object."""
     __tablename__ = 'disks'
     id = Column(String(36), primary_key=True)
-    name = Column(String(255))
-    status = Column(String(255))
-    vendor = Column(String(255))
     native_disk_id = Column(String(255))
+    name = Column(String(255))
     serial_number = Column(String(255))
+    manufacturer = Column(String(255))
     model = Column(String(255))
-    media_type = Column(String(255))
+    firmware = Column(String(255))
+    speed = Column(Integer)
     capacity = Column(BigInteger)
+    status = Column(String(255))
+    physical_type = Column(String(255))
+    logical_type = Column(String(255))
+    health_score = Column(Integer)
+    native_disk_group_id = Column(String(255))
+    storage_id = Column(String(255))
+    location = Column(String(255))
 
 
 class Controller(BASE, DelfinBase):

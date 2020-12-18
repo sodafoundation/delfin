@@ -867,25 +867,147 @@ def _process_port_info_filters(query, filters):
     return query
 
 
+def disks_create(context, disks):
+    """Create multiple disks."""
+    session = get_session()
+    disks_refs = []
+    with session.begin():
+
+        for disk in disks:
+            LOG.debug('adding new disk for native_disk_id {0}:'
+                      .format(disk.get('native_disk_id')))
+            if not disk.get('id'):
+                disk['id'] = uuidutils.generate_uuid()
+
+            disk_ref = models.Disk()
+            disk_ref.update(disk)
+            disks_refs.append(disk_ref)
+
+        session.add_all(disks_refs)
+
+    return disks_refs
+
+
+def disks_update(context, disks):
+    """Update multiple disks."""
+    session = get_session()
+
+    with session.begin():
+        disk_refs = []
+
+        for disk in disks:
+            LOG.debug('updating disk {0}:'.format(
+                disk.get('id')))
+            query = _disk_get_query(context, session)
+            result = query.filter_by(id=disk.get('id')
+                                     ).update(disk)
+
+            if not result:
+                LOG.error(exception.DiskNotFound(disk.get(
+                    'id')))
+            else:
+                disk_refs.append(result)
+
+    return disk_refs
+
+
+def disks_delete(context, disks_id_list):
+    """Delete multiple disks."""
+    session = get_session()
+    with session.begin():
+        for disk_id in disks_id_list:
+            LOG.debug('deleting disk {0}:'.format(disk_id))
+            query = _disk_get_query(context, session)
+            result = query.filter_by(id=disk_id).delete()
+
+            if not result:
+                LOG.error(exception.DiskNotFound(disk_id))
+
+    return
+
+
+def _disk_get_query(context, session=None):
+    return model_query(context, models.Disk, session=session)
+
+
+def _disk_get(context, disk_id, session=None):
+    result = (_disk_get_query(context, session=session)
+              .filter_by(id=disk_id)
+              .first())
+
+    if not result:
+        raise exception.DiskNotFound(disk_id)
+
+    return result
+
+
 def disk_create(context, values):
     """Create a disk from the values dictionary."""
-    return NotImplemented
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    disk_ref = models.Disk()
+    disk_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(disk_ref)
+
+    return _disk_get(context,
+                     disk_ref['id'],
+                     session=session)
 
 
 def disk_update(context, disk_id, values):
-    """Update a disk withe the values dictionary."""
-    return NotImplemented
+    """Update a disk with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _disk_get_query(context, session)
+        result = query.filter_by(id=disk_id).update(values)
+
+        if not result:
+            raise exception.DiskNotFound(disk_id)
+
+    return result
 
 
 def disk_get(context, disk_id):
     """Get a disk or raise an exception if it does not exist."""
-    return NotImplemented
+    return _disk_get(context, disk_id)
+
+
+def disk_delete_by_storage(context, storage_id):
+    """Delete disk or raise an exception if it does not exist."""
+    _disk_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 def disk_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
     """Retrieves all disks."""
-    return NotImplemented
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Disk,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Disk would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Disk)
+def _process_disk_info_filters(query, filters):
+    """Common filter processing for disks queries."""
+    if filters:
+        if not is_valid_model_filters(models.Disk, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
 
 
 def is_orm_value(obj):
@@ -1002,6 +1124,8 @@ PAGINATION_HELPERS = {
                         _process_controller_info_filters,
                         _controller_get),
     models.Port: (_port_get_query, _process_port_info_filters, _port_get),
+    models.Disk: (_disk_get_query, _process_disk_info_filters,
+                  _disk_get),
 }
 
 

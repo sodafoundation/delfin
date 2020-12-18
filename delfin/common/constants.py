@@ -120,6 +120,34 @@ class PortLogicalType(object):
            INTERNAL, MAINTENANCE, INTERCONNECT, OTHER)
 
 
+class DiskStatus(object):
+    NORMAL = 'normal'
+    ABNORMAL = 'abnormal'
+    OFFLINE = 'offline'
+
+    ALL = (NORMAL, ABNORMAL, OFFLINE)
+
+
+class DiskPhysicalType(object):
+    SATA = 'sata'
+    SAS = 'sas'
+    SSD = 'ssd'
+    NL_SSD = 'nl-ssd'
+    UNKNOWN = 'unknown'
+
+    ALL = (SATA, SAS, SSD, NL_SSD, UNKNOWN)
+
+
+class DiskLogicalType(object):
+    FREE = 'free'
+    MEMBER = 'member'
+    HOTSPARE = 'hotspare'
+    CACHE = 'cache'
+    UNKNOWN = 'unknown'
+
+    ALL = (FREE, MEMBER, HOTSPARE, CACHE, UNKNOWN)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'
