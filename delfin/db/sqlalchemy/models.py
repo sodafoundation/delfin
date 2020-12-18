@@ -143,6 +143,29 @@ class Controller(BASE, DelfinBase):
     storage_id = Column(String(36))
 
 
+class Port(BASE, DelfinBase):
+    """Represents a port object."""
+    __tablename__ = 'ports'
+    id = Column(String(36), primary_key=True)
+    native_port_id = Column(String(255))
+    name = Column(String(255))
+    location = Column(String(255))
+    connection_status = Column(String(255))
+    health_status = Column(String(255))
+    type = Column(String(255))
+    logical_type = Column(String(255))
+    speed = Column(Integer)
+    max_speed = Column(Integer)
+    storage_id = Column(String(36))
+    native_parent_id = Column(String(255))
+    wwn = Column(String(255))
+    mac_address = Column(String(255))
+    ipv4 = Column(String(255))
+    ipv4_mask = Column(String(255))
+    ipv6 = Column(String(255))
+    ipv6_mask = Column(String(255))
+
+
 class AlertSource(BASE, DelfinBase):
     """Represents an alert source configuration."""
     __tablename__ = 'alert_source'

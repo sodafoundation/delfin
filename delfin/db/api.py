@@ -286,6 +286,64 @@ def controller_get_all(context, marker=None, limit=None, sort_keys=None,
                                    sort_dirs, filters, offset)
 
 
+def ports_create(context, values):
+    """Create multiple ports."""
+    return IMPL.ports_create(context, values)
+
+
+def ports_update(context, values):
+    """Update multiple ports."""
+    return IMPL.ports_update(context, values)
+
+
+def ports_delete(context, values):
+    """Delete multiple ports."""
+    return IMPL.ports_delete(context, values)
+
+
+def port_create(context, values):
+    """Create a port from the values dictionary."""
+    return IMPL.port_create(context, values)
+
+
+def port_update(context, port_id, values):
+    """Update a port with the values dictionary."""
+    return IMPL.port_update(context, port_id, values)
+
+
+def port_get(context, port_id):
+    """Get a port or raise an exception if it does not exist."""
+    return IMPL.port_get(context, port_id)
+
+
+def port_delete_by_storage(context, storage_id):
+    """Delete a port or raise an exception if it does not exist."""
+    return IMPL.port_delete_by_storage(context, storage_id)
+
+
+def port_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all ports.
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of controllers
+    """
+    return IMPL.port_get_all(context, marker, limit, sort_keys,
+                             sort_dirs, filters, offset)
+
+
 def disk_create(context, values):
     """Create a disk from the values dictionary."""
     return IMPL.disk_create(context, values)

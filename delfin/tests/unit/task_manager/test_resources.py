@@ -63,6 +63,28 @@ vols_list = [{
 }
 ]
 
+ports_list = [{
+    'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "name": "fake_pool_" + str(id),
+    "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "native_port_id": "fake_original_id_" + str(id),
+    "location": "location_25",
+    "connection_status": "disconnected",
+    "health_status": "normal",
+    "type": "iscsi",
+    "logical_type": "service",
+    "speed": 1000,
+    "max_speed": 7200,
+    "native_parent_id": "parent_id",
+    "wwn": "wwn",
+    "mac_address": "mac_352",
+    "ipv4": "127.0.0.1",
+    "ipv4_mask": "255.255.255.0",
+    "ipv6": "",
+    "ipv6_mask": ""
+}
+]
+
 
 controllers_list = [{
     'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a222',
@@ -267,3 +289,49 @@ class TestStoragecontrollerTask(test.TestCase):
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         controller_obj.remove()
         self.assertTrue(mock_controller_del.called)
+
+
+class TestStoragePortTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_ports')
+    @mock.patch('delfin.db.port_get_all')
+    @mock.patch('delfin.db.ports_delete')
+    @mock.patch('delfin.db.ports_update')
+    @mock.patch('delfin.db.ports_create')
+    def test_sync_successful(self, mock_port_create, mock_port_update,
+                             mock_port_del, mock_port_get_all, mock_list_ports,
+                             get_lock):
+        port_obj = resources.StoragePortTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        port_obj.sync()
+        self.assertTrue(mock_list_ports.called)
+        self.assertTrue(mock_port_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the ports from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the ports to DB
+        mock_list_ports.return_value = fake_storage_obj.list_ports(context)
+        mock_port_get_all.return_value = list()
+        port_obj.sync()
+        self.assertTrue(mock_port_create.called)
+
+        # update the ports to DB
+        mock_list_ports.return_value = ports_list
+        mock_port_get_all.return_value = ports_list
+        port_obj.sync()
+        self.assertTrue(mock_port_update.called)
+
+        # delete the ports to DB
+        mock_list_ports.return_value = list()
+        mock_port_get_all.return_value = ports_list
+        port_obj.sync()
+        self.assertTrue(mock_port_del.called)
+
+    @mock.patch('delfin.db.port_delete_by_storage')
+    def test_remove(self, mock_port_del):
+        port_obj = resources.StoragePortTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        port_obj.remove()
+        self.assertTrue(mock_port_del.called)

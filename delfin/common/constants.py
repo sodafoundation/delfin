@@ -77,6 +77,49 @@ class VolumeType(object):
     ALL = (THICK, THIN)
 
 
+class PortConnectionStatus(object):
+    CONNECTED = 'connected'
+    DISCONNECTED = 'disconnected'
+    UNKNOWN = 'unknown'
+
+    ALL = (CONNECTED, DISCONNECTED, UNKNOWN)
+
+
+class PortHealthStatus(object):
+    NORMAL = 'normal'
+    ABNORMAL = 'abnormal'
+    UNKNOWN = 'unknown'
+
+    ALL = (NORMAL, ABNORMAL, UNKNOWN)
+
+
+class PortType(object):
+    FC = 'fc'
+    ISCSI = 'iscsi'
+    FICON = 'ficon'
+    FCOE = 'fcoe'
+    ETH = 'eth'
+    SAS = 'sas'
+    IB = 'ib'
+    OTHER = 'other'
+
+    ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, OTHER)
+
+
+class PortLogicalType(object):
+    FRONTEND = 'frontend'
+    BACKEND = 'backend'
+    SERVICE = 'service'
+    MANAGEMENT = 'management'
+    INTERNAL = 'internal'
+    MAINTENANCE = 'maintenance'
+    INTERCONNECT = 'interconnect'
+    OTHER = 'other'
+
+    ALL = (FRONTEND, BACKEND, SERVICE, MANAGEMENT,
+           INTERNAL, MAINTENANCE, INTERCONNECT, OTHER)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'

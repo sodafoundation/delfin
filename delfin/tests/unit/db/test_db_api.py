@@ -276,6 +276,68 @@ class TestSIMDBAPI(test.TestCase):
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_get(self, mock_session):
+        fake_port = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_port
+        result = db_api.port_get(ctxt,
+                                 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_ports_update(self, mock_session):
+        ports = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = ports
+        result = db_api.ports_update(ctxt, ports)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_update(self, mock_session):
+        ports = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = ports
+        result = db_api.port_update(ctxt,
+                                    'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
+                                    ports)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_ports_delete(self, mock_session):
+        fake_port = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_port
+        result = db_api.ports_delete(ctxt, fake_port)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_ports_create(self, mock_session):
+        fake_port = [models.Volume()]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_port
+        result = db_api.ports_create(ctxt, fake_port)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_create(self, mock_session):
+        fake_port = models.Volume()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_port
+        result = db_api.port_create(ctxt, fake_port)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_get_all(self, mock_session):
+        fake_port = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_port
+        result = db_api.port_get_all(ctxt)
+        assert len(result) == 0
+
+        result = db_api.port_get_all(ctxt, filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
     def test_access_info_get_all(self, mock_session):
         fake_access_info = []
         mock_session.return_value.__enter__.return_value.query.return_value \

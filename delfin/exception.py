@@ -174,6 +174,10 @@ class ControllerNotFound(NotFound):
     msg_fmt = _("Controller {0} could not be found.")
 
 
+class PortNotFound(NotFound):
+    msg_fmt = _("Port {0} could not be found.")
+
+
 class StorageDriverNotFound(NotFound):
     msg_fmt = _("Storage driver '{0}'could not be found.")
 
