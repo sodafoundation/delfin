@@ -119,14 +119,21 @@ class Disk(BASE, DelfinBase):
     """Represents a disk object."""
     __tablename__ = 'disks'
     id = Column(String(36), primary_key=True)
-    name = Column(String(255))
-    status = Column(String(255))
-    vendor = Column(String(255))
     native_disk_id = Column(String(255))
+    name = Column(String(255))
     serial_number = Column(String(255))
+    manufacturer = Column(String(255))
     model = Column(String(255))
-    media_type = Column(String(255))
+    firmware = Column(String(255))
+    speed = Column(Integer)
     capacity = Column(BigInteger)
+    status = Column(String(255))
+    physical_type = Column(String(255))
+    logical_type = Column(String(255))
+    health_score = Column(Integer)
+    native_disk_group_id = Column(String(255))
+    storage_id = Column(String(255))
+    location = Column(String(255))
 
 
 class Controller(BASE, DelfinBase):
@@ -141,6 +148,29 @@ class Controller(BASE, DelfinBase):
     cpu_info = Column(String(255))
     memory_size = Column(BigInteger)
     storage_id = Column(String(36))
+
+
+class Port(BASE, DelfinBase):
+    """Represents a port object."""
+    __tablename__ = 'ports'
+    id = Column(String(36), primary_key=True)
+    native_port_id = Column(String(255))
+    name = Column(String(255))
+    location = Column(String(255))
+    connection_status = Column(String(255))
+    health_status = Column(String(255))
+    type = Column(String(255))
+    logical_type = Column(String(255))
+    speed = Column(Integer)
+    max_speed = Column(Integer)
+    storage_id = Column(String(36))
+    native_parent_id = Column(String(255))
+    wwn = Column(String(255))
+    mac_address = Column(String(255))
+    ipv4 = Column(String(255))
+    ipv4_mask = Column(String(255))
+    ipv6 = Column(String(255))
+    ipv6_mask = Column(String(255))
 
 
 class AlertSource(BASE, DelfinBase):

@@ -63,6 +63,27 @@ vols_list = [{
 }
 ]
 
+ports_list = [{
+    'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "name": "fake_pool_" + str(id),
+    "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "native_port_id": "fake_original_id_" + str(id),
+    "location": "location_25",
+    "connection_status": "disconnected",
+    "health_status": "normal",
+    "type": "iscsi",
+    "logical_type": "service",
+    "speed": 1000,
+    "max_speed": 7200,
+    "native_parent_id": "parent_id",
+    "wwn": "wwn",
+    "mac_address": "mac_352",
+    "ipv4": "127.0.0.1",
+    "ipv4_mask": "255.255.255.0",
+    "ipv6": "",
+    "ipv6_mask": ""
+}
+]
 
 controllers_list = [{
     'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a222',
@@ -74,6 +95,25 @@ controllers_list = [{
     "soft_version": "ver_321",
     "cpu_info": "Intel Xenon",
     "memory_size": 200000,
+}
+]
+
+disks_list = [{
+    'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "name": "fake_pool_" + str(id),
+    "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
+    "native_disk_id": "fake_original_id_" + str(id),
+    "serial_number": "serial_3299",
+    "manufacturer": "Intel",
+    "model": "model_4565",
+    "firmware": "firmware_9541",
+    "speed": 751,
+    "capacity": 1074,
+    "status": "offline",
+    "physical_type": "sata",
+    "logical_type": "cache",
+    "health_score": 34,
+    "native_disk_group_id": "",
 }
 ]
 
@@ -267,3 +307,95 @@ class TestStoragecontrollerTask(test.TestCase):
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         controller_obj.remove()
         self.assertTrue(mock_controller_del.called)
+
+
+class TestStoragePortTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_ports')
+    @mock.patch('delfin.db.port_get_all')
+    @mock.patch('delfin.db.ports_delete')
+    @mock.patch('delfin.db.ports_update')
+    @mock.patch('delfin.db.ports_create')
+    def test_sync_successful(self, mock_port_create, mock_port_update,
+                             mock_port_del, mock_port_get_all, mock_list_ports,
+                             get_lock):
+        port_obj = resources.StoragePortTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        port_obj.sync()
+        self.assertTrue(mock_list_ports.called)
+        self.assertTrue(mock_port_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the ports from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the ports to DB
+        mock_list_ports.return_value = fake_storage_obj.list_ports(context)
+        mock_port_get_all.return_value = list()
+        port_obj.sync()
+        self.assertTrue(mock_port_create.called)
+
+        # update the ports to DB
+        mock_list_ports.return_value = ports_list
+        mock_port_get_all.return_value = ports_list
+        port_obj.sync()
+        self.assertTrue(mock_port_update.called)
+
+        # delete the ports to DB
+        mock_list_ports.return_value = list()
+        mock_port_get_all.return_value = ports_list
+        port_obj.sync()
+        self.assertTrue(mock_port_del.called)
+
+    @mock.patch('delfin.db.port_delete_by_storage')
+    def test_remove(self, mock_port_del):
+        port_obj = resources.StoragePortTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        port_obj.remove()
+        self.assertTrue(mock_port_del.called)
+
+
+class TestStorageDiskTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_disks')
+    @mock.patch('delfin.db.disk_get_all')
+    @mock.patch('delfin.db.disks_delete')
+    @mock.patch('delfin.db.disks_update')
+    @mock.patch('delfin.db.disks_create')
+    def test_sync_successful(self, mock_disk_create, mock_disk_update,
+                             mock_disk_del, mock_disk_get_all, mock_list_disks,
+                             get_lock):
+        disk_obj = resources.StorageDiskTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        disk_obj.sync()
+        self.assertTrue(mock_list_disks.called)
+        self.assertTrue(mock_disk_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the disks from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the disks to DB
+        mock_list_disks.return_value = fake_storage_obj.list_disks(context)
+        mock_disk_get_all.return_value = list()
+        disk_obj.sync()
+        self.assertTrue(mock_disk_create.called)
+
+        # update the disks to DB
+        mock_list_disks.return_value = disks_list
+        mock_disk_get_all.return_value = disks_list
+        disk_obj.sync()
+        self.assertTrue(mock_disk_update.called)
+
+        # delete the disks to DB
+        mock_list_disks.return_value = list()
+        mock_disk_get_all.return_value = disks_list
+        disk_obj.sync()
+        self.assertTrue(mock_disk_del.called)
+
+    @mock.patch('delfin.db.disk_delete_by_storage')
+    def test_remove(self, mock_disk_del):
+        disk_obj = resources.StorageDiskTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        disk_obj.remove()
+        self.assertTrue(mock_disk_del.called)

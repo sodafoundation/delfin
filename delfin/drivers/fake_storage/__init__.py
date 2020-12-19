@@ -49,6 +49,8 @@ LOG = log.getLogger(__name__)
 
 MIN_WAIT, MAX_WAIT = 0.1, 0.5
 MIN_POOL, MAX_POOL = 1, 100
+MIN_PORTS, MAX_PORTS = 1, 10
+MIN_DISK, MAX_DISK = 1, 100
 MIN_VOLUME, MAX_VOLUME = 1, 2000
 MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
@@ -188,6 +190,82 @@ class FakeStorageDriver(driver.StorageDriver):
             }
             ctrl_list.append(c)
         return ctrl_list
+
+    def list_ports(self, ctx):
+        rd_ports_count = random.randint(MIN_PORTS, MAX_PORTS)
+        LOG.info("###########fake_ports for %s: %d" % (self.storage_id,
+                                                       rd_ports_count))
+        port_list = []
+        for idx in range(rd_ports_count):
+            max_s, normal, remain = self._get_random_capacity()
+            conn_sts = list(constants.PortConnectionStatus.ALL)
+            conn_sts_len = len(constants.PortConnectionStatus.ALL) - 1
+            health_sts = list(constants.PortHealthStatus.ALL)
+            health_sts_len = len(constants.PortHealthStatus.ALL) - 1
+            port_type = list(constants.PortType.ALL)
+            port_type_len = len(constants.PortType.ALL) - 1
+            logic_type = list(constants.PortLogicalType.ALL)
+            logic_type_len = len(constants.PortLogicalType.ALL) - 1
+            c = {
+                "name": "fake_port_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_port_id": "fake_original_id_" + str(idx),
+                "location": "location_" + str(random.randint(0, 99)),
+                "connection_status": conn_sts[
+                    random.randint(0, conn_sts_len)],
+                "health_status": health_sts[
+                    random.randint(0, health_sts_len)],
+                "type": port_type[
+                    random.randint(0, port_type_len)],
+                "logical_type": logic_type[
+                    random.randint(0, logic_type_len)],
+                "speed": normal,
+                "max_speed": max_s,
+                "native_parent_id": "parent_id_" + str(random.randint(0, 99)),
+                "wwn": "wwn_" + str(random.randint(0, 9999)),
+                "mac_address": "mac_" + str(random.randint(0, 9999)),
+                "ipv4": "0.0.0.0",
+                "ipv4_mask": "255.255.255.0",
+                "ipv6": "0",
+                "ipv6_mask": "::",
+            }
+            port_list.append(c)
+        return port_list
+
+    def list_disks(self, ctx):
+        rd_disks_count = random.randint(MIN_DISK, MAX_DISK)
+        LOG.info("###########fake_disks for %s: %d" % (self.storage_id,
+                                                       rd_disks_count))
+        disk_list = []
+        for idx in range(rd_disks_count):
+            max_s, normal, remain = self._get_random_capacity()
+            manufacturer = ["Intel", "Seagate", "WD", "Crucial", "HP"]
+            sts = list(constants.DiskStatus.ALL)
+            sts_len = len(constants.DiskStatus.ALL) - 1
+            physical_type = list(constants.DiskPhysicalType.ALL)
+            physical_type_len = len(constants.DiskPhysicalType.ALL) - 1
+            logic_type = list(constants.DiskLogicalType.ALL)
+            logic_type_len = len(constants.DiskLogicalType.ALL) - 1
+            c = {
+                "name": "fake_disk_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_disk_id": "fake_original_id_" + str(idx),
+                "serial_number": "serial_" + str(random.randint(0, 9999)),
+                "manufacturer": manufacturer[random.randint(0, 4)],
+                "model": "model_" + str(random.randint(0, 9999)),
+                "firmware": "firmware_" + str(random.randint(0, 9999)),
+                "speed": normal,
+                "capacity": max_s,
+                "status": sts[random.randint(0, sts_len)],
+                "physical_type": physical_type[
+                    random.randint(0, physical_type_len)],
+                "logical_type": logic_type[random.randint(0, logic_type_len)],
+                "health_score": random.randint(0, 100),
+                "native_diskgroup_id": "dg_id_" + str(random.randint(0, 99)),
+                "location": "location_" + str(random.randint(0, 99)),
+            }
+            disk_list.append(c)
+        return disk_list
 
     def add_trap_config(self, context, trap_config):
         pass
