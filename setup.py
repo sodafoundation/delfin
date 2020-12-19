@@ -29,7 +29,10 @@ setup(
             'example = delfin.exporter.example:AlertExporterExample'
         ],
         'delfin.performance.exporters': [
-            'example = delfin.exporter.example:PerformanceExporterExample'
+            'example = delfin.exporter.example:PerformanceExporterExample',
+            'prometheus = delfin.exporter.prometheus.exporter'
+            ':PerformanceExporterPrometheus',
+            'kafka = delfin.exporter.kafka.exporter:PerformanceExporterKafka'
         ],
         'delfin.storage.drivers': [
             'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',

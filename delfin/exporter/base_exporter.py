@@ -20,24 +20,8 @@ from stevedore import extension
 
 from delfin import exception
 from delfin.i18n import _
-from delfin.exporter import prometheus, kafka
 
 LOG = log.getLogger(__name__)
-
-prom_grp = cfg.OptGroup('PROMETHEUS_EXPORTER')
-kafka_grp = cfg.OptGroup('KAFKA_EXPORTER')
-
-prometheus_opts = [
-    cfg.BoolOpt('enable', default=False,
-                help='Prometheus exporter is enabled or not'),
-
-]
-
-kafka_opts = [
-    cfg.BoolOpt('enable', default=False,
-                help='Kafka exporter is enabled or not'),
-
-]
 
 exporter_opts = [
     cfg.ListOpt('alert_exporters',
@@ -49,8 +33,6 @@ exporter_opts = [
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(prometheus_opts, group=prom_grp)
-CONF.register_opts(kafka_opts, group=kafka_grp)
 CONF.register_opts(exporter_opts)
 
 
@@ -117,18 +99,6 @@ class PerformanceExporterManager(BaseManager):
 
     def __init__(self):
         super(PerformanceExporterManager, self).__init__(self.NAMESPACE)
-
-    def dispatch(self, ctxt, data):
-        # create object of prometheus class and push to prometheus
-        # exporter to translate into time-series format
-        if cfg.CONF.PROMETHEUS_EXPORTER.enable:
-            prometheus_obj = prometheus.PrometheusExporter()
-            prometheus_obj.push_to_prometheus(data)
-
-        # kafka exporter
-        if cfg.CONF.KAFKA_EXPORTER.enable:
-            kafka_obj = kafka.KafkaExporter()
-            kafka_obj.push_to_kafka(data)
 
     def _get_configured_exporters(self):
         return CONF.performance_exporters
