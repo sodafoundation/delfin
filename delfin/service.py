@@ -119,9 +119,6 @@ class Service(service.Service):
 
         self.manager.init_host()
 
-        task_manager = TaskManager()
-        task_manager.periodic_performance_collect()
-
         if self.periodic_interval:
             if self.periodic_fuzzy_delay:
                 initial_delay = random.randint(0, self.periodic_fuzzy_delay)
@@ -250,6 +247,31 @@ class AlertService(Service):
         except Exception:
             pass
         super(AlertService, self).stop()
+
+
+class TaskService(Service):
+    """Service object for triggering task manager functionalities.
+        """
+
+    @classmethod
+    def create(cls, host=None, binary=None, topic=None,
+               manager=None, periodic_interval=None,
+               periodic_fuzzy_delay=None, service_name=None,
+               coordination=False, *args, **kwargs):
+        service_obj = super(TaskService, cls).create(
+            host=host, binary=binary, topic=topic, manager=manager,
+            periodic_interval=periodic_interval,
+            periodic_fuzzy_delay=periodic_fuzzy_delay,
+            service_name=service_name,
+            coordination=coordination, *args, **kwargs)
+
+        return service_obj
+
+    def start(self):
+        super(TaskService, self).start()
+
+        task_manager = TaskManager()
+        task_manager.periodic_performance_collect()
 
 
 class WSGIService(service.ServiceBase):

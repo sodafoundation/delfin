@@ -42,8 +42,8 @@ def main():
     log.setup(CONF, "delfin")
     utils.monkey_patch()
 
-    task_server = service.Service.create(binary='delfin-task',
-                                         coordination=True)
+    task_server = service.TaskService.create(binary='delfin-task',
+                                             coordination=True)
     service.serve(task_server)
     service.wait()
 
