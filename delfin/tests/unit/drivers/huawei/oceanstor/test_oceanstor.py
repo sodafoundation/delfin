@@ -328,3 +328,518 @@ class TestOceanStorStorageDriver(TestCase):
                 driver.list_volumes(context)
             self.assertIn('Exception from Storage Backend',
                           str(exc.exception))
+
+    def test_list_ports(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'TEST_FC_PORT',
+                'storage_id': '12345',
+                'connection_status': 'disconnected',
+                'health_status': 'unknown',
+                'location': 'Location1',
+                'logical_type': 'service',
+                'max_speed': '16000',
+                'native_port_id': '012345',
+                'native_parent_id': '0B.0',
+                'wwn': 'WWN_123000',
+                'type': 'fc',
+                'speed': None,
+                'mac_address': None,
+                'ipv4': None,
+                'ipv4_mask': None,
+                'ipv6': None,
+                'ipv6_mask': None,
+            },
+            {
+                'name': 'TEST_FCOE_PORT',
+                'storage_id': '12345',
+                'connection_status': 'disconnected',
+                'health_status': 'unknown',
+                'location': 'Location2',
+                'logical_type': 'service',
+                'max_speed': '12000',
+                'native_port_id': '22222',
+                'native_parent_id': '0B.2',
+                'wwn': '2210',
+                'type': 'fcoe',
+                'speed': None,
+                'mac_address': None,
+                'ipv4': None,
+                'ipv4_mask': None,
+                'ipv6': None,
+                'ipv6_mask': None,
+            },
+            {
+                'name': 'TEST_ETH_PORT',
+                'storage_id': '12345',
+                'connection_status': 'disconnected',
+                'health_status': 'unknown',
+                'location': 'Location3',
+                'logical_type': 'service',
+                'max_speed': '1000',
+                'native_port_id': '11111',
+                'native_parent_id': '0B.0',
+                'wwn': None,
+                'type': 'eth',
+                'speed': '-1',
+                'mac_address': 'MAC_1:ff:00',
+                'ipv4': None,
+                'ipv4_mask': None,
+                'ipv6': None,
+                'ipv6_mask': None,
+            },
+            {
+                'name': 'TEST_PCIE_PORT',
+                'storage_id': '12345',
+                'connection_status': 'disconnected',
+                'health_status': 'unknown',
+                'location': 'Location4',
+                'logical_type': 'other',
+                'max_speed': '8000',
+                'native_port_id': '33333',
+                'native_parent_id': '1090',
+                'wwn': None,
+                'type': 'other',
+                'speed': '5000',
+                'mac_address': None,
+                'ipv4': None,
+                'ipv4_mask': None,
+                'ipv6': None,
+                'ipv6_mask': None,
+            },
+            {
+                'name': 'TEST_BOND_PORT',
+                'storage_id': '12345',
+                'connection_status': 'connected',
+                'health_status': 'unknown',
+                'location': 'Location5',
+                'logical_type': 'other',
+                'max_speed': None,
+                'native_port_id': '44444',
+                'native_parent_id': None,
+                'wwn': None,
+                'type': 'other',
+                'speed': None,
+                'mac_address': None,
+                'ipv4': None,
+                'ipv4_mask': None,
+                'ipv6': None,
+                'ipv6_mask': None,
+            },
+            {
+                'name': 'TEST_SAS_PORT',
+                'storage_id': '12345',
+                'connection_status': 'unknown',
+                'health_status': 'unknown',
+                'location': 'Location6',
+                'logical_type': 'other',
+                'max_speed': '12000',
+                'native_port_id': '55555',
+                'native_parent_id': '0A',
+                'wwn': None,
+                'type': 'sas',
+                'speed': '12000',
+                'mac_address': None,
+                'ipv4': None,
+                'ipv4_mask': None,
+                'ipv6': None,
+                'ipv6_mask': None,
+            }
+
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        'TYPE': '212',
+                        'NAME': 'TEST_FC_PORT',
+                        'RUNNINGSTATUS': '11',
+                        'HEALTHSTATUS': '1',
+                        'ID': '012345',
+                        'LOCATION': 'Location1',
+                        'MAXSPEED': '16000',
+                        'MAXSUPPORTSPEED': '16000',
+                        'LOGICTYPE': '0',
+                        'RUNSPEED': '-1',
+                        'PARENTID': '0B.0',
+                        'WWN': 'WWN_123000',
+                    },
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'TYPE': '252',
+                    'NAME': 'TEST_FCOE_PORT',
+                    'RUNNINGSTATUS': '11',
+                    'HEALTHSTATUS': '1',
+                    'ID': '22222',
+                    'LOCATION': 'Location2',
+                    'MAXSPEED': '12000',
+                    'LOGICTYPE': '0',
+                    'RUNSPEED': '-1',
+                    'PARENTID': '0B.2',
+                    'WWN': '2210',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'TYPE': '213',
+                    'NAME': 'TEST_ETH_PORT',
+                    'RUNNINGSTATUS': '11',
+                    'HEALTHSTATUS': '1',
+                    'ID': '11111',
+                    'LOCATION': 'Location3',
+                    'SPEED': '-1',
+                    'maxSpeed': '1000',
+                    'LOGICTYPE': '0',
+                    'RUNSPEED': '-1',
+                    'PARENTID': '0B.0',
+                    'MACADDRESS': 'MAC_1:ff:00',
+                    'IP4ADDR': '',
+                    'IP4MASK': '',
+                    'IP6ADDR': '',
+                    'IP6MASK': '',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'TYPE': '233',
+                    'NAME': 'TEST_PCIE_PORT',
+                    'RUNNINGSTATUS': '11',
+                    'HEALTHSTATUS': '1',
+                    'ID': '33333',
+                    'LOCATION': 'Location4',
+                    'PCIESPEED': '5000',
+                    'MAXSPEED': '8000',
+                    'PARENTID': '1090',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'TYPE': '235',
+                    'NAME': 'TEST_BOND_PORT',
+                    'RUNNINGSTATUS': '10',
+                    'HEALTHSTATUS': '1',
+                    'ID': '44444',
+                    'LOCATION': 'Location5',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'TYPE': '214',
+                    'NAME': 'TEST_SAS_PORT',
+                    'RUNNINGSTATUS': '0',
+                    'HEALTHSTATUS': '0',
+                    'ID': '55555',
+                    'LOCATION': 'Location6',
+                    'RUNSPEED': '12000',
+                    'MAXSPEED': '12000',
+                    'PARENTID': '0A',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'TYPE': '210',
+                    'ID': '012345',
+                    'NAME': 'Name100',
+                    'RUNNINGSTATUS': '27',
+                    'HEALTHSTATUS': '0',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            ports = driver.list_ports(context)
+
+            self.assertDictEqual(ports[0], expected[0])
+            self.assertDictEqual(ports[1], expected[1])
+            self.assertDictEqual(ports[2], expected[2])
+            self.assertDictEqual(ports[3], expected[3])
+            self.assertDictEqual(ports[4], expected[4])
+            self.assertDictEqual(ports[5], expected[5])
+
+        with mock.patch.object(RestClient, 'get_all_ports',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_ports(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_ports',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_ports(context)
+            self.assertIn('The results are invalid',
+                          str(exc.exception))
+
+    def test_list_controllers(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'Controller-1',
+                'storage_id': '12345',
+                'native_controller_id': '0A',
+                'status': 'normal',
+                'location': 'Location1',
+                'soft_version': 'Ver123',
+                'cpu_info': 'Intel Xenon',
+                'memory_size': '100000',
+            },
+            {
+                'name': 'Controller-2',
+                'storage_id': '12345',
+                'native_controller_id': '0B',
+                'status': 'offline',
+                'location': 'Location2',
+                'soft_version': 'VerABC',
+                'cpu_info': 'ARM64',
+                'memory_size': '500000',
+            },
+            {
+                'name': 'Controller-3',
+                'storage_id': '12345',
+                'native_controller_id': '0B',
+                'status': 'unknown',
+                'location': 'Location3',
+                'soft_version': 'VerABC',
+                'cpu_info': 'ARM64',
+                'memory_size': '500000',
+            }
+
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        'RUNNINGSTATUS': '27',
+                        'NAME': 'Controller-1',
+                        'SOFTVER': 'Ver123',
+                        'CPUINFO': 'Intel Xenon',
+                        'MEMORYSIZE': '100000',
+                        'ID': '0A',
+                        'LOCATION': 'Location1'
+                    },
+                    {
+                        'RUNNINGSTATUS': '28',
+                        'NAME': 'Controller-2',
+                        'SOFTVER': 'VerABC',
+                        'CPUINFO': 'ARM64',
+                        'MEMORYSIZE': '500000',
+                        'ID': '0B',
+                        'LOCATION': 'Location2'
+                    },
+                    {
+                        'RUNNINGSTATUS': '0',
+                        'NAME': 'Controller-3',
+                        'SOFTVER': 'VerABC',
+                        'CPUINFO': 'ARM64',
+                        'MEMORYSIZE': '500000',
+                        'ID': '0B',
+                        'LOCATION': 'Location3'
+                    },
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'SOFTVER': '1000',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            controller = driver.list_controllers(context)
+            self.assertDictEqual(controller[0], expected[0])
+            self.assertDictEqual(controller[1], expected[1])
+            self.assertDictEqual(controller[2], expected[2])
+
+        with mock.patch.object(RestClient, 'get_all_controllers',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_controllers(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_controllers',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_controllers(context)
+            self.assertIn('The results are invalid',
+                          str(exc.exception))
+
+    def test_list_disks(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'ST200:1234',
+                'storage_id': '12345',
+                'native_disk_id': '0A',
+                'serial_number': '1234',
+                'manufacturer': 'Segate',
+                'model': 'ST200',
+                'firmware': '0003',
+                'speed': 7200,
+                'capacity': 1000000,
+                'status': 'normal',
+                'physical_type': 'unknown',
+                'logical_type': 'free',
+                'health_score': '255',
+                'native_disk_group_id': None,
+                'location': 'Location1',
+            },
+            {
+                'name': 'WD00:1111',
+                'storage_id': '12345',
+                'native_disk_id': '0B',
+                'serial_number': '1111',
+                'manufacturer': 'WesterDigital',
+                'model': 'WD00',
+                'firmware': '123',
+                'speed': 10000,
+                'capacity': 5000000,
+                'status': 'offline',
+                'physical_type': 'ssd',
+                'logical_type': 'free',
+                'health_score': '255',
+                'native_disk_group_id': None,
+                'location': 'Location2',
+            },
+            {
+                'name': 'ST200:1234',
+                'storage_id': '12345',
+                'native_disk_id': '0A',
+                'serial_number': '1234',
+                'manufacturer': 'Segate',
+                'model': 'ST200',
+                'firmware': '0003',
+                'speed': 7200,
+                'capacity': 1000000,
+                'status': 'abnormal',
+                'physical_type': 'unknown',
+                'logical_type': 'free',
+                'health_score': '255',
+                'native_disk_group_id': None,
+                'location': 'Location1',
+            }
+
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        'RUNNINGSTATUS': '27',
+                        'DISKTYPE': '4',
+                        'LOGICTYPE': '1',
+                        'HEALTHMARK': '255',
+                        'MODEL': 'ST200',
+                        'SERIALNUMBER': '1234',
+                        'MANUFACTURER': 'Segate',
+                        'FIRMWAREVER': '0003',
+                        'SPEEDRPM': '7200',
+                        'SECTORS': '10000',
+                        'SECTORSIZE': '100',
+                        'ID': '0A',
+                        'LOCATION': 'Location1'
+                    },
+                    {
+                        'RUNNINGSTATUS': '28',
+                        'DISKTYPE': '3',
+                        'LOGICTYPE': '1',
+                        'HEALTHMARK': '255',
+                        'MODEL': 'WD00',
+                        'SERIALNUMBER': '1111',
+                        'MANUFACTURER': 'WesterDigital',
+                        'FIRMWAREVER': '123',
+                        'SPEEDRPM': '10000',
+                        'SECTORS': '50000',
+                        'SECTORSIZE': '100',
+                        'ID': '0B',
+                        'LOCATION': 'Location2'
+                    },
+                    {
+                        'RUNNINGSTATUS': '0',
+                        'DISKTYPE': '4',
+                        'LOGICTYPE': '1',
+                        'HEALTHMARK': '255',
+                        'MODEL': 'ST200',
+                        'SERIALNUMBER': '1234',
+                        'MANUFACTURER': 'Segate',
+                        'FIRMWAREVER': '0003',
+                        'SPEEDRPM': '7200',
+                        'SECTORS': '10000',
+                        'SECTORSIZE': '100',
+                        'ID': '0A',
+                        'LOCATION': 'Location1'
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'SOFTVER': '1000',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            disk = driver.list_disks(context)
+            self.assertDictEqual(disk[0], expected[0])
+            self.assertDictEqual(disk[1], expected[1])
+            self.assertDictEqual(disk[2], expected[2])
+
+        with mock.patch.object(RestClient, 'get_all_disks',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_disks(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_disks',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_disks(context)
+            self.assertIn('The results are invalid',
+                          str(exc.exception))
