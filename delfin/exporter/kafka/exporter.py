@@ -12,20 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from flask import Flask
-from delfin.common import constants
-
-app = Flask(__name__)
+from delfin.exporter import base_exporter
+from delfin.exporter.kafka import kafka
 
 
-@app.route("/metrics", methods=['GET'])
-def getfile():
-    with open(constants.PROMETHEUS_EXPORTER_FILE, "r+") as f:
-        data = f.read()
-        f.truncate(0)
-    return data
+class AlertExporterKafka(base_exporter.BaseExporter):
+    def dispatch(self, ctxt, data):
+        pass
 
 
-if __name__ == '__main__':
-    app.run(host='', port=constants.METRICS_SERVER_PORT)
+class PerformanceExporterKafka(base_exporter.BaseExporter):
+    def dispatch(self, ctxt, data):
+        kafka_obj = kafka.KafkaExporter()
+        kafka_obj.push_to_kafka(data)
