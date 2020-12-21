@@ -98,8 +98,6 @@ class ComponentHandler():
                     if pool.get('pool_name') is not None:
                         # Get pool status  Ready=normal Offline=offline
                         status = self.STATUS_MAP.get(pool.get('state'))
-                        # Get pool storage_type   default block
-                        pool_type = constants.StorageType.BLOCK
 
                         used_cap = float(
                             pool.get("consumed_capacity_gbs")) * units.Gi
@@ -116,7 +114,7 @@ class ComponentHandler():
                             'native_storage_pool_id': str(pool.get('pool_id')),
                             'description': pool.get('description'),
                             'status': status,
-                            'storage_type': pool_type,
+                            'storage_type': constants.StorageType.BLOCK,
                             'total_capacity': int(total_cap),
                             'subscribed_capacity': int(subscribed_cap),
                             'used_capacity': int(used_cap),
@@ -146,8 +144,6 @@ class ComponentHandler():
                         status = self.STATUS_MAP.get(
                             raid.get('raidgroup_state'),
                             constants.StoragePoolStatus.OFFLINE)
-                        # Get pool storage_type   default block
-                        pool_type = constants.StorageType.BLOCK
 
                         free_cap = float(raid.get(
                             "free_capacity_blocks,non-contiguous")) * (
@@ -168,7 +164,7 @@ class ComponentHandler():
                             'description': 'RAID Group %s' %
                                            raid.get('raidgroup_id'),
                             'status': status,
-                            'storage_type': pool_type,
+                            'storage_type': constants.StorageType.BLOCK,
                             'total_capacity': int(total_cap),
                             'subscribed_capacity': int(subscribed_cap),
                             'used_capacity': int(used_cap),
