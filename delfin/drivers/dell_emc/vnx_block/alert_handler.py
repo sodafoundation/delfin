@@ -51,14 +51,6 @@ class AlertHandler(object):
 
     @staticmethod
     def parse_alert(alert):
-        """Parse alert data got from alert manager and fill the alert model."""
-        # Check for mandatory alert attributes
-        for attr in AlertHandler._mandatory_alert_attributes:
-            if not alert.get(attr):
-                msg = "Mandatory information %s missing in alert message. " \
-                      % attr
-                raise exception.InvalidInput(msg)
-
         try:
             alert_model = dict()
             # These information are sourced from device registration info
