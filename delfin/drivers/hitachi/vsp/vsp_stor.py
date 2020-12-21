@@ -266,7 +266,8 @@ class HitachiVspDriver(driver.StorageDriver):
         else:
             err_msg = "list_alerts is not supported in model %s" % \
                       self.rest_handler.device_model
-            raise exception.StorageListAlertFailed(err_msg)
+            LOG.error(err_msg)
+            raise NotImplementedError(err_msg)
         return alert_list
 
     def add_trap_config(self, context, trap_config):

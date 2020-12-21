@@ -282,8 +282,8 @@ class TestHitachiVspStorStorageDriver(TestCase):
             RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
             RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
             self.driver.list_alerts(context)
-        self.assertEqual('Failed to list alerts. Reason: list_alerts is not '
-                         'supported in model VSP F1500.', str(exc.exception))
+        self.assertEqual('list_alerts is not supported in model VSP F1500',
+                         str(exc.exception))
 
     def test_parse_queried_alerts(self):
         alert_list = []
