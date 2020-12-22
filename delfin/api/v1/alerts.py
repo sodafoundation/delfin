@@ -22,6 +22,7 @@ from delfin.api.schemas import alerts as schema_alerts
 from delfin.api.views import alerts as alerts_view
 from delfin.common import alert_util
 from delfin.drivers import api as driver_manager
+from delfin.exporter import base_exporter
 from delfin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
@@ -32,6 +33,7 @@ class AlertController(wsgi.Controller):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
         self.driver_manager = driver_manager.API()
+        self.alert_exporter = base_exporter.AlertExporterManager()
 
     @wsgi.response(200)
     def show(self, req, id):
@@ -66,6 +68,11 @@ class AlertController(wsgi.Controller):
         # Update storage attributes in each alert model
         for alert in alert_list:
             alert_util.fill_storage_attributes(alert, storage)
+
+        try:
+            self.alert_exporter.dispatch(ctx, alert_list)
+        except Exception:
+            LOG.error("Alert exporting failed ")
 
         return alerts_view.build_alerts(alert_list)
 

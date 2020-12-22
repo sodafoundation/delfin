@@ -280,7 +280,56 @@ class FakeStorageDriver(driver.StorageDriver):
         pass
 
     def list_alerts(self, context, query_para=None):
-        pass
+        alert_list = [{
+            "storage_id": self.storage_id,
+            'alert_id': '19660818',
+            'sequence_number': 100,
+            'alert_name': 'SNMP connect failed',
+            'category': 'Fault',
+            'severity': 'Major',
+            'type': 'OperationalViolation',
+            'location': 'NetworkEntity=entity1',
+            'description': "SNMP connection to the storage failed.",
+            'recovery_advice': "Check snmp configurations.",
+            'occur_time': 13445566902
+        }, {
+            "storage_id": self.storage_id,
+            'alert_id': '19660819',
+            'sequence_number': 101,
+            'alert_name': 'Link state down',
+            'category': 'Fault',
+            'severity': 'Critical',
+            'type': 'CommunicationsAlarm',
+            'location': 'NetworkEntity=entity2',
+            'description': "Backend link has gone down",
+            'recovery_advice': "Recheck the network configuration setting.",
+            'occur_time': 13445566900
+        }, {
+            "storage_id": self.storage_id,
+            'alert_id': '19660820',
+            'sequence_number': 102,
+            'alert_name': 'Power failure',
+            'category': 'Fault',
+            'severity': 'Fatal',
+            'type': 'OperationalViolation',
+            'location': 'NetworkEntity=entity3',
+            'description': "Power failure occurred. ",
+            'recovery_advice': "Investigate power connection.",
+            'occur_time': 13445558900
+        }, {
+            "storage_id": self.storage_id,
+            'alert_id': '19660821',
+            'sequence_number': 103,
+            'alert_name': 'Communication failure',
+            'category': 'Fault',
+            'severity': 'Critical',
+            'type': 'CommunicationsAlarm',
+            'location': 'NetworkEntity=network1',
+            'description': "Communication link gone down",
+            'recovery_advice': "Consult network administrator",
+            'occur_time': 17445544900
+        }]
+        return alert_list
 
     @wait_random(MIN_WAIT, MAX_WAIT)
     def _get_volume_range(self, start, end):

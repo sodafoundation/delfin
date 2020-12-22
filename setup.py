@@ -26,7 +26,9 @@ setup(
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
     entry_points={
         'delfin.alert.exporters': [
-            'example = delfin.exporter.example:AlertExporterExample'
+            'example = delfin.exporter.example:AlertExporterExample',
+            'prometheus = delfin.exporter.prometheus.exporter'
+            ':AlertExporterPrometheus',
         ],
         'delfin.performance.exporters': [
             'example = delfin.exporter.example:PerformanceExporterExample',

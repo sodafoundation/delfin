@@ -5,6 +5,7 @@
 # pbr should be first
 pbr!=2.1.0,>=2.0.0 # Apache-2.0
 
+requests
 alembic>=0.8.10 # MIT
 Babel!=2.4.0,>=2.3.4 # BSD
 eventlet!=0.18.3,!=0.20.1,>=0.18.2 # MIT
