@@ -13,7 +13,9 @@
 # limitations under the License.
 import requests
 from oslo_config import cfg
+from oslo_log import log
 
+LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 alert_mngr_opts = [
 
@@ -48,5 +50,13 @@ class PrometheusAlertExporter(object):
             dict["annotations"]["summary"] = alert.get("description")
 
             self.alerts.append(dict)
-            requests.post('http://' + host + ":" + port + '/api/v1/alerts',
-                          json=self.alerts)
+            try:
+                response = requests.post('http://' + host + ":" + port +
+                                         '/api/v1/alerts',
+                                         json=self.alerts)
+                if response != 200:
+                    LOG.error("POST request failed for alert %s ",
+                              alert.get('alert_id'))
+            except Exception:
+                LOG.error("Exporting alert to alert manager has been failed "
+                          "for alert %s ", alert.get('alert_id'))

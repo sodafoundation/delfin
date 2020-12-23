@@ -282,7 +282,7 @@ class FakeStorageDriver(driver.StorageDriver):
     def list_alerts(self, context, query_para=None):
         alert_list = [{
             "storage_id": self.storage_id,
-            'alert_id': '19660818',
+            'alert_id': str(random.randint(1111111, 9999999)),
             'sequence_number': 100,
             'alert_name': 'SNMP connect failed',
             'category': 'Fault',
@@ -291,10 +291,10 @@ class FakeStorageDriver(driver.StorageDriver):
             'location': 'NetworkEntity=entity1',
             'description': "SNMP connection to the storage failed.",
             'recovery_advice': "Check snmp configurations.",
-            'occur_time': 13445566902
+            'occur_time': int(time.time())
         }, {
             "storage_id": self.storage_id,
-            'alert_id': '19660819',
+            'alert_id': str(random.randint(1111111, 9999999)),
             'sequence_number': 101,
             'alert_name': 'Link state down',
             'category': 'Fault',
@@ -303,10 +303,10 @@ class FakeStorageDriver(driver.StorageDriver):
             'location': 'NetworkEntity=entity2',
             'description': "Backend link has gone down",
             'recovery_advice': "Recheck the network configuration setting.",
-            'occur_time': 13445566900
+            'occur_time': int(time.time())
         }, {
             "storage_id": self.storage_id,
-            'alert_id': '19660820',
+            'alert_id': str(random.randint(1111111, 9999999)),
             'sequence_number': 102,
             'alert_name': 'Power failure',
             'category': 'Fault',
@@ -315,10 +315,10 @@ class FakeStorageDriver(driver.StorageDriver):
             'location': 'NetworkEntity=entity3',
             'description': "Power failure occurred. ",
             'recovery_advice': "Investigate power connection.",
-            'occur_time': 13445558900
+            'occur_time': int(time.time())
         }, {
             "storage_id": self.storage_id,
-            'alert_id': '19660821',
+            'alert_id': str(random.randint(1111111, 9999999)),
             'sequence_number': 103,
             'alert_name': 'Communication failure',
             'category': 'Fault',
@@ -327,7 +327,7 @@ class FakeStorageDriver(driver.StorageDriver):
             'location': 'NetworkEntity=network1',
             'description': "Communication link gone down",
             'recovery_advice': "Consult network administrator",
-            'occur_time': 17445544900
+            'occur_time': int(time.time())
         }]
         return alert_list
 
