@@ -115,7 +115,7 @@ class TaskManager(manager.Manager):
     def sync_storage_alerts(self, context, storage_id, query_para):
         LOG.info('Alert sync called for storage id:{0}'
                  .format(storage_id))
-        self.alert_sync.sync_alerts(context, storage_id, query_para)
+        self.alert_task.sync_alerts(context, storage_id, query_para)
 
     def performance_metrics_collection(self, context, storage_id, interval,
                                        is_historic, resource_task):

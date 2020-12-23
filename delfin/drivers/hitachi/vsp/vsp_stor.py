@@ -224,6 +224,15 @@ class HitachiVspDriver(driver.StorageDriver):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
+    def list_controllers(self, context):
+        pass
+
+    def list_ports(self, context):
+        pass
+
+    def list_disks(self, context):
+        pass
+
     @staticmethod
     def parse_queried_alerts(alerts, alert_list, query_para=None):
         for alert in alerts:
