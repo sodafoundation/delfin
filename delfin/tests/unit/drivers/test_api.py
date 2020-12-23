@@ -265,11 +265,8 @@ class TestDriverAPI(TestCase):
         mock_storage_create.return_value = storage
         mock_fake.return_value = []
         api = API()
-        api.discover_storage(context, ACCESS_INFO)
 
         storage_id = '12345'
-        driver = api.driver_manager.driver_factory.get(storage_id, None)
-        self.assertIsNotNone(driver)
 
         api.list_controllers(context, storage_id)
         mock_fake.assert_called_once()
@@ -287,8 +284,6 @@ class TestDriverAPI(TestCase):
         mock_storage_create.return_value = storage
         mock_fake.return_value = []
         api = API()
-        api.discover_storage(context, ACCESS_INFO)
-
         storage_id = '12345'
         driver = api.driver_manager.driver_factory.get(storage_id, None)
         self.assertIsNotNone(driver)
