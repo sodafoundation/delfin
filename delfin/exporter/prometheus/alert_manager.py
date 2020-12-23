@@ -39,7 +39,6 @@ class PrometheusAlertExporter(object):
         host = alert_cfg.alert_manager_host
         port = alert_cfg.alert_manager_port
         for alert in alerts:
-            print(alert)
             dict = {}
             dict["labels"] = {}
             dict["annotations"] = {}
