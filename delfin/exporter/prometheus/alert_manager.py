@@ -54,7 +54,7 @@ class PrometheusAlertExporter(object):
                 response = requests.post('http://' + host + ":" + port +
                                          '/api/v1/alerts',
                                          json=self.alerts)
-                if response != 200:
+                if response.status_code != 200:
                     LOG.error("POST request failed for alert %s ",
                               alert.get('alert_id'))
             except Exception:
