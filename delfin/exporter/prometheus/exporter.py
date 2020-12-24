@@ -14,14 +14,15 @@
 
 from oslo_log import log
 from delfin.exporter import base_exporter
-from delfin.exporter.prometheus import prometheus
+from delfin.exporter.prometheus import prometheus, alert_manager
 
 LOG = log.getLogger(__name__)
 
 
 class AlertExporterPrometheus(base_exporter.BaseExporter):
     def dispatch(self, ctxt, data):
-        pass
+        alert_manager_obj = alert_manager.PrometheusAlertExporter()
+        alert_manager_obj.push_prometheus_alert(data)
 
 
 class PerformanceExporterPrometheus(base_exporter.BaseExporter):
