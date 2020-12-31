@@ -153,11 +153,25 @@ class UNITYStorDriver(driver.StorageDriver):
                 volume_list.append(v)
 
     def list_volumes(self, context):
+        page_size = 1
         volume_list = []
-        luns = self.rest_handler.get_all_luns()
-        filesystems = self.rest_handler.get_all_filesystem()
-        self.volume_handler(luns, volume_list)
-        self.volume_handler(filesystems, volume_list)
+        while True:
+            luns = self.rest_handler.get_all_luns(page_size)
+            if 'entries' not in luns:
+                break
+            if len(luns['entries']) < 1:
+                break
+            self.volume_handler(luns, volume_list)
+            page_size = page_size + 1
+        page_size = 1
+        while True:
+            filesystems = self.rest_handler.get_all_filesystem(page_size)
+            if 'entries' not in filesystems:
+                break
+            if len(filesystems['entries']) < 1:
+                break
+            self.volume_handler(filesystems, volume_list)
+            page_size = page_size + 1
 
         return volume_list
 

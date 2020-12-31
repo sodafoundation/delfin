@@ -292,6 +292,21 @@ GET_ALL_LUNS = {
         }
     ]
 }
+GET_ALL_LUNS_NULL = {
+    "@base": "https://8.44.162.244/api/types/alert/instances",
+    "updated": "2020-10-19T09:02:57.980Z",
+    "links": [
+        {
+            "rel": "self",
+            "href": "&page=1"
+        },
+        {
+            "rel": "next",
+            "href": "&page=2"
+        }
+    ],
+    "entries": []
+}
 GET_ALL_ALERTS = {
     "@base": "https://8.44.162.244/api/types/alert/instances",
     "updated": "2020-10-19T09:02:57.980Z",
@@ -556,7 +571,8 @@ class TestUNITYStorDriver(TestCase):
         self.assertDictEqual(pool[0], pool_result[0])
 
     def test_list_volumes(self):
-        RestHandler.get_rest_info = mock.Mock(return_value=GET_ALL_LUNS)
+        RestHandler.get_rest_info = mock.Mock(side_effect=[
+            GET_ALL_LUNS, GET_ALL_LUNS_NULL])
         volume = self.driver.list_volumes(context)
         self.assertDictEqual(volume[0], volume_result[0])
         self.assertDictEqual(volume[1], volume_result[1])
@@ -611,14 +627,3 @@ class TestUNITYStorDriver(TestCase):
             self.driver.list_storage_pools(context)
         self.assertIn('Bad response from server',
                       str(exc.exception))
-
-    def test_list_volumes_call(self):
-        m = mock.MagicMock(status_code=200)
-        with mock.patch.object(Session, 'get', return_value=m):
-            m.raise_for_status.return_value = 200
-            m.json.return_value = GET_ALL_LUNS
-            volume = self.driver.list_volumes(context)
-            self.assertDictEqual(volume[0], volume_result[0])
-            self.assertDictEqual(volume[1], volume_result[1])
-            self.assertDictEqual(volume[2], volume_result[2])
-            self.assertDictEqual(volume[3], volume_result[3])

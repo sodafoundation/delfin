@@ -43,11 +43,10 @@ class RestHandler(RestClient):
     def __init__(self, **kwargs):
         super(RestHandler, self).__init__(**kwargs)
 
-    def call(self, url, data=None, method=None, params=None):
+    def call(self, url, data=None, method=None):
         try:
             res = self.do_call(url, data, method,
-                               calltimeout=consts.SOCKET_TIMEOUT,
-                               params=params)
+                               calltimeout=consts.SOCKET_TIMEOUT)
             if (res.status_code == consts.ERROR_SESSION_INVALID_CODE
                     or res.status_code ==
                     consts.ERROR_SESSION_IS_BEING_USED_CODE):
@@ -62,8 +61,7 @@ class RestHandler(RestClient):
                 if access_session is not None:
                     res = self. \
                         do_call(url, data, method,
-                                calltimeout=consts.SOCKET_TIMEOUT,
-                                params=params)
+                                calltimeout=consts.SOCKET_TIMEOUT)
                 else:
                     LOG.error('Login res is None')
             elif res.status_code == 503:
@@ -74,9 +72,9 @@ class RestHandler(RestClient):
             LOG.error(err_msg)
             raise e
 
-    def get_rest_info(self, url, data=None, method='GET', params=None):
+    def get_rest_info(self, url, data=None, method='GET'):
         result_json = None
-        res = self.call(url, data, method, params)
+        res = self.call(url, data, method)
         if res.status_code == 200:
             result_json = res.json()
         return result_json
@@ -151,73 +149,59 @@ class RestHandler(RestClient):
             raise e
 
     def get_storage(self):
-        params = {
-            "fields": "name,model,serialNumber,health"
-        }
-        result_json = self.get_rest_info(RestHandler.REST_STORAGE_URL,
-                                         params=params)
+        url = '%s?%s' % (RestHandler.REST_STORAGE_URL,
+                         'fields=name,model,serialNumber,health')
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_capacity(self):
-        params = {
-            "fields": "sizeFree,sizeTotal,sizeUsed,"
-                      "sizeSubscribed,totalLogicalSize"
-        }
-        result_json = self.get_rest_info(RestHandler.REST_CAPACITY_URL,
-                                         params=params)
+        url = '%s?%s' % (RestHandler.REST_CAPACITY_URL,
+                         'fields=sizeFree,sizeTotal,sizeUsed,'
+                         'sizeSubscribed,totalLogicalSize')
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_all_pools(self):
-        params = {
-            "fields": "id,name,health,type,sizeFree,"
-                      "sizeTotal,sizeUsed,sizeSubscribed"
-        }
-        result_json = self.get_rest_info(RestHandler.REST_POOLS_URL,
-                                         params=params)
+        url = '%s?%s' % (RestHandler.REST_POOLS_URL,
+                         'fields=id,name,health,type,sizeFree,'
+                         'sizeTotal,sizeUsed,sizeSubscribed')
+        result_json = self.get_rest_info(url)
         return result_json
 
-    def get_all_luns(self):
-        params = {
-            "fields": "id,name,health,type,sizeAllocated,"
-                      "sizeTotal,sizeUsed,pool,wwn,isThinEnabled"
-        }
-        result_json = self.get_rest_info(RestHandler.REST_LUNS_URL,
-                                         params=params)
+    def get_all_luns(self, page_size):
+        url = '%s?%s&%spage=' % (RestHandler.REST_LUNS_URL,
+                                 'fields=id,name,health,type,sizeAllocated,'
+                                 'sizeTotal,sizeUsed,pool,wwn,isThinEnabled',
+                                 page_size)
+        result_json = self.get_rest_info(url)
         return result_json
 
-    def get_all_filesystem(self):
-        params = {
-            "fields": "id,name,health,type,sizeAllocated,"
-                      "sizeTotal,sizeUsed,pool,wwn,isThinEnabled"
-        }
-        result_json = self.get_rest_info(RestHandler.REST_FILESYSTEM_URL,
-                                         params=params)
+    def get_all_filesystem(self, page_size):
+        url = '%s?%s&%spage=' % (RestHandler.REST_FILESYSTEM_URL,
+                                 'fields=id,name,health,type,sizeAllocated,'
+                                 'sizeTotal,sizeUsed,pool,wwn,isThinEnabled',
+                                 page_size)
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_all_alerts(self, page_size):
-        params = {
-            "fields": "id,timestamp,severity,component,"
-                      "messageId,message,description,descriptionId",
-            "page": page_size
-        }
-        result_json = self.get_rest_info(RestHandler.REST_ALERTS_URL,
-                                         params=params)
+        url = '%s?%s&%spage=' % (RestHandler.REST_ALERTS_URL,
+                                 'fields=id,timestamp,severity,component,'
+                                 'messageId,message,description,descriptionId',
+                                 page_size)
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_soft_version(self):
-        params = {
-            "fields": "version"
-        }
-        result_json = self.get_rest_info(RestHandler.REST_SOFT_VERSION_URL,
-                                         params=params)
+        url = '%s?%s' % (RestHandler.REST_SOFT_VERSION_URL,
+                         'fields=version')
+        result_json = self.get_rest_info(url)
         return result_json
 
     def get_disk_info(self):
-        params = {
-            "fields": "rawSize"
-        }
-        result_json = self.get_rest_info(RestHandler.REST_DISK_URL,
-                                         params=params)
+        url = '%s?%s' % (RestHandler.REST_DISK_URL,
+                         'fields=rawSize')
+        result_json = self.get_rest_info(url)
         return result_json
 
     def remove_alert(self, alert_id):
