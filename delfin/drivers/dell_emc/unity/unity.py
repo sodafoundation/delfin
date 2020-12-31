@@ -16,7 +16,7 @@ from oslo_log import log
 
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.dell_emc.unity import rest_handler, alert_handler
+from delfin.drivers.dell_emc.unity import rest_handler, alert_handler, consts
 from delfin.drivers.dell_emc.unity.alert_handler import AlertHandler
 
 LOG = log.getLogger(__name__)
@@ -50,7 +50,7 @@ class UNITYStorDriver(driver.StorageDriver):
                 model = system.get('content').get('model')
                 serial_number = system.get('content').get('serialNumber')
                 health_value = system.get('content').get('health').get('value')
-                if health_value == 5:
+                if health_value in consts.HEALTH_OK:
                     status = constants.StorageStatus.NORMAL
                 else:
                     status = constants.StorageStatus.ABNORMAL
@@ -95,7 +95,7 @@ class UNITYStorDriver(driver.StorageDriver):
             pool_entries = pool_info.get('entries')
             for pool in pool_entries:
                 health_value = pool.get('content').get('health').get('value')
-                if health_value == 5:
+                if health_value in consts.HEALTH_OK:
                     status = constants.StorageStatus.NORMAL
                 else:
                     status = constants.StorageStatus.ABNORMAL
@@ -130,7 +130,7 @@ class UNITYStorDriver(driver.StorageDriver):
                 deduplicated = volume.get('content').\
                     get('isAdvancedDedupEnabled')
                 health_value = volume.get('content').get('health').get('value')
-                if health_value == 5:
+                if health_value in consts.HEALTH_OK:
                     status = constants.StorageStatus.NORMAL
                 else:
                     status = constants.StorageStatus.ABNORMAL
