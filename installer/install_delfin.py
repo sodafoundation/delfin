@@ -81,7 +81,7 @@ def start_processes():
 
     # Start exporter server process
     proc_path = os.path.join(delfin_source_path, 'delfin', 'exporter',
-                             'exporter_server.py')
+                             'prometheus', 'exporter_server.py')
     command = 'python3 ' + proc_path + ' --config-file ' +\
               conf_file + ' >' + DEVNULL + ' 2>&1 &'
     logger.info("Executing command [%s]", command)
