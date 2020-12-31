@@ -33,7 +33,6 @@ class RestHandler(RestClient):
     REST_CAPACITY_URL = '/api/types/systemCapacity/instances'
     REST_POOLS_URL = '/api/types/pool/instances'
     REST_LUNS_URL = '/api/types/lun/instances'
-    REST_FILESYSTEM_URL = '/api/types/filesystem/instances'
     REST_ALERTS_URL = '/api/types/alert/instances'
     REST_DEL_ALERTS_URL = '/api/instances/alert/'
     REST_DISK_URL = '/api/types/disk/instances'
@@ -63,12 +62,12 @@ class RestHandler(RestClient):
                         do_call(url, data, method,
                                 calltimeout=consts.SOCKET_TIMEOUT)
                 else:
-                    LOG.error('Login res is None')
+                    LOG.error('Login session is none')
             elif res.status_code == 503:
                 raise exception.InvalidResults(res.text)
             return res
         except Exception as e:
-            err_msg = "Get RestHandler.call failed: %s" % (six.text_type(e))
+            err_msg = "Get restHandler.call failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
 
@@ -170,14 +169,6 @@ class RestHandler(RestClient):
 
     def get_all_luns(self, page_size):
         url = '%s?%s&page=%s' % (RestHandler.REST_LUNS_URL,
-                                 'fields=id,name,health,type,sizeAllocated,'
-                                 'sizeTotal,sizeUsed,pool,wwn,isThinEnabled',
-                                 page_size)
-        result_json = self.get_rest_info(url)
-        return result_json
-
-    def get_all_filesystem(self, page_size):
-        url = '%s?%s&page=%s' % (RestHandler.REST_FILESYSTEM_URL,
                                  'fields=id,name,health,type,sizeAllocated,'
                                  'sizeTotal,sizeUsed,pool,wwn,isThinEnabled',
                                  page_size)

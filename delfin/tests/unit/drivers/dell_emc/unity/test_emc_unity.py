@@ -467,34 +467,6 @@ volume_result = [
         'compressed': True,
         'name': 'LUN-01',
         'status': 'normal'
-    }, {
-        'used_capacity': 0,
-        'free_capacity': 107374182400,
-        'native_storage_pool_id': 'pool_1',
-        'description': None,
-        'deduplicated': None,
-        'native_volume_id': 'sv_1',
-        'total_capacity': 107374182400,
-        'storage_id': '12345',
-        'wwn': '60:06:01:60:0B:00:49:00:BE:CE:6C:5C:56:C1:9D:D2',
-        'type': 'thick',
-        'compressed': True,
-        'name': 'LUN-00',
-        'status': 'normal'
-    }, {
-        'used_capacity': 0,
-        'free_capacity': 107374182400,
-        'native_storage_pool_id': 'pool_1',
-        'description': None,
-        'deduplicated': None,
-        'native_volume_id': 'sv_2',
-        'total_capacity': 107374182400,
-        'storage_id': '12345',
-        'wwn': '60:06:01:60:0B:00:49:00:BE:CE:6C:5C:9B:86:B5:71',
-        'type': 'thick',
-        'compressed': True,
-        'name': 'LUN-01',
-        'status': 'normal'
     }
 ]
 alert_result = [
@@ -572,13 +544,10 @@ class TestUNITYStorDriver(TestCase):
 
     def test_list_volumes(self):
         RestHandler.get_rest_info = mock.Mock(side_effect=[
-            GET_ALL_LUNS, GET_ALL_LUNS_NULL,
             GET_ALL_LUNS, GET_ALL_LUNS_NULL])
         volume = self.driver.list_volumes(context)
         self.assertDictEqual(volume[0], volume_result[0])
         self.assertDictEqual(volume[1], volume_result[1])
-        self.assertDictEqual(volume[2], volume_result[2])
-        self.assertDictEqual(volume[3], volume_result[3])
 
     def test_list_alerts(self):
         RestHandler.get_rest_info = mock.Mock(side_effect=[

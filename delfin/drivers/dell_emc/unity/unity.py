@@ -163,15 +163,6 @@ class UNITYStorDriver(driver.StorageDriver):
                 break
             self.volume_handler(luns, volume_list)
             page_size = page_size + 1
-        page_size = 1
-        while True:
-            filesystems = self.rest_handler.get_all_filesystem(page_size)
-            if 'entries' not in filesystems:
-                break
-            if len(filesystems['entries']) < 1:
-                break
-            self.volume_handler(filesystems, volume_list)
-            page_size = page_size + 1
 
         return volume_list
 
