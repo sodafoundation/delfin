@@ -169,7 +169,7 @@ class RestHandler(RestClient):
         return result_json
 
     def get_all_luns(self, page_size):
-        url = '%s?%s&%spage=' % (RestHandler.REST_LUNS_URL,
+        url = '%s?%s&page=%s' % (RestHandler.REST_LUNS_URL,
                                  'fields=id,name,health,type,sizeAllocated,'
                                  'sizeTotal,sizeUsed,pool,wwn,isThinEnabled',
                                  page_size)
@@ -177,7 +177,7 @@ class RestHandler(RestClient):
         return result_json
 
     def get_all_filesystem(self, page_size):
-        url = '%s?%s&%spage=' % (RestHandler.REST_FILESYSTEM_URL,
+        url = '%s?%s&page=%s' % (RestHandler.REST_FILESYSTEM_URL,
                                  'fields=id,name,health,type,sizeAllocated,'
                                  'sizeTotal,sizeUsed,pool,wwn,isThinEnabled',
                                  page_size)
@@ -185,7 +185,7 @@ class RestHandler(RestClient):
         return result_json
 
     def get_all_alerts(self, page_size):
-        url = '%s?%s&%spage=' % (RestHandler.REST_ALERTS_URL,
+        url = '%s?%s&page=%s' % (RestHandler.REST_ALERTS_URL,
                                  'fields=id,timestamp,severity,component,'
                                  'messageId,message,description,descriptionId',
                                  page_size)

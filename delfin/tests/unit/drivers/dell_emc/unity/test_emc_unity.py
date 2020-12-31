@@ -572,6 +572,7 @@ class TestUNITYStorDriver(TestCase):
 
     def test_list_volumes(self):
         RestHandler.get_rest_info = mock.Mock(side_effect=[
+            GET_ALL_LUNS, GET_ALL_LUNS_NULL,
             GET_ALL_LUNS, GET_ALL_LUNS_NULL])
         volume = self.driver.list_volumes(context)
         self.assertDictEqual(volume[0], volume_result[0])
