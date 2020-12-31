@@ -427,7 +427,7 @@ storage_result = {
 pool_result = [
     {
         'native_storage_pool_id': 'pool_1',
-        'status': 'abnormal',
+        'status': 'normal',
         'free_capacity': 2311766147072,
         'name': 'pool1',
         'storage_type': 'block',
