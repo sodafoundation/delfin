@@ -166,6 +166,15 @@ class UNITYStorDriver(driver.StorageDriver):
 
         return volume_list
 
+    def list_controllers(self, context):
+        pass
+
+    def list_ports(self, context):
+        pass
+
+    def list_disks(self, context):
+        pass
+
     def list_alerts(self, context, query_para=None):
         page_size = 1
         alert_model_list = []
