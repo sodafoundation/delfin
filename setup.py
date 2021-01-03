@@ -38,6 +38,7 @@ setup(
         ],
         'delfin.storage.drivers': [
             'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
+            'dellemc unity = delfin.drivers.dell_emc.unity.unity:UNITYStorDriver',
             'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
             'hitachi vsp = delfin.drivers.hitachi.vsp.vsp_stor:HitachiVspDriver',
             'hpe 3par = delfin.drivers.hpe.hpe_3par.hpe_3parstor:Hpe3parStorDriver',
