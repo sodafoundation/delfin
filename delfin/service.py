@@ -33,7 +33,6 @@ from oslo_utils import importutils
 from delfin import context
 from delfin import coordination
 from delfin import rpc
-from delfin.task_manager.manager import TaskManager
 
 LOG = log.getLogger(__name__)
 
@@ -269,9 +268,7 @@ class TaskService(Service):
 
     def start(self):
         super(TaskService, self).start()
-
-        task_manager = TaskManager()
-        task_manager.periodic_performance_collect()
+        self.manager.periodic_performance_collect()
 
 
 class WSGIService(service.ServiceBase):
