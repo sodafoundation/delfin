@@ -27,9 +27,6 @@ LOG = log.getLogger(__name__)
 class AlertHandler(object):
     """Alert handling functions for vmax snmp traps"""
 
-    def __init__(self):
-        self.oid_mapper = oid_mapper.OidMapper()
-
     # Translation of trap severity to alert model severity
     # Values are:
     # unknown 1, emergency 2, alert 3, critical 4, error 5,
@@ -53,12 +50,13 @@ class AlertHandler(object):
                                    'emcAsyncEventComponentName',
                                    'emcAsyncEventSource')
 
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def parse_alert(context, alert):
         """Parse alert data got from alert manager and fill the alert model."""
 
-        alert = self.oid_mapper.map_oids(alert)
+        alert = oid_mapper.OidMapper.map_oids(alert)
         # Check for mandatory alert attributes
-        for attr in self._mandatory_alert_attributes:
+        for attr in AlertHandler._mandatory_alert_attributes:
             if not alert.get(attr):
                 msg = "Mandatory information %s missing in alert message. " \
                       % attr
@@ -71,7 +69,7 @@ class AlertHandler(object):
         alert_model['alert_name'] = alert_mapper.alarm_id_name_mapping.get(
             alert_model['alert_id'], alert_model['alert_id'])
 
-        alert_model['severity'] = self.SEVERITY_MAP.get(
+        alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
             alert['connUnitEventSeverity'],
             constants.Severity.INFORMATIONAL)
 

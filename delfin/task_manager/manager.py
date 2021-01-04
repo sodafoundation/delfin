@@ -43,7 +43,7 @@ class TaskManager(manager.Manager):
     RPC_API_VERSION = '1.0'
 
     def __init__(self, service_name=None, *args, **kwargs):
-        self.alert_sync = alerts.AlertSyncTask()
+        self.alert_task = alerts.AlertSyncTask()
         super(TaskManager, self).__init__(*args, **kwargs)
 
     def periodic_performance_collect(self):
@@ -115,7 +115,7 @@ class TaskManager(manager.Manager):
     def sync_storage_alerts(self, context, storage_id, query_para):
         LOG.info('Alert sync called for storage id:{0}'
                  .format(storage_id))
-        self.alert_sync.sync_alerts(context, storage_id, query_para)
+        self.alert_task.sync_alerts(context, storage_id, query_para)
 
     def performance_metrics_collection(self, context, storage_id, interval,
                                        is_historic, resource_task):
@@ -124,3 +124,10 @@ class TaskManager(manager.Manager):
         cls = importutils.import_class(resource_task)
         device_obj = cls(context, storage_id, interval, is_historic)
         device_obj.collect()
+
+    def clear_storage_alerts(self, context, storage_id, sequence_number_list):
+        LOG.info('Clear alerts called for storage id: {0}'
+                 .format(storage_id))
+        return self.alert_task.clear_alerts(context,
+                                            storage_id,
+                                            sequence_number_list)

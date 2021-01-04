@@ -90,7 +90,7 @@ class TestCase(base_test.BaseTestCase):
         self.injected = []
         self._services = []
         # This will be cleaned up by the NestedTempfile fixture
-        lock_path = self.useFixture(fixtures.TempDir()).path
+        lock_path = '/' + self.useFixture(fixtures.TempDir()).path
         self.fixture = self.useFixture(config_fixture.Config(lockutils.CONF))
         self.fixture.config(lock_path=lock_path, group='oslo_concurrency')
         self.fixture.config(

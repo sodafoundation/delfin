@@ -73,8 +73,8 @@ class StorageDriver(object):
         """Remove trap receiver configuration from storage system."""
         pass
 
-    @abc.abstractmethod
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def parse_alert(context, alert):
         """Parse alert data got from snmp trap server."""
 
         """

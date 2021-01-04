@@ -93,7 +93,8 @@ class VMAXStorageDriver(driver.StorageDriver):
     def remove_trap_config(self, context, trap_config):
         pass
 
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def parse_alert(context, alert):
         return snmp_alerts.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, sequence_number):

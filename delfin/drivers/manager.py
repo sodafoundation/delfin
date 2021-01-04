@@ -80,6 +80,9 @@ class DriverManager(stevedore.ExtensionManager):
             cls = self._get_driver_cls(**kwargs)
             return cls(**kwargs)
 
+        if kwargs['storage_id'] in self.driver_factory:
+            return self.driver_factory[kwargs['storage_id']]
+
         with self._instance_lock:
             if kwargs['storage_id'] in self.driver_factory:
                 return self.driver_factory[kwargs['storage_id']]

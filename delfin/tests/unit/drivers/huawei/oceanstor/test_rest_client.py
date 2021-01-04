@@ -127,7 +127,7 @@ class TestOceanStorRestClient(TestCase):
         mock_call.return_value = RESP
         kwargs = ACCESS_INFO
         rest_client = RestClient(**kwargs)
-        data = rest_client.get_controller()
+        data = rest_client.get_all_controllers()
         self.assertEqual(data['data'], 'dummy')
         mock_call.assert_called_with("/controller",
                                      log_filter_flag=True, method='GET')

@@ -53,8 +53,8 @@ kafka_opts = [
                help='The kafka server port'),
 ]
 
-CONF.register_opts(kafka_opts, "KAFKA")
-kafka = CONF.KAFKA
+CONF.register_opts(kafka_opts, "KAFKA_EXPORTER")
+kafka = CONF.KAFKA_EXPORTER
 
 
 class KafkaExporter(object):

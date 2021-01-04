@@ -103,11 +103,14 @@ class RestClient(object):
 
         try:
             res = func(url, **kwargs)
-        except requests.exceptions.SSLError as ssl_exc:
-            LOG.exception('SSLError exception from server: %(url)s.'
-                          ' Error: %(err)s', {'url': url, 'err': ssl_exc})
-            return {"error": {"code": consts.ERROR_CONNECT_TO_SERVER,
-                              "description": "Retry with valid certificate."}}
+        except requests.exceptions.SSLError as e:
+            LOG.error('SSLError exception from server: %(url)s.'
+                      ' Error: %(err)s', {'url': url, 'err': e})
+            err_str = six.text_type(e)
+            if 'certificate verify failed' in err_str:
+                raise exception.SSLCertificateFailed()
+            else:
+                raise exception.SSLHandshakeFailed()
         except Exception as err:
             LOG.exception('Bad response from server: %(url)s.'
                           ' Error: %(err)s', {'url': url, 'err': err})
@@ -253,7 +256,7 @@ class RestClient(object):
 
         return result['data']
 
-    def get_controller(self):
+    def get_all_controllers(self):
         url = "/controller"
         result = self.call(url, method='GET', log_filter_flag=True)
 
@@ -263,8 +266,40 @@ class RestClient(object):
 
         return result['data']
 
+    def get_all_ports(self):
+        url = "/fc_port"
+        fc_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/fcoe_port"
+        fcoe_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/eth_port"
+        eth_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/pcie_port"
+        pcie_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/bond_port"
+        bond_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        url = "/sas_port"
+        sas_ports = self.paginated_call(
+            url, None, "GET", log_filter_flag=True)
+
+        return fc_ports + fcoe_ports + eth_ports\
+            + pcie_ports + bond_ports + sas_ports
+
     def get_all_volumes(self):
         url = "/lun"
+        return self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+    def get_all_disks(self):
+        url = "/disk"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
 
     def get_all_pools(self):

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import six
+
 from oslo_log import log
 from delfin.common import constants
 from delfin.drivers.huawei.oceanstor import rest_client, consts, alert_handler
@@ -38,7 +40,7 @@ class OceanStorDriver(driver.StorageDriver):
         storage = self.client.get_storage()
 
         # Get firmware version
-        controller = self.client.get_controller()
+        controller = self.client.get_all_controllers()
         firmware_ver = controller[0]['SOFTVER']
 
         # Get status
@@ -179,13 +181,178 @@ class OceanStorDriver(driver.StorageDriver):
                 'Failed to get list volumes from OceanStor')
 
     def list_controllers(self, context):
-        pass
+        try:
+            # Get list of OceanStor controller details
+            controllers = self.client.get_all_controllers()
+
+            controller_list = []
+            for controller in controllers:
+                status = constants.ControllerStatus.NORMAL
+                if controller['RUNNINGSTATUS'] == consts.STATUS_CTRLR_UNKNOWN:
+                    status = constants.ControllerStatus.UNKNOWN
+                if controller['RUNNINGSTATUS'] == consts.STATUS_CTRLR_OFFLINE:
+                    status = constants.ControllerStatus.OFFLINE
+
+                c = {
+                    'name': controller['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_controller_id': controller['ID'],
+                    'status': status,
+                    'location': controller['LOCATION'],
+                    'soft_version': controller['SOFTVER'],
+                    'cpu_info': controller['CPUINFO'],
+                    'memory_size': controller['MEMORYSIZE'],
+                }
+                controller_list.append(c)
+
+            return controller_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get controller metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get controller metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
     def list_ports(self, context):
-        pass
+        try:
+            # Get list of OceanStor port details
+            ports = self.client.get_all_ports()
+
+            port_list = []
+            for port in ports:
+                health_status = constants.PortHealthStatus.ABNORMAL
+                conn_status = constants.PortConnectionStatus.CONNECTED
+
+                logical_type = consts.PortLogicTypeMap.get(
+                    port.get('LOGICTYPE'), constants.PortLogicalType.OTHER)
+
+                if port['HEALTHSTATUS'] == consts.PORT_HEALTH_UNKNOWN:
+                    health_status = constants.PortHealthStatus.UNKNOWN
+                if port['HEALTHSTATUS'] == consts.PORT_HEALTH_NORMAL:
+                    health_status = constants.PortHealthStatus.UNKNOWN
+
+                if port['RUNNINGSTATUS'] == consts.PORT_RUNNINGSTS_UNKNOWN:
+                    conn_status = constants.PortConnectionStatus.UNKNOWN
+                if port['RUNNINGSTATUS'] == consts.PORT_RUNNINGSTS_LINKDOWN:
+                    conn_status = constants.PortConnectionStatus.DISCONNECTED
+
+                speed = port.get('RUNSPEED')        # ether -1 or M bits/sec
+                if speed == '-1':
+                    speed = None
+                max_speed = port.get('MAXSPEED')
+
+                port_type = consts.PortTypeMap.get(port['TYPE'],
+                                                   constants.PortType.OTHER)
+                # FC
+                if port['TYPE'] == consts.PORT_TYPE_FC:
+                    max_speed = port['MAXSUPPORTSPEED']     # in 1000 M bits/s
+
+                # Ethernet
+                if port['TYPE'] == consts.PORT_TYPE_ETH:
+                    max_speed = port['maxSpeed']        # in M bits/s
+                    speed = port['SPEED']               # in M bits/s
+
+                # PCIE
+                if port['TYPE'] == consts.PORT_TYPE_PCIE:
+                    speed = port['PCIESPEED']
+                    logical_type = constants.PortLogicalType.OTHER
+
+                p = {
+                    'name': port['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_port_id': port['ID'],
+                    'location': port.get('LOCATION'),
+                    'connection_status': conn_status,
+                    'health_status': health_status,
+                    'type': port_type,
+                    'logical_type': logical_type,
+                    'speed': speed,
+                    'max_speed': max_speed,
+                    'native_parent_id': port.get('PARENTID'),
+                    'wwn': port.get('WWN'),
+                    'mac_address': port.get('MACADDRESS'),
+                    'ipv4': port.get('IPV4ADDR'),
+                    'ipv4_mask': port.get('IPV4MASK'),
+                    'ipv6': port.get('IPV6ADDR'),
+                    'ipv6_mask': port.get('IPV6MASK'),
+                }
+                port_list.append(p)
+
+            return port_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get port metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get port metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
     def list_disks(self, context):
-        pass
+        try:
+            # Get list of OceanStor disks details
+            disks = self.client.get_all_disks()
+
+            disk_list = []
+            for disk in disks:
+                status = constants.DiskStatus.NORMAL
+                if disk['RUNNINGSTATUS'] == consts.DISK_STATUS_OFFLINE:
+                    status = constants.DiskStatus.OFFLINE
+                if disk['RUNNINGSTATUS'] == consts.DISK_STATUS_UNKNOWN:
+                    status = constants.DiskStatus.ABNORMAL
+
+                physical_type = consts.DiskPhysicalTypeMap.get(
+                    disk['DISKTYPE'], constants.DiskPhysicalType.UNKNOWN)
+
+                logical_type = consts.DiskLogicalTypeMap.get(
+                    disk['LOGICTYPE'], constants.DiskLogicalType.UNKNOWN)
+
+                health_score = disk['HEALTHMARK']
+
+                capacity = int(disk['SECTORS']) * int(disk['SECTORSIZE'])
+
+                d = {
+                    'name': disk['MODEL'] + ':' + disk['SERIALNUMBER'],
+                    'storage_id': self.storage_id,
+                    'native_disk_id': disk['ID'],
+                    'serial_number': disk['SERIALNUMBER'],
+                    'manufacturer': disk['MANUFACTURER'],
+                    'model': disk['MODEL'],
+                    'firmware': disk['FIRMWAREVER'],
+                    'speed': int(disk['SPEEDRPM']),
+                    'capacity': capacity,
+                    'status': status,
+                    'physical_type': physical_type,
+                    'logical_type': logical_type,
+                    'health_score': health_score,
+                    'native_disk_group_id': None,
+                    'location': disk['LOCATION'],
+                }
+                disk_list.append(d)
+
+            return disk_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get disk metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get disk metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -193,7 +360,8 @@ class OceanStorDriver(driver.StorageDriver):
     def remove_trap_config(self, context, trap_config):
         pass
 
-    def parse_alert(self, context, alert):
+    @staticmethod
+    def parse_alert(context, alert):
         return alert_handler.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, sequence_number):

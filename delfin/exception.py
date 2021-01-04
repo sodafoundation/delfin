@@ -248,11 +248,6 @@ class SSHConnectTimeout(DelfinException):
     code = 500
 
 
-class SSHInvalidUsernameOrPassword(DelfinException):
-    msg_fmt = _("SSH invalid username or password.")
-    code = 400
-
-
 class SSHNotFoundKnownHosts(NotFound):
     msg_fmt = _("{0} not found in known_hosts.")
     code = 400
@@ -283,12 +278,8 @@ class SSLCertificateFailed(Invalid):
     code = 400
 
 
-class CipherNotMatch(Invalid):
-    msg_fmt = _("Cipher Not Match.")
-
-
-class WrongTlsVersion(Invalid):
-    msg_fmt = _("Wrong TLS Version.")
+class SSLHandshakeFailed(Invalid):
+    msg_fmt = _("SSL handshake failure.")
 
 
 class StorageIsSyncing(Invalid):
