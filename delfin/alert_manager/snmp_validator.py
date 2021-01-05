@@ -101,7 +101,6 @@ class SNMPValidator(object):
                     'rfc3412.prepareDataElements:internal',
                     cbCtx=observer_context
                 )
-
                 auth_key = None
                 if alert_source['auth_key']:
                     auth_key = cryptor.decode(alert_source['auth_key'])
