@@ -270,7 +270,7 @@ event_count 1
 status message
 fixed no
 auto_fixed no
-notification_type informational
+notification_type warning
 event_id 980221
 event_id_text Error log cleared
 error_code
@@ -322,7 +322,7 @@ storage_result = {
     'vendor': 'IBM',
     'model': 'IBM Storwize V7000',
     'status': 'normal',
-    'serial_number': '78N16G4',
+    'serial_number': '00000200A1207E1F',
     'firmware_version': '7.4.0.11',
     'location': 'local',
     'total_capacity': 8961019766374,
@@ -374,7 +374,7 @@ alert_result = [
         'sequence_number': '101',
         'resource_type': 'node',
         'alert_name': 'Error log cleared',
-        'severity': 'Informational',
+        'severity': 'warning',
         'alert_id': '980221',
         'description': 'Error log cleared'
     }
@@ -416,7 +416,7 @@ class TestStorwizeSvcStorageDriver(TestCase):
         SSHPool.get = mock.Mock(
             return_value={paramiko.SSHClient()})
         SSHHandler.do_exec = mock.Mock(
-            side_effect=[system_info, enclosure_info])
+            side_effect=[system_info])
         storage = self.driver.get_storage(context)
         self.assertDictEqual(storage, storage_result)
 
@@ -478,7 +478,7 @@ class TestStorwizeSvcStorageDriver(TestCase):
             kwargs = ACCESS_INFO
             ssh_pool = SSHPool(**kwargs)
             ssh_pool.create()
-        self.assertIn('Exception in SSH protocol negotiation or logic',
+        self.assertIn('Invalid ip or port',
                       str(exc.exception))
 
     def test_ssh_pool_put(self):
