@@ -1,0 +1,354 @@
+#!/usr/bin/env python
+# Copyright 2021 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This class contains the constants required by different modules
+
+import argparse
+from argparse import RawTextHelpFormatter
+from storage import add_storage, list_storage, get_storage, delete_storage
+from resources import list_storage_pools, get_storage_pool
+from resources import list_volumes, get_volume
+from resources import list_controllers, get_controller
+from resources import list_ports, get_port
+from resources import list_disks, get_disk
+from resources import sync_all
+from resources import get_access_info, update_access_info
+from resources import delete_alert, sync_alert
+from resources import get_alert_source, update_alert_source, delete_alert_source
+
+
+def storage_api(args):
+    switcher = {
+        "add": add_storage,
+        "list": list_storage,
+        "get": get_storage,
+        "delete": delete_storage,
+    }
+    # Get the function from switcher dictionary
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def pools_api(args):
+    switcher = {
+        "list": list_storage_pools,
+        "get": get_storage_pool,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def volumes_api(args):
+    switcher = {
+        "list": list_volumes,
+        "get": get_volume,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def controllers_api(args):
+    switcher = {
+        "list": list_controllers,
+        "get": get_controller,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def ports_api(args):
+    switcher = {
+        "list": list_ports,
+        "get": get_port,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def disks_api(args):
+    switcher = {
+        "list": list_disks,
+        "get": get_disk,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def sync_api(args):
+    switcher = {
+        "all": sync_all,
+        "storage": sync_all,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def access_info_api(args):
+    switcher = {
+        "get": get_access_info,
+        "update": update_access_info,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def alert_api(args):
+    switcher = {
+        "delete": delete_alert,
+        "sync": sync_alert,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def alert_source_api(args):
+    switcher = {
+        "get": get_alert_source,
+        "update": update_alert_source,
+        "delete": delete_alert_source,
+    }
+
+    func = switcher.get(args.operation, None)
+    if func is None:
+        raise Exception('Invalid operation: ' + args.operation)
+
+    ret = func(args)
+    if ret is not None:
+        print(ret)
+
+
+def cli():
+    description = """
+    CLI for SODA Delfin
+    (Override default configs in 'configs.py' if needed)
+
+    Example:
+    ./delfinctl --help
+    ./delfinctl storage list
+    ./delfinctl storage add 
+    ./delfinctl storage add --data '{"vendor": "fake_storage", "model": "fake_driver", "rest": {"host": "127.0.0.1","port": 22,"username": "admin","password": "password"}}'
+    ./delfinctl storage get --id d8360a8a-6c5e-4533-a18a-b446db8caac8
+    ./delfinctl storage delete --id d8360a8a-6c5e-4533-a18a-b446db8caac8
+    ./delfinctl pool list
+    ./delfinctl pool get --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl volume list
+    ./delfinctl volume get --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl controller list
+    ./delfinctl controller get --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl port list
+    ./delfinctl port get --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl disk list
+    ./delfinctl disk get --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl sync all
+    ./delfinctl sync storage --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl access-info get --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl access-info update --id 2723347b-9af8-451a-a7f8-62d40b10ad6f --data '{"rest": {"host": "10.0.0.1","port": 8008,"username": "admin","password": "string"}}'
+    ./delfinctl alert delete --id 2723347b-9af8-451a-a7f8-62d40b10ad6f --seq 12345
+    ./delfinctl alert sync --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl alert-source get --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl alert-source delete --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    ./delfinctl alert-source update --data '{ ... }' --id 2723347b-9af8-451a-a7f8-62d40b10ad6f
+    """
+    parser = argparse.ArgumentParser(
+        description=description,
+        formatter_class=RawTextHelpFormatter
+    )
+
+    # Main options
+    # parser.add_argument('--ip', help='Delfin server ip address [127.0.0.1]')
+    # parser.add_argument('--port', help='Delfin server port')
+
+    subparsers = parser.add_subparsers()
+
+    # Subcommand - storage
+    parser_storage = subparsers.add_parser(
+        'storage', help='Registers/Shows storage in Delfin')
+    parser_storage.add_argument(
+        'operation', choices=['list', 'get', 'delete', 'add'],
+        help='list: Shows all storages registered with Delfin, ' +
+             'get: Show specified instance with "id" specified, ' +
+             'delete: Delete/Unregister specified storage with "id" specified, ' +
+             'add: Registers storage with input "data"')
+    parser_storage.add_argument(
+        '-i', '--id', help='Storage ID for get subcommand')
+    parser_storage.add_argument(
+        '-d', '--data', help='JSON data of Storage for add/register subcommand')
+    parser_storage.set_defaults(func=storage_api)
+
+    # Subcommand - pool
+    parser_pools = subparsers.add_parser(
+        'pool', help='list storage pools')
+    parser_pools.add_argument(
+        'operation', choices=['list', 'get'],
+        help='list: Shows all storage-pools, ' +
+             'get: Show specified storage-pool with "id" specified ')
+    parser_pools.add_argument(
+        '-i', '--id', help='Storage Pool ID for get subcommand')
+    parser_pools.set_defaults(func=pools_api)
+
+    # Subcommand - volume
+    parser_volumes = subparsers.add_parser(
+        'volume', help='list storage volumes')
+    parser_volumes.add_argument(
+        'operation', choices=['list', 'get'],
+        help='list: Shows all volumes, ' +
+             'get: Show specified volume with "id" specified ')
+    parser_volumes.add_argument(
+        '-i', '--id', help='Volume ID for get subcommand')
+    parser_volumes.set_defaults(func=volumes_api)
+
+    # Subcommand - controller
+    parser_controllers = subparsers.add_parser(
+        'controller', help='list storage controllers')
+    parser_controllers.add_argument(
+        'operation', choices=['list', 'get'],
+        help='list: Shows all controllers, ' +
+             'get: Show specified controllers with "id" specified ')
+    parser_controllers.add_argument(
+        '-i', '--id', help='Controller ID for get subcommand')
+    parser_controllers.set_defaults(func=controllers_api)
+
+    # Subcommand - port
+    parser_ports = subparsers.add_parser(
+        'port', help='list storage port')
+    parser_ports.add_argument(
+        'operation', choices=['list', 'get'],
+        help='list: Shows all ports, ' +
+             'get: Show specified port with "id" specified ')
+    parser_ports.add_argument(
+        '-i', '--id', help='Port ID for get subcommand')
+    parser_ports.set_defaults(func=ports_api)
+
+    # Subcommand - disk
+    parser_disks = subparsers.add_parser(
+        'disk', help='list storage disks')
+    parser_disks.add_argument(
+        'operation', choices=['list', 'get'],
+        help='list: Shows all disks, ' +
+             'get: Show specified disks with "id" specified ')
+    parser_disks.add_argument(
+        '-i', '--id', help='Disks ID for get subcommand')
+    parser_disks.set_defaults(func=disks_api)
+
+    # Subcommand - sync
+    parser_sync = subparsers.add_parser(
+        'sync', help='sync storage resource')
+    parser_sync.add_argument(
+        'operation', choices=['all', 'storage'],
+        help='all: Sync all storages, ' +
+             'storage: Show specified storage with "id" specified ')
+    parser_sync.add_argument(
+        '-i', '--id', help='Storage ID for sync subcommand')
+    parser_sync.set_defaults(func=sync_api)
+
+    # Subcommand - access-info
+    parser_info = subparsers.add_parser(
+        'access-info', help='storage resource access-info')
+    parser_info.add_argument(
+        'operation', choices=['get', 'update'],
+        help='get: Get access-info of storage with "id" specified, ' +
+             'update: Update access-info storage with "id" specified ')
+    parser_info.add_argument(
+        '-i', '--id', help='Storage ID for access-info subcommand')
+    parser_info.add_argument(
+        '-d', '--data', help='JSON data of storage access-info subcommand')
+    parser_info.set_defaults(func=access_info_api)
+
+    # Subcommand - alert
+    parser_alert = subparsers.add_parser(
+        'alert', help='storage resource alert')
+    parser_alert.add_argument(
+        'operation', choices=['delete', 'sync'],
+        help='delete: Delete alerts of storage with "id" specified, ' +
+             'sync: Sync alerts of storage with "id" specified ')
+    parser_alert.add_argument(
+        '-i', '--id', help='Storage ID for alert subcommand')
+    parser_alert.add_argument(
+        '-s', '--seq', help='String of alert sequence numbers to delete alert subcommand')
+    parser_alert.set_defaults(func=alert_api)
+
+    # Subcommand - alert-source
+    parser_source = subparsers.add_parser(
+        'alert-source', help='storage alert-source configuration')
+    parser_source.add_argument(
+        'operation', choices=['get', 'update', 'delete'],
+        help='get: Get alert-source of storage with "id" specified, ' +
+             'delete: Delete alert-source of storage with "id" specified, ' +
+             'update: Update alert-source storage with "id" specified ')
+    parser_source.add_argument(
+        '-i', '--id', help='Storage ID for alert-source subcommand')
+    parser_source.add_argument(
+        '-d', '--data', help='JSON data of alert-source subcommand')
+    parser_source.set_defaults(func=alert_source_api)
+
+    args = parser.parse_args()
+
+    args.func(args)
+
+
+if __name__ == '__main__':
+    cli()
