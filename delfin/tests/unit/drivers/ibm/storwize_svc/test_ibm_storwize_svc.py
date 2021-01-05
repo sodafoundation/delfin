@@ -478,7 +478,7 @@ class TestStorwizeSvcStorageDriver(TestCase):
             kwargs = ACCESS_INFO
             ssh_pool = SSHPool(**kwargs)
             ssh_pool.create()
-        self.assertIn('Invalid ip or port',
+        self.assertIn('Exception in SSH protocol negotiation or logic',
                       str(exc.exception))
 
     def test_ssh_pool_put(self):
