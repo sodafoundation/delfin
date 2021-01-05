@@ -494,3 +494,19 @@ class TestStorwizeSvcStorageDriver(TestCase):
 
     def test_reset_connection(self):
         self.driver.reset_connection(context, **ACCESS_INFO)
+
+    def test_clear_alert(self):
+        alert_id = 101
+        SSHPool.get = mock.Mock(
+            return_value={paramiko.SSHClient()})
+        SSHHandler.do_exec = mock.Mock(
+            side_effect=['CMMVC8275E'])
+        self.driver.clear_alert(context, alert_id)
+        with self.assertRaises(Exception) as exc:
+            SSHPool.get = mock.Mock(
+                return_value={paramiko.SSHClient()})
+            SSHHandler.do_exec = mock.Mock(
+                side_effect=['can not find alert'])
+            self.driver.clear_alert(context, alert_id)
+        self.assertIn('The results are invalid. can not find alert',
+                      str(exc.exception))
