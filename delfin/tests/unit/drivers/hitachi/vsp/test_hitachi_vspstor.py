@@ -133,6 +133,10 @@ GET_ALL_VOLUMES = {
             "ssid": "0004",
             "resourceGroupId": 0,
             "isAluaEnabled": False
+        },
+        {
+            "ldevId": 0,
+            "emulationType": "NOT DEFINED",
         }
     ]
 }
@@ -175,11 +179,11 @@ storage_result = {
 
 volume_result = [
     {
-        'name': 'ldev_0',
+        'name': '00:00:00',
         'storage_id': '12345',
         'description': 'Hitachi VSP volume',
         'status': 'normal',
-        'native_volume_id': '0',
+        'native_volume_id': '00:00:00',
         'native_storage_pool_id': None,
         'type': 'thick',
         'total_capacity': 2835691339776,

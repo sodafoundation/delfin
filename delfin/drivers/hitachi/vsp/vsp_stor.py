@@ -155,15 +155,36 @@ class HitachiVspDriver(driver.StorageDriver):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def list_volumes(self, context):
-        try:
-            volumes_info = self.rest_handler.get_all_volumes()
+    @staticmethod
+    def to_vsp_lun_id_format(lun_id):
+        hex_str = hex(lun_id)
+        result = ''
+        hex_lun_id = hex_str[2::].rjust(6, '0')
+        is_first = True
+        for i in range(0, len(hex_lun_id), 2):
+            if is_first is True:
+                result = '%s' % (hex_lun_id[i:i + 2])
+                is_first = False
+            else:
+                result = '%s:%s' % (result, hex_lun_id[i:i + 2])
+        return result
 
-            volume_list = []
+    def list_volumes(self, context):
+        head_id = 0
+        is_end = False
+        volume_list = []
+        while is_end is False:
+            is_end = self.get_volumes_paginated(volume_list, head_id)
+            head_id += consts.LDEV_NUMBER_OF_PER_REQUEST
+        return volume_list
+
+    def get_volumes_paginated(self, volume_list, head_id):
+        try:
+            volumes_info = self.rest_handler.get_volumes(head_id)
             volumes = volumes_info.get('data')
             for volume in volumes:
                 if volume.get('emulationType') == 'NOT DEFINED':
-                    continue
+                    return True
                 orig_pool_id = volume.get('poolId')
                 compressed = False
                 deduplicated = False
@@ -190,17 +211,19 @@ class HitachiVspDriver(driver.StorageDriver):
                 # Because there is only subscribed capacity in device,so free
                 # capacity always 0
                 free_cap = 0
+                native_volume_id = HitachiVspDriver.to_vsp_lun_id_format(
+                    volume.get('ldevId'))
                 if volume.get('label'):
                     name = volume.get('label')
                 else:
-                    name = 'ldev_%s' % str(volume.get('ldevId'))
+                    name = native_volume_id
 
                 v = {
                     'name': name,
                     'storage_id': self.storage_id,
                     'description': 'Hitachi VSP volume',
                     'status': status,
-                    'native_volume_id': str(volume.get('ldevId')),
+                    'native_volume_id': str(native_volume_id),
                     'native_storage_pool_id': orig_pool_id,
                     'type': vol_type,
                     'total_capacity': total_cap,
@@ -211,8 +234,7 @@ class HitachiVspDriver(driver.StorageDriver):
                 }
 
                 volume_list.append(v)
-
-            return volume_list
+            return False
         except exception.DelfinException as err:
             err_msg = "Failed to get volumes metrics from hitachi vsp: %s" % \
                       (six.text_type(err))
@@ -268,6 +290,7 @@ class HitachiVspDriver(driver.StorageDriver):
                       self.rest_handler.device_model
             LOG.error(err_msg)
             raise NotImplementedError(err_msg)
+
         return alert_list
 
     def add_trap_config(self, context, trap_config):
