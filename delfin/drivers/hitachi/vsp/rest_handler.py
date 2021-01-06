@@ -43,7 +43,7 @@ class RestHandler(RestClient):
     def call(self, url, data=None, method=None,
              calltimeout=consts.SOCKET_TIMEOUT):
         try:
-            res = self.do_call(url, data, method, calltimeout)
+            res = self.call_with_token(url, data, method, calltimeout)
             if (res.status_code == consts.ERROR_SESSION_INVALID_CODE
                     or res.status_code ==
                     consts.ERROR_SESSION_IS_BEING_USED_CODE):
@@ -53,11 +53,8 @@ class RestHandler(RestClient):
                 if method == 'DELETE' and RestHandler. \
                         LOGOUT_URL in url:
                     return res
-                self.rest_auth_token = None
-                access_session = self.login()
-                if access_session is not None:
-                    res = self. \
-                        do_call(url, data, method, calltimeout)
+                if self.get_token():
+                    res = self.call_with_token(url, data, method, calltimeout)
                 else:
                     LOG.error('Login error,get access_session failed')
             elif res.status_code == 503:
@@ -70,17 +67,33 @@ class RestHandler(RestClient):
             LOG.error(err_msg)
             raise e
 
+    def call_with_token(self, url, data, method, calltimeout):
+        auth_key = None
+        if self.session:
+            auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
+            if auth_key:
+                self.session.headers[RestHandler.AUTH_KEY] \
+                    = cryptor.decode(auth_key)
+        res = self. \
+            do_call(url, data, method, calltimeout)
+        if auth_key:
+            self.session.headers[RestHandler.AUTH_KEY] = auth_key
+        return res
+
     def get_rest_info(self, url, timeout=consts.SOCKET_TIMEOUT, data=None):
         result_json = None
+        if self.session and url != RestHandler.COMM_URL:
+            auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
+            if auth_key is None:
+                self.get_token()
         res = self.call(url, data, 'GET', timeout)
         if res.status_code == 200:
             result_json = res.json()
         return result_json
 
-    def login(self):
+    def get_token(self):
         try:
-            self.get_device_id()
-            access_session = self.rest_auth_token
+            succeed = False
             if self.san_address:
                 url = '%s/%s/sessions' % \
                       (RestHandler.COMM_URL,
@@ -94,15 +107,16 @@ class RestHandler(RestClient):
                         requests.auth.HTTPBasicAuth(
                             self.rest_username,
                             cryptor.decode(self.rest_password))
-                    res = self. \
-                        do_call(url, data, 'POST', 10)
+                    res = self.call_with_token(url, data, 'POST', 30)
                     if res.status_code == 200:
+                        succeed = True
                         result = res.json()
-                        self.session_id = result.get('sessionId')
+                        self.session_id = cryptor.encode(
+                            result.get('sessionId'))
                         access_session = 'Session %s' % result.get('token')
-                        self.rest_auth_token = access_session
                         self.session.headers[
-                            RestHandler.AUTH_KEY] = access_session
+                            RestHandler.AUTH_KEY] = cryptor.encode(
+                            access_session)
                     else:
                         LOG.error("Login error. URL: %(url)s\n"
                                   "Reason: %(reason)s.",
@@ -112,9 +126,18 @@ class RestHandler(RestClient):
                         else:
                             raise exception.BadResponse(res.text)
             else:
-                LOG.error('Login Parameter error')
+                LOG.error('Token Parameter error')
 
-            return access_session
+            return succeed
+        except Exception as e:
+            LOG.error("Get token error: %s", six.text_type(e))
+            raise e
+
+    def login(self):
+        try:
+            succeed = False
+            succeed = self.get_device_id()
+            return succeed
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
@@ -126,15 +149,15 @@ class RestHandler(RestClient):
                 url = '%s/%s/sessions/%s' % \
                       (RestHandler.COMM_URL,
                        self.storage_device_id,
-                       self.session_id)
+                       cryptor.decode(self.session_id))
                 if self.san_address:
                     self.call(url, method='DELETE')
+                    url = None
                     self.session_id = None
                     self.storage_device_id = None
                     self.device_model = None
                     self.serial_number = None
                     self.session = None
-                    self.rest_auth_token = None
             else:
                 LOG.error('logout error:session id not found')
         except Exception as err:
@@ -144,11 +167,13 @@ class RestHandler(RestClient):
 
     def get_device_id(self):
         try:
+            succeed = False
             if self.session is None:
                 self.init_http_head()
             storage_systems = self.get_system_info()
             system_info = storage_systems.get('data')
             for system in system_info:
+                succeed = True
                 if system.get('model') in consts.SUPPORTED_VSP_SERIES:
                     if system.get('ctl1Ip') == self.rest_host or \
                             system.get('ctl2Ip') == self.rest_host:
@@ -163,6 +188,7 @@ class RestHandler(RestClient):
                     break
             if self.storage_device_id is None:
                 LOG.error("Get device id fail,model or something is wrong")
+            return succeed
         except Exception as e:
             LOG.error("Get device id error: %s", six.text_type(e))
             raise e
@@ -189,10 +215,11 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(url)
         return result_json
 
-    def get_all_volumes(self):
-        url = '%s/%s/ldevs?ldevOption=defined&count=%s' % \
-              (RestHandler.COMM_URL, self.storage_device_id,
-               consts.MAX_LDEV_NUMBER_OF_RESTAPI)
+    def get_volumes(self, head_id,
+                    max_number=consts.LDEV_NUMBER_OF_PER_REQUEST):
+        url = '%s/%s/ldevs?headLdevId=%s&count=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, head_id,
+               max_number)
         result_json = self.get_rest_info(url)
         return result_json
 
