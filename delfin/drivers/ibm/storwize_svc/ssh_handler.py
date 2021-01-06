@@ -46,6 +46,7 @@ class SSHHandler(object):
                     }
 
     SECONDS_TO_MS = 1000
+    ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -175,13 +176,9 @@ class SSHHandler(object):
     def get_storage(self):
         try:
             system_info = self.exec_ssh_command('lssystem')
-            enclosure_info = self.exec_ssh_command('lsenclosure -delim :')
-            enclosure_res = enclosure_info.split('\n')
-            enclosure = enclosure_res[1].split(':')
-            serial_number = enclosure[7]
             storage_map = {}
             self.handle_detail(system_info, storage_map, split=' ')
-
+            serial_number = storage_map.get('id')
             status = 'normal' if storage_map.get('statistics_status') == 'on' \
                 else 'offline'
             location = storage_map.get('location')
@@ -338,7 +335,8 @@ class SSHHandler(object):
     def list_alerts(self, query_para):
         try:
             alert_list = []
-            alert_info = self.exec_ssh_command('lseventlog -monitoring yes')
+            alert_info = self.exec_ssh_command('lseventlog -monitoring yes '
+                                               '-message no')
             alert_res = alert_info.split('\n')
             for i in range(1, len(alert_res)):
                 if alert_res[i] is None or alert_res[i] == '':
@@ -360,7 +358,8 @@ class SSHHandler(object):
                 resource_type = alert_map.get('object_type', '')
                 severity = self.SEVERITY_MAP.get(alert_map.
                                                  get('notification_type'))
-
+                if severity == 'Informational' or severity is None:
+                    continue
                 alert_model = {
                     'alert_id': event_id,
                     'alert_name': alert_name,
@@ -384,3 +383,11 @@ class SSHHandler(object):
             err_msg = "Failed to get storage alert: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
+
+    def fix_alert(self, alert):
+        command_line = 'cheventlog -fix %s' % alert
+        result = self.exec_ssh_command(command_line)
+        if result:
+            if self.ALERT_NOT_FOUND_CODE not in result:
+                raise exception.InvalidResults(six.text_type(result))
+            LOG.warning("Alert %s doesn't exist.", alert)
