@@ -919,7 +919,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  /v1/disks:
+  '/v1/disks':
     get:
       tags:
         - Disks
@@ -1042,7 +1042,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-    '/v1/disks/{id}':
+  '/v1/disks/{id}':
       get:
         tags:
           - Disks
