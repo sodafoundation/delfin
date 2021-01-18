@@ -110,3 +110,24 @@ def mock_add_transport(snmpEngine, transportDomain, transport):
 
 def config_delv3_exception(snmp_engine, username, securityEngineId):
     raise exception.InvalidResults("Config delete failed.")
+
+
+def mock_cmdgen_get_cmd(self, authData, transportTarget, *varNames, **kwargs):
+    self.snmpEngine.transportDispatcher = AsyncoreDispatcher()
+    return None, None, None, None
+
+
+def fake_v2_alert_source():
+    return {'storage_id': 'abcd-1234-5678',
+            'version': 'snmpv2c',
+            'community_string': 'YWJjZDEyMzQ1Njc=',
+            }
+
+
+FAKE_STOTRAGE = {
+    'id': 1,
+    'name': 'fake_storage',
+    'vendor': 'fake_vendor',
+    'model': 'fake_model',
+    'serial_number': '12345678',
+}

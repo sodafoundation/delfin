@@ -217,4 +217,5 @@ def _set_synced_if_ok(context, storage_id, resource_count):
                 storage['sync_status'] > 0:
             raise exception.StorageIsSyncing(storage['id'])
         storage['sync_status'] = resource_count * constants.ResourceSync.START
+        storage['updated_at'] = current_time
         db.storage_update(context, storage['id'], storage)

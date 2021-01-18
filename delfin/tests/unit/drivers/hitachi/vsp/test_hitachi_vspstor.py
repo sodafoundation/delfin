@@ -51,9 +51,9 @@ GET_DEVICE_ID = {
     "data": [
         {
             "storageDeviceId": "800000011633",
-            "model": "VSP G350",
+            "model": "VSP F1500",
             "serialNumber": 11633,
-            "svpIp": "110.143.132.231"
+            "svpIp": "110.143.132.231",
         }
     ]
 }
@@ -76,38 +76,6 @@ GET_ALL_POOLS = {
             "isShrinking": False,
             "locatedVolumeCount": 65,
             "totalLocatedCapacity": 15694896,
-            "blockingMode": "NB",
-            "totalReservedCapacity": 0,
-            "reservedVolumeCount": 0,
-            "poolType": "HDP",
-            "duplicationNumber": 0,
-            "dataReductionAccelerateCompCapacity": 0,
-            "dataReductionCapacity": 0,
-            "dataReductionBeforeCapacity": 0,
-            "dataReductionAccelerateCompRate": 0,
-            "duplicationRate": 0,
-            "compressionRate": 0,
-            "dataReductionRate": 0,
-            "snapshotUsedCapacity": 0,
-            "suspendSnapshot": True
-        },
-        {
-            "poolId": 1,
-            "poolStatus": "POLF",
-            "usedCapacityRate": 78,
-            "snapshotCount": 0,
-            "poolName": "hjw_test",
-            "availableVolumeCapacity": 3530184,
-            "totalPoolCapacity": 16221576,
-            "numOfLdevs": 6,
-            "firstLdevId": 0,
-            "warningThreshold": 70,
-            "depletionThreshold": 80,
-            "virtualVolumeCapacityRate": -1,
-            "isMainframe": False,
-            "isShrinking": False,
-            "locatedVolumeCount": 24,
-            "totalLocatedCapacity": 12702144,
             "blockingMode": "NB",
             "totalReservedCapacity": 0,
             "reservedVolumeCount": 0,
@@ -167,100 +135,8 @@ GET_ALL_VOLUMES = {
             "isAluaEnabled": False
         },
         {
-            "ldevId": 1,
-            "clprId": 0,
-            "emulationType": "OPEN-V",
-            "byteFormatCapacity": "2.57 T",
-            "blockCapacity": 5538459648,
-            "composingPoolId": 1,
-            "attributes": [
-                "POOL"
-            ],
-            "raidLevel": "RAID5",
-            "raidType": "3D+1P",
-            "numOfParityGroups": 1,
-            "parityGroupIds": [
-                "5-1"
-            ],
-            "driveType": "SLB5E-M1R9SS",
-            "driveByteFormatCapacity": "1.74 T",
-            "driveBlockCapacity": 3750000030,
-            "status": "NML",
-            "mpBladeId": 4,
-            "ssid": "0004",
-            "resourceGroupId": 0,
-            "isAluaEnabled": False
-        },
-        {
-            "ldevId": 2,
-            "clprId": 0,
-            "emulationType": "OPEN-V-CVS",
-            "byteFormatCapacity": "500.00 G",
-            "blockCapacity": 1048576000,
-            "numOfPorts": 4,
-            "ports": [
-                {
-                    "portId": "CL3-A",
-                    "hostGroupNumber": 1,
-                    "hostGroupName": "3A84",
-                    "lun": 0
-                },
-                {
-                    "portId": "CL2-B",
-                    "hostGroupNumber": 0,
-                    "hostGroupName": "2B-G00",
-                    "lun": 0
-                },
-                {
-                    "portId": "CL4-A",
-                    "hostGroupNumber": 1,
-                    "hostGroupName": "75_197b",
-                    "lun": 0
-                },
-                {
-                    "portId": "CL2-A",
-                    "hostGroupNumber": 1,
-                    "hostGroupName": "198_126b",
-                    "lun": 0
-                }
-            ],
-            "attributes": [
-                "CVS",
-                "HDP"
-            ],
-            "label": "hjw_test_lun0",
-            "status": "NML",
-            "mpBladeId": 0,
-            "ssid": "0004",
-            "poolId": 1,
-            "numOfUsedBlock": 1048621056,
-            "isFullAllocationEnabled": False,
-            "resourceGroupId": 0,
-            "dataReductionStatus": "DISABLED",
-            "dataReductionMode": "disabled",
-            "isAluaEnabled": False
-        },
-        {
-            "ldevId": 99,
-            "clprId": 0,
-            "emulationType": "OPEN-V-CVS",
-            "byteFormatCapacity": "500.00 G",
-            "blockCapacity": 1048576000,
-            "attributes": [
-                "CVS",
-                "HDP"
-            ],
-            "label": "AIX_performance_test_zj",
-            "status": "NML",
-            "mpBladeId": 5,
-            "ssid": "0004",
-            "poolId": 0,
-            "numOfUsedBlock": 1048621056,
-            "isFullAllocationEnabled": False,
-            "resourceGroupId": 0,
-            "dataReductionStatus": "DISABLED",
-            "dataReductionMode": "disabled",
-            "isAluaEnabled": False
+            "ldevId": 0,
+            "emulationType": "NOT DEFINED",
         }
     ]
 }
@@ -285,6 +161,79 @@ ALERT_INFO = [
         'errorLevel': 'Serious'
     }
 ]
+
+storage_result = {
+    'name': 'VSP F1500_110.143.132.231',
+    'vendor': 'Hitachi',
+    'description': 'Hitachi VSP Storage',
+    'model': 'VSP F1500',
+    'status': 'normal',
+    'serial_number': '11633',
+    'firmware_version': '80-06-70/00',
+    'location': '',
+    'raw_capacity': 18687222349824,
+    'total_capacity': 18687222349824,
+    'used_capacity': 10511909388288,
+    'free_capacity': 8175312961536
+}
+
+volume_result = [
+    {
+        'name': '00:00:00',
+        'storage_id': '12345',
+        'description': 'Hitachi VSP volume',
+        'status': 'normal',
+        'native_volume_id': '00:00:00',
+        'native_storage_pool_id': None,
+        'type': 'thick',
+        'total_capacity': 2835691339776,
+        'used_capacity': 2835691339776,
+        'free_capacity': 0,
+        'compressed': False,
+        'deduplicated': False,
+    }
+]
+
+pool_result = [
+    {
+        'name': 'p3-1',
+        'storage_id': '12345',
+        'native_storage_pool_id': '0',
+        'description': 'Hitachi VSP Pool',
+        'status': 'normal',
+        'storage_type': 'block',
+        'total_capacity': 18687222349824,
+        'used_capacity': 10511909388288,
+        'free_capacity': 8175312961536,
+    }
+]
+
+alert_result = [
+    {
+        'location': 'test',
+        'alert_id': '223232',
+        'sequence_number': '1111111',
+        'description': 'test alert',
+        'alert_name': 'someting wrong',
+        'resource_type': 'Storage',
+        'occur_time': 1605838210000,
+        'category': 'Fault',
+        'type': 'EquipmentAlarm',
+        'severity': 'Major',
+    }
+]
+
+trap_alert_result = {
+    'alert_id': 'eeeeeeeee',
+    'alert_name': 'ddddddd',
+    'severity': 'Critical',
+    'category': 'Fault',
+    'type': 'EquipmentAlarm',
+    'occur_time': 1605852610000,
+    'description': 'ddddddd',
+    'resource_type': 'Storage',
+    'location': ' System Version = 7.4.0.11 '
+}
 
 
 def create_driver():
@@ -318,28 +267,38 @@ class TestHitachiVspStorStorageDriver(TestCase):
         RestHandler.get_system_info = mock.Mock(return_value=GET_DEVICE_ID)
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[GET_ALL_POOLS, GET_SPECIFIC_STORAGE])
-        self.driver.get_storage(context)
+        storage = self.driver.get_storage(context)
+        self.assertDictEqual(storage, storage_result)
 
     def test_list_storage_pools(self):
         RestHandler.get_rest_info = mock.Mock(return_value=GET_ALL_POOLS)
-        self.driver.list_storage_pools(context)
+        pool = self.driver.list_storage_pools(context)
+        self.assertDictEqual(pool[0], pool_result[0])
 
     def test_list_volumes(self):
         RestHandler.get_rest_info = mock.Mock(return_value=GET_ALL_VOLUMES)
-        self.driver.list_volumes(context)
+        volume = self.driver.list_volumes(context)
+        self.assertDictEqual(volume[0], volume_result[0])
 
     def test_list_alerts(self):
-        RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
-        RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
-        RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
-        self.driver.list_alerts(context)
+        with self.assertRaises(Exception) as exc:
+            RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
+            RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
+            RestHandler.get_rest_info = mock.Mock(return_value=ALERT_INFO)
+            self.driver.list_alerts(context)
+        self.assertEqual('list_alerts is not supported in model VSP F1500',
+                         str(exc.exception))
 
     def test_parse_queried_alerts(self):
         alert_list = []
         HitachiVspDriver.parse_queried_alerts(ALERT_INFO, alert_list)
+        self.assertEqual(alert_list[0].get('alert_id'),
+                         alert_result[0].get('alert_id'))
 
     def test_parse_alert(self):
-        self.driver.parse_alert(context, TRAP_INFO)
+        trap_alert = self.driver.parse_alert(context, TRAP_INFO)
+        self.assertEqual(trap_alert.get('alert_id'),
+                         trap_alert_result.get('alert_id'))
 
     def test_rest_close_connection(self):
         m = mock.MagicMock(status_code=200)
@@ -390,13 +349,5 @@ class TestHitachiVspStorStorageDriver(TestCase):
         with mock.patch.object(Session, 'get', return_value=m):
             m.raise_for_status.return_value = 200
             m.json.return_value = GET_ALL_VOLUMES
-            self.driver.list_volumes(context)
-
-    def test_add_trap_config(self):
-        self.driver.add_trap_config(context, None)
-
-    def test_remove_trap_config(self):
-        self.driver.remove_trap_config(context, None)
-
-    def test_clear_alert(self):
-        self.driver.clear_alert(context, None)
+            volume = self.driver.list_volumes(context)
+            self.assertDictEqual(volume[0], volume_result[0])
