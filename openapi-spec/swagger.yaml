@@ -1574,6 +1574,47 @@ components:
         pub_key_type:
           type: string
           enum: ['ed25519', 'ecdsa', 'rsa']
+    LocalAccessInfoRegistry:
+      required:
+        - host
+        - port
+        - username
+        - password
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "8888"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+    SMISAccessInfoRegistry:
+      required:
+        - host
+        - port
+        - username
+        - password
+        - namespace
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "5989"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+        namespace:
+          type: string
     RestAccessInfoUpdate:
       required:
         - username
@@ -1614,6 +1655,42 @@ components:
         pub_key_type:
           type: string
           enum: ['ed25519', 'ecdsa', 'rsa']
+    LocalAccessInfoUpdate:
+      required:
+        - username
+        - password
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "8888"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+    SMISAccessInfoUpdate:
+      required:
+        - username
+        - password
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "5989"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+        namespace:
+          type: string
     RestAccessInfoResponse:
       required:
         - host
@@ -1656,6 +1733,45 @@ components:
         pub_key_type:
           type: string
           enum: ['ed25519', 'ecdsa', 'rsa']
+    LocalAccessInfoResponse:
+      required:
+        - host
+        - port
+        - username
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "8008"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+    SMISAccessInfoResponse:
+      required:
+        - host
+        - port
+        - username
+        - namespace
+      type: object
+      properties:
+        host:
+          type: string
+          example: 10.0.0.1
+        port:
+          type: string
+          example: "8008"
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+        namespace:
+          type: string
     StorageBackendRegistry:
       required:
         - model
@@ -1663,6 +1779,8 @@ components:
       anyOf:
         - $ref: '#/components/schemas/RestAccessInfoRegistry'
         - $ref: '#/components/schemas/SSHAccessInfoRegistry'
+        - $ref: '#/components/schemas/LocalAccessInfoRegistry'
+        - $ref: '#/components/schemas/SMISAccessInfoRegistry'
       type: object
       properties:
         name:
@@ -1681,6 +1799,10 @@ components:
           $ref: '#/components/schemas/RestAccessInfoRegistry'
         ssh:
           $ref: '#/components/schemas/SSHAccessInfoRegistry'
+        local:
+          $ref: '#/components/schemas/LocalAccessInfoRegistry'
+        smis:
+          $ref: '#/components/schemas/SMISAccessInfoRegistry'
         extra_attributes:
           type: object
           additionalProperties:
@@ -1691,12 +1813,18 @@ components:
       anyOf:
         - $ref: '#/components/schemas/RestAccessInfoUpdate'
         - $ref: '#/components/schemas/SSHAccessInfoUpdate'
+        - $ref: '#/components/schemas/LocalAccessInfoUpdate'
+        - $ref: '#/components/schemas/SMISAccessInfoUpdate'
       type: object
       properties:
         rest:
           $ref: '#/components/schemas/RestAccessInfoUpdate'
         ssh:
           $ref: '#/components/schemas/SSHAccessInfoUpdate'
+        local:
+          $ref: '#/components/schemas/LocalAccessInfoUpdate'
+        smis:
+          $ref: '#/components/schemas/SMISAccessInfoUpdate'
         extra_attributes:
           type: object
           additionalProperties:
@@ -1760,6 +1888,10 @@ components:
           $ref: '#/components/schemas/RestAccessInfoResponse'
         ssh:
           $ref: '#/components/schemas/SSHAccessInfoResponse'
+        local:
+          $ref: '#/components/schemas/LocalAccessInfoResponse'
+        smis:
+          $ref: '#/components/schemas/SMISAccessInfoResponse'
         vendor:
           type: string
           example: dellemc
