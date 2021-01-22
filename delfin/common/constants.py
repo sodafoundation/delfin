@@ -21,7 +21,7 @@ from pysnmp.entity import config
 DB_MAX_INT = 0x7FFFFFFF
 
 # Valid access type supported currently.
-ACCESS_TYPE = ['rest', 'ssh']
+ACCESS_TYPE = ['rest', 'ssh', 'local', 'smis']
 
 RESOURCE_CLASS_TYPE = {'array_polling': 'ArrayPerformanceCollection'}
 SCHEDULING_MIN_INTERVAL = 5
