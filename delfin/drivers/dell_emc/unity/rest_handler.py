@@ -35,7 +35,6 @@ class RestHandler(RestClient):
     REST_LUNS_URL = '/api/types/lun/instances'
     REST_ALERTS_URL = '/api/types/alert/instances'
     REST_DEL_ALERTS_URL = '/api/instances/alert/'
-    REST_DISK_URL = '/api/types/disk/instances'
     REST_SOFT_VERSION_URL = '/api/types/installedSoftwareVersion/instances'
     REST_AUTH_KEY = 'EMC-CSRF-TOKEN'
 
@@ -189,13 +188,7 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(url)
         return result_json
 
-    def get_disk_info(self):
-        url = '%s?%s' % (RestHandler.REST_DISK_URL,
-                         'fields=rawSize')
-        result_json = self.get_rest_info(url)
-        return result_json
-
     def remove_alert(self, alert_id):
-        url = RestHandler.REST_DEL_ALERTS_URL % alert_id
+        url = '%s%s' % (RestHandler.REST_DEL_ALERTS_URL, alert_id)
         result_json = self.get_rest_info(url, method='DELETE')
         return result_json

@@ -421,7 +421,7 @@ storage_result = {
     'status': 'abnormal',
     'name': 'CETV3182000026',
     'model': 'Unity 350F',
-    'raw_capacity': 2311766147072,
+    'raw_capacity': 8838774259712,
     'firmware_version': '4.7.1'
 }
 pool_result = [
@@ -532,8 +532,7 @@ class TestUNITYStorDriver(TestCase):
 
     def test_get_storage(self):
         RestHandler.get_rest_info = mock.Mock(
-            side_effect=[GET_STORAGE, GET_CAPACITY, GET_SOFT_VERSION,
-                         GET_DISK_INFO])
+            side_effect=[GET_STORAGE, GET_CAPACITY, GET_SOFT_VERSION])
         storage = self.driver.get_storage(context)
         self.assertDictEqual(storage, storage_result)
 
@@ -597,3 +596,12 @@ class TestUNITYStorDriver(TestCase):
             self.driver.list_storage_pools(context)
         self.assertIn('Bad response from server',
                       str(exc.exception))
+
+    def test_clear_alert(self):
+        alert_id = 101
+        m = mock.MagicMock(status_code=200)
+        with mock.patch.object(Session, 'delete', return_value=m):
+            m.raise_for_status.return_value = 200
+            m.json.return_value = None
+            re = self.driver.clear_alert(context, alert_id)
+            self.assertIsNone(re)

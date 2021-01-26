@@ -41,7 +41,6 @@ class UNITYStorDriver(driver.StorageDriver):
         system_info = self.rest_handler.get_storage()
         capacity = self.rest_handler.get_capacity()
         version_info = self.rest_handler.get_soft_version()
-        disk_info = self.rest_handler.get_disk_info()
         status = constants.StorageStatus.OFFLINE
         if system_info is not None and capacity is not None:
             system_entries = system_info.get('entries')
@@ -66,11 +65,6 @@ class UNITYStorDriver(driver.StorageDriver):
             for soft_info in soft_version:
                 version = soft_info.get('content').get('id')
                 break
-            disk_entrier = disk_info.get('entries')
-            raw = 0
-            for disk in disk_entrier:
-                raw = raw + int(disk.get('content').get('rawSize'))
-
             result = {
                 'name': name,
                 'vendor': 'DELL EMC',
@@ -81,7 +75,7 @@ class UNITYStorDriver(driver.StorageDriver):
                 'location': '',
                 'subscribed_capacity': int(subs),
                 'total_capacity': int(total),
-                'raw_capacity': int(raw),
+                'raw_capacity': int(total),
                 'used_capacity': int(used),
                 'free_capacity': int(free)
             }
