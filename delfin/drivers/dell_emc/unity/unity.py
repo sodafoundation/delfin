@@ -186,4 +186,4 @@ class UNITYStorDriver(driver.StorageDriver):
         return AlertHandler.parse_alert(context, alert)
 
     def clear_alert(self, context, alert):
-        return self.rest_handler.remove_alert(context, alert)
+        return self.rest_handler.remove_alert(alert)
