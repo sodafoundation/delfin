@@ -562,7 +562,6 @@ class TestUNITYStorDriver(TestCase):
         self.assertEqual(trap.get('alert_id'), trap_result.get('alert_id'))
 
     def test_rest_close_connection(self):
-        self.driver.close_connection()
         m = mock.MagicMock(status_code=200)
         with mock.patch.object(Session, 'post', return_value=m):
             m.raise_for_status.return_value = 200
