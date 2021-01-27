@@ -56,7 +56,7 @@ update = {
                 'password': {'type': 'string', 'minLength': 1,
                              'maxLength': 255}
             },
-            'required': ['host', 'port', 'username', 'password'],
+            'required': ['host', 'username', 'password'],
             'additionalProperties': False
         },
         'smis': {
@@ -71,7 +71,7 @@ update = {
                 'namespace': {'type': 'string', 'minLength': 1,
                               'maxLength': 255}
             },
-            'required': ['host', 'port', 'username', 'password', 'namespace'],
+            'required': ['host', 'username', 'password'],
             'additionalProperties': False
         },
         'extra_attributes': {
