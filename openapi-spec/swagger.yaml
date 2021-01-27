@@ -1577,7 +1577,6 @@ components:
     LocalAccessInfoRegistry:
       required:
         - host
-        - port
         - username
         - password
       type: object
@@ -1596,10 +1595,8 @@ components:
     SMISAccessInfoRegistry:
       required:
         - host
-        - port
         - username
         - password
-        - namespace
       type: object
       properties:
         host:
