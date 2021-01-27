@@ -562,6 +562,7 @@ class TestUNITYStorDriver(TestCase):
         self.assertEqual(trap.get('alert_id'), trap_result.get('alert_id'))
 
     def test_rest_close_connection(self):
+        self.driver.close_connection()
         m = mock.MagicMock(status_code=200)
         with mock.patch.object(Session, 'post', return_value=m):
             m.raise_for_status.return_value = 200
@@ -580,16 +581,12 @@ class TestUNITYStorDriver(TestCase):
         self.assertIn('Bad response from server', str(exc.exception))
 
     def test_reset_connection(self):
-        RestHandler.logout = mock.Mock(return_value={})
-        m = mock.MagicMock(status_code=200)
-        with mock.patch.object(Session, 'get', return_value=m):
-            m.raise_for_status.return_value = 201
-            m.json.return_value = {
-                "EMC-CSRF-TOKEN": "97c13b8082444b36bc2103026205fa64"
-            }
-            kwargs = ACCESS_INFO
-            re = self.driver.reset_connection(context, **kwargs)
-            self.assertIsNone(re)
+        kwargs = ACCESS_INFO
+        self.assertEqual(self.driver.rest_handler.rest_host, "110.143.132.231")
+        self.assertEqual(self.driver.rest_handler.rest_port, "8443")
+        with self.assertRaises(Exception) as exc:
+            self.driver.reset_connection(context, **kwargs)
+        self.assertIn('Bad response from server', str(exc.exception))
 
     def test_err_storage_pools(self):
         with self.assertRaises(Exception) as exc:
@@ -599,9 +596,6 @@ class TestUNITYStorDriver(TestCase):
 
     def test_clear_alert(self):
         alert_id = 101
-        m = mock.MagicMock(status_code=200)
-        with mock.patch.object(Session, 'delete', return_value=m):
-            m.raise_for_status.return_value = 200
-            m.json.return_value = None
-            re = self.driver.clear_alert(context, alert_id)
-            self.assertIsNone(re)
+        with self.assertRaises(Exception) as exc:
+            self.driver.clear_alert(context, alert_id)
+        self.assertIn('Bad response from server', str(exc.exception))
