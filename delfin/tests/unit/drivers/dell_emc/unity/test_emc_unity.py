@@ -593,8 +593,9 @@ class TestUNITYStorDriver(TestCase):
         self.assertIn('Bad response from server',
                       str(exc.exception))
 
-    def test_clear_alert(self):
+    @mock.patch.object(RestHandler, 'remove_alert')
+    def test_clear_alert(self, mock_remove):
         alert_id = 101
-        with self.assertRaises(Exception) as exc:
-            self.driver.clear_alert(context, alert_id)
-        self.assertIn('Bad response from server', str(exc.exception))
+        mock_remove.return_value = None
+        re = self.driver.clear_alert(context, alert_id)
+        self.assertIsNone(re)
