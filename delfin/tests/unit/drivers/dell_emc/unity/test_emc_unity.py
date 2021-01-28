@@ -596,9 +596,9 @@ class TestUNITYStorDriver(TestCase):
         alert_id = 101
         mock_call.return_value = 'remove alert fail'
         with self.assertRaises(Exception) as exc:
-            self.driver.rest_handler.remove_alert(alert_id)
+            self.driver.clear_alert(context, alert_id)
         self.assertIn('The results are invalid. {0}',
                       str(exc.exception))
         mock_call.return_value = None
-        re = self.driver.rest_handler.remove_alert(alert_id)
+        re = self.driver.clear_alert(context, alert_id)
         self.assertIsNone(re)
