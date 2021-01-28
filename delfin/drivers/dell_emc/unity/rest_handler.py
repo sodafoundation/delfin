@@ -191,4 +191,6 @@ class RestHandler(RestClient):
     def remove_alert(self, alert_id):
         url = '%s%s' % (RestHandler.REST_DEL_ALERTS_URL, alert_id)
         result_json = self.get_rest_info(url, method='DELETE')
+        if result_json is not None:
+            raise exception.InvalidResults()
         return result_json

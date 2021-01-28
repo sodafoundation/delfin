@@ -581,8 +581,6 @@ class TestUNITYStorDriver(TestCase):
 
     def test_reset_connection(self):
         kwargs = ACCESS_INFO
-        self.assertEqual(self.driver.rest_handler.rest_host, "110.143.132.231")
-        self.assertEqual(self.driver.rest_handler.rest_port, "8443")
         with self.assertRaises(Exception) as exc:
             self.driver.reset_connection(context, **kwargs)
         self.assertIn('Bad response from server', str(exc.exception))
@@ -593,9 +591,14 @@ class TestUNITYStorDriver(TestCase):
         self.assertIn('Bad response from server',
                       str(exc.exception))
 
-    @mock.patch.object(RestHandler, 'remove_alert')
-    def test_clear_alert(self, mock_remove):
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_clear_alert(self, mock_call):
         alert_id = 101
-        mock_remove.return_value = None
-        re = self.driver.clear_alert(context, alert_id)
+        mock_call.return_value = 'remove alert fail'
+        with self.assertRaises(Exception) as exc:
+            self.driver.rest_handler.remove_alert(alert_id)
+        self.assertIn('The results are invalid. {0}',
+                      str(exc.exception))
+        mock_call.return_value = None
+        re = self.driver.rest_handler.remove_alert(alert_id)
         self.assertIsNone(re)
