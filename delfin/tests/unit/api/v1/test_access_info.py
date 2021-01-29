@@ -48,7 +48,7 @@ class TestAccessInfoController(test.TestCase):
                 "username": "admin"
             },
             "ssh": None,
-            "local": None,
+            "cli": None,
             "smis": None,
             "extra_attributes": {
                 "array_id": "0001234567897"
@@ -101,7 +101,7 @@ class TestAccessInfoController(test.TestCase):
                 "port": 1234
             },
             "ssh": None,
-            "local": None,
+            "cli": None,
             "smis": None,
             "extra_attributes": {
                 "array_id": "0001234567897"

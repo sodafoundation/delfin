@@ -46,7 +46,7 @@ update = {
             'required': ['host', 'port', 'username'],
             'additionalProperties': False
         },
-        'local': {
+        'cli': {
             'type': 'object',
             'properties': {
                 'host': parameter_types.hostname_or_ip_address,
@@ -86,7 +86,7 @@ update = {
     'anyOf': [
         {'required': ['rest']},
         {'required': ['ssh']},
-        {'required': ['local']},
+        {'required': ['cli']},
         {'required': ['smis']}
     ],
     'additionalProperties': False
