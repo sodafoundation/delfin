@@ -54,7 +54,7 @@ class AccessInfo(BASE, DelfinBase):
     model = Column(String(255))
     rest = Column(JsonEncodedDict)
     ssh = Column(JsonEncodedDict)
-    local = Column(JsonEncodedDict)
+    cli = Column(JsonEncodedDict)
     smis = Column(JsonEncodedDict)
     extra_attributes = Column(JsonEncodedDict)
 

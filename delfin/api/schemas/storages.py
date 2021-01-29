@@ -48,7 +48,7 @@ create = {
             'required': ['host', 'port', 'username', 'password', 'pub_key'],
             'additionalProperties': False
         },
-        'local': {
+        'cli': {
             'type': 'object',
             'properties': {
                 'host': parameter_types.hostname_or_ip_address,
@@ -89,7 +89,7 @@ create = {
     'anyOf': [
         {'required': ['rest']},
         {'required': ['ssh']},
-        {'required': ['local']},
+        {'required': ['cli']},
         {'required': ['smis']}
     ],
     'additionalProperties': False
