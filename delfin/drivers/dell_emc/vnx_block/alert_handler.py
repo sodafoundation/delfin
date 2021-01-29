@@ -27,6 +27,7 @@ LOG = logging.getLogger(__name__)
 class AlertHandler(object):
     """Alert handling functions for vnx stor driver"""
 
+    OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
     OID_MESSAGECODE = '1.3.6.1.4.1.1981.1.4.5'
     OID_DETAILS = '1.3.6.1.4.1.1981.1.4.6'
 
@@ -40,11 +41,12 @@ class AlertHandler(object):
                     "71": constants.Severity.INFORMATIONAL,
                     "70": constants.Severity.INFORMATIONAL}
 
-    # Attributes expected in alert info to proceed with model filling
-    _mandatory_alert_attributes = (
-        OID_MESSAGECODE,
-        OID_DETAILS
-    )
+    TRAP_LEVEL_MAP = {'1.3.6.1.4.1.1981.0.6': constants.Severity.CRITICAL,
+                      '1.3.6.1.4.1.1981.0.5': constants.Severity.MINOR,
+                      '1.3.6.1.4.1.1981.0.4': constants.Severity.WARNING,
+                      '1.3.6.1.4.1.1981.0.3': constants.Severity.INFORMATIONAL,
+                      '1.3.6.1.4.1.1981.0.2': constants.Severity.INFORMATIONAL
+                      }
 
     def __init__(self, navi_handler=None):
         self.navi_handler = navi_handler
@@ -56,8 +58,9 @@ class AlertHandler(object):
             # These information are sourced from device registration info
             alert_model['alert_id'] = alert.get(AlertHandler.OID_MESSAGECODE)
             alert_model['alert_name'] = alert.get(AlertHandler.OID_DETAILS)
-            alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
-                alert.get(AlertHandler.OID_MESSAGECODE)[0:2])
+            alert_model['severity'] = AlertHandler.TRAP_LEVEL_MAP.get(
+                alert.get(AlertHandler.OID_SEVERITY),
+                constants.Severity.INFORMATIONAL)
             alert_model['category'] = constants.Category.EVENT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['occur_time'] = time.time() * units.k

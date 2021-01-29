@@ -39,7 +39,7 @@ class NaviHandler(object):
     GET_STORAGEPOOL_API = 'naviseccli -h %(host)s storagepool -list'
     GET_RAIDGROUP_API = 'naviseccli -h %(host)s getall -rg'
     GET_DISK_API = 'naviseccli -h %(host)s getdisk'
-    GET_LUN_API = 'naviseccli -h %(host)s lun -list'
+    GET_LUN_API = 'naviseccli -h %(host)s lun -list -dedupState'
     GET_GETALLLUN_API = 'naviseccli -h %(host)s getall -lun'
     GET_LOG_API = 'naviseccli -h %(host)s getlog ' \
                   '-date %(begin_time)s %(end_time)s'
@@ -86,7 +86,7 @@ class NaviHandler(object):
             raise e
         except Exception as e:
             err_msg = "Login error: %s" % (six.text_type(e))
-            raise exception.InvalidResults(err_msg)
+            raise exception.StorageBackendException(err_msg)
         return version
 
     def get_agent(self):

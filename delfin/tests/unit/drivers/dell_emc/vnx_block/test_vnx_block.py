@@ -276,6 +276,7 @@ RAID_INFOS = """
 LUN_INFOS = """
         LOGICAL UNIT NUMBER 239
         Name:  sun_data_VNX_2
+        Deduplication Status: OK(0x0)
         UID:  28:F0:36:00:4D:77:DC:BE:2B:F7:EA:11
         Current Owner:  SP A
         Default Owner:  SP A
@@ -527,7 +528,7 @@ STORAGE_RESULT = {
     'serial_number': 'CETV2135000041',
     'firmware_version': '05.33.000.5.038',
     'total_capacity': 1142846874714,
-    'raw_capacity': 1152785580032,
+    'raw_capacity': 1099382,
     'used_capacity': 14501957074,
     'free_capacity': 1128344917639
 }
@@ -568,7 +569,8 @@ VOLUMES_RESULT = [
         'total_capacity': 9663676416,
         'used_capacity': 1882269417,
         'free_capacity': 7781406998,
-        'compressed': False
+        'compressed': False,
+        'deduplicated': True
     },
     {
         'name': 'sun_data_pool',
@@ -581,7 +583,8 @@ VOLUMES_RESULT = [
         'total_capacity': 5368709120,
         'used_capacity': 1882269417,
         'free_capacity': 3486439702,
-        'compressed': False
+        'compressed': False,
+        'deduplicated': False
     },
     {
         'name': 'LN_10G_01',
@@ -683,6 +686,7 @@ class TestVnxBlocktorageDriver(TestCase):
 
     def test_parse_alert(self):
         alert = {
+            '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.1981.0.6',
             '1.3.6.1.4.1.1981.1.4.3': 'A-CETV2135000041',
             '1.3.6.1.4.1.1981.1.4.4': 'K10',
             '1.3.6.1.4.1.1981.1.4.5': '761f',
@@ -692,3 +696,15 @@ class TestVnxBlocktorageDriver(TestCase):
         re_alert = self.driver.parse_alert(context, alert)
         ALERT_RESULT['occur_time'] = re_alert['occur_time']
         self.assertDictEqual(re_alert, ALERT_RESULT)
+
+    def test_error_storage(self):
+        with self.assertRaises(Exception) as exc:
+            self.driver.get_storage(context)
+        self.assertIn('The results are invalid',
+                      str(exc.exception))
+
+    def test_error_pool(self):
+        with self.assertRaises(Exception) as exc:
+            self.driver.list_storage_pools(context)
+        self.assertIn('The results are invalid',
+                      str(exc.exception))

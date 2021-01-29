@@ -29,6 +29,12 @@ class ComponentHandler():
     STATUS_MAP = {'Ready': constants.StoragePoolStatus.NORMAL,
                   'Offline': constants.StoragePoolStatus.OFFLINE,
                   'Valid_luns': constants.StoragePoolStatus.NORMAL,
+                  'Busy': constants.StoragePoolStatus.ABNORMAL,
+                  'Halted': constants.StoragePoolStatus.ABNORMAL,
+                  'Defragmenting': constants.StoragePoolStatus.NORMAL,
+                  'Expanding': constants.StoragePoolStatus.NORMAL,
+                  'Explicit Remove': constants.StoragePoolStatus.OFFLINE,
+                  'Invalid': constants.StoragePoolStatus.OFFLINE,
                   'Bound': constants.StoragePoolStatus.NORMAL}
 
     VOL_TYPE_MAP = {'no': constants.VolumeType.THICK,
@@ -152,8 +158,6 @@ class ComponentHandler():
                             raid.get("logical_capacity_blocks")) * (
                             units.Ki / 2)
                         used_cap = total_cap - free_cap
-                        subscribed_cap = float(
-                            raid.get("raw_capacity_blocks")) * (units.Ki / 2)
 
                         p = {
                             'name': 'RAID Group %s' % raid.get('raidgroup_id'),
@@ -166,7 +170,6 @@ class ComponentHandler():
                             'status': status,
                             'storage_type': constants.StorageType.BLOCK,
                             'total_capacity': int(total_cap),
-                            'subscribed_capacity': int(subscribed_cap),
                             'used_capacity': int(used_cap),
                             'free_capacity': int(free_cap)
                         }
@@ -198,6 +201,9 @@ class ComponentHandler():
                     free_cap = total_cap - used_cap
                     if free_cap < 0:
                         free_cap = 0
+                    deduplicated = False
+                    if volume.get('deduplication_status') == 'OK(0x0)':
+                        deduplicated = True
 
                     v = {
                         'name': volume.get('name'),
@@ -213,7 +219,8 @@ class ComponentHandler():
                         'used_capacity': int(used_cap),
                         'free_capacity': int(free_cap),
                         'compressed': self.VOL_COMPRESSED_MAP.get(
-                            volume.get('is_compressed').lower())
+                            volume.get('is_compressed').lower()),
+                        'deduplicated': deduplicated
                     }
                     volume_list.append(v)
         raid_volumes = self.handler_raid_volume(storage_id)
@@ -283,22 +290,15 @@ class ComponentHandler():
             # Get disk capacity
             objs = self.navi_handler.get_disks()
             obj_sum = 0
-            obj_free = 0
-            obj_model = {}
             if objs:
                 for obj in objs:
                     if obj.get('disk_id') is not None:
                         # Get status Unbound
                         status = obj.get('state')
                         capacity = float(obj.get("capacity", 0))
-                        obj_sum += capacity
-                        if status == 'Unbound':
-                            obj_free += capacity
-                obj_model = {
-                    'obj_sum': obj_sum * units.Mi,
-                    'obj_free': obj_free * units.Mi
-                }
-            return obj_model
+                        if status == 'Enabled':
+                            obj_sum += capacity
+            return obj_sum
 
         except Exception as e:
             err_msg = "Failed to get disk capacity from EmcVnxStor: %s" % (
@@ -360,9 +360,7 @@ class ComponentHandler():
             pool_free = 0
             raid_free = 0
             try:
-                disk_map = self.handler_disk_capacity()
-                if disk_map:
-                    raw_cap = disk_map.get('obj_sum')
+                raw_cap = self.handler_disk_capacity()
             except Exception:
                 LOG.error('Get disk capacity failed!')
 
