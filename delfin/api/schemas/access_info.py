@@ -46,6 +46,34 @@ update = {
             'required': ['host', 'port', 'username'],
             'additionalProperties': False
         },
+        'cli': {
+            'type': 'object',
+            'properties': {
+                'host': parameter_types.hostname_or_ip_address,
+                'port': parameter_types.tcp_udp_port,
+                'username': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255},
+                'password': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255}
+            },
+            'required': ['host', 'username', 'password'],
+            'additionalProperties': False
+        },
+        'smis': {
+            'type': 'object',
+            'properties': {
+                'host': parameter_types.hostname_or_ip_address,
+                'port': parameter_types.tcp_udp_port,
+                'username': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255},
+                'password': {'type': 'string', 'minLength': 1,
+                             'maxLength': 255},
+                'namespace': {'type': 'string', 'minLength': 1,
+                              'maxLength': 255}
+            },
+            'required': ['host', 'username', 'password'],
+            'additionalProperties': False
+        },
         'extra_attributes': {
             'type': 'object',
             'patternProperties': {
@@ -57,7 +85,9 @@ update = {
     },
     'anyOf': [
         {'required': ['rest']},
-        {'required': ['ssh']}
+        {'required': ['ssh']},
+        {'required': ['cli']},
+        {'required': ['smis']}
     ],
     'additionalProperties': False
 }
