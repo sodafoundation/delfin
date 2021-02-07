@@ -112,7 +112,44 @@ class VMAXClient(object):
         try:
             storage_info = self.rest.get_system_capacity(
                 self.array_id, self.uni_version)
-            return storage_info
+
+            total_capacity = 0
+            used_capacity = 0
+            free_capacity = 0
+            raw_capacity = 0
+            subscribed_capacity = 0
+            if int(self.uni_version) < 90:
+                physical_capacity = storage_info.get('physicalCapacity')
+                total_cap = storage_info.get('total_usable_cap_gb')
+                used_cap = storage_info.get('total_allocated_cap_gb')
+                subscribed_cap = storage_info.get('total_subscribed_cap_gb')
+                total_raw = physical_capacity.get('total_capacity_gb')
+                free_cap = total_cap - used_cap
+
+                total_capacity = int(total_cap * units.Gi)
+                used_capacity = int(used_cap * units.Gi)
+                free_capacity = int(free_cap * units.Gi)
+                raw_capacity = int(total_raw * units.Gi)
+                subscribed_capacity = int(subscribed_cap * units.Gi)
+
+            else:
+                system_capacity = storage_info['system_capacity']
+                physical_capacity = storage_info.get('physicalCapacity')
+                total_cap = system_capacity.get('usable_total_tb')
+                used_cap = system_capacity.get('usable_used_tb')
+                subscribed_cap = system_capacity.get('subscribed_total_tb')
+                total_raw = physical_capacity.get('total_capacity_gb')
+                free_cap = total_cap - used_cap
+
+                total_capacity = int(total_cap * units.Ti)
+                used_capacity = int(used_cap * units.Ti)
+                free_capacity = int(free_cap * units.Ti)
+                raw_capacity = int(total_raw * units.Gi)
+                subscribed_capacity = int(subscribed_cap * units.Ti)
+
+            return total_capacity, used_capacity, free_capacity,\
+                raw_capacity, subscribed_capacity
+
         except exception.SSLCertificateFailed:
             LOG.error('SSL certificate failed when '
                       'get storage capacity for VMax')
@@ -134,10 +171,20 @@ class VMAXClient(object):
                 pool_info = self.rest.get_srp_by_name(
                     self.array_id, self.uni_version, srp=pool)
 
-                srp_cap = pool_info['srp_capacity']
-                total_cap = srp_cap['usable_total_tb'] * units.Ti
-                used_cap = srp_cap['usable_used_tb'] * units.Ti
-                subscribed_cap = srp_cap['subscribed_total_tb'] * units.Ti
+                total_cap = 0
+                used_cap = 0
+                subscribed_cap = 0
+                if int(self.uni_version) < 90:
+                    total_cap = pool_info['total_usable_cap_gb'] * units.Gi
+                    used_cap = pool_info['total_allocated_cap_gb'] * units.Gi
+                    subscribed_cap = \
+                        pool_info['total_subscribed_cap_gb'] * units.Gi
+                else:
+                    srp_cap = pool_info['srp_capacity']
+                    total_cap = srp_cap['usable_total_tb'] * units.Ti
+                    used_cap = srp_cap['usable_used_tb'] * units.Ti
+                    subscribed_cap = srp_cap['subscribed_total_tb'] * units.Ti
+
                 p = {
                     "name": pool,
                     "storage_id": storage_id,
@@ -150,6 +197,7 @@ class VMAXClient(object):
                     "free_capacity": int(total_cap - used_cap),
                     "subscribed_capacity": int(subscribed_cap),
                 }
+
                 pool_list.append(p)
 
             return pool_list
@@ -221,8 +269,9 @@ class VMAXClient(object):
                     sg = vol['storageGroupId'][0]
                     sg_info = self.rest.get_storage_group(
                         self.array_id, self.uni_version, sg)
-                    v['native_storage_pool_id'] = sg_info['srp']
-                    v['compressed'] = sg_info['compression']
+                    v['native_storage_pool_id'] =\
+                        sg_info.get('srp', default_srps[emulation_type])
+                    v['compressed'] = sg_info.get('compression', False)
                 else:
                     v['native_storage_pool_id'] = default_srps[emulation_type]
 
