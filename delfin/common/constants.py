@@ -19,7 +19,7 @@ from pysnmp.entity import config
 DB_MAX_INT = 0x7FFFFFFF
 
 # Valid access type supported currently.
-ACCESS_TYPE = ['rest', 'ssh']
+ACCESS_TYPE = ['rest', 'ssh', 'cli', 'smis']
 
 
 # Custom fields for Delfin objects
