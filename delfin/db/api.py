@@ -404,6 +404,64 @@ def disk_get_all(context, marker=None, limit=None, sort_keys=None,
                              filters, offset)
 
 
+def filesystems_create(context, values):
+    """Create multiple filesystems."""
+    return IMPL.filesystems_create(context, values)
+
+
+def filesystems_update(context, values):
+    """Update multiple filesystems."""
+    return IMPL.filesystems_update(context, values)
+
+
+def filesystems_delete(context, values):
+    """Delete multiple filesystems."""
+    return IMPL.filesystems_delete(context, values)
+
+
+def filesystem_create(context, values):
+    """Create a filesystem from the values dictionary."""
+    return IMPL.filesystem_create(context, values)
+
+
+def filesystem_update(context, filesystem_id, values):
+    """Update a filesystem with the values dictionary."""
+    return IMPL.filesystem_update(context, filesystem_id, values)
+
+
+def filesystem_get(context, filesystem_id):
+    """Get a filesystem or raise an exception if it does not exist."""
+    return IMPL.filesystem_get(context, filesystem_id)
+
+
+def filesystem_delete_by_storage(context, storage_id):
+    """Delete a filesystem or raise an exception if it does not exist."""
+    return IMPL.filesystem_delete_by_storage(context, storage_id)
+
+
+def filesystem_get_all(context, marker=None, limit=None, sort_keys=None,
+                       sort_dirs=None, filters=None, offset=None):
+    """Retrieves all filesystems.
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of controllers
+    """
+    return IMPL.filesystem_get_all(context, marker, limit, sort_keys,
+                                   sort_dirs, filters, offset)
+
+
 def access_info_create(context, values):
     """Create a storage access information that used to connect
     to a specific storage device.

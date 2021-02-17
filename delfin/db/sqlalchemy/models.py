@@ -175,6 +175,24 @@ class Port(BASE, DelfinBase):
     ipv6_mask = Column(String(255))
 
 
+class Filesystem(BASE, DelfinBase):
+    """Represents a filesystem object."""
+    __tablename__ = 'filesystems'
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(36))
+    native_filesystem_id = Column(String(255))
+    status = Column(String(255))
+    allocation_type = Column(String(255))
+    security_mode = Column(String(255))
+    total_capacity = Column(BigInteger)
+    used_capacity = Column(BigInteger)
+    free_capacity = Column(BigInteger)
+    compression = Column(Boolean)
+    deduplication = Column(Boolean)
+    worm = Column(Boolean)
+
+
 class AlertSource(BASE, DelfinBase):
     """Represents an alert source configuration."""
     __tablename__ = 'alert_source'

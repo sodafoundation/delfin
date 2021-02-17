@@ -18,6 +18,7 @@ from delfin.api.v1 import access_info
 from delfin.api.v1 import alert_source
 from delfin.api.v1 import alerts
 from delfin.api.v1 import controllers
+from delfin.api.v1 import filesystems
 from delfin.api.v1 import ports
 from delfin.api.v1 import disks
 from delfin.api.v1 import storage_pools
@@ -109,3 +110,7 @@ class APIRouter(common.APIRouter):
         self.resources['disks'] = disks.create_resource()
         mapper.resource("disk", "disks",
                         controller=self.resources['disks'])
+
+        self.resources['filesystems'] = filesystems.create_resource()
+        mapper.resource("filesystems", "filesystems",
+                        controller=self.resources['filesystems'])

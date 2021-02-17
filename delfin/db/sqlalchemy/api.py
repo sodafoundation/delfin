@@ -1010,6 +1010,148 @@ def _process_disk_info_filters(query, filters):
     return query
 
 
+def filesystems_create(context, filesystems):
+    """Create multiple filesystems."""
+    session = get_session()
+    filesystems_refs = []
+    with session.begin():
+
+        for filesystem in filesystems:
+            LOG.debug('adding new filesystem for native_filesystem_id {0}:'
+                      .format(filesystem.get('native_filesystem_id')))
+            if not filesystem.get('id'):
+                filesystem['id'] = uuidutils.generate_uuid()
+
+            filesystem_ref = models.Filesystem()
+            filesystem_ref.update(filesystem)
+            filesystems_refs.append(filesystem_ref)
+
+        session.add_all(filesystems_refs)
+
+    return filesystems_refs
+
+
+def filesystems_update(context, filesystems):
+    """Update multiple filesystems."""
+    session = get_session()
+
+    with session.begin():
+        filesystem_refs = []
+
+        for filesystem in filesystems:
+            LOG.debug('updating filesystem {0}:'.format(
+                filesystem.get('id')))
+            query = _filesystem_get_query(context, session)
+            result = query.filter_by(id=filesystem.get('id')
+                                     ).update(filesystem)
+
+            if not result:
+                LOG.error(exception.FilesystemNotFound(filesystem.get(
+                    'id')))
+            else:
+                filesystem_refs.append(result)
+
+    return filesystem_refs
+
+
+def filesystems_delete(context, filesystems_id_list):
+    """Delete multiple filesystems."""
+    session = get_session()
+    with session.begin():
+        for filesystem_id in filesystems_id_list:
+            LOG.debug('deleting filesystem {0}:'.format(filesystem_id))
+            query = _filesystem_get_query(context, session)
+            result = query.filter_by(id=filesystem_id).delete()
+
+            if not result:
+                LOG.error(exception.FilesystemNotFound(filesystem_id))
+    return
+
+
+def _filesystem_get_query(context, session=None):
+    return model_query(context, models.Filesystem, session=session)
+
+
+def _filesystem_get(context, filesystem_id, session=None):
+    result = (_filesystem_get_query(context, session=session)
+              .filter_by(id=filesystem_id)
+              .first())
+
+    if not result:
+        raise exception.FilesystemNotFound(filesystem_id)
+
+    return result
+
+
+def filesystem_create(context, values):
+    """Create a filesystem from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    filesystem_ref = models.Filesystem()
+    filesystem_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(filesystem_ref)
+
+    return _filesystem_get(context,
+                     filesystem_ref['id'],
+                     session=session)
+
+
+def filesystem_update(context, filesystem_id, values):
+    """Update a filesystem with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _filesystem_get_query(context, session)
+        result = query.filter_by(id=filesystem_id).update(values)
+
+        if not result:
+            raise exception.FilesystemNotFound(filesystem_id)
+
+    return result
+
+
+def filesystem_get(context, filesystem_id):
+    """Get a filesystem or raise an exception if it does not exist."""
+    return _filesystem_get(context, filesystem_id)
+
+
+def filesystem_delete_by_storage(context, storage_id):
+    """Delete filesystem or raise an exception if it does not exist."""
+    _filesystem_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def filesystem_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all filesystems."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Filesystem,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Filesystem would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Filesystem)
+def _process_filesystem_info_filters(query, filters):
+    """Common filter processing for filesystems queries."""
+    if filters:
+        if not is_valid_model_filters(models.Filesystem, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def is_orm_value(obj):
     """Check if object is an ORM field or expression."""
     return isinstance(obj, (sqlalchemy.orm.attributes.InstrumentedAttribute,
@@ -1126,6 +1268,8 @@ PAGINATION_HELPERS = {
     models.Port: (_port_get_query, _process_port_info_filters, _port_get),
     models.Disk: (_disk_get_query, _process_disk_info_filters,
                   _disk_get),
+    models.Filesystem: (_filesystem_get_query,
+                        _process_filesystem_info_filters, _filesystem_get),
 }
 
 

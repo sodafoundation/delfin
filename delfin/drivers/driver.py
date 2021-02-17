@@ -64,6 +64,11 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
+    def list_filesystems(self, context):
+        """List all filesystems from storage system."""
+        pass
+
+    @abc.abstractmethod
     def add_trap_config(self, context, trap_config):
         """Config the trap receiver in storage system."""
         pass

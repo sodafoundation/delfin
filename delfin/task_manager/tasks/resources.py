@@ -397,6 +397,57 @@ class StorageDiskTask(StorageResourceTask):
         db.disk_delete_by_storage(self.context, self.storage_id)
 
 
+class StorageFilesystemTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageFilesystemTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing filesystems for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the filesystems list from driver and database
+            storage_filesystems = self.driver_api.list_filesystems(
+                self.context, self.storage_id)
+            db_filesystems = db.filesystem_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_filesystems, db_filesystems, 'native_filesystem_id'
+            )
+
+            LOG.info('###StorageFilesystemTask for {0}:add={1},delete={2},'
+                     'update={3}'.format(self.storage_id,
+                                         len(add_list),
+                                         len(delete_id_list),
+                                         len(update_list)))
+            if delete_id_list:
+                db.filesystems_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.filesystems_update(self.context, update_list)
+
+            if add_list:
+                db.filesystems_create(self.context, add_list)
+        except AttributeError as e:
+            LOG.error(e)
+        except Exception as e:
+            msg = _('Failed to sync filesystems entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing filesystems successful!!!")
+
+    def remove(self):
+        LOG.info('Remove filesystems for storage id:{0}'
+                 .format(self.storage_id))
+        db.filesystem_delete_by_storage(self.context, self.storage_id)
+
+
 class PerformanceCollectionTask(object):
 
     def __init__(self):

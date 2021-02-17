@@ -149,6 +149,23 @@ class DiskLogicalType(object):
     ALL = (FREE, MEMBER, HOTSPARE, CACHE, UNKNOWN)
 
 
+class FilesystemStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (NORMAL, OFFLINE, UNKNOWN)
+
+
+class FilesystemSecurityMode(object):
+    MIXED = 'mixed'
+    NATIVE = 'native'
+    WINDOWS = 'windows'
+    UNIX = 'unix'
+
+    ALL = (MIXED, NATIVE, WINDOWS, UNIX)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'
