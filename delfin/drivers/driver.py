@@ -64,11 +64,6 @@ class StorageDriver(object):
         pass
 
     @abc.abstractmethod
-    def list_filesystems(self, context):
-        """List all filesystems from storage system."""
-        pass
-
-    @abc.abstractmethod
     def add_trap_config(self, context, trap_config):
         """Config the trap receiver in storage system."""
         pass
@@ -120,3 +115,67 @@ class StorageDriver(object):
     def clear_alert(self, context, sequence_number):
         """Clear alert from storage system."""
         pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class NASDriver(StorageDriver):
+
+    def __init__(self, **kwargs):
+        """
+        :param kwargs:  A dictionary, include access information. Pay
+            attention that it's not safe to save username and password
+            in memory, so suggest each driver use them to get session
+            instead of save them in memory directly.
+        """
+        super(NASDriver, self).__init__(**kwargs)
+
+    @abc.abstractmethod
+    def list_filesystems(self, context):
+        """List all filesystems from storage system."""
+        pass
+
+    # @abc.abstractmethod
+    # def list_qtrees(self, context):
+    #     """List all qtrees from storage system."""
+    #     pass
+    #
+    # @abc.abstractmethod
+    # def list_shares(self, context):
+    #     """List all shares from storage system."""
+    #     pass
+    #
+    # @abc.abstractmethod
+    # def list_quotas(self, context):
+    #     """List all quota from storage system."""
+    #     pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class SANDriver(StorageDriver):
+
+    def __init__(self, **kwargs):
+        """
+        :param kwargs:  A dictionary, include access information. Pay
+            attention that it's not safe to save username and password
+            in memory, so suggest each driver use them to get session
+            instead of save them in memory directly.
+        """
+        super(SANDriver, self).__init__(**kwargs)
+
+    # @abc.abstractmethod
+    # def list_blocks(self, context):
+    #     """List all blocks from storage system."""
+    #     pass
+
+
+@six.add_metaclass(abc.ABCMeta)
+class UnifiedStorageDriver(SANDriver, NASDriver):
+
+    def __init__(self, **kwargs):
+        """
+        :param kwargs:  A dictionary, include access information. Pay
+            attention that it's not safe to save username and password
+            in memory, so suggest each driver use them to get session
+            instead of save them in memory directly.
+        """
+        super(UnifiedStorageDriver, self).__init__(**kwargs)

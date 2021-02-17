@@ -20,6 +20,7 @@ from oslo_utils import uuidutils
 from delfin import db
 from delfin.drivers import helper
 from delfin.drivers import manager
+from delfin.drivers.driver import NASDriver
 
 LOG = log.getLogger(__name__)
 
@@ -105,7 +106,10 @@ class API(object):
     def list_filesystems(self, context, storage_id):
         """List all filesystems from storage system."""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
-        return driver.list_filesystems(context)
+        if isinstance(driver, NASDriver):
+            return driver.list_filesystems(context)
+        else:
+            return []
 
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
