@@ -56,6 +56,7 @@ MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
 MIN_STORAGE, MAX_STORAGE = 1, 10
 MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
+MIN_FS, MAX_FS = 1, 10
 
 
 def get_range_val(range_str, t):
@@ -266,6 +267,37 @@ class FakeStorageDriver(driver.StorageDriver):
             }
             disk_list.append(c)
         return disk_list
+
+    def list_filesystems(self, ctx):
+        rd_filesystems_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_filesystems for %s: %d"
+                 % (self.storage_id, rd_filesystems_count))
+        filesystem_list = []
+        for idx in range(rd_filesystems_count):
+            total, used, free = self._get_random_capacity()
+            boolean = [True, False]
+            sts = list(constants.FilesystemStatus.ALL)
+            sts_len = len(constants.FilesystemStatus.ALL) - 1
+            alloc_type = list(constants.VolumeType.ALL)
+            alloc_type_len = len(constants.VolumeType.ALL) - 1
+            security = list(constants.FilesystemSecurityMode.ALL)
+            security_len = len(constants.FilesystemSecurityMode.ALL) - 1
+            c = {
+                "name": "fake_filesystem_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_filesystem_id": "fake_original_id_" + str(idx),
+                "status": sts[random.randint(0, sts_len)],
+                "allocation_type": alloc_type[random.randint(0, alloc_type_len)],
+                "security_mode": security[random.randint(0, security_len)],
+                "total_capacity": total,
+                "used_capacity": used,
+                "free_capacity": free,
+                "worm": boolean[random.randint(0, 1)],
+                "deduplication": boolean[random.randint(0, 1)],
+                "compression": boolean[random.randint(0, 1)],
+            }
+            filesystem_list.append(c)
+        return filesystem_list
 
     def add_trap_config(self, context, trap_config):
         pass

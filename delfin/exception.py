@@ -182,6 +182,10 @@ class DiskNotFound(NotFound):
     msg_fmt = _("Disk {0} could not be found.")
 
 
+class FilesystemNotFound(NotFound):
+    msg_fmt = _("Filesystem {0} could not be found.")
+
+
 class StorageDriverNotFound(NotFound):
     msg_fmt = _("Storage driver '{0}'could not be found.")
 
