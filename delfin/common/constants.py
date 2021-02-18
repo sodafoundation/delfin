@@ -174,6 +174,24 @@ class QuotaState(object):
     ALL = (NORMAL, SOFT, HARD, ABNORMAL)
 
 
+class ShareType(object):
+    CIFS = 'cifs'
+    NFS = 'nfs'
+    FTP = 'ftp'
+    UNKNOWN = 'unknown'
+
+    ALL = (CIFS, NFS, FTP, UNKNOWN)
+
+
+class ShareOfflineMode(object):
+    MANUAL = 'manual'
+    DOCUMENTS = 'documents'
+    PROGRAMS = 'programs'
+    NONE = 'none'
+
+    ALL = (MANUAL, DOCUMENTS, PROGRAMS, NONE)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'

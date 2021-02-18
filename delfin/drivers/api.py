@@ -119,6 +119,14 @@ class API(object):
         else:
             return []
 
+    def list_shares(self, context, storage_id):
+        """List all shares from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        if isinstance(driver, NASDriver):
+            return driver.list_shares(context)
+        else:
+            return []
+
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
         pass

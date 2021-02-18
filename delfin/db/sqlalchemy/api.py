@@ -1294,6 +1294,148 @@ def _process_qtree_info_filters(query, filters):
     return query
 
 
+def shares_create(context, shares):
+    """Create multiple shares."""
+    session = get_session()
+    shares_refs = []
+    with session.begin():
+
+        for share in shares:
+            LOG.debug('adding new share for native_share_id {0}:'
+                      .format(share.get('native_share_id')))
+            if not share.get('id'):
+                share['id'] = uuidutils.generate_uuid()
+
+            share_ref = models.Share()
+            share_ref.update(share)
+            shares_refs.append(share_ref)
+
+        session.add_all(shares_refs)
+
+    return shares_refs
+
+
+def shares_update(context, shares):
+    """Update multiple shares."""
+    session = get_session()
+
+    with session.begin():
+        share_refs = []
+
+        for share in shares:
+            LOG.debug('updating share {0}:'.format(
+                share.get('id')))
+            query = _share_get_query(context, session)
+            result = query.filter_by(id=share.get('id')
+                                     ).update(share)
+
+            if not result:
+                LOG.error(exception.ShareNotFound(share.get(
+                    'id')))
+            else:
+                share_refs.append(result)
+
+    return share_refs
+
+
+def shares_delete(context, shares_id_list):
+    """Delete multiple shares."""
+    session = get_session()
+    with session.begin():
+        for share_id in shares_id_list:
+            LOG.debug('deleting share {0}:'.format(share_id))
+            query = _share_get_query(context, session)
+            result = query.filter_by(id=share_id).delete()
+
+            if not result:
+                LOG.error(exception.ShareNotFound(share_id))
+    return
+
+
+def _share_get_query(context, session=None):
+    return model_query(context, models.Share, session=session)
+
+
+def _share_get(context, share_id, session=None):
+    result = (_share_get_query(context, session=session)
+              .filter_by(id=share_id)
+              .first())
+
+    if not result:
+        raise exception.ShareNotFound(share_id)
+
+    return result
+
+
+def share_create(context, values):
+    """Create a share from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    share_ref = models.Share()
+    share_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(share_ref)
+
+    return _share_get(context,
+                      share_ref['id'],
+                      session=session)
+
+
+def share_update(context, share_id, values):
+    """Update a share with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _share_get_query(context, session)
+        result = query.filter_by(id=share_id).update(values)
+
+        if not result:
+            raise exception.ShareNotFound(share_id)
+
+    return result
+
+
+def share_get(context, share_id):
+    """Get a share or raise an exception if it does not exist."""
+    return _share_get(context, share_id)
+
+
+def share_delete_by_storage(context, storage_id):
+    """Delete share or raise an exception if it does not exist."""
+    _share_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def share_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all shares."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Share,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Share would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Share)
+def _process_share_info_filters(query, filters):
+    """Common filter processing for shares queries."""
+    if filters:
+        if not is_valid_model_filters(models.Share, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def is_orm_value(obj):
     """Check if object is an ORM field or expression."""
     return isinstance(obj, (sqlalchemy.orm.attributes.InstrumentedAttribute,
@@ -1414,6 +1556,8 @@ PAGINATION_HELPERS = {
                         _process_filesystem_info_filters, _filesystem_get),
     models.Qtree: (_qtree_get_query,
                    _process_qtree_info_filters, _qtree_get),
+    models.Share: (_share_get_query,
+                   _process_share_info_filters, _share_get),
 }
 
 

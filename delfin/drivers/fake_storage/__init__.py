@@ -323,6 +323,31 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
             qtree_list.append(c)
         return qtree_list
 
+    def list_shares(self, ctx):
+        rd_shares_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_shares for %s: %d"
+                 % (self.storage_id, rd_shares_count))
+        share_list = []
+        for idx in range(rd_shares_count):
+            boolean = [True, False]
+            st = list(constants.ShareType.ALL)
+            st_len = len(constants.ShareType.ALL) - 1
+            mode = list(constants.ShareOfflineMode.ALL)
+            mode_len = len(constants.ShareOfflineMode.ALL) - 1
+            c = {
+                "name": "fake_share_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_share_id": "fake_original_id_" + str(idx),
+                "native_filesystem_id": "fake_filesystem_id_" + str(idx),
+                "qtree_id": random.randint(0, 1000),
+                "type": st[random.randint(0, st_len)],
+                "offline_mode": mode[random.randint(0, mode_len)],
+                "oplock": boolean[random.randint(0, 1)],
+                "path": "/",
+            }
+            share_list.append(c)
+        return share_list
+
     def add_trap_config(self, context, trap_config):
         pass
 
