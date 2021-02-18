@@ -18,12 +18,12 @@ from delfin.api.common import wsgi
 from delfin.api.views import filesystems as filesystem_view
 
 
-class PortController(wsgi.Controller):
+class FilesystemController(wsgi.Controller):
 
     def __init__(self):
-        super(PortController, self).__init__()
-        self.search_options = ['name', 'status', 'id', 'storage_id', 'wwn',
-                               'native_controller_id', 'native_filesystem_id']
+        super(FilesystemController, self).__init__()
+        self.search_options = ['name', 'status', 'id', 'storage_id',
+                               'native_filesystem_id']
 
     def _get_fs_search_options(self):
         """Return filesystems search options allowed ."""
@@ -41,7 +41,7 @@ class PortController(wsgi.Controller):
                                          self._get_fs_search_options())
 
         filesystems = db.filesystem_get_all(ctxt, marker, limit, sort_keys,
-                                sort_dirs, query_params, offset)
+                                            sort_dirs, query_params, offset)
         return filesystem_view.build_filesystems(filesystems)
 
     def show(self, req, id):
@@ -51,4 +51,4 @@ class PortController(wsgi.Controller):
 
 
 def create_resource():
-    return wsgi.Resource(PortController())
+    return wsgi.Resource(FilesystemController())

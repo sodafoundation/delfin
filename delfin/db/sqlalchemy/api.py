@@ -1096,8 +1096,8 @@ def filesystem_create(context, values):
         session.add(filesystem_ref)
 
     return _filesystem_get(context,
-                     filesystem_ref['id'],
-                     session=session)
+                           filesystem_ref['id'],
+                           session=session)
 
 
 def filesystem_update(context, filesystem_id, values):
@@ -1125,7 +1125,7 @@ def filesystem_delete_by_storage(context, storage_id):
 
 
 def filesystem_get_all(context, marker=None, limit=None, sort_keys=None,
-                 sort_dirs=None, filters=None, offset=None):
+                       sort_dirs=None, filters=None, offset=None):
     """Retrieves all filesystems."""
 
     session = get_session()

@@ -287,7 +287,8 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
                 "storage_id": self.storage_id,
                 "native_filesystem_id": "fake_original_id_" + str(idx),
                 "status": sts[random.randint(0, sts_len)],
-                "allocation_type": alloc_type[random.randint(0, alloc_type_len)],
+                "allocation_type":
+                    alloc_type[random.randint(0, alloc_type_len)],
                 "security_mode": security[random.randint(0, security_len)],
                 "total_capacity": total,
                 "used_capacity": used,
