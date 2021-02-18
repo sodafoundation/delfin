@@ -207,6 +207,21 @@ class Qtree(BASE, DelfinBase):
     state = Column(String(255))
 
 
+class Share(BASE, DelfinBase):
+    """Represents a share object."""
+    __tablename__ = 'shares'
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(36))
+    native_share_id = Column(String(255))
+    native_filesystem_id = Column(String(255))
+    qtree_id = Column(String(255))
+    type = Column(String(255))
+    offline_mode = Column(String(255))
+    oplock = Column(Boolean)
+    path = Column(String(255))
+
+
 class AlertSource(BASE, DelfinBase):
     """Represents an alert source configuration."""
     __tablename__ = 'alert_source'

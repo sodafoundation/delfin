@@ -139,11 +139,11 @@ class NASDriver(StorageDriver):
         """List all qtrees from storage system."""
         pass
 
-    # @abc.abstractmethod
-    # def list_shares(self, context):
-    #     """List all shares from storage system."""
-    #     pass
-    #
+    @abc.abstractmethod
+    def list_shares(self, context):
+        """List all shares from storage system."""
+        pass
+
     # @abc.abstractmethod
     # def list_quotas(self, context):
     #     """List all quota from storage system."""

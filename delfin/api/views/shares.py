@@ -14,13 +14,13 @@
 import copy
 
 
-def build_filesystems(filesystems):
-    # Build list of filesystems
-    views = [build_filesystem(filesystem)
-             for filesystem in filesystems]
-    return dict(filesystems=views)
+def build_shares(shares):
+    # Build list of shares
+    views = [build_share(share)
+             for share in shares]
+    return dict(shares=views)
 
 
-def build_filesystem(filesystem):
-    view = copy.deepcopy(filesystem)
+def build_share(share):
+    view = copy.deepcopy(share)
     return dict(view)
