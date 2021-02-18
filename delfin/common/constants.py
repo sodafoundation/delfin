@@ -157,13 +157,22 @@ class FilesystemStatus(object):
     ALL = (NORMAL, OFFLINE, UNKNOWN)
 
 
-class FilesystemSecurityMode(object):
+class NASSecurityMode(object):
     MIXED = 'mixed'
     NATIVE = 'native'
     WINDOWS = 'windows'
     UNIX = 'unix'
 
     ALL = (MIXED, NATIVE, WINDOWS, UNIX)
+
+
+class QuotaState(object):
+    NORMAL = 'normal'
+    SOFT = 'soft_limit'
+    HARD = 'hard_limit'
+    ABNORMAL = 'abnormal'
+
+    ALL = (NORMAL, SOFT, HARD, ABNORMAL)
 
 
 # Enumerations for alert severity

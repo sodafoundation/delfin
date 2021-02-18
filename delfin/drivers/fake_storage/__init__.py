@@ -280,8 +280,8 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
             sts_len = len(constants.FilesystemStatus.ALL) - 1
             alloc_type = list(constants.VolumeType.ALL)
             alloc_type_len = len(constants.VolumeType.ALL) - 1
-            security = list(constants.FilesystemSecurityMode.ALL)
-            security_len = len(constants.FilesystemSecurityMode.ALL) - 1
+            security = list(constants.NASSecurityMode.ALL)
+            security_len = len(constants.NASSecurityMode.ALL) - 1
             c = {
                 "name": "fake_filesystem_" + str(idx),
                 "storage_id": self.storage_id,
@@ -299,6 +299,29 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
             }
             filesystem_list.append(c)
         return filesystem_list
+
+    def list_qtrees(self, ctx):
+        rd_qtrees_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_qtrees for %s: %d"
+                 % (self.storage_id, rd_qtrees_count))
+        qtree_list = []
+        for idx in range(rd_qtrees_count):
+            state = list(constants.QuotaState.ALL)
+            state_len = len(constants.QuotaState.ALL) - 1
+            security = list(constants.NASSecurityMode.ALL)
+            security_len = len(constants.NASSecurityMode.ALL) - 1
+            c = {
+                "name": "fake_qtree_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_qtree_id": "fake_original_id_" + str(idx),
+                "native_filesystem_id": "fake_filesystem_id_" + str(idx),
+                "quota_id": random.randint(0, 1000),
+                "state": state[random.randint(0, state_len)],
+                "security_mode": security[random.randint(0, security_len)],
+                "path": "/",
+            }
+            qtree_list.append(c)
+        return qtree_list
 
     def add_trap_config(self, context, trap_config):
         pass
