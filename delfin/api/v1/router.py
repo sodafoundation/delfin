@@ -18,13 +18,14 @@ from delfin.api.v1 import access_info
 from delfin.api.v1 import alert_source
 from delfin.api.v1 import alerts
 from delfin.api.v1 import controllers
-from delfin.api.v1 import filesystems
-from delfin.api.v1 import ports
 from delfin.api.v1 import disks
+from delfin.api.v1 import filesystems
+from delfin.api.v1 import performance
+from delfin.api.v1 import ports
+from delfin.api.v1 import qtrees
 from delfin.api.v1 import storage_pools
 from delfin.api.v1 import storages
 from delfin.api.v1 import volumes
-from delfin.api.v1 import performance
 
 
 class APIRouter(common.APIRouter):
@@ -114,3 +115,7 @@ class APIRouter(common.APIRouter):
         self.resources['filesystems'] = filesystems.create_resource()
         mapper.resource("filesystems", "filesystems",
                         controller=self.resources['filesystems'])
+
+        self.resources['qtrees'] = qtrees.create_resource()
+        mapper.resource("qtrees", "qtrees",
+                        controller=self.resources['qtrees'])

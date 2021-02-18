@@ -1152,6 +1152,148 @@ def _process_filesystem_info_filters(query, filters):
     return query
 
 
+def qtrees_create(context, qtrees):
+    """Create multiple qtrees."""
+    session = get_session()
+    qtrees_refs = []
+    with session.begin():
+
+        for qtree in qtrees:
+            LOG.debug('adding new qtree for native_qtree_id {0}:'
+                      .format(qtree.get('native_qtree_id')))
+            if not qtree.get('id'):
+                qtree['id'] = uuidutils.generate_uuid()
+
+            qtree_ref = models.Qtree()
+            qtree_ref.update(qtree)
+            qtrees_refs.append(qtree_ref)
+
+        session.add_all(qtrees_refs)
+
+    return qtrees_refs
+
+
+def qtrees_update(context, qtrees):
+    """Update multiple qtrees."""
+    session = get_session()
+
+    with session.begin():
+        qtree_refs = []
+
+        for qtree in qtrees:
+            LOG.debug('updating qtree {0}:'.format(
+                qtree.get('id')))
+            query = _qtree_get_query(context, session)
+            result = query.filter_by(id=qtree.get('id')
+                                     ).update(qtree)
+
+            if not result:
+                LOG.error(exception.QtreeNotFound(qtree.get(
+                    'id')))
+            else:
+                qtree_refs.append(result)
+
+    return qtree_refs
+
+
+def qtrees_delete(context, qtrees_id_list):
+    """Delete multiple qtrees."""
+    session = get_session()
+    with session.begin():
+        for qtree_id in qtrees_id_list:
+            LOG.debug('deleting qtree {0}:'.format(qtree_id))
+            query = _qtree_get_query(context, session)
+            result = query.filter_by(id=qtree_id).delete()
+
+            if not result:
+                LOG.error(exception.QtreeNotFound(qtree_id))
+    return
+
+
+def _qtree_get_query(context, session=None):
+    return model_query(context, models.Qtree, session=session)
+
+
+def _qtree_get(context, qtree_id, session=None):
+    result = (_qtree_get_query(context, session=session)
+              .filter_by(id=qtree_id)
+              .first())
+
+    if not result:
+        raise exception.QtreeNotFound(qtree_id)
+
+    return result
+
+
+def qtree_create(context, values):
+    """Create a qtree from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    qtree_ref = models.Qtree()
+    qtree_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(qtree_ref)
+
+    return _qtree_get(context,
+                      qtree_ref['id'],
+                      session=session)
+
+
+def qtree_update(context, qtree_id, values):
+    """Update a qtree with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _qtree_get_query(context, session)
+        result = query.filter_by(id=qtree_id).update(values)
+
+        if not result:
+            raise exception.QtreeNotFound(qtree_id)
+
+    return result
+
+
+def qtree_get(context, qtree_id):
+    """Get a qtree or raise an exception if it does not exist."""
+    return _qtree_get(context, qtree_id)
+
+
+def qtree_delete_by_storage(context, storage_id):
+    """Delete qtree or raise an exception if it does not exist."""
+    _qtree_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def qtree_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all qtrees."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Qtree,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Qtree would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Qtree)
+def _process_qtree_info_filters(query, filters):
+    """Common filter processing for qtrees queries."""
+    if filters:
+        if not is_valid_model_filters(models.Qtree, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def is_orm_value(obj):
     """Check if object is an ORM field or expression."""
     return isinstance(obj, (sqlalchemy.orm.attributes.InstrumentedAttribute,
@@ -1270,6 +1412,8 @@ PAGINATION_HELPERS = {
                   _disk_get),
     models.Filesystem: (_filesystem_get_query,
                         _process_filesystem_info_filters, _filesystem_get),
+    models.Qtree: (_qtree_get_query,
+                   _process_qtree_info_filters, _qtree_get),
 }
 
 

@@ -193,6 +193,20 @@ class Filesystem(BASE, DelfinBase):
     worm = Column(Boolean)
 
 
+class Qtree(BASE, DelfinBase):
+    """Represents a qtree object."""
+    __tablename__ = 'qtrees'
+    id = Column(String(36), primary_key=True)
+    name = Column(String(255))
+    storage_id = Column(String(36))
+    native_qtree_id = Column(String(255))
+    native_filesystem_id = Column(String(255))
+    quota_id = Column(String(255))
+    path = Column(String(255))
+    security_mode = Column(String(255))
+    state = Column(String(255))
+
+
 class AlertSource(BASE, DelfinBase):
     """Represents an alert source configuration."""
     __tablename__ = 'alert_source'

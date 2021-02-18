@@ -186,6 +186,10 @@ class FilesystemNotFound(NotFound):
     msg_fmt = _("Filesystem {0} could not be found.")
 
 
+class QtreeNotFound(NotFound):
+    msg_fmt = _("Qtree {0} could not be found.")
+
+
 class StorageDriverNotFound(NotFound):
     msg_fmt = _("Storage driver '{0}'could not be found.")
 

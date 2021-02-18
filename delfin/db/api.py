@@ -462,6 +462,64 @@ def filesystem_get_all(context, marker=None, limit=None, sort_keys=None,
                                    sort_dirs, filters, offset)
 
 
+def qtrees_create(context, values):
+    """Create multiple qtrees."""
+    return IMPL.qtrees_create(context, values)
+
+
+def qtrees_update(context, values):
+    """Update multiple qtrees."""
+    return IMPL.qtrees_update(context, values)
+
+
+def qtrees_delete(context, values):
+    """Delete multiple qtrees."""
+    return IMPL.qtrees_delete(context, values)
+
+
+def qtree_create(context, values):
+    """Create a qtree from the values dictionary."""
+    return IMPL.qtree_create(context, values)
+
+
+def qtree_update(context, qtree_id, values):
+    """Update a qtree with the values dictionary."""
+    return IMPL.qtree_update(context, qtree_id, values)
+
+
+def qtree_get(context, qtree_id):
+    """Get a qtree or raise an exception if it does not exist."""
+    return IMPL.qtree_get(context, qtree_id)
+
+
+def qtree_delete_by_storage(context, storage_id):
+    """Delete a qtree or raise an exception if it does not exist."""
+    return IMPL.qtree_delete_by_storage(context, storage_id)
+
+
+def qtree_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all qtrees.
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of controllers
+    """
+    return IMPL.qtree_get_all(context, marker, limit, sort_keys,
+                              sort_dirs, filters, offset)
+
+
 def access_info_create(context, values):
     """Create a storage access information that used to connect
     to a specific storage device.

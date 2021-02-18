@@ -448,6 +448,57 @@ class StorageFilesystemTask(StorageResourceTask):
         db.filesystem_delete_by_storage(self.context, self.storage_id)
 
 
+class StorageQtreeTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageQtreeTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing qtrees for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the qtrees list from driver and database
+            storage_qtrees = self.driver_api.list_qtrees(
+                self.context, self.storage_id)
+            db_qtrees = db.qtree_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_qtrees, db_qtrees, 'native_qtree_id'
+            )
+
+            LOG.info('###StorageQtreeTask for {0}:add={1},delete={2},'
+                     'update={3}'.format(self.storage_id,
+                                         len(add_list),
+                                         len(delete_id_list),
+                                         len(update_list)))
+            if delete_id_list:
+                db.qtrees_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.qtrees_update(self.context, update_list)
+
+            if add_list:
+                db.qtrees_create(self.context, add_list)
+        except AttributeError as e:
+            LOG.error(e)
+        except Exception as e:
+            msg = _('Failed to sync Qtrees entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing Qtrees successful!!!")
+
+    def remove(self):
+        LOG.info('Remove qtrees for storage id:{0}'
+                 .format(self.storage_id))
+        db.qtree_delete_by_storage(self.context, self.storage_id)
+
+
 class PerformanceCollectionTask(object):
 
     def __init__(self):
