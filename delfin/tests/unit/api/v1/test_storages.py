@@ -310,3 +310,71 @@ class TestStorageController(test.TestCase):
         self.assertRaises(exception.StorageAlreadyExists,
                           self.controller.create,
                           req, body=body)
+
+    def test_get_capabilities(self):
+        self.mock_object(
+            db, 'storage_get',
+            fakes.fake_storages_show)
+        req = fakes.HTTPRequest.blank(
+            '/storages/12c2d52f-01bc-41f5-b73f-7abf6f38a2a6/capability')
+        self.mock_object(
+            self.driver_api, 'get_capabilities',
+            fakes.fake_get_capabilities)
+
+        resp = self.controller.get_capabilities(
+            req, "12c2d52f-01bc-41f5-b73f-7abf6f38a2a6")
+
+        self.assertEqual(resp['metadata']['vendor'], 'fake_vendor')
+        self.assertEqual(resp['metadata']["model"], 'fake_model')
+
+    def test_get_capabilities_with_invalid_storage_id(self):
+        self.mock_object(
+            db, 'storage_get',
+            fakes.fake_storage_get_exception)
+        req = fakes.HTTPRequest.blank(
+            '/storages/12c2d52f-01bc-41f5-b73f-7abf6f38a2a6/capability')
+
+        storage_id = '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6'
+
+        self.assertRaisesRegex(exception.StorageNotFound, "Storage " +
+                                                          storage_id + " "
+                                                          "could not be "
+                                                          "found.",
+                               self.controller.get_capabilities, req,
+                               storage_id)
+
+    def test_get_capabilities_with_none(self):
+        self.mock_object(
+            db, 'storage_get',
+            fakes.fake_storages_show)
+        req = fakes.HTTPRequest.blank(
+            '/storages/12c2d52f-01bc-41f5-b73f-7abf6f38a2a6/capability')
+        self.mock_object(
+            self.driver_api, 'get_capabilities',
+            fakes.custom_fake_get_capabilities(None))
+
+        storage_id = '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6'
+
+        self.assertRaises(exception.StorageCapabilityNotSupported,
+                          self.controller.get_capabilities, req,
+                          storage_id)
+
+    def test_get_capabilities_with_invalid_capabilities(self):
+        self.mock_object(
+            db, 'storage_get',
+            fakes.fake_storages_show)
+        req = fakes.HTTPRequest.blank(
+            '/storages/12c2d52f-01bc-41f5-b73f-7abf6f38a2a6/capability')
+
+        storage_id = '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6'
+
+        cap = fakes.fake_get_capabilities('fake_context', storage_id)
+        cap['additional_field'] = True
+
+        self.mock_object(
+            self.driver_api, 'get_capabilities',
+            fakes.custom_fake_get_capabilities(cap))
+
+        self.assertRaises(exception.InvalidStorageCapability,
+                          self.controller.get_capabilities, req,
+                          storage_id)

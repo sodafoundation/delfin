@@ -414,7 +414,7 @@ def fake_storage_pool_show(context, storage_pool_id):
 
 
 def fake_storage_get_exception(ctx, storage_id):
-    raise exception.StorageNotFound('abcd-1234-5678')
+    raise exception.StorageNotFound(storage_id)
 
 
 def fake_getcmd_exception(auth_data, transport_target, *var_names, **kwargs):
@@ -423,3 +423,52 @@ def fake_getcmd_exception(auth_data, transport_target, *var_names, **kwargs):
 
 def fake_getcmd_success(auth_data, transport_target, *var_names, **kwargs):
     return None, None, None, None
+
+
+def fake_get_capabilities(context, storage_id):
+    return {'is_historic': False,
+            'resource_metrics': {
+                "storage": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Represents how much data is "
+                                       "successfully transferred in MB/s"
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation in ms"
+                    },
+                    "requests": {
+                        "unit": "IOPS",
+                        "description": "Input/output operations per second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Represents how much data read is "
+                                       "successfully transferred in MB/s"
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Represents how much data write is "
+                                       "successfully transferred in MB/s"
+                    },
+                    "readRequests": {
+                        "unit": "IOPS",
+                        "description": "Read requests per second"
+                    },
+                    "writeRequests": {
+                        "unit": "IOPS",
+                        "description": "Write requests per second"
+                    },
+                }
+            }
+            }
+
+
+def custom_fake_get_capabilities(capabilities):
+
+    def get_capability(context, storage_id):
+        return capabilities
+
+    return get_capability

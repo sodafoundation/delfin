@@ -130,3 +130,8 @@ class StorageDriver(object):
         """List all shares from storage system."""
         raise NotImplementedError(
             "Driver API list_shares() is not Implemented")
+
+    @staticmethod
+    def get_capabilities(context):
+        """Get capability of driver"""
+        pass

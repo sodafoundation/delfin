@@ -17,13 +17,14 @@ import copy
 from unittest import TestCase, mock
 
 import sys
-sys.modules['delfin.cryptor'] = mock.Mock()
 
 from delfin import context
 from delfin import exception
 from delfin.common import config # noqa
 from delfin.drivers.api import API
 from delfin.drivers.fake_storage import FakeStorageDriver
+
+sys.modules['delfin.cryptor'] = mock.Mock()
 
 
 class Request:
@@ -340,3 +341,12 @@ class TestDriverAPI(TestCase):
         mock_access_info.assert_called_once()
         driver_manager.assert_called_once()
         mock_fake.assert_called_once()
+
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_get_capabilities(self, driver_manager):
+        driver_manager.return_value = FakeStorageDriver()
+        storage_id = '12345'
+        capabilities = API().get_capabilities(context, storage_id)
+
+        self.assertTrue('resource_metrics' in capabilities)
+        driver_manager.assert_called_once()

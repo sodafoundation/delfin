@@ -22,6 +22,9 @@ Request Body validating middleware.
 import functools
 
 from delfin.api.validation import validators
+from delfin.api.schemas.storage_capabilities_schema import \
+    STORAGE_CAPABILITIES_SCHEMA
+from delfin import exception
 
 
 def schema(request_body_schema):
@@ -43,3 +46,14 @@ def schema(request_body_schema):
         return wrapper
 
     return add_validator
+
+
+def validate_capabilities(capabilities):
+    if not capabilities:
+        raise exception.StorageCapabilityNotSupported()
+
+    schema_validator = validators._SchemaValidator(STORAGE_CAPABILITIES_SCHEMA)
+    try:
+        schema_validator.validate(capabilities)
+    except exception.InvalidInput as ex:
+        raise exception.InvalidStorageCapability(ex.msg)

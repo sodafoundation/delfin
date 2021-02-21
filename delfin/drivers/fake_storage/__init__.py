@@ -459,3 +459,46 @@ class FakeStorageDriver(driver.StorageDriver):
                 array_metrics.append(m)
 
         return array_metrics
+
+    @staticmethod
+    def get_capabilities(context):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': False,
+            'resource_metrics': {
+                "storage": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Represents how much data is "
+                                       "successfully transferred in MB/s"
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation in ms"
+                    },
+                    "requests": {
+                        "unit": "IOPS",
+                        "description": "Input/output operations per second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Represents how much data read is "
+                                       "successfully transferred in MB/s"
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Represents how much data write is "
+                                       "successfully transferred in MB/s"
+                    },
+                    "readRequests": {
+                        "unit": "IOPS",
+                        "description": "Read requests per second"
+                    },
+                    "writeRequests": {
+                        "unit": "IOPS",
+                        "description": "Write requests per second"
+                    },
+                }
+            }
+        }
