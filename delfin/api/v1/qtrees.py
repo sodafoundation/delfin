@@ -23,7 +23,7 @@ class QtreeController(wsgi.Controller):
     def __init__(self):
         super(QtreeController, self).__init__()
         self.search_options = ['name', 'state', 'id', 'storage_id',
-                               'native_filesystem_id', 'quota_id',
+                               'native_filesystem_id',
                                'native_qtree_id']
 
     def _get_qtrees_search_options(self):

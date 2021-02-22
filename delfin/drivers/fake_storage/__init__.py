@@ -310,12 +310,23 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
             state_len = len(constants.QuotaState.ALL) - 1
             security = list(constants.NASSecurityMode.ALL)
             security_len = len(constants.NASSecurityMode.ALL) - 1
+            c_limit = random.randint(1000, 2000)
+            h_limit = int(random.randint(0, 100) * c_limit / 100)
+            s_limit = int(random.randint(0, 100) * h_limit / 100)
+            fc_limit = random.randint(1000, 2000)
+            fh_limit = int(random.randint(0, 100) * fc_limit / 100)
+            fs_limit = int(random.randint(0, 100) * fh_limit / 100)
             c = {
                 "name": "fake_qtree_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_qtree_id": "fake_original_id_" + str(idx),
                 "native_filesystem_id": "fake_filesystem_id_" + str(idx),
-                "quota_id": random.randint(0, 1000),
+                "capacity_hard_limit": h_limit,
+                "capacity_soft_limit": s_limit,
+                "file_hard_limit": fh_limit,
+                "file_soft_limit": fs_limit,
+                "used_capacity": c_limit,
+                "file_count": fc_limit,
                 "state": state[random.randint(0, state_len)],
                 "security_mode": security[random.randint(0, security_len)],
                 "path": "/",
