@@ -118,6 +118,58 @@ disks_list = [{
 ]
 
 
+filesystems_list = [{
+    "id": "fe760f5c-7b4c-42b2-b1ed-ecb4f0b6d6bc",
+    "name": "fake_filesystem_" + str(id),
+    "storage_id": "793b26f9-6f16-4fd5-a6a2-d7453f050a41",
+    "native_filesystem_id": "fake_original_id_" + str(id),
+    "status": "offline",
+    "allocation_type": "thin",
+    "security_mode": "unix",
+    "total_capacity": 1055,
+    "used_capacity": 812,
+    "free_capacity": 243,
+    "compression": True,
+    "deduplication": False,
+    "worm": True
+}
+]
+
+
+qtrees_list = [{
+    "id": "251594c5-aac4-46ad-842f-3daca9176938",
+    "name": "fake_qtree_" + str(id),
+    "storage_id": "793b26f9-6f16-4fd5-a6a2-d7453f050a41",
+    "native_qtree_id": "fake_original_id_" + str(id),
+    "native_filesystem_id": "fake_filesystem_id_" + str(id),
+    "capacity_hard_limit": 316,
+    "capacity_soft_limit": 170,
+    "file_hard_limit": 1726,
+    "file_soft_limit": 759,
+    "used_capacity": 1093,
+    "file_count": 1726,
+    "path": "/",
+    "security_mode": "native",
+    "state": "normal"
+}
+]
+
+
+shares_list = [{
+    "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
+    "name": "fake_share_" + str(id),
+    "storage_id": "793b26f9-6f16-4fd5-a6a2-d7453f050a41",
+    "native_share_id": "fake_original_id_" + str(id),
+    "native_filesystem_id": "fake_filesystem_id_" + str(id),
+    "qtree_id": "859",
+    "type": "nfs",
+    "offline_mode": "none",
+    "oplock": True,
+    "path": "/"
+}
+]
+
+
 class TestStorageDeviceTask(test.TestCase):
     def setUp(self):
         super(TestStorageDeviceTask, self).setUp()
@@ -399,3 +451,52 @@ class TestStorageDiskTask(test.TestCase):
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         disk_obj.remove()
         self.assertTrue(mock_disk_del.called)
+
+
+class TestStorageFilesystemTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_filesystems')
+    @mock.patch('delfin.db.filesystem_get_all')
+    @mock.patch('delfin.db.filesystems_delete')
+    @mock.patch('delfin.db.filesystems_update')
+    @mock.patch('delfin.db.filesystems_create')
+    def test_sync_successful(self, mock_filesystem_create,
+                             mock_filesystem_update,
+                             mock_filesystem_del, mock_filesystem_get_all,
+                             mock_list_filesystems,
+                             get_lock):
+        filesystem_obj = resources.StorageFilesystemTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        filesystem_obj.sync()
+        self.assertTrue(mock_list_filesystems.called)
+        self.assertTrue(mock_filesystem_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the filesystems from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the filesystems to DB
+        mock_list_filesystems.return_value =\
+            fake_storage_obj.list_filesystems(context)
+        mock_filesystem_get_all.return_value = list()
+        filesystem_obj.sync()
+        self.assertTrue(mock_filesystem_create.called)
+
+        # update the filesystems to DB
+        mock_list_filesystems.return_value = filesystems_list
+        mock_filesystem_get_all.return_value = filesystems_list
+        filesystem_obj.sync()
+        self.assertTrue(mock_filesystem_update.called)
+
+        # delete the filesystems to DB
+        mock_list_filesystems.return_value = list()
+        mock_filesystem_get_all.return_value = filesystems_list
+        filesystem_obj.sync()
+        self.assertTrue(mock_filesystem_del.called)
+
+    @mock.patch('delfin.db.filesystem_delete_by_storage')
+    def test_remove(self, mock_filesystem_del):
+        filesystem_obj = resources.StorageFilesystemTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        filesystem_obj.remove()
+        self.assertTrue(mock_filesystem_del.called)
