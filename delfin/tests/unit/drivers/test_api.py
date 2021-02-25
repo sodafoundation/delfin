@@ -288,6 +288,42 @@ class TestDriverAPI(TestCase):
         driver_manager.assert_called_once()
         mock_fake.assert_called_once()
 
+    @mock.patch.object(FakeStorageDriver, 'list_filesystems')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_filesystems(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_filesystems(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_qtrees')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_qtrees(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_qtrees(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_shares')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_shares(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_shares(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
     @mock.patch.object(FakeStorageDriver, 'parse_alert')
     @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
     @mock.patch('delfin.db.access_info_get')
