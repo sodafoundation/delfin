@@ -278,6 +278,8 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
             boolean = [True, False]
             sts = list(constants.FilesystemStatus.ALL)
             sts_len = len(constants.FilesystemStatus.ALL) - 1
+            worm = list(constants.WORMType.ALL)
+            worm_len = len(constants.WORMType.ALL) - 1
             alloc_type = list(constants.VolumeType.ALL)
             alloc_type_len = len(constants.VolumeType.ALL) - 1
             security = list(constants.NASSecurityMode.ALL)
@@ -286,16 +288,16 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
                 "name": "fake_filesystem_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_filesystem_id": "fake_original_id_" + str(idx),
+                "native_pool_id": "fake_pool_id_" + str(idx),
                 "status": sts[random.randint(0, sts_len)],
-                "allocation_type":
-                    alloc_type[random.randint(0, alloc_type_len)],
+                "type": alloc_type[random.randint(0, alloc_type_len)],
                 "security_mode": security[random.randint(0, security_len)],
                 "total_capacity": total,
                 "used_capacity": used,
                 "free_capacity": free,
-                "worm": boolean[random.randint(0, 1)],
-                "deduplication": boolean[random.randint(0, 1)],
-                "compression": boolean[random.randint(0, 1)],
+                "worm": worm[random.randint(0, worm_len)],
+                "deduplicated": boolean[random.randint(0, 1)],
+                "compressed": boolean[random.randint(0, 1)],
             }
             filesystem_list.append(c)
         return filesystem_list
@@ -306,28 +308,14 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
                  % (self.storage_id, rd_qtrees_count))
         qtree_list = []
         for idx in range(rd_qtrees_count):
-            state = list(constants.QuotaState.ALL)
-            state_len = len(constants.QuotaState.ALL) - 1
             security = list(constants.NASSecurityMode.ALL)
             security_len = len(constants.NASSecurityMode.ALL) - 1
-            c_limit = random.randint(1000, 2000)
-            h_limit = int(random.randint(0, 100) * c_limit / 100)
-            s_limit = int(random.randint(0, 100) * h_limit / 100)
-            fc_limit = random.randint(1000, 2000)
-            fh_limit = int(random.randint(0, 100) * fc_limit / 100)
-            fs_limit = int(random.randint(0, 100) * fh_limit / 100)
+
             c = {
                 "name": "fake_qtree_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_qtree_id": "fake_original_id_" + str(idx),
                 "native_filesystem_id": "fake_filesystem_id_" + str(idx),
-                "capacity_hard_limit": h_limit,
-                "capacity_soft_limit": s_limit,
-                "file_hard_limit": fh_limit,
-                "file_soft_limit": fs_limit,
-                "used_capacity": c_limit,
-                "file_count": fc_limit,
-                "state": state[random.randint(0, state_len)],
                 "security_mode": security[random.randint(0, security_len)],
                 "path": "/",
             }
@@ -340,20 +328,15 @@ class FakeStorageDriver(driver.UnifiedStorageDriver):
                  % (self.storage_id, rd_shares_count))
         share_list = []
         for idx in range(rd_shares_count):
-            boolean = [True, False]
-            st = list(constants.ShareType.ALL)
-            st_len = len(constants.ShareType.ALL) - 1
-            mode = list(constants.ShareOfflineMode.ALL)
-            mode_len = len(constants.ShareOfflineMode.ALL) - 1
+            pro = list(constants.ShareProtocol.ALL)
+            pro_len = len(constants.ShareProtocol.ALL) - 1
             c = {
                 "name": "fake_share_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_share_id": "fake_original_id_" + str(idx),
                 "native_filesystem_id": "fake_filesystem_id_" + str(idx),
-                "qtree_id": random.randint(0, 1000),
-                "type": st[random.randint(0, st_len)],
-                "offline_mode": mode[random.randint(0, mode_len)],
-                "oplock": boolean[random.randint(0, 1)],
+                "native_qtree_id": "fake_qtree_id_" + str(idx),
+                "protocol": pro[random.randint(0, pro_len)],
                 "path": "/",
             }
             share_list.append(c)

@@ -123,15 +123,15 @@ filesystems_list = [{
     "name": "fake_filesystem_" + str(id),
     "storage_id": "793b26f9-6f16-4fd5-a6a2-d7453f050a41",
     "native_filesystem_id": "fake_original_id_" + str(id),
-    "status": "offline",
-    "allocation_type": "thin",
+    "status": "normal",
+    "type": "thin",
     "security_mode": "unix",
     "total_capacity": 1055,
     "used_capacity": 812,
     "free_capacity": 243,
-    "compression": True,
-    "deduplication": False,
-    "worm": True
+    "compressed": True,
+    "deduplicated": False,
+    "worm": "non_worm"
 }
 ]
 
@@ -142,15 +142,8 @@ qtrees_list = [{
     "storage_id": "793b26f9-6f16-4fd5-a6a2-d7453f050a41",
     "native_qtree_id": "fake_original_id_" + str(id),
     "native_filesystem_id": "fake_filesystem_id_" + str(id),
-    "capacity_hard_limit": 316,
-    "capacity_soft_limit": 170,
-    "file_hard_limit": 1726,
-    "file_soft_limit": 759,
-    "used_capacity": 1093,
-    "file_count": 1726,
     "path": "/",
-    "security_mode": "native",
-    "state": "normal"
+    "security_mode": "native"
 }
 ]
 
@@ -161,10 +154,8 @@ shares_list = [{
     "storage_id": "793b26f9-6f16-4fd5-a6a2-d7453f050a41",
     "native_share_id": "fake_original_id_" + str(id),
     "native_filesystem_id": "fake_filesystem_id_" + str(id),
-    "qtree_id": "859",
-    "type": "nfs",
-    "offline_mode": "none",
-    "oplock": True,
+    "native_qtree_id": "859",
+    "protocol": "nfs",
     "path": "/"
 }
 ]
