@@ -39,6 +39,7 @@ class RestHandler(RestClient):
     REST_SOFT_VERSION_URL = '/api/types/installedSoftwareVersion/instances'
     REST_AUTH_KEY = 'EMC-CSRF-TOKEN'
 
+
     def __init__(self, **kwargs):
         super(RestHandler, self).__init__(**kwargs)
 
