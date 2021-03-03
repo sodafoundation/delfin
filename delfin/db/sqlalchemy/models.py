@@ -182,15 +182,16 @@ class Filesystem(BASE, DelfinBase):
     name = Column(String(255))
     storage_id = Column(String(36))
     native_filesystem_id = Column(String(255))
+    native_pool_id = Column(String(255))
     status = Column(String(255))
-    allocation_type = Column(String(255))
+    type = Column(String(255))
     security_mode = Column(String(255))
     total_capacity = Column(BigInteger)
     used_capacity = Column(BigInteger)
     free_capacity = Column(BigInteger)
-    compression = Column(Boolean)
-    deduplication = Column(Boolean)
-    worm = Column(Boolean)
+    compressed = Column(Boolean)
+    deduplicated = Column(Boolean)
+    worm = Column(String(255))
 
 
 class Qtree(BASE, DelfinBase):
@@ -201,15 +202,8 @@ class Qtree(BASE, DelfinBase):
     storage_id = Column(String(36))
     native_qtree_id = Column(String(255))
     native_filesystem_id = Column(String(255))
-    capacity_hard_limit = Column(BigInteger)
-    capacity_soft_limit = Column(BigInteger)
-    file_hard_limit = Column(BigInteger)
-    file_soft_limit = Column(BigInteger)
-    used_capacity = Column(BigInteger)
-    file_count = Column(BigInteger)
     path = Column(String(255))
     security_mode = Column(String(255))
-    state = Column(String(255))
 
 
 class Share(BASE, DelfinBase):
@@ -220,10 +214,8 @@ class Share(BASE, DelfinBase):
     storage_id = Column(String(36))
     native_share_id = Column(String(255))
     native_filesystem_id = Column(String(255))
-    qtree_id = Column(String(255))
-    type = Column(String(255))
-    offline_mode = Column(String(255))
-    oplock = Column(Boolean)
+    native_qtree_id = Column(String(255))
+    protocol = Column(String(255))
     path = Column(String(255))
 
 

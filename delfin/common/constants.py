@@ -151,46 +151,36 @@ class DiskLogicalType(object):
 
 class FilesystemStatus(object):
     NORMAL = 'normal'
-    OFFLINE = 'offline'
-    UNKNOWN = 'unknown'
+    FAULTY = 'faulty'
 
-    ALL = (NORMAL, OFFLINE, UNKNOWN)
+    ALL = (NORMAL, FAULTY)
+
+
+class WORMType(object):
+    NON_WORM = 'non_worm'
+    AUDIT_LOG = 'audit_log'
+    COMPLIANCE = 'compliance'
+    ENTERPRISE = 'enterprise'
+
+    ALL = (NON_WORM, AUDIT_LOG, COMPLIANCE, ENTERPRISE)
 
 
 class NASSecurityMode(object):
     MIXED = 'mixed'
     NATIVE = 'native'
-    WINDOWS = 'windows'
+    NTFS = 'ntfs'
     UNIX = 'unix'
 
-    ALL = (MIXED, NATIVE, WINDOWS, UNIX)
+    ALL = (MIXED, NATIVE, NTFS, UNIX)
 
 
-class QuotaState(object):
-    NORMAL = 'normal'
-    SOFT = 'soft_limit'
-    HARD = 'hard_limit'
-    ABNORMAL = 'abnormal'
-
-    ALL = (NORMAL, SOFT, HARD, ABNORMAL)
-
-
-class ShareType(object):
+class ShareProtocol(object):
     CIFS = 'cifs'
     NFS = 'nfs'
     FTP = 'ftp'
     UNKNOWN = 'unknown'
 
     ALL = (CIFS, NFS, FTP, UNKNOWN)
-
-
-class ShareOfflineMode(object):
-    MANUAL = 'manual'
-    DOCUMENTS = 'documents'
-    PROGRAMS = 'programs'
-    NONE = 'none'
-
-    ALL = (MANUAL, DOCUMENTS, PROGRAMS, NONE)
 
 
 # Enumerations for alert severity
