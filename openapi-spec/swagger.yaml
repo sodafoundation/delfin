@@ -851,7 +851,7 @@ paths:
                   - ports
                 additionalProperties: true
                 properties:
-                  controllers:
+                  ports:
                     type: array
                     title: the port schema
                     items:
@@ -1019,7 +1019,7 @@ paths:
                   - ports
                 additionalProperties: true
                 properties:
-                  controllers:
+                  ports:
                     type: array
                     title: the disk schema
                     items:
@@ -1333,7 +1333,7 @@ paths:
             enum:
               - mixed
               - native
-              - windows
+              - ntfs
               - unix
         - name: status
           in: query
@@ -1345,8 +1345,7 @@ paths:
             type: string
             enum:
               - normal
-              - offline
-              - unknown
+              - faulty
       responses:
         '200':
           description: List filesystem query was success
@@ -1358,7 +1357,7 @@ paths:
                   - filesystems
                 additionalProperties: true
                 properties:
-                  controllers:
+                  filesystems:
                     type: array
                     title: the filesystem schema
                     items:
@@ -1487,9 +1486,9 @@ paths:
           explode: true
           schema:
             type: string
-        - name: native_pool_id
+        - name: native_filesystem_id
           in: query
-          description: Pool ID of the qtree in the storage backend.
+          description: Filesystem ID of the qtree in the storage backend.
           required: false
           style: form
           explode: true
@@ -1514,20 +1513,8 @@ paths:
             enum:
               - mixed
               - native
-              - windows
+              - ntfs
               - unix
-        - name: status
-          in: query
-          description: The qtree status
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: string
-            enum:
-              - normal
-              - offline
-              - unknown
       responses:
         '200':
           description: List qtree query was success
@@ -1539,7 +1526,7 @@ paths:
                   - qtrees
                 additionalProperties: true
                 properties:
-                  controllers:
+                  qtrees:
                     type: array
                     title: the qtree schema
                     items:
@@ -1676,7 +1663,7 @@ paths:
           explode: true
           schema:
             type: string
-        - name: qtree_id
+        - name: nativee_qtree_id
           in: query
           description: Qtree ID of the share in the storage backend.
           required: false
@@ -1692,9 +1679,9 @@ paths:
           explode: true
           schema:
             type: string
-        - name: type
+        - name: protocol
           in: query
-          description: The share security modes
+          description: The share protocol
           required: false
           style: form
           explode: true
@@ -1716,7 +1703,7 @@ paths:
                   - shares
                 additionalProperties: true
                 properties:
-                  controllers:
+                  shares:
                     type: array
                     title: the share schema
                     items:
@@ -2713,29 +2700,29 @@ components:
               type: string
               enum:
                 - normal
-                - offline
-                - unknown
+                - faulty
             worm:
               type: string
               enum:
-                - yes
-                - no
-                - unknown
-            allocation_type:
+                - non_worm
+                - audit_log
+                - compliance
+                - enterprise
+            type:
               type: string
               enum:
                 - thick
                 - thin
-            deduplication:
+            deduplicated:
               type: boolean
-            compression:
+            compressed:
               type: boolean
             security_mode:
               type: string
               enum:
                 - mixed
                 - native
-                - windows
+                - ntfs
                 - unix
     QtreeSpec:
       description: >-
@@ -2765,23 +2752,14 @@ components:
               type: string
               readOnly: true
               example: Filesystem_A
-            state:
-              type: string
-              enum:
-                - normal
-                - soft_limit
-                - hard_limit
-                - abnormal
             path:
-              type: string
-            quota_id:
               type: string
             security_mode:
               type: string
               enum:
                 - mixed
                 - native
-                - windows
+                - ntfs
                 - unix
     ShareSpec:
       description: >-
@@ -2811,24 +2789,15 @@ components:
               type: string
               readOnly: true
               example: Filesystem_A
-            qtree_id:
+            native_qtree_id:
               type: string
-            type:
+            protocol:
               type: string
               enum:
                 - cifs
                 - nfs
                 - ftp
                 - unknown
-            offline_mode:
-              type: string
-              enum:
-                - manual
-                - documents
-                - programs
-                - unknown
-            oplock:
-              type: boolean
             path:
               type: string
 
