@@ -193,3 +193,14 @@ class AlertSource(BASE, DelfinBase):
     context_name = Column(String(255))
     retry_num = Column(Integer)
     expiration = Column(Integer)
+
+
+class TaskTemplate(BASE, DelfinBase):
+    """Represents a task template configuration."""
+    __tablename__ = 'task_template'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    interval = Column(Integer)
+    method = Column(String(255))
+    args = Column(JsonEncodedDict)
+    last_run_time = Column(Integer)

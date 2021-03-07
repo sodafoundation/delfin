@@ -1107,6 +1107,93 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
+def task_template_create(context, values):
+    """Add task template configuration."""
+    task_template_ref = models.TaskTemplate()
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+    task_template_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(task_template_ref)
+
+    return _task_template_get(context,
+                              task_template_ref['id'],
+                              session=session)
+
+
+def task_template_update(context, task_template_id, values):
+    """Update a task template withe the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _task_template_get_query(context, session)
+        result = query.filter_by(id=task_template_id).update(values)
+
+        if not result:
+            raise exception.TaskTemplateNotFound(task_template_id)
+
+    return result
+
+
+def _task_template_get(context, task_template_id, session=None):
+    result = (_task_template_get_query(context, session=session)
+              .filter_by(id=task_template_id)
+              .first())
+
+    if not result:
+        raise exception.TaskTemplateNotFound(task_template_id)
+
+    return result
+
+
+def _task_template_get_query(context, session=None):
+    return model_query(context, models.TaskTemplate, session=session)
+
+
+def task_template_get(context, task_template_id):
+    """Get a task template  or raise an exception if it does not exist."""
+    return _task_template_get(context, task_template_id)
+
+
+def task_template_delete_by_storage(context, storage_id):
+    """Delete all the task templates of a storage device"""
+    _task_template_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def task_template_delete(context, task_template_id):
+    """Delete a given task template"""
+    _task_template_get_query(context).filter_by(id=task_template_id).delete()
+
+
+def task_template_get_all(context, marker=None, limit=None, sort_keys=None,
+                          sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage task templates."""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.TaskTemplate,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No task template would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.TaskTemplate)
+def _process_task_template_info_filters(query, filters):
+    """Common filter processing for task template queries."""
+    if filters:
+        if not is_valid_model_filters(models.TaskTemplate, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
@@ -1126,6 +1213,9 @@ PAGINATION_HELPERS = {
     models.Port: (_port_get_query, _process_port_info_filters, _port_get),
     models.Disk: (_disk_get_query, _process_disk_info_filters,
                   _disk_get),
+    models.TaskTemplate: (_task_template_get_query,
+                          _process_task_template_info_filters,
+                          _task_template_get),
 }
 
 
