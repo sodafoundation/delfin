@@ -204,13 +204,18 @@ class RestClient(object):
         return result
 
     def paginated_call(self, url, data=None, method=None,
-                       log_filter_flag=False,
+                       params=None, log_filter_flag=False,
                        page_size=consts.QUERY_PAGE_SIZE):
+        if params:
+            url = "{0}?{1}".format(url, params)
+        else:
+            url = "{0}?".format(url)
+
         result_list = []
         start, end = 0, page_size
         msg = _('Query resource volume error')
         while True:
-            url_p = '{0}?range=[{1}-{2}]'.format(url, start, end)
+            url_p = "{0}range=[{1}-{2}]".format(url, start, end)
             start, end = end, end + page_size
             result = self.call(url_p, data, method, log_filter_flag)
             self._assert_rest_result(result, msg)
@@ -305,6 +310,33 @@ class RestClient(object):
     def get_all_pools(self):
         url = "/storagepool"
         return self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+    def get_all_filesystems(self):
+        url = "/filesystem"
+        return self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+    def get_all_qtrees(self):
+        url = "/quotatree"
+        fss = self.get_all_filesystems()
+        qt_list = []
+        for fs in fss:
+            params = "PARENTTYPE=40&PARENTID={0}&".format(fs['ID'])
+            qt = self.paginated_call(url, None, "GET",
+                                     params=params, log_filter_flag=True)
+            qt_list.extend(qt)
+        return qt_list
+
+    def get_all_shares(self):
+        url = "/CIFSHARE"
+        cifs = self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+        url = "/NFSHARE"
+        nfs = self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+        url = "/FTP_SHARE_AUTH_CLIENT"
+        ftps = self.paginated_call(url, None, "GET", log_filter_flag=True)
+
+        return cifs + nfs + ftps
 
     def clear_alert(self, sequence_number):
         url = "/alarm/currentalarm?sequence=%s" % sequence_number

@@ -23,7 +23,7 @@ from delfin import exception
 LOG = log.getLogger(__name__)
 
 
-class OceanStorDriver(driver.StorageDriver):
+class OceanStorDriver(driver.UnifiedStorageDriver):
     """OceanStorDriver implement Huawei OceanStor driver,
     """
 
@@ -350,6 +350,146 @@ class OceanStorDriver(driver.StorageDriver):
 
         except Exception as err:
             err_msg = "Failed to get disk metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_filesystems(self, context):
+        try:
+            # Get list of OceanStor filesystems details
+            fss = self.client.get_all_filesystems()
+
+            fs_list = []
+            worm_type = {
+                consts.FS_WORM_COMPLIANCE: constants.WORMType.COMPLIANCE,
+                consts.FS_WORM_AUDIT_LOG: constants.WORMType.AUDIT_LOG,
+                consts.FS_WORM_ENTERPRISE: constants.WORMType.ENTERPRISE
+            }
+            for fs in fss:
+                status = constants.FilesystemStatus.FAULTY
+                if fs['HEALTHSTATUS'] == consts.FS_HEALTH_NORMAL:
+                    status = constants.FilesystemStatus.NORMAL
+                type = constants.FSType.THICK
+                if fs['ALLOCTYPE'] == consts.FS_TYPE_THIN:
+                    type = constants.FSType.THIN
+
+                sector_size = int(fs['SECTORSIZE'])
+                total_cap = int(fs['CAPACITY']) * sector_size
+                used_cap = int(fs['ALLOCCAPACITY']) * sector_size
+
+                compressed = False
+                if fs['ENABLECOMPRESSION'] != 'false':
+                    compressed = True
+
+                deduplicated = False
+                if fs['ENABLEDEDUP'] != 'false':
+                    deduplicated = True
+
+                fs = {
+                    'name': fs['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_filesystem_id': fs['ID'],
+                    'compressed': compressed,
+                    'deduplicated': deduplicated,
+                    'worm': worm_type.get(fs['WORMTYPE'],
+                                          constants.WORMType.NON_WORM),
+                    'status': status,
+                    'type': type,
+                    'total_capacity': total_cap,
+                    'used_capacity': used_cap,
+                    'free_capacity': None,
+                }
+                fs_list.append(fs)
+
+            return fs_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get filesystem metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get filesystem metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_qtrees(self, context):
+        try:
+            # Get list of OceanStor qtrees details
+            qts = self.client.get_all_qtrees()
+            security_mode = {
+                consts.SECURITY_STYLE_MIXED: constants.NASSecurityMode.MIXED,
+                consts.SECURITY_STYLE_NATIVE: constants.NASSecurityMode.NATIVE,
+                consts.SECURITY_STYLE_NTFS: constants.NASSecurityMode.NTFS,
+                consts.SECURITY_STYLE_UNIX: constants.NASSecurityMode.UNIX,
+            }
+
+            qt_list = []
+            for qt in qts:
+                fs_id = None
+                if qt['PARENTTYPE'] == consts.PARENT_OBJECT_TYPE_FS:
+                    fs_id = qt['PARENTID']
+                qt = {
+                    'name': qt['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_qtree_id': qt['ID'],
+                    'native_filesystem_id': fs_id,
+                    'security_mode': security_mode.get(qt['securityStyle']),
+                }
+                qt_list.append(qt)
+
+            return qt_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get qtree metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get qtree metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_shares(self, context):
+        try:
+            # Get list of OceanStor shares details
+            ss = self.client.get_all_shares()
+
+            s_list = []
+            for s in ss:
+
+                protocol = constants.ShareProtocol.UNKNOWN
+                if s.get('type') == consts.SHARE_NFS:
+                    protocol = constants.ShareProtocol.NFS
+                if s.get('subType'):
+                    protocol = constants.ShareProtocol.CIFS
+                if s.get('ACCESSNAME'):
+                    protocol = constants.ShareProtocol.FTP
+
+                s = {
+                    'name': s['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_share_id': s['ID'],
+                    'native_filesystem_id': s['FSID'],
+                    'path': s['SHAREPATH'],
+                    'protocol': protocol
+                }
+                s_list.append(s)
+
+            return s_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get share metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get share metrics from OceanStor: %s" %\
                       (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)

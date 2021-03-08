@@ -173,6 +173,13 @@ class NASSecurityMode(object):
     ALL = (MIXED, NATIVE, NTFS, UNIX)
 
 
+class FSType(object):
+    THICK = 'thick'
+    THIN = 'thin'
+
+    ALL = (THICK, THIN)
+
+
 class QuotaState(object):
     NORMAL = 'normal'
     SOFT = 'soft_limit'
