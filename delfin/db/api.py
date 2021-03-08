@@ -550,3 +550,62 @@ def task_template_delete(context, task_template_id):
     exist.
     """
     return IMPL.task_template_delete(context, task_template_id)
+
+
+def task_instance_create(context, values):
+    """Create a task instance from the values dictionary."""
+    return IMPL.task_instance_create(context, values)
+
+
+def task_instance_update(context, task_instance_id, values):
+    """Update a task instance with the values dictionary."""
+    return IMPL.task_instance_update(context, task_instance_id, values)
+
+
+def task_instance_get(context, task_instance_id):
+    """Get a task instance or raise an exception if it does not exist."""
+    return IMPL.task_instance_get(context, task_instance_id)
+
+
+def task_instance_get_all(context, marker=None, limit=None, sort_keys=None,
+                          sort_dirs=None, filters=None, offset=None):
+    """Retrieves all  task instances.
+    If no sort parameters are specified then the returned task templates are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of  task instances
+    """
+    return IMPL.task_instance_get_all(context, marker, limit,
+                                      sort_keys, sort_dirs, filters, offset)
+
+
+def task_instance_delete_by_storage(context, storage_id):
+    """Delete all task instances of given storage or raise an exception if it
+    does not exist.
+    """
+    return IMPL.task_instance_delete_by_storage(context, storage_id)
+
+
+def task_instance_delete_by_template(context, task_template_id):
+    """Delete all task instances of given task template or raise an exception
+    if it does not exist.
+    """
+    return IMPL.task_instance_delete_by_template(context, task_template_id)
+
+
+def task_instance_delete(context, task_instance_id):
+    """Delete a given task instance or raise an exception if it does not
+    exist.
+    """
+    return IMPL.task_instance_delete(context, task_instance_id)

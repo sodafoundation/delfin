@@ -204,3 +204,17 @@ class TaskTemplate(BASE, DelfinBase):
     method = Column(String(255))
     args = Column(JsonEncodedDict)
     last_run_time = Column(Integer)
+
+
+class TaskInstance(BASE, DelfinBase):
+    """Represents a task instance configuration."""
+    __tablename__ = 'task_instance'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    task_template_id = Column(String(36))
+    launch_time = Column(Integer)
+    interval = Column(Integer)
+    method = Column(String(255))
+    args = Column(JsonEncodedDict)
+    result = Column(String(255))
+    retry_count = Column(Integer)

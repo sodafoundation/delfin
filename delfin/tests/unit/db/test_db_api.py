@@ -526,3 +526,70 @@ class TestSIMDBAPI(test.TestCase):
             .task_template_delete_by_storage(context,
                                              fake_task_template_storage_id)
         assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_task_instance_create(self, mock_session):
+        fake_task_instance = models.TaskInstance()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_task_instance
+        result = db_api.task_instance_create(context, fake_task_instance)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_task_instance_update(self, mock_session):
+        values = {'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = values
+        result = db_api.task_instance_update(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', values)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_task_instance_get(self, mock_session):
+        fake_task_instance = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_task_instance
+        result = db_api.task_instance_get(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_task_instance_get_all(self, mock_session):
+        fake_task_instance = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_task_instance
+        result = api.task_instance_get_all(context)
+        assert len(result) == 0
+
+        result = db_api.task_instance_get_all(context,
+                                              filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_task_instance_delete(self, mock_session):
+        fake_task_instance = [models.TaskInstance().id]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_task_instance
+        result = db_api.task_template_delete(context, fake_task_instance)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_task_instance_delete_by_storage(self, mock_session):
+        fake_task_instance_storage_id = [models.TaskInstance().storage_id]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_task_instance_storage_id
+        result = db_api \
+            .task_instance_delete_by_storage(context,
+                                             fake_task_instance_storage_id)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_task_instance_delete_by_template(self, mock_session):
+        fake_task_instance_template_id \
+            = [models.TaskInstance().task_template_id]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_task_instance_template_id
+        result = db_api \
+            .task_instance_delete_by_template(context,
+                                              fake_task_instance_template_id)
+        assert result is None
