@@ -182,6 +182,13 @@ class QuotaType(object):
     ALL = (TREE, USER, GROUP)
 
 
+class FSType(object):
+    THICK = 'thick'
+    THIN = 'thin'
+
+    ALL = (THICK, THIN)
+
+
 class ShareProtocol(object):
     CIFS = 'cifs'
     NFS = 'nfs'
