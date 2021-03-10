@@ -447,6 +447,7 @@ class TestStorageDiskTask(test.TestCase):
 class TestStorageFilesystemTask(test.TestCase):
     @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
     @mock.patch('delfin.drivers.api.API.list_filesystems')
+    @mock.patch('delfin.db.quota_get_all')
     @mock.patch('delfin.db.filesystem_get_all')
     @mock.patch('delfin.db.filesystems_delete')
     @mock.patch('delfin.db.filesystems_update')
@@ -454,13 +455,17 @@ class TestStorageFilesystemTask(test.TestCase):
     def test_sync_successful(self, mock_filesystem_create,
                              mock_filesystem_update,
                              mock_filesystem_del, mock_filesystem_get_all,
-                             mock_list_filesystems,
+                             mock_quota_get_all, mock_list_filesystems,
                              get_lock):
         filesystem_obj = resources.StorageFilesystemTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+        mock_list_filesystems.return_value =\
+            fake_storage_obj.list_filesystems(context)
         filesystem_obj.sync()
         self.assertTrue(mock_list_filesystems.called)
         self.assertTrue(mock_filesystem_get_all.called)
+        self.assertTrue(mock_quota_get_all.called)
         self.assertTrue(get_lock.called)
 
         # collect the filesystems from fake_storage
@@ -474,20 +479,127 @@ class TestStorageFilesystemTask(test.TestCase):
         self.assertTrue(mock_filesystem_create.called)
 
         # update the filesystems to DB
-        mock_list_filesystems.return_value = filesystems_list
+        mock_list_filesystems.return_value = filesystems_list, []
         mock_filesystem_get_all.return_value = filesystems_list
         filesystem_obj.sync()
         self.assertTrue(mock_filesystem_update.called)
 
         # delete the filesystems to DB
-        mock_list_filesystems.return_value = list()
+        mock_list_filesystems.return_value = list(), []
         mock_filesystem_get_all.return_value = filesystems_list
         filesystem_obj.sync()
         self.assertTrue(mock_filesystem_del.called)
 
     @mock.patch('delfin.db.filesystem_delete_by_storage')
-    def test_remove(self, mock_filesystem_del):
+    @mock.patch('delfin.db.quota_get_all')
+    @mock.patch('delfin.db.quotas_delete')
+    def test_remove(self, mock_filesystem_del,
+                    mock_quota_get, mock_quota_del):
         filesystem_obj = resources.StorageFilesystemTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         filesystem_obj.remove()
         self.assertTrue(mock_filesystem_del.called)
+
+
+class TestStorageQtreeTask(test.TestCase):
+    # @mock.patch('delfin.drivers.api.API.list_qtrees', 'get_lock')
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_qtrees')
+    @mock.patch('delfin.db.quota_get_all')
+    @mock.patch('delfin.db.qtree_get_all')
+    @mock.patch('delfin.db.qtrees_delete')
+    @mock.patch('delfin.db.qtrees_update')
+    @mock.patch('delfin.db.qtrees_create')
+    def test_sync_successful(self, mock_qtree_create,
+                             mock_qtree_update,
+                             mock_qtree_del, mock_qtree_get_all,
+                             mock_quota_get_all, mock_list_qtrees,
+                             get_lock):
+        qtree_obj = resources.StorageQtreeTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+        mock_list_qtrees.return_value =\
+            fake_storage_obj.list_qtrees(context)
+        qtree_obj.sync()
+        self.assertTrue(mock_list_qtrees.called)
+        self.assertTrue(mock_qtree_get_all.called)
+        self.assertTrue(mock_quota_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the qtrees from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the qtrees to DB
+        mock_list_qtrees.return_value =\
+            fake_storage_obj.list_qtrees(context)
+        mock_qtree_get_all.return_value = list()
+        qtree_obj.sync()
+        self.assertTrue(mock_qtree_create.called)
+
+        # update the qtrees to DB
+        mock_list_qtrees.return_value = qtrees_list, []
+        mock_qtree_get_all.return_value = qtrees_list
+        qtree_obj.sync()
+        self.assertTrue(mock_qtree_update.called)
+
+        # delete the qtrees to DB
+        mock_list_qtrees.return_value = list(), []
+        mock_qtree_get_all.return_value = qtrees_list
+        qtree_obj.sync()
+        self.assertTrue(mock_qtree_del.called)
+
+    @mock.patch('delfin.db.qtree_delete_by_storage')
+    @mock.patch('delfin.db.quota_get_all')
+    @mock.patch('delfin.db.quotas_delete')
+    def test_remove(self, mock_qtree_del,
+                    mock_quota_get, mock_quota_del):
+        qtree_obj = resources.StorageQtreeTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        qtree_obj.remove()
+        self.assertTrue(mock_qtree_del.called)
+
+
+class TestStorageShareTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_shares')
+    @mock.patch('delfin.db.share_get_all')
+    @mock.patch('delfin.db.shares_delete')
+    @mock.patch('delfin.db.shares_update')
+    @mock.patch('delfin.db.shares_create')
+    def test_sync_successful(self, mock_share_create, mock_share_update,
+                             mock_share_del, mock_share_get_all,
+                             mock_list_shares, get_lock):
+        share_obj = resources.StorageShareTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        share_obj.sync()
+        self.assertTrue(mock_list_shares.called)
+        self.assertTrue(mock_share_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # collect the shares from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # add the shares to DB
+        mock_list_shares.return_value = fake_storage_obj.list_shares(context)
+        mock_share_get_all.return_value = list()
+        share_obj.sync()
+        self.assertTrue(mock_share_create.called)
+
+        # update the shares to DB
+        mock_list_shares.return_value = shares_list
+        mock_share_get_all.return_value = shares_list
+        share_obj.sync()
+        self.assertTrue(mock_share_update.called)
+
+        # delete the shares to DB
+        mock_list_shares.return_value = list()
+        mock_share_get_all.return_value = shares_list
+        share_obj.sync()
+        self.assertTrue(mock_share_del.called)
+
+    @mock.patch('delfin.db.share_delete_by_storage')
+    def test_remove(self, mock_share_del):
+        share_obj = resources.StorageShareTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        share_obj.remove()
+        self.assertTrue(mock_share_del.called)

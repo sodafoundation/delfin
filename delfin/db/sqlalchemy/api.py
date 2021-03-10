@@ -1152,6 +1152,148 @@ def _process_filesystem_info_filters(query, filters):
     return query
 
 
+def quotas_create(context, quotas):
+    """Create multiple quotas."""
+    session = get_session()
+    quotas_refs = []
+    with session.begin():
+
+        for quota in quotas:
+            LOG.debug('adding new quota for native_quota_id {0}:'
+                      .format(quota.get('native_quota_id')))
+            if not quota.get('id'):
+                quota['id'] = uuidutils.generate_uuid()
+
+            quota_ref = models.Quota()
+            quota_ref.update(quota)
+            quotas_refs.append(quota_ref)
+
+        session.add_all(quotas_refs)
+
+    return quotas_refs
+
+
+def quotas_update(context, quotas):
+    """Update multiple quotas."""
+    session = get_session()
+
+    with session.begin():
+        quota_refs = []
+
+        for quota in quotas:
+            LOG.debug('updating quota {0}:'.format(
+                quota.get('id')))
+            query = _quota_get_query(context, session)
+            result = query.filter_by(id=quota.get('id')
+                                     ).update(quota)
+
+            if not result:
+                LOG.error(exception.QuotaNotFound(quota.get(
+                    'id')))
+            else:
+                quota_refs.append(result)
+
+    return quota_refs
+
+
+def quotas_delete(context, quotas_id_list):
+    """Delete multiple quotas."""
+    session = get_session()
+    with session.begin():
+        for quota_id in quotas_id_list:
+            LOG.debug('deleting quota {0}:'.format(quota_id))
+            query = _quota_get_query(context, session)
+            result = query.filter_by(id=quota_id).delete()
+
+            if not result:
+                LOG.error(exception.QuotaNotFound(quota_id))
+    return
+
+
+def _quota_get_query(context, session=None):
+    return model_query(context, models.Quota, session=session)
+
+
+def _quota_get(context, quota_id, session=None):
+    result = (_quota_get_query(context, session=session)
+              .filter_by(id=quota_id)
+              .first())
+
+    if not result:
+        raise exception.QuotaNotFound(quota_id)
+
+    return result
+
+
+def quota_create(context, values):
+    """Create a quota from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    quota_ref = models.Quota()
+    quota_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(quota_ref)
+
+    return _quota_get(context,
+                      quota_ref['id'],
+                      session=session)
+
+
+def quota_update(context, quota_id, values):
+    """Update a quota with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _quota_get_query(context, session)
+        result = query.filter_by(id=quota_id).update(values)
+
+        if not result:
+            raise exception.QuotaNotFound(quota_id)
+
+    return result
+
+
+def quota_get(context, quota_id):
+    """Get a quota or raise an exception if it does not exist."""
+    return _quota_get(context, quota_id)
+
+
+def quota_delete_by_storage(context, storage_id):
+    """Delete quota or raise an exception if it does not exist."""
+    _quota_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def quota_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all quotas."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Quota,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Quota would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Quota)
+def _process_quota_info_filters(query, filters):
+    """Common filter processing for quotas queries."""
+    if filters:
+        if not is_valid_model_filters(models.Quota, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def qtrees_create(context, qtrees):
     """Create multiple qtrees."""
     session = get_session()
@@ -1552,6 +1694,8 @@ PAGINATION_HELPERS = {
     models.Port: (_port_get_query, _process_port_info_filters, _port_get),
     models.Disk: (_disk_get_query, _process_disk_info_filters,
                   _disk_get),
+    models.Quota: (_quota_get_query,
+                   _process_quota_info_filters, _quota_get),
     models.Filesystem: (_filesystem_get_query,
                         _process_filesystem_info_filters, _filesystem_get),
     models.Qtree: (_qtree_get_query,

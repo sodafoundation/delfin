@@ -109,7 +109,7 @@ class API(object):
         if isinstance(driver, NASDriver):
             return driver.list_filesystems(context)
         else:
-            return []
+            return [], []
 
     def list_qtrees(self, context, storage_id):
         """List all qtrees from storage system."""
@@ -117,7 +117,7 @@ class API(object):
         if isinstance(driver, NASDriver):
             return driver.list_qtrees(context)
         else:
-            return []
+            return [], []
 
     def list_shares(self, context, storage_id):
         """List all shares from storage system."""

@@ -190,6 +190,10 @@ class QtreeNotFound(NotFound):
     msg_fmt = _("Qtree {0} could not be found.")
 
 
+class QuotaNotFound(NotFound):
+    msg_fmt = _("Quota {0} could not be found.")
+
+
 class ShareNotFound(NotFound):
     msg_fmt = _("Share {0} could not be found.")
 

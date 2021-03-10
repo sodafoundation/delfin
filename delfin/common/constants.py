@@ -180,6 +180,16 @@ class FSType(object):
     ALL = (THICK, THIN)
 
 
+class QuotaType(object):
+    FILESYSTEM = 'filesystem'
+    TREE = 'tree'
+    USER = 'user'
+    GROUP = 'group'
+    OTHERS = 'others'
+
+    ALL = (FILESYSTEM, TREE, USER, GROUP, OTHERS)
+
+
 class QuotaState(object):
     NORMAL = 'normal'
     SOFT = 'soft_limit'

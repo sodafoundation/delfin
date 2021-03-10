@@ -206,6 +206,24 @@ class Qtree(BASE, DelfinBase):
     security_mode = Column(String(255))
 
 
+class Quota(BASE, DelfinBase):
+    """Represents a qtree object."""
+    __tablename__ = 'quota'
+    id = Column(String(36), primary_key=True)
+    native_quota_id = Column(String(255))
+    type = Column(String(255))
+    storage_id = Column(String(36))
+    native_filesystem_id = Column(String(255))
+    native_qtree_id = Column(String(255))
+    capacity_hard_limit = Column(BigInteger)
+    capacity_soft_limit = Column(BigInteger)
+    file_hard_limit = Column(BigInteger)
+    file_soft_limit = Column(BigInteger)
+    file_count = Column(BigInteger)
+    used_capacity = Column(BigInteger)
+    user_group_name = Column(String(255))
+
+
 class Share(BASE, DelfinBase):
     """Represents a share object."""
     __tablename__ = 'shares'
