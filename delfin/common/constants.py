@@ -62,8 +62,9 @@ class ControllerStatus(object):
 class StorageType(object):
     BLOCK = 'block'
     FILE = 'file'
+    UNIFIED = 'unified'
 
-    ALL = (BLOCK, FILE)
+    ALL = (BLOCK, FILE, UNIFIED)
 
 
 class SyncStatus(object):
