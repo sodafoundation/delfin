@@ -435,6 +435,9 @@ class StorageFilesystemTask(StorageResourceTask):
                 db.filesystems_create(self.context, add_list)
         except AttributeError as e:
             LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
         except Exception as e:
             msg = _('Failed to sync filesystems entry in DB: {0}'
                     .format(e))
@@ -486,6 +489,9 @@ class StorageQtreeTask(StorageResourceTask):
                 db.qtrees_create(self.context, add_list)
         except AttributeError as e:
             LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
         except Exception as e:
             msg = _('Failed to sync Qtrees entry in DB: {0}'
                     .format(e))
@@ -537,6 +543,9 @@ class StorageShareTask(StorageResourceTask):
                 db.shares_create(self.context, add_list)
         except AttributeError as e:
             LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
         except Exception as e:
             msg = _('Failed to sync Shares entry in DB: {0}'
                     .format(e))

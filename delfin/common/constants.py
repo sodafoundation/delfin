@@ -178,9 +178,9 @@ class ShareProtocol(object):
     CIFS = 'cifs'
     NFS = 'nfs'
     FTP = 'ftp'
-    UNKNOWN = 'unknown'
+    HDFS = 'hdfs'
 
-    ALL = (CIFS, NFS, FTP, UNKNOWN)
+    ALL = (CIFS, NFS, FTP, HDFS)
 
 
 # Enumerations for alert severity

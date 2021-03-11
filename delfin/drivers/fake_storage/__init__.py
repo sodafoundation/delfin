@@ -83,7 +83,7 @@ def wait_random(low, high):
     return _wait
 
 
-class FakeStorageDriver(driver.UnifiedStorageDriver):
+class FakeStorageDriver(driver.StorageDriver):
     """FakeStorageDriver shows how to implement the StorageDriver,
     it also plays a role as faker to fake data for being tested by clients.
     """
