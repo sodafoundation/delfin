@@ -1934,6 +1934,7 @@ components:
               enum:
                 - block
                 - file
+                - unified
             description:
               type: string
             status:
