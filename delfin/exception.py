@@ -198,12 +198,12 @@ class StorageDriverNotFound(NotFound):
     msg_fmt = _("Storage driver '{0}'could not be found.")
 
 
-class TaskTemplateNotFound(NotFound):
-    msg_fmt = _("Task template {0} could not be found.")
+class TaskNotFound(NotFound):
+    msg_fmt = _("Task {0} could not be found.")
 
 
-class TaskInstanceNotFound(NotFound):
-    msg_fmt = _("Task instance {0} could not be found.")
+class FailedTaskNotFound(NotFound):
+    msg_fmt = _("Failed task {0} could not be found.")
 
 
 class ConfigNotFound(NotFound):

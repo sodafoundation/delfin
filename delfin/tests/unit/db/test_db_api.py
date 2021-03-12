@@ -657,124 +657,113 @@ class TestSIMDBAPI(test.TestCase):
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_template_create(self, mock_session):
-        fake_task_template = models.TaskTemplate()
+    def test_task_create(self, mock_session):
+        fake_task = models.Task()
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_template
-        result = db_api.task_template_create(context, fake_task_template)
+            = fake_task
+        result = db_api.task_create(context, fake_task)
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_template_update(self, mock_session):
+    def test_task_update(self, mock_session):
         values = {'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}
         mock_session.return_value.__enter__.return_value.query.return_value \
             = values
-        result = db_api.task_template_update(
+        result = db_api.task_update(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', values)
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_template_get(self, mock_session):
-        fake_task_template = {}
+    def test_task_get(self, mock_session):
+        fake_task = {}
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_template
-        result = db_api.task_template_get(
+            = fake_task
+        result = db_api.task_get(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_template_get_all(self, mock_session):
-        fake_task_template = []
+    def test_task_get_all(self, mock_session):
+        fake_task = []
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_template
-        result = api.task_template_get_all(context)
+            = fake_task
+        result = api.task_get_all(context)
         assert len(result) == 0
 
-        result = db_api.task_template_get_all(context,
-                                              filters={'status': 'Normal'})
+        result = db_api.task_get_all(context,
+                                     filters={'status': 'Normal'})
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_template_delete(self, mock_session):
-        fake_task_template = [models.TaskTemplate().id]
+    def test_task_delete(self, mock_session):
+        fake_task = [models.Task().id]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_template
-        result = db_api.task_template_delete(context, fake_task_template)
+            = fake_task
+        result = db_api.task_delete(context, fake_task)
         assert result is None
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_template_delete_by_storage(self, mock_session):
-        fake_task_template_storage_id = [models.TaskTemplate().storage_id]
+    def test_task_delete_by_storage(self, mock_session):
+        fake_task_storage_id = [models.Task().storage_id]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_template_storage_id
+            = fake_task_storage_id
         result = db_api \
-            .task_template_delete_by_storage(context,
-                                             fake_task_template_storage_id)
+            .task_delete_by_storage(context, fake_task_storage_id)
         assert result is None
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_instance_create(self, mock_session):
-        fake_task_instance = models.TaskInstance()
+    def test_failed_task_create(self, mock_session):
+        fake_failed_task = models.FailedTask()
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_instance
-        result = db_api.task_instance_create(context, fake_task_instance)
+            = fake_failed_task
+        result = db_api.failed_task_create(context, fake_failed_task)
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_instance_update(self, mock_session):
+    def test_failed_task_update(self, mock_session):
         values = {'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}
         mock_session.return_value.__enter__.return_value.query.return_value \
             = values
-        result = db_api.task_instance_update(
+        result = db_api.failed_task_update(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', values)
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_instance_get(self, mock_session):
-        fake_task_instance = {}
+    def test_failed_task_get(self, mock_session):
+        fake_failed_task = {}
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_instance
-        result = db_api.task_instance_get(
+            = fake_failed_task
+        result = db_api.failed_task_get(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_instance_get_all(self, mock_session):
-        fake_task_instance = []
+    def test_failed_task_get_all(self, mock_session):
+        fake_failed_task = []
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_instance
-        result = api.task_instance_get_all(context)
+            = fake_failed_task
+        result = api.failed_task_get_all(context)
         assert len(result) == 0
 
-        result = db_api.task_instance_get_all(context,
-                                              filters={'status': 'Normal'})
+        result = db_api.failed_task_get_all(context,
+                                            filters={'status': 'Normal'})
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_instance_delete(self, mock_session):
-        fake_task_instance = [models.TaskInstance().id]
+    def test_failed_task_delete(self, mock_session):
+        fake_failed_task = [models.FailedTask().id]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_instance
-        result = db_api.task_template_delete(context, fake_task_instance)
+            = fake_failed_task
+        result = db_api.task_delete(context, fake_failed_task)
         assert result is None
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_instance_delete_by_storage(self, mock_session):
-        fake_task_instance_storage_id = [models.TaskInstance().storage_id]
+    def test_failed_task_delete_by_task_id(self, mock_session):
+        fake_failed_task_id \
+            = [models.FailedTask().task_id]
         mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_instance_storage_id
+            = fake_failed_task_id
         result = db_api \
-            .task_instance_delete_by_storage(context,
-                                             fake_task_instance_storage_id)
-        assert result is None
-
-    @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_task_instance_delete_by_template(self, mock_session):
-        fake_task_instance_template_id \
-            = [models.TaskInstance().task_template_id]
-        mock_session.return_value.__enter__.return_value.query.return_value \
-            = fake_task_instance_template_id
-        result = db_api \
-            .task_instance_delete_by_template(context,
-                                              fake_task_instance_template_id)
+            .failed_task_delete_by_task_id(context,
+                                           fake_failed_task_id)
         assert result is None

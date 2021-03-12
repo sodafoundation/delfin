@@ -675,12 +675,12 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
 
 
 def task_create(context, values):
-    """Create a task template from the values dictionary."""
+    """Create a task entry from the values dictionary."""
     return IMPL.task_create(context, values)
 
 
 def task_update(context, task_id, values):
-    """Update a task template with the values dictionary."""
+    """Update a task entry with the values dictionary."""
     return IMPL.task_update(context, task_id, values)
 
 
@@ -691,8 +691,8 @@ def task_get(context, task_id):
 
 def task_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
-    """Retrieves all  task templates.
-    If no sort parameters are specified then the returned task templates are
+    """Retrieves all  tasks.
+    If no sort parameters are specified then the returned tasks are
     sorted first by the 'created_at' key and then by the 'id' key in
     descending order.
     :param context: context of this request, it's helpful to trace the request
@@ -720,31 +720,31 @@ def task_delete_by_storage(context, storage_id):
 
 
 def task_delete(context, task_id):
-    """Delete a given task template or raise an exception if it does not
+    """Delete a given task or raise an exception if it does not
     exist.
     """
     return IMPL.task_delete(context, task_id)
 
 
 def failed_task_create(context, values):
-    """Create a task instance from the values dictionary."""
+    """Create a failed task entry from the values dictionary."""
     return IMPL.failed_task_create(context, values)
 
 
 def failed_task_update(context, failed_task_id, values):
-    """Update a task instance with the values dictionary."""
+    """Update a failed task with the values dictionary."""
     return IMPL.failed_task_update(context, failed_task_id, values)
 
 
 def failed_task_get(context, failed_task_id):
-    """Get a task instance or raise an exception if it does not exist."""
+    """Get a failed task or raise an exception if it does not exist."""
     return IMPL.failed_task_get(context, failed_task_id)
 
 
 def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
                         sort_dirs=None, filters=None, offset=None):
-    """Retrieves all  task instances.
-    If no sort parameters are specified then the returned task templates are
+    """Retrieves all  failed tasks.
+    If no sort parameters are specified then the returned failed tasks are
     sorted first by the 'created_at' key and then by the 'id' key in
     descending order.
     :param context: context of this request, it's helpful to trace the request
@@ -758,28 +758,21 @@ def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
                       'desc' for descending order
     :param filters: dictionary of filters
     :param offset: number of items to skip
-    :returns: list of task instances
+    :returns: list of failed tasks
     """
     return IMPL.failed_task_get_all(context, marker, limit,
                                     sort_keys, sort_dirs, filters, offset)
 
 
-def failed_task_delete_by_storage(context, storage_id):
-    """Delete all task instances of given storage or raise an exception if it
-    does not exist.
-    """
-    return IMPL.failed_task_delete_by_storage(context, storage_id)
-
-
-def failed_task_delete_by_template(context, task_id):
-    """Delete all task instances of given task template or raise an exception
+def failed_task_delete_by_task_id(context, task_id):
+    """Delete all failed tasks of given task id or raise an exception
     if it does not exist.
     """
-    return IMPL.failed_task_delete_by_template(context, task_id)
+    return IMPL.failed_task_delete_by_task_id(context, task_id)
 
 
 def failed_task_delete(context, failed_task_id):
-    """Delete a given task instance or raise an exception if it does not
+    """Delete a given failed task or raise an exception if it does not
     exist.
     """
     return IMPL.failed_task_delete(context, failed_task_id)
