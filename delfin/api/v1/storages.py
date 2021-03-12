@@ -110,6 +110,7 @@ class StorageController(wsgi.Controller):
             validation.validate_capabilities(capabilities)
             _create_performance_monitoring_task(ctxt, storage['id'],
                                                 capabilities)
+
         except exception.EmptyResourceMetrics:
             msg = _("Resource metric provided by capabilities is empty for "
                     "storage: %s") % storage['id']
