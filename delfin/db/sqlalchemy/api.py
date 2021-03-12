@@ -1534,7 +1534,7 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
 
 
 def task_create(context, values):
-    """Add task template configuration."""
+    """Add task configuration."""
     tasks_ref = models.Task()
     tasks_ref.update(values)
 
@@ -1546,7 +1546,7 @@ def task_create(context, values):
 
 
 def task_update(context, tasks_id, values):
-    """Update a task template withe the values dictionary."""
+    """Update a task attributes withe the values dictionary."""
     session = get_session()
 
     with session.begin():
@@ -1554,7 +1554,7 @@ def task_update(context, tasks_id, values):
         result = query.filter_by(id=tasks_id).update(values)
 
         if not result:
-            raise exception.TaskTemplateNotFound(tasks_id)
+            raise exception.TaskNotFound(tasks_id)
 
     return result
 
@@ -1565,7 +1565,7 @@ def _task_get(context, task_id, session=None):
               .first())
 
     if not result:
-        raise exception.TaskTemplateNotFound(task_id)
+        raise exception.TaskNotFound(task_id)
 
     return result
 
@@ -1575,23 +1575,23 @@ def _task_get_query(context, session=None):
 
 
 def task_get(context, tasks_id):
-    """Get a task template  or raise an exception if it does not exist."""
+    """Get a task  or raise an exception if it does not exist."""
     return _task_get(context, tasks_id)
 
 
 def task_delete_by_storage(context, storage_id):
-    """Delete all the task templates of a storage device"""
+    """Delete all the tasks of a storage device"""
     _task_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 def task_delete(context, tasks_id):
-    """Delete a given task template"""
+    """Delete a given task"""
     _task_get_query(context).filter_by(id=tasks_id).delete()
 
 
 def task_get_all(context, marker=None, limit=None, sort_keys=None,
                  sort_dirs=None, filters=None, offset=None):
-    """Retrieves all storage task templates."""
+    """Retrieves all tasks of a storage."""
     session = get_session()
     with session.begin():
         # Generate the query
@@ -1599,7 +1599,7 @@ def task_get_all(context, marker=None, limit=None, sort_keys=None,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset,
                                          )
-        # No task template would match, return empty list
+        # No task entry would match, return empty list
         if query is None:
             return []
         return query.all()
@@ -1607,7 +1607,7 @@ def task_get_all(context, marker=None, limit=None, sort_keys=None,
 
 @apply_like_filters(model=models.Task)
 def _process_tasks_info_filters(query, filters):
-    """Common filter processing for task template queries."""
+    """Common filter processing for task table queries."""
     if filters:
         if not is_valid_model_filters(models.Task, filters):
             return
@@ -1617,7 +1617,7 @@ def _process_tasks_info_filters(query, filters):
 
 
 def failed_task_create(context, values):
-    """Add task instance configuration."""
+    """Add failed task configuration."""
     failed_task_ref = models.FailedTask()
     failed_task_ref.update(values)
 
@@ -1629,7 +1629,7 @@ def failed_task_create(context, values):
 
 
 def failed_task_update(context, failed_task_id, values):
-    """Update a task instance withe the values dictionary."""
+    """Update a failed task withe the values dictionary."""
     session = get_session()
 
     with session.begin():
@@ -1637,7 +1637,7 @@ def failed_task_update(context, failed_task_id, values):
         result = query.filter_by(id=failed_task_id).update(values)
 
         if not result:
-            raise exception.TaskInstanceNotFound(failed_task_id)
+            raise exception.FailedTaskNotFound(failed_task_id)
 
     return result
 
@@ -1648,7 +1648,7 @@ def _failed_tasks_get(context, failed_task_id, session=None):
               .first())
 
     if not result:
-        raise exception.TaskInstanceNotFound(failed_task_id)
+        raise exception.FailedTaskNotFound(failed_task_id)
 
     return result
 
@@ -1658,29 +1658,24 @@ def _failed_tasks_get_query(context, session=None):
 
 
 def failed_task_get(context, failed_task_id):
-    """Get a task instance or raise an exception if it does not exist."""
+    """Get a failed task or raise an exception if it does not exist."""
     return _failed_tasks_get(context, failed_task_id)
 
 
-def failed_task_delete_by_storage(context, storage_id):
-    """Delete all the task instances of a storage device"""
-    _failed_tasks_get_query(context).filter_by(storage_id=storage_id).delete()
-
-
-def failed_task_delete_by_template(context, task_id):
-    """Delete all the task instances of a given task template"""
+def failed_task_delete_by_task_id(context, task_id):
+    """Delete all the failed tasks of a given task id"""
     _failed_tasks_get_query(context).filter_by(
         task_id=task_id).delete()
 
 
 def failed_task_delete(context, failed_task_id):
-    """Delete a given task instance"""
+    """Delete a given failed task"""
     _failed_tasks_get_query(context).filter_by(id=failed_task_id).delete()
 
 
 def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
                         sort_dirs=None, filters=None, offset=None):
-    """Retrieves all task instances."""
+    """Retrieves all failed tasks."""
     session = get_session()
     with session.begin():
         # Generate the query
@@ -1688,7 +1683,7 @@ def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset,
                                          )
-        # No task instance would match, return empty list
+        # No failed task would match, return empty list
         if query is None:
             return []
         return query.all()
@@ -1696,7 +1691,7 @@ def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
 
 @apply_like_filters(model=models.FailedTask)
 def _process_failed_tasks_info_filters(query, filters):
-    """Common filter processing for task instance queries."""
+    """Common filter processing for failed task queries."""
     if filters:
         if not is_valid_model_filters(models.FailedTask, filters):
             return
@@ -1724,14 +1719,6 @@ PAGINATION_HELPERS = {
     models.Port: (_port_get_query, _process_port_info_filters, _port_get),
     models.Disk: (_disk_get_query, _process_disk_info_filters,
                   _disk_get),
-	
-
-    models.TaskTemplate: (_task_template_get_query,
-                          _process_task_template_info_filters,
-                          _task_template_get),
-    models.TaskInstance: (_task_instance_get_query,
-                          _process_task_instance_info_filters,
-                          _task_instance_get),
     models.Filesystem: (_filesystem_get_query,
                         _process_filesystem_info_filters, _filesystem_get),
     models.Qtree: (_qtree_get_query,
