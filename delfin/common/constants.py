@@ -174,30 +174,13 @@ class NASSecurityMode(object):
     ALL = (MIXED, NATIVE, NTFS, UNIX)
 
 
-class FSType(object):
-    THICK = 'thick'
-    THIN = 'thin'
-
-    ALL = (THICK, THIN)
-
-
 class QuotaType(object):
     FILESYSTEM = 'filesystem'
     TREE = 'tree'
     USER = 'user'
     GROUP = 'group'
-    OTHERS = 'others'
 
-    ALL = (FILESYSTEM, TREE, USER, GROUP, OTHERS)
-
-
-class QuotaState(object):
-    NORMAL = 'normal'
-    SOFT = 'soft_limit'
-    HARD = 'hard_limit'
-    ABNORMAL = 'abnormal'
-
-    ALL = (NORMAL, SOFT, HARD, ABNORMAL)
+    ALL = (FILESYSTEM, TREE, USER, GROUP)
 
 
 class ShareProtocol(object):

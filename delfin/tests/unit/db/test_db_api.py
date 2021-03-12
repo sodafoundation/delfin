@@ -523,6 +523,68 @@ class TestSIMDBAPI(test.TestCase):
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_quota_get(self, mock_session):
+        fake_quota = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_quota
+        result = db_api.quota_get(ctxt,
+                                  'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_quotas_update(self, mock_session):
+        quotas = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = quotas
+        result = db_api.quotas_update(ctxt, quotas)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_quota_update(self, mock_session):
+        quotas = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = quotas
+        result = db_api.quota_update(ctxt,
+                                     'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
+                                     quotas)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_quotas_delete(self, mock_session):
+        fake_quota = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_quota
+        result = db_api.quotas_delete(ctxt, fake_quota)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_quotas_create(self, mock_session):
+        fake_quota = [models.Volume()]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_quota
+        result = db_api.quotas_create(ctxt, fake_quota)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_quota_create(self, mock_session):
+        fake_quota = models.Volume()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_quota
+        result = db_api.quota_create(ctxt, fake_quota)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_quota_get_all(self, mock_session):
+        fake_quota = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_quota
+        result = db_api.quota_get_all(ctxt)
+        assert len(result) == 0
+
+        result = db_api.quota_get_all(ctxt, filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
     def test_share_get(self, mock_session):
         fake_share = {}
         mock_session.return_value.__enter__.return_value.query.return_value \
