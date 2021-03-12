@@ -72,3 +72,10 @@ def check_storage_consistency(context, storage_id, storage_new):
                (storage_new['serial_number'],
                 storage_present['serial_number']))
         raise exception.StorageSerialNumberMismatch(msg)
+
+
+def empty_driver_capabilities(context):
+    return {
+        'is_historic': False,
+        'resource_metrics': {}
+    }

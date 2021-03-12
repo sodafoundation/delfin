@@ -288,3 +288,11 @@ class ResourceSync(object):
     START = 100
     SUCCEED = 100
     FAILED = 101
+
+
+class Task(object):
+    DEFAULT_TASK_INTERVAL = 30
+    """Default task interval"""
+    PERFORMANCE_TASK_METHOD = "delfin.task_manager.tasks." \
+                              "performance_monitoring"
+    """Performance monitoring task name"""

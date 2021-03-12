@@ -101,6 +101,21 @@ class StorageController(wsgi.Controller):
             msg = _('Failed to sync resources for storage: %(storage)s. '
                     'Error: %(err)s') % {'storage': storage['id'], 'err': e}
             LOG.error(msg)
+
+        try:
+            # Trigger Performance monitoring
+            capabilities = self.driver_api.get_capabilities(
+                context=ctxt, storage_id=storage['id'])
+            # ignore if capabilities is empty
+            if capabilities:
+                _create_performance_monitoring_task(ctxt, storage['id'],
+                                                    capabilities)
+        except Exception as e:
+            # Unexpected error occurred, while performance monitoring.
+            msg = _('Failed to trigger performance monitoring for storage: '
+                    '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
+                                                      'err': e}
+            LOG.error(msg)
         return storage_view.build_storage(storage)
 
     @wsgi.response(202)
@@ -239,3 +254,21 @@ def _set_synced_if_ok(context, storage_id, resource_count):
         storage['sync_status'] = resource_count * constants.ResourceSync.START
         storage['updated_at'] = current_time
         db.storage_update(context, storage['id'], storage)
+
+
+def _create_performance_monitoring_task(context, storage_id, capabilities):
+    # check resource_metric attribute availability and
+    # check if resource_metric is empty
+    if 'resource_metrics' not in capabilities \
+            or not bool(capabilities.get('resource_metrics')):
+        msg = _('Skipping performance monitoring as resource metric is empty '
+                'for storage: %(storage)s.') % {'storage': storage_id}
+        LOG.warning(msg)
+
+    task = dict()
+    task.update(storage_id=storage_id)
+    task.update(args=capabilities.get('resource_metrics'))
+    task.update(interval=constants.Task.DEFAULT_TASK_INTERVAL)
+    task.update(method=constants.Task.PERFORMANCE_TASK_METHOD)
+    # push task in DB
+    db.task_create(context=context, values=task)
