@@ -1533,6 +1533,173 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
+def task_create(context, values):
+    """Add task configuration."""
+    tasks_ref = models.Task()
+    tasks_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(tasks_ref)
+
+    return _task_get(context, tasks_ref['id'], session=session)
+
+
+def task_update(context, tasks_id, values):
+    """Update a task attributes withe the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _task_get_query(context, session)
+        result = query.filter_by(id=tasks_id).update(values)
+
+        if not result:
+            raise exception.TaskNotFound(tasks_id)
+
+    return result
+
+
+def _task_get(context, task_id, session=None):
+    result = (_task_get_query(context, session=session)
+              .filter_by(id=task_id)
+              .first())
+
+    if not result:
+        raise exception.TaskNotFound(task_id)
+
+    return result
+
+
+def _task_get_query(context, session=None):
+    return model_query(context, models.Task, session=session)
+
+
+def task_get(context, tasks_id):
+    """Get a task  or raise an exception if it does not exist."""
+    return _task_get(context, tasks_id)
+
+
+def task_delete_by_storage(context, storage_id):
+    """Delete all the tasks of a storage device"""
+    _task_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def task_delete(context, tasks_id):
+    """Delete a given task"""
+    _task_get_query(context).filter_by(id=tasks_id).delete()
+
+
+def task_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all tasks of a storage."""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Task,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No task entry would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Task)
+def _process_tasks_info_filters(query, filters):
+    """Common filter processing for task table queries."""
+    if filters:
+        if not is_valid_model_filters(models.Task, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def failed_task_create(context, values):
+    """Add failed task configuration."""
+    failed_task_ref = models.FailedTask()
+    failed_task_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(failed_task_ref)
+
+    return _failed_tasks_get(context, failed_task_ref['id'], session=session)
+
+
+def failed_task_update(context, failed_task_id, values):
+    """Update a failed task withe the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _failed_tasks_get_query(context, session)
+        result = query.filter_by(id=failed_task_id).update(values)
+
+        if not result:
+            raise exception.FailedTaskNotFound(failed_task_id)
+
+    return result
+
+
+def _failed_tasks_get(context, failed_task_id, session=None):
+    result = (_failed_tasks_get_query(context, session=session)
+              .filter_by(id=failed_task_id)
+              .first())
+
+    if not result:
+        raise exception.FailedTaskNotFound(failed_task_id)
+
+    return result
+
+
+def _failed_tasks_get_query(context, session=None):
+    return model_query(context, models.FailedTask, session=session)
+
+
+def failed_task_get(context, failed_task_id):
+    """Get a failed task or raise an exception if it does not exist."""
+    return _failed_tasks_get(context, failed_task_id)
+
+
+def failed_task_delete_by_task_id(context, task_id):
+    """Delete all the failed tasks of a given task id"""
+    _failed_tasks_get_query(context).filter_by(
+        task_id=task_id).delete()
+
+
+def failed_task_delete(context, failed_task_id):
+    """Delete a given failed task"""
+    _failed_tasks_get_query(context).filter_by(id=failed_task_id).delete()
+
+
+def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
+    """Retrieves all failed tasks."""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.FailedTask,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No failed task would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.FailedTask)
+def _process_failed_tasks_info_filters(query, filters):
+    """Common filter processing for failed task queries."""
+    if filters:
+        if not is_valid_model_filters(models.FailedTask, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
@@ -1558,6 +1725,12 @@ PAGINATION_HELPERS = {
                    _process_qtree_info_filters, _qtree_get),
     models.Share: (_share_get_query,
                    _process_share_info_filters, _share_get),
+    models.Task: (_task_get_query,
+                  _process_tasks_info_filters,
+                  _task_get),
+    models.FailedTask: (_failed_tasks_get_query,
+                        _process_failed_tasks_info_filters,
+                        _failed_tasks_get),
 }
 
 

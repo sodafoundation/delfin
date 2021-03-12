@@ -237,3 +237,28 @@ class AlertSource(BASE, DelfinBase):
     context_name = Column(String(255))
     retry_num = Column(Integer)
     expiration = Column(Integer)
+
+
+class Task(BASE, DelfinBase):
+    """Represents a task attributes."""
+    __tablename__ = 'tasks'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    storage_id = Column(String(36))
+    interval = Column(Integer)
+    method = Column(String(255))
+    args = Column(JsonEncodedDict)
+    last_run_time = Column(Integer)
+    job_id = Column(String(36))
+
+
+class FailedTask(BASE, DelfinBase):
+    """Represents a failed task attributes."""
+    __tablename__ = 'failed_tasks'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(Integer)
+    interval = Column(Integer)
+    start_time = Column(Integer)
+    end_time = Column(Integer)
+    retry_count = Column(Integer)
+    result = Column(String(255))
+    job_id = Column(String(36))

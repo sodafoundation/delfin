@@ -672,3 +672,107 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
     """
     return IMPL.alert_source_get_all(context, marker, limit, sort_keys,
                                      sort_dirs, filters, offset)
+
+
+def task_create(context, values):
+    """Create a task entry from the values dictionary."""
+    return IMPL.task_create(context, values)
+
+
+def task_update(context, task_id, values):
+    """Update a task entry with the values dictionary."""
+    return IMPL.task_update(context, task_id, values)
+
+
+def task_get(context, task_id):
+    """Get a task or raise an exception if it does not exist."""
+    return IMPL.task_get(context, task_id)
+
+
+def task_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
+    """Retrieves all  tasks.
+    If no sort parameters are specified then the returned tasks are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of  tasks
+    """
+    return IMPL.task_get_all(context, marker, limit,
+                             sort_keys, sort_dirs, filters, offset)
+
+
+def task_delete_by_storage(context, storage_id):
+    """Delete all tasks of given storage or raise an exception if it
+    does not exist.
+    """
+    return IMPL.task_delete_by_storage(context, storage_id)
+
+
+def task_delete(context, task_id):
+    """Delete a given task or raise an exception if it does not
+    exist.
+    """
+    return IMPL.task_delete(context, task_id)
+
+
+def failed_task_create(context, values):
+    """Create a failed task entry from the values dictionary."""
+    return IMPL.failed_task_create(context, values)
+
+
+def failed_task_update(context, failed_task_id, values):
+    """Update a failed task with the values dictionary."""
+    return IMPL.failed_task_update(context, failed_task_id, values)
+
+
+def failed_task_get(context, failed_task_id):
+    """Get a failed task or raise an exception if it does not exist."""
+    return IMPL.failed_task_get(context, failed_task_id)
+
+
+def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
+    """Retrieves all  failed tasks.
+    If no sort parameters are specified then the returned failed tasks are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of failed tasks
+    """
+    return IMPL.failed_task_get_all(context, marker, limit,
+                                    sort_keys, sort_dirs, filters, offset)
+
+
+def failed_task_delete_by_task_id(context, task_id):
+    """Delete all failed tasks of given task id or raise an exception
+    if it does not exist.
+    """
+    return IMPL.failed_task_delete_by_task_id(context, task_id)
+
+
+def failed_task_delete(context, failed_task_id):
+    """Delete a given failed task or raise an exception if it does not
+    exist.
+    """
+    return IMPL.failed_task_delete(context, failed_task_id)
