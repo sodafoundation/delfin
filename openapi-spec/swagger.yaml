@@ -1594,6 +1594,183 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
+  /v1/quotas:
+    get:
+      tags:
+        - Quotas
+      description: List all quotas.
+      parameters:
+        - name: limit
+          in: query
+          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The quota name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a quota.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_quota_id
+          in: query
+          description: Actual ID of the quota in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_filesystem_id
+          in: query
+          description: Filesystem ID of the quota in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_qtree_id
+          in: query
+          description: Qtree ID of the quota in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: storage_id
+          in: query
+          description: Database ID created for a storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: The quota types
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - filesystem
+              - tree
+              - user
+              - group
+      responses:
+        '200':
+          description: List quota query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - quotas
+                additionalProperties: true
+                properties:
+                  quotas:
+                    type: array
+                    title: the quota schema
+                    items:
+                      $ref: '#/components/schemas/QuotaSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/quotas/{id}':
+    get:
+      tags:
+        - Quotas
+      description: Get quota detail by quota ID.
+      parameters:
+        - name: id
+          in: path
+          description: Database ID created for a quota.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotaSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '404':
+          description: The resource does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
   /v1/shares:
     get:
       tags:
@@ -1663,7 +1840,7 @@ paths:
           explode: true
           schema:
             type: string
-        - name: nativee_qtree_id
+        - name: native_qtree_id
           in: query
           description: Qtree ID of the share in the storage backend.
           required: false
@@ -1691,7 +1868,7 @@ paths:
               - cifs
               - nfs
               - ftp
-              - unknown
+              - hdfs
       responses:
         '200':
           description: List share query was success
@@ -2761,6 +2938,72 @@ components:
                 - native
                 - ntfs
                 - unix
+    QuotaSpec:
+      description: >-
+        A quota is discovered and updated by task manager.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - required:
+            - id
+            - name
+            - type
+          type: object
+          properties:
+            id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_quota_id:
+              type: string
+              readOnly: true
+              example: Quota_A
+            name:
+              type: string
+            type:
+              type: string
+              enum:
+                - filesystem
+                - tree
+                - user
+                - group
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_filesystem_id:
+              type: string
+              readOnly: true
+              example: Filesystem_A
+            native_qtree_id:
+              type: string
+              readOnly: true
+              example: Qtree_A
+            capacity_hard_limit:
+              type: integer
+              format: int64
+              example: 100
+            capacity_soft_limit:
+              type: integer
+              format: int64
+              example: 80
+            file_hard_limit:
+              type: integer
+              format: int64
+              example: 10
+            file_soft_limit:
+              type: integer
+              format: int64
+              example: 8
+            used_capacity:
+              type: integer
+              format: int64
+              example: 100
+            file_count:
+              type: integer
+              format: int64
+              example: 10
+            user_group_name:
+              type: string
     ShareSpec:
       description: >-
         A share is discovered and updated by task manager.
@@ -2797,7 +3040,7 @@ components:
                 - cifs
                 - nfs
                 - ftp
-                - unknown
+                - hdfs
             path:
               type: string
 
