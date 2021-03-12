@@ -56,6 +56,7 @@ MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
 MIN_STORAGE, MAX_STORAGE = 1, 10
 MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
+MIN_FS, MAX_FS = 1, 10
 
 
 def get_range_val(range_str, t):
@@ -266,6 +267,80 @@ class FakeStorageDriver(driver.StorageDriver):
             }
             disk_list.append(c)
         return disk_list
+
+    def list_filesystems(self, ctx):
+        rd_filesystems_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_filesystems for %s: %d"
+                 % (self.storage_id, rd_filesystems_count))
+        filesystem_list = []
+        for idx in range(rd_filesystems_count):
+            total, used, free = self._get_random_capacity()
+            boolean = [True, False]
+            sts = list(constants.FilesystemStatus.ALL)
+            sts_len = len(constants.FilesystemStatus.ALL) - 1
+            worm = list(constants.WORMType.ALL)
+            worm_len = len(constants.WORMType.ALL) - 1
+            alloc_type = list(constants.VolumeType.ALL)
+            alloc_type_len = len(constants.VolumeType.ALL) - 1
+            security = list(constants.NASSecurityMode.ALL)
+            security_len = len(constants.NASSecurityMode.ALL) - 1
+            c = {
+                "name": "fake_filesystem_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_filesystem_id": "fake_original_id_" + str(idx),
+                "native_pool_id": "fake_pool_id_" + str(idx),
+                "status": sts[random.randint(0, sts_len)],
+                "type": alloc_type[random.randint(0, alloc_type_len)],
+                "security_mode": security[random.randint(0, security_len)],
+                "total_capacity": total,
+                "used_capacity": used,
+                "free_capacity": free,
+                "worm": worm[random.randint(0, worm_len)],
+                "deduplicated": boolean[random.randint(0, 1)],
+                "compressed": boolean[random.randint(0, 1)],
+            }
+            filesystem_list.append(c)
+        return filesystem_list
+
+    def list_qtrees(self, ctx):
+        rd_qtrees_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_qtrees for %s: %d"
+                 % (self.storage_id, rd_qtrees_count))
+        qtree_list = []
+        for idx in range(rd_qtrees_count):
+            security = list(constants.NASSecurityMode.ALL)
+            security_len = len(constants.NASSecurityMode.ALL) - 1
+
+            c = {
+                "name": "fake_qtree_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_qtree_id": "fake_original_id_" + str(idx),
+                "native_filesystem_id": "fake_filesystem_id_" + str(idx),
+                "security_mode": security[random.randint(0, security_len)],
+                "path": "/",
+            }
+            qtree_list.append(c)
+        return qtree_list
+
+    def list_shares(self, ctx):
+        rd_shares_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_shares for %s: %d"
+                 % (self.storage_id, rd_shares_count))
+        share_list = []
+        for idx in range(rd_shares_count):
+            pro = list(constants.ShareProtocol.ALL)
+            pro_len = len(constants.ShareProtocol.ALL) - 1
+            c = {
+                "name": "fake_share_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_share_id": "fake_original_id_" + str(idx),
+                "native_filesystem_id": "fake_filesystem_id_" + str(idx),
+                "native_qtree_id": "fake_qtree_id_" + str(idx),
+                "protocol": pro[random.randint(0, pro_len)],
+                "path": "/",
+            }
+            share_list.append(c)
+        return share_list
 
     def add_trap_config(self, context, trap_config):
         pass

@@ -400,6 +400,191 @@ class TestSIMDBAPI(test.TestCase):
         assert len(result) == 0
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_filesystem_get(self, mock_session):
+        fake_filesystem = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_filesystem
+        result = db_api.filesystem_get(ctxt,
+                                       'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_filesystems_update(self, mock_session):
+        filesystems = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = filesystems
+        result = db_api.filesystems_update(ctxt, filesystems)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_filesystem_update(self, mock_session):
+        filesystems = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = filesystems
+        result = db_api.filesystem_update(
+            ctxt, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd', filesystems)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_filesystems_delete(self, mock_session):
+        fake_filesystem = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_filesystem
+        result = db_api.filesystems_delete(ctxt, fake_filesystem)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_filesystems_create(self, mock_session):
+        fake_filesystem = [models.Volume()]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_filesystem
+        result = db_api.filesystems_create(ctxt, fake_filesystem)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_filesystem_create(self, mock_session):
+        fake_filesystem = models.Volume()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_filesystem
+        result = db_api.filesystem_create(ctxt, fake_filesystem)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_filesystem_get_all(self, mock_session):
+        fake_filesystem = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_filesystem
+        result = db_api.filesystem_get_all(ctxt)
+        assert len(result) == 0
+
+        result = db_api.filesystem_get_all(ctxt, filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_qtree_get(self, mock_session):
+        fake_qtree = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_qtree
+        result = db_api.qtree_get(ctxt,
+                                  'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_qtrees_update(self, mock_session):
+        qtrees = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = qtrees
+        result = db_api.qtrees_update(ctxt, qtrees)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_qtree_update(self, mock_session):
+        qtrees = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = qtrees
+        result = db_api.qtree_update(ctxt,
+                                     'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
+                                     qtrees)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_qtrees_delete(self, mock_session):
+        fake_qtree = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_qtree
+        result = db_api.qtrees_delete(ctxt, fake_qtree)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_qtrees_create(self, mock_session):
+        fake_qtree = [models.Volume()]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_qtree
+        result = db_api.qtrees_create(ctxt, fake_qtree)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_qtree_create(self, mock_session):
+        fake_qtree = models.Volume()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_qtree
+        result = db_api.qtree_create(ctxt, fake_qtree)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_qtree_get_all(self, mock_session):
+        fake_qtree = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_qtree
+        result = db_api.qtree_get_all(ctxt)
+        assert len(result) == 0
+
+        result = db_api.qtree_get_all(ctxt, filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_share_get(self, mock_session):
+        fake_share = {}
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_share
+        result = db_api.share_get(ctxt,
+                                  'c5c91c98-91aa-40e6-85ac-37a1d3b32bd')
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_shares_update(self, mock_session):
+        shares = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = shares
+        result = db_api.shares_update(ctxt, shares)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_share_update(self, mock_session):
+        shares = [{'id': 'c5c91c98-91aa-40e6-85ac-37a1d3b32bd'}]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = shares
+        result = db_api.share_update(ctxt,
+                                     'c5c91c98-91aa-40e6-85ac-37a1d3b32bd',
+                                     shares)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_shares_delete(self, mock_session):
+        fake_share = ['c5c91c98-91aa-40e6-85ac-37a1d3b32bd']
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_share
+        result = db_api.shares_delete(ctxt, fake_share)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_shares_create(self, mock_session):
+        fake_share = [models.Volume()]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_share
+        result = db_api.shares_create(ctxt, fake_share)
+        assert len(result) == 1
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_share_create(self, mock_session):
+        fake_share = models.Volume()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_share
+        result = db_api.share_create(ctxt, fake_share)
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_share_get_all(self, mock_session):
+        fake_share = []
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_share
+        result = db_api.share_get_all(ctxt)
+        assert len(result) == 0
+
+        result = db_api.share_get_all(ctxt, filters={'status': 'Normal'})
+        assert len(result) == 0
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
     def test_access_info_get_all(self, mock_session):
         fake_access_info = []
         mock_session.return_value.__enter__.return_value.query.return_value \

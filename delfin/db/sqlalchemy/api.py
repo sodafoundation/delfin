@@ -1010,6 +1010,432 @@ def _process_disk_info_filters(query, filters):
     return query
 
 
+def filesystems_create(context, filesystems):
+    """Create multiple filesystems."""
+    session = get_session()
+    filesystems_refs = []
+    with session.begin():
+
+        for filesystem in filesystems:
+            LOG.debug('adding new filesystem for native_filesystem_id {0}:'
+                      .format(filesystem.get('native_filesystem_id')))
+            if not filesystem.get('id'):
+                filesystem['id'] = uuidutils.generate_uuid()
+
+            filesystem_ref = models.Filesystem()
+            filesystem_ref.update(filesystem)
+            filesystems_refs.append(filesystem_ref)
+
+        session.add_all(filesystems_refs)
+
+    return filesystems_refs
+
+
+def filesystems_update(context, filesystems):
+    """Update multiple filesystems."""
+    session = get_session()
+
+    with session.begin():
+        filesystem_refs = []
+
+        for filesystem in filesystems:
+            LOG.debug('updating filesystem {0}:'.format(
+                filesystem.get('id')))
+            query = _filesystem_get_query(context, session)
+            result = query.filter_by(id=filesystem.get('id')
+                                     ).update(filesystem)
+
+            if not result:
+                LOG.error(exception.FilesystemNotFound(filesystem.get(
+                    'id')))
+            else:
+                filesystem_refs.append(result)
+
+    return filesystem_refs
+
+
+def filesystems_delete(context, filesystems_id_list):
+    """Delete multiple filesystems."""
+    session = get_session()
+    with session.begin():
+        for filesystem_id in filesystems_id_list:
+            LOG.debug('deleting filesystem {0}:'.format(filesystem_id))
+            query = _filesystem_get_query(context, session)
+            result = query.filter_by(id=filesystem_id).delete()
+
+            if not result:
+                LOG.error(exception.FilesystemNotFound(filesystem_id))
+    return
+
+
+def _filesystem_get_query(context, session=None):
+    return model_query(context, models.Filesystem, session=session)
+
+
+def _filesystem_get(context, filesystem_id, session=None):
+    result = (_filesystem_get_query(context, session=session)
+              .filter_by(id=filesystem_id)
+              .first())
+
+    if not result:
+        raise exception.FilesystemNotFound(filesystem_id)
+
+    return result
+
+
+def filesystem_create(context, values):
+    """Create a filesystem from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    filesystem_ref = models.Filesystem()
+    filesystem_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(filesystem_ref)
+
+    return _filesystem_get(context,
+                           filesystem_ref['id'],
+                           session=session)
+
+
+def filesystem_update(context, filesystem_id, values):
+    """Update a filesystem with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _filesystem_get_query(context, session)
+        result = query.filter_by(id=filesystem_id).update(values)
+
+        if not result:
+            raise exception.FilesystemNotFound(filesystem_id)
+
+    return result
+
+
+def filesystem_get(context, filesystem_id):
+    """Get a filesystem or raise an exception if it does not exist."""
+    return _filesystem_get(context, filesystem_id)
+
+
+def filesystem_delete_by_storage(context, storage_id):
+    """Delete filesystem or raise an exception if it does not exist."""
+    _filesystem_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def filesystem_get_all(context, marker=None, limit=None, sort_keys=None,
+                       sort_dirs=None, filters=None, offset=None):
+    """Retrieves all filesystems."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Filesystem,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Filesystem would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Filesystem)
+def _process_filesystem_info_filters(query, filters):
+    """Common filter processing for filesystems queries."""
+    if filters:
+        if not is_valid_model_filters(models.Filesystem, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def qtrees_create(context, qtrees):
+    """Create multiple qtrees."""
+    session = get_session()
+    qtrees_refs = []
+    with session.begin():
+
+        for qtree in qtrees:
+            LOG.debug('adding new qtree for native_qtree_id {0}:'
+                      .format(qtree.get('native_qtree_id')))
+            if not qtree.get('id'):
+                qtree['id'] = uuidutils.generate_uuid()
+
+            qtree_ref = models.Qtree()
+            qtree_ref.update(qtree)
+            qtrees_refs.append(qtree_ref)
+
+        session.add_all(qtrees_refs)
+
+    return qtrees_refs
+
+
+def qtrees_update(context, qtrees):
+    """Update multiple qtrees."""
+    session = get_session()
+
+    with session.begin():
+        qtree_refs = []
+
+        for qtree in qtrees:
+            LOG.debug('updating qtree {0}:'.format(
+                qtree.get('id')))
+            query = _qtree_get_query(context, session)
+            result = query.filter_by(id=qtree.get('id')
+                                     ).update(qtree)
+
+            if not result:
+                LOG.error(exception.QtreeNotFound(qtree.get(
+                    'id')))
+            else:
+                qtree_refs.append(result)
+
+    return qtree_refs
+
+
+def qtrees_delete(context, qtrees_id_list):
+    """Delete multiple qtrees."""
+    session = get_session()
+    with session.begin():
+        for qtree_id in qtrees_id_list:
+            LOG.debug('deleting qtree {0}:'.format(qtree_id))
+            query = _qtree_get_query(context, session)
+            result = query.filter_by(id=qtree_id).delete()
+
+            if not result:
+                LOG.error(exception.QtreeNotFound(qtree_id))
+    return
+
+
+def _qtree_get_query(context, session=None):
+    return model_query(context, models.Qtree, session=session)
+
+
+def _qtree_get(context, qtree_id, session=None):
+    result = (_qtree_get_query(context, session=session)
+              .filter_by(id=qtree_id)
+              .first())
+
+    if not result:
+        raise exception.QtreeNotFound(qtree_id)
+
+    return result
+
+
+def qtree_create(context, values):
+    """Create a qtree from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    qtree_ref = models.Qtree()
+    qtree_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(qtree_ref)
+
+    return _qtree_get(context,
+                      qtree_ref['id'],
+                      session=session)
+
+
+def qtree_update(context, qtree_id, values):
+    """Update a qtree with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _qtree_get_query(context, session)
+        result = query.filter_by(id=qtree_id).update(values)
+
+        if not result:
+            raise exception.QtreeNotFound(qtree_id)
+
+    return result
+
+
+def qtree_get(context, qtree_id):
+    """Get a qtree or raise an exception if it does not exist."""
+    return _qtree_get(context, qtree_id)
+
+
+def qtree_delete_by_storage(context, storage_id):
+    """Delete qtree or raise an exception if it does not exist."""
+    _qtree_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def qtree_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all qtrees."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Qtree,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Qtree would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Qtree)
+def _process_qtree_info_filters(query, filters):
+    """Common filter processing for qtrees queries."""
+    if filters:
+        if not is_valid_model_filters(models.Qtree, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def shares_create(context, shares):
+    """Create multiple shares."""
+    session = get_session()
+    shares_refs = []
+    with session.begin():
+
+        for share in shares:
+            LOG.debug('adding new share for native_share_id {0}:'
+                      .format(share.get('native_share_id')))
+            if not share.get('id'):
+                share['id'] = uuidutils.generate_uuid()
+
+            share_ref = models.Share()
+            share_ref.update(share)
+            shares_refs.append(share_ref)
+
+        session.add_all(shares_refs)
+
+    return shares_refs
+
+
+def shares_update(context, shares):
+    """Update multiple shares."""
+    session = get_session()
+
+    with session.begin():
+        share_refs = []
+
+        for share in shares:
+            LOG.debug('updating share {0}:'.format(
+                share.get('id')))
+            query = _share_get_query(context, session)
+            result = query.filter_by(id=share.get('id')
+                                     ).update(share)
+
+            if not result:
+                LOG.error(exception.ShareNotFound(share.get(
+                    'id')))
+            else:
+                share_refs.append(result)
+
+    return share_refs
+
+
+def shares_delete(context, shares_id_list):
+    """Delete multiple shares."""
+    session = get_session()
+    with session.begin():
+        for share_id in shares_id_list:
+            LOG.debug('deleting share {0}:'.format(share_id))
+            query = _share_get_query(context, session)
+            result = query.filter_by(id=share_id).delete()
+
+            if not result:
+                LOG.error(exception.ShareNotFound(share_id))
+    return
+
+
+def _share_get_query(context, session=None):
+    return model_query(context, models.Share, session=session)
+
+
+def _share_get(context, share_id, session=None):
+    result = (_share_get_query(context, session=session)
+              .filter_by(id=share_id)
+              .first())
+
+    if not result:
+        raise exception.ShareNotFound(share_id)
+
+    return result
+
+
+def share_create(context, values):
+    """Create a share from the values dictionary."""
+    if not values.get('id'):
+        values['id'] = uuidutils.generate_uuid()
+
+    share_ref = models.Share()
+    share_ref.update(values)
+
+    session = get_session()
+    with session.begin():
+        session.add(share_ref)
+
+    return _share_get(context,
+                      share_ref['id'],
+                      session=session)
+
+
+def share_update(context, share_id, values):
+    """Update a share with the values dictionary."""
+    session = get_session()
+
+    with session.begin():
+        query = _share_get_query(context, session)
+        result = query.filter_by(id=share_id).update(values)
+
+        if not result:
+            raise exception.ShareNotFound(share_id)
+
+    return result
+
+
+def share_get(context, share_id):
+    """Get a share or raise an exception if it does not exist."""
+    return _share_get(context, share_id)
+
+
+def share_delete_by_storage(context, storage_id):
+    """Delete share or raise an exception if it does not exist."""
+    _share_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def share_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all shares."""
+
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.Share,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset,
+                                         )
+        # No Share would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.Share)
+def _process_share_info_filters(query, filters):
+    """Common filter processing for shares queries."""
+    if filters:
+        if not is_valid_model_filters(models.Share, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
 def is_orm_value(obj):
     """Check if object is an ORM field or expression."""
     return isinstance(obj, (sqlalchemy.orm.attributes.InstrumentedAttribute,
@@ -1126,6 +1552,12 @@ PAGINATION_HELPERS = {
     models.Port: (_port_get_query, _process_port_info_filters, _port_get),
     models.Disk: (_disk_get_query, _process_disk_info_filters,
                   _disk_get),
+    models.Filesystem: (_filesystem_get_query,
+                        _process_filesystem_info_filters, _filesystem_get),
+    models.Qtree: (_qtree_get_query,
+                   _process_qtree_info_filters, _qtree_get),
+    models.Share: (_share_get_query,
+                   _process_share_info_filters, _share_get),
 }
 
 

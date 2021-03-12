@@ -404,6 +404,180 @@ def disk_get_all(context, marker=None, limit=None, sort_keys=None,
                              filters, offset)
 
 
+def filesystems_create(context, values):
+    """Create multiple filesystems."""
+    return IMPL.filesystems_create(context, values)
+
+
+def filesystems_update(context, values):
+    """Update multiple filesystems."""
+    return IMPL.filesystems_update(context, values)
+
+
+def filesystems_delete(context, values):
+    """Delete multiple filesystems."""
+    return IMPL.filesystems_delete(context, values)
+
+
+def filesystem_create(context, values):
+    """Create a filesystem from the values dictionary."""
+    return IMPL.filesystem_create(context, values)
+
+
+def filesystem_update(context, filesystem_id, values):
+    """Update a filesystem with the values dictionary."""
+    return IMPL.filesystem_update(context, filesystem_id, values)
+
+
+def filesystem_get(context, filesystem_id):
+    """Get a filesystem or raise an exception if it does not exist."""
+    return IMPL.filesystem_get(context, filesystem_id)
+
+
+def filesystem_delete_by_storage(context, storage_id):
+    """Delete a filesystem or raise an exception if it does not exist."""
+    return IMPL.filesystem_delete_by_storage(context, storage_id)
+
+
+def filesystem_get_all(context, marker=None, limit=None, sort_keys=None,
+                       sort_dirs=None, filters=None, offset=None):
+    """Retrieves all filesystems.
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of controllers
+    """
+    return IMPL.filesystem_get_all(context, marker, limit, sort_keys,
+                                   sort_dirs, filters, offset)
+
+
+def qtrees_create(context, values):
+    """Create multiple qtrees."""
+    return IMPL.qtrees_create(context, values)
+
+
+def qtrees_update(context, values):
+    """Update multiple qtrees."""
+    return IMPL.qtrees_update(context, values)
+
+
+def qtrees_delete(context, values):
+    """Delete multiple qtrees."""
+    return IMPL.qtrees_delete(context, values)
+
+
+def qtree_create(context, values):
+    """Create a qtree from the values dictionary."""
+    return IMPL.qtree_create(context, values)
+
+
+def qtree_update(context, qtree_id, values):
+    """Update a qtree with the values dictionary."""
+    return IMPL.qtree_update(context, qtree_id, values)
+
+
+def qtree_get(context, qtree_id):
+    """Get a qtree or raise an exception if it does not exist."""
+    return IMPL.qtree_get(context, qtree_id)
+
+
+def qtree_delete_by_storage(context, storage_id):
+    """Delete a qtree or raise an exception if it does not exist."""
+    return IMPL.qtree_delete_by_storage(context, storage_id)
+
+
+def qtree_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all qtrees.
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of controllers
+    """
+    return IMPL.qtree_get_all(context, marker, limit, sort_keys,
+                              sort_dirs, filters, offset)
+
+
+def shares_create(context, values):
+    """Create multiple shares."""
+    return IMPL.shares_create(context, values)
+
+
+def shares_update(context, values):
+    """Update multiple shares."""
+    return IMPL.shares_update(context, values)
+
+
+def shares_delete(context, values):
+    """Delete multiple shares."""
+    return IMPL.shares_delete(context, values)
+
+
+def share_create(context, values):
+    """Create a share from the values dictionary."""
+    return IMPL.share_create(context, values)
+
+
+def share_update(context, share_id, values):
+    """Update a share with the values dictionary."""
+    return IMPL.share_update(context, share_id, values)
+
+
+def share_get(context, share_id):
+    """Get a share or raise an exception if it does not exist."""
+    return IMPL.share_get(context, share_id)
+
+
+def share_delete_by_storage(context, storage_id):
+    """Delete a share or raise an exception if it does not exist."""
+    return IMPL.share_delete_by_storage(context, storage_id)
+
+
+def share_get_all(context, marker=None, limit=None, sort_keys=None,
+                  sort_dirs=None, filters=None, offset=None):
+    """Retrieves all shares.
+    If no sort parameters are specified then the returned volumes are sorted
+    first by the 'created_at' key and then by the 'id' key in descending
+    order.
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of controllers
+    """
+    return IMPL.share_get_all(context, marker, limit, sort_keys,
+                              sort_dirs, filters, offset)
+
+
 def access_info_create(context, values):
     """Create a storage access information that used to connect
     to a specific storage device.
