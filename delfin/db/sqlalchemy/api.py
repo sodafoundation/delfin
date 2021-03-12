@@ -1533,73 +1533,69 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
-def task_template_create(context, values):
+def task_create(context, values):
     """Add task template configuration."""
-    task_template_ref = models.TaskTemplate()
-    if not values.get('id'):
-        values['id'] = uuidutils.generate_uuid()
-    task_template_ref.update(values)
+    tasks_ref = models.Task()
+    tasks_ref.update(values)
 
     session = get_session()
     with session.begin():
-        session.add(task_template_ref)
+        session.add(tasks_ref)
 
-    return _task_template_get(context,
-                              task_template_ref['id'],
-                              session=session)
+    return _task_get(context, tasks_ref['id'], session=session)
 
 
-def task_template_update(context, task_template_id, values):
+def task_update(context, tasks_id, values):
     """Update a task template withe the values dictionary."""
     session = get_session()
 
     with session.begin():
-        query = _task_template_get_query(context, session)
-        result = query.filter_by(id=task_template_id).update(values)
+        query = _task_get_query(context, session)
+        result = query.filter_by(id=tasks_id).update(values)
 
         if not result:
-            raise exception.TaskTemplateNotFound(task_template_id)
+            raise exception.TaskTemplateNotFound(tasks_id)
 
     return result
 
 
-def _task_template_get(context, task_template_id, session=None):
-    result = (_task_template_get_query(context, session=session)
-              .filter_by(id=task_template_id)
+def _task_get(context, task_id, session=None):
+    result = (_task_get_query(context, session=session)
+              .filter_by(id=task_id)
               .first())
 
     if not result:
-        raise exception.TaskTemplateNotFound(task_template_id)
+        raise exception.TaskTemplateNotFound(task_id)
 
     return result
 
 
-def _task_template_get_query(context, session=None):
-    return model_query(context, models.TaskTemplate, session=session)
+def _task_get_query(context, session=None):
+    return model_query(context, models.Task, session=session)
 
 
-def task_template_get(context, task_template_id):
+def task_get(context, tasks_id):
     """Get a task template  or raise an exception if it does not exist."""
-    return _task_template_get(context, task_template_id)
+    return _task_get(context, tasks_id)
 
 
-def task_template_delete_by_storage(context, storage_id):
+def task_delete_by_storage(context, storage_id):
     """Delete all the task templates of a storage device"""
-    _task_template_get_query(context).filter_by(storage_id=storage_id).delete()
+    _task_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
-def task_template_delete(context, task_template_id):
+def task_delete(context, tasks_id):
     """Delete a given task template"""
-    _task_template_get_query(context).filter_by(id=task_template_id).delete()
+    _task_get_query(context).filter_by(id=tasks_id).delete()
 
 
-def task_template_get_all(context, marker=None, limit=None, sort_keys=None,
-                          sort_dirs=None, filters=None, offset=None):
+def task_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
     """Retrieves all storage task templates."""
     session = get_session()
     with session.begin():
         # Generate the query
-        query = _generate_paginate_query(context, session, models.TaskTemplate,
+        query = _generate_paginate_query(context, session, models.Task,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset,
                                          )
@@ -1609,90 +1605,86 @@ def task_template_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
-@apply_like_filters(model=models.TaskTemplate)
-def _process_task_template_info_filters(query, filters):
+@apply_like_filters(model=models.Task)
+def _process_tasks_info_filters(query, filters):
     """Common filter processing for task template queries."""
     if filters:
-        if not is_valid_model_filters(models.TaskTemplate, filters):
+        if not is_valid_model_filters(models.Task, filters):
             return
         query = query.filter_by(**filters)
 
     return query
 
 
-def task_instance_create(context, values):
+def failed_task_create(context, values):
     """Add task instance configuration."""
-    task_instance_ref = models.TaskInstance()
-    if not values.get('id'):
-        values['id'] = uuidutils.generate_uuid()
-    task_instance_ref.update(values)
+    failed_task_ref = models.FailedTask()
+    failed_task_ref.update(values)
 
     session = get_session()
     with session.begin():
-        session.add(task_instance_ref)
+        session.add(failed_task_ref)
 
-    return _task_instance_get(context,
-                              task_instance_ref['id'],
-                              session=session)
+    return _failed_tasks_get(context, failed_task_ref['id'], session=session)
 
 
-def task_instance_update(context, task_instance_id, values):
+def failed_task_update(context, failed_task_id, values):
     """Update a task instance withe the values dictionary."""
     session = get_session()
 
     with session.begin():
-        query = _task_instance_get_query(context, session)
-        result = query.filter_by(id=task_instance_id).update(values)
+        query = _failed_tasks_get_query(context, session)
+        result = query.filter_by(id=failed_task_id).update(values)
 
         if not result:
-            raise exception.TaskInstanceNotFound(task_instance_id)
+            raise exception.TaskInstanceNotFound(failed_task_id)
 
     return result
 
 
-def _task_instance_get(context, task_instance_id, session=None):
-    result = (_task_instance_get_query(context, session=session)
-              .filter_by(id=task_instance_id)
+def _failed_tasks_get(context, failed_task_id, session=None):
+    result = (_failed_tasks_get_query(context, session=session)
+              .filter_by(id=failed_task_id)
               .first())
 
     if not result:
-        raise exception.TaskInstanceNotFound(task_instance_id)
+        raise exception.TaskInstanceNotFound(failed_task_id)
 
     return result
 
 
-def _task_instance_get_query(context, session=None):
-    return model_query(context, models.TaskInstance, session=session)
+def _failed_tasks_get_query(context, session=None):
+    return model_query(context, models.FailedTask, session=session)
 
 
-def task_instance_get(context, task_instance_id):
+def failed_task_get(context, failed_task_id):
     """Get a task instance or raise an exception if it does not exist."""
-    return _task_instance_get(context, task_instance_id)
+    return _failed_tasks_get(context, failed_task_id)
 
 
-def task_instance_delete_by_storage(context, storage_id):
+def failed_task_delete_by_storage(context, storage_id):
     """Delete all the task instances of a storage device"""
-    _task_instance_get_query(context).filter_by(storage_id=storage_id).delete()
+    _failed_tasks_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
-def task_instance_delete_by_template(context, task_template_id):
+def failed_task_delete_by_template(context, task_id):
     """Delete all the task instances of a given task template"""
-    _task_instance_get_query(context).filter_by(
-        task_template_id=task_template_id).delete()
+    _failed_tasks_get_query(context).filter_by(
+        task_id=task_id).delete()
 
 
-def task_instance_delete(context, task_instance_id):
+def failed_task_delete(context, failed_task_id):
     """Delete a given task instance"""
-    _task_instance_get_query(context).filter_by(id=task_instance_id).delete()
+    _failed_tasks_get_query(context).filter_by(id=failed_task_id).delete()
 
 
-def task_instance_get_all(context, marker=None, limit=None, sort_keys=None,
-                          sort_dirs=None, filters=None, offset=None):
+def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
     """Retrieves all task instances."""
     session = get_session()
     with session.begin():
         # Generate the query
-        query = _generate_paginate_query(context, session, models.TaskInstance,
+        query = _generate_paginate_query(context, session, models.FailedTask,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset,
                                          )
@@ -1702,11 +1694,11 @@ def task_instance_get_all(context, marker=None, limit=None, sort_keys=None,
         return query.all()
 
 
-@apply_like_filters(model=models.TaskInstance)
-def _process_task_instance_info_filters(query, filters):
+@apply_like_filters(model=models.FailedTask)
+def _process_failed_tasks_info_filters(query, filters):
     """Common filter processing for task instance queries."""
     if filters:
-        if not is_valid_model_filters(models.TaskInstance, filters):
+        if not is_valid_model_filters(models.FailedTask, filters):
             return
         query = query.filter_by(**filters)
 
@@ -1732,6 +1724,7 @@ PAGINATION_HELPERS = {
     models.Port: (_port_get_query, _process_port_info_filters, _port_get),
     models.Disk: (_disk_get_query, _process_disk_info_filters,
                   _disk_get),
+	
 
     models.TaskTemplate: (_task_template_get_query,
                           _process_task_template_info_filters,
@@ -1745,6 +1738,12 @@ PAGINATION_HELPERS = {
                    _process_qtree_info_filters, _qtree_get),
     models.Share: (_share_get_query,
                    _process_share_info_filters, _share_get),
+    models.Task: (_task_get_query,
+                  _process_tasks_info_filters,
+                  _task_get),
+    models.FailedTask: (_failed_tasks_get_query,
+                        _process_failed_tasks_info_filters,
+                        _failed_tasks_get),
 }
 
 

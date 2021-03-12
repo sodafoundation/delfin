@@ -239,26 +239,26 @@ class AlertSource(BASE, DelfinBase):
     expiration = Column(Integer)
 
 
-class TaskTemplate(BASE, DelfinBase):
-    """Represents a task template configuration."""
-    __tablename__ = 'task_template'
-    id = Column(String(36), primary_key=True)
+class Task(BASE, DelfinBase):
+    """Represents a task attributes."""
+    __tablename__ = 'tasks'
+    id = Column(Integer, primary_key=True, autoincrement=True)
     storage_id = Column(String(36))
     interval = Column(Integer)
     method = Column(String(255))
     args = Column(JsonEncodedDict)
     last_run_time = Column(Integer)
+    job_id = Column(String(36))
 
 
-class TaskInstance(BASE, DelfinBase):
-    """Represents a task instance configuration."""
-    __tablename__ = 'task_instance'
-    id = Column(String(36), primary_key=True)
-    storage_id = Column(String(36))
-    task_template_id = Column(String(36))
-    launch_time = Column(Integer)
+class FailedTask(BASE, DelfinBase):
+    """Represents a failed task attributes."""
+    __tablename__ = 'failed_tasks'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(Integer)
     interval = Column(Integer)
-    method = Column(String(255))
-    args = Column(JsonEncodedDict)
-    result = Column(String(255))
+    start_time = Column(Integer)
+    end_time = Column(Integer)
     retry_count = Column(Integer)
+    result = Column(String(255))
+    job_id = Column(String(36))

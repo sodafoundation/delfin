@@ -674,23 +674,23 @@ def alert_source_get_all(context, marker=None, limit=None, sort_keys=None,
                                      sort_dirs, filters, offset)
 
 
-def task_template_create(context, values):
+def task_create(context, values):
     """Create a task template from the values dictionary."""
-    return IMPL.task_template_create(context, values)
+    return IMPL.task_create(context, values)
 
 
-def task_template_update(context, task_template_id, values):
+def task_update(context, task_id, values):
     """Update a task template with the values dictionary."""
-    return IMPL.task_template_update(context, task_template_id, values)
+    return IMPL.task_update(context, task_id, values)
 
 
-def task_template_get(context, task_template_id):
-    """Get a task_template or raise an exception if it does not exist."""
-    return IMPL.task_template_get(context, task_template_id)
+def task_get(context, task_id):
+    """Get a task or raise an exception if it does not exist."""
+    return IMPL.task_get(context, task_id)
 
 
-def task_template_get_all(context, marker=None, limit=None, sort_keys=None,
-                          sort_dirs=None, filters=None, offset=None):
+def task_get_all(context, marker=None, limit=None, sort_keys=None,
+                 sort_dirs=None, filters=None, offset=None):
     """Retrieves all  task templates.
     If no sort parameters are specified then the returned task templates are
     sorted first by the 'created_at' key and then by the 'id' key in
@@ -706,43 +706,43 @@ def task_template_get_all(context, marker=None, limit=None, sort_keys=None,
                       'desc' for descending order
     :param filters: dictionary of filters
     :param offset: number of items to skip
-    :returns: list of  task_templates
+    :returns: list of  tasks
     """
-    return IMPL.task_template_get_all(context, marker, limit,
-                                      sort_keys, sort_dirs, filters, offset)
+    return IMPL.task_get_all(context, marker, limit,
+                             sort_keys, sort_dirs, filters, offset)
 
 
-def task_template_delete_by_storage(context, storage_id):
-    """Delete all task_templates of given storage or raise an exception if it
+def task_delete_by_storage(context, storage_id):
+    """Delete all tasks of given storage or raise an exception if it
     does not exist.
     """
-    return IMPL.task_template_delete_by_storage(context, storage_id)
+    return IMPL.task_delete_by_storage(context, storage_id)
 
 
-def task_template_delete(context, task_template_id):
+def task_delete(context, task_id):
     """Delete a given task template or raise an exception if it does not
     exist.
     """
-    return IMPL.task_template_delete(context, task_template_id)
+    return IMPL.task_delete(context, task_id)
 
 
-def task_instance_create(context, values):
+def failed_task_create(context, values):
     """Create a task instance from the values dictionary."""
-    return IMPL.task_instance_create(context, values)
+    return IMPL.failed_task_create(context, values)
 
 
-def task_instance_update(context, task_instance_id, values):
+def failed_task_update(context, failed_task_id, values):
     """Update a task instance with the values dictionary."""
-    return IMPL.task_instance_update(context, task_instance_id, values)
+    return IMPL.failed_task_update(context, failed_task_id, values)
 
 
-def task_instance_get(context, task_instance_id):
+def failed_task_get(context, failed_task_id):
     """Get a task instance or raise an exception if it does not exist."""
-    return IMPL.task_instance_get(context, task_instance_id)
+    return IMPL.failed_task_get(context, failed_task_id)
 
 
-def task_instance_get_all(context, marker=None, limit=None, sort_keys=None,
-                          sort_dirs=None, filters=None, offset=None):
+def failed_task_get_all(context, marker=None, limit=None, sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
     """Retrieves all  task instances.
     If no sort parameters are specified then the returned task templates are
     sorted first by the 'created_at' key and then by the 'id' key in
@@ -758,28 +758,28 @@ def task_instance_get_all(context, marker=None, limit=None, sort_keys=None,
                       'desc' for descending order
     :param filters: dictionary of filters
     :param offset: number of items to skip
-    :returns: list of  task instances
+    :returns: list of task instances
     """
-    return IMPL.task_instance_get_all(context, marker, limit,
-                                      sort_keys, sort_dirs, filters, offset)
+    return IMPL.failed_task_get_all(context, marker, limit,
+                                    sort_keys, sort_dirs, filters, offset)
 
 
-def task_instance_delete_by_storage(context, storage_id):
+def failed_task_delete_by_storage(context, storage_id):
     """Delete all task instances of given storage or raise an exception if it
     does not exist.
     """
-    return IMPL.task_instance_delete_by_storage(context, storage_id)
+    return IMPL.failed_task_delete_by_storage(context, storage_id)
 
 
-def task_instance_delete_by_template(context, task_template_id):
+def failed_task_delete_by_template(context, task_id):
     """Delete all task instances of given task template or raise an exception
     if it does not exist.
     """
-    return IMPL.task_instance_delete_by_template(context, task_template_id)
+    return IMPL.failed_task_delete_by_template(context, task_id)
 
 
-def task_instance_delete(context, task_instance_id):
+def failed_task_delete(context, failed_task_id):
     """Delete a given task instance or raise an exception if it does not
     exist.
     """
-    return IMPL.task_instance_delete(context, task_instance_id)
+    return IMPL.failed_task_delete(context, failed_task_id)
