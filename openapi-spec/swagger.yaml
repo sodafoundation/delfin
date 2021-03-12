@@ -851,7 +851,7 @@ paths:
                   - ports
                 additionalProperties: true
                 properties:
-                  controllers:
+                  ports:
                     type: array
                     title: the port schema
                     items:
@@ -1019,7 +1019,7 @@ paths:
                   - ports
                 additionalProperties: true
                 properties:
-                  controllers:
+                  ports:
                     type: array
                     title: the disk schema
                     items:
@@ -1241,6 +1241,709 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
         '500':
           description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  /v1/filesystems:
+    get:
+      tags:
+        - Filesystems
+      description: List all filesystems.
+      parameters:
+        - name: limit
+          in: query
+          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The filesystem name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a filesystem.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_filesystem_id
+          in: query
+          description: Actual ID of the filesystem in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_pool_id
+          in: query
+          description: Pool ID of the filesystem in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: storage_id
+          in: query
+          description: Database ID created for a storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: security_mode
+          in: query
+          description: The filesystem security modes
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - mixed
+              - native
+              - ntfs
+              - unix
+        - name: status
+          in: query
+          description: The filesystem status
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - normal
+              - faulty
+      responses:
+        '200':
+          description: List filesystem query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - filesystems
+                additionalProperties: true
+                properties:
+                  filesystems:
+                    type: array
+                    title: the filesystem schema
+                    items:
+                      $ref: '#/components/schemas/FilesystemSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/filesystems/{id}':
+    get:
+      tags:
+        - Filesystems
+      description: Get filesystem detail by filesystem ID.
+      parameters:
+        - name: id
+          in: path
+          description: Database ID created for a filesystem.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilesystemSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '404':
+          description: The resource does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  /v1/qtrees:
+    get:
+      tags:
+        - Qtrees
+      description: List all qtrees.
+      parameters:
+        - name: limit
+          in: query
+          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The qtree name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a qtree.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_qtree_id
+          in: query
+          description: Actual ID of the qtree in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_filesystem_id
+          in: query
+          description: Filesystem ID of the qtree in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: storage_id
+          in: query
+          description: Database ID created for a storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: security_mode
+          in: query
+          description: The qtree security modes
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - mixed
+              - native
+              - ntfs
+              - unix
+      responses:
+        '200':
+          description: List qtree query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - qtrees
+                additionalProperties: true
+                properties:
+                  qtrees:
+                    type: array
+                    title: the qtree schema
+                    items:
+                      $ref: '#/components/schemas/QtreeSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/qtrees/{id}':
+    get:
+      tags:
+        - Qtrees
+      description: Get qtree detail by qtree ID.
+      parameters:
+        - name: id
+          in: path
+          description: Database ID created for a qtree.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QtreeSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '404':
+          description: The resource does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occurred.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  /v1/quotas:
+    get:
+      tags:
+        - Quotas
+      description: List all quotas.
+      parameters:
+        - name: limit
+          in: query
+          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The quota name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a quota.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_quota_id
+          in: query
+          description: Actual ID of the quota in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_filesystem_id
+          in: query
+          description: Filesystem ID of the quota in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_qtree_id
+          in: query
+          description: Qtree ID of the quota in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: storage_id
+          in: query
+          description: Database ID created for a storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: The quota types
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - filesystem
+              - tree
+              - user
+              - group
+      responses:
+        '200':
+          description: List quota query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - quotas
+                additionalProperties: true
+                properties:
+                  quotas:
+                    type: array
+                    title: the quota schema
+                    items:
+                      $ref: '#/components/schemas/QuotaSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/quotas/{id}':
+    get:
+      tags:
+        - Quotas
+      description: Get quota detail by quota ID.
+      parameters:
+        - name: id
+          in: path
+          description: Database ID created for a quota.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotaSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '404':
+          description: The resource does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  /v1/shares:
+    get:
+      tags:
+        - Shares
+      description: List all shares.
+      parameters:
+        - name: limit
+          in: query
+          description: Requests a page size of items. Returns a number of items up to a limit value. Use the limit parameter to make an initial limited request and use the ID of the last-seen item from the response as the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: Used in conjunction with limit to return a slice of items. offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The share name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a share.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_share_id
+          in: query
+          description: Actual ID of the share in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_filesystem_id
+          in: query
+          description: Filesystem ID of the share in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_qtree_id
+          in: query
+          description: Qtree ID of the share in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: storage_id
+          in: query
+          description: Database ID created for a storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: protocol
+          in: query
+          description: The share protocol
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - cifs
+              - nfs
+              - ftp
+              - hdfs
+      responses:
+        '200':
+          description: List share query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - shares
+                additionalProperties: true
+                properties:
+                  shares:
+                    type: array
+                    title: the share schema
+                    items:
+                      $ref: '#/components/schemas/ShareSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/shares/{id}':
+    get:
+      tags:
+        - Shares
+      description: Get share detail by share ID.
+      parameters:
+        - name: id
+          in: path
+          description: Database ID created for a share.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShareSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '404':
+          description: The resource does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occurred.
           content:
             application/json:
               schema:
@@ -2135,6 +2838,210 @@ components:
             health_score:
               type: integer
             native_disk_group_id:
+              type: string
+    FilesystemSpec:
+      description: >-
+        A filesystem is discovered and updated by task manager.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - required:
+            - id
+            - name
+          type: object
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_filesystem_id:
+              type: string
+              readOnly: true
+              example: Filesystem_A
+            native_pool_id:
+              type: string
+              readOnly: true
+              example: Pool_A
+            total_capacity:
+              type: integer
+            used_capacity:
+              type: integer
+            free_capacity:
+              type: integer
+            status:
+              type: string
+              enum:
+                - normal
+                - faulty
+            worm:
+              type: string
+              enum:
+                - non_worm
+                - audit_log
+                - compliance
+                - enterprise
+            type:
+              type: string
+              enum:
+                - thick
+                - thin
+            deduplicated:
+              type: boolean
+            compressed:
+              type: boolean
+            security_mode:
+              type: string
+              enum:
+                - mixed
+                - native
+                - ntfs
+                - unix
+    QtreeSpec:
+      description: >-
+        A qtree is discovered and updated by task manager.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - required:
+            - id
+            - name
+          type: object
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_qtree_id:
+              type: string
+              readOnly: true
+              example: Qtree_A
+            native_filesystem_id:
+              type: string
+              readOnly: true
+              example: Filesystem_A
+            path:
+              type: string
+            security_mode:
+              type: string
+              enum:
+                - mixed
+                - native
+                - ntfs
+                - unix
+    QuotaSpec:
+      description: >-
+        A quota is discovered and updated by task manager.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - required:
+            - id
+            - name
+            - type
+          type: object
+          properties:
+            id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_quota_id:
+              type: string
+              readOnly: true
+              example: Quota_A
+            name:
+              type: string
+            type:
+              type: string
+              enum:
+                - filesystem
+                - tree
+                - user
+                - group
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_filesystem_id:
+              type: string
+              readOnly: true
+              example: Filesystem_A
+            native_qtree_id:
+              type: string
+              readOnly: true
+              example: Qtree_A
+            capacity_hard_limit:
+              type: integer
+              format: int64
+              example: 100
+            capacity_soft_limit:
+              type: integer
+              format: int64
+              example: 80
+            file_hard_limit:
+              type: integer
+              format: int64
+              example: 10
+            file_soft_limit:
+              type: integer
+              format: int64
+              example: 8
+            used_capacity:
+              type: integer
+              format: int64
+              example: 100
+            file_count:
+              type: integer
+              format: int64
+              example: 10
+            user_group_name:
+              type: string
+    ShareSpec:
+      description: >-
+        A share is discovered and updated by task manager.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - required:
+            - id
+            - name
+          type: object
+          properties:
+            name:
+              type: string
+            id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_share_id:
+              type: string
+              readOnly: true
+              example: Share_A
+            native_filesystem_id:
+              type: string
+              readOnly: true
+              example: Filesystem_A
+            native_qtree_id:
+              type: string
+            protocol:
+              type: string
+              enum:
+                - cifs
+                - nfs
+                - ftp
+                - hdfs
+            path:
               type: string
 
     VolumeRespSpec:
