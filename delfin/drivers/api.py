@@ -102,6 +102,21 @@ class API(object):
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_disks(context)
 
+    def list_filesystems(self, context, storage_id):
+        """List all filesystems from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_filesystems(context)
+
+    def list_qtrees(self, context, storage_id):
+        """List all qtrees from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_qtrees(context)
+
+    def list_shares(self, context, storage_id):
+        """List all shares from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_shares(context)
+
     def add_trap_config(self, context, storage_id, trap_config):
         """Config the trap receiver in storage system."""
         pass

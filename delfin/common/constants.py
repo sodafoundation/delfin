@@ -149,6 +149,40 @@ class DiskLogicalType(object):
     ALL = (FREE, MEMBER, HOTSPARE, CACHE, UNKNOWN)
 
 
+class FilesystemStatus(object):
+    NORMAL = 'normal'
+    FAULTY = 'faulty'
+
+    ALL = (NORMAL, FAULTY)
+
+
+class WORMType(object):
+    NON_WORM = 'non_worm'
+    AUDIT_LOG = 'audit_log'
+    COMPLIANCE = 'compliance'
+    ENTERPRISE = 'enterprise'
+
+    ALL = (NON_WORM, AUDIT_LOG, COMPLIANCE, ENTERPRISE)
+
+
+class NASSecurityMode(object):
+    MIXED = 'mixed'
+    NATIVE = 'native'
+    NTFS = 'ntfs'
+    UNIX = 'unix'
+
+    ALL = (MIXED, NATIVE, NTFS, UNIX)
+
+
+class ShareProtocol(object):
+    CIFS = 'cifs'
+    NFS = 'nfs'
+    FTP = 'ftp'
+    HDFS = 'hdfs'
+
+    ALL = (CIFS, NFS, FTP, HDFS)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'

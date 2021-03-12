@@ -65,19 +65,19 @@ class Storage(BASE, DelfinBase):
     __tablename__ = 'storages'
     id = Column(String(36), primary_key=True)
     name = Column(String(255))
-    vendor = Column(String(255))
     description = Column(String(255))
-    model = Column(String(255))
+    location = Column(String(255))
     status = Column(String(255))
+    sync_status = Column(Integer, default=constants.SyncStatus.SYNCED)
+    vendor = Column(String(255))
+    model = Column(String(255))
     serial_number = Column(String(255))
     firmware_version = Column(String(255))
-    location = Column(String(255))
     total_capacity = Column(BigInteger)
     used_capacity = Column(BigInteger)
     free_capacity = Column(BigInteger)
     raw_capacity = Column(BigInteger)
     subscribed_capacity = Column(BigInteger)
-    sync_status = Column(Integer, default=constants.SyncStatus.SYNCED)
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, default=False)
 
@@ -86,14 +86,14 @@ class Volume(BASE, DelfinBase):
     """Represents a volume object."""
     __tablename__ = 'volumes'
     id = Column(String(36), primary_key=True)
+    native_volume_id = Column(String(255))
     name = Column(String(255))
+    description = Column(String(255))
+    type = Column(String(255))
+    status = Column(String(255))
     storage_id = Column(String(36))
     native_storage_pool_id = Column(String(255))
-    description = Column(String(255))
-    status = Column(String(255))
-    native_volume_id = Column(String(255))
     wwn = Column(String(255))
-    type = Column(String(255))
     total_capacity = Column(BigInteger)
     used_capacity = Column(BigInteger)
     free_capacity = Column(BigInteger)
@@ -105,12 +105,12 @@ class StoragePool(BASE, DelfinBase):
     """Represents a storage_pool object."""
     __tablename__ = 'storage_pools'
     id = Column(String(36), primary_key=True)
-    name = Column(String(255))
-    storage_id = Column(String(36))
     native_storage_pool_id = Column(String(255))
+    name = Column(String(255))
     description = Column(String(255))
-    status = Column(String(255))
     storage_type = Column(String(255))
+    status = Column(String(255))
+    storage_id = Column(String(36))
     total_capacity = Column(BigInteger)
     used_capacity = Column(BigInteger)
     free_capacity = Column(BigInteger)
@@ -123,19 +123,19 @@ class Disk(BASE, DelfinBase):
     id = Column(String(36), primary_key=True)
     native_disk_id = Column(String(255))
     name = Column(String(255))
+    physical_type = Column(String(255))
+    logical_type = Column(String(255))
+    status = Column(String(255))
+    location = Column(String(255))
+    storage_id = Column(String(255))
+    native_disk_group_id = Column(String(255))
     serial_number = Column(String(255))
     manufacturer = Column(String(255))
     model = Column(String(255))
     firmware = Column(String(255))
     speed = Column(Integer)
     capacity = Column(BigInteger)
-    status = Column(String(255))
-    physical_type = Column(String(255))
-    logical_type = Column(String(255))
     health_score = Column(Integer)
-    native_disk_group_id = Column(String(255))
-    storage_id = Column(String(255))
-    location = Column(String(255))
 
 
 class Controller(BASE, DelfinBase):
@@ -159,20 +159,64 @@ class Port(BASE, DelfinBase):
     native_port_id = Column(String(255))
     name = Column(String(255))
     location = Column(String(255))
-    connection_status = Column(String(255))
-    health_status = Column(String(255))
     type = Column(String(255))
     logical_type = Column(String(255))
-    speed = Column(Integer)
-    max_speed = Column(Integer)
+    connection_status = Column(String(255))
+    health_status = Column(String(255))
     storage_id = Column(String(36))
     native_parent_id = Column(String(255))
+    speed = Column(Integer)
+    max_speed = Column(Integer)
     wwn = Column(String(255))
     mac_address = Column(String(255))
     ipv4 = Column(String(255))
     ipv4_mask = Column(String(255))
     ipv6 = Column(String(255))
     ipv6_mask = Column(String(255))
+
+
+class Filesystem(BASE, DelfinBase):
+    """Represents a filesystem object."""
+    __tablename__ = 'filesystems'
+    id = Column(String(36), primary_key=True)
+    native_filesystem_id = Column(String(255))
+    name = Column(String(255))
+    type = Column(String(255))
+    status = Column(String(255))
+    storage_id = Column(String(36))
+    native_pool_id = Column(String(255))
+    security_mode = Column(String(255))
+    total_capacity = Column(BigInteger)
+    used_capacity = Column(BigInteger)
+    free_capacity = Column(BigInteger)
+    compressed = Column(Boolean)
+    deduplicated = Column(Boolean)
+    worm = Column(String(255))
+
+
+class Qtree(BASE, DelfinBase):
+    """Represents a qtree object."""
+    __tablename__ = 'qtrees'
+    id = Column(String(36), primary_key=True)
+    native_qtree_id = Column(String(255))
+    name = Column(String(255))
+    path = Column(String(255))
+    storage_id = Column(String(36))
+    native_filesystem_id = Column(String(255))
+    security_mode = Column(String(255))
+
+
+class Share(BASE, DelfinBase):
+    """Represents a share object."""
+    __tablename__ = 'shares'
+    id = Column(String(36), primary_key=True)
+    native_share_id = Column(String(255))
+    name = Column(String(255))
+    path = Column(String(255))
+    storage_id = Column(String(36))
+    native_filesystem_id = Column(String(255))
+    native_qtree_id = Column(String(255))
+    protocol = Column(String(255))
 
 
 class AlertSource(BASE, DelfinBase):
