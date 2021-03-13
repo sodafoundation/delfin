@@ -166,9 +166,8 @@ class StoragePoolTask(StorageResourceTask):
             # collect the storage pools list from driver and database
             storage_pools = self.driver_api.list_storage_pools(self.context,
                                                                self.storage_id)
-            db_pools = db.storage_pool_get_all(self.context,
-                                               filters={"storage_id":
-                                                        self.storage_id})
+            db_pools = db.storage_pool_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools, 'native_storage_pool_id'
@@ -211,9 +210,8 @@ class StorageVolumeTask(StorageResourceTask):
             # collect the volumes list from driver and database
             storage_volumes = self.driver_api.list_volumes(self.context,
                                                            self.storage_id)
-            db_volumes = db.volume_get_all(self.context,
-                                           filters={"storage_id":
-                                                    self.storage_id})
+            db_volumes = db.volume_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_volumes, db_volumes, 'native_volume_id'
@@ -260,9 +258,8 @@ class StorageControllerTask(StorageResourceTask):
             # collect the controllers list from driver and database
             storage_controllers = self.driver_api.list_controllers(
                 self.context, self.storage_id)
-            db_controllers = db.controller_get_all(self.context,
-                                                   filters={"storage_id":
-                                                            self.storage_id})
+            db_controllers = db.controller_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_controllers, db_controllers, 'native_controller_id'
@@ -311,9 +308,8 @@ class StoragePortTask(StorageResourceTask):
             # collect the ports list from driver and database
             storage_ports = self.driver_api.list_ports(self.context,
                                                        self.storage_id)
-            db_ports = db.port_get_all(self.context,
-                                       filters={"storage_id":
-                                                self.storage_id})
+            db_ports = db.port_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_ports, db_ports, 'native_port_id'
@@ -362,8 +358,7 @@ class StorageDiskTask(StorageResourceTask):
             storage_disks = self.driver_api.list_disks(self.context,
                                                        self.storage_id)
             db_disks = db.disk_get_all(self.context,
-                                       filters={"storage_id":
-                                                self.storage_id})
+                                       filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_disks, db_disks, 'native_disk_id'
