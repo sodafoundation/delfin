@@ -323,3 +323,8 @@ class InvalidStorageCapability(Invalid):
 class StorageCapabilityNotSupported(Invalid):
     msg_fmt = _("Capability feature not supported by storage")
     code = 501
+
+
+class EmptyResourceMetrics(DelfinException):
+    msg_fmt = _("Empty resource metric in capabilities")
+    code = 501

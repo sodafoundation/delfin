@@ -16,7 +16,6 @@ import copy
 import six
 import stevedore
 import threading
-import jsonschema
 
 from oslo_log import log
 
@@ -24,9 +23,6 @@ from delfin import db
 from delfin import exception
 from delfin import utils
 from delfin import ssl_utils
-from delfin import context
-from delfin.drivers.helper import empty_driver_capabilities
-from delfin.drivers.driver_spec_schema import DRIVER_SPECIFICATION_SCHEMA
 
 LOG = log.getLogger(__name__)
 
@@ -42,52 +38,6 @@ class DriverManager(stevedore.ExtensionManager):
         # each of storage systems so that the session between driver
         # and storage system is effectively used.
         self.driver_factory = dict()
-        self._validate_driver_spec()
-
-    def _validate_driver_spec(self):
-        for name in self.names():
-            driver_cls = self[name].plugin
-            spec = driver_cls.get_capabilities(
-                context=context.RequestContext(is_admin=True))
-
-            # in case get_capabilities not implemented
-            if spec is None:
-                # update list_resource_metrics to return empty
-                self._add_default_capabilities(driver_cls)
-                self.alert_driver_error(
-                    driver_cls, "Driver's capability list is empty "
-                                "for %s" % name)
-            try:
-                jsonschema.validate(spec, DRIVER_SPECIFICATION_SCHEMA)
-            except jsonschema.ValidationError as ex:
-                if isinstance(ex.cause, exception.InvalidName):
-                    detail = "An invalid 'name' value was provided " \
-                             "in capability list"
-                elif len(ex.path) > 0:
-                    detail = "Invalid input for capability list " \
-                             "configured in field/attribute %(path)s." \
-                             " %(message)s" % {'path': ex.path.pop(),
-                                               'message': ex.message}
-                else:
-                    detail = ex.message
-                # update list_resource_metrics to return empty
-                self._add_default_capabilities(driver_cls)
-                self.alert_driver_error(driver_cls, detail)
-            except TypeError as ex:
-                # update list_resource_metrics to return empty
-                self._add_default_capabilities(driver_cls)
-
-                # NOTE: If passing non string value to patternProperties
-                # parameter, TypeError happens. Here is for catching
-                # the TypeError.
-                detail = six.text_type(ex)
-                self.alert_driver_error(driver_cls, detail)
-
-    def alert_driver_error(self, driver_cls, msg):
-        LOG.warning(msg)
-        # FIXME (Amit): Add Alert for driver's error
-        #   Also enable feature flag to make Northbound API aware
-        return
 
     def get_driver(self, context, invoke_on_load=True,
                    cache_on_load=True, **kwargs):
@@ -164,8 +114,3 @@ class DriverManager(stevedore.ExtensionManager):
         msg = "Storage driver '%s' could not be found." % name
         LOG.error(msg)
         raise exception.StorageDriverNotFound(name)
-
-    @staticmethod
-    def _add_default_capabilities(driver_cls):
-        driver_cls.get_capabilities = \
-            staticmethod(empty_driver_capabilities)
