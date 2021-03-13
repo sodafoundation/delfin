@@ -124,7 +124,7 @@ class StorageController(wsgi.Controller):
             LOG.info(msg)
         except Exception as e:
             # Unexpected error occurred, while performance monitoring.
-            msg = _('Failed to trigger performance monitoring for storage: '
+            msg = _('Failed to create performance monitoring task for storage:'
                     '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
                                                       'err': six.text_type(e)}
             LOG.error(msg)
