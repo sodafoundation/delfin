@@ -150,3 +150,8 @@ class API(object):
                                                 storage_id=storage_id)
         return driver.collect_array_metrics(context, storage_id,
                                             interval, is_historic)
+
+    def get_capabilities(self, context, storage_id,):
+        """Get capabilities from supported driver"""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.get_capabilities(context)

@@ -309,3 +309,13 @@ class StorageIsSyncing(Invalid):
 class InvalidIpOrPort(DelfinException):
     msg_fmt = _("Invalid ip or port.")
     code = 400
+
+
+class InvalidStorageCapability(Invalid):
+    msg_fmt = _("Invalid capability response: {0}")
+    code = 500
+
+
+class StorageCapabilityNotSupported(Invalid):
+    msg_fmt = _("Capability feature not supported by storage")
+    code = 501

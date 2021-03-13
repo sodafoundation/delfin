@@ -237,6 +237,25 @@ class StorageController(wsgi.Controller):
                     .format(six.text_type(e)))
             LOG.error(msg)
 
+    @wsgi.response(200)
+    def get_capabilities(self, req, id):
+        """
+        The API fetches capabilities from driver
+          associated with the storage device.
+        """
+        # Check and fetch storage with storage_id
+        ctx = req.environ['delfin.context']
+        storage_info = db.storage_get(ctx, id)
+
+        # Fetch supported driver's capability
+        capabilities = self.driver_api.\
+            get_capabilities(ctx, storage_info['id'])
+
+        # validate capabilities
+        validation.validate_capabilities(capabilities)
+
+        return storage_view.build_capabilities(storage_info, capabilities)
+
 
 def create_resource():
     return wsgi.Resource(StorageController())
