@@ -24,14 +24,13 @@ The idea is to move fully to cfg eventually, and this wrapper is a
 stepping stone.
 
 """
-import json
 import socket
-from delfin import exception
+
+from apscheduler.schedulers.background import BackgroundScheduler
 from oslo_config import cfg
 from oslo_log import log
 from oslo_middleware import cors
 from oslo_utils import netutils
-from apscheduler.schedulers.background import BackgroundScheduler
 
 LOG = log.getLogger(__name__)
 
@@ -130,21 +129,6 @@ def set_middleware_defaults():
                        'DELETE',
                        'PATCH']
     )
-
-
-def load_json_file(config_file):
-    try:
-        with open(config_file) as f:
-            data = json.load(f)
-            return data
-    except json.decoder.JSONDecodeError as e:
-        msg = ("{0} file is not correct. Please check the configuration file"
-               .format(config_file))
-        LOG.error(msg)
-        raise exception.InvalidInput(e.msg)
-    except FileNotFoundError as e:
-        LOG.error(e)
-        raise exception.ConfigNotFound(e)
 
 
 class Scheduler:

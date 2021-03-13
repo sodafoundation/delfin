@@ -21,7 +21,6 @@ from delfin import coordination
 from delfin import db
 from delfin import exception
 from delfin.common import constants
-from delfin.exporter import base_exporter
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
 
@@ -167,9 +166,8 @@ class StoragePoolTask(StorageResourceTask):
             # collect the storage pools list from driver and database
             storage_pools = self.driver_api.list_storage_pools(self.context,
                                                                self.storage_id)
-            db_pools = db.storage_pool_get_all(self.context,
-                                               filters={"storage_id":
-                                                        self.storage_id})
+            db_pools = db.storage_pool_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_pools, db_pools, 'native_storage_pool_id'
@@ -212,9 +210,8 @@ class StorageVolumeTask(StorageResourceTask):
             # collect the volumes list from driver and database
             storage_volumes = self.driver_api.list_volumes(self.context,
                                                            self.storage_id)
-            db_volumes = db.volume_get_all(self.context,
-                                           filters={"storage_id":
-                                                    self.storage_id})
+            db_volumes = db.volume_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_volumes, db_volumes, 'native_volume_id'
@@ -261,9 +258,8 @@ class StorageControllerTask(StorageResourceTask):
             # collect the controllers list from driver and database
             storage_controllers = self.driver_api.list_controllers(
                 self.context, self.storage_id)
-            db_controllers = db.controller_get_all(self.context,
-                                                   filters={"storage_id":
-                                                            self.storage_id})
+            db_controllers = db.controller_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_controllers, db_controllers, 'native_controller_id'
@@ -312,9 +308,8 @@ class StoragePortTask(StorageResourceTask):
             # collect the ports list from driver and database
             storage_ports = self.driver_api.list_ports(self.context,
                                                        self.storage_id)
-            db_ports = db.port_get_all(self.context,
-                                       filters={"storage_id":
-                                                self.storage_id})
+            db_ports = db.port_get_all(
+                self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_ports, db_ports, 'native_port_id'
@@ -363,8 +358,7 @@ class StorageDiskTask(StorageResourceTask):
             storage_disks = self.driver_api.list_disks(self.context,
                                                        self.storage_id)
             db_disks = db.disk_get_all(self.context,
-                                       filters={"storage_id":
-                                                self.storage_id})
+                                       filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 storage_disks, db_disks, 'native_disk_id'
@@ -557,53 +551,3 @@ class StorageShareTask(StorageResourceTask):
         LOG.info('Remove shares for storage id:{0}'
                  .format(self.storage_id))
         db.share_delete_by_storage(self.context, self.storage_id)
-
-
-class PerformanceCollectionTask(object):
-
-    def __init__(self):
-        self.driver_api = driverapi.API()
-        self.perf_exporter = base_exporter.PerformanceExporterManager()
-
-
-class ArrayPerformanceCollection(PerformanceCollectionTask):
-    def __init__(self, context, storage_id, interval, is_historic):
-        super(ArrayPerformanceCollection, self).__init__()
-        self.context = context
-        self.storage_id = storage_id
-        self.interval = interval
-        self.is_historic = is_historic
-
-    def collect(self):
-        """
-        :return:
-        """
-        LOG.info('Collecting array performance metrics for storage id:{0}'
-                 .format(self.storage_id))
-        try:
-            # collect the performance metrics from driver and push to
-            # prometheus exporter api
-            array_metrics = self.driver_api.collect_array_metrics(
-                self.context, self.storage_id, self.interval,
-                self.is_historic)
-            # fill extra labels to metric by fetching metadata from resource DB
-            try:
-                array_details = db.storage_get(self.context, storage_id=self
-                                               .storage_id)
-                for m in array_metrics:
-                    m.labels["name"] = array_details.name
-                    m.labels["serial_number"] = array_details.serial_number
-
-            except Exception as e:
-                msg = _('Failed to add extra labels to array performance '
-                        'metrics: {0}'.format(e))
-                LOG.error(msg)
-
-            self.perf_exporter.dispatch(self.context, array_metrics)
-
-        except Exception as e:
-            msg = _('Failed to collect array performance metrics from '
-                    'driver: {0}'.format(e))
-            LOG.error(msg)
-        else:
-            LOG.info("Array performance metrics collection done!!!")

@@ -14,22 +14,12 @@
 
 from unittest import mock
 
-from delfin.common import constants
-
 from delfin import db
 from delfin import exception
 from delfin import test
 from delfin.api.v1.storages import StorageController
+from delfin.common import constants
 from delfin.tests.unit.api import fakes
-
-fake_schedular_config = {
-    "storages": [{"id": "fake_id",
-                  "array_polling": {"perf_collection": True, "interval": 12,
-                                    "is_historic": True}}]}
-
-invalid_schedular_config = '"storages": [{"id": "fake_id","array_polling": {' \
-                           '"perf_collection": True, "interval": 12,' \
-                           '"is_historic": True}}]} '
 
 
 class TestStorageController(test.TestCase):
@@ -44,24 +34,8 @@ class TestStorageController(test.TestCase):
 
     @mock.patch.object(db, 'storage_get',
                        mock.Mock(return_value={'id': 'fake_id'}))
-    @mock.patch('delfin.common.config.load_json_file')
-    def test_delete(self, mock_load_json_file):
+    def test_delete(self):
         req = fakes.HTTPRequest.blank('/storages/fake_id')
-        mock_load_json_file.return_value = fake_schedular_config
-        self.controller.delete(req, 'fake_id')
-        ctxt = req.environ['delfin.context']
-        db.storage_get.assert_called_once_with(ctxt, 'fake_id')
-        self.task_rpcapi.remove_storage_resource.assert_called_with(
-            ctxt, 'fake_id', mock.ANY)
-        self.task_rpcapi.remove_storage_in_cache.assert_called_once_with(
-            ctxt, 'fake_id')
-
-    @mock.patch.object(db, 'storage_get',
-                       mock.Mock(return_value={'id': 'fake_id'}))
-    @mock.patch('delfin.common.config.load_json_file')
-    def test_delete_invalid_schedular_conf(self, mock_load_json_file):
-        req = fakes.HTTPRequest.blank('/storages/fake_id')
-        mock_load_json_file.return_value = invalid_schedular_config
         self.controller.delete(req, 'fake_id')
         ctxt = req.environ['delfin.context']
         db.storage_get.assert_called_once_with(ctxt, 'fake_id')

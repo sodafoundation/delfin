@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import copy
+import six
 
 from oslo_config import cfg
 from oslo_log import log
@@ -106,15 +107,16 @@ class StorageController(wsgi.Controller):
             # Trigger Performance monitoring
             capabilities = self.driver_api.get_capabilities(
                 context=ctxt, storage_id=storage['id'])
-            # ignore if capabilities is empty
-            if capabilities:
-                _create_performance_monitoring_task(ctxt, storage['id'],
-                                                    capabilities)
+            # validate capabilities
+            validation.validate_capabilities(capabilities)
+            # trigger performance monitoring
+            _create_performance_monitoring_task(ctxt, storage['id'],
+                                                capabilities)
         except Exception as e:
             # Unexpected error occurred, while performance monitoring.
             msg = _('Failed to trigger performance monitoring for storage: '
                     '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
-                                                      'err': e}
+                                                      'err': six.text_type(e)}
             LOG.error(msg)
         return storage_view.build_storage(storage)
 
@@ -207,7 +209,6 @@ class StorageController(wsgi.Controller):
 
         return False
 
-
     @wsgi.response(200)
     def get_capabilities(self, req, id):
         """
@@ -261,9 +262,7 @@ def _create_performance_monitoring_task(context, storage_id, capabilities):
     # check if resource_metric is empty
     if 'resource_metrics' not in capabilities \
             or not bool(capabilities.get('resource_metrics')):
-        msg = _('Skipping performance monitoring as resource metric is empty '
-                'for storage: %(storage)s.') % {'storage': storage_id}
-        LOG.warning(msg)
+        raise exception.EmptyResourceMetrics()
 
     task = dict()
     task.update(storage_id=storage_id)

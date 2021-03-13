@@ -23,9 +23,6 @@ DB_MAX_INT = 0x7FFFFFFF
 # Valid access type supported currently.
 ACCESS_TYPE = ['rest', 'ssh', 'cli', 'smis']
 
-RESOURCE_CLASS_TYPE = {'array_polling': 'ArrayPerformanceCollection'}
-SCHEDULING_MIN_INTERVAL = 5
-
 
 # Custom fields for Delfin objects
 class StorageStatus(object):
@@ -293,6 +290,6 @@ class ResourceSync(object):
 class Task(object):
     DEFAULT_TASK_INTERVAL = 30
     """Default task interval"""
-    PERFORMANCE_TASK_METHOD = "delfin.task_manager.tasks." \
-                              "performance_monitoring"
+    PERFORMANCE_TASK_METHOD = "delfin.task_manager.tasks.telemetry." \
+                              "PerformanceCollectionTask"
     """Performance monitoring task name"""
