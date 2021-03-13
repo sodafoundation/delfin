@@ -397,6 +397,56 @@ class StorageDiskTask(StorageResourceTask):
         db.disk_delete_by_storage(self.context, self.storage_id)
 
 
+class StorageQuotaTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageQuotaTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing Quotas for storage id:{0}'.format(self.storage_id))
+        try:
+            # collect the quotas list from driver and database
+            storage_quotas = self.driver_api.list_quotas(self.context,
+                                                         self.storage_id)
+            db_quotas = db.quota_get_all(self.context,
+                                         filters={"storage_id":
+                                                  self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_quotas, db_quotas, 'native_quota_id'
+            )
+
+            LOG.info('###StorageQuotaTask for {0}:add={1},delete={2},'
+                     'update={3}'.format(self.storage_id,
+                                         len(add_list),
+                                         len(delete_id_list),
+                                         len(update_list)))
+            if delete_id_list:
+                db.quotas_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.quotas_update(self.context, update_list)
+
+            if add_list:
+                db.quotas_create(self.context, add_list)
+        except AttributeError as e:
+            LOG.error(e)
+        except Exception as e:
+            msg = _('Failed to sync Quotas entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing quotas successful!!!")
+
+    def remove(self):
+        LOG.info('Remove Quotas for storage id:{0}'.format(self.storage_id))
+        db.quota_delete_by_storage(self.context, self.storage_id)
+
+
 class StorageFilesystemTask(StorageResourceTask):
     def __init__(self, context, storage_id):
         super(StorageFilesystemTask, self).__init__(context, storage_id)
@@ -407,22 +457,17 @@ class StorageFilesystemTask(StorageResourceTask):
         """
         :return:
         """
-        LOG.info('Syncing filesystems for storage id:{0}'
+        LOG.info('Syncing Filesystems for storage id:{0}'
                  .format(self.storage_id))
         try:
             # collect the filesystems list from driver and database
-            filesystems, quotas = self.driver_api.list_filesystems(
+            filesystems = self.driver_api.list_filesystems(
                 self.context, self.storage_id)
             db_filesystems = db.filesystem_get_all(
-                self.context, filters={"storage_id": self.storage_id})
-            db_quotas = db.quota_get_all(
                 self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 filesystems, db_filesystems, 'native_filesystem_id'
-            )
-            add_q_list, upd_q_list, del_q_list = self._classify_resources(
-                quotas, db_quotas, 'native_filesystem_id'
             )
 
             LOG.info('###StorageFilesystemTask for {0}:add={1},delete={2},'
@@ -439,14 +484,6 @@ class StorageFilesystemTask(StorageResourceTask):
             if add_list:
                 db.filesystems_create(self.context, add_list)
 
-            if del_q_list:
-                db.quotas_delete(self.context, del_q_list)
-
-            if upd_q_list:
-                db.quotas_update(self.context, upd_q_list)
-
-            if add_q_list:
-                db.quotas_create(self.context, add_q_list)
         except AttributeError as e:
             LOG.error(e)
         except NotImplementedError:
@@ -457,19 +494,12 @@ class StorageFilesystemTask(StorageResourceTask):
                     .format(e))
             LOG.error(msg)
         else:
-            LOG.info("Syncing filesystems successful!!!")
+            LOG.info("Syncing Filesystems successful!!!")
 
     def remove(self):
         LOG.info('Remove filesystems for storage id:{0}'
                  .format(self.storage_id))
         db.filesystem_delete_by_storage(self.context, self.storage_id)
-        filters = {
-            "storage_id": self.storage_id,
-            "type": constants.QuotaType.FILESYSTEM
-        }
-        db_quotas = db.quota_get_all(self.context, filters=filters)
-        delete_qid_list = [quota['id'] for quota in db_quotas]
-        db.quotas_delete(self.context, delete_qid_list)
 
 
 class StorageQtreeTask(StorageResourceTask):
@@ -486,18 +516,13 @@ class StorageQtreeTask(StorageResourceTask):
                  .format(self.storage_id))
         try:
             # collect the qtrees list from driver and database
-            qtrees, quotas = self.driver_api.list_qtrees(
+            qtrees = self.driver_api.list_qtrees(
                 self.context, self.storage_id)
             db_qtrees = db.qtree_get_all(
-                self.context, filters={"storage_id": self.storage_id})
-            db_quotas = db.quota_get_all(
                 self.context, filters={"storage_id": self.storage_id})
 
             add_list, update_list, delete_id_list = self._classify_resources(
                 qtrees, db_qtrees, 'native_qtree_id'
-            )
-            add_q_list, upd_q_list, del_q_list = self._classify_resources(
-                quotas, db_quotas, 'native_qtree_id'
             )
 
             LOG.info('###StorageQtreeTask for {0}:add={1},delete={2},'
@@ -514,14 +539,6 @@ class StorageQtreeTask(StorageResourceTask):
             if add_list:
                 db.qtrees_create(self.context, add_list)
 
-            if del_q_list:
-                db.quotas_delete(self.context, del_q_list)
-
-            if upd_q_list:
-                db.quotas_update(self.context, upd_q_list)
-
-            if add_q_list:
-                db.quotas_create(self.context, add_q_list)
         except AttributeError as e:
             LOG.error(e)
         except NotImplementedError:
@@ -538,13 +555,6 @@ class StorageQtreeTask(StorageResourceTask):
         LOG.info('Remove qtrees for storage id:{0}'
                  .format(self.storage_id))
         db.qtree_delete_by_storage(self.context, self.storage_id)
-        filters = {
-            "storage_id": self.storage_id,
-            "type": constants.QuotaType.TREE
-        }
-        db_quotas = db.quota_get_all(self.context, filters=filters)
-        delete_qid_list = [quota['id'] for quota in db_quotas]
-        db.quotas_delete(self.context, delete_qid_list)
 
 
 class StorageShareTask(StorageResourceTask):

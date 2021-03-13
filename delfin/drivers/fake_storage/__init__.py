@@ -268,12 +268,38 @@ class FakeStorageDriver(driver.StorageDriver):
             disk_list.append(c)
         return disk_list
 
+    def list_quotas(self, ctx):
+        rd_quotas_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_quotas for %s: %d"
+                 % (self.storage_id, rd_quotas_count))
+        quota_list = []
+        for idx in range(rd_quotas_count):
+            qtype = list(constants.QuotaType.ALL)
+            qtype_len = len(constants.QuotaType.ALL) - 1
+            slimit = random.randint(0, 5000)
+            hlimit = random.randint(slimit, 10000)
+            q = {
+                "native_quota_id": None,
+                "type": qtype[random.randint(0, qtype_len)],
+                "storage_id": self.storage_id,
+                "native_filesystem_id": "fake_original_id_" + str(idx),
+                "native_qtree_id": None,
+                "capacity_hard_limit": random.randint(slimit, hlimit),
+                "capacity_soft_limit": random.randint(0, slimit),
+                "file_hard_limit": random.randint(slimit, hlimit),
+                "file_soft_limit": random.randint(slimit, hlimit),
+                "file_count": hlimit,
+                "used_capacity": hlimit + slimit,
+                "user_group_name": "usr0",
+            }
+            quota_list.append(q)
+        return quota_list
+
     def list_filesystems(self, ctx):
         rd_filesystems_count = random.randint(MIN_FS, MAX_FS)
         LOG.info("###########fake_filesystems for %s: %d"
                  % (self.storage_id, rd_filesystems_count))
         filesystem_list = []
-        quota_list = []
         for idx in range(rd_filesystems_count):
             total, used, free = self._get_random_capacity()
             boolean = [True, False]
@@ -300,30 +326,14 @@ class FakeStorageDriver(driver.StorageDriver):
                 "deduplicated": boolean[random.randint(0, 1)],
                 "compressed": boolean[random.randint(0, 1)],
             }
-            q = {
-                "native_quota_id": None,
-                "type": constants.QuotaType.FILESYSTEM,
-                "storage_id": self.storage_id,
-                "native_filesystem_id": "fake_original_id_" + str(idx),
-                "native_qtree_id": None,
-                "capacity_hard_limit": 80,
-                "capacity_soft_limit": 70,
-                "file_hard_limit": 81,
-                "file_soft_limit": 71,
-                "file_count": 101,
-                "used_capacity": 100,
-                "user_group_name": None,
-            }
             filesystem_list.append(f)
-            quota_list.append(q)
-        return filesystem_list, quota_list
+        return filesystem_list
 
     def list_qtrees(self, ctx):
         rd_qtrees_count = random.randint(MIN_FS, MAX_FS)
         LOG.info("###########fake_qtrees for %s: %d"
                  % (self.storage_id, rd_qtrees_count))
         qtree_list = []
-        quota_list = []
         for idx in range(rd_qtrees_count):
             security = list(constants.NASSecurityMode.ALL)
             security_len = len(constants.NASSecurityMode.ALL) - 1
@@ -336,24 +346,9 @@ class FakeStorageDriver(driver.StorageDriver):
                 "security_mode": security[random.randint(0, security_len)],
                 "path": "/",
             }
-            q = {
-                "native_quota_id": None,
-                "type": constants.QuotaType.TREE,
-                "storage_id": self.storage_id,
-                "native_filesystem_id": None,
-                "native_qtree_id": "fake_original_id_" + str(idx),
-                "capacity_hard_limit": 70,
-                "capacity_soft_limit": 30,
-                "file_hard_limit": 71,
-                "file_soft_limit": 31,
-                "file_count": 101,
-                "used_capacity": 100,
-                "user_group_name": None,
-            }
-
             qtree_list.append(t)
-            quota_list.append(q)
-        return qtree_list, quota_list
+
+        return qtree_list
 
     def list_shares(self, ctx):
         rd_shares_count = random.randint(MIN_FS, MAX_FS)

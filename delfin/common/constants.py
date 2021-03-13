@@ -175,12 +175,11 @@ class NASSecurityMode(object):
 
 
 class QuotaType(object):
-    FILESYSTEM = 'filesystem'
     TREE = 'tree'
     USER = 'user'
     GROUP = 'group'
 
-    ALL = (FILESYSTEM, TREE, USER, GROUP)
+    ALL = (TREE, USER, GROUP)
 
 
 class ShareProtocol(object):
