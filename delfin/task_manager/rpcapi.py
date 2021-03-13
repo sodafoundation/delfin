@@ -47,6 +47,17 @@ class TaskAPI(object):
                                  storage_id=storage_id,
                                  resource_task=resource_task)
 
+    def collect_telemetry(self, context, storage_id, telemetry_task, args,
+                          start_time, end_time):
+        call_context = self.client.prepare(version='1.0')
+        return call_context.cast(context,
+                                 'collect_telemetry',
+                                 storage_id=storage_id,
+                                 telemetry_task=telemetry_task,
+                                 args=args,
+                                 start_time=start_time,
+                                 end_time=end_time)
+
     def remove_storage_resource(self, context, storage_id, resource_task):
         call_context = self.client.prepare(version='1.0')
         return call_context.cast(context,

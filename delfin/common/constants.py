@@ -277,7 +277,6 @@ DELFIN_ARRAY_METRICS = [
     "write_bandwidth"
 ]
 
-
 BLOCK_SIZE = 4096
 
 
@@ -287,9 +286,8 @@ class ResourceSync(object):
     FAILED = 101
 
 
-class Task(object):
-    DEFAULT_TASK_INTERVAL = 30
-    """Default task interval"""
-    PERFORMANCE_TASK_METHOD = "delfin.task_manager.tasks.telemetry." \
-                              "PerformanceCollectionTask"
+class TelemetryCollection(object):
     """Performance monitoring task name"""
+    PERFORMANCE_TASK_METHOD = "delfin.task_manager.scheduler.schedulers." \
+                              "telemetry.performance_collection_handler." \
+                              "PerformanceCollectionHandler"

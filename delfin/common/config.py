@@ -26,7 +26,6 @@ stepping stone.
 """
 import socket
 
-from apscheduler.schedulers.background import BackgroundScheduler
 from oslo_config import cfg
 from oslo_log import log
 from oslo_middleware import cors
@@ -129,21 +128,3 @@ def set_middleware_defaults():
                        'DELETE',
                        'PATCH']
     )
-
-
-class Scheduler:
-    __instance = None
-
-    @staticmethod
-    def getInstance():
-        """ Get instance of scheduler class """
-        if Scheduler.__instance is None:
-            Scheduler.__instance = BackgroundScheduler()
-        return Scheduler.__instance
-
-    def __init__(self):
-        if Scheduler.__instance is not None:
-            raise Exception("The instance of scheduler class is already"
-                            "running.")
-        else:
-            Scheduler.__instance = self
