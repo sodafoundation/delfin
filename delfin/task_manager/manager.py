@@ -18,9 +18,10 @@
 """
 from oslo_log import log
 from oslo_utils import importutils
+
 from delfin import manager
 from delfin.drivers import manager as driver_manager
-from delfin.task_manager.tasks import alerts
+from delfin.task_manager.tasks import alerts, telemetry
 
 LOG = log.getLogger(__name__)
 
@@ -32,6 +33,7 @@ class TaskManager(manager.Manager):
 
     def __init__(self, service_name=None, *args, **kwargs):
         self.alert_task = alerts.AlertSyncTask()
+        self.telemetry_task = telemetry.TelemetryTask()
         super(TaskManager, self).__init__(*args, **kwargs)
 
     def sync_storage_resource(self, context, storage_id, resource_task):
@@ -40,6 +42,14 @@ class TaskManager(manager.Manager):
         cls = importutils.import_class(resource_task)
         device_obj = cls(context, storage_id)
         device_obj.sync()
+
+    def collect_telemetry(self, context, storage_id, telemetry_task,
+                          args, start_time, end_time):
+        LOG.info("Collecting resource_metrics: {0} request for storage"
+                 " id:{1}".format(args, storage_id))
+        cls = importutils.import_class(telemetry_task)
+        device_obj = cls()
+        device_obj.collect(context, storage_id, args, start_time, end_time)
 
     def remove_storage_resource(self, context, storage_id, resource_task):
         cls = importutils.import_class(resource_task)

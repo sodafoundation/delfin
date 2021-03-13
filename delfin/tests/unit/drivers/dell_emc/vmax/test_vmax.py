@@ -14,15 +14,15 @@
 
 
 from unittest import TestCase, mock
+
 from requests.sessions import Session
-from delfin import exception
+
 from delfin import context
-
-from delfin.common import constants
-
+from delfin import exception
 from delfin.common import config  # noqa
-from delfin.drivers.dell_emc.vmax.vmax import VMAXStorageDriver
+from delfin.common import constants
 from delfin.drivers.dell_emc.vmax.rest import VMaxRest
+from delfin.drivers.dell_emc.vmax.vmax import VMAXStorageDriver
 
 
 class Request:
@@ -587,17 +587,20 @@ class TestVMAXStorageDriver(TestCase):
         self.assertEqual(driver.storage_id, "12345")
         self.assertEqual(driver.client.array_id, "00112233")
 
-        ret = driver.collect_array_metrics(context, '12345', 900, True)
+        ret = driver.collect_perf_metrics(context, '12345', "", 10900000,
+                                          10000000)
         self.assertEqual(ret, expected_historic)
 
         mock_performnace.return_value = 200, vmax_array_perf_resp_real_time
-        ret = driver.collect_array_metrics(context, '12345', 0, False)
+        ret = driver.collect_perf_metrics(context, '12345', "", 10900000,
+                                          10900000)
         self.assertEqual(ret, expected_realtime)
 
         mock_performnace.side_effect = \
             exception.StoragePerformanceCollectionFailed
         with self.assertRaises(Exception) as exc:
-            ret = driver.collect_array_metrics(context, '12345', 900, True)
+            ret = driver.collect_perf_metrics(context, '12345', "", 10900000,
+                                              10000000)
 
         self.assertIn('Failed to collect performance metrics. Reason',
                       str(exc.exception))

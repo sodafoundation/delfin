@@ -121,6 +121,11 @@ class StorageDriver(object):
         raise NotImplementedError(
             "Driver API list_quotas() is not Implemented")
 
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time, end_time):
+        """Collect performance metrics from storage system."""
+        pass
+
     def list_filesystems(self, context):
         """List all filesystems from storage system."""
         raise NotImplementedError(

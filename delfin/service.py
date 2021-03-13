@@ -33,6 +33,7 @@ from oslo_utils import importutils
 from delfin import context
 from delfin import coordination
 from delfin import rpc
+from delfin.task_manager.scheduler import schedule_manager
 
 LOG = log.getLogger(__name__)
 
@@ -268,6 +269,7 @@ class TaskService(Service):
 
     def start(self):
         super(TaskService, self).start()
+        schedule_manager.SchedulerManager().start()
 
 
 class WSGIService(service.ServiceBase):

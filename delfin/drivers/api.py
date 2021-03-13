@@ -148,13 +148,15 @@ class API(object):
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.list_alerts(context, query_para)
 
-    def collect_array_metrics(self, context, storage_id, interval,
-                              is_historic):
-        """Collect array performance metrics"""
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time, end_time):
+
+        """Collect performance metrics"""
         driver = self.driver_manager.get_driver(context,
                                                 storage_id=storage_id)
-        return driver.collect_array_metrics(context, storage_id,
-                                            interval, is_historic)
+        return driver.collect_perf_metrics(context, storage_id,
+                                           resource_metrics, start_time,
+                                           end_time)
 
     def get_capabilities(self, context, storage_id,):
         """Get capabilities from supported driver"""

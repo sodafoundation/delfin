@@ -36,6 +36,14 @@ from delfin.task_manager.tasks import resources
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
+telemetry_opts = [
+    cfg.IntOpt('performance_collection_interval', default=300,
+               help='default interval (in sec) for performance collection'),
+]
+
+CONF.register_opts(telemetry_opts, "TELEMETRY")
+telemetry = CONF.TELEMETRY
+
 
 class StorageController(wsgi.Controller):
     def __init__(self):
@@ -269,6 +277,6 @@ def _create_performance_monitoring_task(context, storage_id, capabilities):
     task = dict()
     task.update(storage_id=storage_id)
     task.update(args=capabilities.get('resource_metrics'))
-    task.update(interval=constants.Task.DEFAULT_TASK_INTERVAL)
-    task.update(method=constants.Task.PERFORMANCE_TASK_METHOD)
+    task.update(interval=telemetry.performance_collection_interval)
+    task.update(method=constants.TelemetryCollection.PERFORMANCE_TASK_METHOD)
     db.task_create(context=context, values=task)

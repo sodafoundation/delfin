@@ -88,10 +88,10 @@ def map_array_perf_metrics_to_delfin_metrics(metrics_value_map):
     write_throughput_values_dict = metrics_value_map.get('HostWrites')
     # map values to delfin metrics spec
     delfin_metrics = {'response_time': response_time_values_dict,
-                      'read_bandwidth': read_bandwidth_values_dict,
-                      'write_bandwidth': write_bandwidth_values_dict,
-                      'throughput': throughput_values_dict,
-                      'read_throughput': read_throughput_values_dict,
-                      'write_throughput': write_throughput_values_dict,
-                      'bandwidth': bandwidth_values_dict}
+                      'read_throughput': read_bandwidth_values_dict,
+                      'write_throughput': write_bandwidth_values_dict,
+                      'requests': throughput_values_dict,
+                      'readRequests': read_throughput_values_dict,
+                      'writeRequests': write_throughput_values_dict,
+                      'throughput': bandwidth_values_dict}
     return delfin_metrics
