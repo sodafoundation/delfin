@@ -268,6 +268,33 @@ class FakeStorageDriver(driver.StorageDriver):
             disk_list.append(c)
         return disk_list
 
+    def list_quotas(self, ctx):
+        rd_quotas_count = random.randint(MIN_FS, MAX_FS)
+        LOG.info("###########fake_quotas for %s: %d"
+                 % (self.storage_id, rd_quotas_count))
+        quota_list = []
+        for idx in range(rd_quotas_count):
+            qtype = list(constants.QuotaType.ALL)
+            qtype_len = len(constants.QuotaType.ALL) - 1
+            slimit = random.randint(0, 5000)
+            hlimit = random.randint(slimit, 10000)
+            q = {
+                "native_quota_id": None,
+                "type": qtype[random.randint(0, qtype_len)],
+                "storage_id": self.storage_id,
+                "native_filesystem_id": "fake_original_id_" + str(idx),
+                "native_qtree_id": None,
+                "capacity_hard_limit": random.randint(slimit, hlimit),
+                "capacity_soft_limit": random.randint(0, slimit),
+                "file_hard_limit": random.randint(slimit, hlimit),
+                "file_soft_limit": random.randint(slimit, hlimit),
+                "file_count": hlimit,
+                "used_capacity": hlimit + slimit,
+                "user_group_name": "usr0",
+            }
+            quota_list.append(q)
+        return quota_list
+
     def list_filesystems(self, ctx):
         rd_filesystems_count = random.randint(MIN_FS, MAX_FS)
         LOG.info("###########fake_filesystems for %s: %d"
@@ -284,7 +311,7 @@ class FakeStorageDriver(driver.StorageDriver):
             alloc_type_len = len(constants.VolumeType.ALL) - 1
             security = list(constants.NASSecurityMode.ALL)
             security_len = len(constants.NASSecurityMode.ALL) - 1
-            c = {
+            f = {
                 "name": "fake_filesystem_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_filesystem_id": "fake_original_id_" + str(idx),
@@ -299,7 +326,7 @@ class FakeStorageDriver(driver.StorageDriver):
                 "deduplicated": boolean[random.randint(0, 1)],
                 "compressed": boolean[random.randint(0, 1)],
             }
-            filesystem_list.append(c)
+            filesystem_list.append(f)
         return filesystem_list
 
     def list_qtrees(self, ctx):
@@ -311,7 +338,7 @@ class FakeStorageDriver(driver.StorageDriver):
             security = list(constants.NASSecurityMode.ALL)
             security_len = len(constants.NASSecurityMode.ALL) - 1
 
-            c = {
+            t = {
                 "name": "fake_qtree_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_qtree_id": "fake_original_id_" + str(idx),
@@ -319,7 +346,8 @@ class FakeStorageDriver(driver.StorageDriver):
                 "security_mode": security[random.randint(0, security_len)],
                 "path": "/",
             }
-            qtree_list.append(c)
+            qtree_list.append(t)
+
         return qtree_list
 
     def list_shares(self, ctx):
