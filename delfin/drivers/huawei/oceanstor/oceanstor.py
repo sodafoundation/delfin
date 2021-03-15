@@ -354,6 +354,226 @@ class OceanStorDriver(driver.StorageDriver):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
+    def _list_quotas(self, quotas, fs_id, qt_id):
+        q_type = {
+            consts.QUOTA_TYPE_TREE: constants.QuotaType.TREE,
+            consts.QUOTA_TYPE_USER: constants.QuotaType.USER,
+            consts.QUOTA_TYPE_GROUP: constants.QuotaType.GROUP,
+        }
+        q_list = []
+        for qt in quotas:
+            chq, csq, fhq, fsq = None, None, None, None
+            uc, fc = None, None
+            if qt['SPACEHARDQUOTA'] != consts.QUOTA_NOT_ENABLED:
+                chq = qt['SPACEHARDQUOTA']
+            if qt['SPACESOFTQUOTA'] != consts.QUOTA_NOT_ENABLED:
+                csq = qt['SPACESOFTQUOTA']
+            if qt['FILEHARDQUOTA'] != consts.QUOTA_NOT_ENABLED:
+                fhq = qt['FILEHARDQUOTA']
+            if qt['FILESOFTQUOTA'] != consts.QUOTA_NOT_ENABLED:
+                fsq = qt['FILESOFTQUOTA']
+            if qt['SPACEUSED'] != consts.QUOTA_NOT_ENABLED:
+                uc = qt['SPACEUSED']
+            if qt['FILEUSED'] != consts.QUOTA_NOT_ENABLED:
+                fc = qt['FILEUSED']
+            q = {
+                "native_quota_id": qt['ID'],
+                "type": q_type.get(qt['QUOTATYPE']),
+                "storage_id": self.storage_id,
+                "native_filesystem_id": fs_id,
+                "native_qtree_id": qt_id,
+                "capacity_hard_limit": chq,
+                "capacity_soft_limit": csq,
+                "file_hard_limit": fhq,
+                "file_soft_limit": fsq,
+                "file_count": fc,
+                "used_capacity": uc,
+                "user_group_name": qt['USRGRPOWNERNAME'],
+            }
+            q_list.append(q)
+            return q_list
+
+    def list_quotas(self, context):
+        try:
+            # Get list of OceanStor quotas details
+            quotas_list = []
+            filesystems = self.client.get_all_filesystems()
+            for fs in filesystems:
+                fs_id = fs["ID"]
+                quotas = self.client.get_all_filesystem_quotas(fs_id)
+                if quotas:
+                    qs = self._list_quotas(quotas, fs_id, None)
+                    quotas_list.extend(qs)
+
+            qtrees = self.client.get_all_qtrees(filesystems)
+            for qt in qtrees:
+                qt_id = qt["ID"]
+                quotas = self.client.get_all_qtree_quotas(qt_id)
+                if quotas:
+                    qs = self._list_quotas(quotas, None, qt_id)
+                    quotas_list.extend(qs)
+
+            return quotas_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get quotas from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get quotas from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_filesystems(self, context):
+        try:
+            # Get list of OceanStor filesystems details
+            fss = self.client.get_all_filesystems()
+
+            fs_list = []
+            worm_type = {
+                consts.FS_WORM_COMPLIANCE: constants.WORMType.COMPLIANCE,
+                consts.FS_WORM_AUDIT_LOG: constants.WORMType.AUDIT_LOG,
+                consts.FS_WORM_ENTERPRISE: constants.WORMType.ENTERPRISE
+            }
+            for fs in fss:
+                status = constants.FilesystemStatus.FAULTY
+                if fs['HEALTHSTATUS'] == consts.FS_HEALTH_NORMAL:
+                    status = constants.FilesystemStatus.NORMAL
+                fs_type = constants.FSType.THICK
+                if fs['ALLOCTYPE'] == consts.FS_TYPE_THIN:
+                    fs_type = constants.FSType.THIN
+
+                pool_id = None
+                if fs['PARENTTYPE'] == consts.PARENT_TYPE_POOL:
+                    pool_id = fs['PARENTID']
+
+                sector_size = int(fs['SECTORSIZE'])
+                total_cap = int(fs['CAPACITY']) * sector_size
+                used_cap = int(fs['ALLOCCAPACITY']) * sector_size
+                free_cap = int(fs['AVAILABLECAPCITY']) * sector_size
+
+                compressed = False
+                if fs['ENABLECOMPRESSION'] != 'false':
+                    compressed = True
+
+                deduplicated = False
+                if fs['ENABLEDEDUP'] != 'false':
+                    deduplicated = True
+
+                f = {
+                    'name': fs['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_filesystem_id': fs['ID'],
+                    'native_pool_id': pool_id,
+                    'compressed': compressed,
+                    'deduplicated': deduplicated,
+                    'worm': worm_type.get(fs['WORMTYPE'],
+                                          constants.WORMType.NON_WORM),
+                    'status': status,
+                    'type': fs_type,
+                    'total_capacity': total_cap,
+                    'used_capacity': used_cap,
+                    'free_capacity': free_cap,
+                }
+                fs_list.append(f)
+
+            return fs_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get filesystems from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get filesystems from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_qtrees(self, context):
+        try:
+            # Get list of OceanStor qtrees details
+            filesystems = self.client.get_all_filesystems()
+            qts = self.client.get_all_qtrees(filesystems)
+            security_mode = {
+                consts.SECURITY_STYLE_MIXED: constants.NASSecurityMode.MIXED,
+                consts.SECURITY_STYLE_NATIVE: constants.NASSecurityMode.NATIVE,
+                consts.SECURITY_STYLE_NTFS: constants.NASSecurityMode.NTFS,
+                consts.SECURITY_STYLE_UNIX: constants.NASSecurityMode.UNIX,
+            }
+
+            qt_list = []
+            for qt in qts:
+                fs_id = None
+                if qt['PARENTTYPE'] == consts.PARENT_OBJECT_TYPE_FS:
+                    fs_id = qt['PARENTID']
+                q = {
+                    'name': qt['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_qtree_id': qt['ID'],
+                    'native_filesystem_id': fs_id,
+                    'security_mode': security_mode.get(qt['securityStyle']),
+                }
+                qt_list.append(q)
+
+            return qt_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get qtrees from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get qtrees from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_shares(self, context):
+        try:
+            # Get list of OceanStor shares details
+            ss = self.client.get_all_shares()
+
+            s_list = []
+            for s in ss:
+
+                protocol = None
+                if s.get('type') == consts.SHARE_NFS:
+                    protocol = constants.ShareProtocol.NFS
+                if s.get('subType'):
+                    protocol = constants.ShareProtocol.CIFS
+                if s.get('ACCESSNAME'):
+                    protocol = constants.ShareProtocol.FTP
+
+                s = {
+                    'name': s['NAME'],
+                    'storage_id': self.storage_id,
+                    'native_share_id': s['ID'],
+                    'native_filesystem_id': s['FSID'],
+                    'path': s['SHAREPATH'],
+                    'protocol': protocol
+                }
+                s_list.append(s)
+
+            return s_list
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to get shares from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get shares from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
     def add_trap_config(self, context, trap_config):
         pass
 
