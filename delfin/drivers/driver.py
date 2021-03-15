@@ -116,6 +116,11 @@ class StorageDriver(object):
         """Clear alert from storage system."""
         pass
 
+    def list_quotas(self, context):
+        """List all quotas from storage system."""
+        raise NotImplementedError(
+            "Driver API list_quotas() is not Implemented")
+
     def list_filesystems(self, context):
         """List all filesystems from storage system."""
         raise NotImplementedError(

@@ -23,6 +23,7 @@ from delfin.api.v1 import filesystems
 from delfin.api.v1 import performance
 from delfin.api.v1 import ports
 from delfin.api.v1 import qtrees
+from delfin.api.v1 import quotas
 from delfin.api.v1 import shares
 from delfin.api.v1 import storage_pools
 from delfin.api.v1 import storages
@@ -125,6 +126,10 @@ class APIRouter(common.APIRouter):
         self.resources['qtrees'] = qtrees.create_resource()
         mapper.resource("qtrees", "qtrees",
                         controller=self.resources['qtrees'])
+
+        self.resources['quotas'] = quotas.create_resource()
+        mapper.resource("quotas", "quotas",
+                        controller=self.resources['quotas'])
 
         self.resources['shares'] = shares.create_resource()
         mapper.resource("shares", "shares",

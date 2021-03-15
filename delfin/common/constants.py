@@ -174,6 +174,14 @@ class NASSecurityMode(object):
     ALL = (MIXED, NATIVE, NTFS, UNIX)
 
 
+class QuotaType(object):
+    TREE = 'tree'
+    USER = 'user'
+    GROUP = 'group'
+
+    ALL = (TREE, USER, GROUP)
+
+
 class ShareProtocol(object):
     CIFS = 'cifs'
     NFS = 'nfs'
