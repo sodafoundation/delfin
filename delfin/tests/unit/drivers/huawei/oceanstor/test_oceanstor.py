@@ -843,3 +843,312 @@ class TestOceanStorStorageDriver(TestCase):
                 driver.list_disks(context)
             self.assertIn('The results are invalid',
                           str(exc.exception))
+
+    def test_list_filesystems(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'fs1',
+                'storage_id': '12345',
+                'native_filesystem_id': '123',
+                'native_pool_id': '123',
+                'compressed': True,
+                'deduplicated': True,
+                'worm': 'non_worm',
+                'status': 'normal',
+                'type': 'thin',
+                'total_capacity': 81920,
+                'used_capacity': 8192,
+                'free_capacity': 8192,
+            },
+            {
+                'name': 'fs2',
+                'storage_id': '12345',
+                'native_filesystem_id': '123',
+                'native_pool_id': '123',
+                'compressed': False,
+                'deduplicated': False,
+                'worm': 'compliance',
+                'status': 'normal',
+                'type': 'thin',
+                'total_capacity': 81920,
+                'used_capacity': 81920,
+                'free_capacity': 8192,
+            },
+            {
+                'name': 'fs3',
+                'storage_id': '12345',
+                'native_filesystem_id': '123',
+                'native_pool_id': '123',
+                'compressed': True,
+                'deduplicated': True,
+                'worm': 'audit_log',
+                'status': 'normal',
+                'type': 'thin',
+                'total_capacity': 81920,
+                'used_capacity': 8192,
+                'free_capacity': 8192,
+            }
+
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        'HEALTHSTATUS': '1',
+                        'ALLOCTYPE': '1',
+                        'SECTORSIZE': '8192',
+                        'CAPACITY': '10',
+                        'ALLOCCAPACITY': '1',
+                        'AVAILABLECAPCITY': '1',
+                        'ENABLECOMPRESSION': 'true',
+                        'ENABLEDEDUP': 'true',
+                        'NAME': 'fs1',
+                        'ID': '123',
+                        'PARENTTYPE': 216,
+                        'PARENTID': '123',
+                        'WORMTYPE': '0'
+                    },
+                    {
+                        'HEALTHSTATUS': '1',
+                        'ALLOCTYPE': '1',
+                        'SECTORSIZE': '8192',
+                        'CAPACITY': '10',
+                        'ALLOCCAPACITY': '10',
+                        'AVAILABLECAPCITY': '1',
+                        'ENABLECOMPRESSION': 'false',
+                        'ENABLEDEDUP': 'false',
+                        'NAME': 'fs2',
+                        'ID': '123',
+                        'PARENTTYPE': 216,
+                        'PARENTID': '123',
+                        'WORMTYPE': '1'
+                    },
+                    {
+                        'HEALTHSTATUS': '1',
+                        'ALLOCTYPE': '1',
+                        'SECTORSIZE': '8192',
+                        'CAPACITY': '10',
+                        'ALLOCCAPACITY': '1',
+                        'AVAILABLECAPCITY': '1',
+                        'ENABLECOMPRESSION': 'true',
+                        'ENABLEDEDUP': 'true',
+                        'NAME': 'fs3',
+                        'ID': '123',
+                        'PARENTTYPE': 216,
+                        'PARENTID': '123',
+                        'WORMTYPE': '2'
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'SOFTVER': '1000',
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            fs = driver.list_filesystems(context)
+            self.assertDictEqual(fs[0], expected[0])
+            self.assertDictEqual(fs[1], expected[1])
+            self.assertDictEqual(fs[2], expected[2])
+
+        with mock.patch.object(RestClient, 'get_all_filesystems',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_filesystems(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_filesystems',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_filesystems(context)
+            self.assertIn('The results are invalid',
+                          str(exc.exception))
+
+    def test_list_qtrees(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'qtree1',
+                'storage_id': '12345',
+                'native_qtree_id': '123',
+                'native_filesystem_id': '123',
+                'security_mode': 'mixed',
+            },
+            {
+                'name': 'WD00:1111',
+                'storage_id': '12345',
+                'native_disk_id': '0B',
+                'serial_number': '1111',
+                'manufacturer': 'WesterDigital',
+                'model': 'WD00',
+                'firmware': '123',
+                'speed': 10000,
+                'capacity': 5000000,
+                'status': 'offline',
+                'physical_type': 'ssd',
+                'logical_type': 'free',
+                'health_score': '255',
+                'native_disk_group_id': None,
+                'location': 'Location2',
+            },
+            {
+                'name': 'ST200:1234',
+                'storage_id': '12345',
+                'native_disk_id': '0A',
+                'serial_number': '1234',
+                'manufacturer': 'Segate',
+                'model': 'ST200',
+                'firmware': '0003',
+                'speed': 7200,
+                'capacity': 1000000,
+                'status': 'abnormal',
+                'physical_type': 'unknown',
+                'logical_type': 'free',
+                'health_score': '255',
+                'native_disk_group_id': None,
+                'location': 'Location1',
+            }
+
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        'NAME': 'qtree1',
+                        'ID': '123',
+                        'securityStyle': '0',
+                        'PARENTTYPE': 40,
+                        'PARENTID': '123',
+                    },
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'get_all_filesystems',
+                               side_effect=[[{"ID": "1"}]]):
+            with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+                qtree = driver.list_qtrees(context)
+            self.assertDictEqual(qtree[0], expected[0])
+
+        with mock.patch.object(RestClient, 'get_all_filesystems',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_qtrees(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_filesystems',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_qtrees(context)
+            self.assertIn('The results are invalid',
+                          str(exc.exception))
+
+    def test_list_shares(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'CIFS',
+                'storage_id': '12345',
+                'native_share_id': '111',
+                'native_filesystem_id': 'FS111',
+                'path': '/filesystem0001/',
+                'protocol': 'cifs'
+            },
+            {
+                'name': 'NFS',
+                'storage_id': '12345',
+                'native_share_id': '222',
+                'native_filesystem_id': 'FS222',
+                'path': '/filesystem0002/',
+                'protocol': 'nfs'
+            },
+            {
+                'name': 'FTP',
+                'storage_id': '12345',
+                'native_share_id': '333',
+                'native_filesystem_id': 'FS333',
+                'path': '/filesystem0003/',
+                'protocol': 'ftp'
+            }
+
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        'subType': '0',
+                        'NAME': 'CIFS',
+                        'SHAREPATH': '/filesystem0001/',
+                        'ID': '111',
+                        'FSID': 'FS111'
+                    },
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'type': '16401',
+                    'NAME': 'NFS',
+                    'SHAREPATH': '/filesystem0002/',
+                    'ID': '222',
+                    'FSID': 'FS222'
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [{
+                    'ACCESSNAME': 'test',
+                    'NAME': 'FTP',
+                    'SHAREPATH': '/filesystem0003/',
+                    'ID': '333',
+                    'FSID': 'FS333'
+                }],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            share = driver.list_shares(context)
+            self.assertDictEqual(share[0], expected[0])
+            self.assertDictEqual(share[1], expected[1])
+            self.assertDictEqual(share[2], expected[2])
+
+        with mock.patch.object(RestClient, 'get_all_shares',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_shares(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_shares',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_shares(context)
+            self.assertIn('The results are invalid',
+                          str(exc.exception))
