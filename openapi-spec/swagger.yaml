@@ -2211,7 +2211,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-
+  '/v1/storages/{id}/capabilities':
+    get:
+      tags:
+        - Performance Monitoring
+      description: |
+        Provides supported capabilities of Infrastructure management by storage configured in delfin deployment.
+      parameters:
+        - name: id
+          in: path
+          description: Database ID created for a storage backend.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns specifications of storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageCapabilitiesResponse'
+        '404':
+          description: The storage does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: Invalid capabilities.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '505':
+          description: Capability feature not supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
 components:
   schemas:
     BaseModel:
@@ -3299,6 +3338,61 @@ components:
       description: >-
         Detailed HTTP error response, which consists of a HTTP status code, and
         a custom error message unique for each failure case.
+
+    StorageCapabilitiesResponse:
+      type: object
+      required:
+        - metadata
+        - spec
+      properties:
+        metadata:
+          type: object
+          properties:
+            model:
+              type: string
+              description: Name of the supported storage (driver)
+              example: VMAX250F
+            vendor:
+              type: string
+              description: Name of the vendor
+              example: Dell EMC
+        spec:
+          type: object
+          required:
+            - is_historic
+          properties:
+            is_historic:
+              type: boolean
+              example: true
+              description: Set true during storage driver registration if driver support fetching historic metrics. This enable internal performance framework to either call driver interface to pull real time metrics or historic time series metrics.
+            resource_metrics:
+              $ref: '#/components/schemas/ResourceMetrics'
+    ResourceMetrics:
+      type: object
+      description: Map of resources and supported metrics of respective resources for storage (driver)
+      additionalProperties:
+        type: array
+        items:
+          type: object
+          description: list of metrics with supported Units and its description
+          properties:
+            unit:
+              type: string
+              description: supported metric unit
+            description:
+              type: string
+              description: storage specific desctiption for respective metric
+      example:
+        storagePool:
+          - throughput:
+              unit: MB/s
+              description: Represents how much data is successfully transferred in MB/s
+          - readThroughput:
+              unit: MB/s
+              description: Represents how much data read is successfully transferred in MB/s
+          - readRequests:
+              unit: IOPS
+              description: Read requests per second
   responses:
     HTTPStatus400:
       description: BadRequest
