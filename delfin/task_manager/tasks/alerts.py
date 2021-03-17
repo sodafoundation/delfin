@@ -16,6 +16,7 @@ import six
 from oslo_log import log
 
 from delfin import db
+from delfin import exception
 from delfin.common import alert_util
 from delfin.drivers import api as driver_manager
 from delfin.exporter import base_exporter
@@ -66,6 +67,9 @@ class AlertSyncTask(object):
             try:
                 self.driver_manager.clear_alert(ctx, storage_id,
                                                 sequence_number)
+            except (exception.AccessInfoNotFound,
+                    exception.StorageNotFound) as e:
+                LOG.warning("Ignore the situation: %s", e.msg)
             except Exception as e:
                 LOG.error("Failed to clear alert with sequence number: %s "
                           "for storage: %s, reason: %s.",

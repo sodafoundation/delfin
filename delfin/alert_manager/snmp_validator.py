@@ -45,7 +45,6 @@ class SNMPValidator(object):
             # engine id if engine id is empty. Therefore, engine id
             # should be saved in database.
             if not engine_id and alert_source.get('engine_id'):
-
                 alert_source_dict = {
                     'engine_id': alert_source.get('engine_id')}
                 db.alert_source_update(ctxt,
@@ -81,23 +80,33 @@ class SNMPValidator(object):
 
         cmd_gen = cmdgen.CommandGenerator()
 
-        # Register engine observer to get engineId,
-        # Code reference from: http://snmplabs.com/pysnmp/
-        observer_context = {}
-        cmd_gen.snmpEngine.observer.registerObserver(
-            lambda e, p, v, c: c.update(
-                securityEngineId=v['securityEngineId']),
-            'rfc3412.prepareDataElements:internal',
-            cbCtx=observer_context
-        )
-
         version = alert_source.get('version')
 
         # Connect to alert source through snmp get to check the configuration
         try:
+            target = cmdgen.UdpTransportTarget((alert_source['host'],
+                                                alert_source['port']),
+                                               timeout=alert_source[
+                                                   'expiration'],
+                                               retries=alert_source[
+                                                   'retry_num'])
+            target.setLocalAddress((CONF.my_ip, 0))
             if version.lower() == 'snmpv3':
-                auth_key = cryptor.decode(alert_source['auth_key'])
-                privacy_key = cryptor.decode(alert_source['privacy_key'])
+                # Register engine observer to get engineId,
+                # Code reference from: http://snmplabs.com/pysnmp/
+                observer_context = {}
+                cmd_gen.snmpEngine.observer.registerObserver(
+                    lambda e, p, v, c: c.update(
+                        securityEngineId=v['securityEngineId']),
+                    'rfc3412.prepareDataElements:internal',
+                    cbCtx=observer_context
+                )
+                auth_key = None
+                if alert_source['auth_key']:
+                    auth_key = cryptor.decode(alert_source['auth_key'])
+                privacy_key = None
+                if alert_source['privacy_key']:
+                    privacy_key = cryptor.decode(alert_source['privacy_key'])
                 auth_protocol = None
                 privacy_protocol = None
                 if alert_source['auth_protocol']:
@@ -117,12 +126,7 @@ class SNMPValidator(object):
                                        authProtocol=auth_protocol,
                                        privProtocol=privacy_protocol,
                                        securityEngineId=engine_id),
-                    cmdgen.UdpTransportTarget((alert_source['host'],
-                                               alert_source['port']),
-                                              timeout=alert_source[
-                                                  'expiration'],
-                                              retries=alert_source[
-                                                  'retry_num']),
+                    target,
                     constants.SNMP_QUERY_OID,
                 )
 
@@ -137,14 +141,11 @@ class SNMPValidator(object):
                     cmdgen.CommunityData(
                         community_string,
                         contextName=alert_source['context_name']),
-                    cmdgen.UdpTransportTarget((alert_source['host'],
-                                               alert_source['port']),
-                                              timeout=alert_source[
-                                                  'expiration'],
-                                              retries=alert_source[
-                                                  'retry_num']),
+                    target,
                     constants.SNMP_QUERY_OID,
                 )
+
+            cmd_gen.snmpEngine.transportDispatcher.closeDispatcher()
 
             if not error_indication:
                 return alert_source
