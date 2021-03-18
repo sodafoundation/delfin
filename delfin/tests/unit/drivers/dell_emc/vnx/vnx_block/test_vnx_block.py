@@ -197,10 +197,21 @@ ALERTS_RESULT = [
         'severity': 'Critical',
         'category': 'Fault',
         'type': 'EquipmentAlarm',
-        'occur_time': 1585143017000,
+        'occur_time': 1585114217000,
         'description': 'Navisphere Agent, version 7.33',
         'resource_type': 'Storage',
         'match_key': 'b969bbaa22b62ebcad4074618cc29b94'
+    },
+    {
+        'alert_id': '7606',
+        'alert_name': 'Thinpool (Migration_pool) is (',
+        'severity': 'Critical',
+        'category': 'Fault',
+        'type': 'EquipmentAlarm',
+        'occur_time': 1600081405000,
+        'description': 'Thinpool (Migration_pool) is (',
+        'resource_type': 'Storage',
+        'match_key': '65a5b90e11842a2aedf3bfab471f7701'
     }]
 ALERT_RESULT = {
     'alert_id': '761f',
@@ -250,6 +261,7 @@ class TestVnxBlocktorageDriver(TestCase):
         NaviClient.exec = mock.Mock(
             side_effect=[DOMAIN_INFOS, LOG_INFOS, OTHER_LOG_INFOS])
         alerts = self.driver.list_alerts(context, None)
+        print(alerts)
         self.assertDictEqual(alerts[0], ALERTS_RESULT[0])
 
     def test_parse_alert(self):
