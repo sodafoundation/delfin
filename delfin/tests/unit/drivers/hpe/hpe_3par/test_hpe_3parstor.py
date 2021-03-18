@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import unittest
 from unittest import TestCase, mock
 
 from delfin.drivers.hpe.hpe_3par.alert_handler import AlertHandler
@@ -20,7 +19,6 @@ from delfin.drivers.hpe.hpe_3par.alert_handler import AlertHandler
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import exception
 from delfin import context
-from delfin.common import config # noqa
 from delfin.drivers.hpe.hpe_3par.hpe_3parstor import Hpe3parStorDriver
 from delfin.drivers.hpe.hpe_3par.rest_handler import RestHandler
 from delfin.drivers.hpe.hpe_3par.ssh_handler import SSHHandler
