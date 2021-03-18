@@ -331,3 +331,11 @@ class TestUNITYStorDriver(TestCase):
         mock_rest.return_value = GET_ALL_LUNS
         value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_luns(1)
         self.assertEqual(value, GET_ALL_LUNS)
+
+    @mock.patch.object(RestHandler, 'call_with_token')
+    def test_rest_login_and_call(self, mock_token):
+        mock_token.return_value = mock.MagicMock(status_code=200)
+        result = UnityStorDriver(**ACCESS_INFO).rest_handler.login()
+        self.assertIsNone(result)
+        mock_token.return_value = mock.MagicMock(status_code=401)
+        UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
