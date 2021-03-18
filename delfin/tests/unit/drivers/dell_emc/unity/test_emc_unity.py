@@ -313,3 +313,21 @@ class TestUNITYStorDriver(TestCase):
         alert = UnityStorDriver(**ACCESS_INFO).list_alerts(context)
         alert[0]['occur_time'] = int(1602464992000)
         self.assertEqual(alert[0], alert_result[0])
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_get_rest_info(self, mock_rest):
+        mock_rest.return_value = GET_STORAGE_ABNORMAL
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_storage()
+        self.assertEqual(value, GET_STORAGE_ABNORMAL)
+        mock_rest.return_value = GET_CAPACITY
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_capacity()
+        self.assertEqual(value, GET_CAPACITY)
+        mock_rest.return_value = GET_SOFT_VERSION
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_soft_version()
+        self.assertEqual(value, GET_SOFT_VERSION)
+        mock_rest.return_value = GET_ALL_POOLS
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_pools()
+        self.assertEqual(value, GET_ALL_POOLS)
+        mock_rest.return_value = GET_ALL_LUNS
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_luns()
+        self.assertEqual(value, GET_ALL_LUNS)
