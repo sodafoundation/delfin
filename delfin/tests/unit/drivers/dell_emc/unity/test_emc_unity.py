@@ -266,10 +266,10 @@ alert_result = [
 
 
 class TestUNITYStorDriver(TestCase):
-    RestHandler.login = mock.Mock(return_value=None)
 
     @mock.patch.object(RestHandler, 'get_all_pools')
     def test_list_storage_pools(self, mock_pool):
+        RestHandler.login = mock.Mock(return_value=None)
         mock_pool.return_value = GET_ALL_POOLS
         pool = UnityStorDriver(**ACCESS_INFO).list_storage_pools(context)
         self.assertDictEqual(pool[0], pool_result[0])
@@ -281,6 +281,7 @@ class TestUNITYStorDriver(TestCase):
     @mock.patch.object(RestHandler, 'get_capacity')
     @mock.patch.object(RestHandler, 'get_soft_version')
     def test_get_storage(self, mock_version, mock_capa, mock_base):
+        RestHandler.login = mock.Mock(return_value=None)
         mock_version.return_value = GET_SOFT_VERSION
         mock_capa.return_value = GET_CAPACITY
         mock_base.return_value = GET_STORAGE_ABNORMAL
@@ -292,17 +293,20 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_luns')
     def test_list_volumes(self, mock_lun):
+        RestHandler.login = mock.Mock(return_value=None)
         mock_lun.side_effect = [GET_ALL_LUNS, GET_ALL_LUNS_NULL]
         volume = UnityStorDriver(**ACCESS_INFO).list_volumes(context)
         self.assertDictEqual(volume[0], volume_result[0])
 
     def test_parse_alert(self):
+        RestHandler.login = mock.Mock(return_value=None)
         trap = UnityStorDriver(**ACCESS_INFO).parse_alert(context, TRAP_INFO)
         trap['occur_time'] = int(1605852610000)
         self.assertEqual(trap, trap_result)
 
     @mock.patch.object(RestHandler, 'remove_alert')
     def test_clear_alert(self, mock_remove):
+        RestHandler.login = mock.Mock(return_value=None)
         alert_id = 101
         UnityStorDriver(**ACCESS_INFO).clear_alert(context, alert_id)
         self.assertEqual(mock_remove.call_count, 1)
@@ -316,6 +320,7 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_rest_info')
     def test_get_rest_api(self, mock_rest):
+        RestHandler.login = mock.Mock(return_value=None)
         mock_rest.return_value = GET_STORAGE_ABNORMAL
         value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_storage()
         self.assertEqual(value, GET_STORAGE_ABNORMAL)
@@ -340,5 +345,6 @@ class TestUNITYStorDriver(TestCase):
         mock_token.return_value = mock.MagicMock(status_code=200)
         result = UnityStorDriver(**ACCESS_INFO).rest_handler.login()
         self.assertIsNone(result)
+        RestHandler.login = mock.Mock(return_value=None)
         mock_token.return_value = mock.MagicMock(status_code=401)
         UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
