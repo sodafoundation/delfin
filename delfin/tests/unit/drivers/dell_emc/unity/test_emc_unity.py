@@ -329,5 +329,5 @@ class TestUNITYStorDriver(TestCase):
         value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_pools()
         self.assertEqual(value, GET_ALL_POOLS)
         mock_rest.return_value = GET_ALL_LUNS
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_luns()
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_luns(1)
         self.assertEqual(value, GET_ALL_LUNS)
