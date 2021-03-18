@@ -304,9 +304,8 @@ class TestHitachiVspStorStorageDriver(TestCase):
     @mock.patch.object(RestHandler, 'call_with_token')
     def test_get_token(self, mock_token):
         with self.assertRaises(Exception) as exc:
-            mock_call_value = mock.MagicMock(status_code=403,
-                                             text='KART30005-E')
-            mock_token.return_value = mock_call_value
+            mock_token.return_value = mock.MagicMock(
+                status_code=403, text='KART30005-E')
             self.driver.rest_handler.get_token()
         self.assertEqual('Exception from Storage Backend: KART30005-E.',
                          str(exc.exception))
