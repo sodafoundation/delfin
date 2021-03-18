@@ -261,7 +261,7 @@ class TestVnxBlocktorageDriver(TestCase):
         NaviClient.exec = mock.Mock(
             side_effect=[DOMAIN_INFOS, LOG_INFOS, OTHER_LOG_INFOS])
         alerts = self.driver.list_alerts(context, None)
-        print(alerts)
+        ALERTS_RESULT[0]['occur_time'] = alerts['occur_time']
         self.assertDictEqual(alerts[0], ALERTS_RESULT[0])
 
     def test_parse_alert(self):
