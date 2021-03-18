@@ -479,17 +479,6 @@ class TestStorwizeSvcStorageDriver(TestCase):
         self.assertEqual(alert[0].get('alert_id'),
                          alert_result[0].get('alert_id'))
 
-    @mock.patch('delfin.drivers.utils.ssh_client.'
-                '_get_ssh_insecure_algorithm')
-    def test_ssh_pool_create(self, mock_ssh_insecure_algorithm):
-        mock_ssh_insecure_algorithm.return_value = UNSECURE_ALGORITHMS
-        with self.assertRaises(Exception) as exc:
-            kwargs = ACCESS_INFO
-            ssh_pool = SSHPool(**kwargs)
-            ssh_pool.create()
-        self.assertIn('Invalid ip or port.',
-                      str(exc.exception))
-
     def test_parse_alert(self):
         alert = self.driver.parse_alert(context, trap_info)
         trap_alert_result['occur_time'] = alert['occur_time']
