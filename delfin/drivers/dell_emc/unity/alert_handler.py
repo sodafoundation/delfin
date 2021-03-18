@@ -1,4 +1,4 @@
-# Copyright 2020 The SODA Authors.
+# Copyright 2021 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import hashlib
 import time
 
 import six
@@ -26,15 +27,11 @@ LOG = log.getLogger(__name__)
 
 class AlertHandler(object):
 
-    TIME_PATTERN = "%Y-%m-%dT%H:%M:%S.%fZ"
-
     OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
     OID_NODE = '1.3.6.1.4.1.1139.103.1.18.1.1'
     OID_COMPONENT = '1.3.6.1.4.1.1139.103.1.18.1.2'
     OID_SYMPTOMID = '1.3.6.1.4.1.1139.103.1.18.1.3'
     OID_SYMPTOMTEXT = '1.3.6.1.4.1.1139.103.1.18.1.4'
-    OID_TIMESTAMP = '1.3.6.1.4.1.1139.103.1.18.1.5'
-
     ALERT_LEVEL_MAP = {0: constants.Severity.CRITICAL,
                        1: constants.Severity.CRITICAL,
                        2: constants.Severity.CRITICAL,
@@ -44,7 +41,6 @@ class AlertHandler(object):
                        6: constants.Severity.INFORMATIONAL,
                        7: constants.Severity.NOT_SPECIFIED
                        }
-
     TRAP_LEVEL_MAP = {'1.3.6.1.4.1.1139.103.1.18.2.0':
                       constants.Severity.CRITICAL,
                       '1.3.6.1.4.1.1139.103.1.18.2.1':
@@ -63,6 +59,9 @@ class AlertHandler(object):
                       constants.Severity.NOT_SPECIFIED
                       }
     SECONDS_TO_MS = 1000
+    SECONDS_PER_HOUR = 60 * 60
+    STATE_SOLVED = 2
+    TIME_PATTERN = "%Y-%m-%dT%H:%M:%S.%fZ"
 
     @staticmethod
     def parse_alert(context, alert):
@@ -81,52 +80,52 @@ class AlertHandler(object):
                 AlertHandler.OID_SYMPTOMTEXT)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = alert.get(AlertHandler.OID_NODE)
+            alert_model['match_key'] = hashlib.md5(alert.get(
+                AlertHandler.OID_SYMPTOMTEXT).encode()).hexdigest()
 
             return alert_model
         except Exception as e:
             LOG.error(e)
-            msg = (_("Failed to build alert model as some attributes missing "
-                     "in alert message."))
+            msg = (_("Failed to build alert model as some attributes missing"))
             raise exception.InvalidResults(msg)
 
-    def parse_queried_alerts(self, alert_model_list, alert_list, query_para):
-        alerts = alert_list.get('entries')
+    def parse_queried_alerts(self, alert_model_list, alert_dict, query_para):
+        alerts = alert_dict.get('entries')
         for alert in alerts:
             try:
+                content = alert.get('content', {})
+                if content.get('state') == AlertHandler.STATE_SOLVED:
+                    continue
                 occur_time = int(time.mktime(time.strptime(
-                    alert.get('content').get('timestamp'),
+                    content.get('timestamp'),
                     self.TIME_PATTERN)))
+                hour_offset = (time.mktime(time.localtime()) - time.mktime(
+                    time.gmtime())) / AlertHandler.SECONDS_PER_HOUR
+                occur_time = occur_time + (int(hour_offset) *
+                                           AlertHandler.SECONDS_PER_HOUR)
                 if not alert_util.is_alert_in_time_range(
                         query_para, int(occur_time *
                                         AlertHandler.SECONDS_TO_MS)):
                     continue
-
                 alert_model = {}
                 location = ''
                 resource_type = constants.DEFAULT_RESOURCE_TYPE
                 if 'component' in alert:
-                    resource_type = alert.get(
-                        'content').get('component').get('resource')
-                    location = alert.get(
-                        'content').get('component').get('id')
-
-                alert_model['alert_id'] = alert.get(
-                    'content').get('messageId')
-                alert_model['alert_name'] = alert.get(
-                    'content').get('message')
+                    resource_type = content.get('component').get('resource')
+                    location = content.get('component').get('id')
+                alert_model['alert_id'] = content.get('messageId')
+                alert_model['alert_name'] = content.get('message')
                 alert_model['severity'] = self.ALERT_LEVEL_MAP.get(
-                    alert.get('content').get('severity'),
+                    content.get('severity'),
                     constants.Severity.INFORMATIONAL)
                 alert_model['category'] = constants.Category.FAULT
                 alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-                alert_model['sequence_number'] = alert.get('content').get('id')
+                alert_model['sequence_number'] = content.get('id')
                 alert_model['occur_time'] = int(occur_time *
                                                 AlertHandler.SECONDS_TO_MS)
-                alert_model['description'] = alert.get('content').get(
-                    'description')
+                alert_model['description'] = content.get('description')
                 alert_model['resource_type'] = resource_type
                 alert_model['location'] = location
-
                 alert_model_list.append(alert_model)
             except Exception as e:
                 LOG.error(e)
