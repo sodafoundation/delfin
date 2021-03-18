@@ -300,6 +300,7 @@ class TestVnxBlocktorageDriver(TestCase):
     def test_cli_log_to_list(self):
         navi_handler = NaviHandler(**ACCESS_INFO)
         re_list = navi_handler.cli_log_to_list(LOG_INFOS)
+        LOG_RESULT[0]['log_time_stamp'] = re_list[0]['log_time_stamp']
         self.assertDictEqual(re_list[0], LOG_RESULT[0])
 
     @mock.patch.object(NaviClient, 'exec')
