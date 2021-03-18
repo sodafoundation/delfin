@@ -320,6 +320,18 @@ class VplexStorageDriver(driver.StorageDriver):
             raise e
         return capacity
 
+    def list_controllers(self, context):
+        """List all storage controllers from storage system."""
+        pass
+
+    def list_ports(self, context):
+        """List all ports from storage system."""
+        pass
+
+    def list_disks(self, context):
+        """List all disks from storage system."""
+        pass
+
 
 @staticmethod
 def handle_detail_list(detail_info, detail_map, split):
