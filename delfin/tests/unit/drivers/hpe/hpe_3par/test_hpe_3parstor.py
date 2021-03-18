@@ -13,17 +13,16 @@
 # limitations under the License.
 
 from unittest import TestCase, mock
-import unittest
 
-from delfin import exception
+from requests import Session
+
 from delfin import context
-from delfin.common import config # noqa
+from delfin import exception
+from delfin.drivers.hpe.hpe_3par.alert_handler import AlertHandler
 from delfin.drivers.hpe.hpe_3par.hpe_3parstor import Hpe3parStorDriver
 from delfin.drivers.hpe.hpe_3par.rest_handler import RestHandler
 from delfin.drivers.hpe.hpe_3par.ssh_handler import SSHHandler
 from delfin.drivers.utils.rest_client import RestClient
-
-from requests import Session
 
 
 class Request:
@@ -161,7 +160,7 @@ class TestHpe3parStorageDriver(TestCase):
                 }
             }
         )
-
+        SSHHandler.get_health_state = mock.Mock(return_value="")
         m = mock.MagicMock(status_code=200)
         with mock.patch.object(RestHandler, 'call', return_value=m):
             m.raise_for_status.return_value = 200
@@ -577,28 +576,9 @@ class TestHpe3parStorageDriver(TestCase):
         # Verify that all other fields are matching
         self.assertDictEqual(expected_alert_model, alert_model)
 
-    def test_clear_alert(self):
+    @mock.patch.object(AlertHandler, 'clear_alert')
+    def test_clear_alert(self, mock_clear_alert):
         driver = create_driver()
         alert_id = '230584300921369'
-
-        with self.assertRaises(Exception) as exc:
-            driver.clear_alert(context, alert_id)
-        self.assertIn('Exception in SSH protocol', str(exc.exception))
-
-    """
-    def test_j_restlogout(self):
-        m = mock.MagicMock()
-        with mock.patch.object(Session, 'delete', return_value=m):
-            m.raise_for_status.return_value = None
-            m.json.return_value = None
-            kwargs = ACCESS_INFO
-
-            rc = RestClient(**kwargs)
-            rh = RestHandler(rc)
-            re = rh.logout()
-            self.assertIsNone(re)
-    """
-
-
-if __name__ == '__main__':
-    unittest.main()
+        driver.clear_alert(context, alert_id)
+        self.assertEqual(mock_clear_alert.call_count, 1)
