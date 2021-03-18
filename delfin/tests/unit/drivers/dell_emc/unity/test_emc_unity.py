@@ -315,7 +315,7 @@ class TestUNITYStorDriver(TestCase):
         self.assertEqual(alert[0], alert_result[0])
 
     @mock.patch.object(RestHandler, 'get_rest_info')
-    def test_get_rest_info(self, mock_rest):
+    def test_get_rest_api(self, mock_rest):
         mock_rest.return_value = GET_STORAGE_ABNORMAL
         value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_storage()
         self.assertEqual(value, GET_STORAGE_ABNORMAL)
@@ -331,6 +331,9 @@ class TestUNITYStorDriver(TestCase):
         mock_rest.return_value = GET_ALL_LUNS
         value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_luns(1)
         self.assertEqual(value, GET_ALL_LUNS)
+        mock_rest.return_value = None
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.remove_alert(1)
+        self.assertIsNone(value)
 
     @mock.patch.object(RestHandler, 'call_with_token')
     def test_rest_login_and_call(self, mock_token):
