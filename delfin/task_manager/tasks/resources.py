@@ -21,7 +21,6 @@ from delfin import coordination
 from delfin import db
 from delfin import exception
 from delfin.common import constants
-from delfin.exporter import base_exporter
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
 
@@ -609,53 +608,3 @@ class StorageShareTask(StorageResourceTask):
         LOG.info('Remove shares for storage id:{0}'
                  .format(self.storage_id))
         db.share_delete_by_storage(self.context, self.storage_id)
-
-
-class PerformanceCollectionTask(object):
-
-    def __init__(self):
-        self.driver_api = driverapi.API()
-        self.perf_exporter = base_exporter.PerformanceExporterManager()
-
-
-class ArrayPerformanceCollection(PerformanceCollectionTask):
-    def __init__(self, context, storage_id, interval, is_historic):
-        super(ArrayPerformanceCollection, self).__init__()
-        self.context = context
-        self.storage_id = storage_id
-        self.interval = interval
-        self.is_historic = is_historic
-
-    def collect(self):
-        """
-        :return:
-        """
-        LOG.info('Collecting array performance metrics for storage id:{0}'
-                 .format(self.storage_id))
-        try:
-            # collect the performance metrics from driver and push to
-            # prometheus exporter api
-            array_metrics = self.driver_api.collect_array_metrics(
-                self.context, self.storage_id, self.interval,
-                self.is_historic)
-            # fill extra labels to metric by fetching metadata from resource DB
-            try:
-                array_details = db.storage_get(self.context, storage_id=self
-                                               .storage_id)
-                for m in array_metrics:
-                    m.labels["name"] = array_details.name
-                    m.labels["serial_number"] = array_details.serial_number
-
-            except Exception as e:
-                msg = _('Failed to add extra labels to array performance '
-                        'metrics: {0}'.format(e))
-                LOG.error(msg)
-
-            self.perf_exporter.dispatch(self.context, array_metrics)
-
-        except Exception as e:
-            msg = _('Failed to collect array performance metrics from '
-                    'driver: {0}'.format(e))
-            LOG.error(msg)
-        else:
-            LOG.info("Array performance metrics collection done!!!")
