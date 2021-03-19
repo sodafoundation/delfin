@@ -14,24 +14,27 @@
 # limitations under the License.
 
 from setuptools import setup, find_packages
-import os
+
 
 setup(
     name="delfin",
-    version=os.environ.get("CUSTOMIZE_VERSION", "0.4.0"),
+    version="1.0.0",
     author="SODA Authors",
     author_email="Opensds-tech-discuss@lists.opensds.io",
     license="Apache 2.0",
     packages=find_packages(exclude=("tests", "tests.*")),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
-    include_package_data=True,
     entry_points={
         'delfin.alert.exporters': [
             'example = delfin.exporter.example:AlertExporterExample',
-            'dme_alert_exporter = delfin.exporter.dme.alert:DMEAlertExporter'
+            'prometheus = delfin.exporter.prometheus.exporter'
+            ':AlertExporterPrometheus',
         ],
         'delfin.performance.exporters': [
-            'example = delfin.exporter.example:PerformanceExporterExample'
+            'example = delfin.exporter.example:PerformanceExporterExample',
+            'prometheus = delfin.exporter.prometheus.exporter'
+            ':PerformanceExporterPrometheus',
+            'kafka = delfin.exporter.kafka.exporter:PerformanceExporterKafka'
         ],
         'delfin.storage.drivers': [
             'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
