@@ -139,11 +139,6 @@ def main():
                                  'delfin', 'delfin.conf')
     copy_files(conf_file_src, conf_file)
 
-    # Copy the scheduler_config.json file
-    conf_file_src = os.path.join(delfin_source_path, 'etc',
-                                 'scheduler_config.json')
-    copy_files(conf_file_src, delfin_etc_dir)
-
     # install
     install_delfin()
 
