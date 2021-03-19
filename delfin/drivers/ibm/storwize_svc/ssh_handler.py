@@ -96,8 +96,6 @@ class SSHHandler(object):
                 alert.get(SSHHandler.OID_OBJ_TYPE), '=', 1)
             alert_model['location'] = SSHHandler.handle_split(alert.get(
                 SSHHandler.OID_OBJ_NAME), '=', 1)
-            alert_model['match_key'] = hashlib.md5(
-                alert_name.encode()).hexdigest()
             return alert_model
         except Exception as e:
             LOG.error(e)
