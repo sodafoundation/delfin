@@ -317,6 +317,8 @@ class TestUNITYStorDriver(TestCase):
         mock_alert.side_effect = [GET_ALL_ALERTS, GET_ALL_ALERTS_NULL]
         alert = UnityStorDriver(**ACCESS_INFO).list_alerts(context)
         alert_result[0]['occur_time'] = alert[0]['occur_time']
+        print(alert)
+        print(alert_result)
         self.assertEqual(alert[0], alert_result[0])
 
     @mock.patch.object(RestHandler, 'call_with_token')

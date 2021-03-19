@@ -110,8 +110,7 @@ class AlertHandler(object):
                 alert_model = {}
                 location = ''
                 resource_type = constants.DEFAULT_RESOURCE_TYPE
-                if 'component' in alert:
-                    resource_type = content.get('component').get('resource')
+                if content.get('component'):
                     location = content.get('component').get('id')
                 alert_model['alert_id'] = content.get('messageId')
                 alert_model['alert_name'] = content.get('message')
