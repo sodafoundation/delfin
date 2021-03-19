@@ -421,8 +421,7 @@ trap_alert_result = {
                   'were detected',
     'resource_type': 'cluster',
     'location': 'Cluster_192.168.70.125',
-    'category': 'Fault',
-    'match_key': '03632483c6788a9d497af7593b80b8dd'
+    'category': 'Fault'
 }
 
 
