@@ -317,8 +317,6 @@ class TestUNITYStorDriver(TestCase):
         mock_alert.side_effect = [GET_ALL_ALERTS, GET_ALL_ALERTS_NULL]
         alert = UnityStorDriver(**ACCESS_INFO).list_alerts(context)
         alert_result[0]['occur_time'] = alert[0]['occur_time']
-        print(alert)
-        print(alert_result)
         self.assertEqual(alert[0], alert_result[0])
 
     @mock.patch.object(RestHandler, 'call_with_token')
@@ -333,12 +331,17 @@ class TestUNITYStorDriver(TestCase):
                                                      text='Forbidden')
             UnityStorDriver(**ACCESS_INFO).rest_handler.login()
         self.assertEqual('Invalid ip or port.', str(exc.exception))
+        with self.assertRaises(Exception) as exc:
+            mock_token.return_value = mock.MagicMock(status_code=503)
+            UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
+        self.assertEqual('Bad response from server', str(exc.exception))
         RestHandler.login = mock.Mock(return_value=None)
         mock_token.return_value = mock.MagicMock(status_code=401)
         UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
 
     @mock.patch.object(RestHandler, 'call')
     def test_get_rest_info(self, mock_rest):
-        mock_rest.return_value = GET_ALL_ALERTS
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
-        self.assertEqual(value, GET_ALL_ALERTS)
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_rest.return_value =mock.MagicMock(status_code=200)
+        UnityStorDriver(**ACCESS_INFO).rest_handler.get_rest_info('')
+        self.assertEqual(mock_rest.call_count, 1)
