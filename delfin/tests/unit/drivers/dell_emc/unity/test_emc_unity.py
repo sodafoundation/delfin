@@ -342,6 +342,6 @@ class TestUNITYStorDriver(TestCase):
     @mock.patch.object(RestHandler, 'call')
     def test_get_rest_info(self, mock_rest):
         RestHandler.login = mock.Mock(return_value=None)
-        mock_rest.return_value =mock.MagicMock(status_code=200)
+        mock_rest.return_value = mock.MagicMock(status_code=200)
         UnityStorDriver(**ACCESS_INFO).rest_handler.get_rest_info('')
         self.assertEqual(mock_rest.call_count, 1)
