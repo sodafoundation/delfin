@@ -323,9 +323,6 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'call_with_token')
     def test_call_and_login(self, mock_token):
-        mock_token.return_value = mock.MagicMock(status_code=200)
-        result = UnityStorDriver(**ACCESS_INFO).rest_handler.login()
-        self.assertIsNone(result)
         with self.assertRaises(Exception) as exc:
             mock_token.return_value = mock.MagicMock(status_code=401,
                                                      text='Unauthorized')
