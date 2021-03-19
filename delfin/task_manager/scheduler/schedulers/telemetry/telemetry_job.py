@@ -55,7 +55,7 @@ class TelemetryJob(object):
 
                 # method indicates the specific collection task to be triggered
                 collection_class = importutils.import_class(task['method'])
-                # Create periodic task
+                # Create periodic job
                 self.schedule.add_job(
                     collection_class(), 'interval',
                     args=[ctx, task_id], seconds=task['interval'],

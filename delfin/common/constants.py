@@ -292,7 +292,6 @@ DELFIN_ARRAY_METRICS = [
     "writeRequests"
 ]
 
-
 BLOCK_SIZE = 4096
 
 
@@ -307,3 +306,4 @@ class TelemetryCollection(object):
     PERFORMANCE_TASK_METHOD = "delfin.task_manager.scheduler.schedulers." \
                               "telemetry.performance_collection_handler." \
                               "PerformanceCollectionHandler"
+    PERIODIC_JOB_INTERVAL = 300

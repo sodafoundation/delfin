@@ -37,7 +37,7 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 telemetry_opts = [
-    cfg.IntOpt('performance_collection_interval', default=300,
+    cfg.IntOpt('performance_collection_interval', default=900,
                help='default interval (in sec) for performance collection'),
 ]
 
@@ -127,7 +127,6 @@ class StorageController(wsgi.Controller):
             msg = _('Failed to trigger performance monitoring for storage: '
                     '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
                                                       'err': six.text_type(e)}
-
             LOG.error(msg)
         return storage_view.build_storage(storage)
 

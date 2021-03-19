@@ -20,19 +20,12 @@ from oslo_log import log
 from oslo_utils import uuidutils
 
 from delfin import context
+from delfin.common import constants
 from delfin.task_manager.scheduler import scheduler
 from delfin.task_manager.scheduler.schedulers.telemetry import telemetry_job
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
-
-telemetry_opts = [
-    cfg.IntOpt('periodic_task_schedule_interval', default=180,
-               help='default interval (in sec) for the periodic scan for '
-                    'failed task scheduling'),
-]
-CONF.register_opts(telemetry_opts, "TELEMETRY")
-telemetry = CONF.TELEMETRY
 
 
 class SchedulerManager(object):
@@ -40,7 +33,7 @@ class SchedulerManager(object):
         self.schedule_instance = scheduler.Scheduler.get_instance()
 
     def start(self):
-        """ Initialise the schedulers for collection and failed tasks
+        """ Initialise the schedulers for periodic job creation
         """
         ctxt = context.get_admin_context()
         try:
@@ -49,7 +42,7 @@ class SchedulerManager(object):
             periodic_scheduler_job_id = uuidutils.generate_uuid()
             self.schedule_instance.add_job(
                 telemetry_job.TelemetryJob(ctxt), 'interval', args=[ctxt],
-                seconds=telemetry.periodic_task_schedule_interval,
+                seconds=constants.TelemetryCollection.PERIODIC_JOB_INTERVAL,
                 next_run_time=datetime.now(),
                 id=periodic_scheduler_job_id)
         except Exception as e:

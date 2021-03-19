@@ -31,16 +31,15 @@ class PerformanceCollectionHandler(object):
     def __call__(self, ctx, task_id):
         # Handles performance collection from driver and dispatch
         try:
-
             task = db.task_get(ctx, task_id)
             LOG.debug('Collecting performance metrics for task id: %s'
                       % task['id'])
             current_time = int(datetime.utcnow().timestamp())
             db.task_update(ctx, task_id, {'last_run_time': current_time})
 
-            # Times (starttime and endtime) are epoch time in miliseconds
-            start_time = current_time * 1000
-            end_time = start_time + task['interval'] * 10000
+            # Times are epoch time in miliseconds
+            end_time = current_time * 1000
+            start_time = end_time - (task['interval'] * 1000)
             self.task_rpcapi.collect_telemetry(ctx, task['storage_id'],
                                                telemetry.TelemetryTask.
                                                __module__ + '.' +
@@ -51,8 +50,7 @@ class PerformanceCollectionHandler(object):
             LOG.error("Failed to collect performance metrics for "
                       "task id :{0}, reason:{1}".format(task_id,
                                                         six.text_type(e)))
-
-            # Add this entry to failed task for the retry process
         else:
             LOG.debug("Performance collection done for storage id :{0}"
-                      " and task id:{1}".format(task['storage_id'], task_id))
+                      ",task id :{1} and interval(in sec):{2}"
+                      .format(task['storage_id'], task_id, task['interval']))
