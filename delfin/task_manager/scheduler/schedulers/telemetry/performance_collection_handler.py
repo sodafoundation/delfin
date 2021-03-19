@@ -31,6 +31,7 @@ class PerformanceCollectionHandler(object):
     def __call__(self, ctx, task_id):
         # Handles performance collection from driver and dispatch
         try:
+
             task = db.task_get(ctx, task_id)
             LOG.debug('Collecting performance metrics for task id: %s'
                       % task['id'])
