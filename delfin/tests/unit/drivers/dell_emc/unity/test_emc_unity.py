@@ -252,7 +252,7 @@ GET_ALL_ALERTS_NULL = {
 alert_result = [
     {
         'severity': 'Warning',
-        'location': '',
+        'location': 'Host_87',
         'occur_time': 1602464992000,
         'type': 'EquipmentAlarm',
         'sequence_number': 'alert_31523',
@@ -313,38 +313,33 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_alerts')
     def test_list_alerts(self, mock_alert):
+        RestHandler.login = mock.Mock(return_value=None)
         mock_alert.side_effect = [GET_ALL_ALERTS, GET_ALL_ALERTS_NULL]
         alert = UnityStorDriver(**ACCESS_INFO).list_alerts(context)
-        alert[0]['occur_time'] = int(1602464992000)
+        alert_result[0]['occur_time'] = alert[0]['occur_time']
         self.assertEqual(alert[0], alert_result[0])
 
-    @mock.patch.object(RestHandler, 'get_rest_info')
-    def test_get_rest_api(self, mock_rest):
-        RestHandler.login = mock.Mock(return_value=None)
-        mock_rest.return_value = GET_STORAGE_ABNORMAL
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_storage()
-        self.assertEqual(value, GET_STORAGE_ABNORMAL)
-        mock_rest.return_value = GET_CAPACITY
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_capacity()
-        self.assertEqual(value, GET_CAPACITY)
-        mock_rest.return_value = GET_SOFT_VERSION
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_soft_version()
-        self.assertEqual(value, GET_SOFT_VERSION)
-        mock_rest.return_value = GET_ALL_POOLS
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_pools()
-        self.assertEqual(value, GET_ALL_POOLS)
-        mock_rest.return_value = GET_ALL_LUNS
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.get_all_luns(1)
-        self.assertEqual(value, GET_ALL_LUNS)
-        mock_rest.return_value = None
-        value = UnityStorDriver(**ACCESS_INFO).rest_handler.remove_alert(1)
-        self.assertIsNone(value)
-
     @mock.patch.object(RestHandler, 'call_with_token')
-    def test_rest_login_and_call(self, mock_token):
+    def test_call_and_login(self, mock_token):
         mock_token.return_value = mock.MagicMock(status_code=200)
         result = UnityStorDriver(**ACCESS_INFO).rest_handler.login()
         self.assertIsNone(result)
+        with self.assertRaises(Exception) as exc:
+            mock_token.return_value = mock.MagicMock(status_code=401,
+                                                     text='Unauthorized')
+            UnityStorDriver(**ACCESS_INFO).rest_handler.login()
+        self.assertEqual('Invalid username or password.', str(exc.exception))
+        with self.assertRaises(Exception) as exc:
+            mock_token.return_value = mock.MagicMock(status_code=401,
+                                                     text='Forbidden')
+            UnityStorDriver(**ACCESS_INFO).rest_handler.login()
+        self.assertEqual('Invalid ip or port.', str(exc.exception))
         RestHandler.login = mock.Mock(return_value=None)
         mock_token.return_value = mock.MagicMock(status_code=401)
         UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
+
+    @mock.patch.object(RestHandler, 'call')
+    def test_get_rest_info(self, mock_rest):
+        mock_rest.return_value = GET_ALL_ALERTS
+        value = UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
+        self.assertEqual(value, GET_ALL_ALERTS)
