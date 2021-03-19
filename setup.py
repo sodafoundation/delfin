@@ -14,35 +14,32 @@
 # limitations under the License.
 
 from setuptools import setup, find_packages
-
+import os
 
 setup(
     name="delfin",
-    version="1.0.0",
+    version=os.environ.get("CUSTOMIZE_VERSION", "0.4.0"),
     author="SODA Authors",
     author_email="Opensds-tech-discuss@lists.opensds.io",
     license="Apache 2.0",
     packages=find_packages(exclude=("tests", "tests.*")),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+    include_package_data=True,
     entry_points={
         'delfin.alert.exporters': [
             'example = delfin.exporter.example:AlertExporterExample',
-            'prometheus = delfin.exporter.prometheus.exporter'
-            ':AlertExporterPrometheus',
+            'dme_alert_exporter = delfin.exporter.dme.alert:DMEAlertExporter'
         ],
         'delfin.performance.exporters': [
-            'example = delfin.exporter.example:PerformanceExporterExample',
-            'prometheus = delfin.exporter.prometheus.exporter'
-            ':PerformanceExporterPrometheus',
-            'kafka = delfin.exporter.kafka.exporter:PerformanceExporterKafka'
+            'example = delfin.exporter.example:PerformanceExporterExample'
         ],
         'delfin.storage.drivers': [
-            'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
-            'dellemc unity = delfin.drivers.dell_emc.unity.unity:UNITYStorDriver',
+            'dellemc unity = delfin.drivers.dell_emc.unity.unity:UnityStorDriver',
             'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
+            'dellemc vnx_block = delfin.drivers.dell_emc.vnx.vnx_block.vnx_block:VnxBlockStorDriver',
+            'dellemc vplex = delfin.drivers.dell_emc.vplex.vplex_stor:VplexStorageDriver',
             'hitachi vsp = delfin.drivers.hitachi.vsp.vsp_stor:HitachiVspDriver',
             'hpe 3par = delfin.drivers.hpe.hpe_3par.hpe_3parstor:Hpe3parStorDriver',
-            'huawei oceanstor = delfin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver',
             'ibm storwize_svc = delfin.drivers.ibm.storwize_svc.storwize_svc:StorwizeSVCDriver'
         ]
     },
