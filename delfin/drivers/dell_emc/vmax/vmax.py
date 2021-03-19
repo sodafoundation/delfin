@@ -104,7 +104,5 @@ class VMAXStorageDriver(driver.StorageDriver):
     def collect_perf_metrics(self, context, storage_id,
                              resource_metrics, start_time,
                              end_time):
-        # Get interval in seconds
-        interval = (end_time - start_time) / 1000
         return self.client.get_array_performance_metrics(self.storage_id,
-                                                         interval=interval)
+                                                         start_time, end_time)

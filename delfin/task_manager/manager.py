@@ -45,8 +45,8 @@ class TaskManager(manager.Manager):
 
     def collect_telemetry(self, context, storage_id, telemetry_task,
                           args, start_time, end_time):
-        LOG.info("Collecting resource_metrics: {0} request for storage"
-                 " id:{1}".format(args, storage_id))
+        LOG.debug("Collecting resource metrics: {0} request for storage"
+                  " id:{1}".format(args, storage_id))
         cls = importutils.import_class(telemetry_task)
         device_obj = cls()
         device_obj.collect(context, storage_id, args, start_time, end_time)

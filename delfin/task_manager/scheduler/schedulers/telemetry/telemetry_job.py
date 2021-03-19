@@ -26,16 +26,20 @@ LOG = log.getLogger(__name__)
 
 
 class TelemetryJob(object):
-    def __init__(self):
+    def __init__(self, ctxt):
         # create the object of periodic scheduler
         self.schedule = scheduler.Scheduler.get_instance()
-        self.last_traversed_task = 0
+        # Reset last run time of tasks to restart scheduling
+        task_list = db.task_get_all(ctxt)
+        for task in task_list:
+            db.task_update(ctxt, task['id'], {'last_run_time': None})
 
     def __call__(self, ctx):
         """ Schedule the collection tasks based on interval """
         try:
-            # filters = {'id' > self.last_traversed_task}
-            tasks = db.task_get_all(ctx)
+
+            filters = {'last_run_time': None}
+            tasks = db.task_get_all(ctx, filters=filters)
             LOG.debug("Schedule performance collection triggered: total "
                       "tasks to be handled:%s" % len(tasks))
             for task in tasks:
@@ -62,9 +66,8 @@ class TelemetryJob(object):
                 db.task_update(ctx, task_id, update_task_dict)
                 LOG.info('Periodic collection task triggered for for task id: '
                          '%s ' % task['id'])
-                self.last_traversed_task = task_id
         except Exception as e:
             LOG.error("Failed to trigger periodic collection, reason: %s.",
                       six.text_type(e))
         else:
-            LOG.debug("Periodic collection task Scheduling completed")
+            LOG.debug("Periodic collection task Scheduling completed.")

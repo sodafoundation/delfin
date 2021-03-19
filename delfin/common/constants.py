@@ -283,14 +283,15 @@ metric_struct = namedtuple("Metric", "name labels values")
 
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [
-    "response_time",
+    "responseTime",
     "throughput",
-    "read_throughput",
-    "write_throughput",
-    "bandwidth",
-    "read_bandwidth",
-    "write_bandwidth"
+    "readThroughput",
+    "writeThroughput",
+    "requests",
+    "readRequests",
+    "writeRequests"
 ]
+
 
 BLOCK_SIZE = 4096
 

@@ -411,7 +411,7 @@ class TestVMAXStorageDriver(TestCase):
         }
 
         expected_historic = [
-            constants.metric_struct(name='response_time',
+            constants.metric_struct(name='responseTime',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type':
@@ -430,43 +430,6 @@ class TestVMAXStorageDriver(TestCase):
                                         'resource_type':
                                             'array'},
                                     values={
-                                        1598875800000: 296.1,
-                                        1598876100000:
-                                            350.22998,
-                                        1598876400000:
-                                            297.63333}
-                                    ),
-            constants.metric_struct(name='read_throughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            14.056666,
-                                        1598876100000:
-                                            13.213333,
-                                        1598876400000:
-                                            13.176666}
-                                    ),
-            constants.metric_struct(name='write_throughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000: 25.78,
-                                        1598876100000:
-                                            45.97333,
-                                        1598876400000:
-                                            28.643333}
-                                    ),
-            constants.metric_struct(name='bandwidth',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
                                         1598875800000:
                                             0.36879882999999997,
                                         1598876400000:
@@ -474,7 +437,7 @@ class TestVMAXStorageDriver(TestCase):
                                         1598876100000:
                                             0.446360664}
                                     ),
-            constants.metric_struct(name='read_bandwidth',
+            constants.metric_struct(name='readThroughput',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type':
@@ -487,7 +450,7 @@ class TestVMAXStorageDriver(TestCase):
                                         1598876400000:
                                             0.042753905}
                                     ),
-            constants.metric_struct(name='write_bandwidth',
+            constants.metric_struct(name='writeThroughput',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type':
@@ -499,11 +462,48 @@ class TestVMAXStorageDriver(TestCase):
                                             0.40306965,
                                         1598876400000:
                                             0.25046548}
+                                    ),
+            constants.metric_struct(name='requests',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 296.1,
+                                        1598876100000:
+                                            350.22998,
+                                        1598876400000:
+                                            297.63333}
+                                    ),
+            constants.metric_struct(name='readRequests',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            14.056666,
+                                        1598876100000:
+                                            13.213333,
+                                        1598876400000:
+                                            13.176666}
+                                    ),
+            constants.metric_struct(name='writeRequests',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 25.78,
+                                        1598876100000:
+                                            45.97333,
+                                        1598876400000:
+                                            28.643333}
                                     )
         ]
 
         expected_realtime = [
-            constants.metric_struct(name='response_time',
+            constants.metric_struct(name='responseTime',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type':
@@ -519,39 +519,11 @@ class TestVMAXStorageDriver(TestCase):
                                         'resource_type':
                                             'array'},
                                     values={
-                                        1598875800000: 296.1
-                                    }
-                                    ),
-            constants.metric_struct(name='read_throughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            14.056666
-                                    }
-                                    ),
-            constants.metric_struct(name='write_throughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000: 25.78
-                                    }
-                                    ),
-            constants.metric_struct(name='bandwidth',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
                                         1598875800000:
                                             0.36879882999999997
                                     }
                                     ),
-            constants.metric_struct(name='read_bandwidth',
+            constants.metric_struct(name='readThroughput',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type':
@@ -561,7 +533,7 @@ class TestVMAXStorageDriver(TestCase):
                                             0.05016927
                                     }
                                     ),
-            constants.metric_struct(name='write_bandwidth',
+            constants.metric_struct(name='writeThroughput',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type': 'array'
@@ -569,6 +541,34 @@ class TestVMAXStorageDriver(TestCase):
                                     values={
                                         1598875800000: 0.31862956
 
+                                    }
+                                    ),
+            constants.metric_struct(name='requests',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 296.1
+                                    }
+                                    ),
+            constants.metric_struct(name='readRequests',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000:
+                                            14.056666
+                                    }
+                                    ),
+            constants.metric_struct(name='writeRequests',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type':
+                                            'array'},
+                                    values={
+                                        1598875800000: 25.78
                                     }
                                     )
         ]
@@ -587,8 +587,8 @@ class TestVMAXStorageDriver(TestCase):
         self.assertEqual(driver.storage_id, "12345")
         self.assertEqual(driver.client.array_id, "00112233")
 
-        ret = driver.collect_perf_metrics(context, '12345', "", 10900000,
-                                          10000000)
+        ret = driver.collect_perf_metrics(context, '12345', "", 10000000,
+                                          10900000)
         self.assertEqual(ret, expected_historic)
 
         mock_performnace.return_value = 200, vmax_array_perf_resp_real_time
@@ -599,8 +599,8 @@ class TestVMAXStorageDriver(TestCase):
         mock_performnace.side_effect = \
             exception.StoragePerformanceCollectionFailed
         with self.assertRaises(Exception) as exc:
-            ret = driver.collect_perf_metrics(context, '12345', "", 10900000,
-                                              10000000)
+            ret = driver.collect_perf_metrics(context, '12345', "", 10000000,
+                                              10900000)
 
         self.assertIn('Failed to collect performance metrics. Reason',
                       str(exc.exception))

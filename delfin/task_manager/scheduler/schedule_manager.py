@@ -30,12 +30,6 @@ telemetry_opts = [
     cfg.IntOpt('periodic_task_schedule_interval', default=180,
                help='default interval (in sec) for the periodic scan for '
                     'failed task scheduling'),
-    cfg.IntOpt('failed_task_schedule_interval', default=240,
-               help='default interval (in sec) interval in sec for periodic '
-                    'scan for failed task scheduling'),
-    cfg.IntOpt('max_failed_task_retry_count', default=5,
-               help='default value (in integer) for maximum number of retries '
-                    'for failed task execution'),
 ]
 CONF.register_opts(telemetry_opts, "TELEMETRY")
 telemetry = CONF.TELEMETRY
@@ -43,23 +37,24 @@ telemetry = CONF.TELEMETRY
 
 class SchedulerManager(object):
     def __init__(self):
-        self.schedule = scheduler.Scheduler.get_instance()
+        self.schedule_instance = scheduler.Scheduler.get_instance()
 
     def start(self):
         """ Initialise the schedulers for collection and failed tasks
         """
         ctxt = context.get_admin_context()
         try:
-            # Create a job for periodic scheduling
+
+            # Create a jobs for periodic scheduling
             periodic_scheduler_job_id = uuidutils.generate_uuid()
-            self.schedule.add_job(
-                telemetry_job.TelemetryJob(), 'interval', args=[ctxt],
+            self.schedule_instance.add_job(
+                telemetry_job.TelemetryJob(ctxt), 'interval', args=[ctxt],
                 seconds=telemetry.periodic_task_schedule_interval,
                 next_run_time=datetime.now(),
                 id=periodic_scheduler_job_id)
         except Exception as e:
-            LOG.error("Failed to initialize periodic tasks for performance "
-                      "collection, reason: %s.", six.text_type(e))
+            LOG.error("Failed to initialize periodic tasks, reason: %s.",
+                      six.text_type(e))
         else:
             # start the scheduler
-            self.schedule.start()
+            self.schedule_instance.start()

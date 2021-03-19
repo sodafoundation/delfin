@@ -544,17 +544,17 @@ class VMaxRest(object):
             operation, status_code, message)
         return status_code, message
 
-    def get_array_performance_metrics(self, array, interval):
+    def get_array_performance_metrics(self, array, start_time, end_time):
         """Get a array performance metrics from VMAX unipshere REST API.
         :param array: the array serial number
-        :param interval: difference between start and end time
-
+        :param start_time: start time for collection
+        :param end_time: end time for collection
         :returns: message -- response from unipshere REST API
          """
 
         target_uri = constants.VMAX_REST_TARGET_URI_ARRAY_PERF
         payload = perf_utils.generate_performance_payload(
-            array, interval, constants.ARRAY_METRICS)
+            array, start_time, end_time, constants.ARRAY_METRICS)
 
         status_code, message = self.post_request(target_uri, payload)
         # Expected 200 when POST request has metrics in response body

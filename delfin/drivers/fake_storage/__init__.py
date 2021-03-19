@@ -490,7 +490,7 @@ class FakeStorageDriver(driver.StorageDriver):
                              end_time):
         """Collects performance metric for the given interval"""
         rd_array_count = random.randint(MIN_STORAGE, MAX_STORAGE)
-        LOG.info("Fake_perf_metrics number for %s: %d" % (
+        LOG.debug("Fake_perf_metrics number for %s: %d" % (
             storage_id, rd_array_count))
         array_metrics = []
         labels = {'storage_id': storage_id, 'resource_type': 'array'}

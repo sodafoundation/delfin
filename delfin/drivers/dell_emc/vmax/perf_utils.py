@@ -35,15 +35,17 @@ def epoch_time_interval_ago(interval_seconds=constants.VMAX_PERF_MIN_INTERVAL):
     return int(epoch_time_ms_now() - (interval_seconds * 1000))
 
 
-def generate_performance_payload(array, interval, metrics):
+def generate_performance_payload(array, start_time, end_time, metrics):
     """Generate request payload for VMAX performance POST request
     :param array: symmetrixID
-    :param interval: interval in seconds
+    :param start_time: start time for collection
+    :param end_time: end time for collection
+    :param metrics: metrics to be collected
     :returns: payload dictionary
     """
     return {'symmetrixId': str(array),
-            "endDate": epoch_time_ms_now(),
-            "startDate": epoch_time_interval_ago(interval),
+            "endDate": end_time,
+            "startDate": start_time,
             "metrics": metrics,
             "dataFormat": "Average"}
 
@@ -87,9 +89,9 @@ def map_array_perf_metrics_to_delfin_metrics(metrics_value_map):
     read_throughput_values_dict = metrics_value_map.get('HostReads')
     write_throughput_values_dict = metrics_value_map.get('HostWrites')
     # map values to delfin metrics spec
-    delfin_metrics = {'response_time': response_time_values_dict,
-                      'read_throughput': read_bandwidth_values_dict,
-                      'write_throughput': write_bandwidth_values_dict,
+    delfin_metrics = {'responseTime': response_time_values_dict,
+                      'readThroughput': read_bandwidth_values_dict,
+                      'writeThroughput': write_bandwidth_values_dict,
                       'requests': throughput_values_dict,
                       'readRequests': read_throughput_values_dict,
                       'writeRequests': write_throughput_values_dict,
