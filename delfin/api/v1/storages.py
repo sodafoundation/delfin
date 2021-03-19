@@ -107,16 +107,18 @@ class StorageController(wsgi.Controller):
             # Trigger Performance monitoring
             capabilities = self.driver_api.get_capabilities(
                 context=ctxt, storage_id=storage['id'])
-            # validate capabilities
             validation.validate_capabilities(capabilities)
-            # trigger performance monitoring
             _create_performance_monitoring_task(ctxt, storage['id'],
                                                 capabilities)
+        except exception.EmptyResourceMetrics:
+            msg = _("Resource metric provided by capabilities is empty for "
+                    "storage: %s") % storage['id']
+            LOG.info(msg)
         except Exception as e:
-            # Unexpected error occurred, while performance monitoring.
             msg = _('Failed to create performance monitoring task for storage:'
                     '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
                                                       'err': six.text_type(e)}
+
             LOG.error(msg)
         return storage_view.build_storage(storage)
 
@@ -258,7 +260,7 @@ def _set_synced_if_ok(context, storage_id, resource_count):
 
 
 def _create_performance_monitoring_task(context, storage_id, capabilities):
-    # check resource_metric attribute availability and
+    # Check resource_metric attribute availability and
     # check if resource_metric is empty
     if 'resource_metrics' not in capabilities \
             or not bool(capabilities.get('resource_metrics')):
@@ -269,5 +271,4 @@ def _create_performance_monitoring_task(context, storage_id, capabilities):
     task.update(args=capabilities.get('resource_metrics'))
     task.update(interval=constants.Task.DEFAULT_TASK_INTERVAL)
     task.update(method=constants.Task.PERFORMANCE_TASK_METHOD)
-    # push task in DB
     db.task_create(context=context, values=task)
