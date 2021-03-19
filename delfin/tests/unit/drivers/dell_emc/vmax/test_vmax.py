@@ -424,7 +424,7 @@ class TestVMAXStorageDriver(TestCase):
                                         1598876100000:
                                             9.1774695}
                                     ),
-            constants.metric_struct(name='requests',
+            constants.metric_struct(name='throughput',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type':
@@ -513,7 +513,7 @@ class TestVMAXStorageDriver(TestCase):
                                             9.1405992
                                     }
                                     ),
-            constants.metric_struct(name='requests',
+            constants.metric_struct(name='throughput',
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type':
