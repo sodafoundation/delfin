@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import sys
 from unittest import TestCase, mock
-import unittest
 
+from delfin.drivers.hpe.hpe_3par.alert_handler import AlertHandler
+
+sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import exception
 from delfin import context
-from delfin.common import config # noqa
 from delfin.drivers.hpe.hpe_3par.hpe_3parstor import Hpe3parStorDriver
 from delfin.drivers.hpe.hpe_3par.rest_handler import RestHandler
 from delfin.drivers.hpe.hpe_3par.ssh_handler import SSHHandler
@@ -69,16 +70,12 @@ def create_driver():
 class TestHpe3parStorageDriver(TestCase):
 
     def test_a_init(self):
-        m = mock.MagicMock(status_code=100)
-        with mock.patch.object(Session, 'post', return_value=m):
-            m.raise_for_status.return_value = 201
-            m.json.return_value = {
-                'key': 'deviceid123ABC456'
-            }
-            kwargs = ACCESS_INFO
-            with self.assertRaises(Exception) as exc:
-                Hpe3parStorDriver(**kwargs)
-            self.assertIn('Bad response from server', str(exc.exception))
+        kwargs = ACCESS_INFO
+        SSHHandler.login = mock.Mock(
+            return_value={""})
+        RestHandler.login = mock.Mock(
+            return_value={""})
+        Hpe3parStorDriver(**kwargs)
 
     def test_b_initrest(self):
         m = mock.MagicMock()
@@ -88,21 +85,8 @@ class TestHpe3parStorageDriver(TestCase):
                 'key': '1&2F28CA9FC1EA0B8EAB80E9D8FD'
             }
             kwargs = ACCESS_INFO
-            with self.assertRaises(Exception) as exc:
-                rc = RestClient(**kwargs)
-                rh = RestHandler(rc)
-                rh.login()
-            self.assertIn('Bad response from server', str(exc.exception))
-
-    """
-    def test_c_initssh(self):
-        driver = create_driver()
-        with self.assertRaises(Exception) as exc:
-            command_str = 'ls -l'
-            driver.ssh_handler.ssh_client.do_exec(context, command_str)
-        self.assertIn('Exception in SSH protocol negotiation or logic',
-                      str(exc.exception))
-    """
+            rc = RestClient(**kwargs)
+            RestHandler(rc)
 
     def test_d_get_storage(self):
         driver = create_driver()
@@ -161,7 +145,7 @@ class TestHpe3parStorageDriver(TestCase):
                 }
             }
         )
-
+        SSHHandler.get_health_state = mock.Mock(return_value="")
         m = mock.MagicMock(status_code=200)
         with mock.patch.object(RestHandler, 'call', return_value=m):
             m.raise_for_status.return_value = 200
@@ -327,218 +311,6 @@ class TestHpe3parStorageDriver(TestCase):
             self.assertIn('An unknown exception occurred',
                           str(exc.exception))
 
-    """
-    def test_f_list_volumes(self):
-        driver = create_driver()
-        expected = [
-            {
-                'name': 'admin',
-                'storage_id': '12345',
-                'description': None,
-                'status': 'normal',
-                'native_volume_id': 0,
-                'native_storage_pool_id': '',
-                'wwn': '50002AC000001C9F',
-                'type': 'thick',
-                'total_capacity': 10737418240,
-                'used_capacity': 10737418240,
-                'free_capacity': 0,
-                'compressed': True,
-                'deduplicated': True
-            }, {
-                'name': 'C61.277',
-                'storage_id': '12345',
-                'description': None,
-                'status': 'normal',
-                'native_volume_id': 5115,
-                'native_storage_pool_id': 'cxd',
-                'wwn': '50002AC193FB1C9F',
-                'type': 'thin',
-                'total_capacity': 268435456,
-                'used_capacity': 1207959552,
-                'free_capacity': -939524096,
-                'compressed': True,
-                'deduplicated': True
-            }, {
-                'name': 'C61.278',
-                'storage_id': '12345',
-                'description': None,
-                'status': 'normal',
-                'native_volume_id': 5116,
-                'native_storage_pool_id': 'cxd',
-                'wwn': '50002AC193FC1C9F',
-                'type': 'thin',
-                'total_capacity': 268435456,
-                'used_capacity': 1207959552,
-                'free_capacity': -939524096,
-                'compressed': True,
-                'deduplicated': True
-            }
-        ]
-
-        ret = [
-            {
-                "total": 380,
-                "members": [
-                    {
-                        "id": 0,
-                        "name": "admin",
-                        "provisioningType": 1,
-                        "copyType": 1,
-                        "baseId": 0,
-                        "readOnly": False,
-                        "state": 1,
-                        "failedStates": [],
-                        "degradedStates": [],
-                        "additionalStates": [],
-                        "adminSpace": {
-                            "reservedMiB": 0,
-                            "rawReservedMiB": 0,
-                            "usedMiB": 0,
-                            "freeMiB": 0
-                        },
-                        "snapshotSpace": {
-                            "reservedMiB": 0,
-                            "rawReservedMiB": 0,
-                            "usedMiB": 0,
-                            "freeMiB": 0
-                        },
-                        "userSpace": {
-                            "reservedMiB": 10240,
-                            "rawReservedMiB": 20480,
-                            "usedMiB": 10240,
-                            "freeMiB": 0
-                        },
-                        "sizeMiB": 10240,
-                        "wwn": "50002AC000001C9F",
-                        "creationTimeSec": 1400743667,
-                        "creationTime8601": "2014-05-22T15:27:47+08:00",
-                        "ssSpcAllocWarningPct": 0,
-                        "ssSpcAllocLimitPct": 0,
-                        "usrSpcAllocWarningPct": 0,
-                        "usrSpcAllocLimitPct": 0,
-                        "policies": {
-                            "staleSS": True,
-                            "oneHost": False,
-                            "zeroDetect": False,
-                            "system": True,
-                            "caching": True
-                        },
-                        "uuid": "d88e03b7-79c6-4541-8506-bc5d56697cae"
-                    },
-                    {
-                        "id": 5115,
-                        "name": "C61.277",
-                        "provisioningType": 2,
-                        "copyType": 1,
-                        "baseId": 5115,
-                        "readOnly": False,
-                        "state": 1,
-                        "failedStates": [],
-                        "degradedStates": [],
-                        "additionalStates": [],
-                        "adminSpace": {
-                            "reservedMiB": 128,
-                            "rawReservedMiB": 384,
-                            "usedMiB": 128,
-                            "freeMiB": 0
-                        },
-                        "snapshotSpace": {
-                            "reservedMiB": 512,
-                            "rawReservedMiB": 614,
-                            "usedMiB": 512,
-                            "freeMiB": 0
-                        },
-                        "userSpace": {
-                            "reservedMiB": 512,
-                            "rawReservedMiB": 614,
-                            "usedMiB": 512,
-                            "freeMiB": 0
-                        },
-                        "sizeMiB": 256,
-                        "wwn": "50002AC193FB1C9F",
-                        "creationTimeSec": 1595299510,
-                        "creationTime8601": "2020-07-21T10:45:10+08:00",
-                        "ssSpcAllocWarningPct": 0,
-                        "ssSpcAllocLimitPct": 0,
-                        "usrSpcAllocWarningPct": 0,
-                        "usrSpcAllocLimitPct": 0,
-                        "policies": {
-                            "staleSS": True,
-                            "oneHost": False,
-                            "zeroDetect": True,
-                            "system": False,
-                            "caching": True
-                        },
-                        "userCPG": "cxd",
-                        "snapCPG": "cxd",
-                        "uuid": "99669ae8-3c4b-4ceb-bb10-9e46e1da1eba"
-                    },
-                    {
-                        "id": 5116,
-                        "name": "C61.278",
-                        "provisioningType": 2,
-                        "copyType": 1,
-                        "baseId": 5116,
-                        "readOnly": False,
-                        "state": 1,
-                        "failedStates": [],
-                        "degradedStates": [],
-                        "additionalStates": [],
-                        "adminSpace": {
-                            "reservedMiB": 128,
-                            "rawReservedMiB": 384,
-                            "usedMiB": 128,
-                            "freeMiB": 0
-                        },
-                        "snapshotSpace": {
-                            "reservedMiB": 512,
-                            "rawReservedMiB": 614,
-                            "usedMiB": 512,
-                            "freeMiB": 0
-                        },
-                        "userSpace": {
-                            "reservedMiB": 512,
-                            "rawReservedMiB": 614,
-                            "usedMiB": 512,
-                            "freeMiB": 0
-                        },
-                        "sizeMiB": 256,
-                        "wwn": "50002AC193FC1C9F",
-                        "creationTimeSec": 1595299510,
-                        "creationTime8601": "2020-07-21T10:45:10+08:00",
-                        "ssSpcAllocWarningPct": 0,
-                        "ssSpcAllocLimitPct": 0,
-                        "usrSpcAllocWarningPct": 0,
-                        "usrSpcAllocLimitPct": 0,
-                        "policies": {
-                            "staleSS": True,
-                            "oneHost": False,
-                            "zeroDetect": True,
-                            "system": False,
-                            "caching": True
-                        },
-                        "userCPG": "cxd",
-                        "snapCPG": "cxd",
-                        "uuid": "8575071b-163e-49ae-90dd-770f1fede25c"
-                    }
-                ]
-            }
-        ]
-        with mock.patch.object(RestHandler, 'get_resinfo_call',
-                               side_effect=ret):
-            volumes = driver.list_volumes(context)
-            self.assertDictEqual(volumes[0], expected[0])
-            self.assertDictEqual(volumes[1], expected[1])
-
-        with mock.patch.object(RestHandler, 'get_all_volumes',
-                               side_effect=exception.DelfinException):
-            with self.assertRaises(Exception) as exc:
-                driver.list_volumes(context)
-            self.assertIn('Exception from Storage Backend',
-                          str(exc.exception))
-    """
-
     def test_h_parse_alert(self):
         """ Success flow with all necessary parameters"""
         driver = create_driver()
@@ -568,6 +340,7 @@ class TestHpe3parStorageDriver(TestCase):
             'description': 'This is a test trap',
             'resource_type': 'Storage',
             'location': 'test_trap',
+            'match_key': 'c24c7735a5146d6717b5bb2ffb7d72ca',
             'occur_time': '',
             'clear_category': 'Automatic'
         }
@@ -577,28 +350,9 @@ class TestHpe3parStorageDriver(TestCase):
         # Verify that all other fields are matching
         self.assertDictEqual(expected_alert_model, alert_model)
 
-    def test_clear_alert(self):
+    @mock.patch.object(AlertHandler, 'clear_alert')
+    def test_clear_alert(self, mock_clear_alert):
         driver = create_driver()
         alert_id = '230584300921369'
-
-        with self.assertRaises(Exception) as exc:
-            driver.clear_alert(context, alert_id)
-        self.assertIn('Exception in SSH protocol', str(exc.exception))
-
-    """
-    def test_j_restlogout(self):
-        m = mock.MagicMock()
-        with mock.patch.object(Session, 'delete', return_value=m):
-            m.raise_for_status.return_value = None
-            m.json.return_value = None
-            kwargs = ACCESS_INFO
-
-            rc = RestClient(**kwargs)
-            rh = RestHandler(rc)
-            re = rh.logout()
-            self.assertIsNone(re)
-    """
-
-
-if __name__ == '__main__':
-    unittest.main()
+        driver.clear_alert(context, alert_id)
+        self.assertEqual(mock_clear_alert.call_count, 1)

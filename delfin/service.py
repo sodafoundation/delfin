@@ -268,7 +268,6 @@ class TaskService(Service):
 
     def start(self):
         super(TaskService, self).start()
-        self.manager.periodic_performance_collect()
 
 
 class WSGIService(service.ServiceBase):
