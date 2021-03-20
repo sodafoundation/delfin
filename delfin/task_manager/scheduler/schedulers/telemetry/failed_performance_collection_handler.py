@@ -18,7 +18,7 @@ from oslo_log import log
 
 from delfin import db
 from delfin import exception
-from delfin.common.constants import TelemetryJobStatus
+from delfin.common.constants import TelemetryJobStatus, TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
 from delfin.db.sqlalchemy.models import Task
 from delfin.i18n import _
@@ -86,7 +86,7 @@ class FailedPerformanceCollectionHandler(object):
             self._teardown_task()
             return
 
-        if self.retry_count >= CONF.TELEMETRY.max_failed_task_retry_count:
+        if self.retry_count >= TelemetryCollection.MAX_FAILED_JOB_RETRY_COUNT:
             msg = _(
                 "Failed to collect performance metrics of task instance "
                 "id:{0} for start time:{1} and end time:{2} with "

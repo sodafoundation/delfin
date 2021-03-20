@@ -15,28 +15,17 @@
 from datetime import datetime
 
 import six
-from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import db
 from delfin import utils
-from delfin.common.constants import TelemetryJobStatus
+from delfin.common.constants import TelemetryJobStatus, TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
 from delfin.task_manager.scheduler import scheduler
 
 LOG = log.getLogger(__name__)
-CONF = cfg.CONF
-
-telemetry_opts = [
-    cfg.IntOpt('max_failed_task_retry_count', default=5,
-               help='default value (in integer) for maximum number of retries '
-                    'for failed task execution'),
-]
-
-CONF.register_opts(telemetry_opts, "TELEMETRY")
-telemetry = CONF.TELEMETRY
 
 
 @six.add_metaclass(utils.Singleton)
@@ -69,9 +58,9 @@ class FailedTelemetryJob(object):
                 retry_count = failed_task[FailedTask.retry_count.name]
                 result = failed_task[FailedTask.result.name]
                 job_id = failed_task[FailedTask.job_id.name]
-                if retry_count >= telemetry.max_failed_task_retry_count \
-                        or result == \
-                        TelemetryJobStatus.FAILED_JOB_STATUS_SUCCESS:
+                if retry_count >= \
+                        TelemetryCollection.MAX_FAILED_JOB_RETRY_COUNT or \
+                        result == TelemetryJobStatus.FAILED_JOB_STATUS_SUCCESS:
                     LOG.info("Exiting Failure task processing for task [%d] "
                              "with result [%s] and retry count [%d] "
                              % (failed_task_id, result, retry_count))
