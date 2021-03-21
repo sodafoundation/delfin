@@ -20,6 +20,7 @@ from oslo_log import log
 from delfin import context
 from delfin.drivers import api as driver_api
 from delfin.exporter import base_exporter
+from delfin.common.constants import TelemetryTaskStatus
 
 LOG = log.getLogger(__name__)
 
@@ -37,13 +38,17 @@ class PerformanceCollectionTask(TelemetryTask):
 
     def collect(self, ctx, storage_id, args, start_time, end_time):
         try:
+            LOG.info("Performance collection for storage [%s] with "
+                     "start time [%s] and end time [%s]"
+                     % (storage_id, start_time, end_time))
             perf_metrics = self.driver_api \
                 .collect_perf_metrics(ctx, storage_id,
                                       args,
                                       start_time, end_time)
-
             self.perf_exporter.dispatch(context, perf_metrics)
+            return TelemetryTaskStatus.TASK_EXEC_STATUS_SUCCESS
         except Exception as e:
             LOG.error("Failed to collect performance metrics for "
                       "storage id :{0}, reason:{1}".format(storage_id,
                                                            six.text_type(e)))
+            return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE

@@ -278,5 +278,6 @@ class FailedTask(BASE, DelfinBase):
     start_time = Column(Integer)
     end_time = Column(Integer)
     retry_count = Column(Integer)
-    result = Column(String(255))
+    method = Column(String(255))
     job_id = Column(String(36))
+    result = Column(String(255))

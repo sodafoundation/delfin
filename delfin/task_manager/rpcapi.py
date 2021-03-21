@@ -50,7 +50,7 @@ class TaskAPI(object):
     def collect_telemetry(self, context, storage_id, telemetry_task, args,
                           start_time, end_time):
         call_context = self.client.prepare(version='1.0')
-        return call_context.cast(context,
+        return call_context.call(context,
                                  'collect_telemetry',
                                  storage_id=storage_id,
                                  telemetry_task=telemetry_task,

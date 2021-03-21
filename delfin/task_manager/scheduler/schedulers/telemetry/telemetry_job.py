@@ -20,7 +20,10 @@ from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import db
+from delfin.common.constants import TelemetryCollection
 from delfin.task_manager.scheduler import scheduler
+from delfin.task_manager.scheduler.schedulers.telemetry.failed_telemetry_job \
+    import FailedTelemetryJob
 
 LOG = log.getLogger(__name__)
 
@@ -33,6 +36,8 @@ class TelemetryJob(object):
         task_list = db.task_get_all(ctxt)
         for task in task_list:
             db.task_update(ctxt, task['id'], {'last_run_time': None})
+        # Enable telemetry failed task handler
+        self._schedule_failed_telemetry_job_handler(ctxt)
 
     def __call__(self, ctx):
         """ Schedule the collection tasks based on interval """
@@ -55,10 +60,10 @@ class TelemetryJob(object):
 
                 # method indicates the specific collection task to be triggered
                 collection_class = importutils.import_class(task['method'])
+                instance = collection_class.get_instance(ctx, task_id)
                 # Create periodic job
                 self.schedule.add_job(
-                    collection_class(), 'interval',
-                    args=[ctx, task_id], seconds=task['interval'],
+                    instance, 'interval', seconds=task['interval'],
                     next_run_time=next_collection_time, id=job_id)
 
                 update_task_dict = {'job_id': job_id,
@@ -71,3 +76,11 @@ class TelemetryJob(object):
                       six.text_type(e))
         else:
             LOG.debug("Periodic collection task Scheduling completed.")
+
+    def _schedule_failed_telemetry_job_handler(self, ctx):
+        periodic_scheduler_job_id = uuidutils.generate_uuid()
+        self.schedule.add_job(
+            FailedTelemetryJob(ctx), 'interval',
+            seconds=TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL,
+            next_run_time=datetime.now(),
+            id=periodic_scheduler_job_id)

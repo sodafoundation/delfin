@@ -306,4 +306,20 @@ class TelemetryCollection(object):
     PERFORMANCE_TASK_METHOD = "delfin.task_manager.scheduler.schedulers." \
                               "telemetry.performance_collection_handler." \
                               "PerformanceCollectionHandler"
-    PERIODIC_JOB_INTERVAL = 300
+    """Performance monitoring job interval"""
+    PERIODIC_JOB_INTERVAL = 180
+    """Failed Performance monitoring job interval"""
+    FAILED_JOB_SCHEDULE_INTERVAL = 240
+
+
+class TelemetryTaskStatus(object):
+    """Telemetry task enum"""
+    TASK_EXEC_STATUS_SUCCESS = True
+    TASK_EXEC_STATUS_FAILURE = False
+
+
+class TelemetryJobStatus(object):
+    """Telemetry jobs enum"""
+    FAILED_JOB_STATUS_SUCCESS = "Success"
+    FAILED_JOB_STATUS_STARTED = "Started"
+    FAILED_JOB_STATUS_INIT = "Initialized"

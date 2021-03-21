@@ -328,3 +328,7 @@ class StorageCapabilityNotSupported(Invalid):
 class EmptyResourceMetrics(DelfinException):
     msg_fmt = _("Empty resource metric in capabilities")
     code = 501
+
+
+class TelemetryTaskExecError(DelfinException):
+    msg_fmt = _("Failure in telemetry task execution")

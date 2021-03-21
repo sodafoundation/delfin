@@ -15,17 +15,15 @@
 from datetime import datetime
 
 import six
-from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
 
 from delfin import context
-from delfin.common import constants
+from delfin.common.constants import TelemetryCollection
 from delfin.task_manager.scheduler import scheduler
 from delfin.task_manager.scheduler.schedulers.telemetry import telemetry_job
 
 LOG = log.getLogger(__name__)
-CONF = cfg.CONF
 
 
 class SchedulerManager(object):
@@ -42,7 +40,7 @@ class SchedulerManager(object):
             periodic_scheduler_job_id = uuidutils.generate_uuid()
             self.schedule_instance.add_job(
                 telemetry_job.TelemetryJob(ctxt), 'interval', args=[ctxt],
-                seconds=constants.TelemetryCollection.PERIODIC_JOB_INTERVAL,
+                seconds=TelemetryCollection.PERIODIC_JOB_INTERVAL,
                 next_run_time=datetime.now(),
                 id=periodic_scheduler_job_id)
         except Exception as e:

@@ -49,7 +49,8 @@ class TaskManager(manager.Manager):
                   " id:{1}".format(args, storage_id))
         cls = importutils.import_class(telemetry_task)
         device_obj = cls()
-        device_obj.collect(context, storage_id, args, start_time, end_time)
+        return device_obj.collect(context, storage_id, args, start_time,
+                                  end_time)
 
     def remove_storage_resource(self, context, storage_id, resource_task):
         cls = importutils.import_class(resource_task)
