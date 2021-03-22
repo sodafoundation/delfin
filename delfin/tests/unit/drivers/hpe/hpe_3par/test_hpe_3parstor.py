@@ -340,7 +340,6 @@ class TestHpe3parStorageDriver(TestCase):
             'description': 'This is a test trap',
             'resource_type': 'Storage',
             'location': 'test_trap',
-            'match_key': 'c24c7735a5146d6717b5bb2ffb7d72ca',
             'occur_time': '',
             'clear_category': 'Automatic'
         }

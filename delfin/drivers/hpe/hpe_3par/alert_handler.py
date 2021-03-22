@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import hashlib
 import time
 
 import six
@@ -119,8 +118,7 @@ class AlertHandler(object):
             alert_model['description'] = alert.get(AlertHandler.OID_DETAILS)
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = alert.get(AlertHandler.OID_COMPONENT)
-            alert_model['match_key'] = hashlib.md5(
-                alert.get(AlertHandler.OID_DETAILS, '').encode()).hexdigest()
+
             if alert.get(AlertHandler.OID_STATE) == '5':
                 alert_model['clear_category'] = constants.ClearType.AUTOMATIC
             return alert_model
