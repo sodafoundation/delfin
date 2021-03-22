@@ -1,4 +1,4 @@
-# Copyright 2020 The SODA Authors.
+# Copyright 2021 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -232,7 +232,8 @@ trap_alert_result = {
     'occur_time': 1605852610000,
     'description': 'ddddddd',
     'resource_type': 'Storage',
-    'location': ' System Version = 7.4.0.11 '
+    'location': ' System Version = 7.4.0.11 ',
+    'match_key': '338d811d532553557ca33be45b6bde55'
 }
 
 
@@ -297,57 +298,14 @@ class TestHitachiVspStorStorageDriver(TestCase):
 
     def test_parse_alert(self):
         trap_alert = self.driver.parse_alert(context, TRAP_INFO)
-        self.assertEqual(trap_alert.get('alert_id'),
-                         trap_alert_result.get('alert_id'))
+        trap_alert_result['occur_time'] = trap_alert['occur_time']
+        self.assertEqual(trap_alert, trap_alert_result)
 
-    def test_rest_close_connection(self):
-        m = mock.MagicMock(status_code=200)
-        with mock.patch.object(Session, 'delete', return_value=m):
-            m.raise_for_status.return_value = 200
-            m.json.return_value = None
-            re = self.driver.close_connection()
-            self.assertIsNone(re)
-
-    def test_rest_handler_cal(self):
-        m = mock.MagicMock(status_code=403)
+    @mock.patch.object(RestHandler, 'call_with_token')
+    def test_get_token(self, mock_token):
         with self.assertRaises(Exception) as exc:
-            with mock.patch.object(Session, 'get', return_value=m):
-                m.raise_for_status.return_value = 403
-                m.json.return_value = None
-                url = 'http://test'
-                self.driver.rest_handler.call(url, '', 'GET')
-        self.assertIn('Invalid ip or port', str(exc.exception))
-
-    def test_reset_connection(self):
-        RestHandler.logout = mock.Mock(return_value={})
-        RestHandler.get_system_info = mock.Mock(return_value=GET_DEVICE_ID)
-        m = mock.MagicMock(status_code=200)
-        with mock.patch.object(Session, 'post', return_value=m):
-            m.raise_for_status.return_value = 201
-            m.json.return_value = {
-                "token": "97c13b8082444b36bc2103026205fa64",
-                "sessionId": 9
-            }
-            kwargs = ACCESS_INFO
-            re = self.driver.reset_connection(context, **kwargs)
-            self.assertIsNone(re)
-
-    def test_err_storage_pools_err(self):
-        with self.assertRaises(Exception) as exc:
-            self.driver.list_storage_pools(context)
-        self.assertIn('Invalid ip or port',
-                      str(exc.exception))
-
-    def test_err_volumes(self):
-        with self.assertRaises(Exception) as exc:
-            self.driver.list_volumes(context)
-        self.assertIn('Invalid ip or port',
-                      str(exc.exception))
-
-    def test_list_volumes_call(self):
-        m = mock.MagicMock(status_code=200)
-        with mock.patch.object(Session, 'get', return_value=m):
-            m.raise_for_status.return_value = 200
-            m.json.return_value = GET_ALL_VOLUMES
-            volume = self.driver.list_volumes(context)
-            self.assertDictEqual(volume[0], volume_result[0])
+            mock_token.return_value = mock.MagicMock(
+                status_code=403, text='KART30005-E')
+            self.driver.rest_handler.get_token()
+        self.assertEqual('Exception from Storage Backend: KART30005-E.',
+                         str(exc.exception))
