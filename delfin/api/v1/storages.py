@@ -41,8 +41,7 @@ telemetry_opts = [
                help='default interval (in sec) for performance collection'),
 ]
 
-CONF.register_opts(telemetry_opts, "TELEMETRY")
-telemetry = CONF.TELEMETRY
+CONF.register_opts(telemetry_opts, "telemetry")
 
 
 class StorageController(wsgi.Controller):
@@ -277,6 +276,6 @@ def _create_performance_monitoring_task(context, storage_id, capabilities):
     task = dict()
     task.update(storage_id=storage_id)
     task.update(args=capabilities.get('resource_metrics'))
-    task.update(interval=telemetry.performance_collection_interval)
+    task.update(interval=CONF.telemetry.performance_collection_interval)
     task.update(method=constants.TelemetryCollection.PERFORMANCE_TASK_METHOD)
     db.task_create(context=context, values=task)

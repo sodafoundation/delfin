@@ -17,10 +17,11 @@ import abc
 import six
 from oslo_log import log
 
-from delfin import context
+from delfin import context, db
+from delfin.common.constants import TelemetryTaskStatus
 from delfin.drivers import api as driver_api
 from delfin.exporter import base_exporter
-from delfin.common.constants import TelemetryTaskStatus
+from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -45,6 +46,19 @@ class PerformanceCollectionTask(TelemetryTask):
                 .collect_perf_metrics(ctx, storage_id,
                                       args,
                                       start_time, end_time)
+
+            # fill extra labels to metric by fetching metadata from resource DB
+            try:
+                storage_details = db.storage_get(ctx, storage_id)
+                for m in perf_metrics:
+                    m.labels["name"] = storage_details.name
+                    m.labels["serial_number"] = storage_details.serial_number
+            except Exception as e:
+                msg = _('Failed to add extra labels to performance '
+                        'metrics: {0}'.format(e))
+                LOG.error(msg)
+                return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
+
             self.perf_exporter.dispatch(context, perf_metrics)
             return TelemetryTaskStatus.TASK_EXEC_STATUS_SUCCESS
         except Exception as e:

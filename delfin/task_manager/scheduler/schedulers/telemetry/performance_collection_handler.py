@@ -81,7 +81,7 @@ class PerformanceCollectionHandler(object):
     def _handle_task_failure(self, start_time, end_time):
         failed_task = {FailedTask.task_id.name: self.task_id,
                        FailedTask.interval.name:
-                           TelemetryCollection.PERIODIC_JOB_SCHEDULE_INTERVAL,
+                           TelemetryCollection.PERIODIC_JOB_INTERVAL,
                        FailedTask.end_time.name: end_time,
                        FailedTask.start_time.name: start_time,
                        FailedTask.method.name:
