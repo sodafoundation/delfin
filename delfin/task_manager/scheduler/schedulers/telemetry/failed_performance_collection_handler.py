@@ -31,10 +31,10 @@ CONF = cfg.CONF
 
 
 class FailedPerformanceCollectionHandler(object):
-    def __init__(self, ctx, filed_task_id, storage_id, args, job_id,
+    def __init__(self, ctx, failed_task_id, storage_id, args, job_id,
                  retry_count, start_time, end_time):
         self.ctx = ctx
-        self.filed_task_id = filed_task_id
+        self.failed_task_id = failed_task_id
         self.retry_count = retry_count
         self.storage_id = storage_id
         self.job_id = job_id
@@ -92,19 +92,19 @@ class FailedPerformanceCollectionHandler(object):
                 "Failed to collect performance metrics of task instance "
                 "id:{0} for start time:{1} and end time:{2} with "
                 "maximum retry. Giving up on "
-                "retry".format(self.filed_task_id, self.start_time,
+                "retry".format(self.failed_task_id, self.start_time,
                                self.end_time))
             LOG.error(msg)
             self._stop_task()
             return
 
         self.result = TelemetryJobStatus.FAILED_JOB_STATUS_STARTED
-        db.failed_task_update(self.ctx, self.filed_task_id,
+        db.failed_task_update(self.ctx, self.failed_task_id,
                               {FailedTask.retry_count.name: self.retry_count,
                                FailedTask.result.name: self.result})
 
     def _stop_task(self):
-        db.failed_task_update(self.ctx, self.filed_task_id,
+        db.failed_task_update(self.ctx, self.failed_task_id,
                               {FailedTask.retry_count.name: self.retry_count,
                                FailedTask.result.name: self.result})
         self.scheduler_instance.pause_job(self.job_id)

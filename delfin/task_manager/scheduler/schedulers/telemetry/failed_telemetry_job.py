@@ -33,7 +33,7 @@ LOG = log.getLogger(__name__)
 class FailedTelemetryJob(object):
     def __init__(self, ctx):
         # create the object of periodic scheduler
-        self.schedule = scheduler.Scheduler.get_instance()
+        self.scheduler = scheduler.Scheduler.get_instance()
         self.ctx = ctx
 
     def __call__(self):
@@ -70,7 +70,7 @@ class FailedTelemetryJob(object):
                     continue
 
                 # check if job already scheduled
-                if job_id and self.schedule.get_job(job_id):
+                if job_id and self.scheduler.get_job(job_id):
                     # skip if job already exist
                     continue
 
@@ -98,7 +98,7 @@ class FailedTelemetryJob(object):
                 instance = \
                     collection_class.get_instance(self.ctx, failed_task_id)
                 # Create failed task collection
-                self.schedule.add_job(
+                self.scheduler.add_job(
                     instance, 'interval',
                     seconds=failed_task[FailedTask.interval.name],
                     next_run_time=datetime.now(), id=job_id)
@@ -112,4 +112,4 @@ class FailedTelemetryJob(object):
 
     def _teardown_task(self, ctx, failed_task_id, job_id):
         db.failed_task_delete(ctx, failed_task_id)
-        self.schedule.remove_job(job_id)
+        self.scheduler.remove_job(job_id)

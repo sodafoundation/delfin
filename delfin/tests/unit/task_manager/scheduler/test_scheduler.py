@@ -12,17 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from delfin import utils
+from delfin import test
+from delfin.task_manager.scheduler import scheduler
 
 
-@six.add_metaclass(utils.Singleton)
-class Scheduler:
-    @staticmethod
-    def get_instance():
-        return Scheduler().background_scheduler
+class TestScheduler(test.TestCase):
 
-    def __init__(self):
-        self.background_scheduler = BackgroundScheduler()
+    def test_scheduler_singleton(self):
+        first_instance = scheduler.Scheduler.get_instance()
+        self.assertIsInstance(first_instance, BackgroundScheduler)
+
+        second_instance = scheduler.Scheduler.get_instance()
+        self.assertIsInstance(second_instance, BackgroundScheduler)
+
+        self.assertEqual(first_instance, second_instance)
