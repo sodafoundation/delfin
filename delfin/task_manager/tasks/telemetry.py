@@ -39,9 +39,9 @@ class PerformanceCollectionTask(TelemetryTask):
 
     def collect(self, ctx, storage_id, args, start_time, end_time):
         try:
-            LOG.info("Performance collection for storage [%s] with "
-                     "start time [%s] and end time [%s]"
-                     % (storage_id, start_time, end_time))
+            LOG.debug("Performance collection for storage [%s] with start time"
+                      " [%s] and end time [%s]"
+                      % (storage_id, start_time, end_time))
             perf_metrics = self.driver_api \
                 .collect_perf_metrics(ctx, storage_id,
                                       args,

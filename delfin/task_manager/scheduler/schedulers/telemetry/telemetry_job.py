@@ -31,7 +31,7 @@ LOG = log.getLogger(__name__)
 class TelemetryJob(object):
     def __init__(self, ctxt):
         # create the object of periodic scheduler
-        self.schedule = scheduler.Scheduler.get_instance()
+        self.scheduler = scheduler.Scheduler.get_instance()
         # Reset last run time of tasks to restart scheduling
         task_list = db.task_get_all(ctxt)
         for task in task_list:
@@ -62,7 +62,7 @@ class TelemetryJob(object):
                 collection_class = importutils.import_class(task['method'])
                 instance = collection_class.get_instance(ctx, task_id)
                 # Create periodic job
-                self.schedule.add_job(
+                self.scheduler.add_job(
                     instance, 'interval', seconds=task['interval'],
                     next_run_time=next_collection_time, id=job_id)
 
@@ -79,7 +79,7 @@ class TelemetryJob(object):
 
     def _schedule_failed_telemetry_job_handler(self, ctx):
         periodic_scheduler_job_id = uuidutils.generate_uuid()
-        self.schedule.add_job(
+        self.scheduler.add_job(
             FailedTelemetryJob(ctx), 'interval',
             seconds=TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL,
             next_run_time=datetime.now(),
