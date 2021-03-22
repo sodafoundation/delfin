@@ -187,7 +187,7 @@ class SSHHandler(object):
             used_capacity = self.parse_string(storage_map.get(
                 'total_used_capacity'))
             raw_capacity = self.parse_string(storage_map.get(
-                'total_drive_raw_capacity'))
+                'total_mdisk_capacity'))
             subscribed_capacity = self.parse_string(storage_map.get(
                 'virtual_capacity'))
             firmware_version = ''
