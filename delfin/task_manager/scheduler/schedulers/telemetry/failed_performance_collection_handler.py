@@ -32,10 +32,10 @@ CONF = cfg.CONF
 
 class FailedPerformanceCollectionHandler(object):
     def __init__(self, ctx, filed_task_id, storage_id, args, job_id,
-                 start_time, end_time):
+                 retry_count, start_time, end_time):
         self.ctx = ctx
         self.filed_task_id = filed_task_id
-        self.retry_count = 0
+        self.retry_count = retry_count
         self.storage_id = storage_id
         self.job_id = job_id
         self.args = args
@@ -45,8 +45,8 @@ class FailedPerformanceCollectionHandler(object):
         self.scheduler_instance = scheduler.Scheduler.get_instance()
         self.result = TelemetryJobStatus.FAILED_JOB_STATUS_INIT
 
-    @classmethod
-    def get_instance(cls, ctx, failed_task_id):
+    @staticmethod
+    def get_instance(ctx, failed_task_id):
         # fetch failed task info
         failed_task = db.failed_task_get(ctx, failed_task_id)
         # fetched task info
@@ -57,6 +57,7 @@ class FailedPerformanceCollectionHandler(object):
             task[Task.storage_id.name],
             task[Task.args.name],
             failed_task[FailedTask.job_id.name],
+            failed_task[FailedTask.retry_count.name],
             failed_task[FailedTask.start_time.name],
             failed_task[FailedTask.end_time.name],
         )
@@ -83,7 +84,7 @@ class FailedPerformanceCollectionHandler(object):
             LOG.info("Successfully completed Performance metrics collection "
                      "for storage id :{0} ".format(self.storage_id))
             self.result = TelemetryJobStatus.FAILED_JOB_STATUS_SUCCESS
-            self._teardown_task()
+            self._stop_task()
             return
 
         if self.retry_count >= TelemetryCollection.MAX_FAILED_JOB_RETRY_COUNT:
@@ -94,7 +95,7 @@ class FailedPerformanceCollectionHandler(object):
                 "retry".format(self.filed_task_id, self.start_time,
                                self.end_time))
             LOG.error(msg)
-            self._teardown_task()
+            self._stop_task()
             return
 
         self.result = TelemetryJobStatus.FAILED_JOB_STATUS_STARTED
@@ -102,7 +103,7 @@ class FailedPerformanceCollectionHandler(object):
                               {FailedTask.retry_count.name: self.retry_count,
                                FailedTask.result.name: self.result})
 
-    def _teardown_task(self):
+    def _stop_task(self):
         db.failed_task_update(self.ctx, self.filed_task_id,
                               {FailedTask.retry_count.name: self.retry_count,
                                FailedTask.result.name: self.result})

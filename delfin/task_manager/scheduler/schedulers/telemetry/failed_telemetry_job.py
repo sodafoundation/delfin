@@ -23,6 +23,7 @@ from delfin import db
 from delfin import utils
 from delfin.common.constants import TelemetryJobStatus, TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
+from delfin.exception import TaskNotFound
 from delfin.task_manager.scheduler import scheduler
 
 LOG = log.getLogger(__name__)
@@ -73,12 +74,17 @@ class FailedTelemetryJob(object):
                     # skip if job already exist
                     continue
 
-                # fetch storage_id and args from task table
-                telemetry_task = db.task_get(
-                    self.ctx, failed_task[FailedTask.task_id.name])
-                if not telemetry_task:
-                    # failed task if original task is not available
-                    db.failed_task_delete(self.ctx, failed_task_id)
+                # ensure telemetry task exist
+                try:
+                    db.task_get(self.ctx,
+                                failed_task[FailedTask.task_id.name])
+                except TaskNotFound as e:
+                    LOG.info("Removing failed telemetry job as parent job "
+                             "do not exist: %s", six.text_type(e))
+                    # tear down if original task is not available
+                    self._teardown_task(self.ctx, failed_task_id,
+                                        job_id)
+                    continue
 
                 if not job_id:
                     job_id = uuidutils.generate_uuid()

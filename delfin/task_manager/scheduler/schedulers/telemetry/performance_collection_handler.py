@@ -39,8 +39,8 @@ class PerformanceCollectionHandler(object):
         self.interval = interval
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
-    @classmethod
-    def get_instance(cls, ctx, task_id):
+    @staticmethod
+    def get_instance(ctx, task_id):
         task = db.task_get(ctx, task_id)
         return PerformanceCollectionHandler(ctx, task_id, task['storage_id'],
                                             task['args'], task['interval'])
