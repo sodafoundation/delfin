@@ -109,6 +109,14 @@ class TestVMAXStorageDriver(TestCase):
 
             }
         }
+        system_capacity_84 = {
+            'total_usable_cap_gb': 100 * 1024,
+            'total_allocated_cap_gb': 75 * 1024,
+            'total_subscribed_cap_gb': 200 * 1024,
+            'physicalCapacity': {
+                'total_capacity_gb': 1500
+            }
+        }
         kwargs = VMAX_STORAGE_CONF
 
         mock_version.return_value = ['V9.0.2.7', '90']
@@ -125,6 +133,11 @@ class TestVMAXStorageDriver(TestCase):
         self.assertEqual(driver.storage_id, "12345")
         self.assertEqual(driver.client.array_id, "00112233")
 
+        ret = driver.get_storage(context)
+        self.assertDictEqual(ret, expected)
+
+        driver.client.uni_version = '84'
+        mock_capacity.return_value = system_capacity_84
         ret = driver.get_storage(context)
         self.assertDictEqual(ret, expected)
 
