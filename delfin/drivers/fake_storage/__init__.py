@@ -56,7 +56,10 @@ MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
 MIN_STORAGE, MAX_STORAGE = 1, 10
 MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
+MIN_QUOTA, MAX_QUOTA = 1, 100
 MIN_FS, MAX_FS = 1, 10
+MIN_QTREE, MAX_QTREE = 1, 100
+MIN_SHARE, MAX_SHARE = 1, 100
 
 
 def get_range_val(range_str, t):
@@ -269,28 +272,35 @@ class FakeStorageDriver(driver.StorageDriver):
         return disk_list
 
     def list_quotas(self, ctx):
-        rd_quotas_count = random.randint(MIN_FS, MAX_FS)
+        rd_quotas_count = random.randint(MIN_QUOTA, MAX_QUOTA)
         LOG.info("###########fake_quotas for %s: %d"
                  % (self.storage_id, rd_quotas_count))
         quota_list = []
         for idx in range(rd_quotas_count):
             qtype = list(constants.QuotaType.ALL)
             qtype_len = len(constants.QuotaType.ALL) - 1
-            slimit = random.randint(0, 5000)
-            hlimit = random.randint(slimit, 10000)
+            max_cap = random.randint(1111, 9999)
+            fslimit = random.randint(max_cap * 7, max_cap * 8)
+            fhlimit = random.randint(max_cap * 8, max_cap * 9)
+            slimit = random.randint(max_cap * 7000, max_cap * 8000)
+            hlimit = random.randint(max_cap * 8000, max_cap * 9000)
+            user_group = ['usr_', 'grp_']
             q = {
-                "native_quota_id": None,
+                "native_quota_id": "fake_original_id_" + str(idx),
                 "type": qtype[random.randint(0, qtype_len)],
                 "storage_id": self.storage_id,
-                "native_filesystem_id": "fake_original_id_" + str(idx),
-                "native_qtree_id": None,
-                "capacity_hard_limit": random.randint(slimit, hlimit),
-                "capacity_soft_limit": random.randint(0, slimit),
-                "file_hard_limit": random.randint(slimit, hlimit),
-                "file_soft_limit": random.randint(slimit, hlimit),
-                "file_count": hlimit,
-                "used_capacity": hlimit + slimit,
-                "user_group_name": "usr0",
+                "native_filesystem_id": "fake_original_id_"
+                                        + str(random.randint(0, 99)),
+                "native_qtree_id": "fake_original_id_"
+                                   + str(random.randint(0, 99)),
+                "capacity_hard_limit": hlimit,
+                "capacity_soft_limit": slimit,
+                "file_hard_limit": fhlimit,
+                "file_soft_limit": fslimit,
+                "file_count": random.randint(0, max_cap * 10),
+                "used_capacity": random.randint(0, max_cap * 10000),
+                "user_group_name": user_group[random.randint(0, 1)]
+                                   + str(random.randint(0, 99)),
             }
             quota_list.append(q)
         return quota_list
@@ -330,7 +340,7 @@ class FakeStorageDriver(driver.StorageDriver):
         return filesystem_list
 
     def list_qtrees(self, ctx):
-        rd_qtrees_count = random.randint(MIN_FS, MAX_FS)
+        rd_qtrees_count = random.randint(MIN_QTREE, MAX_QTREE)
         LOG.info("###########fake_qtrees for %s: %d"
                  % (self.storage_id, rd_qtrees_count))
         qtree_list = []
@@ -342,16 +352,17 @@ class FakeStorageDriver(driver.StorageDriver):
                 "name": "fake_qtree_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_qtree_id": "fake_original_id_" + str(idx),
-                "native_filesystem_id": "fake_filesystem_id_" + str(idx),
+                "native_filesystem_id": "fake_filesystem_id_"
+                                        + str(random.randint(0, 99)),
                 "security_mode": security[random.randint(0, security_len)],
-                "path": "/",
+                "path": "/path/qtree_" + str(random.randint(0, 99)),
             }
             qtree_list.append(t)
 
         return qtree_list
 
     def list_shares(self, ctx):
-        rd_shares_count = random.randint(MIN_FS, MAX_FS)
+        rd_shares_count = random.randint(MIN_SHARE, MAX_SHARE)
         LOG.info("###########fake_shares for %s: %d"
                  % (self.storage_id, rd_shares_count))
         share_list = []
@@ -362,10 +373,12 @@ class FakeStorageDriver(driver.StorageDriver):
                 "name": "fake_share_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_share_id": "fake_original_id_" + str(idx),
-                "native_filesystem_id": "fake_filesystem_id_" + str(idx),
-                "native_qtree_id": "fake_qtree_id_" + str(idx),
+                "native_filesystem_id": "fake_filesystem_id_"
+                                        + str(random.randint(0, 99)),
+                "native_qtree_id": "fake_qtree_id_"
+                                   + str(random.randint(0, 99)),
                 "protocol": pro[random.randint(0, pro_len)],
-                "path": "/",
+                "path": "/path/share_" + str(random.randint(0, 99)),
             }
             share_list.append(c)
         return share_list
