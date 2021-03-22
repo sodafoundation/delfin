@@ -60,7 +60,3 @@ class StorwizeSVCDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         return self.ssh_hanlder.fix_alert(alert)
-
-    @staticmethod
-    def get_access_url():
-        return 'https://{ip}'
