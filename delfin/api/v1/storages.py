@@ -13,9 +13,8 @@
 # limitations under the License.
 
 import copy
-import json
-
 import six
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import timeutils
@@ -28,7 +27,7 @@ from delfin.api import validation
 from delfin.api.common import wsgi
 from delfin.api.schemas import storages as schema_storages
 from delfin.api.views import storages as storage_view
-from delfin.common import constants, config
+from delfin.common import constants
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
 from delfin.task_manager import rpcapi as task_rpcapi
@@ -103,6 +102,24 @@ class StorageController(wsgi.Controller):
             msg = _('Failed to sync resources for storage: %(storage)s. '
                     'Error: %(err)s') % {'storage': storage['id'], 'err': e}
             LOG.error(msg)
+
+        try:
+            # Trigger Performance monitoring
+            capabilities = self.driver_api.get_capabilities(
+                context=ctxt, storage_id=storage['id'])
+            validation.validate_capabilities(capabilities)
+            _create_performance_monitoring_task(ctxt, storage['id'],
+                                                capabilities)
+        except exception.EmptyResourceMetrics:
+            msg = _("Resource metric provided by capabilities is empty for "
+                    "storage: %s") % storage['id']
+            LOG.info(msg)
+        except Exception as e:
+            msg = _('Failed to create performance monitoring task for storage:'
+                    '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
+                                                      'err': six.text_type(e)}
+
+            LOG.error(msg)
         return storage_view.build_storage(storage)
 
     @wsgi.response(202)
@@ -116,7 +133,6 @@ class StorageController(wsgi.Controller):
                 storage['id'],
                 subclass.__module__ + '.' + subclass.__name__)
         self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
-        self._unregister_perf_collection(storage['id'])
 
     @wsgi.response(202)
     def sync_all(self, req):
@@ -195,48 +211,6 @@ class StorageController(wsgi.Controller):
 
         return False
 
-    def _unregister_perf_collection(self, storage_id):
-
-        schedule = config.Scheduler.getInstance()
-
-        # The path of scheduler config file
-        config_file = CONF.scheduler.config_path
-
-        try:
-            # Load the scheduler configuration file
-            data = config.load_json_file(config_file)
-            for storage in data.get("storages"):
-                config_storage_id = storage.get('id')
-                if config_storage_id == storage_id:
-                    for resource in storage.keys():
-                        # Skip storage id attribute and
-                        # check for all metric collection jobs
-                        if resource == 'id':
-                            continue
-                        job_id = storage_id + resource
-
-                        if schedule.get_job(job_id):
-                            schedule.remove_job(job_id)
-
-                    # Remove the entry for storage being deleted and
-                    # update schedular config file
-                    data['storages'].remove(storage)
-                    with open(config_file, "w") as jsonFile:
-                        json.dump(data, jsonFile)
-                        jsonFile.close()
-                    break
-        except TypeError:
-            LOG.error("Failed to unregister performance collection. Error "
-                      "occurred during parsing of config file")
-        except json.decoder.JSONDecodeError:
-            msg = ("Failed to unregister performance collection. Not able to "
-                   "open the config file: {0} ".format(config_file))
-            LOG.error(msg)
-        except Exception as e:
-            msg = _('Failed to unregister performance collection. Reason: {0}'
-                    .format(six.text_type(e)))
-            LOG.error(msg)
-
     @wsgi.response(200)
     def get_capabilities(self, req, id):
         """
@@ -283,3 +257,18 @@ def _set_synced_if_ok(context, storage_id, resource_count):
         storage['sync_status'] = resource_count * constants.ResourceSync.START
         storage['updated_at'] = current_time
         db.storage_update(context, storage['id'], storage)
+
+
+def _create_performance_monitoring_task(context, storage_id, capabilities):
+    # Check resource_metric attribute availability and
+    # check if resource_metric is empty
+    if 'resource_metrics' not in capabilities \
+            or not bool(capabilities.get('resource_metrics')):
+        raise exception.EmptyResourceMetrics()
+
+    task = dict()
+    task.update(storage_id=storage_id)
+    task.update(args=capabilities.get('resource_metrics'))
+    task.update(interval=constants.Task.DEFAULT_TASK_INTERVAL)
+    task.update(method=constants.Task.PERFORMANCE_TASK_METHOD)
+    db.task_create(context=context, values=task)
