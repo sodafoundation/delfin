@@ -1,4 +1,4 @@
-# Copyright 2020 The SODA Authors.
+# Copyright 2021 The SODA Authors.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -123,6 +123,9 @@ class RestHandler(RestClient):
                                   {"url": url, "reason": res.text})
                         if 'authentication failed' in res.text:
                             raise exception.InvalidUsernameOrPassword()
+                        elif 'KART30005-E' in res.text:
+                            raise exception.StorageBackendException(
+                                six.text_type(res.text))
                         else:
                             raise exception.BadResponse(res.text)
             else:
