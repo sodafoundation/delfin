@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from unittest import TestCase, mock
 
 import paramiko
 
+sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.ibm.storwize_svc.ssh_handler import SSHHandler
 from delfin.drivers.ibm.storwize_svc.storwize_svc import StorwizeSVCDriver
@@ -25,6 +27,33 @@ class Request:
     def __init__(self):
         self.environ = {'delfin.context': context.RequestContext()}
         pass
+
+
+UNSECURE_ALGORITHMS = {
+    "ciphers": [
+        "aes128-cbc",
+        "aes192-cbc",
+        "aes256-cbc",
+        "blowfish-cbc",
+        "3des-cbc"
+    ],
+    "macs": [
+        "hmac-sha1-96",
+        "hmac-md5",
+        "hmac-md5-96"
+    ],
+    "keys": [
+        "ecdsa-sha2-nistp256",
+        "ecdsa-sha2-nistp384",
+        "ecdsa-sha2-nistp521",
+        "ssh-dss"
+    ],
+    "kex": [
+        "diffie-hellman-group14-sha256",
+        "diffie-hellman-group-exchange-sha1",
+        "diffie-hellman-group14-sha1",
+        "diffie-hellman-group1-sha1"
+    ]}
 
 
 ACCESS_INFO = {
@@ -326,7 +355,7 @@ storage_result = {
     'firmware_version': '7.4.0.11',
     'location': 'local',
     'total_capacity': 8961019766374,
-    'raw_capacity': 12006666975313,
+    'raw_capacity': 8906044184985,
     'subscribed_capacity': 0,
     'used_capacity': 5552533720268,
     'free_capacity': 3408486046105
@@ -449,51 +478,10 @@ class TestStorwizeSvcStorageDriver(TestCase):
         self.assertEqual(alert[0].get('alert_id'),
                          alert_result[0].get('alert_id'))
 
-    def test_list_storage_with_error(self):
-        with self.assertRaises(Exception) as exc:
-            self.driver.get_storage(context)
-        self.assertIn('Exception in SSH protocol negotiation or logic',
-                      str(exc.exception))
-
-    def test_list_pool_with_error(self):
-        with self.assertRaises(Exception) as exc:
-            self.driver.list_storage_pools(context)
-        self.assertIn('Exception in SSH protocol negotiation or logic',
-                      str(exc.exception))
-
-    def test_list_volume_with_error(self):
-        with self.assertRaises(Exception) as exc:
-            self.driver.list_volumes(context)
-        self.assertIn('Exception in SSH protocol negotiation or logic',
-                      str(exc.exception))
-
-    def test_init_ssh_exec(self):
-        with self.assertRaises(Exception) as exc:
-            ssh = paramiko.SSHClient()
-            SSHHandler.do_exec('lssystem', ssh)
-        self.assertIn('', str(exc.exception))
-
-    def test_ssh_pool_create(self):
-        with self.assertRaises(Exception) as exc:
-            kwargs = ACCESS_INFO
-            ssh_pool = SSHPool(**kwargs)
-            ssh_pool.create()
-        self.assertIn('Exception in SSH protocol negotiation or logic',
-                      str(exc.exception))
-
-    def test_ssh_pool_put(self):
-        ssh_pool = SSHPool(**ACCESS_INFO)
-        ssh = paramiko.SSHClient()
-        ssh_pool.put(ssh)
-        ssh_pool.remove(ssh)
-
     def test_parse_alert(self):
         alert = self.driver.parse_alert(context, trap_info)
-        self.assertEqual(alert.get('alert_id'),
-                         trap_alert_result.get('alert_id'))
-
-    def test_reset_connection(self):
-        self.driver.reset_connection(context, **ACCESS_INFO)
+        trap_alert_result['occur_time'] = alert['occur_time']
+        self.assertEqual(alert, trap_alert_result)
 
     def test_clear_alert(self):
         alert_id = 101
