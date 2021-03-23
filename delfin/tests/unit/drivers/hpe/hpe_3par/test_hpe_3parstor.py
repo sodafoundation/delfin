@@ -331,7 +331,7 @@ class TestHpe3parStorageDriver(TestCase):
         }
 
         expected_alert_model = {
-            'alert_id': '2555934',
+            'alert_id': '0x027001e',
             'alert_name': 'CPG growth non admin limit',
             'severity': 'NotSpecified',
             'category': 'Recovery',
