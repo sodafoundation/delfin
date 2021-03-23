@@ -83,7 +83,7 @@ class AlertHandler(object):
     )
 
     # Convert received time to epoch format
-    TIME_PATTERN = '%Y-%m-%d %H:%M:%S CST'
+    TIME_PATTERN = '%Y-%m-%d %H:%M:%S'
 
     def __init__(self, rest_handler=None, ssh_handler=None):
         self.rest_handler = rest_handler
@@ -102,7 +102,9 @@ class AlertHandler(object):
         try:
             alert_model = dict()
             # These information are sourced from device registration info
-            alert_model['alert_id'] = alert.get(AlertHandler.OID_MESSAGECODE)
+            alert_model['alert_id'] = (
+                hex(int(alert.get(AlertHandler.OID_MESSAGECODE)))).replace(
+                '0x', '0x0')
             alert_model['alert_name'] = AlertHandler.get_alert_type(alert.get(
                 AlertHandler.OID_MESSAGECODE))
             alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
@@ -192,10 +194,8 @@ class AlertHandler(object):
                 severity = self.ALERT_LEVEL_MAP.get(map.get('severity'))
                 category = map.get('category') == 'New' and 'Fault' or ''
                 occur_time = AlertHandler.get_time_stamp(map.get('occur_time'))
-                alert_id = map.get('message_code') and str(int(map.get(
-                    'message_code'), 16)) or ''
                 alert_model = {
-                    'alert_id': alert_id,
+                    'alert_id': map.get('message_code'),
                     'alert_name': map.get('alert_name'),
                     'severity': severity,
                     'category': category,
@@ -239,7 +239,9 @@ class AlertHandler(object):
         """
         time_stamp = ''
         try:
-            if time_str is not None:
+            if time_str:
+                if (len(time_str.split()) == 3):
+                    time_str = time_str.rsplit(' ', 1)[0]
                 # Convert to time array first
                 time_array = time.strptime(time_str, AlertHandler.TIME_PATTERN)
                 # Convert to timestamps to milliseconds
