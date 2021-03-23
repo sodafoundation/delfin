@@ -349,6 +349,38 @@ class TestHpe3parStorageDriver(TestCase):
         # Verify that all other fields are matching
         self.assertDictEqual(expected_alert_model, alert_model)
 
+    def test_list_alert(self):
+        """ Success flow with all necessary parameters"""
+        driver = create_driver()
+        alert = """
+        Id : 1
+        State : New
+        MessageCode : 0x2200de
+        Time : 2015-07-17 20:14:29 PDT
+        Severity : Degraded
+        Type : Component state change
+        Message : Node 0, Power Supply 1, Battery 0 Degraded
+        Component: 100.118.18.100
+
+        """
+
+        expected_alert = [{
+            'alert_id': '0x2200de',
+            'alert_name': 'Component state change',
+            'severity': 'Warning',
+            'category': 'Fault',
+            'type': 'EquipmentAlarm',
+            'sequence_number': '1',
+            'occur_time': 1437135269000,
+            'description': 'Node 0, Power Supply 1, Battery 0 Degraded',
+            'resource_type': 'Storage',
+            'location': '100.118.18.100'
+        }]
+        SSHHandler.get_all_alerts = mock.Mock(return_value=alert)
+        alert_list = driver.list_alerts(context, None)
+        expected_alert[0]['occur_time'] = alert_list[0]['occur_time']
+        self.assertDictEqual(alert_list[0], expected_alert[0])
+
     @mock.patch.object(AlertHandler, 'clear_alert')
     def test_clear_alert(self, mock_clear_alert):
         driver = create_driver()
