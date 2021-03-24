@@ -41,6 +41,8 @@ class TestStorageController(test.TestCase):
         db.storage_get.assert_called_once_with(ctxt, 'fake_id')
         self.task_rpcapi.remove_storage_resource.assert_called_with(
             ctxt, 'fake_id', mock.ANY)
+        self.task_rpcapi.remove_telemetry_instances.assert_called_once_with(
+            ctxt, 'fake_id', mock.ANY)
         self.task_rpcapi.remove_storage_in_cache.assert_called_once_with(
             ctxt, 'fake_id')
 

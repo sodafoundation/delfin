@@ -267,17 +267,22 @@ class Task(BASE, DelfinBase):
     args = Column(JsonEncodedDict)
     last_run_time = Column(Integer)
     job_id = Column(String(36))
+    deleted_at = Column(DateTime)
+    deleted = Column(Boolean, default=False)
 
 
 class FailedTask(BASE, DelfinBase):
     """Represents a failed task attributes."""
     __tablename__ = 'failed_tasks'
     id = Column(Integer, primary_key=True, autoincrement=True)
+    storage_id = Column(String(36))
     task_id = Column(Integer)
     interval = Column(Integer)
     start_time = Column(Integer)
     end_time = Column(Integer)
     retry_count = Column(Integer)
     method = Column(String(255))
-    job_id = Column(String(36))
     result = Column(String(255))
+    job_id = Column(String(36))
+    deleted_at = Column(DateTime)
+    deleted = Column(Boolean, default=False)

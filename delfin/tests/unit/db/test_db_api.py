@@ -829,3 +829,12 @@ class TestSIMDBAPI(test.TestCase):
             .failed_task_delete_by_task_id(context,
                                            fake_failed_task_id)
         assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_failed_task_delete_by_storage(self, mock_session):
+        fake_failed_task_storage_id = [models.FailedTask().storage_id]
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = fake_failed_task_storage_id
+        result = db_api \
+            .task_delete_by_storage(context, fake_failed_task_storage_id)
+        assert result is None

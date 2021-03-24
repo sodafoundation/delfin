@@ -32,6 +32,7 @@ from delfin.drivers import api as driverapi
 from delfin.i18n import _
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.tasks import resources
+from delfin.task_manager.tasks import telemetry as task_telemetry
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -141,6 +142,13 @@ class StorageController(wsgi.Controller):
                 ctxt,
                 storage['id'],
                 subclass.__module__ + '.' + subclass.__name__)
+
+        for subclass in task_telemetry.TelemetryTask.__subclasses__():
+            self.task_rpcapi.remove_telemetry_instances(ctxt,
+                                                        storage['id'],
+                                                        subclass.__module__ +
+                                                        '.'
+                                                        + subclass.__name__)
         self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
 
     @wsgi.response(202)

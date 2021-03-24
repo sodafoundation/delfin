@@ -63,6 +63,14 @@ class TaskManager(manager.Manager):
         drivers = driver_manager.DriverManager()
         drivers.remove_driver(storage_id)
 
+    def remove_telemetry_instances(self, context, storage_id, telemetry_task):
+        LOG.info('Remove telemetry instances for storage id:{0}')
+        cls = importutils.import_class(telemetry_task)
+        device_obj = cls()
+        return device_obj.remove_telemetry(context,
+                                           storage_id,
+                                           )
+
     def sync_storage_alerts(self, context, storage_id, query_para):
         LOG.info('Alert sync called for storage id:{0}'
                  .format(storage_id))
