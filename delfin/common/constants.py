@@ -283,15 +283,14 @@ metric_struct = namedtuple("Metric", "name labels values")
 
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [
-    "response_time",
+    "responseTime",
     "throughput",
-    "read_throughput",
-    "write_throughput",
-    "bandwidth",
-    "read_bandwidth",
-    "write_bandwidth"
+    "readThroughput",
+    "writeThroughput",
+    "requests",
+    "readRequests",
+    "writeRequests"
 ]
-
 
 BLOCK_SIZE = 4096
 
@@ -302,9 +301,29 @@ class ResourceSync(object):
     FAILED = 101
 
 
-class Task(object):
-    DEFAULT_TASK_INTERVAL = 30
-    """Default task interval"""
-    PERFORMANCE_TASK_METHOD = "delfin.task_manager.tasks.telemetry." \
-                              "PerformanceCollectionTask"
+class TelemetryCollection(object):
     """Performance monitoring task name"""
+    PERFORMANCE_TASK_METHOD = "delfin.task_manager.scheduler.schedulers." \
+                              "telemetry.performance_collection_handler." \
+                              "PerformanceCollectionHandler"
+    """Performance monitoring job interval"""
+    PERIODIC_JOB_INTERVAL = 180
+    """Failed Performance monitoring job interval"""
+    FAILED_JOB_SCHEDULE_INTERVAL = 240
+    """Failed Performance monitoring retry count"""
+    MAX_FAILED_JOB_RETRY_COUNT = 5
+    """Default performance collection interval"""
+    DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
+
+
+class TelemetryTaskStatus(object):
+    """Telemetry task enum"""
+    TASK_EXEC_STATUS_SUCCESS = True
+    TASK_EXEC_STATUS_FAILURE = False
+
+
+class TelemetryJobStatus(object):
+    """Telemetry jobs enum"""
+    FAILED_JOB_STATUS_SUCCESS = "Success"
+    FAILED_JOB_STATUS_RETRYING = "Retrying"
+    FAILED_JOB_STATUS_INIT = "Initialized"

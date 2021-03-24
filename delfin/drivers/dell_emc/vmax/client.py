@@ -297,7 +297,7 @@ class VMAXClient(object):
         return self.rest.clear_alert(sequence_number, version=self.uni_version,
                                      array=self.array_id)
 
-    def get_array_performance_metrics(self, storage_id, interval):
+    def get_array_performance_metrics(self, storage_id, start_time, end_time):
         """Get performance metrics."""
         try:
             # Fetch VMAX Array Performance data from REST client
@@ -305,7 +305,7 @@ class VMAXClient(object):
             #  Check whether array is registered for performance collection
             #  in unisphere
             perf_data = self.rest.get_array_performance_metrics(
-                self.array_id, interval)
+                self.array_id, start_time, end_time)
             # parse VMAX REST response to metric->values map
             metrics_value_map = perf_utils.parse_performance_data(perf_data)
             # prepare  labels required for array_leval performance data
