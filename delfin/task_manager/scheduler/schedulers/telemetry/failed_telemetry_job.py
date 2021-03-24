@@ -41,21 +41,21 @@ class FailedTelemetryJob(object):
         :return:
         """
         try:
-            # create the object of periodic scheduler
             failed_tasks = db.failed_task_get_all(self.ctx)
 
             if not len(failed_tasks):
                 LOG.info("No failed task found for performance collection")
                 return
 
-            LOG.info("Schedule performance collection triggered: total "
-                     "failed tasks:%s" % len(failed_tasks))
+            LOG.debug("Schedule performance collection triggered: total "
+                      "failed tasks:%s" % len(failed_tasks))
 
             for failed_task in failed_tasks:
-                # Get current time in epoch format
                 failed_task_id = failed_task[FailedTask.id.name]
                 LOG.info("Processing failed task : %s" % failed_task_id)
 
+                # Get failed jobs, if retry count has reached max,
+                # remove job and delete db entry
                 retry_count = failed_task[FailedTask.retry_count.name]
                 result = failed_task[FailedTask.result.name]
                 job_id = failed_task[FailedTask.job_id.name]
@@ -69,12 +69,10 @@ class FailedTelemetryJob(object):
                     self._teardown_task(self.ctx, failed_task_id, job_id)
                     continue
 
-                # check if job already scheduled
+                # If job already scheduled, skip
                 if job_id and self.scheduler.get_job(job_id):
-                    # skip if job already exist
                     continue
 
-                # ensure telemetry task exist
                 try:
                     db.task_get(self.ctx,
                                 failed_task[FailedTask.task_id.name])
@@ -91,13 +89,10 @@ class FailedTelemetryJob(object):
                     db.failed_task_update(self.ctx, failed_task_id,
                                           {FailedTask.job_id.name: job_id})
 
-                # method indicates the specific collection task to be
-                # triggered
                 collection_class = importutils.import_class(
                     failed_task[FailedTask.method.name])
                 instance = \
                     collection_class.get_instance(self.ctx, failed_task_id)
-                # Create failed task collection
                 self.scheduler.add_job(
                     instance, 'interval',
                     seconds=failed_task[FailedTask.interval.name],
@@ -107,7 +102,6 @@ class FailedTelemetryJob(object):
             LOG.error("Failed to schedule retry tasks for performance "
                       "collection, reason: %s", six.text_type(e))
         else:
-            # start the scheduler
             LOG.info("Schedule collection completed")
 
     def _teardown_task(self, ctx, failed_task_id, job_id):

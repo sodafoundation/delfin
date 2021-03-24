@@ -119,6 +119,39 @@ class StorageDriver(object):
     def collect_perf_metrics(self, context, storage_id,
                              resource_metrics, start_time, end_time):
         """Collect performance metrics from storage system."""
+
+        """
+        Input:
+        context: context information
+        storage_id: storage identifier
+        resource_metrics: dictionary represents the collection configuration
+        Example:
+        resource_metrics =
+              {'storagePool':
+                        ['readThroughput', 'writeThroughput', 'responseTime'],
+                'volume':
+                        ['readThroughput', 'writeThroughput']}
+        start_time	Time from which the performance metric to be collected
+                    It is in epoch format in milliseconds
+        end_time	Time until which the performance metric to be collected
+                    It is in epoch format in milliseconds
+
+        Response: List of metric with details
+                Format : [[Metric(name=metric_1,
+                             labels={'key_1': value_1,
+                                     'key_2': value_2,},
+                             values={timestamp_0: value_0,
+                                     timestamp_n: value_n,})]
+        Example:
+        [[Metric(name='responseTime',
+                     labels={'storage_id': '1f8d6982-2ac2-4fa9-95ef-78f359de',
+                             'resource_type': 'storagePool'},
+                     values={1616560337249: 96.12081735538251}),
+          Metric(name='throughput',
+                     labels={'storage_id': '1f8d6982-2ac2-4fa9-95ef-78f359de',
+                             'resource_type': 'storagePool'},
+                     values={1616560337249: 90.08194398331271})]
+        """
         pass
 
     def list_quotas(self, context):

@@ -44,8 +44,9 @@ class SchedulerManager(object):
                 next_run_time=datetime.now(),
                 id=periodic_scheduler_job_id)
         except Exception as e:
+            # TODO: Currently failure of scheduler is failing task manager
+            #  start flow, it is logged and ignored.
             LOG.error("Failed to initialize periodic tasks, reason: %s.",
                       six.text_type(e))
         else:
-            # start the scheduler
             self.schedule_instance.start()

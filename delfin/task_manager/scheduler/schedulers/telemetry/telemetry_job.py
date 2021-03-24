@@ -30,13 +30,13 @@ LOG = log.getLogger(__name__)
 
 class TelemetryJob(object):
     def __init__(self, ctxt):
-        # create the object of periodic scheduler
         self.scheduler = scheduler.Scheduler.get_instance()
-        # Reset last run time of tasks to restart scheduling
+
+        # Reset last run time of tasks to restart scheduling and
+        # start the failed task job
         task_list = db.task_get_all(ctxt)
         for task in task_list:
             db.task_update(ctxt, task['id'], {'last_run_time': None})
-        # Enable telemetry failed task handler
         self._schedule_failed_telemetry_job_handler(ctxt)
 
     def __call__(self, ctx):
@@ -48,7 +48,8 @@ class TelemetryJob(object):
             LOG.debug("Schedule performance collection triggered: total "
                       "tasks to be handled:%s" % len(tasks))
             for task in tasks:
-                # Get current time in epoch format in seconds
+                # Get current time in epoch format in seconds. Here method
+                # indicates the specific collection task to be triggered
                 current_time = int(datetime.now().timestamp())
                 last_run_time = current_time
                 next_collection_time = last_run_time + task['interval']
@@ -58,10 +59,8 @@ class TelemetryJob(object):
                     .fromtimestamp(next_collection_time) \
                     .strftime('%Y-%m-%d %H:%M:%S')
 
-                # method indicates the specific collection task to be triggered
                 collection_class = importutils.import_class(task['method'])
                 instance = collection_class.get_instance(ctx, task_id)
-                # Create periodic job
                 self.scheduler.add_job(
                     instance, 'interval', seconds=task['interval'],
                     next_run_time=next_collection_time, id=job_id)

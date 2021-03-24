@@ -47,9 +47,7 @@ class FailedPerformanceCollectionHandler(object):
 
     @staticmethod
     def get_instance(ctx, failed_task_id):
-        # fetch failed task info
         failed_task = db.failed_task_get(ctx, failed_task_id)
-        # fetched task info
         task = db.task_get(ctx, failed_task[FailedTask.task_id.name])
         return FailedPerformanceCollectionHandler(
             ctx,
@@ -63,7 +61,7 @@ class FailedPerformanceCollectionHandler(object):
         )
 
     def __call__(self):
-        # pull performance collection info
+        # Pull performance collection info
         self.retry_count = self.retry_count + 1
         try:
             status = self.task_rpcapi.collect_telemetry(

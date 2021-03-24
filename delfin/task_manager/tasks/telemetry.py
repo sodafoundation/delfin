@@ -47,7 +47,7 @@ class PerformanceCollectionTask(TelemetryTask):
                                       args,
                                       start_time, end_time)
 
-            # fill extra labels to metric by fetching metadata from resource DB
+            # Fill extra labels to metric by fetching metadata from resource DB
             try:
                 storage_details = db.storage_get(ctx, storage_id)
                 for m in perf_metrics:
