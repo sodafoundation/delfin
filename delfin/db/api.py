@@ -834,3 +834,10 @@ def failed_task_delete(context, failed_task_id):
     exist.
     """
     return IMPL.failed_task_delete(context, failed_task_id)
+
+
+def failed_task_delete_by_storage(context, storage_id):
+    """Delete all failed tasks of given storage or raise an exception if it
+    does not exist.
+    """
+    return IMPL.failed_task_delete_by_storage(context, storage_id)

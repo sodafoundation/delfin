@@ -37,6 +37,19 @@ fake_telemetry_jobs = [
     fake_telemetry_job,
 ]
 
+fake_telemetry_job_deleted = {
+    Task.id.name: 2,
+    Task.storage_id.name: uuidutils.generate_uuid(),
+    Task.args.name: {},
+    Task.interval.name: 10,
+    Task.method.name: constants.TelemetryCollection.PERFORMANCE_TASK_METHOD,
+    Task.last_run_time.name: None,
+    Task.deleted.name: True,
+}
+
+fake_telemetry_jobs_deleted = [
+    fake_telemetry_job_deleted,
+]
 # With method name as None
 Incorrect_telemetry_job = {
     Task.id.name: 2,
@@ -80,6 +93,25 @@ class TestTelemetryJob(test.TestCase):
         mock.Mock())
     @mock.patch('logging.LoggerAdapter.error')
     def test_telemetry_job_scheduling_exception(self, mock_log_error):
+        ctx = context.get_admin_context()
+        telemetry_job = TelemetryJob(ctx)
+        # call telemetry job scheduling
+        telemetry_job(ctx)
+        self.assertEqual(mock_log_error.call_count, 2)
+
+    @mock.patch.object(db, 'task_delete',
+                       mock.Mock())
+    @mock.patch.object(db, 'task_get_all',
+                       mock.Mock(return_value=fake_telemetry_jobs_deleted))
+    @mock.patch.object(db, 'task_update',
+                       mock.Mock(return_value=fake_telemetry_job))
+    @mock.patch.object(db, 'task_get',
+                       mock.Mock(return_value=fake_telemetry_job))
+    @mock.patch(
+        'apscheduler.schedulers.background.BackgroundScheduler.add_job',
+        mock.Mock())
+    @mock.patch('logging.LoggerAdapter.error')
+    def test_telemetry_removal_success(self, mock_log_error):
         ctx = context.get_admin_context()
         telemetry_job = TelemetryJob(ctx)
         # call telemetry job scheduling

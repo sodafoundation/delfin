@@ -1723,7 +1723,9 @@ def task_get(context, tasks_id):
 
 def task_delete_by_storage(context, storage_id):
     """Delete all the tasks of a storage device"""
-    _task_get_query(context).filter_by(storage_id=storage_id).delete()
+    delete_info = {'deleted': True, 'deleted_at': timeutils.utcnow()}
+    _task_get_query(context).filter_by(
+        storage_id=storage_id).update(delete_info)
 
 
 def task_delete(context, tasks_id):
@@ -1808,6 +1810,13 @@ def failed_task_delete_by_task_id(context, task_id):
     """Delete all the failed tasks of a given task id"""
     _failed_tasks_get_query(context).filter_by(
         task_id=task_id).delete()
+
+
+def failed_task_delete_by_storage(context, storage_id):
+    """Delete all the failed tasks of a storage device"""
+    delete_info = {'deleted': True, 'deleted_at': timeutils.utcnow()}
+    _failed_tasks_get_query(context).filter_by(
+        storage_id=storage_id).update(delete_info)
 
 
 def failed_task_delete(context, failed_task_id):

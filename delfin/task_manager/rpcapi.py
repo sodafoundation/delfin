@@ -71,6 +71,13 @@ class TaskAPI(object):
                                  'remove_storage_in_cache',
                                  storage_id=storage_id)
 
+    def remove_telemetry_instances(self, context, storage_id, telemetry_task):
+        call_context = self.client.prepare(version='1.0', fanout=True)
+        return call_context.cast(context,
+                                 'remove_telemetry_instances',
+                                 storage_id=storage_id,
+                                 telemetry_task=telemetry_task)
+
     def sync_storage_alerts(self, context, storage_id, query_para):
         call_context = self.client.prepare(version='1.0')
         return call_context.cast(context,
