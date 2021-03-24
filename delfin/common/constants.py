@@ -312,6 +312,8 @@ class TelemetryCollection(object):
     FAILED_JOB_SCHEDULE_INTERVAL = 240
     """Failed Performance monitoring retry count"""
     MAX_FAILED_JOB_RETRY_COUNT = 5
+    """Default performance collection interval"""
+    DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
 
 
 class TelemetryTaskStatus(object):
@@ -323,5 +325,5 @@ class TelemetryTaskStatus(object):
 class TelemetryJobStatus(object):
     """Telemetry jobs enum"""
     FAILED_JOB_STATUS_SUCCESS = "Success"
-    FAILED_JOB_STATUS_STARTED = "Started"
+    FAILED_JOB_STATUS_RETRYING = "Retrying"
     FAILED_JOB_STATUS_INIT = "Initialized"

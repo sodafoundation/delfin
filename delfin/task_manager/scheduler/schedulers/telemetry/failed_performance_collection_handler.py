@@ -98,7 +98,7 @@ class FailedPerformanceCollectionHandler(object):
             self._stop_task()
             return
 
-        self.result = TelemetryJobStatus.FAILED_JOB_STATUS_STARTED
+        self.result = TelemetryJobStatus.FAILED_JOB_STATUS_RETRYING
         db.failed_task_update(self.ctx, self.failed_task_id,
                               {FailedTask.retry_count.name: self.retry_count,
                                FailedTask.result.name: self.result})

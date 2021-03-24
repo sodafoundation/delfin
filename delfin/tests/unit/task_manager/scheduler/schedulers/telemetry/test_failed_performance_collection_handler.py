@@ -106,7 +106,7 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
             {
                 FailedTask.retry_count.name: 1,
                 FailedTask.result.name:
-                    TelemetryJobStatus.FAILED_JOB_STATUS_STARTED})
+                    TelemetryJobStatus.FAILED_JOB_STATUS_RETRYING})
 
     @mock.patch.object(db, 'task_get',
                        mock.Mock(return_value=fake_telemetry_job))

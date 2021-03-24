@@ -37,7 +37,9 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 telemetry_opts = [
-    cfg.IntOpt('performance_collection_interval', default=900,
+    cfg.IntOpt('performance_collection_interval',
+               default=constants.TelemetryCollection
+               .DEF_PERFORMANCE_COLLECTION_INTERVAL,
                help='default interval (in sec) for performance collection'),
 ]
 
