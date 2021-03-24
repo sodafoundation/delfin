@@ -41,11 +41,11 @@ class FailedTelemetryJob(object):
         :return:
         """
         try:
-            # Remove jobs from scheduler  for deleted failed_tasks
+            # Remove jobs from scheduler for deleted failed_tasks
             # Remove jobs from scheduler if it is added
             filters = {'deleted': True}
             failed_tasks = db.failed_task_get_all(self.ctx, filters=filters)
-            LOG.debug(" total failed_tasks found deleted "
+            LOG.debug("Total failed_tasks found deleted "
                       "in this cycle:%s" % len(failed_tasks))
             for failed_task in failed_tasks:
                 job_id = failed_task['job_id']

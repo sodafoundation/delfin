@@ -42,11 +42,11 @@ class TelemetryJob(object):
     def __call__(self, ctx):
         """ Schedule the collection tasks based on interval """
         try:
-            # Remove jobs from scheduler  for deleted tasks
+            # Remove jobs from scheduler for deleted tasks
             # Remove jobs from scheduler if it is added
             filters = {'deleted': True}
             tasks = db.task_get_all(ctx, filters=filters)
-            LOG.debug(" total tasks found deleted "
+            LOG.debug("Total tasks found deleted "
                       "in this cycle:%s" % len(tasks))
             for task in tasks:
                 job_id = task['job_id']
