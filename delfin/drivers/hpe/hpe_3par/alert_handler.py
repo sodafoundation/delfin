@@ -102,9 +102,8 @@ class AlertHandler(object):
         try:
             alert_model = dict()
             # These information are sourced from device registration info
-            alert_model['alert_id'] = (
-                hex(int(alert.get(AlertHandler.OID_MESSAGECODE)))).replace(
-                '0x', '0x0')
+            alert_model['alert_id'] = ("0x%07x" % int(
+                alert.get(AlertHandler.OID_MESSAGECODE)))
             alert_model['alert_name'] = AlertHandler.get_alert_type(alert.get(
                 AlertHandler.OID_MESSAGECODE))
             alert_model['severity'] = AlertHandler.SEVERITY_MAP.get(
@@ -262,8 +261,7 @@ class AlertHandler(object):
         re = ''
         try:
             if message_code is not None:
-                message_key = \
-                    (hex(int(message_code))).replace('0x', '0x0')
+                message_key = ("0x%07x" % int(message_code))
                 re = consts.HPE3PAR_ALERT_CODE.get(message_key)
         except Exception as e:
             LOG.error(e)
