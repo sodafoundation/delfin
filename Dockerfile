@@ -14,23 +14,20 @@
 
 FROM ubuntu:18.04
 
+MAINTAINER soda team
+
 RUN apt-get update -y && \
     apt-get install -y python3-pip && \
     apt-get install -y sqlite3 && \
-    apt-get install -y libffi-dev
+    apt-get install -y libffi-dev && \
+    pip3 install --upgrade pip
 
 ADD . /delfin
+
 WORKDIR /delfin
 
-RUN mkdir -p /var/log/delfin
-RUN mkdir -p /var/lib/delfin/
+RUN pip3 install -r requirements.txt && \
+    python3 setup.py install
 
-RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
+ENTRYPOINT ["/delfin/script/start.sh"]
 
-COPY etc/delfin/api-paste.ini /etc/delfin/api-paste.ini
-COPY etc/delfin/delfin.conf /etc/delfin/delfin.conf
-
-COPY script/start.sh start.sh
-
-CMD ./start.sh
