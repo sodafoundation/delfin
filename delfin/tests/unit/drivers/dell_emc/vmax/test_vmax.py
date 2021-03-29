@@ -629,3 +629,26 @@ class TestVMAXStorageDriver(TestCase):
         driver.client.rest.session = None
         driver.client.rest.request('/session', 'GET')
         self.assertEqual(driver.client.uni_version, '90')
+
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_get_capabilities(self, mock_unisphere_version,
+                              mock_version, mock_array):
+        kwargs = VMAX_STORAGE_CONF
+
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.client.uni_version, '90')
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+
+        capabilities = driver.get_capabilities(context)
+        self.assertIsNotNone(capabilities)
+        self.assertIsInstance(capabilities, dict)
+        self.assertEqual(capabilities['is_historic'], True)
+        self.assertIsInstance(capabilities['resource_metrics'], dict)
+        # Only support storage metrics
+        self.assertEqual(len(capabilities['resource_metrics']), 1)
