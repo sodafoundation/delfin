@@ -39,3 +39,4 @@ pyopenssl==19.1.0 # Apache-2.0
 APScheduler~=3.6.3
 flask
 kafka-python
+importlib-metadata==3.7.0; python_version < "3.8"
