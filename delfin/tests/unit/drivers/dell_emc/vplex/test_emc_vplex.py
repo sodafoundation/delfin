@@ -259,3 +259,9 @@ class TestVplexStorDriver(TestCase):
                          GET_ALL_LUNS_SUMMARY])
         storage = VplexStorageDriver(**ACCESS_INFO).get_storage(context)
         self.assertDictEqual(storage, storage_result)
+
+    def test_list_alerts(self):
+        with self.assertRaises(Exception) as exc:
+            VplexStorageDriver(**ACCESS_INFO).list_alerts(context)
+        self.assertEqual('list_alerts is not supported in model VPLEX',
+                         str(exc.exception))
