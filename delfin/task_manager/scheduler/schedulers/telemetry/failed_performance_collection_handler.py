@@ -61,6 +61,21 @@ class FailedPerformanceCollectionHandler(object):
         )
 
     def __call__(self):
+        # Upon periodic job callback, if storage is already deleted or soft
+        # deleted,do not proceed with failed performance collection flow
+        try:
+            failed_task = db.failed_task_get(self.ctx, self.failed_task_id)
+            if failed_task["deleted"]:
+                LOG.debug('Storage %s getting deleted, ignoring '
+                          'performance collection cycle for failed task id %s.'
+                          % (self.storage_id, self.failed_task_id))
+                return
+        except exception.FailedTaskNotFound:
+            LOG.debug('Storage %s already deleted, ignoring '
+                      'performance collection cycle for failed task id %s.'
+                      % (self.storage_id, self.failed_task_id))
+            return
+
         # Pull performance collection info
         self.retry_count = self.retry_count + 1
         try:

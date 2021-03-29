@@ -41,6 +41,7 @@ fake_failed_job = {
     FailedTask.start_time.name: int(datetime.now().timestamp()),
     FailedTask.end_time.name: int(datetime.now().timestamp()) + 20,
     FailedTask.interval.name: 20,
+    FailedTask.deleted.name: False,
 }
 
 fake_failed_jobs = [
@@ -90,7 +91,7 @@ class TestFailedTelemetryJob(test.TestCase):
         failed_job()
 
         # entry get deleted and job get removed
-        self.assertEqual(mock_failed_task_delete.call_count, 1)
+        self.assertEqual(mock_failed_task_delete.call_count, 2)
         self.assertEqual(mock_remove_job.call_count, 1)
 
     @mock.patch(
@@ -132,5 +133,5 @@ class TestFailedTelemetryJob(test.TestCase):
         failed_job()
 
         # entry get deleted and job get removed
-        self.assertEqual(mock_failed_task_delete.call_count, 1)
+        self.assertEqual(mock_failed_task_delete.call_count, 2)
         self.assertEqual(mock_remove_job.call_count, 1)
