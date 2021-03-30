@@ -2,5 +2,9 @@ comment:
   layout: "header, diff, tree"
 
 coverage:
+  range: "70...100"
+  precision: 2
+  round: down
   status:
-    project: false
+    patch: false
+
