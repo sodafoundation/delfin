@@ -52,17 +52,14 @@ class ComponentHandler():
         # get storage info
         storage = self.rest_handler.get_storage()
         # default state is offline
-        status = constants.StorageStatus.OFFLINE
+        status = constants.StorageStatus.NORMAL
 
         if storage:
             try:
                 # Check the hardware and software health
                 # status of the storage system
                 re_str = self.ssh_handler.get_health_state()
-                if ComponentHandler.COMPONENT_HEALTH in re_str \
-                        or ComponentHandler.SYSTEM_HEALTH in re_str:
-                    status = constants.StorageStatus.NORMAL
-                else:
+                if 'degraded' in re_str or 'failed' in re_str:
                     status = constants.StorageStatus.ABNORMAL
             except Exception:
                 status = constants.StorageStatus.ABNORMAL
