@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from unittest import TestCase, mock
 
+sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.dell_emc.vnx.vnx_block.navi_handler import NaviHandler
 from delfin.drivers.dell_emc.vnx.vnx_block.navicli_client import NaviClient
@@ -192,7 +194,7 @@ VOLUMES_RESULT = [
     }]
 ALERTS_RESULT = [
     {
-        'alert_id': '76cc',
+        'alert_id': '0x76cc',
         'alert_name': 'Navisphere Agent, version 7.33',
         'severity': 'Critical',
         'category': 'Fault',
@@ -214,7 +216,7 @@ ALERTS_RESULT = [
         'match_key': '65a5b90e11842a2aedf3bfab471f7701'
     }]
 ALERT_RESULT = {
-    'alert_id': '761f',
+    'alert_id': '0x761f',
     'alert_name': 'Unisphere can no longer manage',
     'severity': 'Critical',
     'category': 'Fault',
