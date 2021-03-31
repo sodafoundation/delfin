@@ -46,6 +46,21 @@ class PerformanceCollectionHandler(object):
                                             task['args'], task['interval'])
 
     def __call__(self):
+        # Upon periodic job callback, if storage is already deleted or soft
+        # deleted,do not proceed with performance collection flow
+        try:
+            task = db.task_get(self.ctx, self.task_id)
+            if task["deleted"]:
+                LOG.debug('Storage %s getting deleted, ignoring performance '
+                          'collection cycle for task id %s.'
+                          % (self.storage_id, self.task_id))
+                return
+        except exception.TaskNotFound:
+            LOG.debug('Storage %s already deleted, ignoring performance '
+                      'collection cycle for task id %s.'
+                      % (self.storage_id, self.task_id))
+            return
+
         # Handles performance collection from driver and dispatch
         start_time = None
         end_time = None
@@ -79,7 +94,8 @@ class PerformanceCollectionHandler(object):
                       .format(self.storage_id, self.task_id, self.interval))
 
     def _handle_task_failure(self, start_time, end_time):
-        failed_task = {FailedTask.task_id.name: self.task_id,
+        failed_task = {FailedTask.storage_id.name: self.storage_id,
+                       FailedTask.task_id.name: self.task_id,
                        FailedTask.interval.name:
                            TelemetryCollection.PERIODIC_JOB_INTERVAL,
                        FailedTask.end_time.name: end_time,

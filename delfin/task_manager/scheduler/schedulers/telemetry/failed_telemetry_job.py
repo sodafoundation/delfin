@@ -50,7 +50,7 @@ class FailedTelemetryJob(object):
                 job_id = failed_task['job_id']
                 if job_id and self.scheduler.get_job(job_id):
                     self.scheduler.remove_job(job_id)
-                db.task_delete(self.ctx, failed_task['id'])
+                db.failed_task_delete(self.ctx, failed_task['id'])
         except Exception as e:
             LOG.error("Failed to remove periodic scheduling job , reason: %s.",
                       six.text_type(e))
