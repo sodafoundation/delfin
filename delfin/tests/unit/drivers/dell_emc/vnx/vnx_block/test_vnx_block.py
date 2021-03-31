@@ -100,6 +100,7 @@ LOG_INFOS = """
 OTHER_LOG_INFOS = """
 03/25/2020 00:13:03 N/A                  (4600)'Capture the array configurati
 03/25/2020 13:30:17 N/A                  (76cc)Navisphere Agent, version 7.33
+09/14/2020 20:03:25 N/A                  (7606)Thinpool (Migration_pool) is (
 """
 
 AGENT_RESULT = {
