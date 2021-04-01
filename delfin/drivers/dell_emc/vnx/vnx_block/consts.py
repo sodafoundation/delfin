@@ -36,6 +36,7 @@ CER_SEPARATE_KEY = '-----------------------------'
 TIME_PATTERN = '%m/%d/%Y %H:%M:%S'
 DATE_PATTERN = '%m/%d/%Y'
 ONE_DAY_SCE = 24 * 60 * 60
+SECS_OF_QUERY_TIME_RANGE_DAYS = 29 * 24 * 60 * 60 * 1000
 LOG_FILTER_PATTERN = '\\(7[0-7]([a-f]|[0-9]){2}\\)'
 NAVISECCLI_API = 'naviseccli -User %(username)s -password %(password)s' \
                  ' -scope 0 -t %(timeout)d -h %(host)s'
@@ -68,8 +69,8 @@ VOL_TYPE_MAP = {'no': constants.VolumeType.THICK,
                 'yes': constants.VolumeType.THIN}
 VOL_COMPRESSED_MAP = {'no': False,
                       'yes': True}
-DEFAULT_QUERY_LOG_DAYS = 9
-SECS_OF_TEN_DAYS = DEFAULT_QUERY_LOG_DAYS * ONE_DAY_SCE
+DEFAULT_QUERY_LOG_DAYS = 3650
+SECS_OF_DEFAULT_QUERY_LOG_DAYS = DEFAULT_QUERY_LOG_DAYS * ONE_DAY_SCE
 OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
 OID_MESSAGECODE = '1.3.6.1.4.1.1981.1.4.5'
 OID_DETAILS = '1.3.6.1.4.1.1981.1.4.6'

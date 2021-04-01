@@ -122,39 +122,75 @@ class NaviHandler(object):
     def get_log(self, host_ip, query_para=None):
         log_list = []
         try:
-            begin_time = ''
-            end_time = ''
-            tools = Tools()
-            if query_para:
-                if query_para.get('begin_time') and query_para.get('end_time'):
-                    begin_time = tools.timestamp_to_time_str(
-                        query_para.get('begin_time'), consts.DATE_PATTERN)
-                    end_time = tools.timestamp_to_time_str(
-                        query_para.get('end_time'),
-                        consts.DATE_PATTERN)
-            else:
-                # Get the current time and 10 days ago
-                tmp_begin = (time.time() - consts.SECS_OF_TEN_DAYS) * units.k
-                tmp_end = (time.time() + consts.ONE_DAY_SCE) * units.k
-                begin_time = tools.timestamp_to_time_str(tmp_begin,
-                                                         consts.DATE_PATTERN)
-                end_time = tools.timestamp_to_time_str(tmp_end,
-                                                       consts.DATE_PATTERN)
-            command_str = consts.GET_LOG_API % {'begin_time': begin_time,
-                                                'end_time': end_time}
-            command_str = self.get_cli_command_str(host_ip=host_ip,
-                                                   sub_command=command_str)
-            result = self.navi_exe(command_str.split(), host_ip)
-            if result:
-                log_list = self.cli_log_to_list(result)
+            query_time_list = self.get_log_query_time_list(query_para)
+            for i in range(len(query_time_list) - 1, -1, -1):
+                query_time = query_time_list[i]
+                command_str = consts.GET_LOG_API % {
+                    'begin_time': query_time.get('begin_time'),
+                    'end_time': query_time.get('end_time')}
+                command_str = self.get_cli_command_str(host_ip=host_ip,
+                                                       sub_command=command_str)
+                result = self.navi_exe(command_str.split(), host_ip)
+                if result:
+                    log_list.extend(self.cli_log_to_list(result))
+                else:
+                    break
         except Exception as e:
             # The log query error of a single control node does not affect
             # the overall return, so only the log is recorded here,
             # and no exception is thrown
-            err_msg = "Failed to get log from %s: %s"\
+            err_msg = "Failed to get log from %s: %s" \
                       % (host_ip, six.text_type(e))
             LOG.error(err_msg)
         return log_list
+
+    def get_log_query_time_list(self, query_para=None):
+        log_query_time_list = []
+        try:
+            if query_para is None:
+                tmp_begin = (time.time() -
+                             consts.SECS_OF_DEFAULT_QUERY_LOG_DAYS) * units.k
+                tmp_end = (time.time() + consts.ONE_DAY_SCE) * units.k
+                query_para = {
+                    'begin_time': str(tmp_begin),
+                    'end_time': str(tmp_end)
+                }
+            begin_time_int = int(float(query_para.get('begin_time')))
+            end_time_int = int(float(query_para.get('end_time')))
+            next_start_time = (begin_time_int +
+                               consts.SECS_OF_QUERY_TIME_RANGE_DAYS)
+            if next_start_time < end_time_int:
+                while (begin_time_int < end_time_int):
+                    begin_time_tmp = begin_time_int
+                    end_time_tmp = (begin_time_int +
+                                    consts.SECS_OF_QUERY_TIME_RANGE_DAYS)
+                    if end_time_tmp > end_time_int:
+                        end_time_tmp = end_time_int
+                    query_time = self.log_query_time_to_list(begin_time_tmp,
+                                                             end_time_tmp)
+                    log_query_time_list.append(query_time)
+                    begin_time_int = end_time_tmp
+            else:
+                query_time = self.log_query_time_to_list(begin_time_int,
+                                                         end_time_int)
+                log_query_time_list.append(query_time)
+        except Exception as e:
+            err_msg = "Error splitting query time: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return log_query_time_list
+
+    def log_query_time_to_list(self, begin_timestamp, end_timestamp):
+        tools = Tools()
+        begin_time = tools.timestamp_to_time_str(begin_timestamp,
+                                                 consts.DATE_PATTERN)
+        end_time = tools.timestamp_to_time_str(end_timestamp,
+                                               consts.DATE_PATTERN)
+        query_time_map = {
+            'begin_time': begin_time,
+            'end_time': end_time
+        }
+        return query_time_map
 
     def get_resources_info(self, sub_command, analyse_type):
         """Execute commands to query data and analyze"""
