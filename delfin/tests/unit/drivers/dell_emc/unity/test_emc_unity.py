@@ -216,6 +216,15 @@ TRAP_INFO = {
     '1.3.6.1.4.1.1139.103.1.18.1.5': '2020/11/20 14:10:10',
     '1.3.6.1.4.1.1139.103.1.18.1.2': 'test'
 }
+TRAP_NOT_IN_MAPPPING_INFO = {
+    "1.3.6.1.2.1.1.3.0": "0",
+    '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.1139.103.1.18.2.0',
+    '1.3.6.1.4.1.1139.103.1.18.1.1': 'eeeeeeeee',
+    '1.3.6.1.4.1.1139.103.1.18.1.3': '14:60bba1',
+    '1.3.6.1.4.1.1139.103.1.18.1.4': 'this is test',
+    '1.3.6.1.4.1.1139.103.1.18.1.5': '2020/11/20 14:10:10',
+    '1.3.6.1.4.1.1139.103.1.18.1.2': 'test'
+}
 trap_result = {
     'alert_id': '14:60bba',
     'alert_name': 'this is test',
@@ -226,6 +235,18 @@ trap_result = {
     'description': 'Storage resource allocation from one of the pools has '
                    'exceed the 85% threshold. Allocate more storage space '
                    'from the pool to the storage resource.',
+    'resource_type': 'Storage',
+    'location': 'eeeeeeeee',
+    'match_key': '8c6d115258631625b625486f81b09532'
+}
+trap_not_in_mapping_result = {
+    'alert_id': '14:60bba1',
+    'alert_name': 'this is test',
+    'severity': 'Critical',
+    'category': 'Fault',
+    'type': 'EquipmentAlarm',
+    'occur_time': 1605852610000,
+    'description': 'this is test',
     'resource_type': 'Storage',
     'location': 'eeeeeeeee',
     'match_key': '8c6d115258631625b625486f81b09532'
@@ -305,6 +326,10 @@ class TestUNITYStorDriver(TestCase):
         trap = UnityStorDriver(**ACCESS_INFO).parse_alert(context, TRAP_INFO)
         trap['occur_time'] = int(1605852610000)
         self.assertEqual(trap, trap_result)
+        trap = UnityStorDriver(**ACCESS_INFO).parse_alert(
+            context, TRAP_NOT_IN_MAPPPING_INFO)
+        trap['occur_time'] = int(1605852610000)
+        self.assertEqual(trap, trap_not_in_mapping_result)
 
     @mock.patch.object(RestHandler, 'remove_alert')
     def test_clear_alert(self, mock_remove):
