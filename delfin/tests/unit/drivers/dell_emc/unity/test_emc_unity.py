@@ -283,6 +283,7 @@ alert_result = [
         'alert_id': '14:608fe',
         'description': 'The host does not have any initiators.',
         'category': 'Fault',
+        'sequence_number': 'alert_31523',
         'match_key': 'de23e7c25b5a46f029cb2f84f15a4a3a'
     }
 ]
