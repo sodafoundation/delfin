@@ -125,7 +125,7 @@ class AlertHandler(object):
                     constants.Severity.INFORMATIONAL)
                 alert_model['category'] = constants.Category.FAULT
                 alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-                alert_model['sequence_number'] = alert.get('content').get('id')
+                alert_model['sequence_number'] = content.get('id')
                 alert_model['occur_time'] = int(occur_time *
                                                 AlertHandler.SECONDS_TO_MS)
                 alert_model['description'] = content.get('description')
