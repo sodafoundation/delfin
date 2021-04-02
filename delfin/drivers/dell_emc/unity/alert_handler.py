@@ -20,6 +20,7 @@ from oslo_log import log
 from delfin import exception
 from delfin.common import alert_util
 from delfin.common import constants
+from delfin.drivers.dell_emc.unity import consts
 from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
@@ -68,7 +69,13 @@ class AlertHandler(object):
         try:
             alert_model = dict()
             alert_model['alert_id'] = alert.get(AlertHandler.OID_SYMPTOMID)
-            alert_model['alert_name'] = alert.get(AlertHandler.OID_COMPONENT)
+            trap_map_desc = consts.TRAP_DESC.get(
+                alert.get(AlertHandler.OID_SYMPTOMID))
+            if trap_map_desc:
+                alert_desc = trap_map_desc[2]
+            else:
+                alert_desc = alert.get(AlertHandler.OID_SYMPTOMTEXT)
+            alert_model['alert_name'] = alert.get(AlertHandler.OID_SYMPTOMTEXT)
             alert_model['severity'] = AlertHandler.TRAP_LEVEL_MAP.get(
                 alert.get(AlertHandler.OID_SEVERITY),
                 constants.Severity.INFORMATIONAL)
@@ -76,8 +83,7 @@ class AlertHandler(object):
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             occur_time = int(time.time()) * AlertHandler.SECONDS_TO_MS
             alert_model['occur_time'] = occur_time
-            alert_model['description'] = alert.get(
-                AlertHandler.OID_SYMPTOMTEXT)
+            alert_model['description'] = alert_desc
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = alert.get(AlertHandler.OID_NODE)
             alert_model['match_key'] = hashlib.md5(alert.get(
@@ -126,6 +132,8 @@ class AlertHandler(object):
                 alert_model['resource_type'] = resource_type
                 alert_model['location'] = location
                 alert_model_list.append(alert_model)
+                alert_model['match_key'] = hashlib.md5(
+                    content.get('message').encode()).hexdigest()
             except Exception as e:
                 LOG.error(e)
                 err_msg = "Failed to build alert model as some attributes " \
