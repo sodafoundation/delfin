@@ -14,7 +14,7 @@
 from delfin import exception
 from delfin.common import constants
 
-SOCKET_TIMEOUT = 30
+SOCKET_TIMEOUT = 10
 CER_ERR = 'Unable to validate the identity of the server'
 CALLER_ERR = 'Caller not privileged'
 SECURITY_ERR = 'Security file not found'
