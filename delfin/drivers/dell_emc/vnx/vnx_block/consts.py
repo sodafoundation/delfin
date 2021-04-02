@@ -24,8 +24,8 @@ INVALID_ERR = 'invalid username, password and/or scope'
 EXCEPTION_MAP = {CER_ERR: exception.SSLCertificateFailed,
                  CALLER_ERR: exception.InvalidUsernameOrPassword,
                  SECURITY_ERR: exception.InvalidUsernameOrPassword,
-                 TRYING_CONNECT_ERR: exception.ConnectTimeout,
-                 CONNECTION_ERR: exception.ConnectTimeout,
+                 TRYING_CONNECT_ERR: exception.InvalidIpOrPort,
+                 CONNECTION_ERR: exception.InvalidIpOrPort,
                  INVALID_ERR: exception.InvalidUsernameOrPassword}
 CER_STORE = '2'
 CER_REJECT = '3'
