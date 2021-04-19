@@ -35,7 +35,8 @@ class AlertHandler(object):
     def parse_alert(alert):
         try:
             alert_model = dict()
-            alert_model['alert_id'] = alert.get(consts.OID_MESSAGECODE)
+            alert_model['alert_id'] = AlertHandler.check_event_code(
+                alert.get(consts.OID_MESSAGECODE))
             alert_model['alert_name'] = alert.get(consts.OID_DETAILS)
             alert_model['severity'] = consts.TRAP_LEVEL_MAP.get(
                 alert.get(consts.OID_SEVERITY),
@@ -58,7 +59,8 @@ class AlertHandler(object):
         alert_list = []
         for alert in alerts:
             alert_model = {
-                'alert_id': alert.get('event_code'),
+                'alert_id': AlertHandler.check_event_code(
+                    alert.get('event_code')),
                 'alert_name': alert.get('message'),
                 'severity': consts.SEVERITY_MAP.get(
                     alert.get('event_code')[0:2]),
@@ -122,3 +124,9 @@ class AlertHandler(object):
             err_msg = "remove duplication failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
+
+    @staticmethod
+    def check_event_code(event_code):
+        if '0x' not in event_code:
+            event_code = '0x%s' % event_code
+        return event_code
