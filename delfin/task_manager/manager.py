@@ -61,7 +61,7 @@ class TaskManager(manager.Manager):
         LOG.info('Remove storage device in memory for storage id:{0}'
                  .format(storage_id))
         drivers = driver_manager.DriverManager()
-        drivers.remove_driver(storage_id)
+        drivers.remove_driver(context, storage_id)
 
     def remove_telemetry_instances(self, context, storage_id, telemetry_task):
         LOG.info('Remove telemetry instances for storage id:{0}')

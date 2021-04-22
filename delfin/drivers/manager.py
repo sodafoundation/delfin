@@ -66,30 +66,41 @@ class DriverManager(stevedore.ExtensionManager):
         else:
             return self._get_driver_obj(context, cache_on_load, **kwargs)
 
-    def update_driver(self, storage_id, driver):
-        self.driver_factory[storage_id] = driver
+    def update_driver(self, driver_id, driver):
+        self.driver_factory[driver_id] = driver
 
-    def remove_driver(self, storage_id):
+    def remove_driver(self, context, storage_id):
         """Clear driver instance from driver factory."""
-        self.driver_factory.pop(storage_id, None)
+        access_info = db.access_info_get(context, storage_id).to_dict()
+        if access_info:
+            db.access_info_delete(context, storage_id)
+            acs = db.access_info_get_all(
+                context, filters={"driver_id": access_info['driver_id']})
+            if len(acs) < 1:
+                self.driver_factory.pop(access_info['driver_id'], None)
 
     def _get_driver_obj(self, context, cache_on_load=True, **kwargs):
-        if not cache_on_load or not kwargs.get('storage_id'):
+        if not kwargs.get('driver_id') and kwargs.get('storage_id'):
+            access_info = db.access_info_get(
+                context, kwargs.get('storage_id')).to_dict()
+            kwargs['driver_id'] = access_info['driver_id']
+        if not cache_on_load or not kwargs.get('driver_id'):
             if kwargs['verify']:
                 ssl_utils.reload_certificate(kwargs['verify'])
             cls = self._get_driver_cls(**kwargs)
             return cls(**kwargs)
 
-        if kwargs['storage_id'] in self.driver_factory:
-            return self.driver_factory[kwargs['storage_id']]
+        if kwargs['driver_id'] in self.driver_factory:
+            return self.driver_factory[kwargs['driver_id']]
 
         with self._instance_lock:
-            if kwargs['storage_id'] in self.driver_factory:
-                return self.driver_factory[kwargs['storage_id']]
+            if kwargs['driver_id'] in self.driver_factory:
+                return self.driver_factory[kwargs['driver_id']]
 
             if kwargs['verify']:
                 ssl_utils.reload_certificate(kwargs['verify'])
             access_info = copy.deepcopy(kwargs)
+            driver_id = access_info.pop('driver_id')
             storage_id = access_info.pop('storage_id')
             access_info.pop('verify')
             if access_info:
@@ -102,7 +113,7 @@ class DriverManager(stevedore.ExtensionManager):
                 cls = self._get_driver_cls(**access_info)
                 driver = cls(**access_info)
 
-            self.driver_factory[storage_id] = driver
+            self.driver_factory[driver_id] = driver
             return driver
 
     def _get_driver_cls(self, **kwargs):

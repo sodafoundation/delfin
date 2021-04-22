@@ -127,10 +127,14 @@ class StorageDeviceTask(StorageResourceTask):
         LOG.info('Syncing storage device for storage id:{0}'.format(
             self.storage_id))
         try:
-            storage = self.driver_api.get_storage(self.context,
-                                                  self.storage_id)
+            storages = self.driver_api.get_storage(self.context,
+                                                   self.storage_id)
+            db_storage = db.storage_get(self.context, self.storage_id)
+            for storage in storages:
+                if not db_storage or storage['serial_number'] == db_storage['serial_number']:
+                    db.storage_update(self.context, self.storage_id, storage)
+                    break
 
-            db.storage_update(self.context, self.storage_id, storage)
         except Exception as e:
             msg = _('Failed to update storage entry in DB: {0}'
                     .format(e))
@@ -144,7 +148,6 @@ class StorageDeviceTask(StorageResourceTask):
                  .format(self.storage_id))
         try:
             db.storage_delete(self.context, self.storage_id)
-            db.access_info_delete(self.context, self.storage_id)
             db.alert_source_delete(self.context, self.storage_id)
         except Exception as e:
             LOG.error('Failed to update storage entry in DB: {0}'.format(e))

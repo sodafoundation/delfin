@@ -97,40 +97,42 @@ class StorageController(wsgi.Controller):
         with lock:
             if self._storage_exist(ctxt, access_info_dict):
                 raise exception.StorageAlreadyExists()
-            storage = self.driver_api.discover_storage(ctxt,
-                                                       access_info_dict)
+            storages = self.driver_api.discover_storage(ctxt,
+                                                        access_info_dict)
 
         # Registration success, sync resource collection for this storage
-        try:
-            self.sync(req, storage['id'])
+        for storage in storages:
+            try:
+                self.sync(req, storage['id'])
 
-            # Post registration, trigger alert sync
-            self.task_rpcapi.sync_storage_alerts(ctxt, storage['id'],
-                                                 query_para=None)
-        except Exception as e:
-            # Unexpected error occurred, while syncing resources.
-            msg = _('Failed to sync resources for storage: %(storage)s. '
-                    'Error: %(err)s') % {'storage': storage['id'], 'err': e}
-            LOG.error(msg)
+                # Post registration, trigger alert sync
+                self.task_rpcapi.sync_storage_alerts(ctxt, storage['id'],
+                                                     query_para=None)
+            except Exception as e:
+                # Unexpected error occurred, while syncing resources.
+                msg = _('Failed to sync resources for storage: %(storage)s. '
+                        'Error: %(err)s') % {'storage': storage['id'], 'err': e}
+                LOG.error(msg)
 
-        try:
-            # Trigger Performance monitoring
-            capabilities = self.driver_api.get_capabilities(
-                context=ctxt, storage_id=storage['id'])
-            validation.validate_capabilities(capabilities)
-            _create_performance_monitoring_task(ctxt, storage['id'],
-                                                capabilities)
-        except exception.EmptyResourceMetrics:
-            msg = _("Resource metric provided by capabilities is empty for "
-                    "storage: %s") % storage['id']
-            LOG.info(msg)
-        except Exception as e:
-            # Unexpected error occurred, while performance monitoring.
-            msg = _('Failed to trigger performance monitoring for storage: '
-                    '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
-                                                      'err': six.text_type(e)}
-            LOG.error(msg)
-        return storage_view.build_storage(storage)
+            try:
+                # Trigger Performance monitoring
+                capabilities = self.driver_api.get_capabilities(
+                    context=ctxt, storage_id=access_info_dict['storage_id'])
+                validation.validate_capabilities(capabilities)
+                _create_performance_monitoring_task(ctxt, storage['id'],
+                                                    capabilities)
+            except exception.EmptyResourceMetrics:
+                msg = _("Resource metric provided by capabilities is empty for "
+                        "storage: %s") % storage['id']
+                LOG.info(msg)
+            except Exception as e:
+                # Unexpected error occurred, while performance monitoring.
+                msg = _('Failed to trigger performance monitoring for storage: '
+                        '%(storage)s. Error: %(err)s') % {'storage': storage['id'],
+                                                          'err': six.text_type(e)}
+                LOG.error(msg)
+
+        return storage_view.build_storages(storages)
 
     @wsgi.response(202)
     def delete(self, req, id):

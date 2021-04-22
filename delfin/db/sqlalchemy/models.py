@@ -50,6 +50,7 @@ class AccessInfo(BASE, DelfinBase):
     """Represent access info required for storage accessing."""
     __tablename__ = "access_info"
     storage_id = Column(String(36), primary_key=True)
+    driver_id = Column(String(36))
     vendor = Column(String(255))
     model = Column(String(255))
     rest = Column(JsonEncodedDict)
