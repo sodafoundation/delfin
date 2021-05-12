@@ -1,11 +1,74 @@
+# Copyright 2021 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from unittest import mock
 
 from delfin import context, exception
 from delfin import test
 from delfin.db import api as db_api
 from delfin.db.sqlalchemy import api, models
+from delfin.tests.unit import fake_data, utils
 
 ctxt = context.get_admin_context()
+
+
+class TestIMDBAPIStoragePool(test.TestCase):
+    @mock.patch('sqlalchemy.create_engine', mock.Mock())
+    def test_register_db(self):
+        db_api.register_db()
+
+    def test_get_session(self):
+        api.get_session()
+
+    def test_get_engine(self):
+        api.get_engine()
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_basic_storage_pool_create(self, mock_session):
+        storage_pool_model_lst = fake_data.fake_storage_pool_create()
+        expected = fake_data.fake_expected_storage_pool_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
+        utils.validate_db_schema_storage_pool_model(got[0])
+        utils.validate_db_schema_storage_pool_model(expected[0])
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_invalid_attribute_value_storage_pool_create(self, mock_session):
+        storage_pool_model_lst = fake_data.fake_storage_pool_create()
+        expected = fake_data.fake_expected_storage_pool_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
+        try:
+            self.assertDictMatch(got[1], expected[1])
+        except AssertionError as msg:
+            print(msg)
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_unknown_attribute_storage_pool_model_create(self, mock_session):
+        storage_pool_model_lst = fake_data.fake_storage_pool_create()
+        expected = fake_data.fake_expected_storage_pool_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
+        try:
+            utils.validate_db_schema_storage_pool_model(got[2])
+            utils.validate_db_schema_storage_pool_model(expected[2])
+        except AssertionError as msg:
+            print(msg)
 
 
 class TestSIMDBAPI(test.TestCase):
