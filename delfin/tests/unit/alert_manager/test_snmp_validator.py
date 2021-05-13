@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import random
-from datetime import datetime
 from unittest import mock
 
 from pysnmp.entity.rfc3413.oneliner import cmdgen
@@ -20,6 +19,7 @@ from pysnmp.entity.rfc3413.oneliner import cmdgen
 from delfin import context
 from delfin import db
 from delfin import test
+from delfin import utils
 from delfin.alert_manager import snmp_validator
 from delfin.common import constants
 from delfin.exporter import base_exporter
@@ -127,7 +127,7 @@ class TestSNMPValidator(test.TestCase):
             'recovery_advice': "1. The network connection is abnormal. "
                                "2. SNMP authentication parameters "
                                "are invalid.",
-            'occur_time': int(datetime.utcnow().timestamp()) * 1000,
+            'occur_time': utils.utcnow_ms(),
         }
         validator._dispatch_snmp_validation_alert(
             context, storage, constants.Category.FAULT)

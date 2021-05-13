@@ -332,3 +332,7 @@ class EmptyResourceMetrics(DelfinException):
 
 class TelemetryTaskExecError(DelfinException):
     msg_fmt = _("Failure in telemetry task execution")
+
+
+class ComponentNotFound(NotFound):
+    msg_fmt = _("Component {0} could not be found.")
