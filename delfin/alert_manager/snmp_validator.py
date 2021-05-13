@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import binascii
-from datetime import datetime
 
 import six
 from oslo_config import cfg
@@ -23,6 +22,7 @@ from pysnmp.entity.rfc3413.oneliner import cmdgen
 from delfin import cryptor
 from delfin import db
 from delfin import exception
+from delfin import utils
 from delfin.common import constants
 from delfin.exporter import base_exporter
 
@@ -196,6 +196,6 @@ class SNMPValidator(object):
             'recovery_advice': "1. The network connection is abnormal. "
                                "2. SNMP authentication parameters "
                                "are invalid.",
-            'occur_time': int(datetime.utcnow().timestamp()) * 1000,
+            'occur_time': utils.utcnow_ms(),
         }
         self.exporter.dispatch(ctxt, alert)
