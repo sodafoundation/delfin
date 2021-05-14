@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+import time
 from unittest import TestCase, mock
+
+from delfin.drivers.dell_emc.vnx.vnx_block import consts
+from delfin.drivers.dell_emc.vnx.vnx_block.alert_handler import AlertHandler
+from delfin.drivers.utils.tools import Tools
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
@@ -93,15 +98,21 @@ GET_ALL_LUN_INFOS = """
         LUN Capacity(Megabytes):    10240
         Is Thin LUN:                YES
         """
-LOG_INFOS = """
-09/14/2020 19:03:25 N/A                  (7606)Thinpool (Migration_pool) is (
-03/25/2020 13:30:17 N/A                  (2006)Able to read events from the W
-"""
-OTHER_LOG_INFOS = """
-03/25/2020 00:13:03 N/A                  (4600)'Capture the array configurati
-03/25/2020 13:30:17 N/A                  (76cc)Navisphere Agent, version 7.33
-09/14/2020 20:03:25 N/A                  (7606)Thinpool (Migration_pool) is (
-"""
+
+CER_INFOS = """
+-----------------------------
+Subject:CN=TrustedRoot,C=US,ST=MA,L=Hopkinton,EMAIL=rsa@emc.com,OU=CSP,O=RSA
+Issuer:1.1.1.1
+Serial#: 00d8280b0c863f6d4e
+Valid From: 20090407135111Z
+Valid To: 20190405135111Z
+-----------------------------
+Subject:CN=TrustedRoot,C=US,ST=MA,L=Hopkinton,EMAIL=rsa@emc.com,OU=CSP,O=RSA
+Issuer:110.143.132.231
+Serial#: 00d8280b0c863f6d4e
+Valid From: 20090407135111Z
+Valid To: 20190405135111Z
+        """
 
 AGENT_RESULT = {
     'agent_rev': '7.33.1 (0.38)',
@@ -162,13 +173,6 @@ ALL_LUN_RESULT = [
         'lun_capacitymegabytes': '10240',
         'is_thin_lun': 'YES'
     }]
-LOG_RESULT = [
-    {
-        'log_time': '09/14/2020 19:03:25',
-        'log_time_stamp': 1600081405000,
-        'event_code': '7606',
-        'message': 'Thinpool (Migration_pool) is ('
-    }]
 POOLS_ANALYSE_RESULT = [{
     'pool_name': 'Pool 1',
     'pool_id': '1',
@@ -191,7 +195,8 @@ VOLUMES_RESULT = [
         'total_capacity': 9663676416,
         'used_capacity': 1882269417,
         'free_capacity': 7781406998,
-        'compressed': False
+        'compressed': False,
+        'wwn': None
     }]
 ALERTS_RESULT = [
     {
@@ -204,17 +209,6 @@ ALERTS_RESULT = [
         'description': 'Navisphere Agent, version 7.33',
         'resource_type': 'Storage',
         'match_key': 'b969bbaa22b62ebcad4074618cc29b94'
-    },
-    {
-        'alert_id': '7606',
-        'alert_name': 'Thinpool (Migration_pool) is (',
-        'severity': 'Critical',
-        'category': 'Fault',
-        'type': 'EquipmentAlarm',
-        'occur_time': 1600081405000,
-        'description': 'Thinpool (Migration_pool) is (',
-        'resource_type': 'Storage',
-        'match_key': '65a5b90e11842a2aedf3bfab471f7701'
     }]
 ALERT_RESULT = {
     'alert_id': '0x761f',
@@ -261,11 +255,10 @@ class TestVnxBlocktorageDriver(TestCase):
         self.assertDictEqual(volumes[0], VOLUMES_RESULT[0])
 
     def test_get_alerts(self):
-        NaviClient.exec = mock.Mock(
-            side_effect=[DOMAIN_INFOS, LOG_INFOS, OTHER_LOG_INFOS])
-        alerts = self.driver.list_alerts(context, None)
-        ALERTS_RESULT[0]['occur_time'] = alerts[0]['occur_time']
-        self.assertDictEqual(alerts[0], ALERTS_RESULT[0])
+        with self.assertRaises(Exception) as exc:
+            self.driver.list_alerts(context, None)
+        self.assertIn('Driver API list_alerts() is not Implemented',
+                      str(exc.exception))
 
     def test_parse_alert(self):
         alert = {
@@ -300,12 +293,6 @@ class TestVnxBlocktorageDriver(TestCase):
         re_list = navi_handler.cli_lun_to_list(GET_ALL_LUN_INFOS)
         self.assertDictEqual(re_list[0], ALL_LUN_RESULT[0])
 
-    def test_cli_log_to_list(self):
-        navi_handler = NaviHandler(**ACCESS_INFO)
-        re_list = navi_handler.cli_log_to_list(LOG_INFOS)
-        LOG_RESULT[0]['log_time_stamp'] = re_list[0]['log_time_stamp']
-        self.assertDictEqual(re_list[0], LOG_RESULT[0])
-
     @mock.patch.object(NaviClient, 'exec')
     def test_init_cli(self, mock_exec):
         mock_exec.return_value = 'test'
@@ -331,3 +318,63 @@ class TestVnxBlocktorageDriver(TestCase):
             navi_handler = NaviHandler(**ACCESS_INFO)
             navi_handler.cli_res_to_list({})
         self.assertIn('cli resource to list error', str(exc.exception))
+
+    @mock.patch.object(time, 'mktime')
+    def test_time_str_to_timestamp(self, mock_mktime):
+        tools = Tools()
+        log_time = '03/26/2021 14:25:36'
+        tools.time_str_to_timestamp(log_time, consts.TIME_PATTERN)
+        self.assertEqual(mock_mktime.call_count, 1)
+
+    @mock.patch.object(time, 'strftime')
+    def test_timestamp_to_time_str(self, mock_strftime):
+        tools = Tools()
+        timestamp = 1616739936000
+        tools.timestamp_to_time_str(timestamp, consts.TIME_PATTERN)
+        self.assertEqual(mock_strftime.call_count, 1)
+
+    def test_cli_exec(self):
+        with self.assertRaises(Exception) as exc:
+            command_str = 'abc'
+            NaviClient.exec(command_str)
+        self.assertIn('Component naviseccli could not be found',
+                      str(exc.exception))
+
+    def test_analyse_cer(self):
+        re_map = {
+            '1.1.1.1': {
+                'subject': 'CN=TrustedRoot,C=US,ST=MA,L=Hopkinton,'
+                           'EMAIL=rsa@emc.com,OU=CSP,O=RSA',
+                'issuer': '1.1.1.1',
+                'serial#': '00d8280b0c863f6d4e',
+                'valid_from': '20090407135111Z',
+                'valid_to': '20190405135111Z'
+            }
+        }
+        navi_handler = NaviHandler(**ACCESS_INFO)
+        cer_map = navi_handler.analyse_cer(CER_INFOS, host_ip='1.1.1.1')
+        self.assertDictEqual(cer_map, re_map)
+
+    def test_analyse_cer_exception(self):
+        with self.assertRaises(Exception) as exc:
+            navi_handler = NaviHandler(**ACCESS_INFO)
+            navi_handler.analyse_cer(CER_INFOS)
+        self.assertIn('arrange cer info error', str(exc.exception))
+
+    def test_get_resources_info_exception(self):
+        with self.assertRaises(Exception) as exc:
+            NaviClient.exec = mock.Mock(side_effect=[LUN_INFOS])
+            navi_handler = NaviHandler(**ACCESS_INFO)
+            navi_handler.get_resources_info('abc', None)
+        self.assertIn('object is not callable', str(exc.exception))
+
+    def test_parse_alert_exception(self):
+        with self.assertRaises(Exception) as exc:
+            AlertHandler.parse_alert(None)
+        self.assertIn('The results are invalid', str(exc.exception))
+
+    def test_clear_alert(self):
+        self.driver.clear_alert(None, None)
+
+    def test_remove_trap_config(self):
+        self.driver.remove_trap_config(None, None)
