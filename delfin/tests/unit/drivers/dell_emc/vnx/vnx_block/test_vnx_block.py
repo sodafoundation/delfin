@@ -374,7 +374,7 @@ class TestVnxBlocktorageDriver(TestCase):
         self.assertIn('The results are invalid', str(exc.exception))
 
     def test_clear_alert(self):
-        self.driver.clear_alert(None,None)
+        self.driver.clear_alert(None, None)
 
     def test_remove_trap_config(self):
-        self.driver.remove_trap_config(None,None)
+        self.driver.remove_trap_config(None, None)
