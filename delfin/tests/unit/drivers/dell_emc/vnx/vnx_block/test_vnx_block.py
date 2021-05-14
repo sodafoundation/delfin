@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+import time
 from unittest import TestCase, mock
 
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
@@ -302,8 +303,16 @@ class TestVnxBlocktorageDriver(TestCase):
             navi_handler.cli_res_to_list({})
         self.assertIn('cli resource to list error', str(exc.exception))
 
-    def test_time_str_to_timestamp(self):
+    @mock.patch.object(time, 'mktime')
+    def test_time_str_to_timestamp(self, mock_mktime):
         tools = Tools()
         log_time = '03/26/2021 14:25:36'
-        timestamp = tools.time_str_to_timestamp(log_time, consts.TIME_PATTERN)
-        self.assertEqual(1616739936000, timestamp)
+        tools.time_str_to_timestamp(log_time, consts.TIME_PATTERN)
+        self.assertEqual(mock_mktime.call_count, 1)
+
+    @mock.patch.object(time, 'strftime')
+    def test_timestamp_to_time_str(self, mock_strftime):
+        tools = Tools()
+        timestamp = 1616739936000
+        tools.timestamp_to_time_str(timestamp, consts.TIME_PATTERN)
+        self.assertEqual(mock_strftime.call_count, 1)
