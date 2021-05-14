@@ -362,7 +362,7 @@ class TestVnxBlocktorageDriver(TestCase):
 
     def test_get_resources_info_exception(self):
         with self.assertRaises(Exception) as exc:
+            NaviClient.exec = mock.Mock(side_effect=[LUN_INFOS])
             navi_handler = NaviHandler(**ACCESS_INFO)
             navi_handler.get_resources_info('abc', None)
-        self.assertIn('Component naviseccli could not be found',
-                      str(exc.exception))
+        self.assertIn('object is not callable', str(exc.exception))
