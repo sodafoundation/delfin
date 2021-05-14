@@ -14,6 +14,9 @@
 import sys
 from unittest import TestCase, mock
 
+from delfin.drivers.dell_emc.vnx.vnx_block import consts
+from delfin.drivers.utils.tools import Tools
+
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.dell_emc.vnx.vnx_block.navi_handler import NaviHandler
@@ -298,3 +301,9 @@ class TestVnxBlocktorageDriver(TestCase):
             navi_handler = NaviHandler(**ACCESS_INFO)
             navi_handler.cli_res_to_list({})
         self.assertIn('cli resource to list error', str(exc.exception))
+
+    def test_time_str_to_timestamp(self):
+        tools = Tools()
+        log_time = '03/26/2021 14:25:36'
+        timestamp = tools.time_str_to_timestamp(log_time, consts.TIME_PATTERN)
+        self.assertEqual(1616739936000, timestamp)
