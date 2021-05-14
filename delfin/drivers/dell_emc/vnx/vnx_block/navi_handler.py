@@ -343,5 +343,9 @@ class NaviHandler(object):
             self.login(host_ip)
             result = NaviClient.exec(command_str)
             return result
+        except Exception as e:
+            err_msg = "naviseccli exec error: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
         finally:
             self.session_lock.release()

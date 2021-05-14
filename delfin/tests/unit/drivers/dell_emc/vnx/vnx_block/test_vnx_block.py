@@ -352,5 +352,17 @@ class TestVnxBlocktorageDriver(TestCase):
         }
         navi_handler = NaviHandler(**ACCESS_INFO)
         cer_map = navi_handler.analyse_cer(CER_INFOS, host_ip='1.1.1.1')
-        print(cer_map)
         self.assertDictEqual(cer_map, re_map)
+
+    def test_analyse_cer_exception(self):
+        with self.assertRaises(Exception) as exc:
+            navi_handler = NaviHandler(**ACCESS_INFO)
+            navi_handler.analyse_cer(CER_INFOS)
+        self.assertIn('arrange cer info error', str(exc.exception))
+
+    def test_get_resources_info_exception(self):
+        with self.assertRaises(Exception) as exc:
+            navi_handler = NaviHandler(**ACCESS_INFO)
+            navi_handler.get_resources_info('abc', None)
+        self.assertIn('Component naviseccli could not be found',
+                      str(exc.exception))
