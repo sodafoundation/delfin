@@ -98,6 +98,21 @@ GET_ALL_LUN_INFOS = """
         Is Thin LUN:                YES
         """
 
+CER_INFOS = """
+-----------------------------
+Subject:CN=TrustedRoot,C=US,ST=MA,L=Hopkinton,EMAIL=rsa@emc.com,OU=CSP,O=RSA
+Issuer:1.1.1.1
+Serial#: 00d8280b0c863f6d4e
+Valid From: 20090407135111Z
+Valid To: 20190405135111Z
+-----------------------------
+Subject:CN=TrustedRoot,C=US,ST=MA,L=Hopkinton,EMAIL=rsa@emc.com,OU=CSP,O=RSA
+Issuer:110.143.132.231
+Serial#: 00d8280b0c863f6d4e
+Valid From: 20090407135111Z
+Valid To: 20190405135111Z
+        """
+
 AGENT_RESULT = {
     'agent_rev': '7.33.1 (0.38)',
     'name': 'K10',
@@ -316,3 +331,26 @@ class TestVnxBlocktorageDriver(TestCase):
         timestamp = 1616739936000
         tools.timestamp_to_time_str(timestamp, consts.TIME_PATTERN)
         self.assertEqual(mock_strftime.call_count, 1)
+
+    def test_cli_exec(self):
+        with self.assertRaises(Exception) as exc:
+            command_str = 'abc'
+            NaviClient.exec(command_str)
+        self.assertIn('Component naviseccli could not be found',
+                      str(exc.exception))
+
+    def test_analyse_cer(self):
+        re_map = {
+            '1.1.1.1': {
+                'subject': 'CN=TrustedRoot,C=US,ST=MA,L=Hopkinton,'
+                           'EMAIL=rsa@emc.com,OU=CSP,O=RSA',
+                'issuer': '1.1.1.1',
+                'serial#': '00d8280b0c863f6d4e',
+                'valid_from': '20090407135111Z',
+                'valid_to': '20190405135111Z'
+            }
+        }
+        navi_handler = NaviHandler(**ACCESS_INFO)
+        cer_map = navi_handler.analyse_cer(CER_INFOS, host_ip='1.1.1.1')
+        print(cer_map)
+        self.assertDictEqual(cer_map, re_map)
