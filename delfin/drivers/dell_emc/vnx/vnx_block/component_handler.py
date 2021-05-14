@@ -141,7 +141,8 @@ class ComponentHandler(object):
                         'used_capacity': int(used_cap),
                         'free_capacity': int(free_cap),
                         'compressed': consts.VOL_COMPRESSED_MAP.get(
-                            volume.get('is_compressed').lower())
+                            volume.get('is_compressed').lower()),
+                        'wwn': volume.get('uid')
                     }
                     volume_list.append(v)
         return volume_list
@@ -151,8 +152,13 @@ class ComponentHandler(object):
         volumes = self.navi_handler.get_all_lun()
         if volumes:
             for volume in volumes:
-                if volume.get('raidgroup_id') is not None and volume.get(
-                        'raidgroup_id') != 'N/A':
+                if volume.get('raidgroup_id') and (
+                        volume.get('raidgroup_id') != 'N/A' or volume.get(
+                        'is_meta_lun') == 'YES'):
+                    pool_id = None
+                    if volume.get('raidgroup_id') != 'N/A':
+                        pool_id = '%s%s' % (consts.RAID_GROUP_ID_PREFIX,
+                                            volume.get('raidgroup_id'))
                     status = consts.STATUS_MAP.get(
                         volume.get('state'),
                         constants.StoragePoolStatus.OFFLINE)
@@ -168,13 +174,12 @@ class ComponentHandler(object):
                         'status': status,
                         'native_volume_id': str(
                             volume.get('logical_unit_number')),
-                        'native_storage_pool_id': '%s%s' % (
-                            consts.RAID_GROUP_ID_PREFIX,
-                            volume.get('raidgroup_id')),
+                        'native_storage_pool_id': pool_id,
                         'type': vol_type,
                         'total_capacity': int(total_cap),
                         'used_capacity': int(used_cap),
-                        'free_capacity': int(free_cap)
+                        'free_capacity': int(free_cap),
+                        'wwn': volume.get('uid')
                     }
                     volume_list.append(v)
         return volume_list

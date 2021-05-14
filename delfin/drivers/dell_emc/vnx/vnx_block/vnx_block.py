@@ -30,7 +30,6 @@ class VnxBlockStorDriver(driver.StorageDriver):
         self.navi_handler = NaviHandler(**kwargs)
         self.version = self.navi_handler.login()
         self.com_handler = ComponentHandler(self.navi_handler)
-        self.alert_handler = AlertHandler(self.navi_handler)
 
     def reset_connection(self, context, **kwargs):
         self.navi_handler.remove_cer()
@@ -50,7 +49,8 @@ class VnxBlockStorDriver(driver.StorageDriver):
         return self.com_handler.list_volumes(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
-        return self.alert_handler.list_alerts(query_para)
+        raise NotImplementedError(
+            "Driver API list_alerts() is not Implemented")
 
     def list_controllers(self, context):
         """List all storage controllers from storage system."""
