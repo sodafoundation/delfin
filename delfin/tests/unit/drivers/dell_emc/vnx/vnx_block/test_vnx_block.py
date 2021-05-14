@@ -16,6 +16,7 @@ import time
 from unittest import TestCase, mock
 
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
+from delfin.drivers.dell_emc.vnx.vnx_block.alert_handler import AlertHandler
 from delfin.drivers.utils.tools import Tools
 
 sys.modules['delfin.cryptor'] = mock.Mock()
@@ -366,3 +367,14 @@ class TestVnxBlocktorageDriver(TestCase):
             navi_handler = NaviHandler(**ACCESS_INFO)
             navi_handler.get_resources_info('abc', None)
         self.assertIn('object is not callable', str(exc.exception))
+
+    def test_parse_alert_exception(self):
+        with self.assertRaises(Exception) as exc:
+            AlertHandler.parse_alert(None)
+        self.assertIn('The results are invalid', str(exc.exception))
+
+    def test_clear_alert(self):
+        self.driver.clear_alert(None,None)
+
+    def test_remove_trap_config(self):
+        self.driver.remove_trap_config(None,None)
