@@ -146,18 +146,6 @@ class ComponentHandler():
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def handle_pool_name(self, volume):
-        orig_pool_name = ''
-        if 'userCPG' in volume:
-            orig_pool_name = volume.get('userCPG')
-        if 'snapCPG' in volume:
-            if orig_pool_name == '':
-                orig_pool_name = volume.get('snapCPG')
-            elif volume.get('snapCPG') != orig_pool_name:
-                orig_pool_name = '%s/%s' % (orig_pool_name, volume
-                                            .get('snapCPG'))
-        return orig_pool_name
-
     def handler_volume(self, volumes, pool_ids):
         volume_list = []
         if volumes is None:
@@ -166,7 +154,7 @@ class ComponentHandler():
             members = volumes.get('members')
             for volume in members:
                 status = self.STATUS_MAP.get(volume.get('state'))
-                orig_pool_name = self.handle_pool_name(volume)
+                orig_pool_name = volume.get('userCPG', '')
 
                 compressed = True
                 deduplicated = True
