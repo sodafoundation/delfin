@@ -322,16 +322,18 @@ class TestVnxBlocktorageDriver(TestCase):
     @mock.patch.object(time, 'mktime')
     def test_time_str_to_timestamp(self, mock_mktime):
         tools = Tools()
-        log_time = '03/26/2021 14:25:36'
-        tools.time_str_to_timestamp(log_time, consts.TIME_PATTERN)
-        self.assertEqual(mock_mktime.call_count, 1)
+        time_str = '03/26/2021 14:25:36'
+        mock_mktime.return_value = 1616739936
+        re = tools.time_str_to_timestamp(time_str, consts.TIME_PATTERN)
+        self.assertEqual(1616739936000, re)
 
     @mock.patch.object(time, 'strftime')
     def test_timestamp_to_time_str(self, mock_strftime):
         tools = Tools()
+        mock_strftime.return_value = '03/26/2021 14:25:36'
         timestamp = 1616739936000
-        tools.timestamp_to_time_str(timestamp, consts.TIME_PATTERN)
-        self.assertEqual(mock_strftime.call_count, 1)
+        re = tools.timestamp_to_time_str(timestamp, consts.TIME_PATTERN)
+        self.assertEqual('03/26/2021 14:25:36', re)
 
     def test_cli_exec(self):
         with self.assertRaises(Exception) as exc:
