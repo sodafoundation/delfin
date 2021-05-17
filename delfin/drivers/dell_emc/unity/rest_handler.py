@@ -64,7 +64,8 @@ class RestHandler(RestClient):
                     elif 'Forbidden' in res.text:
                         raise exception.InvalidIpOrPort()
                     else:
-                        raise exception.BadResponse(res.text)
+                        raise exception.StorageBackendException(
+                            six.text_type(res.text))
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e

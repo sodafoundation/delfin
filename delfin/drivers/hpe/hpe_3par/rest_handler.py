@@ -119,7 +119,6 @@ class RestHandler(object):
 
                 if self.rest_client.rest_auth_token is not None:
                     return self.rest_client.rest_auth_token
-
                 self.rest_client.init_http_head()
                 res = self.rest_client. \
                     do_call(url, data, 'POST',
@@ -144,7 +143,8 @@ class RestHandler(object):
                     if 'invalid username or password' in res.text:
                         raise exception.InvalidUsernameOrPassword()
                     else:
-                        raise exception.BadResponse(res.text)
+                        raise exception.StorageBackendException(
+                            six.text_type(res.text))
             else:
                 LOG.error('Login Parameter error')
 
