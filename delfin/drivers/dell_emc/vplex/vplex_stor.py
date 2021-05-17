@@ -22,6 +22,7 @@ from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.vplex import alert_handler
 from delfin.drivers.dell_emc.vplex import rest_handler
+from delfin.drivers.dell_emc.vplex import consts
 
 LOG = log.getLogger(__name__)
 
@@ -80,8 +81,7 @@ class VplexStorageDriver(driver.StorageDriver):
                     'raw_capacity': int(raw_capacity),
                     'total_capacity': int(total_capacity),
                     'used_capacity': int(used_capacity),
-                    'free_capacity': int(free_capacity),
-                    'subscribed_capacity': 0
+                    'free_capacity': int(free_capacity)
                 }
                 break
         return cluster
@@ -324,15 +324,235 @@ class VplexStorageDriver(driver.StorageDriver):
 
     def list_controllers(self, context):
         """List all storage controllers from storage system."""
-        pass
+        ct_list = []
+        director_version_map = {}
+        version_resp = self.rest_handler.get_version_verbose()
+        all_director = self.rest_handler.get_engine_director_resp()
+        ct_context_list = VplexStorageDriver.get_context_list(all_director)
+        VplexStorageDriver.analyse_director_version(version_resp,
+                                                    director_version_map)
+        for ct_context in ct_context_list:
+            ct_attr_map = ct_context.get("attributes")
+            communication_status = ct_attr_map.get('communication-status')
+            name = ct_attr_map.get('name')
+            ct = {
+                'native_controller_id ': ct_attr_map.get('director-id'),
+                'name': name,
+                'status': VplexStorageDriver.analyse_director_status(
+                    communication_status),
+                'location ': '',
+                'storage_id ': self.storage_id,
+                'soft_version ': self.get_value_from_nest_map(
+                    director_version_map, name, "Director Software"),
+                'cpu_info': '',
+                'memory_size': ''
+            }
+            ct_list.append(ct)
+        return ct_list
 
     def list_ports(self, context):
         """List all ports from storage system."""
-        pass
+        port_list = []
+        hardware_port_map = {}
+        hardware_port_resp = self.rest_handler. \
+            get_engine_director_hardware_port_resp()
+        export_port_resp = self.rest_handler.get_cluster_export_port_resp()
+        VplexStorageDriver.analyse_hardware_port(hardware_port_resp,
+                                                 hardware_port_map)
+        port_context_list = VplexStorageDriver. \
+            get_context_list(export_port_resp)
+        for port_context in port_context_list:
+            port_attr = port_context.get('attributes')
+            port_name = port_attr.get('name')
+            speed, max_speed, protocols, role, port_status, \
+                operational_status = self.get_hardware_port_info(
+                    hardware_port_map, port_name, 'attributes')
+            connection_status = VplexStorageDriver.analyse_port_connect_status(
+                port_status)
+            port = {
+                'native_port_id': port_attr.get('name'),
+                'name': port_attr.get('name'),
+                'type': VplexStorageDriver.analyse_port_type(protocols),
+                'logical_type': VplexStorageDriver.analyse_port_logical_type(
+                    role),
+                'connection_status': connection_status,
+                'health_status': VplexStorageDriver.analyse_port_health_status(
+                    operational_status),
+                'location': '',
+                'storage_id': self.storage_id,
+                'native_parent_id': port_attr.get('director-id'),
+                'speed': VplexStorageDriver.analyse_speed(speed),
+                'max_speed': VplexStorageDriver.analyse_speed(max_speed),
+                'wwn': port_attr.get('port-wwn'),
+                'mac_address': '',
+                'ipv4': '',
+                'ipv4_mask': '',
+                'ipv6': '',
+                'ipv6_mask': ''
+            }
+            port_list.append(port)
+        return port_list
 
     def list_disks(self, context):
         """List all disks from storage system."""
         pass
+
+    @staticmethod
+    def get_context_list(response):
+        context_list = []
+        if response:
+            contexts = response.get("context")
+            for context in contexts:
+                type = context.get("type")
+                parent = context.get("parent")
+                attributes = context.get("attributes")
+                context_map = {}
+                attr_map = {}
+                for attribute in attributes:
+                    key = attribute.get("name")
+                    value = attribute.get("value")
+                    attr_map[key] = value
+                context_map["type"] = type
+                context_map["parent"] = parent
+                context_map["attributes"] = attr_map
+                context_list.append(context_map)
+        return context_list
+
+    @staticmethod
+    def analyse_director_version(version_resp, director_version_map):
+        custom_data = version_resp.get('custom-data')
+        detail_arr = custom_data.split('\n')
+        director_name = ''
+        version_name = ''
+        for detail in detail_arr:
+            if detail is not None and detail != '':
+                if "For director" in detail:
+                    match_obj = re.search(
+                        r'For director.+?directors/(.*?):', detail)
+                    if match_obj:
+                        director_name = match_obj.group(1)
+                    continue
+                if director_name:
+                    if "What:" in detail:
+                        match_obj = re.search(r'What:\s+(.+?)$', detail)
+                        if match_obj:
+                            version_name = match_obj.group(1)
+                        continue
+                    if version_name:
+                        match_obj = re.search(r'Version:\s+(.+?)$', detail)
+                        if match_obj:
+                            version_value = match_obj.group(1)
+                            if director_version_map.get(director_name):
+                                director_version_map.get(director_name)[
+                                    version_name] = version_value
+                            else:
+                                version_map = {}
+                                version_map[version_name] = version_value
+                                director_version_map[
+                                    director_name] = version_map
+
+    @staticmethod
+    def analyse_director_status(status):
+        controller_status = constants.ControllerStatus.UNKNOWN
+        if status:
+            status_value = consts.CONTROLLER_STATUS_MAP.get(status)
+            if status_value:
+                controller_status = status_value
+        return controller_status
+
+    def get_director_specified_version(self, version_map, director_name,
+                                       specified_name):
+        version_value = ''
+        if version_map:
+            director_map = version_map.get(director_name)
+            if director_map:
+                version_value = director_map.get(specified_name)
+        return version_value
+
+    def get_value_from_nest_map(self, nest_map, first_key, second_key):
+        final_value = ''
+        if nest_map:
+            second_map = nest_map.get(first_key)
+            if second_map:
+                final_value = second_map.get(second_key)
+        return final_value
+
+    def get_hardware_port_info(self, nest_map, first_key, second_key):
+        speed = ''
+        max_speed = ''
+        protocols = []
+        role = ''
+        port_status = ''
+        operational_status = ''
+
+        if nest_map:
+            second_map = nest_map.get(first_key)
+            if second_map:
+                third_map = second_map.get(second_key)
+                if third_map:
+                    speed = third_map.get('current-speed')
+                    max_speed = third_map.get('max-speed')
+                    protocols = third_map.get('protocols')
+                    role = third_map.get('role')
+                    port_status = third_map.get('port-status')
+                    operational_status = third_map.get('operational-status')
+        return (speed, max_speed, protocols, role, port_status,
+                operational_status)
+
+    @staticmethod
+    def analyse_hardware_port(resp, hardware_port_map):
+        port_list = VplexStorageDriver.get_context_list(resp)
+        if port_list:
+            for port in port_list:
+                port_name = port.get("attributes").get("target-port")
+                hardware_port_map[port_name] = port
+
+    @staticmethod
+    def analyse_port_type(protocols):
+        port_type = constants.PortType.OTHER
+        if protocols:
+            for protocol in protocols:
+                port_type_value = consts.PORT_TYPE_MAP.get(protocol)
+                if port_type_value:
+                    port_type = port_type_value
+                    break
+        return port_type
+
+    @staticmethod
+    def analyse_port_logical_type(role):
+        port_logic_type = constants.PortLogicalType.OTHER
+        if role:
+            port_type_value = consts.PORT_LOGICAL_TYPE_MAP.get(role)
+            if port_type_value:
+                port_logic_type = port_type_value
+        return port_logic_type
+
+    @staticmethod
+    def analyse_port_connect_status(status):
+        port_connect_status = constants.PortConnectionStatus.UNKNOWN
+        if status:
+            port_status_value = consts.PORT_CONNECT_STATUS_MAP.get(status)
+            if port_status_value:
+                port_connect_status = port_status_value
+        return port_connect_status
+
+    @staticmethod
+    def analyse_port_health_status(status):
+        port_health_status = constants.PortHealthStatus.UNKNOWN
+        if status:
+            port_status_value = consts.PORT_HEALTH_STATUS_MAP.get(status)
+            if port_status_value:
+                port_health_status = port_status_value
+        return port_health_status
+
+    @staticmethod
+    def analyse_speed(speed):
+        speed_value = 0
+        if speed:
+            match_obj = re.search(r'([1-9]\d*\.?\d*)|(0\.\d*[1-9])', speed)
+            if match_obj:
+                speed_value = int(match_obj.group(0)) * units.G
+        return speed_value
 
 
 @staticmethod
