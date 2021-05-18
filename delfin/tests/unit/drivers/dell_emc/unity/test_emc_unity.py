@@ -362,7 +362,7 @@ class TestUNITYStorDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             mock_token.return_value = mock.MagicMock(status_code=503)
             UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
-        self.assertEqual('Bad response from server', str(exc.exception))
+        self.assertIn('Exception from Storage Backend', str(exc.exception))
         RestHandler.login = mock.Mock(return_value=None)
         mock_token.return_value = mock.MagicMock(status_code=401)
         UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
