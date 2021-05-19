@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import re
+
+import six
 from oslo_log import log
 from oslo_utils import units
 
@@ -226,3 +229,218 @@ class ComponentHandler(object):
                 'used_capacity': used_capacity
             }
         return obj_model
+
+    def list_disks(self, storage_id):
+        disks = self.navi_handler.get_disks()
+        disk_list = []
+        if disks:
+            for disk in disks:
+                if disk.get('disk_id'):
+                    status = consts.DISK_STATUS_MAP.get(
+                        disk.get('state', '').upper(),
+                        constants.DiskStatus.ABNORMAL)
+                    capacity = int(float(disk.get("capacity", 0)) * units.Mi)
+                    logical_type = constants.DiskLogicalType.UNKNOWN
+                    hot_spare = disk.get('hot_spare')
+                    if hot_spare != 'N/A':
+                        logical_type = constants.DiskLogicalType.HOTSPARE
+                    disk_model = {
+                        'name': disk.get('disk_name'),
+                        'storage_id': storage_id,
+                        'native_disk_id': disk.get('disk_id'),
+                        'serial_number': disk.get('serial_number'),
+                        'manufacturer': disk.get('vendor_id'),
+                        'model': disk.get('product_id'),
+                        'firmware': disk.get('product_revision'),
+                        'speed': None,
+                        'capacity': capacity,
+                        'status': status,
+                        'physical_type': consts.DISK_PHYSICAL_TYPE_MAP.get(
+                            disk.get('drive_type', '').upper(),
+                            constants.DiskPhysicalType.UNKNOWN),
+                        'logical_type': logical_type,
+                        'health_score': None,
+                        'native_disk_group_id': None,
+                        'location': disk.get('disk_name')
+                    }
+                    disk_list.append(disk_model)
+        return disk_list
+
+    def analyse_speed(self, speed_value):
+        speed = 0
+        try:
+            speeds = re.findall("\\d+", speed_value)
+            if speeds:
+                speed = int(speeds[0])
+            if 'Gbps' in speed_value:
+                speed = speed * units.G
+            elif 'Mbps' in speed_value:
+                speed = speed * units.M
+            elif 'Kbps' in speed_value:
+                speed = speed * units.k
+        except Exception as err:
+            err_msg = "analyse speed error: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+        return speed
+
+    def list_controllers(self, storage_id):
+        controllers = self.navi_handler.get_controllers()
+        cpus = self.navi_handler.get_cpus()
+        controller_list = []
+        if controllers:
+            for controller in controllers:
+                if controller:
+                    memory_size = int(controller.get('memory_size_for_the_sp',
+                                                     '0')) * units.Mi
+                    controller_model = {
+                        'name': controller.get('sp_name'),
+                        'storage_id': storage_id,
+                        'native_controller_id': controller.get(
+                            'signature_for_the_sp'),
+                        'status': constants.ControllerStatus.NORMAL,
+                        'location': None,
+                        'soft_version': controller.get(
+                            'revision_number_for_the_sp'),
+                        'cpu_info': cpus.get(
+                            controller.get('serial_number_for_the_sp', ''),
+                            ''),
+                        'memory_size': str(memory_size)
+                    }
+                    controller_list.append(controller_model)
+        return controller_list
+
+    def list_ports(self, storage_id):
+        port_list = []
+        io_configs = self.navi_handler.get_io_configs()
+        iscsi_port_map = self.get_iscsi_ports()
+        ports = self.get_ports(storage_id, io_configs, iscsi_port_map)
+        port_list.extend(ports)
+        bus_ports = self.get_bus_ports(storage_id, io_configs)
+        port_list.extend(bus_ports)
+        return port_list
+
+    def get_ports(self, storage_id, io_configs, iscsi_port_map):
+        ports = self.navi_handler.get_ports()
+        port_list = []
+        if ports:
+            for port in ports:
+                if port:
+                    port_id = port.get('sp_port_id')
+                    sp_name = port.get('sp_name').replace('SP ', '')
+                    name = '%s-%s' % (sp_name, port_id)
+                    location = 'Slot %s%s,Port %s' % (
+                        sp_name, port.get('i/o_module_slot'),
+                        port.get('physical_port_id'))
+                    mac_address = port.get('mac_address')
+                    if mac_address == 'Not Applicable':
+                        mac_address = None
+                    module_key = '%s_%s' % (
+                        sp_name, port.get('i/o_module_slot'))
+                    if io_configs:
+                        type = io_configs.get(module_key, '')
+
+                    ipv4 = None
+                    ipv4_mask = None
+                    if iscsi_port_map:
+                        iscsi_port = iscsi_port_map.get(port_id)
+                        if iscsi_port:
+                            ipv4 = iscsi_port.get('ip_address')
+                            ipv4_mask = iscsi_port.get('subnet_mask')
+                    port_model = {
+                        'name': name,
+                        'storage_id': storage_id,
+                        'native_port_id': port_id,
+                        'location': location,
+                        'connection_status':
+                            consts.PORT_CONNECTION_STATUS_MAP.get(
+                                port.get('link_status', '').upper(),
+                                constants.PortConnectionStatus.UNKNOWN),
+                        'health_status': consts.PORT_HEALTH_STATUS_MAP.get(
+                            port.get('port_status', '').upper(),
+                            constants.PortHealthStatus.UNKNOWN),
+                        'type': consts.PORT_TYPE_MAP.get(
+                            type.upper(), constants.PortType.OTHER),
+                        'logical_type': None,
+                        'speed': self.analyse_speed(
+                            port.get('speed_value', '')),
+                        'max_speed': self.analyse_speed(
+                            port.get('max_speed', '')),
+                        'native_parent_id': None,
+                        'wwn': port.get('sp_uid'),
+                        'mac_address': mac_address,
+                        'ipv4': ipv4,
+                        'ipv4_mask': ipv4_mask,
+                        'ipv6': None,
+                        'ipv6_mask': None,
+                    }
+                    port_list.append(port_model)
+        return port_list
+
+    def get_bus_ports(self, storage_id, io_configs):
+        bus_ports = self.navi_handler.get_bus_ports()
+        port_list = []
+        if bus_ports:
+            bus_port_state_map = self.navi_handler.get_bus_port_state()
+            for bus_port in bus_ports:
+                if bus_port:
+                    sps = bus_port.get('sps')
+                    if sps:
+                        for sp in sps:
+                            sp_name = sp.replace('sp', '').upper()
+                            name = '%s-%s' % (sp_name,
+                                              bus_port.get('bus_name'))
+                            location = '%s %s,Port %s' % (
+                                bus_port.get('i/o_module_slot'), sp_name,
+                                bus_port.get('physical_port_id'))
+                            native_port_id = location.replace(' ', '')
+                            native_port_id = native_port_id.replace(',', '')
+                            module_key = '%s_%s' % (
+                                sp_name, bus_port.get('i/o_module_slot'))
+                            if io_configs:
+                                type = io_configs.get(module_key, '')
+                            if bus_port_state_map:
+                                port_state_key = '%s_%s' % (
+                                    sp_name, bus_port.get('physical_port_id'))
+                                state = bus_port_state_map.get(port_state_key,
+                                                               '')
+                            port_model = {
+                                'name': name,
+                                'storage_id': storage_id,
+                                'native_port_id': native_port_id,
+                                'location': location,
+                                'connection_status': None,
+                                'health_status':
+                                    consts.PORT_HEALTH_STATUS_MAP.get(
+                                        state.upper(),
+                                        constants.PortHealthStatus.UNKNOWN),
+                                'type': consts.PORT_TYPE_MAP.get(
+                                    type.upper(), constants.PortType.OTHER),
+                                'logical_type': None,
+                                'speed': self.analyse_speed(
+                                    bus_port.get('current_speed', '')),
+                                'max_speed': self.analyse_speed(
+                                    bus_port.get('max_speed', '')),
+                                'native_parent_id': None,
+                                'wwn': None,
+                                'mac_address': None,
+                                'ipv4': None,
+                                'ipv4_mask': None,
+                                'ipv6': None,
+                                'ipv6_mask': None,
+                            }
+                            port_list.append(port_model)
+        return port_list
+
+    def get_iscsi_ports(self):
+        iscsi_port_map = {}
+        try:
+            iscsi_ports = self.navi_handler.get_iscsi_ports()
+            if iscsi_ports:
+                for iscsi_port in iscsi_ports:
+                    iscsi_port_map[iscsi_port.get('port_id')] = iscsi_port
+        except Exception as err:
+            # If no chap user is configured or there is no iSCSI port,
+            # the command execution will report an error
+            err_msg = "get iscsi port info error: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+        return iscsi_port_map
