@@ -1,4 +1,4 @@
-# Copyright 2021 The SODA Authors.
+# Copyright 2020 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class TestNetAppStorageDriver(TestCase):
         self.assertEqual(netapp_client.netapp_handler.ssh_pool.ssh_port, 22)
 
     def test_get_storage(self):
-        NetAppHandler.do_exec = mock.Mock(
+        SSHPool.do_exec = mock.Mock(
             side_effect=[test_constans.SYSTEM_INFO,
                          test_constans.VERSION,
                          test_constans.SYSTEM_STATUS,
@@ -55,14 +55,14 @@ class TestNetAppStorageDriver(TestCase):
         self.assertEqual(data['vendor'], 'NetApp')
 
     def test_list_storage_pools(self):
-        NetAppHandler.do_exec = mock.Mock(
+        SSHPool.do_exec = mock.Mock(
             side_effect=[test_constans.POOLS_INFO,
                          test_constans.AGGREGATE_DETAIL_INFO])
         data = self.netapp_client.list_storage_pools(context)
         self.assertEqual(data[0]['name'], 'aggr0')
 
     def test_list_volumes(self):
-        NetAppHandler.do_exec = mock.Mock(
+        SSHPool.do_exec = mock.Mock(
             side_effect=[test_constans.LUN_INFO,
                          test_constans.FS_INFO,
                          test_constans.THIN_FS_INFO,
@@ -72,7 +72,7 @@ class TestNetAppStorageDriver(TestCase):
         self.assertEqual(data[0]['name'], 'lun_0')
 
     def test_list_alerts(self):
-        NetAppHandler.do_exec = mock.Mock(
+        SSHPool.do_exec = mock.Mock(
             side_effect=[test_constans.EVENT_INFO,
                          test_constans.ALERT_INFO])
         data = self.netapp_client.list_alerts(context)
@@ -81,7 +81,7 @@ class TestNetAppStorageDriver(TestCase):
 
     def test_clear_alters(self):
         alert = {'alert_id': '123'}
-        NetAppHandler.do_exec = mock.Mock()
+        SSHPool.do_exec = mock.Mock()
         self.netapp_client.clear_alert(context, alert)
 
     def test_parse_alert(self):
