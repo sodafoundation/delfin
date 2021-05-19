@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from delfin.common import constants
 
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
@@ -43,6 +44,91 @@ LUN_SHOW_DETAIL_COMMAND = "lun show -instance"
 LUN_SPLIT_STR = "  Vserver"
 
 STORAGE_VENDOR = "NetApp"
+
+STORAGE_STATUS = {
+    'ok': constants.StorageStatus.NORMAL,
+    'ok-with-suppressed': constants.StorageStatus.NORMAL,
+    'degraded': constants.StorageStatus.ABNORMAL,
+    'unreachable': constants.StorageStatus.ABNORMAL
+}
+
+AGGREGATE_STATUS = {
+    'online': constants.StoragePoolStatus.NORMAL,
+    'creating': constants.StoragePoolStatus.NORMAL,
+    'mounting': constants.StoragePoolStatus.NORMAL,
+    'relocating': constants.StoragePoolStatus.NORMAL,
+    'quiesced': constants.StoragePoolStatus.NORMAL,
+    'quiescing': constants.StoragePoolStatus.NORMAL,
+    'unmounted': constants.StoragePoolStatus.NORMAL,
+    'unmounting': constants.StoragePoolStatus.NORMAL,
+    'destroying': constants.StoragePoolStatus.NORMAL,
+    'partial': constants.StoragePoolStatus.NORMAL,
+    'frozen': constants.StoragePoolStatus.NORMAL,
+    'reverted': constants.StoragePoolStatus.NORMAL,
+    'restricted': constants.StoragePoolStatus.NORMAL,
+    'inconsistent': constants.StoragePoolStatus.NORMAL,
+    'iron_restricted': constants.StoragePoolStatus.NORMAL,
+    'unknown': constants.StoragePoolStatus.ABNORMAL,
+    'offline': constants.StoragePoolStatus.OFFLINE,
+    'failed': constants.StoragePoolStatus.ABNORMAL,
+    'remote_cluster': constants.StoragePoolStatus.NORMAL,
+}
+
+VOLUME_STATUS = {
+    'online': constants.VolumeStatus.AVAILABLE,
+    'offline': constants.VolumeStatus.ERROR,
+    'nvfail': constants.VolumeStatus.ERROR,
+    'space-error': constants.VolumeStatus.ERROR,
+    'foreign-lun-error': constants.VolumeStatus.ERROR,
+}
+
+ALERT_SEVERITY = {
+    'Unknown': constants.Severity.NOT_SPECIFIED,
+    'Other': constants.Severity.NOT_SPECIFIED,
+    'Information': constants.Severity.INFORMATIONAL,
+    'Degraded': constants.Severity.WARNING,
+    'Minor': constants.Severity.MINOR,
+    'Major': constants.Severity.MAJOR,
+    'Critical': constants.Severity.CRITICAL,
+    'Fatal': constants.Severity.FATAL,
+}
+
+DISK_TYPE = {
+    'ATA': constants.DiskPhysicalType.SATA,
+    'BSAS': constants.DiskPhysicalType,
+    'FCAL': constants.DiskPhysicalType,
+    'FSAS': constants.DiskPhysicalType,
+    'LUN ': constants.DiskPhysicalType,
+    'SAS': constants.DiskPhysicalType.SAS,
+    'MSATA': constants.DiskPhysicalType,
+    'SSD': constants.DiskPhysicalType.SSD,
+    'VMDISK': constants.DiskPhysicalType,
+    'unknown': constants.DiskPhysicalType.UNKNOWN,
+}
+
+DISK_LOGICAL = {
+    'aggregate': constants.DiskLogicalType.MEMBER,
+    'spare': constants.DiskLogicalType.HOTSPARE,
+    'unknown': constants.DiskLogicalType.UNKNOWN,
+    'free': constants.DiskLogicalType.FREE,
+    'broken': constants.DiskLogicalType,
+    'foreign': constants.DiskLogicalType,
+    'labelmaint': constants.DiskLogicalType,
+    'maintenance': constants.DiskLogicalType,
+    'shared': constants.DiskLogicalType,
+    'unassigned': constants.DiskLogicalType,
+    'unsupported': constants.DiskLogicalType,
+    'remote': constants.DiskLogicalType,
+    'mediator': constants.DiskLogicalType,
+}
+
+FS_STATUS = {
+    'online': constants.FilesystemStatus.NORMAL,
+    'restricted': constants.FilesystemStatus.FAULTY,
+    'offline': constants.FilesystemStatus.NORMAL,
+    'force-online': constants.FilesystemStatus.FAULTY,
+    'force-offline': constants.FilesystemStatus.FAULTY,
+}
 
 SEVERITY_MAP = {
     'AccessCache.ReachedLimits': 'EMERGENCY',
