@@ -19,7 +19,7 @@ from eventlet import pools
 from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
 
-# from delfin import cryptor
+from delfin import cryptor
 from delfin import exception, utils
 
 LOG = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class SSHClient(object):
 
         self.ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                          username=self.ssh_username,
-                         password=self.ssh_password,
+                         password=cryptor.decode(self.ssh_password),
                          timeout=self.ssh_conn_timeout)
 
     def set_host_key(self, host_key):
@@ -183,7 +183,7 @@ class SSHPool(pools.Pool):
 
             ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                         username=self.ssh_username,
-                        password=self.ssh_password,
+                        password=cryptor.decode(self.ssh_password),
                         timeout=self.ssh_conn_timeout)
             if self.conn_timeout:
                 transport = ssh.get_transport()
