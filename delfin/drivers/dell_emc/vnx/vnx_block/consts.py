@@ -14,19 +14,23 @@
 from delfin import exception
 from delfin.common import constants
 
-SOCKET_TIMEOUT = 10
+SOCKET_TIMEOUT = 30
+LOGIN_SOCKET_TIMEOUT = 10
 CER_ERR = 'Unable to validate the identity of the server'
 CALLER_ERR = 'Caller not privileged'
 SECURITY_ERR = 'Security file not found'
 TRYING_CONNECT_ERR = 'error occurred while trying to connect'
 CONNECTION_ERR = 'connection refused'
 INVALID_ERR = 'invalid username, password and/or scope'
+NOT_SUPPORTED_ERR = 'CLI commands are not supported by the target storage' \
+                    ' system'
 EXCEPTION_MAP = {CER_ERR: exception.SSLCertificateFailed,
                  CALLER_ERR: exception.InvalidUsernameOrPassword,
                  SECURITY_ERR: exception.InvalidUsernameOrPassword,
                  TRYING_CONNECT_ERR: exception.InvalidIpOrPort,
                  CONNECTION_ERR: exception.InvalidIpOrPort,
-                 INVALID_ERR: exception.InvalidUsernameOrPassword}
+                 INVALID_ERR: exception.InvalidUsernameOrPassword,
+                 NOT_SUPPORTED_ERR: exception.StorageBackendException}
 CER_STORE = '2'
 CER_REJECT = '3'
 DISK_ID_KEY = 'Bus 0 Enclosure 0  Disk'
@@ -36,7 +40,6 @@ CER_SEPARATE_KEY = '-----------------------------'
 TIME_PATTERN = '%m/%d/%Y %H:%M:%S'
 DATE_PATTERN = '%m/%d/%Y'
 ONE_DAY_SCE = 24 * 60 * 60
-SECS_OF_QUERY_TIME_RANGE_DAYS = 29 * 24 * 60 * 60 * 1000
 LOG_FILTER_PATTERN = '\\(7[0-7]([a-f]|[0-9]){2}\\)'
 NAVISECCLI_API = 'naviseccli -User %(username)s -password %(password)s' \
                  ' -scope 0 -t %(timeout)d -h %(host)s'
@@ -69,8 +72,8 @@ VOL_TYPE_MAP = {'no': constants.VolumeType.THICK,
                 'yes': constants.VolumeType.THIN}
 VOL_COMPRESSED_MAP = {'no': False,
                       'yes': True}
-DEFAULT_QUERY_LOG_DAYS = 3650
-SECS_OF_DEFAULT_QUERY_LOG_DAYS = DEFAULT_QUERY_LOG_DAYS * ONE_DAY_SCE
+DEFAULT_QUERY_LOG_DAYS = 9
+SECS_OF_TEN_DAYS = DEFAULT_QUERY_LOG_DAYS * ONE_DAY_SCE
 OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
 OID_MESSAGECODE = '1.3.6.1.4.1.1981.1.4.5'
 OID_DETAILS = '1.3.6.1.4.1.1981.1.4.6'
