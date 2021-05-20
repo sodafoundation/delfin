@@ -19,7 +19,7 @@ import hashlib
 
 from oslo_log import log as logging
 
-from delfin.drivers.netapp.netapp_fas import netapp_constants
+from delfin.drivers.netapp.netapp_ontap import netapp_constants
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers.utils.ssh_client import SSHPool
@@ -61,11 +61,10 @@ class NetAppHandler(object):
                         'location': ''
                     }
                     return alert_model
-                else:
-                    err_msg = "netapp fas TRAP only supports " \
-                              "emergency level alerts"
-                    LOG.error(err_msg)
-                    raise NotImplementedError(err_msg)
+            err_msg = "netapp fas TRAP only supports " \
+                      "emergency level alerts"
+            LOG.error(err_msg)
+            raise NotImplementedError(err_msg)
         except exception.DelfinException as e:
             err_msg = "Failed to parse alert from " \
                       "netapp fas: %s" % (six.text_type(e.msg))
