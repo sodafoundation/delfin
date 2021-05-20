@@ -78,4 +78,3 @@ class Tools(object):
                 if len(strinfo) > 1:
                     value = strinfo[1]
                 value_map[key] = value
-
