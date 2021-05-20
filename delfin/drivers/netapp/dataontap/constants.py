@@ -43,7 +43,7 @@ DISK_SPLIT_STR = "     Dis"
 LUN_SHOW_DETAIL_COMMAND = "lun show -instance"
 LUN_SPLIT_STR = "  Vserver"
 
-STORAGE_VENDOR = "netappp"
+STORAGE_VENDOR = "netapp"
 STORAGE_MODEL = "cmodel"
 
 STORAGE_STATUS = {
