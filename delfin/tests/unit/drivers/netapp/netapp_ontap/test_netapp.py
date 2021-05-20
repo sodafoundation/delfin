@@ -16,8 +16,8 @@ from unittest import TestCase, mock
 import paramiko
 from delfin.tests.unit.drivers.netapp.netapp_ontap import test_constans
 from delfin import context
-from delfin.drivers.netapp.netapp_ontap.netapp_handler import NetAppHandler
-from delfin.drivers.netapp.netapp_ontap.netapp_ontap import NetAppOntapDriver
+from delfin.drivers.netapp.dataontap.netapp_handler import NetAppHandler
+from delfin.drivers.netapp.dataontap.cluster_mode import NetAppCmodeDriver
 from delfin.drivers.utils.ssh_client import SSHPool
 
 
@@ -31,12 +31,12 @@ class TestNetAppStorageDriver(TestCase):
     SSHPool.get = mock.Mock(
         return_value={paramiko.SSHClient()})
     NetAppHandler.login = mock.Mock()
-    netapp_client = NetAppOntapDriver(**test_constans.ACCESS_INFO)
+    netapp_client = NetAppCmodeDriver(**test_constans.ACCESS_INFO)
 
     def test_reset_connection(self):
         kwargs = test_constans.ACCESS_INFO
         NetAppHandler.login = mock.Mock()
-        netapp_client = NetAppOntapDriver(**kwargs)
+        netapp_client = NetAppCmodeDriver(**kwargs)
         netapp_client.reset_connection(context, **kwargs)
         self.assertEqual(netapp_client.netapp_handler.ssh_pool.ssh_host,
                          "192.168.159.130")
@@ -52,7 +52,7 @@ class TestNetAppStorageDriver(TestCase):
                          test_constans.POOLS_INFO,
                          test_constans.AGGREGATE_DETAIL_INFO])
         data = self.netapp_client.get_storage(context)
-        self.assertEqual(data['vendor'], 'NetApp')
+        self.assertEqual(data['vendor'], 'netapp')
 
     def test_list_storage_pools(self):
         SSHPool.do_exec = mock.Mock(
