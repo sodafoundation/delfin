@@ -19,7 +19,7 @@ import hashlib
 
 from oslo_log import log as logging
 
-from delfin.drivers.netapp.netapp_ontap import netapp_constants
+from delfin.drivers.netapp.dataontap import constants as constant
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers.utils.ssh_client import SSHPool
@@ -46,7 +46,7 @@ class NetAppHandler(object):
             if len(alert_array) > 1:
                 alert_name = alert_array[0]
                 description = alert_array[1]
-                if netapp_constants.SEVERITY_MAP.get(alert_name):
+                if constant.SEVERITY_MAP.get(alert_name):
                     alert_model = {
                         'alert_id': alert_name,
                         'alert_name': alert_name,
@@ -80,13 +80,13 @@ class NetAppHandler(object):
         try:
             raw_capacity = total_capacity = used_capacity = free_capacity = 0
             system_info = self.ssh_pool.do_exec(
-                netapp_constants.CLUSTER_SHOW_COMMAND)
+                constant.CLUSTER_SHOW_COMMAND)
             version = self.ssh_pool.do_exec(
-                netapp_constants.VERSION_SHOW_COMMAND)
+                constant.VERSION_SHOW_COMMAND)
             status_info = self.ssh_pool.do_exec(
-                netapp_constants.STORAGE_STATUS_COMMAND)
+                constant.STORAGE_STATUS_COMMAND)
             version_array = version.split('\r\n')
-            status = netapp_constants.STORAGE_STATUS.get(
+            status = constant.STORAGE_STATUS.get(
                 status_info.split("\r\n")[2])
             disk_list = self.get_disks(None)
             pool_list = self.list_storage_pools(None)
@@ -102,7 +102,7 @@ class NetAppHandler(object):
 
             storage_model = {
                 "name": storage_map['ClusterName'],
-                "vendor": netapp_constants.STORAGE_VENDOR,
+                "vendor": constant.STORAGE_VENDOR,
                 "model": '',
                 "status": status,
                 "serial_number": storage_map['ClusterSerialNumber'],
@@ -128,13 +128,13 @@ class NetAppHandler(object):
     def get_aggregate(self, storage_id):
         agg_list = []
         agg_info = self.ssh_pool.do_exec(
-            netapp_constants.AGGREGATE_SHOW_DETAIL_COMMAND)
+            constant.AGGREGATE_SHOW_DETAIL_COMMAND)
         agg_array = agg_info.split(
-            netapp_constants.AGGREGATE_SPLIT_STR)
+            constant.AGGREGATE_SPLIT_STR)
         agg_map = {}
         for agg in agg_array[1:]:
             Tools.split_value_map(agg, agg_map, split=':')
-            status = netapp_constants.AGGREGATE_STATUS.get(agg_map['State'])
+            status = constant.AGGREGATE_STATUS.get(agg_map['State'])
             pool_model = {
                 'name': agg_map['e'],
                 'storage_id': storage_id,
@@ -155,8 +155,8 @@ class NetAppHandler(object):
     def get_pool(self, storage_id):
         pool_list = []
         pool_info = self.ssh_pool.do_exec(
-            netapp_constants.POOLS_SHOW_DETAIL_COMMAND)
-        pool_array = pool_info.split(netapp_constants.POOLS_SPLIT_STR)
+            constant.POOLS_SHOW_DETAIL_COMMAND)
+        pool_array = pool_info.split(constant.POOLS_SPLIT_STR)
         pool_map = {}
         for pool_str in pool_array[1:]:
             Tools.split_value_map(pool_str, pool_map, split=':')
@@ -205,15 +205,15 @@ class NetAppHandler(object):
         try:
             volume_list = []
             volume_info = self.ssh_pool.do_exec(
-                netapp_constants.LUN_SHOW_DETAIL_COMMAND)
-            volume_array = volume_info.split(netapp_constants.LUN_SPLIT_STR)
+                constant.LUN_SHOW_DETAIL_COMMAND)
+            volume_array = volume_info.split(constant.LUN_SPLIT_STR)
             fs_list = self.get_filesystems(storage_id)
             volume_map = {}
             for volume_str in volume_array[1:]:
                 Tools.split_value_map(volume_str, volume_map, split=':')
                 if volume_map is not None or volume_map != {}:
                     pool_id = ''
-                    status = netapp_constants.VOLUME_STATUS.get(
+                    status = constant.VOLUME_STATUS.get(
                         volume_map['State'])
                     for fs in fs_list:
                         if fs['name'] == volume_map['VolumeName']:
@@ -260,14 +260,14 @@ class NetAppHandler(object):
     def get_events(self, query_para):
         event_list = []
         event_info = self.ssh_pool.do_exec(
-            netapp_constants.EVENT_SHOW_DETAIL_COMMAND)
-        event_array = event_info.split(netapp_constants.ALTER_SPLIT_STR)
+            constant.EVENT_SHOW_DETAIL_COMMAND)
+        event_array = event_info.split(constant.ALTER_SPLIT_STR)
         event_map = {}
         for event_str in event_array[1:]:
             Tools.split_value_map(event_str, event_map, split=':')
             occur_time = int(time.mktime(time.strptime(
                 event_map['Time'],
-                netapp_constants.EVENT_TIME_TYPE)))
+                constant.EVENT_TIME_TYPE)))
             if query_para is None or \
                     (query_para['begin_time']
                      <= occur_time
@@ -292,14 +292,14 @@ class NetAppHandler(object):
     def get_alerts(self, query_para):
         alert_list = []
         alert_info = self.ssh_pool.do_exec(
-            netapp_constants.ALTER_SHOW_DETAIL_COMMAND)
-        alert_array = alert_info.split(netapp_constants.ALTER_SPLIT_STR)
+            constant.ALTER_SHOW_DETAIL_COMMAND)
+        alert_array = alert_info.split(constant.ALTER_SPLIT_STR)
         alert_map = {}
         for alert_str in alert_array[1:]:
             Tools.split_value_map(alert_str, alert_map, split=':')
             occur_time = int(time.mktime(time.strptime(
                 alert_map['IndicationTime'],
-                netapp_constants.ALTER_TIME_TYPE)))
+                constant.ALTER_TIME_TYPE)))
             if query_para is None or \
                     (query_para['begin_time']
                      <= occur_time
@@ -307,7 +307,7 @@ class NetAppHandler(object):
                 alert_model = {
                     'alert_id': alert_map['AlertID'],
                     'alert_name': alert_map['ProbableCause'],
-                    'severity': netapp_constants.ALERT_SEVERITY
+                    'severity': constant.ALERT_SEVERITY
                     [alert_map['PerceivedSeverity']],
                     'category': constants.Category.FAULT,
                     'type': constants.EventType.EQUIPMENT_ALARM,
@@ -343,7 +343,7 @@ class NetAppHandler(object):
     def clear_alert(self, alert):
         try:
             ssh_command = \
-                netapp_constants.CLEAR_ALERT_COMMAND + alert['alert_id']
+                constant.CLEAR_ALERT_COMMAND + alert['alert_id']
             self.ssh_pool.do_exec(ssh_command)
         except exception.DelfinException as e:
             err_msg = "Failed to get storage alert from " \
@@ -360,11 +360,11 @@ class NetAppHandler(object):
         disks_list = []
         physicals_list = []
         disks_info = self.ssh_pool.do_exec(
-            netapp_constants.DISK_SHOW_DETAIL_COMMAND)
+            constant.DISK_SHOW_DETAIL_COMMAND)
         disks_array = disks_info.split(
-            netapp_constants.DISK_SPLIT_STR)
+            constant.DISK_SPLIT_STR)
         physicals_info = self.ssh_pool.do_exec(
-            netapp_constants.DISK_SHOW_PHYSICAL_COMMAND)
+            constant.DISK_SHOW_PHYSICAL_COMMAND)
         disks_map = {}
         physical_array = physicals_info.split('\r\n')
         speed = physical_type = firmware = '-'
@@ -372,14 +372,14 @@ class NetAppHandler(object):
             physicals_list.append(physical_array[i].split())
         for disk_str in disks_array[1:]:
             Tools.split_value_map(disk_str, disks_map, split=':')
-            logical_type = netapp_constants.DISK_LOGICAL. \
+            logical_type = constant.DISK_LOGICAL. \
                 get(disks_map['ContainerType'])
             """Map disk physical information"""
             for physical_info in physicals_list:
                 if len(physical_info) > 6:
                     if physical_info[0] == disks_map['k']:
                         physical_type = \
-                            netapp_constants.DISK_TYPE.get(physical_info[1])
+                            constant.DISK_TYPE.get(physical_info[1])
                         speed = physical_info[5]
                         firmware = physical_info[4]
             status = constants.DiskStatus.ABNORMAL
@@ -409,11 +409,11 @@ class NetAppHandler(object):
     def get_filesystems(self, storage_id):
         fs_list = []
         fs_info = self.ssh_pool.do_exec(
-            netapp_constants.FS_SHOW_DETAIL_COMMAND)
+            constant.FS_SHOW_DETAIL_COMMAND)
         fs_array = fs_info.split(
-            netapp_constants.FS_SPLIT_STR)
+            constant.FS_SPLIT_STR)
         thin_fs_info = self.ssh_pool.do_exec(
-            netapp_constants.THIN_FS_SHOW_COMMAND)
+            constant.THIN_FS_SHOW_COMMAND)
         pool_list = self.list_storage_pools(storage_id)
         thin_fs_array = thin_fs_info.split("\r\n")
         type = constants.FSType.THICK
@@ -439,7 +439,7 @@ class NetAppHandler(object):
                 if fs_map['VolumeContainsSharedorCompressedData'] == \
                         'false':
                     compressed = False
-                status = netapp_constants.FS_STATUS.get(fs_map['VolumeState'])
+                status = constant.FS_STATUS.get(fs_map['VolumeState'])
                 fs_model = {
                     'name': fs_map['VolumeName'],
                     'storage_id': storage_id,

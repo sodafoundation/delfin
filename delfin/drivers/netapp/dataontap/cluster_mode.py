@@ -13,11 +13,11 @@
 # limitations under the License.
 
 from delfin.drivers import driver
-from delfin.drivers.netapp.netapp_ontap import netapp_handler
-from delfin.drivers.netapp.netapp_ontap.netapp_handler import NetAppHandler
+from delfin.drivers.netapp.dataontap import netapp_handler
+from delfin.drivers.netapp.dataontap.netapp_handler import NetAppHandler
 
 
-class NetAppOntapDriver(driver.StorageDriver):
+class NetAppCmodeDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
