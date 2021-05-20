@@ -105,7 +105,7 @@ class NaviHandler(object):
 
     def get_disks(self):
         return self.get_resources_info(consts.GET_DISK_API,
-                                       self.cli_res_to_list)
+                                       self.cli_disk_to_list)
 
     def get_raid_group(self):
         return self.get_resources_info(consts.GET_RAIDGROUP_API,
@@ -118,6 +118,34 @@ class NaviHandler(object):
     def get_all_lun(self):
         return self.get_resources_info(consts.GET_GETALLLUN_API,
                                        self.cli_lun_to_list)
+
+    def get_controllers(self):
+        return self.get_resources_info(consts.GET_SP_API,
+                                       self.cli_sp_to_list)
+
+    def get_cpus(self):
+        return self.get_resources_info(consts.GET_RESUME_API,
+                                       self.cli_cpu_to_dict)
+
+    def get_ports(self):
+        return self.get_resources_info(consts.GET_PORT_API,
+                                       self.cli_port_to_list)
+
+    def get_bus_ports(self):
+        return self.get_resources_info(consts.GET_BUS_PORT_API,
+                                       self.cli_bus_port_to_list)
+
+    def get_bus_port_state(self):
+        return self.get_resources_info(consts.GET_BUS_PORT_STATE_API,
+                                       self.cli_bus_port_state_to_dict)
+
+    def get_iscsi_ports(self):
+        return self.get_resources_info(consts.GET_ISCSI_PORT_API,
+                                       self.cli_iscsi_port_to_list)
+
+    def get_io_configs(self):
+        return self.get_resources_info(consts.GET_IO_PORT_CONFIG_API,
+                                       self.cli_io_config_to_dict)
 
     def get_resources_info(self, sub_command, analyse_type):
         # Execute commands to query data and analyze
@@ -202,6 +230,235 @@ class NaviHandler(object):
             obj_list = self.add_model_to_list(obj_model, obj_list)
         except Exception as e:
             err_msg = "arrange raid info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
+
+    def cli_sp_to_list(self, resource_info):
+        obj_list = []
+        obj_model = {}
+        try:
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if ':' not in str_line:
+                        obj_model['sp_name'] = str_line
+                    else:
+                        str_info = self.split_str_by_colon(str_line)
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+
+                        if str_line and str_line.startswith(
+                                'SP SCSI ID if Available:'):
+                            obj_list = self.add_model_to_list(obj_model,
+                                                              obj_list)
+                            obj_model = {}
+        except Exception as e:
+            err_msg = "arrange sp info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
+
+    def cli_port_to_list(self, resource_info):
+        obj_list = []
+        obj_model = {}
+        max_speed_str = ''
+        previous_line = ''
+        try:
+            spport_infos = resource_info.split(consts.SPPORT_KEY)[1]
+            obj_infos = spport_infos.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if ':' in str_line:
+                        str_info = self.split_str_by_colon(str_line)
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+                        previous_line = str_line
+                    else:
+                        if 'Available Speeds:' in previous_line:
+                            if 'Auto' not in str_line \
+                                    and str_line > max_speed_str:
+                                max_speed_str = str_line
+                else:
+                    if max_speed_str:
+                        obj_model['max_speed'] = max_speed_str
+                    obj_list = self.add_model_to_list(obj_model, obj_list)
+                    obj_model = {}
+                    max_speed_str = ''
+                    previous_line = ''
+            if obj_model:
+                if max_speed_str:
+                    obj_model['max_speed'] = max_speed_str
+                obj_list = self.add_model_to_list(obj_model, obj_list)
+        except Exception as e:
+            err_msg = "arrange port info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
+
+    def cli_bus_port_to_list(self, resource_info):
+        obj_list = []
+        obj_model = {}
+        sp_list = []
+        max_speed_str = ''
+        previous_line = ''
+        try:
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if 'Bus ' in str_line and ':' not in str_line:
+                        if max_speed_str:
+                            obj_model['max_speed'] = max_speed_str
+                        obj_list = self.add_model_to_list(obj_model, obj_list)
+                        obj_model = {}
+                        sp_list = []
+                        max_speed_str = ''
+                        previous_line = ''
+                        obj_model['bus_name'] = str_line
+                    elif ':' in str_line:
+                        previous_line = str_line
+                        str_info = self.split_str_by_colon(str_line)
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+                        if ' Connector State' in str_line:
+                            sp_list.append(
+                                str_info[0].replace('_connector_state', ''))
+                            obj_model['sps'] = sp_list
+                    else:
+                        if 'Available Speeds:' in previous_line:
+                            if 'Auto' not in str_line \
+                                    and str_line > max_speed_str:
+                                max_speed_str = str_line
+            if max_speed_str:
+                obj_model['max_speed'] = max_speed_str
+            obj_list = self.add_model_to_list(obj_model, obj_list)
+        except Exception as e:
+            err_msg = "arrange port info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
+
+    def cli_bus_port_state_to_dict(self, resource_info):
+        obj_model = {}
+        try:
+            obj_infos = resource_info.split('\n')
+            sp = ''
+            port_id = ''
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if 'SP ID:' in str_line:
+                        str_info = self.split_str_by_colon(str_line)
+                        sp = str_info[1]
+                    if 'Physical Port ID:' in str_line:
+                        str_info = self.split_str_by_colon(str_line)
+                        port_id = str_info[1]
+                    if 'Port State:' in str_line:
+                        str_info = self.split_str_by_colon(str_line)
+                        obj_model[sp + '_' + port_id] = str_info[1]
+        except Exception as e:
+            err_msg = "arrange bus port state info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_model
+
+    def cli_iscsi_port_to_list(self, resource_info):
+        obj_list = []
+        obj_model = {}
+        try:
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if ':' in str_line:
+                        str_info = self.split_str_by_colon(str_line)
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+                else:
+                    obj_list = self.add_model_to_list(obj_model, obj_list)
+                    obj_model = {}
+        except Exception as e:
+            err_msg = "arrange iscsi port info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
+
+    def cli_io_config_to_dict(self, resource_info):
+        obj_model = {}
+        try:
+            obj_list = []
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if ':' in str_line:
+                        str_info = self.split_str_by_colon(str_line)
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+                else:
+                    obj_list = self.add_model_to_list(obj_model, obj_list)
+                    obj_model = {}
+            for config in obj_list:
+                if config.get('i/o_module_slot'):
+                    key = '%s_%s' % (
+                        config.get('sp_id'), config.get('i/o_module_slot'))
+                    obj_model[key] = config.get('i/o_module_type').replace(
+                        ' Channel', '')
+        except Exception as e:
+            err_msg = "arrange io port config info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_model
+
+    def cli_cpu_to_dict(self, resource_info):
+        obj_model = {}
+        try:
+            obj_list = []
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if 'CPU Module' in str_line:
+                        str_line = '%s:True' % str_line
+                    str_info = self.split_str_by_colon(str_line)
+                    obj_model = self.str_info_to_model(str_info, obj_model)
+                else:
+                    obj_list = self.add_model_to_list(obj_model, obj_list)
+                    obj_model = {}
+            for cpu_module in obj_list:
+                if cpu_module.get('cpu_module'):
+                    obj_model[
+                        cpu_module.get('emc_serial_number')] = cpu_module.get(
+                        'assembly_name')
+        except Exception as e:
+            err_msg = "arrange cpu info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_model
+
+    def cli_disk_to_list(self, resource_info):
+        obj_list = []
+        obj_model = {}
+        try:
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if str_line.startswith('Bus '):
+                        disk_name = 'disk_name:%s' % str_line
+                        str_info = self.split_str_by_colon(disk_name)
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+                        str_line = "disk id:%s" % (str_line.replace(' ', ''))
+                    if ':' not in str_line:
+                        continue
+                    str_info = self.split_str_by_colon(str_line)
+                    obj_model = self.str_info_to_model(str_info, obj_model)
+                else:
+                    obj_list = self.add_model_to_list(obj_model, obj_list)
+                    obj_model = {}
+            # If the last object is not added to the LIST,
+            # perform the join operation
+            obj_list = self.add_model_to_list(obj_model, obj_list)
+        except Exception as e:
+            err_msg = "cli resource to list error: %s", six.text_type(e)
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
         return obj_list
