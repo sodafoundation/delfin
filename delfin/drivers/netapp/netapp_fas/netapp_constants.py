@@ -95,14 +95,14 @@ ALERT_SEVERITY = {
 
 DISK_TYPE = {
     'ATA': constants.DiskPhysicalType.SATA,
-    'BSAS': constants.DiskPhysicalType,
-    'FCAL': constants.DiskPhysicalType,
-    'FSAS': constants.DiskPhysicalType,
-    'LUN ': constants.DiskPhysicalType,
+    'BSAS': constants.DiskPhysicalType.UNKNOWN,
+    'FCAL': constants.DiskPhysicalType.UNKNOWN,
+    'FSAS': constants.DiskPhysicalType.UNKNOWN,
+    'LUN ': constants.DiskPhysicalType.UNKNOWN,
     'SAS': constants.DiskPhysicalType.SAS,
-    'MSATA': constants.DiskPhysicalType,
+    'MSATA': constants.DiskPhysicalType.UNKNOWN,
     'SSD': constants.DiskPhysicalType.SSD,
-    'VMDISK': constants.DiskPhysicalType,
+    'VMDISK': constants.DiskPhysicalType.UNKNOWN,
     'unknown': constants.DiskPhysicalType.UNKNOWN,
 }
 
@@ -111,15 +111,15 @@ DISK_LOGICAL = {
     'spare': constants.DiskLogicalType.HOTSPARE,
     'unknown': constants.DiskLogicalType.UNKNOWN,
     'free': constants.DiskLogicalType.FREE,
-    'broken': constants.DiskLogicalType,
-    'foreign': constants.DiskLogicalType,
-    'labelmaint': constants.DiskLogicalType,
-    'maintenance': constants.DiskLogicalType,
-    'shared': constants.DiskLogicalType,
-    'unassigned': constants.DiskLogicalType,
-    'unsupported': constants.DiskLogicalType,
-    'remote': constants.DiskLogicalType,
-    'mediator': constants.DiskLogicalType,
+    'broken': constants.DiskLogicalType.UNKNOWN,
+    'foreign': constants.DiskLogicalType.UNKNOWN,
+    'labelmaint': constants.DiskLogicalType.UNKNOWN,
+    'maintenance': constants.DiskLogicalType.UNKNOWN,
+    'shared': constants.DiskLogicalType.UNKNOWN,
+    'unassigned': constants.DiskLogicalType.UNKNOWN,
+    'unsupported': constants.DiskLogicalType.UNKNOWN,
+    'remote': constants.DiskLogicalType.UNKNOWN,
+    'mediator': constants.DiskLogicalType.UNKNOWN,
 }
 
 FS_STATUS = {

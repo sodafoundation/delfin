@@ -15,13 +15,16 @@
 
 import time
 import six
+import hashlib
+
 from oslo_log import log as logging
 from oslo_utils import units
+
 from delfin.drivers.netapp.netapp_fas import netapp_constants
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers.utils.ssh_client import SSHPool
-import hashlib
+
 
 LOG = logging.getLogger(__name__)
 
@@ -367,11 +370,13 @@ class NetAppHandler(object):
             alert_list += self.get_alerts(query_para)
             return alert_list
         except exception.DelfinException as e:
-            err_msg = "Failed to get storage alert: %s" % (six.text_type(e))
+            err_msg = "Failed to get storage alert from " \
+                      "netapp fas: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
         except Exception as err:
-            err_msg = "Failed to get storage alert: %s" % (six.text_type(err))
+            err_msg = "Failed to get storage alert from " \
+                      "netapp fas: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 

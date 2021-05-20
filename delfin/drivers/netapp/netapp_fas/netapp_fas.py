@@ -51,6 +51,15 @@ class NetAppFasDriver(driver.StorageDriver):
     def list_qtrees(self, context):
         pass
 
+    def list_quotas(self, context):
+        pass
+
+    def list_filesystems(self, context):
+        pass
+
+    def list_shares(self, context):
+        pass
+
     def add_trap_config(self, context, trap_config):
         pass
 
