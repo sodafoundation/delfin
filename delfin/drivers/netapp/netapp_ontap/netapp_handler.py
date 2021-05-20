@@ -42,6 +42,7 @@ class NetAppHandler(object):
         try:
             alert_info = alert.get(NetAppHandler.OID_TRAP_DATA)
             alert_array = alert_info.split(":")
+            alert_model = {}
             if len(alert_array) > 1:
                 alert_name = alert_array[0]
                 description = alert_array[1]
@@ -60,8 +61,7 @@ class NetAppHandler(object):
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                         'location': ''
                     }
-                    return alert_model
-            return {}
+            return alert_model
         except Exception as err:
             err_msg = "Failed to parse alert from " \
                       "netapp fas: %s" % (six.text_type(err))
