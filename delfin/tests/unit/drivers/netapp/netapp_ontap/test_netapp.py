@@ -52,7 +52,7 @@ class TestNetAppStorageDriver(TestCase):
                          test_constans.POOLS_INFO,
                          test_constans.AGGREGATE_DETAIL_INFO])
         data = self.netapp_client.get_storage(context)
-        self.assertEqual(data['vendor'], 'NetApp')
+        self.assertEqual(data['vendor'], 'netapp')
 
     def test_list_storage_pools(self):
         SSHPool.do_exec = mock.Mock(
