@@ -23,7 +23,7 @@ from delfin.drivers.netapp.netapp_ontap import netapp_constants
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers.utils.ssh_client import SSHPool
-from delfin.drivers.utils.common_utils import CommonUtils
+from delfin.drivers.utils.tools import Tools
 
 LOG = logging.getLogger(__name__)
 
@@ -61,15 +61,7 @@ class NetAppHandler(object):
                         'location': ''
                     }
                     return alert_model
-            err_msg = "netapp fas TRAP only supports " \
-                      "emergency level alerts"
-            LOG.error(err_msg)
-            raise NotImplementedError(err_msg)
-        except exception.DelfinException as e:
-            err_msg = "Failed to parse alert from " \
-                      "netapp fas: %s" % (six.text_type(e.msg))
-            LOG.error(err_msg)
-            raise e
+            return {}
         except Exception as err:
             err_msg = "Failed to parse alert from " \
                       "netapp fas: %s" % (six.text_type(err))
@@ -93,13 +85,13 @@ class NetAppHandler(object):
                 netapp_constants.VERSION_SHOW_COMMAND)
             status_info = self.ssh_pool.do_exec(
                 netapp_constants.STORAGE_STATUS_COMMAND)
-            version_arrayay = version.split('\r\n')
+            version_array = version.split('\r\n')
             status = netapp_constants.STORAGE_STATUS.get(
                 status_info.split("\r\n")[2])
             disk_list = self.get_disks(None)
             pool_list = self.list_storage_pools(None)
             storage_map = {}
-            CommonUtils.handle_detail(system_info, storage_map, split=':')
+            Tools.split_value_map(system_info, storage_map, split=':')
             for disk in disk_list:
                 raw_capacity += disk['capacity']
 
@@ -114,7 +106,7 @@ class NetAppHandler(object):
                 "model": '',
                 "status": status,
                 "serial_number": storage_map['ClusterSerialNumber'],
-                "firmware_version": version_arrayay[0],
+                "firmware_version": version_array[0],
                 "location": '',
                 "total_capacity": total_capacity,
                 "raw_capacity": raw_capacity,
@@ -137,11 +129,11 @@ class NetAppHandler(object):
         agg_list = []
         agg_info = self.ssh_pool.do_exec(
             netapp_constants.AGGREGATE_SHOW_DETAIL_COMMAND)
-        agg_arrayay = agg_info.split(
+        agg_array = agg_info.split(
             netapp_constants.AGGREGATE_SPLIT_STR)
         agg_map = {}
-        for agg in agg_arrayay[1:]:
-            CommonUtils.handle_detail(agg, agg_map, split=':')
+        for agg in agg_array[1:]:
+            Tools.split_value_map(agg, agg_map, split=':')
             status = netapp_constants.AGGREGATE_STATUS.get(agg_map['State'])
             pool_model = {
                 'name': agg_map['e'],
@@ -151,11 +143,11 @@ class NetAppHandler(object):
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
                 'total_capacity':
-                    int(CommonUtils.parse_string(agg_map['Size'])),
+                    int(Tools.get_capacity_size(agg_map['Size'])),
                 'used_capacity':
-                    int(CommonUtils.parse_string(agg_map['UsedSize'])),
+                    int(Tools.get_capacity_size(agg_map['UsedSize'])),
                 'free_capacity':
-                    int(CommonUtils.parse_string(agg_map['AvailableSize'])),
+                    int(Tools.get_capacity_size(agg_map['AvailableSize'])),
             }
             agg_list.append(pool_model)
         return agg_list
@@ -164,10 +156,10 @@ class NetAppHandler(object):
         pool_list = []
         pool_info = self.ssh_pool.do_exec(
             netapp_constants.POOLS_SHOW_DETAIL_COMMAND)
-        pool_arrayay = pool_info.split(netapp_constants.POOLS_SPLIT_STR)
+        pool_array = pool_info.split(netapp_constants.POOLS_SPLIT_STR)
         pool_map = {}
-        for pool_str in pool_arrayay[1:]:
-            CommonUtils.handle_detail(pool_str, pool_map, split=':')
+        for pool_str in pool_array[1:]:
+            Tools.split_value_map(pool_str, pool_map, split=':')
             status = constants.StoragePoolStatus.ABNORMAL
             if pool_map['IsPoolHealthy?'] == 'true':
                 status = constants.StoragePoolStatus.NORMAL
@@ -179,15 +171,15 @@ class NetAppHandler(object):
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
                 'total_capacity':
-                    int(CommonUtils.parse_string(
+                    int(Tools.get_capacity_size(
                         pool_map['StoragePoolTotalSize'])),
                 'used_capacity':
-                    int(CommonUtils.parse_string(
+                    int(Tools.get_capacity_size(
                         pool_map['StoragePoolTotalSize'])) -
-                    int(CommonUtils.parse_string(
+                    int(Tools.get_capacity_size(
                         pool_map['StoragePoolUsableSize'])),
                 'free_capacity':
-                    int(CommonUtils.parse_string(
+                    int(Tools.get_capacity_size(
                         pool_map['StoragePoolUsableSize']))
             }
             pool_list.append(pool_model)
@@ -214,11 +206,11 @@ class NetAppHandler(object):
             volume_list = []
             volume_info = self.ssh_pool.do_exec(
                 netapp_constants.LUN_SHOW_DETAIL_COMMAND)
-            volume_arrayay = volume_info.split(netapp_constants.LUN_SPLIT_STR)
+            volume_array = volume_info.split(netapp_constants.LUN_SPLIT_STR)
             fs_list = self.get_filesystems(storage_id)
             volume_map = {}
-            for volume_str in volume_arrayay[1:]:
-                CommonUtils.handle_detail(volume_str, volume_map, split=':')
+            for volume_str in volume_array[1:]:
+                Tools.split_value_map(volume_str, volume_map, split=':')
                 if volume_map is not None or volume_map != {}:
                     pool_id = ''
                     status = netapp_constants.VOLUME_STATUS.get(
@@ -241,15 +233,15 @@ class NetAppHandler(object):
                         'deduplicated': '',
                         'type': type,
                         'total_capacity':
-                            int(CommonUtils.parse_string(
+                            int(Tools.get_capacity_size(
                                 volume_map['LUNSize'])),
                         'used_capacity':
-                            int(CommonUtils.parse_string(
+                            int(Tools.get_capacity_size(
                                 volume_map['UsedSize'])),
                         'free_capacity':
-                            int(CommonUtils.parse_string(
+                            int(Tools.get_capacity_size(
                                 volume_map['LUNSize'])) -
-                            int(CommonUtils.parse_string(
+                            int(Tools.get_capacity_size(
                                 volume_map['UsedSize']))
                     }
                     volume_list.append(volume_model)
@@ -269,10 +261,10 @@ class NetAppHandler(object):
         event_list = []
         event_info = self.ssh_pool.do_exec(
             netapp_constants.EVENT_SHOW_DETAIL_COMMAND)
-        event_arrayay = event_info.split(netapp_constants.ALTER_SPLIT_STR)
+        event_array = event_info.split(netapp_constants.ALTER_SPLIT_STR)
         event_map = {}
-        for event_str in event_arrayay[1:]:
-            CommonUtils.handle_detail(event_str, event_map, split=':')
+        for event_str in event_array[1:]:
+            Tools.split_value_map(event_str, event_map, split=':')
             occur_time = int(time.mktime(time.strptime(
                 event_map['Time'],
                 netapp_constants.EVENT_TIME_TYPE)))
@@ -301,10 +293,10 @@ class NetAppHandler(object):
         alert_list = []
         alert_info = self.ssh_pool.do_exec(
             netapp_constants.ALTER_SHOW_DETAIL_COMMAND)
-        alert_arrayay = alert_info.split(netapp_constants.ALTER_SPLIT_STR)
+        alert_array = alert_info.split(netapp_constants.ALTER_SPLIT_STR)
         alert_map = {}
-        for alert_str in alert_arrayay[1:]:
-            CommonUtils.handle_detail(alert_str, alert_map, split=':')
+        for alert_str in alert_array[1:]:
+            Tools.split_value_map(alert_str, alert_map, split=':')
             occur_time = int(time.mktime(time.strptime(
                 alert_map['IndicationTime'],
                 netapp_constants.ALTER_TIME_TYPE)))
@@ -379,7 +371,7 @@ class NetAppHandler(object):
         for i in range(2, len(physical_array), 2):
             physicals_list.append(physical_array[i].split())
         for disk_str in disks_array[1:]:
-            CommonUtils.handle_detail(disk_str, disks_map, split=':')
+            Tools.split_value_map(disk_str, disks_map, split=':')
             logical_type = netapp_constants.DISK_LOGICAL. \
                 get(disks_map['ContainerType'])
             """Map disk physical information"""
@@ -403,7 +395,7 @@ class NetAppHandler(object):
                 'firmware': firmware,
                 'speed': speed,
                 'capacity':
-                    int(CommonUtils.parse_string(disks_map['PhysicalSize'])),
+                    int(Tools.get_capacity_size(disks_map['PhysicalSize'])),
                 'status': status,
                 'physical_type': physical_type,
                 'logical_type': logical_type,
@@ -427,7 +419,7 @@ class NetAppHandler(object):
         type = constants.FSType.THICK
         fs_map = {}
         for fs_str in fs_array[1:]:
-            CommonUtils.handle_detail(fs_str, fs_map, split=':')
+            Tools.split_value_map(fs_str, fs_map, split=':')
             if fs_map is not None or fs_map != {}:
                 pool_id = ""
                 """get pool id"""
@@ -459,12 +451,12 @@ class NetAppHandler(object):
                     'status': status,
                     'type': type,
                     'total_capacity':
-                        int(CommonUtils.parse_string(fs_map['VolumeSize'])),
+                        int(Tools.get_capacity_size(fs_map['VolumeSize'])),
                     'used_capacity':
-                        int(CommonUtils.parse_string(fs_map['UsedSize'])),
+                        int(Tools.get_capacity_size(fs_map['UsedSize'])),
                     'free_capacity':
-                        int(CommonUtils.parse_string(fs_map['VolumeSize'])) -
-                        int(CommonUtils.parse_string(fs_map['UsedSize']))
+                        int(Tools.get_capacity_size(fs_map['VolumeSize'])) -
+                        int(Tools.get_capacity_size(fs_map['UsedSize']))
                 }
                 fs_list.append(fs_model)
         return fs_list
