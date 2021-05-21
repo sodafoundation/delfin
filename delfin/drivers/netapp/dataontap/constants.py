@@ -46,6 +46,9 @@ LUN_SPLIT_STR = "  Vserver"
 STORAGE_VENDOR = "netapp"
 STORAGE_MODEL = "cmodel"
 
+CONTROLLER_SHOW_DETAIL_COMMAND = "node show -instance"
+CONTROLLER_SPLIT_STR = "  Nod"
+
 STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
     'ok-with-suppressed': constants.StorageStatus.NORMAL,
