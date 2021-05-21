@@ -219,8 +219,8 @@ class NetAppHandler(object):
                 Tools.split_value_map(volume_str, volume_map, split=':')
                 if volume_map is not None or volume_map != {}:
                     pool_id = ''
-                    status = constant.VOLUME_STATUS.get(
-                        volume_map['State'])
+                    status = 'normal' if volume_map['State'] == 'online' \
+                        else 'offline'
                     for fs in fs_list:
                         if fs['name'] == volume_map['VolumeName']:
                             pool_id = fs['native_pool_id']
