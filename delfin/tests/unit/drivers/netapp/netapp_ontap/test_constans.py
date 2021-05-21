@@ -716,7 +716,8 @@ Additional Information: Shelf uuid: 50:05:0c:c1:02:00:0f:02\r
 Alerting Resource Name: Shelf ID 2\r
  Additional Alert Tags: quality-of-service, nondisruptive-upgrade\r"""
 
-CONTROLLER_INFO = """                         Node: cl-01\r
+CONTROLLER_INFO = """\r
+                                              Node: cl-01\r
                                              Owner: \r
                                           Location: \r
                                              Model: SIMBOX\r
