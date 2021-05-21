@@ -79,12 +79,18 @@ class NetAppHandler(object):
     def get_storage(self):
         try:
             raw_capacity = total_capacity = used_capacity = free_capacity = 0
+            controller_map = {}
             system_info = self.ssh_pool.do_exec(
                 constant.CLUSTER_SHOW_COMMAND)
             version = self.ssh_pool.do_exec(
                 constant.VERSION_SHOW_COMMAND)
             status_info = self.ssh_pool.do_exec(
                 constant.STORAGE_STATUS_COMMAND)
+            controller_info = self.ssh_pool.do_exec(
+                constant.CONTROLLER_SHOW_DETAIL_COMMAND)
+            controller_array = controller_info.split(
+                constant.CONTROLLER_SPLIT_STR)
+            Tools.split_value_map(controller_array[1], controller_map, ":")
             version_array = version.split('\r\n')
             status = constant.STORAGE_STATUS.get(
                 status_info.split("\r\n")[2])
@@ -103,11 +109,11 @@ class NetAppHandler(object):
             storage_model = {
                 "name": storage_map['ClusterName'],
                 "vendor": constant.STORAGE_VENDOR,
-                "model": '',
+                "model": controller_map['Model'],
                 "status": status,
                 "serial_number": storage_map['ClusterSerialNumber'],
                 "firmware_version": version_array[0],
-                "location": '',
+                "location": controller_map['Location'],
                 "total_capacity": total_capacity,
                 "raw_capacity": raw_capacity,
                 "used_capacity": used_capacity,
@@ -116,12 +122,12 @@ class NetAppHandler(object):
             return storage_model
         except exception.DelfinException as e:
             err_msg = "Failed to get storage from " \
-                      "netapp fas: %s" % (six.text_type(e.msg))
+                      "netapp cmode: %s" % (six.text_type(e.msg))
             LOG.error(err_msg)
             raise e
         except Exception as err:
             err_msg = "Failed to get storage from " \
-                      "netapp fas: %s" % (six.text_type(err))
+                      "netapp cmode: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 

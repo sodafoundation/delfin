@@ -47,6 +47,7 @@ class TestNetAppCmodeDriver(TestCase):
             side_effect=[test_constans.SYSTEM_INFO,
                          test_constans.VERSION,
                          test_constans.SYSTEM_STATUS,
+                         test_constans.CONTROLLER_INFO,
                          test_constans.DISKS_INFO,
                          test_constans.PHYSICAL_INFO,
                          test_constans.POOLS_INFO,
