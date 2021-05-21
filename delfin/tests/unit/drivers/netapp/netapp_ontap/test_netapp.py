@@ -27,7 +27,7 @@ class Request:
         pass
 
 
-class TestNetAppStorageDriver(TestCase):
+class TestNetAppCmodeDriver(TestCase):
     SSHPool.get = mock.Mock(
         return_value={paramiko.SSHClient()})
     NetAppHandler.login = mock.Mock()
