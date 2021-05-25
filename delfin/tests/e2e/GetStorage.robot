@@ -46,7 +46,7 @@ GET Storage with a valid Storage ID
 Get All Storages
     Create Session          delfin      ${delfin_url}
     ${resp_get}=            GET On Session    delfin    storages
-    Status Should Be        200    ${resp_get}
+    Status Should Be        200         ${resp_get}
     ${resp_get_storage}=    Get Value From Json	        ${resp_get.json()}      $..storages
     [Return]                ${resp_get_storage[0]}
 
