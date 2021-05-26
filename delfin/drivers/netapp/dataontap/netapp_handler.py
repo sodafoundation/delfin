@@ -122,12 +122,12 @@ class NetAppHandler(object):
             return storage_model
         except exception.DelfinException as e:
             err_msg = "Failed to get storage from " \
-                      "netapp cmode: %s" % (six.text_type(e.msg))
+                      "netapp fas: %s" % (six.text_type(e.msg))
             LOG.error(err_msg)
             raise e
         except Exception as err:
             err_msg = "Failed to get storage from " \
-                      "netapp cmode: %s" % (six.text_type(err))
+                      "netapp fas: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
