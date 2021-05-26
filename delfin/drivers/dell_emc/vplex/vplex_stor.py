@@ -365,8 +365,8 @@ class VplexStorageDriver(driver.StorageDriver):
             port_attr = port_context.get('attributes')
             port_name = port_attr.get('name')
             speed, max_speed, protocols, role, port_status, \
-                operational_status = self.get_hardware_port_info(
-                    hardware_port_map, port_name, 'attributes')
+            operational_status = self.get_hardware_port_info(
+                hardware_port_map, port_name, 'attributes')
             connection_status = VplexStorageDriver.analyse_port_connect_status(
                 port_status)
             port = {
@@ -520,30 +520,18 @@ class VplexStorageDriver(driver.StorageDriver):
 
     @staticmethod
     def analyse_port_logical_type(role):
-        port_logic_type = constants.PortLogicalType.OTHER
-        if role:
-            port_type_value = consts.PORT_LOGICAL_TYPE_MAP.get(role)
-            if port_type_value:
-                port_logic_type = port_type_value
-        return port_logic_type
+        return consts.PORT_LOGICAL_TYPE_MAP.\
+            get(role, constants.PortLogicalType.OTHER)
 
     @staticmethod
     def analyse_port_connect_status(status):
-        port_connect_status = constants.PortConnectionStatus.UNKNOWN
-        if status:
-            port_status_value = consts.PORT_CONNECT_STATUS_MAP.get(status)
-            if port_status_value:
-                port_connect_status = port_status_value
-        return port_connect_status
+        return consts.PORT_CONNECT_STATUS_MAP.\
+            get(status, constants.PortConnectionStatus.UNKNOWN)
 
     @staticmethod
     def analyse_port_health_status(status):
-        port_health_status = constants.PortHealthStatus.UNKNOWN
-        if status:
-            port_status_value = consts.PORT_HEALTH_STATUS_MAP.get(status)
-            if port_status_value:
-                port_health_status = port_status_value
-        return port_health_status
+        return consts.PORT_HEALTH_STATUS_MAP.\
+            get(status, constants.PortHealthStatus.UNKNOWN)
 
     @staticmethod
     def analyse_speed(speed):
