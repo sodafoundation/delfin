@@ -374,21 +374,21 @@ class NetAppHandler(object):
             constant.DISK_SHOW_PHYSICAL_COMMAND)
         disks_map = {}
         physical_array = physicals_info.split('\r\n')
-        speed = physical_type = firmware = '-'
         for i in range(2, len(physical_array), 2):
             physicals_list.append(physical_array[i].split())
         for disk_str in disks_array[1:]:
+            speed = physical_type = firmware = None
             Tools.split_value_map(disk_str, disks_map, split=':')
             logical_type = constant.DISK_LOGICAL. \
                 get(disks_map['ContainerType'])
             """Map disk physical information"""
             for physical_info in physicals_list:
-                if len(physical_info) > 6:
-                    if physical_info[0] == disks_map['k']:
-                        physical_type = \
-                            constant.DISK_TYPE.get(physical_info[1])
-                        speed = physical_info[5]
-                        firmware = physical_info[4]
+                if len(physical_info) > 6 \
+                        and physical_info[0] == disks_map['k']:
+                    physical_type = constant.DISK_TYPE.get(physical_info[1])
+                    speed = physical_info[5]
+                    firmware = physical_info[4]
+                    break
             status = constants.DiskStatus.ABNORMAL
             if disks_map['Errors:'] is None or disks_map['Errors:'] == "":
                 status = constants.DiskStatus.NORMAL
@@ -423,9 +423,9 @@ class NetAppHandler(object):
             constant.THIN_FS_SHOW_COMMAND)
         pool_list = self.list_storage_pools(storage_id)
         thin_fs_array = thin_fs_info.split("\r\n")
-        type = constants.FSType.THICK
         fs_map = {}
         for fs_str in fs_array[1:]:
+            type = constants.FSType.THICK
             Tools.split_value_map(fs_str, fs_map, split=':')
             if fs_map is not None or fs_map != {}:
                 pool_id = ""
