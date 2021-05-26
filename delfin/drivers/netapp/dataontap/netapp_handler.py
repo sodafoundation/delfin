@@ -82,7 +82,7 @@ class NetAppHandler(object):
             controller_map = {}
             system_info = self.ssh_pool.do_exec(
                 constant.CLUSTER_SHOW_COMMAND)
-            version = self.ssh_pool.do_exec(
+            version_info = self.ssh_pool.do_exec(
                 constant.VERSION_SHOW_COMMAND)
             status_info = self.ssh_pool.do_exec(
                 constant.STORAGE_STATUS_COMMAND)
@@ -91,7 +91,8 @@ class NetAppHandler(object):
             controller_array = controller_info.split(
                 constant.CONTROLLER_SPLIT_STR)
             Tools.split_value_map(controller_array[1], controller_map, ":")
-            version_array = version.split('\r\n')
+            version_array = version_info.split('\r\n')
+            version = version_array[0].split(":")
             status = constant.STORAGE_STATUS.get(
                 status_info.split("\r\n")[2])
             disk_list = self.get_disks(None)
@@ -112,7 +113,7 @@ class NetAppHandler(object):
                 "model": controller_map['Model'],
                 "status": status,
                 "serial_number": storage_map['ClusterSerialNumber'],
-                "firmware_version": version_array[0],
+                "firmware_version": version[0],
                 "location": controller_map['Location'],
                 "total_capacity": total_capacity,
                 "raw_capacity": raw_capacity,
