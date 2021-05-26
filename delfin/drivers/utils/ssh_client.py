@@ -256,12 +256,15 @@ class SSHPool(pools.Pool):
         except Exception as e:
             err = six.text_type(e)
             LOG.error('doexec InvalidUsernameOrPassword error')
-            if 'timed out' in err:
+            if 'timed out' in err \
+                    or 'SSH connect timeout' in err:
                 raise exception.SSHConnectTimeout()
             elif 'No authentication methods available' in err \
-                    or 'Authentication failed' in err:
+                    or 'Authentication failed' in err \
+                    or 'Invalid username or password' in err:
                 raise exception.InvalidUsernameOrPassword()
-            elif 'not a valid RSA private key file' in err:
+            elif 'not a valid RSA private key file' in err \
+                    or 'not a valid RSA private key' in err:
                 raise exception.InvalidPrivateKey()
             else:
                 raise exception.SSHException(err)
