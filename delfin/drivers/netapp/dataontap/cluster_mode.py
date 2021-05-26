@@ -72,3 +72,7 @@ class NetAppCmodeDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         return self.netapp_handler.clear_alert(alert)
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'
