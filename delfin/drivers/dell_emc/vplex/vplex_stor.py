@@ -403,7 +403,7 @@ class VplexStorageDriver(driver.StorageDriver):
         if response:
             contexts = response.get("context")
             for context in contexts:
-                type = context.get("type")
+                ct_type = context.get("type")
                 parent = context.get("parent")
                 attributes = context.get("attributes")
                 context_map = {}
@@ -412,7 +412,7 @@ class VplexStorageDriver(driver.StorageDriver):
                     key = attribute.get("name")
                     value = attribute.get("value")
                     attr_map[key] = value
-                context_map["type"] = type
+                context_map["type"] = ct_type
                 context_map["parent"] = parent
                 context_map["attributes"] = attr_map
                 context_list.append(context_map)
@@ -453,12 +453,8 @@ class VplexStorageDriver(driver.StorageDriver):
 
     @staticmethod
     def analyse_director_status(status):
-        controller_status = constants.ControllerStatus.UNKNOWN
-        if status:
-            status_value = consts.CONTROLLER_STATUS_MAP.get(status)
-            if status_value:
-                controller_status = status_value
-        return controller_status
+        return consts.CONTROLLER_STATUS_MAP. \
+            get(status, constants.ControllerStatus.UNKNOWN)
 
     def get_director_specified_version(self, version_map, director_name,
                                        specified_name):
@@ -520,30 +516,18 @@ class VplexStorageDriver(driver.StorageDriver):
 
     @staticmethod
     def analyse_port_logical_type(role):
-        port_logic_type = constants.PortLogicalType.OTHER
-        if role:
-            port_type_value = consts.PORT_LOGICAL_TYPE_MAP.get(role)
-            if port_type_value:
-                port_logic_type = port_type_value
-        return port_logic_type
+        return consts.PORT_LOGICAL_TYPE_MAP. \
+            get(role, constants.PortLogicalType.OTHER)
 
     @staticmethod
     def analyse_port_connect_status(status):
-        port_connect_status = constants.PortConnectionStatus.UNKNOWN
-        if status:
-            port_status_value = consts.PORT_CONNECT_STATUS_MAP.get(status)
-            if port_status_value:
-                port_connect_status = port_status_value
-        return port_connect_status
+        return consts.PORT_CONNECT_STATUS_MAP. \
+            get(status, constants.PortConnectionStatus.UNKNOWN)
 
     @staticmethod
     def analyse_port_health_status(status):
-        port_health_status = constants.PortHealthStatus.UNKNOWN
-        if status:
-            port_status_value = consts.PORT_HEALTH_STATUS_MAP.get(status)
-            if port_status_value:
-                port_health_status = port_status_value
-        return port_health_status
+        return consts.PORT_HEALTH_STATUS_MAP. \
+            get(status, constants.PortHealthStatus.UNKNOWN)
 
     @staticmethod
     def analyse_speed(speed):
