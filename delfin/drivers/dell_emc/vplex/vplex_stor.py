@@ -403,7 +403,7 @@ class VplexStorageDriver(driver.StorageDriver):
         if response:
             contexts = response.get("context")
             for context in contexts:
-                type = context.get("type")
+                ct_type = context.get("type")
                 parent = context.get("parent")
                 attributes = context.get("attributes")
                 context_map = {}
@@ -412,7 +412,7 @@ class VplexStorageDriver(driver.StorageDriver):
                     key = attribute.get("name")
                     value = attribute.get("value")
                     attr_map[key] = value
-                context_map["type"] = type
+                context_map["type"] = ct_type
                 context_map["parent"] = parent
                 context_map["attributes"] = attr_map
                 context_list.append(context_map)
