@@ -15,6 +15,8 @@
 #    under the License.
 
 # CPG's status
+from delfin.common import constants
+
 STATUS_POOL_NORMAL = 1  # CPG STATUS Normal operation
 STATUS_POOL_DEGRADED = 2  # CPG STATUS Degraded state
 STATUS_POOL_FAILED = 3  # CPG STATUS Abnormal operation
@@ -623,4 +625,78 @@ HPE3PAR_ALERT_CODE = {
     '0x09f0001': 'File Persona VM shutdown',
     '0x09f0002': 'File Persona CPG grow limit warning',
     '0x0a50001': 'File Access Auditing Alerts'
+}
+NODE_PATTERN = "^\\s*Node\\s+[-]*Name[-]*\\s+[-]*State[-]*\\s+Master\\s+"
+CPU_PATTERN = "^\\s*Node\\s+CPU\\s+[-]*Manufacturer[-]*\\s+[-]*Serial[-]*" \
+              "\\s+CPUSpeed"
+DISK_PATTERN = "^\\s*Id\\s+[-]*CagePos[-]*\\s+[-]*Type[-]*\\s+RPM\\s+State\\s+"
+DISK_I_PATTERN = "^\\s*Id\\s+[-]*CagePos[-]*\\s+[-]*State[-]*\\s+" \
+                 "[-]*Node_WWN[-]*\\s+[-]*MFR[-]*\\s+[-]*Model[-]*\\s+" \
+                 "[-]*Serial[-]*\\s+[-]*FW_Rev[-]*"
+PORT_PATTERN = "^\\s*N:S:P\\s+[-]*Mode[-]*\\s+[-]*State[-]*\\s+[-]*" \
+               "Node_WWN[-]*\\s+[-]*Port_WWN/HW_Addr[-]*\\s+"
+PORT_I_PATTERN = "^\\s*N:S:P\\s+Brand\\s+Model\\s+Rev\\s+Firmware\\s+" \
+                 "Serial\\s+HWType"
+PORT_PER_PATTERN = "^\\s*N:S:P\\s+Connmode\\s+ConnType\\s+CfgRate\\s+MaxRate"
+PORT_C_PATTERN = "^\\s*N:S:P\\s+Mode\\s+Device\\s+Pos\\s+Config\\s+" \
+                 "Topology\\s+Rate"
+PORT_ISCSI_PATTERN = "^\\s*N:S:P\\s+State\\s+IPAddr\\s+Netmask/PrefixLen\\s+" \
+                     "Gateway"
+PORT_RCIP_PATTERN = "^\\s*N:S:P\\s+State\\s+[-]*HwAddr[-]*\\s+IPAddr\\s+" \
+                    "Netmask\\s+Gateway\\s+MTU\\s+Rate"
+PORT_FCOE_PATTERN = "^\\s*N:S:P\\s+State\\s+"
+PORT_FS_PATTERN = "^\\s*N:S:P\\s+State\\s+"
+FPG_PATTERN = "^\\s*FPG\\s+[-]*Mountpath[-]*\\s+[-]*Size[-]*\\s+[-]*" \
+              "Available[-]*\\s+[-]*ActiveStates"
+CPG_PATTERN = "^\\s*Id\\s+[-]*Name[-]*\\s+Warn"
+VOLUME_PATTERN = "^\\s*Id\\s+Name\\s+Prov\\s+Compr\\s+Dedup"
+FSTORE_PATTERN = "^\\s*Fstore\\s+VFS\\s+FPG\\s+State\\s+Mode"
+FSHARE_PATTERN = "^\\s*ShareName\\s+Protocol\\s+VFS\\s+FileStore\\s+" \
+                 "ShareDir\\s+State"
+VFS_PATTERN = "^\\s*VFS\\s+FPG\\s+IPAddr\\s+State"
+IPV4_PATTERN = "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+CONTROLLER_STATUS_MAP = {
+    'OK': constants.ControllerStatus.NORMAL,
+    'NORMAL': constants.ControllerStatus.NORMAL,
+    'DEGRADED': constants.ControllerStatus.OFFLINE,
+    'FAILED': constants.ControllerStatus.OFFLINE
+}
+DISK_PHYSICAL_TYPE_MAP = {
+    'FC': constants.DiskPhysicalType.UNKNOWN,
+    'SSD': constants.DiskPhysicalType.SSD,
+    'NL': constants.DiskPhysicalType.UNKNOWN
+}
+DISK_STATUS_MAP = {
+    'NORMAL': constants.DiskStatus.NORMAL,
+    'DEGRADED': constants.DiskStatus.ABNORMAL,
+    'FAILED': constants.DiskStatus.ABNORMAL,
+    'NEW': constants.DiskStatus.ABNORMAL
+}
+PORT_CONNECTION_STATUS_MAP = {
+    'CONFIG_WAIT': constants.PortConnectionStatus.DISCONNECTED,
+    'ALPA_WAIT': constants.PortConnectionStatus.DISCONNECTED,
+    'LOGIN_WAIT': constants.PortConnectionStatus.DISCONNECTED,
+    'READY': constants.PortConnectionStatus.CONNECTED,
+    'LOSS_SYNC': constants.PortConnectionStatus.DISCONNECTED,
+    'ERROR_STATE': constants.PortConnectionStatus.DISCONNECTED,
+    'XXX': constants.PortConnectionStatus.DISCONNECTED,
+    'NONPARTICIPATE': constants.PortConnectionStatus.DISCONNECTED,
+    'COREDUMP': constants.PortConnectionStatus.DISCONNECTED,
+    'OFFLINE': constants.PortConnectionStatus.DISCONNECTED,
+    'FWDEAD': constants.PortConnectionStatus.DISCONNECTED,
+    'IDLE_FOR_RESET': constants.PortConnectionStatus.DISCONNECTED,
+    'DHCP_IN_PROGRESS': constants.PortConnectionStatus.DISCONNECTED,
+    'PENDING_RESET': constants.PortConnectionStatus.DISCONNECTED
+}
+PORT_TYPE_MAP = {
+    'FC': constants.PortType.FC,
+    'ISCSI': constants.PortType.ISCSI,
+    'ETH': constants.PortType.ETH,
+    'CNA': constants.PortType.OTHER,
+    'SAS': constants.PortType.SAS,
+    'COMBO': constants.PortType.OTHER,
+    'NVMe': constants.PortType.OTHER,
+    'UNKNOWN': constants.PortType.OTHER,
+    'RCIP': constants.PortType.OTHER,
+    'RCFC': constants.PortType.OTHER
 }
