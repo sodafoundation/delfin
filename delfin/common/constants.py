@@ -99,9 +99,17 @@ class PortType(object):
     ETH = 'eth'
     SAS = 'sas'
     IB = 'ib'
+    LOGIC = 'logic'
+    CIFS = 'cifs'
+    NFS = 'nfs'
+    FCACHE = 'fcache'
+    COMBO = 'combo'
+    CNA = 'cna'
+    RCIP = 'rcip'
     OTHER = 'other'
 
-    ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, OTHER)
+    ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, LOGIC,
+           CIFS, NFS, FCACHE, COMBO, CNA, RCIP, OTHER)
 
 
 class PortLogicalType(object):
@@ -112,10 +120,19 @@ class PortLogicalType(object):
     INTERNAL = 'internal'
     MAINTENANCE = 'maintenance'
     INTERCONNECT = 'interconnect'
+    CLUSTER = 'cluster'
+    DATA = 'data'
+    NODE_MGMT = 'node-mgmt'
+    INTERCLUSTER = 'intercluster'
+    CLUSTER_MGMT = 'cluster-mgmt'
+    PHYSICAL = 'physical'
+    IF_GROUP = 'if-group'
+    VLAN = 'vlan'
     OTHER = 'other'
 
     ALL = (FRONTEND, BACKEND, SERVICE, MANAGEMENT,
-           INTERNAL, MAINTENANCE, INTERCONNECT, OTHER)
+           INTERNAL, MAINTENANCE, INTERCONNECT, CLUSTER, DATA, NODE_MGMT,
+           INTERCLUSTER, CLUSTER_MGMT, PHYSICAL, IF_GROUP, VLAN, OTHER)
 
 
 class DiskStatus(object):
