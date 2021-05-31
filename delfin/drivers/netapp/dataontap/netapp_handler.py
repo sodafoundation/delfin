@@ -270,6 +270,7 @@ class NetAppHandler(object):
             constant.EVENT_SHOW_DETAIL_COMMAND)
         event_array = event_info.split(constant.ALTER_SPLIT_STR)
         event_map = {}
+
         for event_str in event_array[1:]:
             Tools.split_value_map(event_str, event_map, split=':')
             occur_time = int(time.mktime(time.strptime(
