@@ -1419,7 +1419,7 @@ class TestUNITYStorDriver(TestCase):
         self.assertEqual(port, port_result)
 
     @mock.patch.object(RestHandler, 'get_all_filesystems')
-    def list_filesystems(self, mock_filesystem):
+    def test_list_filesystems(self, mock_filesystem):
         RestHandler.login = mock.Mock(return_value=None)
         mock_filesystem.return_value = GET_ALL_FILESYSTEMS
         file = UnityStorDriver(**ACCESS_INFO).list_filesystems(context)
