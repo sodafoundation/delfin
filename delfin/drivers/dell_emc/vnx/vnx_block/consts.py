@@ -118,9 +118,12 @@ DISK_PHYSICAL_TYPE_MAP = {
     'SATA': constants.DiskPhysicalType.SATA,
     'SAS': constants.DiskPhysicalType.SAS,
     'SSD': constants.DiskPhysicalType.SSD,
-    'NL-SAS': constants.DiskPhysicalType.NL_SSD,
-    'FLASH': constants.DiskPhysicalType.UNKNOWN,
-    'SAS FLASH VP': constants.DiskPhysicalType.UNKNOWN
+    'NL-SAS': constants.DiskPhysicalType.NL_SAS,
+    'NL-SSD': constants.DiskPhysicalType.NL_SSD,
+    'FLASH': constants.DiskPhysicalType.FLASH,
+    'SAS FLASH VP': constants.DiskPhysicalType.SAS_FLASH_VP,
+    'FIBRE CHANNEL': constants.DiskPhysicalType.FC,
+    'ATA': constants.DiskPhysicalType.ATA
 }
 SPPORT_KEY = "Information about each SPPORT:"
 PORT_CONNECTION_STATUS_MAP = {
