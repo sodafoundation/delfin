@@ -11,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import six
 from oslo_log import log
+from oslo_utils import units
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.unity import rest_handler, alert_handler
@@ -173,13 +176,370 @@ class UnityStorDriver(driver.StorageDriver):
         return alert_model_list
 
     def list_controllers(self, context):
-        pass
+        try:
+            controller_list = []
+            controller_info = self.rest_handler.get_all_controllers()
+            if controller_info is not None:
+                pool_entries = controller_info.get('entries')
+                for pool in pool_entries:
+                    content = pool.get('content', {})
+                    health_value = content.get('health').get('value')
+                    if health_value in UnityStorDriver.HEALTH_OK:
+                        status = constants.StorageStatus.NORMAL
+                    else:
+                        status = constants.StorageStatus.ABNORMAL
+                    controller_result = {
+                        'name': content.get('name'),
+                        'storage_id': self.storage_id,
+                        'native_controller_id': content.get('id'),
+                        'status': status,
+                        'location': content.get('slotNumber'),
+                        'memory_size':
+                            int(content.get('memorySize')) * units.Mi
+                    }
+                    controller_list.append(controller_result)
+            return controller_list
+        except Exception as err:
+            err_msg = "Failed to get controller metrics from UnityStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    @staticmethod
+    def handle_port_ip(ip, result):
+        if ip is None:
+            ip = result
+        else:
+            ip = '%s;%s' % (ip, result)
+        return ip
+
+    def get_eth_ports(self, port_list):
+        ports = self.rest_handler.get_all_ethports()
+        ip_interfaces = self.rest_handler.get_port_interface()
+        if ports is not None:
+            port_entries = ports.get('entries')
+            for port in port_entries:
+                content = port.get('content', {})
+                health_value = content.get('health').get('value')
+                if health_value in UnityStorDriver.HEALTH_OK:
+                    status = constants.StorageStatus.NORMAL
+                else:
+                    status = constants.StorageStatus.ABNORMAL
+                conn_status = constants.PortConnectionStatus.CONNECTED if \
+                    content.get('isLinkUp') is True \
+                    else constants.PortConnectionStatus.DISCONNECTED
+                ipv4 = None
+                ipv4_mask = None
+                ipv6 = None
+                ipv6_mask = None
+                for ip_info in ip_interfaces.get('entries'):
+                    ip_content = ip_info.get('content', {})
+                    if content.get('id') == ip_content.get(
+                            'ipPort').get('id'):
+                        if ip_content.get('ipProtocolVersion') == 4:
+                            ipv4 = UnityStorDriver.handle_port_ip(
+                                ipv4, ip_content.get('ipAddress'))
+                            ipv4_mask = UnityStorDriver.handle_port_ip(
+                                ipv4_mask, ip_content.get('netmask'))
+                        else:
+                            ipv6 = UnityStorDriver.handle_port_ip(
+                                ipv6, ip_content.get('ipAddress'))
+                            ipv6_mask = UnityStorDriver.handle_port_ip(
+                                ipv6_mask, ip_content.get('netmask'))
+                port_result = {
+                    'name': content.get('name'),
+                    'storage_id': self.storage_id,
+                    'native_port_id': content.get('id'),
+                    'location': content.get('name'),
+                    'connection_status': conn_status,
+                    'health_status': status,
+                    'type': constants.PortType.ETH,
+                    'logical_type': '',
+                    'max_speed': int(content.get('speed')) * units.Mi,
+                    'native_parent_id':
+                        content.get('storageProcessor').get('id'),
+                    'wwn': '',
+                    'mac_address': content.get('macAddress'),
+                    'ipv4': ipv4,
+                    'ipv4_mask': ipv4_mask,
+                    'ipv6': ipv6,
+                    'ipv6_mask': ipv6_mask
+                }
+                port_list.append(port_result)
+
+    def get_fc_port(self, port_list):
+        ports = self.rest_handler.get_all_fcports()
+        if ports is not None:
+            port_entries = ports.get('entries')
+            for port in port_entries:
+                content = port.get('content', {})
+                health_value = content.get('health').get('value')
+                if health_value in UnityStorDriver.HEALTH_OK:
+                    status = constants.StorageStatus.NORMAL
+                else:
+                    status = constants.StorageStatus.ABNORMAL
+                conn_status = status
+                port_result = {
+                    'name': content.get('name'),
+                    'storage_id': self.storage_id,
+                    'native_port_id': content.get('id'),
+                    'location': content.get('slotNumber'),
+                    'connection_status': conn_status,
+                    'health_status': status,
+                    'type': constants.PortType.FC,
+                    'logical_type': '',
+                    'max_speed': int(content.get('currentSpeed')) * units.Gi,
+                    'native_parent_id':
+                        content.get('storageProcessor').get('id'),
+                    'wwn': content.get('wwn')
+                }
+                port_list.append(port_result)
 
     def list_ports(self, context):
-        pass
+        try:
+            port_list = []
+            self.get_eth_ports(port_list)
+            self.get_fc_port(port_list)
+            return port_list
+        except Exception as err:
+            err_msg = "Failed to get ports metrics from UnityStor: %s" % \
+                      (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
 
     def list_disks(self, context):
-        pass
+        try:
+            disks = self.rest_handler.get_all_disks()
+            disk_list = []
+            if disks is not None:
+                disk_entries = disks.get('entries')
+                for disk in disk_entries:
+                    content = disk.get('content', {})
+                    health_value = content.get('health').get('value')
+                    if health_value in UnityStorDriver.HEALTH_OK:
+                        status = constants.StorageStatus.NORMAL
+                    else:
+                        status = constants.StorageStatus.ABNORMAL
+                    disk_result = {
+                        'name': content.get('name'),
+                        'storage_id': self.storage_id,
+                        'native_disk_id': content.get('id'),
+                        'serial_number': content.get('emcSerialNumber'),
+                        'manufacturer': content.get('manufacturer'),
+                        'model': content.get('model'),
+                        'firmware': content.get('version'),
+                        'speed': int(content.get('rpm')),
+                        'capacity': int(content.get('size')),
+                        'status': status,
+                        'physical_type': constants.DiskPhysicalType.SAS,
+                        'logical_type': '',
+                        'native_disk_group_id':
+                            content.get('diskGroup').get('id'),
+                        'location': content.get('slotNumber')
+                    }
+                    disk_list.append(disk_result)
+            return disk_list
+
+        except Exception as err:
+            err_msg = "Failed to get disk metrics from UnityStor: %s" % \
+                      (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
+
+    def list_filesystems(self, context):
+        try:
+            files = self.rest_handler.get_all_filesystems()
+            fs_list = []
+            if files is not None:
+                fs_entries = files.get('entries')
+                for file in fs_entries:
+                    content = file.get('content', {})
+                    health_value = content.get('health').get('value')
+                    if health_value in UnityStorDriver.HEALTH_OK:
+                        status = constants.FilesystemStatus.NORMAL
+                    else:
+                        status = constants.FilesystemStatus.FAULTY
+                    fs_type = constants.VolumeType.THICK
+                    if content.get('isThinEnabled') is True:
+                        fs_type = constants.VolumeType.THIN
+                    fs = {
+                        'name': content.get('name'),
+                        'storage_id': self.storage_id,
+                        'native_filesystem_id': content.get('id'),
+                        'native_pool_id': content.get('pool').get('id'),
+                        'status': status,
+                        'type': fs_type,
+                        'total_capacity': int(content.get('sizeTotal')),
+                        'used_capacity': int(content.get('sizeAllocated')),
+                        'free_capacity': int(content.get('sizeTotal')) - int(
+                            content.get('sizeAllocated')),
+                        'worm': constants.WORMType.NON_WORM
+                    }
+                    fs_list.append(fs)
+            return fs_list
+        except Exception as err:
+            err_msg = "Failed to get filesystem metrics from UnityStor: %s"\
+                      % (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
+
+    def list_qtrees(self, context):
+        try:
+            qts = self.rest_handler.get_all_qtrees()
+            qt_list = []
+            if qts is not None:
+                qts_entries = qts.get('entries')
+                for qtree in qts_entries:
+                    content = qtree.get('content', {})
+                    path = '/%s%s' % (content.get('filesystem').get('id'),
+                                      content.get('path'))
+                    qt = {
+                        'name': content.get('id'),
+                        'storage_id': self.storage_id,
+                        'native_qtree_id': content.get('id'),
+                        'native_filesystem_id':
+                            content.get('filesystem').get('id'),
+                        'path': path
+                    }
+                    qt_list.append(qt)
+            return qt_list
+        except Exception as err:
+            err_msg = "Failed to get qtree metrics from UnityStor: %s"\
+                      % (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
+
+    def get_share(self, share_list, protocol):
+        try:
+            if protocol == 'cifs':
+                shares = self.rest_handler.get_all_cifsshares()
+                protocol = constants.ShareProtocol.CIFS
+            else:
+                shares = self.rest_handler.get_all_nfsshares()
+                protocol = constants.ShareProtocol.NFS
+            if shares is not None:
+                share_entries = shares.get('entries')
+                for share in share_entries:
+                    content = share.get('content', {})
+                    path = '/%s%s' % (content.get('filesystem').get('id'),
+                                      content.get('path'))
+                    fs = {
+                        'name': content.get('name'),
+                        'storage_id': self.storage_id,
+                        'native_share_id': content.get('id'),
+                        'native_filesystem_id':
+                            content.get('filesystem').get('id'),
+                        'path': path,
+                        'protocol': protocol
+                    }
+                    share_list.append(fs)
+        except Exception as err:
+            err_msg = "Failed to get share metrics from UnityStor: %s"\
+                      % (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
+
+    def list_shares(self, context):
+        try:
+            share_list = []
+            self.get_share(share_list, 'cifs')
+            self.get_share(share_list, 'nfs')
+            return share_list
+        except Exception as err:
+            err_msg = "Failed to get shares metrics from UnityStor: %s"\
+                      % (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
+
+    def get_tree_quotas(self, quotas_list):
+        quota_configs = self.rest_handler.get_quota_configs()
+        qts = self.rest_handler.get_all_qtrees()
+        if qts is None:
+            return
+        qt_entries = qts.get('entries')
+        conf_entries = quota_configs.get('entries')
+        for quota in qt_entries:
+            capacity_hard_limit = 0
+            capacity_soft_limit = 0
+            file_hard_limit = 0
+            file_soft_limit = 0
+            limit_type = 'block'
+            content = quota.get('content', {})
+            for conf in conf_entries:
+                conf_content = conf.get('content', {})
+                if conf_content.get('id') == content.get(
+                        'quotaConfig').get('id'):
+                    if int(conf_content.get('quotaPolicy')) == 0:
+                        limit_type = 'file'
+                    break
+            if limit_type == 'file':
+                file_hard_limit = content.get('hardLimit')
+                file_soft_limit = content.get('softLimit')
+            else:
+                capacity_hard_limit = content.get('hardLimit')
+                capacity_soft_limit = content.get('softLimit')
+            qt = {
+                "native_quota_id": content.get('id'),
+                "type": constants.QuotaType.TREE,
+                "storage_id": self.storage_id,
+                "native_filesystem_id":
+                    content.get('filesystem').get('id'),
+                "native_qtree_id": content.get('id'),
+                "capacity_hard_limit": capacity_hard_limit,
+                "capacity_soft_limit": capacity_soft_limit,
+                "file_hard_limit": file_hard_limit,
+                "file_soft_limit": file_soft_limit,
+                "used_capacity": int(content.get('sizeUsed'))
+            }
+            quotas_list.append(qt)
+
+    def get_user_quotas(self, quotas_list):
+        quota_configs = self.rest_handler.get_quota_configs()
+        user_qts = self.rest_handler.get_all_userquotas()
+        if user_qts is None:
+            return
+        conf_entries = quota_configs.get('entries')
+        user_entries = user_qts.get('entries')
+        for user_quota in user_entries:
+            capacity_hard_limit = 0
+            capacity_soft_limit = 0
+            file_hard_limit = 0
+            file_soft_limit = 0
+            limit_type = 'block'
+            content = user_quota.get('content', {})
+            if content.get('treeQuota'):
+                for conf in conf_entries:
+                    conf_content = conf.get('content', {})
+                    if conf_content.get('treeQuota').get('id')\
+                            == content.get('treeQuota').get('id'):
+                        if int(conf_content.get('quotaPolicy')) == 0:
+                            limit_type = 'file'
+                        break
+            if limit_type == 'file':
+                file_hard_limit = content.get('hardLimit')
+                file_soft_limit = content.get('softLimit')
+            else:
+                capacity_hard_limit = content.get('hardLimit')
+                capacity_soft_limit = content.get('softLimit')
+            qt = {
+                "native_quota_id": content.get('id'),
+                "type": constants.QuotaType.USER,
+                "storage_id": self.storage_id,
+                "native_filesystem_id":
+                    content.get('filesystem').get('id'),
+                "native_qtree_id": content.get('id'),
+                "capacity_hard_limit": capacity_hard_limit,
+                "capacity_soft_limit": capacity_soft_limit,
+                "file_hard_limit": file_hard_limit,
+                "file_soft_limit": file_soft_limit,
+                "used_capacity": int(content.get('sizeUsed'))
+            }
+            quotas_list.append(qt)
+
+    def list_quotas(self, context):
+        try:
+            quotas_list = []
+            self.get_tree_quotas(quotas_list)
+            self.get_user_quotas(quotas_list)
+            return quotas_list
+        except Exception as err:
+            err_msg = "Failed to get quotas metrics from UnityStor: %s"\
+                      % (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
 
     def add_trap_config(self, context, trap_config):
         pass

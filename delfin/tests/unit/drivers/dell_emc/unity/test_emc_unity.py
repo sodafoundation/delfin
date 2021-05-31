@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from unittest import TestCase, mock
 
+sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.dell_emc.unity.rest_handler import RestHandler
 from delfin.drivers.dell_emc.unity.unity import UnityStorDriver
@@ -287,6 +289,1023 @@ alert_result = [
         'match_key': 'de23e7c25b5a46f029cb2f84f15a4a3a'
     }
 ]
+GET_ALL_CONTROLLERS = {
+    "entries": [
+        {
+            "content": {
+                "id": "spa",
+                "parent": {
+                    "id": "dpe",
+                    "resource": "dpe"
+                },
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "needsReplacement": "false",
+                "isRescueMode": "false",
+                "model": "",
+                "slotNumber": 0,
+                "name": "SP A",
+                "emcPartNumber": "",
+                "emcSerialNumber": "VIRT2102W6CHH8",
+                "manufacturer": "",
+                "vendorPartNumber": "",
+                "vendorSerialNumber": "",
+                "sasExpanderVersion": "",
+                "memorySize": 12288,
+                "parentDpe": {
+                    "id": "dpe"
+                }
+            }
+        }
+    ]
+}
+controller_result = [
+    {
+        'name': 'SP A',
+        'storage_id': '12345',
+        'native_controller_id': 'spa',
+        'status': 'normal',
+        'location': 0,
+        'memory_size': 12884901888
+    }
+]
+GET_ALL_DISKS = {
+    "entries": [
+        {
+            "content": {
+                "id": "disk1",
+                "parent": {
+                    "id": "dpe",
+                    "resource": "dpe"
+                },
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "model": "ddd",
+                "slotNumber": 12,
+                "name": "disk1",
+                "version": "dddd",
+                "emcSerialNumber": "VIRT2102W6CHH8",
+                "manufacturer": "ibm",
+                "vendorPartNumber": "",
+                "vendorSerialNumber": "",
+                "sasExpanderVersion": "",
+                "rpm": 12288,
+                "size": 12121212,
+                "diskGroup": {
+                    "id": "dp1"
+                }
+            }
+        }
+    ]
+}
+disk_result = [
+    {
+        'name': 'disk1',
+        'storage_id': '12345',
+        'native_disk_id': 'disk1',
+        'serial_number': 'VIRT2102W6CHH8',
+        'manufacturer': 'ibm',
+        'model': 'ddd',
+        'firmware': 'dddd',
+        'speed': 12288,
+        'capacity': 12121212,
+        'status': 'normal',
+        'physical_type': 'sas',
+        'logical_type': '',
+        'native_disk_group_id': 'dp1',
+        'location': 12
+    }
+]
+GET_ALL_ETHPORTS = {
+    "entries": [
+        {
+            "content": {
+                "id": "spa_eth0",
+                "speed": 10000,
+                "connectorType": 1,
+                "requestedSpeed": 0,
+                "supportedSpeeds": [
+                    0
+                ],
+                "sfpSupportedSpeeds": [],
+                "sfpSupportedProtocols": [],
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_PORT_LINK_UP"
+                    ],
+                    "descriptions": [
+                        "The port is operating normally."
+                    ]
+                },
+                "name": "SP A Ethernet Port 0",
+                "portNumber": 0,
+                "mtu": 1500,
+                "minMtu": 46,
+                "maxMtu": 9000,
+                "bond": False,
+                "isLinkUp": True,
+                "macAddress": "00:50:56:81:E1:50",
+                "isRSSCapable": False,
+                "isRDMACapable": False,
+                "requestedMtu": 1500,
+                "parent": {
+                    "id": "spa",
+                    "resource": "storageProcessor"
+                },
+                "storageProcessor": {
+                    "id": "spa"
+                },
+                "parentStorageProcessor": {
+                    "id": "spa"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "spa_eth1",
+                "speed": 10000,
+                "connectorType": 1,
+                "requestedSpeed": 0,
+                "supportedSpeeds": [
+                    0
+                ],
+                "sfpSupportedSpeeds": [],
+                "sfpSupportedProtocols": [],
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_PORT_LINK_UP"
+                    ],
+                    "descriptions": [
+                        "The port is operating normally."
+                    ]
+                },
+                "name": "SP A Ethernet Port 1",
+                "portNumber": 1,
+                "mtu": 1500,
+                "minMtu": 46,
+                "maxMtu": 9000,
+                "bond": False,
+                "isLinkUp": True,
+                "macAddress": "00:50:56:81:E8:4B",
+                "isRSSCapable": False,
+                "isRDMACapable": False,
+                "requestedMtu": 1500,
+                "parent": {
+                    "id": "spa",
+                    "resource": "storageProcessor"
+                },
+                "storageProcessor": {
+                    "id": "spa"
+                },
+                "parentStorageProcessor": {
+                    "id": "spa"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "spa_eth2",
+                "speed": 10000,
+                "connectorType": 1,
+                "requestedSpeed": 0,
+                "supportedSpeeds": [
+                    0
+                ],
+                "sfpSupportedSpeeds": [],
+                "sfpSupportedProtocols": [],
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_PORT_LINK_UP"
+                    ],
+                    "descriptions": [
+                        "The port is operating normally."
+                    ]
+                },
+                "name": "SP A Ethernet Port 2",
+                "portNumber": 2,
+                "mtu": 1500,
+                "minMtu": 46,
+                "maxMtu": 9000,
+                "bond": False,
+                "isLinkUp": True,
+                "macAddress": "00:50:56:81:11:EF",
+                "isRSSCapable": False,
+                "isRDMACapable": False,
+                "requestedMtu": 1500,
+                "parent": {
+                    "id": "spa",
+                    "resource": "storageProcessor"
+                },
+                "storageProcessor": {
+                    "id": "spa"
+                },
+                "parentStorageProcessor": {
+                    "id": "spa"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "spa_eth3",
+                "speed": 10000,
+                "connectorType": 1,
+                "requestedSpeed": 0,
+                "supportedSpeeds": [
+                    0
+                ],
+                "sfpSupportedSpeeds": [],
+                "sfpSupportedProtocols": [],
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_PORT_LINK_UP"
+                    ],
+                    "descriptions": [
+                        "The port is operating normally."
+                    ]
+                },
+                "name": "SP A Ethernet Port 3",
+                "portNumber": 3,
+                "mtu": 1500,
+                "minMtu": 46,
+                "maxMtu": 9000,
+                "isLinkUp": True,
+                "macAddress": "00:50:56:81:DB:5D",
+                "requestedMtu": 1500,
+                "parent": {
+                    "id": "spa",
+                    "resource": "storageProcessor"
+                },
+                "storageProcessor": {
+                    "id": "spa"
+                },
+                "parentStorageProcessor": {
+                    "id": "spa"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "spa_mgmt",
+                "speed": 10000,
+                "connectorType": 1,
+                "requestedSpeed": 0,
+                "supportedSpeeds": [
+                    0
+                ],
+                "sfpSupportedSpeeds": [],
+                "sfpSupportedProtocols": [],
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_PORT_LINK_UP"
+                    ],
+                    "descriptions": [
+                        "The port is operating normally."
+                    ]
+                },
+                "name": "SP A Management Port",
+                "portNumber": 0,
+                "mtu": 1500,
+                "minMtu": 0,
+                "maxMtu": 0,
+                "bond": False,
+                "isLinkUp": True,
+                "macAddress": "00:50:56:81:E5:05",
+                "isRSSCapable": False,
+                "isRDMACapable": False,
+                "requestedMtu": 0,
+                "parent": {
+                    "id": "spa",
+                    "resource": "storageProcessor"
+                },
+                "storageProcessor": {
+                    "id": "spa"
+                },
+                "parentStorageProcessor": {
+                    "id": "spa"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_IP = {
+    "entries": [
+        {
+            "content": {
+                "id": "1",
+                "netmask": "255.255.255.0",
+                "ipAddress": "192.168.3.111",
+                "ipProtocolVersion": 4,
+                "ipPort": {
+                    "id": "spa_eth1"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_FCPORTS = {
+    "entries": [
+        {
+            "content": {
+                "id": "spa_fc0",
+                "currentSpeed": 10,
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_PORT_LINK_UP"
+                    ],
+                    "descriptions": [
+                        "The port is operating normally."
+                    ]
+                },
+                "name": "SP A FC Port 0",
+                "portNumber": 0,
+                "isLinkUp": True,
+                "macAddress": "00:50:56:81:E1:50",
+                "wwn": "fffffffffff",
+                "isRDMACapable": False,
+                "requestedMtu": 1500,
+                "parent": {
+                    "id": "spa",
+                    "resource": "storageProcessor"
+                },
+                "storageProcessor": {
+                    "id": "spa"
+                },
+                "parentStorageProcessor": {
+                    "id": "spa"
+                }
+            }
+        }
+    ]
+}
+port_result = [
+    {
+        'name': 'SP A Ethernet Port 0',
+        'storage_id': '12345',
+        'native_port_id': 'spa_eth0',
+        'location': 'SP A Ethernet Port 0',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'eth',
+        'logical_type': '',
+        'max_speed': 10485760000,
+        'native_parent_id': 'spa',
+        'wwn': '',
+        'mac_address': '00:50:56:81:E1:50',
+        'ipv4': None,
+        'ipv4_mask': None,
+        'ipv6': None,
+        'ipv6_mask': None
+    }, {
+        'name': 'SP A Ethernet Port 1',
+        'storage_id': '12345',
+        'native_port_id': 'spa_eth1',
+        'location': 'SP A Ethernet Port 1',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'eth',
+        'logical_type': '',
+        'max_speed': 10485760000,
+        'native_parent_id': 'spa',
+        'wwn': '',
+        'mac_address': '00:50:56:81:E8:4B',
+        'ipv4': '192.168.3.111',
+        'ipv4_mask': '255.255.255.0',
+        'ipv6': None,
+        'ipv6_mask': None
+    }, {
+        'name': 'SP A Ethernet Port 2',
+        'storage_id': '12345',
+        'native_port_id': 'spa_eth2',
+        'location': 'SP A Ethernet Port 2',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'eth',
+        'logical_type': '',
+        'max_speed': 10485760000,
+        'native_parent_id': 'spa',
+        'wwn': '',
+        'mac_address': '00:50:56:81:11:EF',
+        'ipv4': None,
+        'ipv4_mask': None,
+        'ipv6': None,
+        'ipv6_mask': None
+    }, {
+        'name': 'SP A Ethernet Port 3',
+        'storage_id': '12345',
+        'native_port_id': 'spa_eth3',
+        'location': 'SP A Ethernet Port 3',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'eth',
+        'logical_type': '',
+        'max_speed': 10485760000,
+        'native_parent_id': 'spa',
+        'wwn': '',
+        'mac_address': '00:50:56:81:DB:5D',
+        'ipv4': None,
+        'ipv4_mask': None,
+        'ipv6': None,
+        'ipv6_mask': None
+    }, {
+        'name': 'SP A Management Port',
+        'storage_id': '12345',
+        'native_port_id': 'spa_mgmt',
+        'location': 'SP A Management Port',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'eth',
+        'logical_type': '',
+        'max_speed': 10485760000,
+        'native_parent_id': 'spa',
+        'wwn': '',
+        'mac_address': '00:50:56:81:E5:05',
+        'ipv4': None,
+        'ipv4_mask': None,
+        'ipv6': None,
+        'ipv6_mask': None
+    }, {
+        'name': 'SP A FC Port 0',
+        'storage_id': '12345',
+        'native_port_id': 'spa_fc0',
+        'location': None,
+        'connection_status': 'normal',
+        'health_status': 'normal',
+        'type': 'fc',
+        'logical_type': '',
+        'max_speed': 10737418240,
+        'native_parent_id': 'spa',
+        'wwn': 'fffffffffff'
+    }
+]
+GET_ALL_FILESYSTEMS = {
+    "entries": [
+        {
+            "content": {
+                "id": "fs_1",
+                "type": 1,
+                "flrVersion": 0,
+                "supportedProtocols": 2,
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "name": "fs1",
+                "sizeTotal": 5368709120,
+                "sizeUsed": 1622450176,
+                "sizeAllocated": 283148288,
+                "isThinEnabled": True,
+                "storageResource": {
+                    "id": "res_1"
+                },
+                "pool": {
+                    "id": "pool_1"
+                },
+                "nasServer": {
+                    "id": "nas_1"
+                },
+                "cifsShare": [
+                    {
+                        "id": "SMBShare_2"
+                    }
+                ],
+                "nfsShare": [
+                    {
+                        "id": "NFSShare_2"
+                    }
+                ]
+            }
+        },
+        {
+            "content": {
+                "id": "fs_3",
+                "type": 1,
+                "flrVersion": 0,
+                "supportedProtocols": 2,
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "name": "ddd",
+                "sizeTotal": 107374182400,
+                "sizeUsed": 1620303872,
+                "sizeAllocated": 283140096,
+                "isThinEnabled": True,
+                "storageResource": {
+                    "id": "res_3"
+                },
+                "pool": {
+                    "id": "pool_1"
+                },
+                "nasServer": {
+                    "id": "nas_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "fs_5",
+                "type": 1,
+                "flrVersion": 0,
+                "supportedProtocols": 2,
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "name": "fs_home",
+                "sizeTotal": 10737418240,
+                "sizeUsed": 1622458368,
+                "sizeAllocated": 283156480,
+                "isThinEnabled": True,
+                "storageResource": {
+                    "id": "res_5"
+                },
+                "pool": {
+                    "id": "pool_1"
+                },
+                "nasServer": {
+                    "id": "nas_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "fs_16",
+                "type": 1,
+                "flrVersion": 0,
+                "supportedProtocols": 2,
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "name": "fs_boga",
+                "sizeTotal": 5368709120,
+                "sizeUsed": 1622450176,
+                "sizeAllocated": 283148288,
+                "isThinEnabled": True,
+                "storageResource": {
+                    "id": "res_16"
+                },
+                "pool": {
+                    "id": "pool_1"
+                },
+                "nasServer": {
+                    "id": "nas_1"
+                },
+                "cifsShare": [
+                    {
+                        "id": "SMBShare_14"
+                    }
+                ],
+                "nfsShare": [
+                    {
+                        "id": "NFSShare_14"
+                    }
+                ]
+            }
+        },
+        {
+            "content": {
+                "id": "fs_20",
+                "type": 1,
+                "flrVersion": 0,
+                "supportedProtocols": 2,
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally"
+                    ]
+                },
+                "name": "fs2",
+                "sizeTotal": 5368709120,
+                "sizeUsed": 1622450176,
+                "sizeAllocated": 283148288,
+                "isThinEnabled": True,
+                "storageResource": {
+                    "id": "res_20"
+                },
+                "pool": {
+                    "id": "pool_1"
+                },
+                "nasServer": {
+                    "id": "nas_1"
+                },
+                "cifsShare": [
+                    {
+                        "id": "SMBShare_18"
+                    }
+                ],
+                "nfsShare": [
+                    {
+                        "id": "NFSShare_18"
+                    }
+                ]
+            }
+        },
+        {
+            "content": {
+                "id": "fs_22",
+                "type": 1,
+                "flrVersion": 0,
+                "supportedProtocols": 2,
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "name": "FS_MULTI1",
+                "sizeTotal": 107374182400,
+                "sizeUsed": 1620303872,
+                "sizeAllocated": 283140096,
+                "isThinEnabled": True,
+                "storageResource": {
+                    "id": "res_22"
+                },
+                "pool": {
+                    "id": "pool_1"
+                },
+                "nasServer": {
+                    "id": "nas_1"
+                },
+                "nfsShare": [
+                    {
+                        "id": "NFSShare_19"
+                    }
+                ]
+            }
+        }
+    ]
+}
+filesystem_result = [
+    {
+        'name': 'fs1',
+        'storage_id': '12345',
+        'native_filesystem_id': 'fs_1',
+        'native_pool_id': 'pool_1',
+        'status': 'normal',
+        'type': 'thin',
+        'total_capacity': 5368709120,
+        'used_capacity': 283148288,
+        'free_capacity': 5085560832,
+        'worm': 'non_worm'
+    }, {
+        'name': 'ddd',
+        'storage_id': '12345',
+        'native_filesystem_id': 'fs_3',
+        'native_pool_id': 'pool_1',
+        'status': 'normal',
+        'type': 'thin',
+        'total_capacity': 107374182400,
+        'used_capacity': 283140096,
+        'free_capacity': 107091042304,
+        'worm': 'non_worm'
+    }, {
+        'name': 'fs_home',
+        'storage_id': '12345',
+        'native_filesystem_id': 'fs_5',
+        'native_pool_id': 'pool_1',
+        'status': 'normal',
+        'type': 'thin',
+        'total_capacity': 10737418240,
+        'used_capacity': 283156480,
+        'free_capacity': 10454261760,
+        'worm': 'non_worm'
+    }, {
+        'name': 'fs_boga',
+        'storage_id': '12345',
+        'native_filesystem_id': 'fs_16',
+        'native_pool_id': 'pool_1',
+        'status': 'normal',
+        'type': 'thin',
+        'total_capacity': 5368709120,
+        'used_capacity': 283148288,
+        'free_capacity': 5085560832,
+        'worm': 'non_worm'
+    }, {
+        'name': 'fs2',
+        'storage_id': '12345',
+        'native_filesystem_id': 'fs_20',
+        'native_pool_id': 'pool_1',
+        'status': 'normal',
+        'type': 'thin',
+        'total_capacity': 5368709120,
+        'used_capacity': 283148288,
+        'free_capacity': 5085560832,
+        'worm': 'non_worm'
+    }, {
+        'name': 'FS_MULTI1',
+        'storage_id': '12345',
+        'native_filesystem_id': 'fs_22',
+        'native_pool_id': 'pool_1',
+        'status': 'normal',
+        'type': 'thin',
+        'total_capacity': 107374182400,
+        'used_capacity': 283140096,
+        'free_capacity': 107091042304,
+        'worm': 'non_worm'
+    }
+]
+GET_ALL_QTREE = {
+    "entries": [
+        {
+            "content": {
+                "id": "qtree_1",
+                "hardLimit": 1000,
+                "softLimit": 1110,
+                "sizeUsed": 20000000,
+                "path": "/",
+                "filesystem": {
+                    "id": "filesystem_1"
+                },
+                "quotaConfig": {
+                    "id": "quotaConfig_1"
+                }
+            }
+        }
+    ]
+}
+qtree_result = [
+    {
+        'name': 'qtree_1',
+        'storage_id': '12345',
+        'native_qtree_id': 'qtree_1',
+        'native_filesystem_id': 'filesystem_1',
+        'path': '/filesystem_1/'
+    }
+]
+GET_ALL_CIFSSHARE = {
+    "entries": [
+        {
+            "content": {
+                "id": "SMBShare_2",
+                "type": 1,
+                "name": "fs1",
+                "path": "/",
+                "filesystem": {
+                    "id": "fs_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "SMBShare_14",
+                "type": 1,
+                "name": "boga",
+                "path": "/",
+                "filesystem": {
+                    "id": "fs_16"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "SMBShare_18",
+                "type": 1,
+                "name": "fs2",
+                "path": "/",
+                "filesystem": {
+                    "id": "fs_20"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_NFSSHARE = {
+    "entries": [
+        {
+            "content": {
+                "id": "NFSShare_2",
+                "type": 1,
+                "role": 0,
+                "name": "fs1",
+                "path": "/",
+                "filesystem": {
+                    "id": "fs_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "NFSShare_14",
+                "type": 1,
+                "role": 0,
+                "name": "boga",
+                "path": "/",
+                "filesystem": {
+                    "id": "fs_16"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "NFSShare_18",
+                "type": 1,
+                "role": 0,
+                "name": "fs2",
+                "path": "/",
+                "filesystem": {
+                    "id": "fs_20"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "NFSShare_19",
+                "type": 1,
+                "role": 0,
+                "name": "FS_MULTI1",
+                "path": "/",
+                "filesystem": {
+                    "id": "fs_22"
+                }
+            }
+        }
+    ]
+}
+share_result = [
+    {
+        'name': 'fs1',
+        'storage_id': '12345',
+        'native_share_id': 'SMBShare_2',
+        'native_filesystem_id': 'fs_1',
+        'path': '/fs_1/',
+        'protocol': 'cifs'
+    }, {
+        'name': 'boga',
+        'storage_id': '12345',
+        'native_share_id': 'SMBShare_14',
+        'native_filesystem_id': 'fs_16',
+        'path': '/fs_16/',
+        'protocol': 'cifs'
+    }, {
+        'name': 'fs2',
+        'storage_id': '12345',
+        'native_share_id': 'SMBShare_18',
+        'native_filesystem_id': 'fs_20',
+        'path': '/fs_20/',
+        'protocol': 'cifs'
+    }, {
+        'name': 'fs1',
+        'storage_id': '12345',
+        'native_share_id': 'NFSShare_2',
+        'native_filesystem_id': 'fs_1',
+        'path': '/fs_1/',
+        'protocol': 'nfs'
+    }, {
+        'name': 'boga',
+        'storage_id': '12345',
+        'native_share_id': 'NFSShare_14',
+        'native_filesystem_id': 'fs_16',
+        'path': '/fs_16/',
+        'protocol': 'nfs'
+    }, {
+        'name': 'fs2',
+        'storage_id': '12345',
+        'native_share_id': 'NFSShare_18',
+        'native_filesystem_id': 'fs_20',
+        'path': '/fs_20/',
+        'protocol': 'nfs'
+    }, {
+        'name': 'FS_MULTI1',
+        'storage_id': '12345',
+        'native_share_id': 'NFSShare_19',
+        'native_filesystem_id': 'fs_22',
+        'path': '/fs_22/',
+        'protocol': 'nfs'
+    }
+]
+GET_ALL_QUOTACONFIG = {
+    "entries": [
+        {
+            "content": {
+                "id": "quotaConfig_1",
+                "isAccessDenyEnabled": True,
+                "quotaPolicy": 0,
+                "isUserQuotaEnabled": True,
+                "filesystem": {
+                    "id": "filesystem_1"
+                },
+                "treeQuota": {
+                    "id": "qtree_1"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_USERQUOTA = {
+    "entries": [
+        {
+            "content": {
+                "id": "user_1",
+                "hardLimit": 1000,
+                "softLimit": 1110,
+                "sizeUsed": 20000000,
+                "path": "/",
+                "filesystem": {
+                    "id": "filesystem_1"
+                },
+                "treeQuota": {
+                    "id": "qtree_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "user_2",
+                "hardLimit": 1000,
+                "softLimit": 1110,
+                "sizeUsed": 20000000,
+                "path": "/",
+                "filesystem": {
+                    "id": "filesystem_1"
+                },
+                "treeQuota": None
+            }
+        }
+    ]
+}
+quota_result = [
+    {
+        'native_quota_id': 'qtree_1',
+        'type': 'tree',
+        'storage_id': '12345',
+        'native_filesystem_id': 'filesystem_1',
+        'native_qtree_id': 'qtree_1',
+        'capacity_hard_limit': 0,
+        'capacity_soft_limit': 0,
+        'file_hard_limit': 1000,
+        'file_soft_limit': 1110,
+        'used_capacity': 20000000
+    }, {
+        'native_quota_id': 'user_1',
+        'type': 'user',
+        'storage_id': '12345',
+        'native_filesystem_id': 'filesystem_1',
+        'native_qtree_id': 'user_1',
+        'capacity_hard_limit': 0,
+        'capacity_soft_limit': 0,
+        'file_hard_limit': 1000,
+        'file_soft_limit': 1110,
+        'used_capacity': 20000000
+    }, {
+        'native_quota_id': 'user_2',
+        'type': 'user',
+        'storage_id': '12345',
+        'native_filesystem_id': 'filesystem_1',
+        'native_qtree_id': 'user_2',
+        'capacity_hard_limit': 1000,
+        'capacity_soft_limit': 1110,
+        'file_hard_limit': 0,
+        'file_soft_limit': 0,
+        'used_capacity': 20000000
+    }
+]
 
 
 class TestUNITYStorDriver(TestCase):
@@ -373,3 +1392,62 @@ class TestUNITYStorDriver(TestCase):
         mock_rest.return_value = mock.MagicMock(status_code=200)
         UnityStorDriver(**ACCESS_INFO).rest_handler.get_rest_info('')
         self.assertEqual(mock_rest.call_count, 1)
+
+    @mock.patch.object(RestHandler, 'get_all_controllers')
+    def test_list_controllers(self, mock_controller):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_controller.return_value = GET_ALL_CONTROLLERS
+        controller = UnityStorDriver(**ACCESS_INFO).list_controllers(context)
+        self.assertEqual(controller, controller_result)
+
+    @mock.patch.object(RestHandler, 'get_all_disks')
+    def test_list_disks(self, mock_disk):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_disk.return_value = GET_ALL_DISKS
+        disk = UnityStorDriver(**ACCESS_INFO).list_disks(context)
+        self.assertEqual(disk, disk_result)
+
+    @mock.patch.object(RestHandler, 'get_all_ethports')
+    @mock.patch.object(RestHandler, 'get_port_interface')
+    @mock.patch.object(RestHandler, 'get_all_fcports')
+    def test_list_ports(self, mock_fc, mock_ip, mock_eth):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_eth.return_value = GET_ALL_ETHPORTS
+        mock_ip.return_value = GET_ALL_IP
+        mock_fc.return_value = GET_ALL_FCPORTS
+        port = UnityStorDriver(**ACCESS_INFO).list_ports(context)
+        self.assertEqual(port, port_result)
+
+    @mock.patch.object(RestHandler, 'get_all_filesystems')
+    def list_filesystems(self, mock_filesystem):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_filesystem.return_value = GET_ALL_FILESYSTEMS
+        file = UnityStorDriver(**ACCESS_INFO).list_filesystems(context)
+        self.assertEqual(file, filesystem_result)
+
+    @mock.patch.object(RestHandler, 'get_all_qtrees')
+    def test_list_qtrees(self, mock_qtree):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_qtree.return_value = GET_ALL_QTREE
+        qtree = UnityStorDriver(**ACCESS_INFO).list_qtrees(context)
+        self.assertEqual(qtree, qtree_result)
+
+    @mock.patch.object(RestHandler, 'get_all_nfsshares')
+    @mock.patch.object(RestHandler, 'get_all_cifsshares')
+    def test_list_shares(self, mock_cifs, mock_nfs):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_cifs.return_value = GET_ALL_CIFSSHARE
+        mock_nfs.return_value = GET_ALL_NFSSHARE
+        share = UnityStorDriver(**ACCESS_INFO).list_shares(context)
+        self.assertEqual(share, share_result)
+
+    @mock.patch.object(RestHandler, 'get_all_qtrees')
+    @mock.patch.object(RestHandler, 'get_all_userquotas')
+    @mock.patch.object(RestHandler, 'get_quota_configs')
+    def test_list_quotas(self, mock_config, mock_user, mock_qtree):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_config.return_value = GET_ALL_QUOTACONFIG
+        mock_user.return_value = GET_ALL_USERQUOTA
+        mock_qtree.return_value = GET_ALL_QTREE
+        quota = UnityStorDriver(**ACCESS_INFO).list_quotas(context)
+        self.assertEqual(quota, quota_result)
