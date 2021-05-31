@@ -36,8 +36,8 @@ PORT_LOGICAL_TYPE_MAP = {
     'maintenance': constants.PortLogicalType.MAINTENANCE,
     'inter-director-communication': constants.PortLogicalType.INTERCONNECT,
     'other': constants.PortLogicalType.OTHER,
-    'local-com': constants.PortLogicalType.OTHER,
-    'wan-com': constants.PortLogicalType.OTHER
+    'local-com': constants.PortLogicalType.INTERCLUSTER,
+    'wan-com': constants.PortLogicalType.CLUSTER_MGMT
 }
 PORT_CONNECT_STATUS_MAP = {
     'up': constants.PortConnectionStatus.CONNECTED,
