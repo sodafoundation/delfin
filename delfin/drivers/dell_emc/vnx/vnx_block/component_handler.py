@@ -401,7 +401,8 @@ class ComponentHandler(object):
                         'storage_id': storage_id,
                         'native_port_id': native_port_id,
                         'location': location,
-                        'connection_status': None,
+                        'connection_status':
+                            constants.PortConnectionStatus.UNKNOWN,
                         'health_status':
                             consts.PORT_HEALTH_STATUS_MAP.get(
                                 state.upper(),
