@@ -662,7 +662,7 @@ CONTROLLER_STATUS_MAP = {
     'FAILED': constants.ControllerStatus.OFFLINE
 }
 DISK_PHYSICAL_TYPE_MAP = {
-    'FC': constants.DiskPhysicalType.UNKNOWN,
+    'FC': constants.DiskPhysicalType.FC,
     'SSD': constants.DiskPhysicalType.SSD,
     'NL': constants.DiskPhysicalType.UNKNOWN
 }
@@ -692,11 +692,11 @@ PORT_TYPE_MAP = {
     'FC': constants.PortType.FC,
     'ISCSI': constants.PortType.ISCSI,
     'ETH': constants.PortType.ETH,
-    'CNA': constants.PortType.OTHER,
+    'CNA': constants.PortType.CNA,
     'SAS': constants.PortType.SAS,
-    'COMBO': constants.PortType.OTHER,
+    'COMBO': constants.PortType.COMBO,
     'NVMe': constants.PortType.OTHER,
     'UNKNOWN': constants.PortType.OTHER,
-    'RCIP': constants.PortType.OTHER,
+    'RCIP': constants.PortType.RCIP,
     'RCFC': constants.PortType.OTHER
 }

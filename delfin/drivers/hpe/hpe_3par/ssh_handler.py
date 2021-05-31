@@ -119,12 +119,12 @@ class SSHHandler(object):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWNODE_CPU,
                                        self.analyse_datas_to_map,
                                        pattern_str=consts.CPU_PATTERN,
-                                       para_map=para_map, ckeck_excep=False)
+                                       para_map=para_map, throw_excep=False)
 
     def get_controllers_version(self):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWEEPROM,
                                        self.analyse_node_version,
-                                       ckeck_excep=False)
+                                       throw_excep=False)
 
     def analyse_node_version(self, resource_info, pattern_str, para_map=None):
         node_version_map = {}
@@ -179,7 +179,7 @@ class SSHHandler(object):
         inventorys = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPD_I, self.analyse_datas_to_list,
             pattern_str=consts.DISK_I_PATTERN, para_map=para_map,
-            ckeck_excep=False)
+            throw_excep=False)
         for inventory in (inventorys or []):
             inventory_map[inventory.get('disk_id')] = inventory
         return inventory_map
@@ -197,7 +197,7 @@ class SSHHandler(object):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPORT_I,
                                        self.analyse_datas_to_map,
                                        pattern_str=consts.PORT_I_PATTERN,
-                                       para_map=para_map, ckeck_excep=False)
+                                       para_map=para_map, throw_excep=False)
 
     def get_ports_config(self):
         para_map = {
@@ -207,14 +207,14 @@ class SSHHandler(object):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPORT_PAR,
                                        self.analyse_datas_to_map,
                                        pattern_str=consts.PORT_PER_PATTERN,
-                                       para_map=para_map, ckeck_excep=False)
+                                       para_map=para_map, throw_excep=False)
 
     def get_ports_iscsi(self):
         iscsis_map = {}
         iscsis = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_ISCSI,
             self.analyse_datas_to_list, pattern_str=consts.PORT_ISCSI_PATTERN,
-            ckeck_excep=False)
+            throw_excep=False)
         for iscsi in (iscsis or []):
             iscsis_map[iscsi.get('n:s:p')] = iscsi
         return iscsis_map
@@ -227,14 +227,14 @@ class SSHHandler(object):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPORT_C,
                                        self.analyse_datas_to_map,
                                        pattern_str=consts.PORT_C_PATTERN,
-                                       para_map=para_map, ckeck_excep=False)
+                                       para_map=para_map, throw_excep=False)
 
     def get_ports_rcip(self):
         rcip_map = {}
         rcips = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_RCIP,
             self.analyse_datas_to_list, pattern_str=consts.PORT_RCIP_PATTERN,
-            ckeck_excep=False)
+            throw_excep=False)
         for rcip in (rcips or []):
             rcip_map[rcip.get('n:s:p')] = rcip
         return rcip_map
@@ -244,7 +244,7 @@ class SSHHandler(object):
         port_fss = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_FS,
             self.analyse_datas_to_list, pattern_str=consts.PORT_FS_PATTERN,
-            ckeck_excep=False)
+            throw_excep=False)
         for port_fs in (port_fss or []):
             port_fs_map[port_fs.get('n:s:p')] = port_fs
         return port_fs_map
@@ -254,7 +254,7 @@ class SSHHandler(object):
         fcoes = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_FCOE,
             self.analyse_datas_to_list, pattern_str=consts.PORT_FCOE_PATTERN,
-            ckeck_excep=False)
+            throw_excep=False)
         for fcoe in (fcoes or []):
             fcoe_map[fcoe.get('n:s:p')] = fcoe
         return fcoe_map
@@ -392,6 +392,7 @@ class SSHHandler(object):
     @staticmethod
     def do_exec(command_str, ssh):
         """Execute command"""
+        result = None
         try:
             utils.check_ssh_injection(command_str)
             if command_str is not None and ssh is not None:
@@ -430,14 +431,15 @@ class SSHHandler(object):
             raise exception.SSHException(msg)
 
     def get_resources_info(self, command, analyse_type, pattern_str=None,
-                           para_map=None, ckeck_excep=True):
+                           para_map=None, throw_excep=True):
         re = self.exec_ssh_command(command)
+        resources_info = None
         try:
             if re:
                 resources_info = analyse_type(re, pattern_str,
                                               para_map=para_map)
         except Exception as e:
             LOG.error("Get %s info error: %s" % (command, six.text_type(e)))
-            if ckeck_excep:
+            if throw_excep:
                 raise e
         return resources_info

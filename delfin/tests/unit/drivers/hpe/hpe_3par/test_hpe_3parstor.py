@@ -169,7 +169,7 @@ DISK_RESULT = [
         'speed': 15000,
         'capacity': 599684808704,
         'status': 'abnormal',
-        'physical_type': 'unknown',
+        'physical_type': 'fc',
         'logical_type': None,
         'health_score': None,
         'native_disk_group_id': None,
