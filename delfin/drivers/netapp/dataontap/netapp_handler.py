@@ -101,12 +101,10 @@ class NetAppHandler(object):
             Tools.split_value_map(system_info, storage_map, split=':')
             for disk in disk_list:
                 raw_capacity += disk['capacity']
-
             for pool in pool_list:
                 total_capacity += pool['total_capacity']
                 free_capacity += pool['free_capacity']
                 used_capacity += pool['used_capacity']
-
             storage_model = {
                 "name": storage_map['ClusterName'],
                 "vendor": constant.STORAGE_VENDOR,
