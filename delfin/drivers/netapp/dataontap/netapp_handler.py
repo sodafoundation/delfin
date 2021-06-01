@@ -42,6 +42,7 @@ class NetAppHandler(object):
             alert_info = alert.get(NetAppHandler.OID_TRAP_DATA)
             alert_array = alert_info.split(":")
             alert_model = {}
+
             if len(alert_array) > 1:
                 alert_name = alert_array[0]
                 description = alert_array[1]
