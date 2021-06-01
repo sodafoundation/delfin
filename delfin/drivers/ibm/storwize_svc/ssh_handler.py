@@ -471,12 +471,12 @@ class SSHHandler(object):
             raise exception.InvalidResults(err_msg)
 
     def get_fc_port(self, port_list, storage_id):
-        disk_info = self.exec_ssh_command('lsportfc')
-        disk_res = disk_info.split('\n')
-        for i in range(1, len(disk_res)):
-            if disk_res[i] is None or disk_res[i] == '':
+        fc_info = self.exec_ssh_command('lsportfc')
+        fc_res = fc_info.split('\n')
+        for i in range(1, len(fc_res)):
+            if fc_res[i] is None or fc_res[i] == '':
                 continue
-            control_str = ' '.join(disk_res[i].split())
+            control_str = ' '.join(fc_res[i].split())
             str_info = control_str.split(' ')
             port_id = str_info[0]
             detail_command = 'lsportfc %s' % port_id
