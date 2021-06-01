@@ -279,15 +279,16 @@ class SSHHandler(object):
                         if para_map and para_map.get('command', '') \
                                 == 'parse_disk_table':
                             obj_list = self.parse_disk_table(cols_size,
-                                                                   titles_size,
-                                                                   str_info,
-                                                                   obj_list,
-                                                                   titles)
-                        elif para_map and para_map.get('command', '')\
+                                                             titles_size,
+                                                             str_info,
+                                                             obj_list,
+                                                             titles)
+                        elif para_map and para_map.get('command', '') \
                                 == 'parse_node_table':
                             obj_list = self.parse_node_table(cols_size,
-                                                          titles_size,
-                                                          str_info, obj_list)
+                                                             titles_size,
+                                                             str_info,
+                                                             obj_list)
                         else:
                             if cols_size == titles_size:
                                 obj_model = {}
@@ -321,9 +322,9 @@ class SSHHandler(object):
                         if para_map and para_map.get('command',
                                                      '') == 'parse_node_cpu':
                             obj_model = self.parse_node_cpu(cols_size,
-                                                              titles_size,
-                                                              str_info,
-                                                              obj_model)
+                                                            titles_size,
+                                                            str_info,
+                                                            obj_model)
                         else:
                             if cols_size >= titles_size:
                                 key_position = para_map.get('key_position')
@@ -339,7 +340,7 @@ class SSHHandler(object):
         return obj_model
 
     def parse_disk_table(self, cols_size, titles_size, str_info,
-                               obj_list, titles):
+                         obj_list, titles):
         if cols_size == titles_size:
             fw_rev_index = self.get_index_of_key(titles, 'FW_Rev')
             if fw_rev_index:
@@ -437,7 +438,7 @@ class SSHHandler(object):
         try:
             if re:
                 resources_info = parse_type(re, pattern_str,
-                                              para_map=para_map)
+                                            para_map=para_map)
         except Exception as e:
             LOG.error("Get %s info error: %s" % (command, six.text_type(e)))
             if throw_excep:
