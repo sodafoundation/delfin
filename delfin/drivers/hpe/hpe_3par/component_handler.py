@@ -378,8 +378,8 @@ class ComponentHandler():
                     'type': consts.PORT_TYPE_MAP.get(port_type.upper(),
                                                      constants.PortType.OTHER),
                     'logical_type': None,
-                    'speed': self.analyse_speed(rate),
-                    'max_speed': self.analyse_speed(max_speed),
+                    'speed': self.parse_speed(rate),
+                    'max_speed': self.parse_speed(max_speed),
                     'native_parent_id': None,
                     'wwn': wwn,
                     'mac_address': mac,
@@ -391,7 +391,7 @@ class ComponentHandler():
                 port_list.append(port_model)
         return port_list
 
-    def analyse_speed(self, speed_value):
+    def parse_speed(self, speed_value):
         speed = 0
         try:
             if speed_value == '' or speed_value == 'n/a':

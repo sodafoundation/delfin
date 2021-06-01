@@ -105,28 +105,28 @@ class SSHHandler(object):
 
     def get_controllers(self):
         para_map = {
-            'command': 'analyse_nodes'
+            'command': 'parse_node_table'
         }
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWNODE,
-                                       self.analyse_datas_to_list,
+                                       self.parse_datas_to_list,
                                        pattern_str=consts.NODE_PATTERN,
                                        para_map=para_map)
 
     def get_controllers_cpu(self):
         para_map = {
-            'command': 'analyse_node_cpu'
+            'command': 'parse_node_cpu'
         }
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWNODE_CPU,
-                                       self.analyse_datas_to_map,
+                                       self.parse_datas_to_map,
                                        pattern_str=consts.CPU_PATTERN,
                                        para_map=para_map, throw_excep=False)
 
     def get_controllers_version(self):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWEEPROM,
-                                       self.analyse_node_version,
+                                       self.parse_node_version,
                                        throw_excep=False)
 
-    def analyse_node_version(self, resource_info, pattern_str, para_map=None):
+    def parse_node_version(self, resource_info, pattern_str, para_map=None):
         node_version_map = {}
         node_info_map = {}
         try:
@@ -168,16 +168,16 @@ class SSHHandler(object):
 
     def get_disks(self):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPD,
-                                       self.analyse_datas_to_list,
+                                       self.parse_datas_to_list,
                                        pattern_str=consts.DISK_PATTERN)
 
     def get_disks_inventory(self):
         inventory_map = {}
         para_map = {
-            'command': 'analyse_disk_inventory'
+            'command': 'parse_disk_table'
         }
         inventorys = self.get_resources_info(
-            SSHHandler.HPE3PAR_COMMAND_SHOWPD_I, self.analyse_datas_to_list,
+            SSHHandler.HPE3PAR_COMMAND_SHOWPD_I, self.parse_datas_to_list,
             pattern_str=consts.DISK_I_PATTERN, para_map=para_map,
             throw_excep=False)
         for inventory in (inventorys or []):
@@ -186,7 +186,7 @@ class SSHHandler(object):
 
     def get_ports(self):
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPORT,
-                                       self.analyse_datas_to_list,
+                                       self.parse_datas_to_list,
                                        pattern_str=consts.PORT_PATTERN)
 
     def get_ports_inventory(self):
@@ -195,7 +195,7 @@ class SSHHandler(object):
             'value_position': 'last'
         }
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPORT_I,
-                                       self.analyse_datas_to_map,
+                                       self.parse_datas_to_map,
                                        pattern_str=consts.PORT_I_PATTERN,
                                        para_map=para_map, throw_excep=False)
 
@@ -205,7 +205,7 @@ class SSHHandler(object):
             'value_position': 4
         }
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPORT_PAR,
-                                       self.analyse_datas_to_map,
+                                       self.parse_datas_to_map,
                                        pattern_str=consts.PORT_PER_PATTERN,
                                        para_map=para_map, throw_excep=False)
 
@@ -213,7 +213,7 @@ class SSHHandler(object):
         iscsis_map = {}
         iscsis = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_ISCSI,
-            self.analyse_datas_to_list, pattern_str=consts.PORT_ISCSI_PATTERN,
+            self.parse_datas_to_list, pattern_str=consts.PORT_ISCSI_PATTERN,
             throw_excep=False)
         for iscsi in (iscsis or []):
             iscsis_map[iscsi.get('n:s:p')] = iscsi
@@ -225,7 +225,7 @@ class SSHHandler(object):
             'value_position': 6
         }
         return self.get_resources_info(SSHHandler.HPE3PAR_COMMAND_SHOWPORT_C,
-                                       self.analyse_datas_to_map,
+                                       self.parse_datas_to_map,
                                        pattern_str=consts.PORT_C_PATTERN,
                                        para_map=para_map, throw_excep=False)
 
@@ -233,7 +233,7 @@ class SSHHandler(object):
         rcip_map = {}
         rcips = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_RCIP,
-            self.analyse_datas_to_list, pattern_str=consts.PORT_RCIP_PATTERN,
+            self.parse_datas_to_list, pattern_str=consts.PORT_RCIP_PATTERN,
             throw_excep=False)
         for rcip in (rcips or []):
             rcip_map[rcip.get('n:s:p')] = rcip
@@ -243,7 +243,7 @@ class SSHHandler(object):
         port_fs_map = {}
         port_fss = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_FS,
-            self.analyse_datas_to_list, pattern_str=consts.PORT_FS_PATTERN,
+            self.parse_datas_to_list, pattern_str=consts.PORT_FS_PATTERN,
             throw_excep=False)
         for port_fs in (port_fss or []):
             port_fs_map[port_fs.get('n:s:p')] = port_fs
@@ -253,13 +253,13 @@ class SSHHandler(object):
         fcoe_map = {}
         fcoes = self.get_resources_info(
             SSHHandler.HPE3PAR_COMMAND_SHOWPORT_FCOE,
-            self.analyse_datas_to_list, pattern_str=consts.PORT_FCOE_PATTERN,
+            self.parse_datas_to_list, pattern_str=consts.PORT_FCOE_PATTERN,
             throw_excep=False)
         for fcoe in (fcoes or []):
             fcoe_map[fcoe.get('n:s:p')] = fcoe
         return fcoe_map
 
-    def analyse_datas_to_list(self, resource_info, pattern_str, para_map=None):
+    def parse_datas_to_list(self, resource_info, pattern_str, para_map=None):
         obj_list = []
         titles_size = 9999
         try:
@@ -277,15 +277,15 @@ class SSHHandler(object):
                         str_info = str_line.split()
                         cols_size = len(str_info)
                         if para_map and para_map.get('command', '') \
-                                == 'analyse_disk_inventory':
-                            obj_list = self.analyse_disk_inventory(cols_size,
+                                == 'parse_disk_table':
+                            obj_list = self.parse_disk_table(cols_size,
                                                                    titles_size,
                                                                    str_info,
                                                                    obj_list,
                                                                    titles)
-                        elif para_map and para_map.get('command',
-                                                       '') == 'analyse_nodes':
-                            obj_list = self.analyse_nodes(cols_size,
+                        elif para_map and para_map.get('command', '')\
+                                == 'parse_node_table':
+                            obj_list = self.parse_node_table(cols_size,
                                                           titles_size,
                                                           str_info, obj_list)
                         else:
@@ -302,7 +302,7 @@ class SSHHandler(object):
             raise exception.InvalidResults(err_msg)
         return obj_list
 
-    def analyse_datas_to_map(self, resource_info, pattern_str, para_map=None):
+    def parse_datas_to_map(self, resource_info, pattern_str, para_map=None):
         obj_model = {}
         titles_size = 9999
         try:
@@ -319,8 +319,8 @@ class SSHHandler(object):
                         str_info = str_line.split()
                         cols_size = len(str_info)
                         if para_map and para_map.get('command',
-                                                     '') == 'analyse_node_cpu':
-                            obj_model = self.analyse_node_cpu(cols_size,
+                                                     '') == 'parse_node_cpu':
+                            obj_model = self.parse_node_cpu(cols_size,
                                                               titles_size,
                                                               str_info,
                                                               obj_model)
@@ -338,7 +338,7 @@ class SSHHandler(object):
             raise exception.InvalidResults(err_msg)
         return obj_model
 
-    def analyse_disk_inventory(self, cols_size, titles_size, str_info,
+    def parse_disk_table(self, cols_size, titles_size, str_info,
                                obj_list, titles):
         if cols_size == titles_size:
             fw_rev_index = self.get_index_of_key(titles, 'FW_Rev')
@@ -353,7 +353,7 @@ class SSHHandler(object):
                 obj_list.append(inventory_map)
         return obj_list
 
-    def analyse_nodes(self, cols_size, titles_size, str_info, obj_list):
+    def parse_node_table(self, cols_size, titles_size, str_info, obj_list):
         if cols_size >= titles_size:
             # Only node_ The name attribute may contain spaces,
             # so there will be several more columns
@@ -369,7 +369,7 @@ class SSHHandler(object):
             obj_list.append(obj_model)
         return obj_list
 
-    def analyse_node_cpu(self, cols_size, titles_size, str_info, obj_map):
+    def parse_node_cpu(self, cols_size, titles_size, str_info, obj_map):
         if cols_size >= titles_size:
             node_id = str_info[0]
             cpu_info = str_info[4]
@@ -430,13 +430,13 @@ class SSHHandler(object):
                   (command, six.text_type(e))
             raise exception.SSHException(msg)
 
-    def get_resources_info(self, command, analyse_type, pattern_str=None,
+    def get_resources_info(self, command, parse_type, pattern_str=None,
                            para_map=None, throw_excep=True):
         re = self.exec_ssh_command(command)
         resources_info = None
         try:
             if re:
-                resources_info = analyse_type(re, pattern_str,
+                resources_info = parse_type(re, pattern_str,
                                               para_map=para_map)
         except Exception as e:
             LOG.error("Get %s info error: %s" % (command, six.text_type(e)))
