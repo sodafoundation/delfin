@@ -426,7 +426,7 @@ class SSHHandler(object):
                 controller_list.append(controller_result)
             return controller_list
         except Exception as err:
-            err_msg = "Failed to get controller metrics from Storwize: %s"\
+            err_msg = "Failed to get controller attributes from Storwize: %s"\
                       % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -466,7 +466,7 @@ class SSHHandler(object):
                 disk_list.append(disk_result)
             return disk_list
         except Exception as err:
-            err_msg = "Failed to get disk metrics from Storwize: %s" % \
+            err_msg = "Failed to get disk attributes from Storwize: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -576,6 +576,6 @@ class SSHHandler(object):
             self.get_iscsi_port(port_list, storage_id)
             return port_list
         except Exception as err:
-            err_msg = "Failed to get ports metrics from Storwize: %s" % \
+            err_msg = "Failed to get ports attributes from Storwize: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
