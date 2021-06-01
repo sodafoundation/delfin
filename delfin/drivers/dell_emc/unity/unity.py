@@ -183,7 +183,7 @@ class UnityStorDriver(driver.StorageDriver):
                 pool_entries = controller_info.get('entries')
                 for pool in pool_entries:
                     content = pool.get('content', {})
-                    health_value = content.get('health').get('value')
+                    health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.StorageStatus.NORMAL
                     else:
@@ -200,7 +200,7 @@ class UnityStorDriver(driver.StorageDriver):
                     controller_list.append(controller_result)
             return controller_list
         except Exception as err:
-            err_msg = "Failed to get controller metrics from UnityStor: %s" %\
+            err_msg = "Failed to get controller metrics from Unity: %s" %\
                       (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -220,7 +220,7 @@ class UnityStorDriver(driver.StorageDriver):
             port_entries = ports.get('entries')
             for port in port_entries:
                 content = port.get('content', {})
-                health_value = content.get('health').get('value')
+                health_value = content.get('health', {}).get('value')
                 if health_value in UnityStorDriver.HEALTH_OK:
                     status = constants.StorageStatus.NORMAL
                 else:
@@ -273,7 +273,7 @@ class UnityStorDriver(driver.StorageDriver):
             port_entries = ports.get('entries')
             for port in port_entries:
                 content = port.get('content', {})
-                health_value = content.get('health').get('value')
+                health_value = content.get('health', {}).get('value')
                 if health_value in UnityStorDriver.HEALTH_OK:
                     status = constants.StorageStatus.NORMAL
                 else:
@@ -302,7 +302,7 @@ class UnityStorDriver(driver.StorageDriver):
             self.get_fc_port(port_list)
             return port_list
         except Exception as err:
-            err_msg = "Failed to get ports metrics from UnityStor: %s" % \
+            err_msg = "Failed to get ports metrics from Unity: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -314,7 +314,7 @@ class UnityStorDriver(driver.StorageDriver):
                 disk_entries = disks.get('entries')
                 for disk in disk_entries:
                     content = disk.get('content', {})
-                    health_value = content.get('health').get('value')
+                    health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.StorageStatus.NORMAL
                     else:
@@ -340,7 +340,7 @@ class UnityStorDriver(driver.StorageDriver):
             return disk_list
 
         except Exception as err:
-            err_msg = "Failed to get disk metrics from UnityStor: %s" % \
+            err_msg = "Failed to get disk metrics from Unity: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -352,7 +352,7 @@ class UnityStorDriver(driver.StorageDriver):
                 fs_entries = files.get('entries')
                 for file in fs_entries:
                     content = file.get('content', {})
-                    health_value = content.get('health').get('value')
+                    health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.FilesystemStatus.NORMAL
                     else:
@@ -376,7 +376,7 @@ class UnityStorDriver(driver.StorageDriver):
                     fs_list.append(fs)
             return fs_list
         except Exception as err:
-            err_msg = "Failed to get filesystem metrics from UnityStor: %s"\
+            err_msg = "Failed to get filesystem metrics from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -401,7 +401,7 @@ class UnityStorDriver(driver.StorageDriver):
                     qt_list.append(qt)
             return qt_list
         except Exception as err:
-            err_msg = "Failed to get qtree metrics from UnityStor: %s"\
+            err_msg = "Failed to get qtree metrics from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -430,7 +430,7 @@ class UnityStorDriver(driver.StorageDriver):
                     }
                     share_list.append(fs)
         except Exception as err:
-            err_msg = "Failed to get share metrics from UnityStor: %s"\
+            err_msg = "Failed to get share metrics from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -441,7 +441,7 @@ class UnityStorDriver(driver.StorageDriver):
             self.get_share(share_list, 'nfs')
             return share_list
         except Exception as err:
-            err_msg = "Failed to get shares metrics from UnityStor: %s"\
+            err_msg = "Failed to get shares metrics from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -537,7 +537,7 @@ class UnityStorDriver(driver.StorageDriver):
             self.get_user_quotas(quotas_list)
             return quotas_list
         except Exception as err:
-            err_msg = "Failed to get quotas metrics from UnityStor: %s"\
+            err_msg = "Failed to get quotas metrics from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
