@@ -98,32 +98,32 @@ ALERT_SEVERITY = {
 }
 
 DISK_TYPE = {
-    'ATA': constants.DiskPhysicalType.SATA,
-    'BSAS': constants.DiskPhysicalType.UNKNOWN,
-    'FCAL': constants.DiskPhysicalType.UNKNOWN,
-    'FSAS': constants.DiskPhysicalType.UNKNOWN,
-    'LUN ': constants.DiskPhysicalType.UNKNOWN,
+    'ATA': constants.DiskPhysicalType.ATA,
+    'BSAS': constants.DiskPhysicalType.SATA,
+    'FCAL': constants.DiskPhysicalType.FC,
+    'FSAS': constants.DiskPhysicalType.NL_SAS,
+    'LUN ': constants.DiskPhysicalType.LUN,
     'SAS': constants.DiskPhysicalType.SAS,
-    'MSATA': constants.DiskPhysicalType.UNKNOWN,
+    'MSATA': constants.DiskPhysicalType.SATA,
     'SSD': constants.DiskPhysicalType.SSD,
-    'VMDISK': constants.DiskPhysicalType.UNKNOWN,
+    'VMDISK': constants.DiskPhysicalType.VMDISK,
     'unknown': constants.DiskPhysicalType.UNKNOWN,
 }
 
 DISK_LOGICAL = {
-    'aggregate': constants.DiskLogicalType.MEMBER,
-    'spare': constants.DiskLogicalType.HOTSPARE,
+    'aggregate': constants.DiskLogicalType.AGGREGATE,
+    'spare': constants.DiskLogicalType.SPARE,
     'unknown': constants.DiskLogicalType.UNKNOWN,
     'free': constants.DiskLogicalType.FREE,
-    'broken': constants.DiskLogicalType.UNKNOWN,
-    'foreign': constants.DiskLogicalType.UNKNOWN,
-    'labelmaint': constants.DiskLogicalType.UNKNOWN,
-    'maintenance': constants.DiskLogicalType.UNKNOWN,
-    'shared': constants.DiskLogicalType.UNKNOWN,
-    'unassigned': constants.DiskLogicalType.UNKNOWN,
-    'unsupported': constants.DiskLogicalType.UNKNOWN,
-    'remote': constants.DiskLogicalType.UNKNOWN,
-    'mediator': constants.DiskLogicalType.UNKNOWN,
+    'broken': constants.DiskLogicalType.BROKEN,
+    'foreign': constants.DiskLogicalType.FOREIGN,
+    'labelmaint': constants.DiskLogicalType.LABELMAINT,
+    'maintenance': constants.DiskLogicalType.MAINTENANCE,
+    'shared': constants.DiskLogicalType.SHARED,
+    'unassigned': constants.DiskLogicalType.UNASSIGNED,
+    'unsupported': constants.DiskLogicalType.UNSUPPORTED,
+    'remote': constants.DiskLogicalType.REMOTE,
+    'mediator': constants.DiskLogicalType.MEDIATOR,
 }
 
 FS_STATUS = {
