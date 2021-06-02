@@ -414,13 +414,15 @@ class SSHHandler(object):
                 self.handle_detail(deltail_info, control_map, split=' ')
                 status = constants.ControllerStatus.NORMAL
                 if control_map.get('degraded') == 'yes':
-                    status = constants.ControllerStatus.ABNORMAL
+                    status = constants.ControllerStatus.OFFLINE
+                soft_version = '%s_%s' % (control_map.get('vendor_id'),
+                                          control_map.get('product_id_low'))
                 controller_result = {
                     'name': control_map.get('controller_name'),
                     'storage_id': storage_id,
                     'native_controller_id': control_map.get('id'),
                     'status': status,
-                    'soft_version': control_map.get('product_id_low'),
+                    'soft_version': soft_version,
                     'location': control_map.get('controller_name')
                 }
                 controller_list.append(controller_result)
@@ -452,6 +454,8 @@ class SSHHandler(object):
                 physical_type = SSHHandler.DISK_PHYSICAL_TYPE.get(
                     disk_map.get('fabric_type'),
                     constants.DiskPhysicalType.UNKNOWN)
+                location = '%s_%s' % (disk_map.get('controller_name'),
+                                      disk_map.get('name'))
                 disk_result = {
                     'name': disk_map.get('name'),
                     'storage_id': storage_id,
@@ -461,7 +465,7 @@ class SSHHandler(object):
                     'status': status,
                     'physical_type': physical_type,
                     'native_disk_group_id': disk_map.get('mdisk_grp_name'),
-                    'location': disk_map.get('controller_name')
+                    'location': location
                 }
                 disk_list.append(disk_result)
             return disk_list
@@ -537,13 +541,13 @@ class SSHHandler(object):
                 conn_status = constants.PortConnectionStatus.DISCONNECTED
                 if port.get('link_state') == 'active':
                     conn_status = constants.PortConnectionStatus.CONNECTED
-                port_type = constants.PortType.ISCSI
+                port_type = constants.PortType.ETH
                 location = '%s_%s' % (port.get('node_name'),
                                       port.get('id'))
                 port_result = {
-                    'name': port.get('id'),
+                    'name': location,
                     'storage_id': storage_id,
-                    'native_port_id': port.get('id'),
+                    'native_port_id': location,
                     'location': location,
                     'connection_status': conn_status,
                     'health_status': status,

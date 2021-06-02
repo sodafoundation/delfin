@@ -448,7 +448,7 @@ controller_result = [
         'storage_id': '12345',
         'native_controller_id': '16',
         'status': 'normal',
-        'soft_version': 'XSG1',
+        'soft_version': 'HUAWEI_XSG1',
         'location': 'controller13'
     }
 ]
@@ -510,7 +510,7 @@ disk_result = [
         'status': 'offline',
         'physical_type': 'fc',
         'native_disk_group_id': 'Pool0_NBE',
-        'location': 'NBEPOC_target_Dorado5000V6'
+        'location': 'NBEPOC_target_Dorado5000V6_mdisk4'
     }
 ]
 get_all_fcports = """id fc_io_port_id
@@ -909,13 +909,13 @@ port_result = [
         'native_parent_id': 'node1',
         'wwn': '500507680140EF3E'
     }, {
-        'name': '1',
+        'name': 'node1_1',
         'storage_id': '12345',
-        'native_port_id': '1',
+        'native_port_id': 'node1_1',
         'location': 'node1_1',
         'connection_status': 'connected',
         'health_status': 'abnormal',
-        'type': 'iscsi',
+        'type': 'eth',
         'max_speed': 1073741824,
         'native_parent_id': 'node1',
         'mac_address': '34:40:b5:d7:5a:94',
@@ -924,13 +924,13 @@ port_result = [
         'ipv6': '',
         'ipv6_mask': ''
     }, {
-        'name': '1',
+        'name': 'node_165084_1',
         'storage_id': '12345',
-        'native_port_id': '1',
+        'native_port_id': 'node_165084_1',
         'location': 'node_165084_1',
         'connection_status': 'connected',
         'health_status': 'abnormal',
-        'type': 'iscsi',
+        'type': 'eth',
         'max_speed': 1073741824,
         'native_parent_id': 'node_165084',
         'mac_address': '34:40:b5:d4:0c:f0',
@@ -939,13 +939,13 @@ port_result = [
         'ipv6': '',
         'ipv6_mask': ''
     }, {
-        'name': '2',
+        'name': 'node1_2',
         'storage_id': '12345',
-        'native_port_id': '2',
+        'native_port_id': 'node1_2',
         'location': 'node1_2',
         'connection_status': 'connected',
         'health_status': 'abnormal',
-        'type': 'iscsi',
+        'type': 'eth',
         'max_speed': 1073741824,
         'native_parent_id': 'node1',
         'mac_address': '34:40:b5:d7:5a:94',
@@ -954,13 +954,13 @@ port_result = [
         'ipv6': '',
         'ipv6_mask': ''
     }, {
-        'name': '2',
+        'name': 'node_165084_2',
         'storage_id': '12345',
-        'native_port_id': '2',
+        'native_port_id': 'node_165084_2',
         'location': 'node_165084_2',
         'connection_status': 'connected',
         'health_status': 'abnormal',
-        'type': 'iscsi',
+        'type': 'eth',
         'max_speed': 1073741824,
         'native_parent_id': 'node_165084',
         'mac_address': '34:40:b5:d4:0c:f0',
