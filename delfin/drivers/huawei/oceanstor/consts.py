@@ -52,7 +52,6 @@ PORT_RUNNINGSTS_LINKUP = '10'
 PORT_RUNNINGSTS_LINKDOWN = '11'
 PORT_RUNNINGSTS_TOBERECOVERED = '33'
 
-PORT_LOGICTYPE_HOST = '0'
 PORT_LOGICTYPE_EXPANSION = '1'
 PORT_LOGICTYPE_MANAGEMENT = '2'
 PORT_LOGICTYPE_INTERNAL = '3'
@@ -160,3 +159,129 @@ QUERY_PAGE_SIZE = 100
 
 THICK_LUNTYPE = '0'
 THIN_LUNTYPE = '1'
+
+OCEANSTOR_METRICS = {
+    'throughput': '21',
+    'readThroughput': '23',
+    'writeThroughput': '26',
+    'responseTime': '370',
+    'readResponseTime': '384',
+    'writeResponseTime': '385',
+    'requests': '22',
+    'readRequests': '25',
+    'writeRequests': '28',
+    'serviceTime:': '29',
+    'cpuUsage': '68',
+    'memoryUsage': '1075'
+}
+
+US_TO_MS_LIST = [
+    'responseTime',
+    'readResponseTime',
+    'writeResponseTime'
+]
+
+THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data is "
+                   "successfully transferred in MB/s"
+}
+READ_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data read is "
+                   "successfully transferred in MB/s"
+}
+WRITE_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data write is "
+                   "successfully transferred in MB/s"
+}
+RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for an IO "
+                   "operation in ms"
+}
+REQUESTS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_REQUEST_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read requests per second"
+}
+WRITE_REQUEST_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write requests per second"
+}
+READ_RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Time taken for an IO read operation in ms"
+}
+WRITE_RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Time taken for an IO write operation in ms"
+}
+CPU_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of CPU usage"
+}
+MEMORY_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of DISK memory usage in percentage"
+}
+SERVICE_TIME = {
+    "unit": 'ms',
+    "description": "Service time of the resource in ms"
+}
+POOL_CAP = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "requests": REQUESTS_DESCRIPTION,
+    "readRequests": READ_REQUEST_DESCRIPTION,
+    "writeRequests": WRITE_REQUEST_DESCRIPTION,
+}
+VOLUME_CAP = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "requests": REQUESTS_DESCRIPTION,
+    "readRequests": READ_REQUEST_DESCRIPTION,
+    "writeRequests": WRITE_REQUEST_DESCRIPTION,
+    "readResponseTime": READ_RESPONSE_TIME_DESCRIPTION,
+    "writeResponseTime": WRITE_RESPONSE_TIME_DESCRIPTION,
+}
+CONTROLLER_CAP = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "requests": REQUESTS_DESCRIPTION,
+    "readRequests": READ_REQUEST_DESCRIPTION,
+    "writeRequests": WRITE_REQUEST_DESCRIPTION,
+    "readResponseTime": READ_RESPONSE_TIME_DESCRIPTION,
+    "writeResponseTime": WRITE_RESPONSE_TIME_DESCRIPTION,
+    "cpuUsage": READ_REQUEST_DESCRIPTION,
+    "memoryUsage": WRITE_REQUEST_DESCRIPTION,
+}
+PORT_CAP = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "requests": REQUESTS_DESCRIPTION,
+    "readRequests": READ_REQUEST_DESCRIPTION,
+    "writeRequests": WRITE_REQUEST_DESCRIPTION,
+    "readResponseTime": READ_RESPONSE_TIME_DESCRIPTION,
+    "writeResponseTime": WRITE_RESPONSE_TIME_DESCRIPTION,
+}
+DISK_CAP = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "requests": REQUESTS_DESCRIPTION,
+    "readRequests": READ_REQUEST_DESCRIPTION,
+    "writeRequests": WRITE_REQUEST_DESCRIPTION,
+    "serviceTime": SERVICE_TIME,
+}

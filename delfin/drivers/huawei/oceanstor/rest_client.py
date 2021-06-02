@@ -13,7 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
+import datetime
 import json
 
 import requests
@@ -22,6 +22,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 from oslo_log import log as logging
 
+from delfin.common import constants
 from delfin import cryptor
 from delfin import exception
 from delfin.drivers.huawei.oceanstor import consts
@@ -29,6 +30,25 @@ from delfin.ssl_utils import HostNameIgnoreAdapter
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
+
+
+def _get_timestamp_values(metric, value):
+    # timestamp = int(metric['CMO_STATISTIC_TIMESTAMP']) * 1000
+    timestamp = int(float(datetime.datetime.now().timestamp()) * 1000)
+    return {timestamp: value}
+
+
+def _get_selection(selection):
+    selected_metrics = []
+    ids = ''
+    for key, value in consts.OCEANSTOR_METRICS.items():
+        if selection.get(key):
+            selected_metrics.append(key)
+            if ids:
+                ids = ids + ',' + value
+            else:
+                ids = value
+    return selected_metrics, ids
 
 
 class RestClient(object):
@@ -367,3 +387,201 @@ class RestClient(object):
                                           "GET",
                                           log_filter_flag=True)
         return result_list
+
+    def _get_performance_switch(self):
+        url = "/performance_statistic_switch"
+        result = self.call(url, method='GET', log_filter_flag=True)
+
+        msg = _('Get performance_statistic_switch failed.')
+        self._assert_rest_result(result, msg)
+        self._assert_data_in_result(result, msg)
+        return result['data']
+
+    def _set_performance_switch(self, value):
+        url = "/performance_statistic_switch"
+        data = {"CMO_PERFORMANCE_SWITCH": value}
+        result = self.call(url, data, method='GET', log_filter_flag=True)
+
+        msg = _('Set performance_statistic_switch failed.')
+        self._assert_rest_result(result, msg)
+        self._assert_data_in_result(result, msg)
+        return result['data']
+
+    def _get_performance_strategy(self):
+        url = "/performance_statistic_strategy"
+        result = self.call(url, method='GET', log_filter_flag=True)
+
+        msg = _('Get performance_statistic_strategy failed.')
+        self._assert_rest_result(result, msg)
+        self._assert_data_in_result(result, msg)
+        return result['data']
+
+    def _set_performance_strategy(self, hist_enable=1, hist_duration=60,
+                                  auto_stop=0, duration=5, max_duration=0):
+        url = "/performance_statistic_strategy"
+        data = {
+            "CMO_STATISTIC_ARCHIVE_SWITCH": hist_enable,
+            "CMO_STATISTIC_ARCHIVE_TIME": hist_duration,
+            "CMO_STATISTIC_AUTO_STOP": auto_stop,
+            "CMO_STATISTIC_INTERVAL": duration,
+            "CMO_STATISTIC_MAX_TIME": max_duration
+        }
+        result = self.call(url, data, method='GET', log_filter_flag=True)
+
+        msg = _('Set performance_statistic_strategy failed.')
+        self._assert_rest_result(result, msg)
+        self._assert_data_in_result(result, msg)
+        return result['data']
+
+    def _get_metrics(self, resource_type, resource_id, metrics_ids):
+        url = "/performace_statistic/cur_statistic_data"
+        params = "CMO_STATISTIC_UUID={0}:{1}&CMO_STATISTIC_DATA_ID_LIST={2}&"\
+            .format(resource_type, resource_id, metrics_ids)
+        return self.paginated_call(url, None, "GET",
+                                   params=params, log_filter_flag=True)
+
+    def enable_metrics_collection(self):
+        return self._set_performance_switch('1')
+
+    def disable_metrics_collection(self):
+        return self._set_performance_switch('0')
+
+    def configure_metrics_collection(self):
+        self.disable_metrics_collection()
+        self._set_performance_strategy(hist_enable=1, hist_duration=300,
+                                       auto_stop=0, duration=60,
+                                       max_duration=0)
+        self.enable_metrics_collection()
+
+    def get_pool_metrics(self, storage_id, selection):
+        pools = self.get_all_pools()
+        pool_metrics = []
+
+        select_metrics, select_ids = _get_selection(selection)
+        for pool in pools:
+            metrics = self._get_metrics(pool['TYPE'], pool['ID'],
+                                        select_ids)
+            for metric in metrics:
+                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                for index, key in enumerate(select_metrics):
+                    data = int(data_list[index])
+                    if key in consts.US_TO_MS_LIST:
+                        data = data * 1000
+                    labels = {
+                        'storage_id': storage_id,
+                        'resource_type': 'pool',
+                        'resource_id': pool['ID'],
+                        'resource_name': pool['NAME']
+                    }
+                    values = _get_timestamp_values(metric, data)
+                    m = constants.metric_struct(name=key, labels=labels,
+                                                values=values)
+                    pool_metrics.append(m)
+        return pool_metrics
+
+    def get_volume_metrics(self, storage_id, selection):
+        volumes = self.get_all_volumes()
+        volume_metrics = []
+
+        select_metrics, select_ids = _get_selection(selection)
+        for volume in volumes:
+            metrics = self._get_metrics(volume['TYPE'], volume['ID'],
+                                        select_ids)
+            for metric in metrics:
+                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                for index, key in enumerate(select_metrics):
+                    data = int(data_list[index])
+                    if key in consts.US_TO_MS_LIST:
+                        data = data * 1000
+                    labels = {
+                        'storage_id': storage_id,
+                        'resource_type': 'volume',
+                        'resource_id': volume['ID'],
+                        'resource_name': volume['NAME']
+                    }
+                    values = _get_timestamp_values(metric, data)
+                    m = constants.metric_struct(name=key, labels=labels,
+                                                values=values)
+                    volume_metrics.append(m)
+        return volume_metrics
+
+    def get_controller_metrics(self, storage_id, selection):
+        controllers = self.get_all_controllers()
+        controller_metrics = []
+
+        select_metrics, select_ids = _get_selection(selection)
+        for controller in controllers:
+            metrics = self._get_metrics(controller['TYPE'], controller['ID'],
+                                        select_ids)
+            for metric in metrics:
+                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                for index, key in enumerate(select_metrics):
+                    data = int(data_list[index])
+                    if key in consts.US_TO_MS_LIST:
+                        data = data * 1000
+                    labels = {
+                        'storage_id': storage_id,
+                        'resource_type': 'controller',
+                        'resource_id': controller['ID'],
+                        'resource_name': controller['NAME']
+                    }
+                    values = _get_timestamp_values(metric, data)
+                    m = constants.metric_struct(name=key, labels=labels,
+                                                values=values)
+                    controller_metrics.append(m)
+        return controller_metrics
+
+    def get_port_metrics(self, storage_id, selection):
+        ports = self.get_all_ports()
+        port_metrics = []
+
+        select_metrics, select_ids = _get_selection(selection)
+        for port in ports:
+            # ETH_PORT collection not supported
+            if port['TYPE'] == 213:
+                continue
+            metrics = self._get_metrics(port['TYPE'], port['ID'],
+                                        select_ids)
+            for metric in metrics:
+                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                for index, key in enumerate(select_metrics):
+                    data = int(data_list[index])
+                    if key in consts.US_TO_MS_LIST:
+                        data = data * 1000
+                    labels = {
+                        'storage_id': storage_id,
+                        'resource_type': 'port',
+                        'resource_id': port['ID'],
+                        'resource_name': port['NAME']
+                    }
+                    values = _get_timestamp_values(metric, data)
+                    m = constants.metric_struct(name=key, labels=labels,
+                                                values=values)
+                    port_metrics.append(m)
+        return port_metrics
+
+    def get_disk_metrics(self, storage_id, selection):
+        disks = self.get_all_disks()
+        disk_metrics = []
+
+        select_metrics, select_ids = _get_selection(selection)
+        for disk in disks:
+            metrics = self._get_metrics(disk['TYPE'], disk['ID'],
+                                        select_ids)
+            for metric in metrics:
+                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                for index, key in enumerate(select_metrics):
+                    data = int(data_list[index])
+                    if key in consts.US_TO_MS_LIST:
+                        data = data * 1000
+                    labels = {
+                        'storage_id': storage_id,
+                        'resource_type': 'disk',
+                        'resource_id': disk['ID'],
+                        'resource_name': disk['MODEL'] + ':' + disk['SERIALNUMBER']
+                    }
+                    values = _get_timestamp_values(metric, data)
+                    m = constants.metric_struct(name=key, labels=labels,
+                                                values=values)
+                    disk_metrics.append(m)
+        return disk_metrics

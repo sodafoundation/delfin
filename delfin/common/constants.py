@@ -322,6 +322,21 @@ class SecurityLevel(object):
 # Metric model
 metric_struct = namedtuple("Metric", "name labels values")
 
+
+class ResourceType(object):
+    STORAGE = 'storage'
+    STORAGE_POOL = 'storage_pool'
+    VOLUME = 'volume'
+    CONTROLLER = 'controller'
+    PORT = 'port'
+    DISK = 'disk'
+    FILESYSTEM = 'filesystem'
+    SHARE = 'share'
+
+    ALL = (STORAGE, STORAGE_POOL, VOLUME, CONTROLLER,
+           PORT, DISK, FILESYSTEM, SHARE)
+
+
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [
     "responseTime",

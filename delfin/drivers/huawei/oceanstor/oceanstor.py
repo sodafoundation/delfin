@@ -31,6 +31,7 @@ class OceanStorDriver(driver.StorageDriver):
         super().__init__(**kwargs)
         self.client = rest_client.RestClient(**kwargs)
         self.sector_size = consts.SECTORS_SIZE
+        self.configure_collection = False
 
     def reset_connection(self, context, **kwargs):
         self.client.reset_connection(**kwargs)
@@ -593,3 +594,63 @@ class OceanStorDriver(driver.StorageDriver):
         alert_model_list = alert_handler.AlertHandler()\
             .parse_queried_alerts(alert_list, query_para)
         return alert_model_list
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time,
+                             end_time):
+        """Collects performance metric for the given interval"""
+        if not self.configure_collection:
+            self.client.configure_metrics_collection()
+            self.configure_collection = True
+
+        metrics = []
+        # storage-pool metrics
+        if resource_metrics.get(constants.ResourceType.STORAGE_POOL):
+            pool_metrics = self.client.get_pool_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.STORAGE_POOL))
+            metrics.extend(pool_metrics)
+
+        # volume metrics
+        if resource_metrics.get(constants.ResourceType.VOLUME):
+            volume_metrics = self.client.get_volume_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.STORAGE_POOL))
+            metrics.extend(volume_metrics)
+
+        # controller metrics
+        if resource_metrics.get(constants.ResourceType.CONTROLLER):
+            controller_metrics = self.client.get_controller_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.CONTROLLER))
+            metrics.extend(controller_metrics)
+
+        # port metrics
+        if resource_metrics.get(constants.ResourceType.PORT):
+            port_metrics = self.client.get_port_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.PORT))
+            metrics.extend(port_metrics)
+
+        # disk metrics
+        if resource_metrics.get(constants.ResourceType.DISK):
+            disk_metrics = self.client.get_disk_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.DISK))
+            metrics.extend(disk_metrics)
+
+        return metrics
+
+    @staticmethod
+    def get_capabilities(context):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': False,
+            'resource_metrics': {
+                constants.ResourceType.STORAGE_POOL: consts.POOL_CAP,
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP,
+                constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP
+            }
+        }
