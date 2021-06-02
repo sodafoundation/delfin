@@ -504,7 +504,7 @@ PORT_RESULT = [
     {
         'name': 'A-6',
         'storage_id': '12345',
-        'native_port_id': '6',
+        'native_port_id': 'A-6',
         'location': 'Slot A3,Port 0',
         'connection_status': 'connected',
         'health_status': 'normal',
@@ -515,7 +515,7 @@ PORT_RESULT = [
         'native_parent_id': None,
         'wwn': '50:06:01:60:88:60:24:1E:50:06:01:66:08:60:24:1E',
         'mac_address': None,
-        'ipv4': '172.20.2.141',
+        'ipv4': '172.20.2.140',
         'ipv4_mask': '255.255.255.0',
         'ipv6': None,
         'ipv6_mask': None

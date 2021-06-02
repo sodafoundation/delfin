@@ -240,8 +240,8 @@ class ComponentHandler(object):
                     constants.DiskStatus.ABNORMAL)
                 capacity = int(float(disk.get("capacity", 0)) * units.Mi)
                 logical_type = constants.DiskLogicalType.UNKNOWN
-                hot_spare = disk.get('hot_spare')
-                if hot_spare != 'N/A':
+                hot_spare = disk.get('hot_spare', '')
+                if hot_spare and hot_spare != 'N/A':
                     logical_type = constants.DiskLogicalType.HOTSPARE
                 disk_model = {
                     'name': disk.get('disk_name'),
@@ -337,14 +337,14 @@ class ComponentHandler(object):
             ipv4 = None
             ipv4_mask = None
             if iscsi_port_map:
-                iscsi_port = iscsi_port_map.get(port_id)
+                iscsi_port = iscsi_port_map.get(name)
                 if iscsi_port:
                     ipv4 = iscsi_port.get('ip_address')
                     ipv4_mask = iscsi_port.get('subnet_mask')
             port_model = {
                 'name': name,
                 'storage_id': storage_id,
-                'native_port_id': port_id,
+                'native_port_id': name,
                 'location': location,
                 'connection_status':
                     consts.PORT_CONNECTION_STATUS_MAP.get(
@@ -429,5 +429,6 @@ class ComponentHandler(object):
         iscsi_port_map = {}
         iscsi_ports = self.navi_handler.get_iscsi_ports()
         for iscsi_port in (iscsi_ports or []):
-            iscsi_port_map[iscsi_port.get('port_id')] = iscsi_port
+            name = '%s-%s' % (iscsi_port.get('sp'), iscsi_port.get('port_id'))
+            iscsi_port_map[name] = iscsi_port
         return iscsi_port_map
