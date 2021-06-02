@@ -1174,49 +1174,49 @@ share_result = [
         'storage_id': '12345',
         'native_share_id': 'SMBShare_2',
         'native_filesystem_id': 'fs_1',
-        'path': '/fs_1/',
+        'path': '/fs1/',
         'protocol': 'cifs'
     }, {
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_14',
         'native_filesystem_id': 'fs_16',
-        'path': '/fs_16/',
+        'path': '/fs_boga/',
         'protocol': 'cifs'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_18',
         'native_filesystem_id': 'fs_20',
-        'path': '/fs_20/',
+        'path': '/fs2/',
         'protocol': 'cifs'
     }, {
         'name': 'fs1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_2',
         'native_filesystem_id': 'fs_1',
-        'path': '/fs_1/',
+        'path': '/fs1/',
         'protocol': 'nfs'
     }, {
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_14',
         'native_filesystem_id': 'fs_16',
-        'path': '/fs_16/',
+        'path': '/fs_boga/',
         'protocol': 'nfs'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_18',
         'native_filesystem_id': 'fs_20',
-        'path': '/fs_20/',
+        'path': '/fs2/',
         'protocol': 'nfs'
     }, {
         'name': 'FS_MULTI1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_19',
         'native_filesystem_id': 'fs_22',
-        'path': '/fs_22/',
+        'path': '/FS_MULTI1/',
         'protocol': 'nfs'
     }
 ]
@@ -1434,10 +1434,13 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_nfsshares')
     @mock.patch.object(RestHandler, 'get_all_cifsshares')
-    def test_list_shares(self, mock_cifs, mock_nfs):
+    @mock.patch.object(RestHandler, 'get_all_filesystems')
+    def test_list_shares(self, mock_file, mock_cifs, mock_nfs):
         RestHandler.login = mock.Mock(return_value=None)
         mock_cifs.return_value = GET_ALL_CIFSSHARE
+        mock_file.return_value = GET_ALL_FILESYSTEMS
         mock_nfs.return_value = GET_ALL_NFSSHARE
+        mock_file.return_value = GET_ALL_FILESYSTEMS
         share = UnityStorDriver(**ACCESS_INFO).list_shares(context)
         self.assertEqual(share, share_result)
 

@@ -414,11 +414,19 @@ class UnityStorDriver(driver.StorageDriver):
                 shares = self.rest_handler.get_all_nfsshares()
                 protocol = constants.ShareProtocol.NFS
             if shares is not None:
+                filesystems = self.rest_handler.get_all_filesystems()
                 share_entries = shares.get('entries')
                 for share in share_entries:
                     content = share.get('content', {})
-                    path = '/%s%s' % (content.get('filesystem').get('id'),
-                                      content.get('path'))
+                    file_entries = filesystems.get('entries')
+                    file_name = ''
+                    for file in file_entries:
+                        file_content = file.get('content', {})
+                        if file_content.get('id') == content.get(
+                                'filesystem', {}).get('id'):
+                            file_name = file_content.get('name')
+                            break
+                    path = '/%s%s' % (file_name, content.get('path'))
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
