@@ -15,7 +15,6 @@
 #    under the License.
 import re
 
-import paramiko
 import six
 from oslo_log import log as logging
 
@@ -58,7 +57,7 @@ class SSHHandler(object):
         """Test SSH connection """
         version = ''
         try:
-            re = self.exec_ssh_command(SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
+            re = self.ssh_pool.do_exec(SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
             wsapi_infos = re.split('\n')
             if len(wsapi_infos) > 1:
                 version = self.get_version(wsapi_infos)
@@ -86,10 +85,10 @@ class SSHHandler(object):
 
            return: System is healthy
         """
-        return self.exec_ssh_command(SSHHandler.HPE3PAR_COMMAND_CHECKHEALTH)
+        return self.ssh_pool.do_exec(SSHHandler.HPE3PAR_COMMAND_CHECKHEALTH)
 
     def get_all_alerts(self):
-        return self.exec_ssh_command(SSHHandler.HPE3PAR_COMMAND_SHOWALERT)
+        return self.ssh_pool.do_exec(SSHHandler.HPE3PAR_COMMAND_SHOWALERT)
 
     def remove_alerts(self, alert_id):
         """Clear alert from storage system.
@@ -97,7 +96,7 @@ class SSHHandler(object):
         """
         utils.check_ssh_injection([alert_id])
         command_str = SSHHandler.HPE3PAR_COMMAND_REMOVEALERT % alert_id
-        res = self.exec_ssh_command(command_str)
+        res = self.ssh_pool.do_exec(command_str)
         if res:
             if self.ALERT_NOT_EXIST_MSG not in res:
                 raise exception.InvalidResults(six.text_type(res))
@@ -390,50 +389,12 @@ class SSHHandler(object):
                     return titles_list.index(title)
         return None
 
-    @staticmethod
-    def do_exec(command_str, ssh):
-        """Execute command"""
-        result = None
-        try:
-            utils.check_ssh_injection(command_str)
-            if command_str is not None and ssh is not None:
-                stdin, stdout, stderr = ssh.exec_command(command_str)
-                res, err = stdout.read(), stderr.read()
-                re = res if res else err
-                result = re.decode()
-        except paramiko.AuthenticationException as ae:
-            LOG.error('doexec Authentication error:{}'.format(ae))
-            raise exception.InvalidUsernameOrPassword()
-        except Exception as e:
-            err = six.text_type(e)
-            LOG.error('doexec InvalidUsernameOrPassword error')
-            if 'timed out' in err:
-                raise exception.SSHConnectTimeout()
-            elif 'No authentication methods available' in err \
-                    or 'Authentication failed' in err:
-                raise exception.InvalidUsernameOrPassword()
-            elif 'not a valid RSA private key file' in err:
-                raise exception.InvalidPrivateKey()
-            else:
-                raise exception.SSHException(err)
-        return result
-
-    def exec_ssh_command(self, command):
-        try:
-            with self.ssh_pool.item() as ssh:
-                ssh_info = SSHHandler.do_exec(command, ssh)
-            if 'invalid command name' in ssh_info:
-                LOG.error(ssh_info)
-                raise NotImplementedError(ssh_info)
-            return ssh_info
-        except Exception as e:
-            msg = "Failed to ssh hpe 3par store %s: %s" % \
-                  (command, six.text_type(e))
-            raise exception.SSHException(msg)
-
     def get_resources_info(self, command, parse_type, pattern_str=None,
                            para_map=None, throw_excep=True):
-        re = self.exec_ssh_command(command)
+        re = self.ssh_pool.do_exec(command)
+        if re and 'invalid command name' in re:
+            LOG.error(re)
+            raise NotImplementedError(re)
         resources_info = None
         try:
             if re:
