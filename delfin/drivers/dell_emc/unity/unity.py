@@ -185,9 +185,9 @@ class UnityStorDriver(driver.StorageDriver):
                     content = pool.get('content', {})
                     health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
-                        status = constants.StorageStatus.NORMAL
+                        status = constants.ControllerStatus.NORMAL
                     else:
-                        status = constants.StorageStatus.ABNORMAL
+                        status = constants.ControllerStatus.OFFLINE
                     controller_result = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
@@ -222,9 +222,9 @@ class UnityStorDriver(driver.StorageDriver):
                 content = port.get('content', {})
                 health_value = content.get('health', {}).get('value')
                 if health_value in UnityStorDriver.HEALTH_OK:
-                    status = constants.StorageStatus.NORMAL
+                    status = constants.PortHealthStatus.NORMAL
                 else:
-                    status = constants.StorageStatus.ABNORMAL
+                    status = constants.PortHealthStatus.ABNORMAL
                 conn_status = constants.PortConnectionStatus.CONNECTED if \
                     content.get('isLinkUp') is True \
                     else constants.PortConnectionStatus.DISCONNECTED
@@ -275,9 +275,9 @@ class UnityStorDriver(driver.StorageDriver):
                 content = port.get('content', {})
                 health_value = content.get('health', {}).get('value')
                 if health_value in UnityStorDriver.HEALTH_OK:
-                    status = constants.StorageStatus.NORMAL
+                    status = constants.PortHealthStatus.NORMAL
                 else:
-                    status = constants.StorageStatus.ABNORMAL
+                    status = constants.PortHealthStatus.ABNORMAL
                 conn_status = status
                 port_result = {
                     'name': content.get('name'),
@@ -316,9 +316,9 @@ class UnityStorDriver(driver.StorageDriver):
                     content = disk.get('content', {})
                     health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
-                        status = constants.StorageStatus.NORMAL
+                        status = constants.DiskStatus.NORMAL
                     else:
-                        status = constants.StorageStatus.ABNORMAL
+                        status = constants.DiskStatus.ABNORMAL
                     disk_result = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
