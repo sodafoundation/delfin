@@ -98,7 +98,6 @@ GET_ALL_LUN_INFOS = """
         LUN Capacity(Megabytes):    10240
         Is Thin LUN:                YES
         """
-
 CER_INFOS = """
 -----------------------------
 Subject:CN=TrustedRoot,C=US,ST=MA,L=Hopkinton,EMAIL=rsa@emc.com,OU=CSP,O=RSA
@@ -113,6 +112,247 @@ Serial#: 00d8280b0c863f6d4e
 Valid From: 20090407135111Z
 Valid To: 20190405135111Z
         """
+
+DISK_DATAS = """
+        Bus 0 Enclosure 0  Disk 0
+        Vendor Id:               HITACHI
+        Product Id:              HUC10906 CLAR600
+        Product Revision:        C430
+        Type:                    193: RAID5 129: RAID5 146: RAID5 151: RAID5
+        State:                   Enabled
+        Hot Spare:               N/A
+        Serial Number:           KSJEX35J
+        Capacity:                549691
+        Raid Group ID:           0
+        Drive Type:              SAS
+        Current Speed: 6Gbps
+        """
+SP_DATAS = """
+
+SP A
+
+Cabinet:             DPE9
+Signature For The SP:          3600485
+Signature For The Peer SP:     3600424
+Revision Number For The SP:    05.33.000.5.038
+Serial Number For The SP:      CF2Z7134700101
+Memory Size For The SP:        16384
+SP SCSI ID if Available:       0
+
+SP B
+
+Cabinet:             DPE9
+Signature For The SP:          3600424
+Signature For The Peer SP:     3600485
+Revision Number For The SP:    05.33.000.5.038
+Serial Number For The SP:      CF2Z7134700040
+Memory Size For The SP:        16384
+SP SCSI ID if Available:       0
+
+
+"""
+RESUME_DATAS = """
+Storage Processor A
+  CPU Module
+    EMC Serial Number:               CF2Z7134700101
+    Assembly Name:                   JFSP 1.8GHZ 4C CPU GEN3
+
+Storage Processor B
+  CPU Module
+    EMC Serial Number:               CF2Z7134700040
+    Assembly Name:                   JFSP 1.8GHZ 4C CPU GEN3
+"""
+PORT_DATAS = """
+Information about each SPPORT:
+
+SP Name:             SP A
+SP Port ID:          6
+SP UID:              50:06:01:60:88:60:24:1E:50:06:01:66:08:60:24:1E
+Link Status:         Up
+Port Status:         Online
+Switch Present:      YES
+Switch UID:          10:00:C4:F5:7C:20:05:80:20:0E:C4:F5:7C:20:05:80
+SP Source ID:        1773056
+ALPA Value:         0
+Speed Value :         8Gbps
+Auto Negotiable :     YES
+Available Speeds:
+2Gbps
+4Gbps
+8Gbps
+Auto
+Requested Value:      Auto
+MAC Address:         Not Applicable
+SFP State:           Online
+Reads:               510068560
+Writes:              331050079
+Blocks Read:         1504646456
+Blocks Written:      236376118
+Queue Full/Busy:     12246
+I/O Module Slot:     3
+Physical Port ID:    0
+"""
+BUS_PORT_DATAS = """
+
+Bus 0
+
+Current Speed: 6Gbps.
+Available Speeds:
+              3Gbps.
+              6Gbps.
+
+SPA SFP State: N/A
+SPB SFP State: N/A
+
+I/O Module Slot: Base Module
+Physical Port ID: 0
+Port Combination In Use: No
+
+
+
+SPA Connector State: None
+SPB Connector State: None
+
+"""
+BUS_PORT_STATE_DATAS = """
+Information about each I/O module(s) on SPA:
+
+SP ID: A
+I/O Module Slot: Base Module
+I/O Module Type: SAS
+I/O Module State: Present
+I/O Module Substate: Good
+I/O Module Power state: On
+I/O Carrier: No
+
+Information about each port on this I/O module:
+Physical Port ID: 0
+Port State: Enabled
+Physical Port ID: 1
+Port State: Missing
+Information about each I/O module(s) on SPB:
+
+SP ID: B
+I/O Module Slot: Base Module
+I/O Module Type: SAS
+I/O Module State: Present
+I/O Module Substate: Good
+I/O Module Power state: On
+I/O Carrier: No
+
+Information about each port on this I/O module:
+Physical Port ID: 0
+Port State: Enabled
+Physical Port ID: 1
+Port State: Missing
+"""
+ISCSI_PORT_DATAS = """
+SP: A
+Port ID: 4
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.a4
+iSCSI Alias: 0877.a4
+IP Address: 172.20.1.140
+Subnet Mask: 255.255.255.0
+Gateway Address: 172.20.1.1
+Initiator Authentication: Not Available
+
+SP: A
+Port ID: 5
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.a5
+iSCSI Alias: 0877.a5
+
+SP: A
+Port ID: 6
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.a6
+iSCSI Alias: 0877.a6
+IP Address: 172.20.2.140
+Subnet Mask: 255.255.255.0
+Gateway Address: 172.20.2.1
+Initiator Authentication: Not Available
+
+SP: A
+Port ID: 7
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.a7
+iSCSI Alias: 0877.a7
+
+SP: B
+Port ID: 4
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.b4
+iSCSI Alias: 0877.b4
+IP Address: 172.20.1.141
+Subnet Mask: 255.255.255.0
+Gateway Address: 172.20.1.1
+Initiator Authentication: Not Available
+
+SP: B
+Port ID: 5
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.b5
+iSCSI Alias: 0877.b5
+
+SP: B
+Port ID: 6
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.b6
+iSCSI Alias: 0877.b6
+IP Address: 172.20.2.141
+Subnet Mask: 255.255.255.0
+Gateway Address: 172.20.2.1
+Initiator Authentication: Not Available
+
+SP: B
+Port ID: 7
+Port WWN: iqn.1992-04.com.emc:cx.apm00093300877.b7
+iSCSI Alias: 0877.b7
+
+SP: B
+Port ID: 9
+Port WWN: 50:06:01:60:BB:20:13:0D:50:06:01:69:3B:24:13:0D
+iSCSI Alias: N/A
+IP Address: N/A
+Subnet Mask: N/A
+Gateway Address: N/A
+Initiator Authentication: N/A
+
+SP: A
+Port ID: 8
+Port WWN: 50:06:01:60:BB:20:13:0D:50:06:01:60:3B:24:13:0D
+iSCSI Alias: N/A
+IP Address: N/A
+Subnet Mask: N/A
+Gateway Address: N/A
+Initiator Authentication: N/A
+
+SP: A
+Port ID: 9
+Port WWN: 50:06:01:60:BB:20:13:0D:50:06:01:61:3B:24:13:0D
+iSCSI Alias: N/A
+IP Address: N/A
+Subnet Mask: N/A
+Gateway Address: N/A
+Initiator Authentication: N/A
+
+SP: B
+Port ID: 8
+Port WWN: 50:06:01:60:BB:20:13:0D:50:06:01:68:3B:24:13:0D
+iSCSI Alias: N/A
+IP Address: N/A
+Subnet Mask: N/A
+Gateway Address: N/A
+Initiator Authentication: N/A
+"""
+IO_PORT_CONFIG_DATAS = """
+SP ID :  A
+I/O Module Slot :  3
+I/O Module Type :  Fibre Channel
+I/O Module State :  Present
+
+SP ID :  A
+I/O Module Slot :  Base Module
+I/O Module Type :  SAS
+
+SP ID :  B
+I/O Module Slot :  Base Module
+I/O Module Type :  SAS
+"""
 
 AGENT_RESULT = {
     'agent_rev': '7.33.1 (0.38)',
@@ -221,6 +461,65 @@ ALERT_RESULT = {
     'resource_type': 'Storage',
     'match_key': '8e97fe0af779d78bad8f2de52e15c65c'
 }
+DISK_RESULT = [
+    {
+        'name': 'Bus 0 Enclosure 0  Disk 0',
+        'storage_id': '12345',
+        'native_disk_id': 'Bus0Enclosure0Disk0',
+        'serial_number': 'KSJEX35J',
+        'manufacturer': 'HITACHI',
+        'model': 'HUC10906 CLAR600',
+        'firmware': 'C430',
+        'speed': None,
+        'capacity': 576392790016,
+        'status': 'normal',
+        'physical_type': 'sas',
+        'logical_type': 'unknown',
+        'health_score': None,
+        'native_disk_group_id': None,
+        'location': 'Bus 0 Enclosure 0  Disk 0'
+    }]
+SP_RESULT = [
+    {
+        'name': 'SP A',
+        'storage_id': '12345',
+        'native_controller_id': '3600485',
+        'status': 'normal',
+        'location': None,
+        'soft_version': '05.33.000.5.038',
+        'cpu_info': 'JFSP 1.8GHZ 4C CPU GEN3',
+        'memory_size': '17179869184'
+    },
+    {
+        'name': 'SP B',
+        'storage_id': '12345',
+        'native_controller_id': '3600424',
+        'status': None,
+        'location': None,
+        'soft_version': '05.33.000.5.038',
+        'cpu_info': 'JFSP 1.8GHZ 4C CPU GEN3',
+        'memory_size': '16777216'
+    }]
+PORT_RESULT = [
+    {
+        'name': 'A-6',
+        'storage_id': '12345',
+        'native_port_id': 'A-6',
+        'location': 'Slot A3,Port 0',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'fc',
+        'logical_type': None,
+        'speed': 8000000000,
+        'max_speed': 8000000000,
+        'native_parent_id': None,
+        'wwn': '50:06:01:60:88:60:24:1E:50:06:01:66:08:60:24:1E',
+        'mac_address': None,
+        'ipv4': '172.20.2.140',
+        'ipv4_mask': '255.255.255.0',
+        'ipv6': None,
+        'ipv6_mask': None
+    }]
 
 
 def create_driver():
@@ -380,3 +679,20 @@ class TestVnxBlocktorageDriver(TestCase):
 
     def test_remove_trap_config(self):
         self.driver.remove_trap_config(None, None)
+
+    def test_get_disks(self):
+        NaviClient.exec = mock.Mock(return_value=DISK_DATAS)
+        disks = self.driver.list_disks(context)
+        self.assertDictEqual(disks[0], DISK_RESULT[0])
+
+    def test_get_controllers(self):
+        NaviClient.exec = mock.Mock(side_effect=[SP_DATAS, RESUME_DATAS])
+        controllers = self.driver.list_controllers(context)
+        self.assertDictEqual(controllers[0], SP_RESULT[0])
+
+    def test_get_ports(self):
+        NaviClient.exec = mock.Mock(
+            side_effect=[IO_PORT_CONFIG_DATAS, ISCSI_PORT_DATAS, PORT_DATAS,
+                         BUS_PORT_DATAS, BUS_PORT_STATE_DATAS])
+        ports = self.driver.list_ports(context)
+        self.assertDictEqual(ports[0], PORT_RESULT[0])
