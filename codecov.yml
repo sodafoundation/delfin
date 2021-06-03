@@ -6,5 +6,8 @@ coverage:
   precision: 2
   round: down
   status:
-    patch: false
-
+    project:
+      default: # This can be anything, but it needs to exist as the name
+        # basic settings
+        target: 70%
+    patch: off
