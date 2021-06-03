@@ -53,16 +53,13 @@ class VnxBlockStorDriver(driver.StorageDriver):
             "Driver API list_alerts() is not Implemented")
 
     def list_controllers(self, context):
-        """List all storage controllers from storage system."""
-        pass
+        return self.com_handler.list_controllers(self.storage_id)
 
     def list_ports(self, context):
-        """List all ports from storage system."""
-        pass
+        return self.com_handler.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        """List all disks from storage system."""
-        pass
+        return self.com_handler.list_disks(self.storage_id)
 
     def add_trap_config(self, context, trap_config):
         pass

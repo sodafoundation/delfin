@@ -20,7 +20,7 @@ from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
 
 from delfin import cryptor
-from delfin import exception
+from delfin import exception, utils
 
 LOG = logging.getLogger(__name__)
 
@@ -239,3 +239,33 @@ class SSHPool(pools.Pool):
             self.current_size -= 1
             return
         super(SSHPool, self).put(conn)
+
+    def do_exec(self, command_str):
+        result = None
+        try:
+            with self.item() as ssh:
+                utils.check_ssh_injection(command_str)
+                if command_str is not None and ssh is not None:
+                    stdin, stdout, stderr = ssh.exec_command(command_str)
+                    res, err = stdout.read(), stderr.read()
+                    re = res if res else err
+                    result = re.decode()
+        except paramiko.AuthenticationException as ae:
+            LOG.error('doexec Authentication error:{}'.format(ae))
+            raise exception.InvalidUsernameOrPassword()
+        except Exception as e:
+            err = six.text_type(e)
+            LOG.error('doexec InvalidUsernameOrPassword error')
+            if 'timed out' in err \
+                    or 'SSH connect timeout' in err:
+                raise exception.SSHConnectTimeout()
+            elif 'No authentication methods available' in err \
+                    or 'Authentication failed' in err \
+                    or 'Invalid username or password' in err:
+                raise exception.InvalidUsernameOrPassword()
+            elif 'not a valid RSA private key file' in err \
+                    or 'not a valid RSA private key' in err:
+                raise exception.InvalidPrivateKey()
+            else:
+                raise exception.SSHException(err)
+        return result
