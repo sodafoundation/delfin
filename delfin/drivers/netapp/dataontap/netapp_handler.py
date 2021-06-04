@@ -761,7 +761,7 @@ class NetAppHandler(object):
             constant.SHARE_AGREEMENT_SHOW_COMMAND)
         protocol_map = {}
         protocol_arr = protocol_info.split('\r\n')
-        for protocol in protocol_arr[2:]:
+        for protocol in protocol_arr[1:]:
             agr_arr = protocol.split()
             if len(agr_arr) > 1:
                 protocol_map[agr_arr[0]] = agr_arr[1]
@@ -803,7 +803,7 @@ class NetAppHandler(object):
             vserver_info = self.ssh_pool.do_exec(
                 constant.VSERVER_SHOW_COMMAND)
             vserver_array = vserver_info.split("\r\n")
-            for vserver in vserver_array[2:]:
+            for vserver in vserver_array[3:]:
                 vserver_name = vserver.split()
                 if len(vserver_name) > 1:
                     shares_list += \
