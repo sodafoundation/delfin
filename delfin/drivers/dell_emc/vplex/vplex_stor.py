@@ -336,13 +336,13 @@ class VplexStorageDriver(driver.StorageDriver):
             communication_status = ct_attr_map.get('communication-status')
             name = ct_attr_map.get('name')
             ct = {
-                'native_controller_id ': ct_attr_map.get('director-id'),
+                'native_controller_id': ct_attr_map.get('director-id'),
                 'name': name,
                 'status': VplexStorageDriver.analyse_director_status(
                     communication_status),
-                'location ': '',
-                'storage_id ': self.storage_id,
-                'soft_version ': self.get_value_from_nest_map(
+                'location': '',
+                'storage_id': self.storage_id,
+                'soft_version': self.get_value_from_nest_map(
                     director_version_map, name, "Director Software"),
                 'cpu_info': '',
                 'memory_size': ''
@@ -364,11 +364,12 @@ class VplexStorageDriver(driver.StorageDriver):
         for port_context in port_context_list:
             port_attr = port_context.get('attributes')
             port_name = port_attr.get('name')
+            export_status = port_attr.get('export-status')
             speed, max_speed, protocols, role, port_status, \
                 operational_status = self.get_hardware_port_info(
                     hardware_port_map, port_name, 'attributes')
             connection_status = VplexStorageDriver.analyse_port_connect_status(
-                port_status)
+                export_status)
             port = {
                 'native_port_id': port_attr.get('name'),
                 'name': port_attr.get('name'),
@@ -531,7 +532,7 @@ class VplexStorageDriver(driver.StorageDriver):
 
     @staticmethod
     def analyse_speed(speed):
-        speed_value = 0
+        speed_value = None
         if speed:
             match_obj = re.search(r'([1-9]\d*\.?\d*)|(0\.\d*[1-9])', speed)
             if match_obj:
