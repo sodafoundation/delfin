@@ -561,7 +561,7 @@ class SSHHandler(object):
                     'ipv4': port.get('IP_address'),
                     'ipv4_mask': port.get('mask'),
                     'ipv6': port.get('IP_address_6'),
-                    'ipv6_mask': port.get('mask')
+                    'ipv6_mask': ''
                 }
                 port_list.append(port_result)
         return port_list
