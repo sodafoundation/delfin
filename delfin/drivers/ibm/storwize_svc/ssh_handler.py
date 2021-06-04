@@ -560,8 +560,7 @@ class SSHHandler(object):
                     'mac_address': port.get('MAC'),
                     'ipv4': port.get('IP_address'),
                     'ipv4_mask': port.get('mask'),
-                    'ipv6': port.get('IP_address_6'),
-                    'ipv6_mask': port.get('mask')
+                    'ipv6': port.get('IP_address_6')
                 }
                 port_list.append(port_result)
         return port_list

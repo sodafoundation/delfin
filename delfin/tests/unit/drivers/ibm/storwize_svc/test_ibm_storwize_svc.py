@@ -921,8 +921,7 @@ port_result = [
         'mac_address': '34:40:b5:d7:5a:94',
         'ipv4': '',
         'ipv4_mask': '',
-        'ipv6': '',
-        'ipv6_mask': ''
+        'ipv6': ''
     }, {
         'name': 'node_165084_1',
         'storage_id': '12345',
@@ -936,8 +935,7 @@ port_result = [
         'mac_address': '34:40:b5:d4:0c:f0',
         'ipv4': '',
         'ipv4_mask': '',
-        'ipv6': '',
-        'ipv6_mask': ''
+        'ipv6': ''
     }, {
         'name': 'node1_2',
         'storage_id': '12345',
@@ -951,8 +949,7 @@ port_result = [
         'mac_address': '34:40:b5:d7:5a:94',
         'ipv4': '',
         'ipv4_mask': '',
-        'ipv6': '',
-        'ipv6_mask': ''
+        'ipv6': ''
     }, {
         'name': 'node_165084_2',
         'storage_id': '12345',
@@ -966,8 +963,7 @@ port_result = [
         'mac_address': '34:40:b5:d4:0c:f0',
         'ipv4': '',
         'ipv4_mask': '',
-        'ipv6': '',
-        'ipv6_mask': ''
+        'ipv6': ''
     }
 ]
 
