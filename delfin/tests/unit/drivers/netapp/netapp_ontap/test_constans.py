@@ -1154,6 +1154,10 @@ NET-1.28         FCAL    NETAPP   VD-1000MB-FZ-520     0042       15000  520\r
                  SerialNumber: 07294313\r
 28 entries were displayed.\r"""
 
+ERROR_DISK_INFO = """Disk             Error Type        Error Text\r
+---------------- ----------------- ----------------------------------\r
+NET-1.25         diskfail          ."""
+
 QTREES_INFO = """
 \r
                       Vserver Name: svm1\r
@@ -1203,6 +1207,12 @@ QTREES_INFO = """
                       Qtree Status: normal\r
                      Export Policy: default\r
         Is Export Policy Inherited: true"""
+
+SHARE_VSERVER_INFO = """
+                               Admin      Operational Root\r
+Vserver     Type    Subtype    State      State       Volume     Aggregate\r
+----------- ------- ---------- ---------- ----------- ---------- ----------\r
+svm4.example.com      data    default    running    running  SVC_FC_ NETAPP"""
 
 SHARES_INFO = """
 \r
@@ -1298,94 +1308,13 @@ SHARES_INFO = """
                                 Offline Files: manual\r
                 Vscan File-Operations Profile: standard\r
             Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: admin$\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /\r
-                             Share Properties: browsable\r
-                           Symlink Properties: -\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: -\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_root\r
-                                Offline Files: -\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: c$\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /\r
-                             Share Properties: oplocks\r
-                                               browsable\r
-                                               changenotify\r
-                                               show-previous-versions\r
-                           Symlink Properties: symlinks\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: BUILTIN\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_root\r
-                                Offline Files: -\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: ipc$\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /\r
-                             Share Properties: browsable\r
-                           Symlink Properties: -\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: -\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_root\r
-                                Offline Files: -\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: svm5_vol1\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /svm5_vol1\r
-                             Share Properties: browsable\r
-                                               changenotify\r
-                                               oplocks\r
-                                               show-previous-versions\r
-                           Symlink Properties: enable\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: Everyone / Full Control\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_vol1\r
-                                Offline Files: manual\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-9 entries were displayed.\r"""
+                   UNIX Group for File Create: -"""
 
 SHARES_AGREEMENT_INFO = """
 vserver allowed-protocols\r
 ------- -----------------\r
-cl      -\r
-cl-01   -\r
-svm1    ndmp\r
-svm2    ndmp\r
-svm3    cifs\r
-svm4.example.com\r
-        nfs,cifs,fcp,iscsi\r
-svm5    nfs,cifs,fcp,iscsi\r
+svm4.example.com 
+nfs,cifs,fcp,iscsi\r
 7 entries were displayed.\r
 """
 
@@ -1400,3 +1329,71 @@ TRAP_MAP = {
         'test in volume 0 (DSID 0) is inconsistent in the WAFL file system.',
     '1.3.6.1.4.1.789.1.1.9.0': '1-80-000008'
 }
+
+
+QUOTAS_INFO = """\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: tree\r
+                  Target: qtree_21052021_110317_94\r
+              Qtree Name: ""\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: user\r
+                  Target: ""\r
+              Qtree Name: ""\r
+            User Mapping: off\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: group\r
+                  Target: ""\r
+              Qtree Name: ""\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: group\r
+                  Target: ""\r
+              Qtree Name: qtree_08052021_152034_44\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 100\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 100\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: group\r
+                  Target: pcuser\r
+              Qtree Name: ""\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+5 entries were displayed."""
