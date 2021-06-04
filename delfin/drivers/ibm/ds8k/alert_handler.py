@@ -27,13 +27,6 @@ class AlertHandler(object):
 
     TIME_PATTERN = "%Y-%m-%dT%H:%M:%S%z"
 
-    OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
-    OID_NODE = '1.3.6.1.4.1.1139.103.1.18.1.1'
-    OID_COMPONENT = '1.3.6.1.4.1.1139.103.1.18.1.2'
-    OID_SYMPTOMID = '1.3.6.1.4.1.1139.103.1.18.1.3'
-    OID_SYMPTOMTEXT = '1.3.6.1.4.1.1139.103.1.18.1.4'
-    OID_TIMESTAMP = '1.3.6.1.4.1.1139.103.1.18.1.5'
-
     ALERT_LEVEL_MAP = {'error': constants.Severity.CRITICAL,
                        'warning': constants.Severity.WARNING,
                        'info': constants.Severity.INFORMATIONAL

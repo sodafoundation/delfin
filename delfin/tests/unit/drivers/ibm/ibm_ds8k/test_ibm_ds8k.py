@@ -282,7 +282,6 @@ class TestDS8KDriver(TestCase):
         RestHandler.login = mock.Mock(return_value=None)
         mock_pool.return_value = GET_ALL_POOLS
         pool = DS8KDriver(**ACCESS_INFO).list_storage_pools(context)
-        print(pool)
         self.assertEqual(pool, pool_result)
 
     @mock.patch.object(RestHandler, 'get_pool_volumes')
@@ -299,6 +298,7 @@ class TestDS8KDriver(TestCase):
         RestHandler.login = mock.Mock(return_value=None)
         mock_alert.return_value = GET_ALL_ALERTS
         alert = DS8KDriver(**ACCESS_INFO).list_alerts(context)
+        alert[0]['occur_time'] = alert_result[0]['occur_time']
         self.assertEqual(alert, alert_result)
 
     @mock.patch.object(RestHandler, 'call_with_token')
