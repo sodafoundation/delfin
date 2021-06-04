@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import random
-import datetime
 import decorator
 import math
 import six
@@ -55,11 +54,21 @@ MIN_VOLUME, MAX_VOLUME = 1, 2000
 MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
 MIN_STORAGE, MAX_STORAGE = 1, 10
-MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
 MIN_QUOTA, MAX_QUOTA = 1, 100
 MIN_FS, MAX_FS = 1, 10
 MIN_QTREE, MAX_QTREE = 1, 100
 MIN_SHARE, MAX_SHARE = 1, 100
+# Minimum sampling interval
+MINIMUM_SAMPLE_DURATION_IN_MS = 5 * 1000
+# count of instances for each resource type
+RESOURCE_COUNT_DICT = {
+    "storage": 1,
+    "storagePool": 10,
+    "volume": 1000,
+    "port": 10,
+    "controller": 4,
+    "disk": 10,
+}
 
 
 def get_range_val(range_str, t):
@@ -468,41 +477,58 @@ class FakeStorageDriver(driver.StorageDriver):
             volume_list.append(v)
         return volume_list
 
-    def _get_random_performance(self):
+    def _get_random_performance(self, metric_list, start_time, end_time):
         def get_random_timestamp_value():
             rtv = {}
-            for i in range(MIN_PERF_VALUES, MAX_PERF_VALUES):
-                timestamp = int(float(datetime.datetime.now().timestamp()
-                                      ) * 1000)
+            timestamp = start_time
+            while timestamp < end_time:
                 rtv[timestamp] = random.uniform(1, 100)
+                timestamp += MINIMUM_SAMPLE_DURATION_IN_MS
+
             return rtv
 
         # The sample performance_params after filling looks like,
         # performance_params = {timestamp1: value1, timestamp2: value2}
         performance_params = {}
-        for key in constants.DELFIN_ARRAY_METRICS:
+        for key in metric_list.keys():
             performance_params[key] = get_random_timestamp_value()
         return performance_params
+
+    @wait_random(MIN_WAIT, MAX_WAIT)
+    def get_resource_perf_metrics(self, storage_id, start_time, end_time,
+                                  resource_type, metric_list):
+        LOG.info("###########collecting metrics for resource %s: from"
+                 " storage  %s" % (resource_type, self.storage_id))
+        resource_metrics = []
+        resource_count = RESOURCE_COUNT_DICT[resource_type]
+
+        for i in range(resource_count):
+            labels = {'storage_id': storage_id,
+                      'resource_type': resource_type,
+                      'resource_id': resource_type + str(i),
+                      'type': 'RAW'}
+            fake_metrics = self._get_random_performance(metric_list,
+                                                        start_time, end_time)
+            for key in metric_list.keys():
+                labels['unit'] = metric_list[key]['unit']
+                m = constants.metric_struct(name=key, labels=labels,
+                                            values=fake_metrics[key])
+                resource_metrics.append(m)
+        return resource_metrics
 
     @wait_random(MIN_WAIT, MAX_WAIT)
     def collect_perf_metrics(self, context, storage_id,
                              resource_metrics, start_time,
                              end_time):
         """Collects performance metric for the given interval"""
-        rd_array_count = random.randint(MIN_STORAGE, MAX_STORAGE)
-        LOG.debug("Fake_perf_metrics number for %s: %d" % (
-            storage_id, rd_array_count))
-        array_metrics = []
-        labels = {'storage_id': storage_id, 'resource_type': 'array'}
-        fake_metrics = self._get_random_performance()
-
-        for _ in range(rd_array_count):
-            for key in constants.DELFIN_ARRAY_METRICS:
-                m = constants.metric_struct(name=key, labels=labels,
-                                            values=fake_metrics[key])
-                array_metrics.append(m)
-
-        return array_metrics
+        merged_metrics = []
+        for key in resource_metrics.keys():
+            m = self.get_resource_perf_metrics(storage_id,
+                                               start_time,
+                                               end_time, key,
+                                               resource_metrics[key])
+            merged_metrics += m
+        return merged_metrics
 
     @staticmethod
     def get_capabilities(context):
@@ -521,7 +547,7 @@ class FakeStorageDriver(driver.StorageDriver):
                         "description": "Average time taken for an IO "
                                        "operation in ms"
                     },
-                    "requests": {
+                    "iops": {
                         "unit": "IOPS",
                         "description": "Input/output operations per second"
                     },
@@ -535,14 +561,218 @@ class FakeStorageDriver(driver.StorageDriver):
                         "description": "Represents how much data write is "
                                        "successfully transferred in MB/s"
                     },
-                    "readRequests": {
+                    "readIops": {
                         "unit": "IOPS",
                         "description": "Read requests per second"
                     },
-                    "writeRequests": {
+                    "writeIops": {
                         "unit": "IOPS",
                         "description": "Write requests per second"
                     },
-                }
+                },
+                "storagePool": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write operations per second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per"
+                                       " second"
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "volume": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+                    "cacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of io that are cache "
+                                       "hits"
+                    },
+                    "readCacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of read ops that are cache"
+                                       " hits"
+                    },
+                    "writeCacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of write ops that are cache"
+                                       " hits"
+                    },
+                    "ioSize": {
+                        "unit": "KB",
+                        "description": "The average size of IO requests in KB"
+                    },
+                    "readIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests "
+                                       "in KB."
+                    },
+                    "writeIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests"
+                                       " in KB."
+                    },
+                },
+                "controller": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per "
+                                       "second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per "
+                                       "second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "port": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per "
+                                       "second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per "
+                                       "second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "disk": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per"
+                                       " second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+
             }
+
         }
