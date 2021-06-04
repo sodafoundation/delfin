@@ -501,8 +501,10 @@ class VplexStorageDriver(driver.StorageDriver):
         port_list = VplexStorageDriver.get_context_list(resp)
         if port_list:
             for port in port_list:
-                port_name = port.get("attributes").get("target-port")
-                hardware_port_map[port_name] = port
+                port_attr = port.get("attributes")
+                if port_attr:
+                    port_name = port_attr.get("target-port")
+                    hardware_port_map[port_name] = port
 
     @staticmethod
     def analyse_port_type(protocols):
@@ -531,13 +533,20 @@ class VplexStorageDriver(driver.StorageDriver):
             get(status, constants.PortHealthStatus.UNKNOWN)
 
     @staticmethod
-    def analyse_speed(speed):
-        speed_value = None
-        if speed:
-            match_obj = re.search(r'([1-9]\d*\.?\d*)|(0\.\d*[1-9])', speed)
+    def analyse_speed(speed_value):
+        speed = None
+        if speed_value:
+            match_obj = re.search(r'([1-9]\d*\.?\d*)|(0\.\d*[1-9])',
+                                  speed_value)
             if match_obj:
-                speed_value = int(match_obj.group(0)) * units.G
-        return speed_value
+                speed = int(match_obj.group(0))
+                if 'Gbit' in speed_value:
+                    speed = speed * units.G
+                elif 'Mbit' in speed_value:
+                    speed = speed * units.M
+                elif 'Kbit' in speed_value:
+                    speed = speed * units.k
+        return speed
 
 
 @staticmethod
