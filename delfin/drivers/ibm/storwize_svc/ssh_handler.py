@@ -474,7 +474,8 @@ class SSHHandler(object):
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
-    def get_fc_port(self, port_list, storage_id):
+    def get_fc_port(self, storage_id):
+        port_list = []
         fc_info = self.exec_ssh_command('lsportfc')
         fc_res = fc_info.split('\n')
         for i in range(1, len(fc_res)):
@@ -511,8 +512,10 @@ class SSHHandler(object):
                 'wwn': port_map.get('WWPN')
             }
             port_list.append(port_result)
+        return port_list
 
-    def get_iscsi_port(self, port_list, storage_id):
+    def get_iscsi_port(self, storage_id):
+        port_list = []
         for i in range(1, 3):
             port_array = []
             port_command = 'lsportip %s' % i
@@ -561,6 +564,7 @@ class SSHHandler(object):
                     'ipv6_mask': port.get('mask')
                 }
                 port_list.append(port_result)
+        return port_list
 
     def handle_port_bps(self, value):
         speed = 0
@@ -576,8 +580,8 @@ class SSHHandler(object):
     def list_ports(self, storage_id):
         try:
             port_list = []
-            self.get_fc_port(port_list, storage_id)
-            self.get_iscsi_port(port_list, storage_id)
+            port_list.extend(self.get_fc_port(storage_id))
+            port_list.extend(self.get_iscsi_port(storage_id))
             return port_list
         except Exception as err:
             err_msg = "Failed to get ports attributes from Storwize: %s" % \
