@@ -42,7 +42,11 @@ PORT_LOGICAL_TYPE_MAP = {
 PORT_CONNECT_STATUS_MAP = {
     'up': constants.PortConnectionStatus.CONNECTED,
     'down': constants.PortConnectionStatus.DISCONNECTED,
-    'no-link': constants.PortConnectionStatus.UNKNOWN
+    'no-link': constants.PortConnectionStatus.UNKNOWN,
+    'ok': constants.PortConnectionStatus.CONNECTED,
+    'pending': constants.PortConnectionStatus.CONNECTED,
+    'suspended': constants.PortConnectionStatus.DISCONNECTED,
+    'hardware error': constants.PortConnectionStatus.UNKNOWN
 }
 PORT_HEALTH_STATUS_MAP = {
     'ok': constants.PortHealthStatus.NORMAL,

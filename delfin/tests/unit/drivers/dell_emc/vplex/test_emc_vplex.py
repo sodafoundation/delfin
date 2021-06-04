@@ -244,12 +244,12 @@ GET_ALL_ENGINE_DIRECTOR = {
 }
 controllers_result = [
     {
-        'native_controller_id ': '0x00000000472029e9',
+        'native_controller_id': '0x00000000472029e9',
         'name': 'director-1-1-A',
         'status': 'normal',
-        'location ': '',
-        'storage_id ': '12345',
-        'soft_version ': '161.1.0.78.0',
+        'location': '',
+        'storage_id': '12345',
+        'soft_version': '161.1.0.78.0',
         'cpu_info': '',
         'memory_size': ''
     }
