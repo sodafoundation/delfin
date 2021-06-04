@@ -481,7 +481,6 @@ class VplexStorageDriver(driver.StorageDriver):
         role = ''
         port_status = ''
         operational_status = ''
-
         if nest_map:
             second_map = nest_map.get(first_key)
             if second_map:
