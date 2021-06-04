@@ -1,4 +1,4 @@
-# Copyright 2020 The SODA Authors.
+# Copyright 2021 The SODA Authors.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -25,6 +25,7 @@ LOG = logging.getLogger(__name__)
 
 
 class RestHandler(RestClient):
+    REST_TOKEN_URL = '/api/v1/tokens'
 
     def __init__(self, **kwargs):
         self.session_lock = threading.Lock()
@@ -67,7 +68,6 @@ class RestHandler(RestClient):
 
     def login(self):
         try:
-            url = '/api/v1/tokens'
             data = {"username": self.rest_username,
                     "password": cryptor.decode(self.rest_password)
                     }
@@ -75,15 +75,16 @@ class RestHandler(RestClient):
             with self.session_lock:
                 if self.session is None:
                     self.init_http_head()
-                res = self.call_with_token(url, data, 'POST')
+                res = self.call_with_token(
+                    RestHandler.REST_TOKEN_URL, data, 'POST')
                 if res.status_code == 200:
                     result = res.json()
                     self.session.headers['X-Auth-Token'] = \
                         cryptor.encode(result.get('token').get('token'))
                 else:
-                    LOG.error("Login error. URL: %(url)s\n"
-                              "Reason: %(reason)s.",
-                              {"url": url, "reason": res.text})
+                    LOG.error("Login error. URL: %(url)s，Reason: %(reason)s.",
+                              {"url": RestHandler.REST_TOKEN_URL,
+                               "reason": res.text})
                     if 'Authentication has failed' in res.text:
                         raise exception.InvalidUsernameOrPassword()
                     else:
@@ -94,9 +95,8 @@ class RestHandler(RestClient):
 
     def logout(self):
         try:
-            url = '/api/v1/tokens'
             if self.san_address:
-                self.call(url, method='DELETE')
+                self.call(RestHandler.REST_TOKEN_URL, method='DELETE')
             if self.session:
                 self.session.close()
         except Exception as e:
