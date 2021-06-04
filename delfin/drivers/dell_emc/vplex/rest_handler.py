@@ -42,7 +42,8 @@ class RestHandler(RestClient):
                 if 'User authentication failed' in res.text:
                     raise exception.InvalidUsernameOrPassword()
                 else:
-                    raise exception.BadResponse(res.text)
+                    raise exception.StorageBackendException(
+                        six.text_type(res.text))
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
@@ -124,3 +125,25 @@ class RestHandler(RestClient):
             err_msg = "Logout error: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
+
+    def get_engine_director_resp(self):
+        url = '%s/engines/*/directors/*' % consts.BASE_CONTEXT
+        response = self.get_rest_info(url)
+        return response
+
+    def get_version_verbose(self):
+        url = '%s/version' % consts.BASE_CONTEXT
+        args = '-a --verbose'
+        data = {"args": args}
+        response = self.get_rest_info(url, data, method='POST')
+        return response
+
+    def get_cluster_export_port_resp(self):
+        url = '%s/clusters/*/exports/ports/*' % consts.BASE_CONTEXT
+        response = self.get_rest_info(url)
+        return response
+
+    def get_engine_director_hardware_port_resp(self):
+        url = '%s/engines/*/directors/*/hardware/ports/*' % consts.BASE_CONTEXT
+        response = self.get_rest_info(url)
+        return response
