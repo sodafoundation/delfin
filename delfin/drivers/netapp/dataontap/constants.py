@@ -39,15 +39,34 @@ CLEAR_ALERT_COMMAND = \
 DISK_SHOW_DETAIL_COMMAND = "disk show -instance"
 DISK_SHOW_PHYSICAL_COMMAND = "disk show -physical"
 DISK_SPLIT_STR = "     Dis"
+DISK_ERROR_COMMAND = "disk error show"
 
 LUN_SHOW_DETAIL_COMMAND = "lun show -instance"
 LUN_SPLIT_STR = "  Vserver"
 
+CONTROLLER_SHOW_DETAIL_COMMAND = "node show -instance"
+CONTROLLER_SPLIT_STR = "  Nod"
+
+PORT_SHOW_DETAIL_COMMAND = "port show -instance"
+INTERFACE_SHOW_DETAIL_COMMAND = "network interface show -instance"
+FC_PORT_SHOW_DETAIL_COMMAND = "fcp adapter show -instance"
+PORT_SPLIT_STR = "   Nod"
+INTERFACE_SPLIT_STR = " Vserver "
+
+QTREE_SHOW_DETAIL_COMMAND = "qtree show -instance"
+QTREE_SPLIT_STR = " Vserver "
+
+CIFS_SHARE_SHOW_DETAIL_COMMAND = "vserver cifs share show -instance" \
+                                 " -vserver %(vserver_name)s"
+CIFS_SHARE_SPLIT_STR = "  Vserve"
+SHARE_AGREEMENT_SHOW_COMMAND = "vserver show -fields Allowed-protocols"
+VSERVER_SHOW_COMMAND = "vserver show -type data"
+
 STORAGE_VENDOR = "netapp"
 STORAGE_MODEL = "cmodel"
 
-CONTROLLER_SHOW_DETAIL_COMMAND = "node show -instance"
-CONTROLLER_SPLIT_STR = "  Nod"
+QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
+QUOTA_SPLIT_STR = "    Vserve"
 
 STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
@@ -132,6 +151,48 @@ FS_STATUS = {
     'offline': constants.FilesystemStatus.NORMAL,
     'force-online': constants.FilesystemStatus.FAULTY,
     'force-offline': constants.FilesystemStatus.FAULTY,
+}
+
+NETWORK_LOGICAL_TYPE = {
+    'data': constants.PortLogicalType.DATA,
+    'cluster': constants.PortLogicalType.CLUSTER,
+    'node-mgmt': constants.PortLogicalType.NODE_MGMT,
+    'cluster-mgmt': constants.PortLogicalType.CLUSTER_MGMT,
+    'intercluster': constants.PortLogicalType.INTERCLUSTER,
+}
+
+ETH_LOGICAL_TYPE = {
+    'physical': constants.PortLogicalType.PHYSICAL,
+    'if-group': constants.PortLogicalType.IF_GROUP,
+    'vlan': constants.PortLogicalType.VLAN,
+    'undef': constants.PortLogicalType.OTHER
+}
+
+FC_TYPE = {
+    'fibre-channel': constants.PortType.FC,
+    'ethernet': constants.PortType.FCOE
+}
+
+WORM_TYPE = {
+    'non-snaplock': constants.WORMType.NON_WORM,
+    'compliance': constants.WORMType.COMPLIANCE,
+    'enterprise': constants.WORMType.ENTERPRISE
+}
+
+QUOTA_TYPE = {
+    'user': constants.QuotaType.USER,
+    'tree': constants.QuotaType.TREE,
+    'group': constants.QuotaType.GROUP
+}
+
+NETWORK_PORT_TYPE = {
+    'nfs': constants.PortType.NFS,
+    'cifs': constants.PortType.CIFS,
+    'iscsi': constants.PortType.ISCSI,
+    'fcp': constants.PortType.FC,
+    'fcache': constants.PortType.FCACHE,
+    'none': constants.PortType.OTHER,
+    'nfs, cifs': constants.PortType.NFS_CIFS
 }
 
 SEVERITY_MAP = {
