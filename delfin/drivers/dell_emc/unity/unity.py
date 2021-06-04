@@ -213,7 +213,8 @@ class UnityStorDriver(driver.StorageDriver):
             ip = '%s;%s' % (ip, result)
         return ip
 
-    def get_eth_ports(self, port_list):
+    def get_eth_ports(self):
+        port_list = []
         ports = self.rest_handler.get_all_ethports()
         ip_interfaces = self.rest_handler.get_port_interface()
         if ports is not None:
@@ -266,8 +267,10 @@ class UnityStorDriver(driver.StorageDriver):
                     'ipv6_mask': ipv6_mask
                 }
                 port_list.append(port_result)
+        return port_list
 
-    def get_fc_port(self, port_list):
+    def get_fc_ports(self):
+        port_list = []
         ports = self.rest_handler.get_all_fcports()
         if ports is not None:
             port_entries = ports.get('entries')
@@ -294,12 +297,13 @@ class UnityStorDriver(driver.StorageDriver):
                     'wwn': content.get('wwn')
                 }
                 port_list.append(port_result)
+        return port_list
 
     def list_ports(self, context):
         try:
             port_list = []
-            self.get_eth_ports(port_list)
-            self.get_fc_port(port_list)
+            port_list.extend(self.get_eth_ports())
+            port_list.extend(self.get_fc_ports())
             return port_list
         except Exception as err:
             err_msg = "Failed to get ports metrics from Unity: %s" % \
@@ -405,8 +409,9 @@ class UnityStorDriver(driver.StorageDriver):
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
-    def get_share(self, share_list, protocol):
+    def get_share(self, protocol):
         try:
+            share_list = []
             if protocol == 'cifs':
                 shares = self.rest_handler.get_all_cifsshares()
                 protocol = constants.ShareProtocol.CIFS
@@ -437,6 +442,7 @@ class UnityStorDriver(driver.StorageDriver):
                         'protocol': protocol
                     }
                     share_list.append(fs)
+            return share_list
         except Exception as err:
             err_msg = "Failed to get share metrics from Unity: %s"\
                       % (six.text_type(err))
@@ -445,15 +451,16 @@ class UnityStorDriver(driver.StorageDriver):
     def list_shares(self, context):
         try:
             share_list = []
-            self.get_share(share_list, 'cifs')
-            self.get_share(share_list, 'nfs')
+            share_list.extend(self.get_share('cifs'))
+            share_list.extend(self.get_share('nfs'))
             return share_list
         except Exception as err:
             err_msg = "Failed to get shares metrics from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
-    def get_tree_quotas(self, quotas_list):
+    def get_tree_quotas(self):
+        quotas_list = []
         quota_configs = self.rest_handler.get_quota_configs()
         qts = self.rest_handler.get_all_qtrees()
         if qts is None:
@@ -494,8 +501,10 @@ class UnityStorDriver(driver.StorageDriver):
                 "used_capacity": int(content.get('sizeUsed'))
             }
             quotas_list.append(qt)
+        return quotas_list
 
-    def get_user_quotas(self, quotas_list):
+    def get_user_quotas(self):
+        quotas_list = []
         quota_configs = self.rest_handler.get_quota_configs()
         user_qts = self.rest_handler.get_all_userquotas()
         if user_qts is None:
@@ -537,12 +546,13 @@ class UnityStorDriver(driver.StorageDriver):
                 "used_capacity": int(content.get('sizeUsed'))
             }
             quotas_list.append(qt)
+        return quotas_list
 
     def list_quotas(self, context):
         try:
             quotas_list = []
-            self.get_tree_quotas(quotas_list)
-            self.get_user_quotas(quotas_list)
+            quotas_list.extend(self.get_tree_quotas())
+            quotas_list.extend(self.get_user_quotas())
             return quotas_list
         except Exception as err:
             err_msg = "Failed to get quotas metrics from Unity: %s"\
