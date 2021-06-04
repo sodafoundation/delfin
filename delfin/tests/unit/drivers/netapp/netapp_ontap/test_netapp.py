@@ -88,3 +88,54 @@ class TestNetAppCmodeDriver(TestCase):
     def test_parse_alert(self):
         data = self.netapp_client.parse_alert(context, test_constans.TRAP_MAP)
         self.assertEqual(data['alert_name'], 'LUN.inconsistent.filesystem')
+
+    def test_list_controllers(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.CONTROLLER_INFO])
+        data = self.netapp_client.list_controllers(context)
+        self.assertEqual(data[0]['name'], 'cl-01')
+
+    def test_list_ports(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.INTERFACE_INFO,
+                         test_constans.FC_PORT_INFO,
+                         test_constans.PORTS_INFO])
+        data = self.netapp_client.list_ports(context)
+        self.assertEqual(data[0]['name'], 'cl-01_mgmt1')
+
+    def test_list_disks(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.DISKS_INFO,
+                         test_constans.PHYSICAL_INFO,
+                         test_constans.ERROR_DISK_INFO])
+        data = self.netapp_client.list_disks(context)
+        self.assertEqual(data[0]['name'], 'NET-1.1')
+
+    def test_list_qtrees(self):
+        SSHPool.do_exec = mock.Mock(side_effect=[
+            test_constans.QTREES_INFO])
+        data = self.netapp_client.list_qtrees(context)
+        self.assertEqual(data[0]['security_mode'], 'ntfs')
+
+    def test_list_shares(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.SHARE_VSERVER_INFO,
+                         test_constans.SHARES_INFO,
+                         test_constans.SHARES_AGREEMENT_INFO])
+        data = self.netapp_client.list_shares(context)
+        self.assertEqual(data[0]['name'], 'admin$')
+
+    def test_list_filesystems(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.FS_INFO,
+                         test_constans.THIN_FS_INFO,
+                         test_constans.POOLS_INFO,
+                         test_constans.AGGREGATE_DETAIL_INFO])
+        data = self.netapp_client.list_filesystems(context)
+        self.assertEqual(data[0]['name'], 'vol0')
+
+    def test_list_quotas(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.QUOTAS_INFO])
+        data = self.netapp_client.list_quotas(context)
+        self.assertEqual(data[0]['file_soft_limit'], 1000)
