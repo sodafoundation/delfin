@@ -106,10 +106,11 @@ class PortType(object):
     COMBO = 'combo'
     CNA = 'cna'
     RCIP = 'rcip'
+    NFS_CIFS = 'nfs-cifs'
     OTHER = 'other'
 
     ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, LOGIC,
-           CIFS, NFS, FCACHE, COMBO, CNA, RCIP, OTHER)
+           CIFS, NFS, FCACHE, COMBO, CNA, RCIP, NFS_CIFS, OTHER)
 
 
 class PortLogicalType(object):
