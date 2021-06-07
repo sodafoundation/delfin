@@ -72,9 +72,10 @@ class Tools(object):
         detail_array = value_info.split('\r\n')
         for detail in detail_array:
             if detail is not None and detail != '':
-                strinfo = detail.split(split + " ")
-                key = strinfo[0].replace(' ', '')
+                string_info = detail.split(split + " ")
+                key = string_info[0].replace(' ', '')
                 value = ''
-                if len(strinfo) > 1:
-                    value = strinfo[1]
+                if len(string_info) > 1:
+                    for string in string_info[1:]:
+                        value += string.replace('""', '')
                 value_map[key] = value
