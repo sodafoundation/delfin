@@ -14,6 +14,7 @@
 
 import six
 
+from oslo_config import cfg
 from oslo_log import log
 from delfin.common import constants
 from delfin.drivers.huawei.oceanstor import rest_client, consts, alert_handler
@@ -21,6 +22,16 @@ from delfin.drivers import driver
 from delfin import exception
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
+
+oceanstor_opts = [
+   cfg.StrOpt('enable_perf_config',
+              default=False,
+              help='Enable changing performance configs on storage array'
+                   'Settings for real-time, historical collection updated'),
+]
+
+CONF.register_opts(oceanstor_opts, "oceanstor_driver")
 
 
 class OceanStorDriver(driver.StorageDriver):
@@ -31,7 +42,7 @@ class OceanStorDriver(driver.StorageDriver):
         super().__init__(**kwargs)
         self.client = rest_client.RestClient(**kwargs)
         self.sector_size = consts.SECTORS_SIZE
-        self.configure_collection = False
+        self.init_perf_config = CONF.oceanstor_driver.enable_perf_config
 
     def reset_connection(self, context, **kwargs):
         self.client.reset_connection(**kwargs)
@@ -599,45 +610,71 @@ class OceanStorDriver(driver.StorageDriver):
                              resource_metrics, start_time,
                              end_time):
         """Collects performance metric for the given interval"""
-        if not self.configure_collection:
-            self.client.configure_metrics_collection()
-            self.configure_collection = True
+        try:
+            if self.init_perf_config:
+                self.client.configure_metrics_collection()
+                self.init_perf_config = False
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to configure collection in OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to configure collection in OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
         metrics = []
-        # storage-pool metrics
-        if resource_metrics.get(constants.ResourceType.STORAGE_POOL):
-            pool_metrics = self.client.get_pool_metrics(
-                storage_id,
-                resource_metrics.get(constants.ResourceType.STORAGE_POOL))
-            metrics.extend(pool_metrics)
+        try:
+            # storage-pool metrics
+            if resource_metrics.get(constants.ResourceType.STORAGE_POOL):
+                pool_metrics = self.client.get_pool_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.STORAGE_POOL))
+                metrics.extend(pool_metrics)
 
-        # volume metrics
-        if resource_metrics.get(constants.ResourceType.VOLUME):
-            volume_metrics = self.client.get_volume_metrics(
-                storage_id,
-                resource_metrics.get(constants.ResourceType.STORAGE_POOL))
-            metrics.extend(volume_metrics)
+            # volume metrics
+            if resource_metrics.get(constants.ResourceType.VOLUME):
+                volume_metrics = self.client.get_volume_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.STORAGE_POOL))
+                metrics.extend(volume_metrics)
 
-        # controller metrics
-        if resource_metrics.get(constants.ResourceType.CONTROLLER):
-            controller_metrics = self.client.get_controller_metrics(
-                storage_id,
-                resource_metrics.get(constants.ResourceType.CONTROLLER))
-            metrics.extend(controller_metrics)
+            # controller metrics
+            if resource_metrics.get(constants.ResourceType.CONTROLLER):
+                controller_metrics = self.client.get_controller_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.CONTROLLER))
+                metrics.extend(controller_metrics)
 
-        # port metrics
-        if resource_metrics.get(constants.ResourceType.PORT):
-            port_metrics = self.client.get_port_metrics(
-                storage_id,
-                resource_metrics.get(constants.ResourceType.PORT))
-            metrics.extend(port_metrics)
+            # port metrics
+            if resource_metrics.get(constants.ResourceType.PORT):
+                port_metrics = self.client.get_port_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.PORT))
+                metrics.extend(port_metrics)
 
-        # disk metrics
-        if resource_metrics.get(constants.ResourceType.DISK):
-            disk_metrics = self.client.get_disk_metrics(
-                storage_id,
-                resource_metrics.get(constants.ResourceType.DISK))
-            metrics.extend(disk_metrics)
+            # disk metrics
+            if resource_metrics.get(constants.ResourceType.DISK):
+                disk_metrics = self.client.get_disk_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.DISK))
+                metrics.extend(disk_metrics)
+
+        except exception.DelfinException as err:
+            err_msg = "Failed to collect metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to collect metrics from OceanStor: %s" %\
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
         return metrics
 

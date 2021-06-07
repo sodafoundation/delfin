@@ -325,7 +325,7 @@ metric_struct = namedtuple("Metric", "name labels values")
 
 class ResourceType(object):
     STORAGE = 'storage'
-    STORAGE_POOL = 'storage_pool'
+    STORAGE_POOL = 'storagePool'
     VOLUME = 'volume'
     CONTROLLER = 'controller'
     PORT = 'port'

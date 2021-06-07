@@ -161,26 +161,37 @@ THICK_LUNTYPE = '0'
 THIN_LUNTYPE = '1'
 
 OCEANSTOR_METRICS = {
+    'iops': '22',
+    'readIops': '25',
+    'writeIops': '28',
     'throughput': '21',
     'readThroughput': '23',
     'writeThroughput': '26',
     'responseTime': '370',
-    'readResponseTime': '384',
-    'writeResponseTime': '385',
-    'requests': '22',
-    'readRequests': '25',
-    'writeRequests': '28',
-    'serviceTime:': '29',
-    'cpuUsage': '68',
-    'memoryUsage': '1075'
+    'ioSize': '228',
+    'readIoSize': '24',
+    'writeIoSize': '27',
+    'cacheHitRatio': '303',
+    'readCacheHitRatio': '93',
+    'writeCacheHitRatio': '95',
 }
 
 US_TO_MS_LIST = [
     'responseTime',
-    'readResponseTime',
-    'writeResponseTime'
 ]
 
+IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read input/output operations per second"
+}
+WRITE_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write input/output operations per second"
+}
 THROUGHPUT_DESCRIPTION = {
     "unit": "MB/s",
     "description": "Represents how much data is "
@@ -201,25 +212,29 @@ RESPONSE_TIME_DESCRIPTION = {
     "description": "Average time taken for an IO "
                    "operation in ms"
 }
-REQUESTS_DESCRIPTION = {
-    "unit": "IOPS",
-    "description": "Input/output operations per second"
+CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of io that are cache hits"
 }
-READ_REQUEST_DESCRIPTION = {
-    "unit": "IOPS",
-    "description": "Read requests per second"
+READ_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of read ops that are cache hits"
 }
-WRITE_REQUEST_DESCRIPTION = {
-    "unit": "IOPS",
-    "description": "Write requests per second"
+WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of write ops that are cache hits"
 }
-READ_RESPONSE_TIME_DESCRIPTION = {
-    "unit": "ms",
-    "description": "Time taken for an IO read operation in ms"
+IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of IO requests in KB"
 }
-WRITE_RESPONSE_TIME_DESCRIPTION = {
-    "unit": "ms",
-    "description": "Time taken for an IO write operation in ms"
+READ_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of read IO requests in KB"
+}
+WRITE_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of write IO requests in KB"
 }
 CPU_USAGE_DESCRIPTION = {
     "unit": "%",
@@ -234,54 +249,53 @@ SERVICE_TIME = {
     "description": "Service time of the resource in ms"
 }
 POOL_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
     "throughput": THROUGHPUT_DESCRIPTION,
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
-    "requests": REQUESTS_DESCRIPTION,
-    "readRequests": READ_REQUEST_DESCRIPTION,
-    "writeRequests": WRITE_REQUEST_DESCRIPTION,
 }
 VOLUME_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
     "throughput": THROUGHPUT_DESCRIPTION,
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
-    "requests": REQUESTS_DESCRIPTION,
-    "readRequests": READ_REQUEST_DESCRIPTION,
-    "writeRequests": WRITE_REQUEST_DESCRIPTION,
-    "readResponseTime": READ_RESPONSE_TIME_DESCRIPTION,
-    "writeResponseTime": WRITE_RESPONSE_TIME_DESCRIPTION,
+    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
+    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
+    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
+    "ioSize": IO_SIZE_DESCRIPTION,
+    "readIoSize": READ_IO_SIZE_DESCRIPTION,
+    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION,
 }
 CONTROLLER_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
     "throughput": THROUGHPUT_DESCRIPTION,
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
-    "requests": REQUESTS_DESCRIPTION,
-    "readRequests": READ_REQUEST_DESCRIPTION,
-    "writeRequests": WRITE_REQUEST_DESCRIPTION,
-    "readResponseTime": READ_RESPONSE_TIME_DESCRIPTION,
-    "writeResponseTime": WRITE_RESPONSE_TIME_DESCRIPTION,
-    "cpuUsage": READ_REQUEST_DESCRIPTION,
-    "memoryUsage": WRITE_REQUEST_DESCRIPTION,
 }
 PORT_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
     "throughput": THROUGHPUT_DESCRIPTION,
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
-    "requests": REQUESTS_DESCRIPTION,
-    "readRequests": READ_REQUEST_DESCRIPTION,
-    "writeRequests": WRITE_REQUEST_DESCRIPTION,
-    "readResponseTime": READ_RESPONSE_TIME_DESCRIPTION,
-    "writeResponseTime": WRITE_RESPONSE_TIME_DESCRIPTION,
 }
 DISK_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
     "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
-    "requests": REQUESTS_DESCRIPTION,
-    "readRequests": READ_REQUEST_DESCRIPTION,
-    "writeRequests": WRITE_REQUEST_DESCRIPTION,
-    "serviceTime": SERVICE_TIME,
 }

@@ -13,6 +13,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import datetime
 import json
 
@@ -33,7 +34,6 @@ LOG = logging.getLogger(__name__)
 
 
 def _get_timestamp_values(metric, value):
-    # timestamp = int(metric['CMO_STATISTIC_TIMESTAMP']) * 1000
     timestamp = int(float(datetime.datetime.now().timestamp()) * 1000)
     return {timestamp: value}
 
@@ -400,7 +400,7 @@ class RestClient(object):
     def _set_performance_switch(self, value):
         url = "/performance_statistic_switch"
         data = {"CMO_PERFORMANCE_SWITCH": value}
-        result = self.call(url, data, method='GET', log_filter_flag=True)
+        result = self.call(url, data, method='PUT', log_filter_flag=True)
 
         msg = _('Set performance_statistic_switch failed.')
         self._assert_rest_result(result, msg)
@@ -426,7 +426,7 @@ class RestClient(object):
             "CMO_STATISTIC_INTERVAL": duration,
             "CMO_STATISTIC_MAX_TIME": max_duration
         }
-        result = self.call(url, data, method='GET', log_filter_flag=True)
+        result = self.call(url, data, method='PUT', log_filter_flag=True)
 
         msg = _('Set performance_statistic_strategy failed.')
         self._assert_rest_result(result, msg)
@@ -578,7 +578,8 @@ class RestClient(object):
                         'storage_id': storage_id,
                         'resource_type': 'disk',
                         'resource_id': disk['ID'],
-                        'resource_name': disk['MODEL'] + ':' + disk['SERIALNUMBER']
+                        'resource_name':
+                            disk['MODEL'] + ':' + disk['SERIALNUMBER']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
