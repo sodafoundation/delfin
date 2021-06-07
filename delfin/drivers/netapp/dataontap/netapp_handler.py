@@ -390,7 +390,7 @@ class NetAppHandler(object):
         for i in range(2, len(physical_array), 2):
             physicals_list.append(physical_array[i].split())
         for disk_str in disks_array[1:]:
-            speed = physical_type = firmware = '-'
+            speed = physical_type = firmware = None
             Tools.split_value_map(disk_str, disks_map, split=':')
             logical_type = constant.DISK_LOGICAL. \
                 get(disks_map['ContainerType'])
