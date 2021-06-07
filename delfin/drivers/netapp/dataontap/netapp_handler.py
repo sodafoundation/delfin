@@ -18,6 +18,7 @@ import six
 import hashlib
 
 from oslo_log import log as logging
+from oslo_utils import units
 
 from delfin.drivers.netapp.dataontap import constants as constant
 from delfin import exception
@@ -31,6 +32,7 @@ LOG = logging.getLogger(__name__)
 class NetAppHandler(object):
     OID_SERIAL_NUM = '1.3.6.1.4.1.789.1.1.9.0'
     OID_TRAP_DATA = '1.3.6.1.4.1.789.1.1.12.0'
+
     SECONDS_TO_MS = 1000
 
     def __init__(self, **kwargs):
@@ -58,7 +60,7 @@ class NetAppHandler(object):
                             (alert.get(NetAppHandler.OID_TRAP_DATA)
                              + str(time.time())).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                        'location': ''
+                        'location': None
                     }
             return alert_model
         except Exception as err:
@@ -100,10 +102,12 @@ class NetAppHandler(object):
             Tools.split_value_map(system_info, storage_map, split=':')
             for disk in disk_list:
                 raw_capacity += disk['capacity']
+
             for pool in pool_list:
                 total_capacity += pool['total_capacity']
                 free_capacity += pool['free_capacity']
                 used_capacity += pool['used_capacity']
+
             storage_model = {
                 "name": storage_map['ClusterName'],
                 "vendor": constant.STORAGE_VENDOR,
@@ -143,7 +147,7 @@ class NetAppHandler(object):
                 'name': agg_map['e'],
                 'storage_id': storage_id,
                 'native_storage_pool_id': agg_map['UUIDString'],
-                'description': '',
+                'description': None,
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
                 'total_capacity':
@@ -171,7 +175,7 @@ class NetAppHandler(object):
                 'name': pool_map['ame'],
                 'storage_id': storage_id,
                 'native_storage_pool_id': pool_map['UUIDofStoragePool'],
-                'description': '',
+                'description': None,
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
                 'total_capacity':
@@ -216,7 +220,7 @@ class NetAppHandler(object):
             for volume_str in volume_array[1:]:
                 Tools.split_value_map(volume_str, volume_map, split=':')
                 if volume_map is not None or volume_map != {}:
-                    pool_id = ''
+                    pool_id = None
                     status = 'normal' if volume_map['State'] == 'online' \
                         else 'offline'
                     for fs in fs_list:
@@ -228,13 +232,13 @@ class NetAppHandler(object):
                     volume_model = {
                         'name': volume_map['LUNName'],
                         'storage_id': storage_id,
-                        'description': '',
+                        'description': None,
                         'status': status,
                         'native_volume_id': volume_map['LUNUUID'],
                         'native_storage_pool_id': pool_id,
-                        'wwn': '',
-                        'compressed': '',
-                        'deduplicated': '',
+                        'wwn': None,
+                        'compressed': None,
+                        'deduplicated': None,
                         'type': type,
                         'total_capacity':
                             int(Tools.get_capacity_size(
@@ -267,7 +271,6 @@ class NetAppHandler(object):
             constant.EVENT_SHOW_DETAIL_COMMAND)
         event_array = event_info.split(constant.ALTER_SPLIT_STR)
         event_map = {}
-
         for event_str in event_array[1:]:
             Tools.split_value_map(event_str, event_map, split=':')
             occur_time = int(time.mktime(time.strptime(
@@ -277,17 +280,19 @@ class NetAppHandler(object):
                     (query_para['begin_time']
                      <= occur_time
                      <= query_para['end_time']):
+                print(event_map)
                 alert_model = {
                     'alert_id': event_map['Sequence#'],
                     'alert_name': event_map['MessageName'],
                     'severity': constants.Severity.CRITICAL,
-                    'category': constants.Category.EVENT,
+                    'category': constants.Category.FAULT,
                     'type': constants.EventType.EQUIPMENT_ALARM,
-                    'occur_time': occur_time,
+                    'occur_time': occur_time * 1000,
                     'description': event_map['Event'],
                     'match_key': hashlib.md5(
                         (event_map['Sequence#'] +
                          str(occur_time)).encode()).hexdigest(),
+                    'sequence_number': event_map['Sequence#'],
                     'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                     'location': event_map['Source']
                 }
@@ -316,8 +321,9 @@ class NetAppHandler(object):
                     [alert_map['PerceivedSeverity']],
                     'category': constants.Category.FAULT,
                     'type': constants.EventType.EQUIPMENT_ALARM,
-                    'occur_time': occur_time,
+                    'occur_time': occur_time * 1000,
                     'description': alert_map['Description'],
+                    'sequence_number': alert_map['AlertID'],
                     'match_key': hashlib.md5(
                         (alert_map['AlertID'] +
                          str(occur_time)).encode()).hexdigest(),
@@ -370,26 +376,35 @@ class NetAppHandler(object):
             constant.DISK_SPLIT_STR)
         physicals_info = self.ssh_pool.do_exec(
             constant.DISK_SHOW_PHYSICAL_COMMAND)
+        error_disk = self.ssh_pool.do_exec(
+            constant.DISK_ERROR_COMMAND
+        )
+        error_disk_list = []
+        error_disk_array = error_disk.split('\r\n')
+        for error_disk in error_disk_array[1:]:
+            error_array = error_disk.split()
+            if len(error_array) > 2:
+                error_disk_list.append(error_array[0])
         disks_map = {}
         physical_array = physicals_info.split('\r\n')
         for i in range(2, len(physical_array), 2):
             physicals_list.append(physical_array[i].split())
         for disk_str in disks_array[1:]:
-            speed = physical_type = firmware = None
+            speed = physical_type = firmware = '-'
             Tools.split_value_map(disk_str, disks_map, split=':')
             logical_type = constant.DISK_LOGICAL. \
                 get(disks_map['ContainerType'])
             """Map disk physical information"""
             for physical_info in physicals_list:
-                if len(physical_info) > 6 \
-                        and physical_info[0] == disks_map['k']:
-                    physical_type = constant.DISK_TYPE.get(physical_info[1])
-                    speed = physical_info[5]
-                    firmware = physical_info[4]
-                    break
-            status = constants.DiskStatus.ABNORMAL
-            if disks_map['Errors:'] is None or disks_map['Errors:'] == "":
-                status = constants.DiskStatus.NORMAL
+                if len(physical_info) > 6:
+                    if physical_info[0] == disks_map['k']:
+                        physical_type = \
+                            constant.DISK_TYPE.get(physical_info[1])
+                        speed = physical_info[5]
+                        firmware = physical_info[4]
+            status = constants.DiskStatus.NORMAL
+            if disks_map['k'] in error_disk_list:
+                status = constants.DiskStatus.ABNORMAL
             disk_model = {
                 'name': disks_map['k'],
                 'storage_id': storage_id,
@@ -404,9 +419,8 @@ class NetAppHandler(object):
                 'status': status,
                 'physical_type': physical_type,
                 'logical_type': logical_type,
-                'health_score': '',
                 'native_disk_group_id': disks_map['Aggregate'],
-                'location': '',
+                'location': None,
             }
             disks_list.append(disk_model)
         return disks_list
@@ -445,14 +459,15 @@ class NetAppHandler(object):
                         'false':
                     compressed = False
                 status = constant.FS_STATUS.get(fs_map['VolumeState'])
+                fs_id = fs_map['Name'] + '_' + fs_map['VolumeName']
                 fs_model = {
                     'name': fs_map['VolumeName'],
                     'storage_id': storage_id,
-                    'native_filesystem_id': fs_map['VolumeName'],
+                    'native_filesystem_id': fs_id,
                     'native_pool_id': pool_id,
                     'compressed': compressed,
                     'deduplicated': deduplicated,
-                    'worm': fs_map['SnapLockType'],
+                    'worm': constant.WORM_TYPE.get(fs_map['SnapLockType']),
                     'status': status,
                     'type': type,
                     'total_capacity':
@@ -465,3 +480,414 @@ class NetAppHandler(object):
                 }
                 fs_list.append(fs_model)
         return fs_list
+
+    def list_controllers(self, storage_id):
+        try:
+            controller_list = []
+            controller_info = self.ssh_pool.do_exec(
+                constant.CONTROLLER_SHOW_DETAIL_COMMAND)
+            controller_array = controller_info.split(
+                constant.CONTROLLER_SPLIT_STR)
+            controller_map = {}
+            for controller_str in controller_array[1:]:
+                Tools.split_value_map(
+                    controller_str, controller_map, split=':')
+                if controller_map is not None or controller_map != {}:
+                    status = constants.ControllerStatus.NORMAL \
+                        if controller_map['Health'] == 'true' \
+                        else constants.ControllerStatus.OFFLINE
+                    controller_model = {
+                        'name': controller_map['e'],
+                        'storage_id': storage_id,
+                        'native_controller_id': controller_map['SystemID'],
+                        'status': status,
+                        'location': controller_map['Location'],
+                        'soft_version': None,
+                        'cpu_info': None,
+                        'memory_size': None,
+                    }
+                    controller_list.append(controller_model)
+            return controller_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage controllers from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+
+        except Exception as err:
+            err_msg = "Failed to get storage controllers from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def get_network_port(self, storage_id):
+        try:
+            ports_list = []
+            interfaces_info = self.ssh_pool.do_exec(
+                constant.INTERFACE_SHOW_DETAIL_COMMAND)
+            interface_array = interfaces_info.split(
+                constant.INTERFACE_SPLIT_STR)
+            interface_map = {}
+            """Traversal to get port IP address information"""
+            for interface_info in interface_array[1:]:
+                ipv4 = ipv4_mask = ipv6 = ipv6_mask = None
+                Tools.split_value_map(
+                    interface_info, interface_map, split=':')
+                logical_type = constant.NETWORK_LOGICAL_TYPE.get(
+                    interface_map['Role'])
+                port_type = constant.NETWORK_PORT_TYPE.get(
+                    interface_map['DataProtocol'])
+                port_id = \
+                    interface_map['Name'] + \
+                    '_' + \
+                    interface_map['LogicalInterfaceName']
+                if interface_map['Addressfamily'] == 'ipv4':
+                    ipv4 = interface_map['NetworkAddress']
+                    ipv4_mask = interface_map['Netmask']
+                elif interface_map['Addressfamily'] == 'ipv6':
+                    ipv6 = interface_map['NetworkAddress']
+                    ipv6_mask = interface_map['Netmask']
+                port_model = {
+                    'name': interface_map['LogicalInterfaceName'],
+                    'storage_id': storage_id,
+                    'native_port_id': port_id,
+                    'location': None,
+                    'connection_status':
+                        constants.PortConnectionStatus.CONNECTED
+                        if interface_map['OperationalStatus'] == 'up'
+                        else constants.PortConnectionStatus.DISCONNECTED,
+                    'health_status':
+                        constants.PortHealthStatus.NORMAL
+                        if interface_map['OperationalStatus'] == 'up'
+                        else constants.PortHealthStatus.ABNORMAL,
+                    'type': port_type,
+                    'logical_type': logical_type,
+                    'speed': None,
+                    'max_speed': None,
+                    'native_parent_id': None,
+                    'wwn': interface_map['FCPWWPN']
+                    if interface_map['FCPWWPN'] != '-' else None,
+                    'mac_address': None,
+                    'ipv4': ipv4,
+                    'ipv4_mask': ipv4_mask,
+                    'ipv6': ipv6,
+                    'ipv6_mask': ipv6_mask,
+                }
+                ports_list.append(port_model)
+            return ports_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage ports from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+
+        except Exception as err:
+            err_msg = "Failed to get storage ports from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def get_eth_port(self, storage_id):
+        try:
+            eth_list = []
+            eth_info = self.ssh_pool.do_exec(
+                constant.PORT_SHOW_DETAIL_COMMAND)
+            eth_array = eth_info.split(
+                constant.PORT_SPLIT_STR)
+            for eth in eth_array[1:]:
+                eth_map = {}
+                Tools.split_value_map(eth, eth_map, split=':')
+                logical_type = constant.ETH_LOGICAL_TYPE.get(
+                    eth_map['PortType'])
+                port_id = eth_map['e'] + '_' + eth_map['Port']
+                eth_model = {
+                    'name': eth_map['Port'],
+                    'storage_id': storage_id,
+                    'native_port_id': port_id,
+                    'location': None,
+                    'connection_status':
+                        constants.PortConnectionStatus.CONNECTED
+                        if eth_map['Link'] == 'up'
+                        else constants.PortConnectionStatus.DISCONNECTED,
+                    'health_status':
+                        constants.PortHealthStatus.NORMAL
+                        if eth_map['PortHealthStatus'] == 'healthy'
+                        else constants.PortHealthStatus.ABNORMAL,
+                    'type': constants.PortType.ETH,
+                    'logical_type': logical_type,
+                    'speed': int(eth_map['SpeedOperational']) * units.Mi,
+                    'max_speed': int(eth_map['SpeedOperational']) * units.Mi,
+                    'native_parent_id': None,
+                    'wwn': None,
+                    'mac_address': eth_map['MACAddress'],
+                    'ipv4': None,
+                    'ipv4_mask': None,
+                    'ipv6': None,
+                    'ipv6_mask': None,
+                }
+                eth_list.append(eth_model)
+            return eth_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage ports from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+
+        except Exception as err:
+            err_msg = "Failed to get storage ports from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def get_fc_port(self, storage_id):
+        try:
+            fc_list = []
+            fc_info = self.ssh_pool.do_exec(
+                constant.FC_PORT_SHOW_DETAIL_COMMAND)
+            fc_array = fc_info.split(
+                constant.PORT_SPLIT_STR)
+            for fc in fc_array[1:]:
+                fc_map = {}
+                Tools.split_value_map(fc, fc_map, split=':')
+                type = constant.FC_TYPE.get(fc_map['PhysicalProtocol'])
+                port_id = fc_map['e'] + '_' + fc_map['Adapter']
+                fc_model = {
+                    'name': fc_map['Adapter'],
+                    'storage_id': storage_id,
+                    'native_port_id': port_id,
+                    'location': None,
+                    'connection_status':
+                        constants.PortConnectionStatus.CONNECTED
+                        if fc_map['AdministrativeStatus'] == 'up'
+                        else constants.PortConnectionStatus.DISCONNECTED,
+                    'health_status':
+                        constants.PortHealthStatus.NORMAL
+                        if fc_map['OperationalStatus'] == 'online'
+                        else constants.PortHealthStatus.ABNORMAL,
+                    'type': type,
+                    'logical_type': None,
+                    'speed': int(fc_map['DataLinkRate(Gbit)']) * units.Gi,
+                    'max_speed': int(fc_map['MaximumSpeed']) * units.Gi,
+                    'native_parent_id': None,
+                    'wwn': fc_map['AdapterWWNN'],
+                    'mac_address': None,
+                    'ipv4': None,
+                    'ipv4_mask': None,
+                    'ipv6': None,
+                    'ipv6_mask': None,
+                }
+                fc_list.append(fc_model)
+            return fc_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage ports from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+
+        except Exception as err:
+            err_msg = "Failed to get storage ports from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_ports(self, storage_id):
+        ports_list = \
+            self.get_network_port(storage_id) + \
+            self.get_fc_port(storage_id) + \
+            self.get_eth_port(storage_id)
+        return ports_list
+
+    def list_disks(self, storage_id):
+        try:
+            return self.get_disks(storage_id)
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage disks from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+
+        except Exception as err:
+            err_msg = "Failed to get storage disks from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_qtrees(self, storage_id):
+        try:
+            qt_list = []
+            qt_info = self.ssh_pool.do_exec(
+                constant.QTREE_SHOW_DETAIL_COMMAND)
+            qt_array = qt_info.split(constant.QTREE_SPLIT_STR)
+            for qt in qt_array[1:]:
+                qt_map = {}
+                Tools.split_value_map(qt, qt_map, split=':')
+                if 'QtreeName' in qt_map.keys():
+                    fs_id = qt_map['Name'] + '_' + qt_map['VolumeName']
+                    qt_id = \
+                        qt_map['Name'] + '_' \
+                        + qt_map['Actual(Non-Junction)QtreePath']
+                    qt_model = {
+                        'name': qt_map['QtreeName'],
+                        'storage_id': storage_id,
+                        'native_qtree_id': qt_id,
+                        'path': qt_map['Actual(Non-Junction)QtreePath'],
+                        'native_filesystem_id': fs_id,
+                        'security_mode': qt_map['SecurityStyle'],
+                    }
+                    qt_list.append(qt_model)
+            return qt_list
+        except exception.DelfinException as err:
+            err_msg = "Failed to get storage qtrees from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get storage qtrees from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def get_shares(self, storage_id, vserver_name):
+        shares_list = []
+        share_info = self.ssh_pool.do_exec(
+            (constant.CIFS_SHARE_SHOW_DETAIL_COMMAND %
+             {'vserver_name': vserver_name}))
+        cifs_share_array = share_info.split(
+            constant.CIFS_SHARE_SPLIT_STR)
+        protocol_info = self.ssh_pool.do_exec(
+            constant.SHARE_AGREEMENT_SHOW_COMMAND)
+        protocol_map = {}
+        protocol_arr = protocol_info.split('\r\n')
+        for protocol in protocol_arr[1:]:
+            agr_arr = protocol.split()
+            if len(agr_arr) > 1:
+                protocol_map[agr_arr[0]] = agr_arr[1]
+        for cifs_share in cifs_share_array[1:]:
+            share_map = {}
+            Tools.split_value_map(cifs_share, share_map, split=':')
+            if 'VolumeName' in share_map.keys() and \
+                    share_map['VolumeName'] != '-':
+                protocol_str = protocol_map.get(share_map['r'])
+                fs_id = share_map['r'] + '_' + share_map['VolumeName']
+                share_id = fs_id + '_' + share_map['Share'] + '_'
+                if constants.ShareProtocol.CIFS in protocol_str:
+                    share = {
+                        'name': share_map['Share'],
+                        'storage_id': storage_id,
+                        'native_share_id': share_id +
+                                           constants.ShareProtocol.CIFS,
+                        'native_filesystem_id': fs_id,
+                        'path': share_map['Path'],
+                        'protocol': constants.ShareProtocol.CIFS
+                    }
+                    shares_list.append(share)
+                if constants.ShareProtocol.NFS in protocol_str:
+                    share = {
+                        'name': share_map['Share'],
+                        'storage_id': storage_id,
+                        'native_share_id': share_id +
+                                           constants.ShareProtocol.NFS,
+                        'native_filesystem_id': fs_id,
+                        'path': share_map['Path'],
+                        'protocol': constants.ShareProtocol.NFS
+                    }
+                    shares_list.append(share)
+        return shares_list
+
+    def list_shares(self, storage_id):
+        try:
+            shares_list = []
+            vserver_info = self.ssh_pool.do_exec(
+                constant.VSERVER_SHOW_COMMAND)
+            vserver_array = vserver_info.split("\r\n")
+            for vserver in vserver_array[3:]:
+                vserver_name = vserver.split()
+                if len(vserver_name) > 1:
+                    shares_list += \
+                        self.get_shares(storage_id, vserver_name[0])
+            return shares_list
+        except exception.DelfinException as err:
+            err_msg = "Failed to get storage shares from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+
+        except Exception as err:
+            err_msg = "Failed to get storage shares from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_filesystems(self, storage_id):
+        try:
+            fs_list = self.get_filesystems(storage_id)
+            return fs_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage volume from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage volume from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_quotas(self, storage_id):
+        try:
+            quota_list = []
+            quotas_info = self.ssh_pool.do_exec(
+                constant.QUOTA_SHOW_DETAIL_COMMAND)
+            quotas_array = quotas_info.split(constant.QUOTA_SPLIT_STR)
+            for quota_info in quotas_array[1:]:
+                quota_map = {}
+                user_group_name = None
+                Tools.split_value_map(quota_info, quota_map, ":")
+                if 'VolumeName' in quota_map.keys():
+                    quota_id = \
+                        quota_map['r'] + '_' + \
+                        quota_map['VolumeName'] + '_' + \
+                        quota_map['Type'] + '_' + \
+                        quota_map['Target']
+                    type = constant.QUOTA_TYPE.get(quota_map['Type'])
+                    native_qtree_id = '/vol/' + quota_map['VolumeName']
+                    if type == 'tree' and quota_map['Target'] != '':
+                        native_qtree_id += '/' + quota_map['Target']
+                    else:
+                        if type == 'group':
+                            user_group_name = quota_map['Target']
+                        if quota_map['QtreeName'] != '':
+                            native_qtree_id += '/' + quota_map['QtreeName']
+                    fs_id = quota_map['r'] + '_' + quota_map['VolumeName']
+                    qt_id = \
+                        quota_map['r'] + '_' \
+                        + native_qtree_id
+                    quota = {
+                        'native_quota_id': quota_id,
+                        'type': type,
+                        'storage_id': storage_id,
+                        'native_filesystem_id': fs_id,
+                        'native_qtree_id': qt_id,
+                        'capacity_hard_limit': Tools.get_capacity_size(
+                            quota_map['DiskLimit']),
+                        'capacity_soft_limit': Tools.get_capacity_size(
+                            quota_map['SoftDiskLimit']),
+                        'file_hard_limit': int(quota_map['FilesLimit']),
+                        'file_soft_limit': int(quota_map['SoftFilesLimit']),
+                        'file_count': None,
+                        'used_capacity': None,
+                        'user_group_name': user_group_name
+                    }
+                    quota_list.append(quota)
+            return quota_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage volume from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage volume from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
