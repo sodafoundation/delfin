@@ -52,12 +52,12 @@ class PrometheusExporter(object):
 
     # Print metrics in Prometheus format.
     def _write_to_prometheus_format(self, f, metric, labels, values):
-        f.write("# HELP storage_%s storage metric for %s\n" % (metric, metric))
-        f.write("# TYPE storage_%s gauge\n" % metric)
+        f.write("# HELP %s storage metric for %s\n" % (metric, metric))
+        f.write("# TYPE %s gauge\n" % metric)
 
         for timestamp, value in values.items():
-            f.write("storage_%s{%s} %f %d\n" % (metric, labels,
-                                                value, timestamp))
+            f.write("%s{%s} %f %d\n" % (metric, labels,
+                                        value, timestamp))
 
     def push_to_prometheus(self, storage_metrics):
         with open(cfg.CONF.PROMETHEUS_EXPORTER.metrics_cache_file, "a+") as f:
@@ -77,6 +77,6 @@ class PrometheusExporter(object):
                     "type=\"%s\",unit=\"%s\",value_type=\"%s\"" %
                     (storage_id, storage_name, storage_sn, resource_type,
                      'RAW', unit, value_type))
-
+                name = labels.get('resource_type') + '_' + name
                 self._write_to_prometheus_format(f, name, storage_labels,
                                                  values)
