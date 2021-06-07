@@ -31,6 +31,7 @@ ALTER_SHOW_DETAIL_COMMAND = "system health alert show -instance"
 EVENT_SHOW_DETAIL_COMMAND = "event show -instance -severity EMERGENCY"
 ALTER_SPLIT_STR = " Node"
 EVENT_TIME_TYPE = '%m/%d/%Y %H:%M:%S'
+
 ALTER_TIME_TYPE = '%a %b %d %H:%M:%S %Y'
 
 CLEAR_ALERT_COMMAND = \
