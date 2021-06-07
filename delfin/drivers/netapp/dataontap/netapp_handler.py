@@ -396,12 +396,12 @@ class NetAppHandler(object):
                 get(disks_map['ContainerType'])
             """Map disk physical information"""
             for physical_info in physicals_list:
-                if len(physical_info) > 6:
-                    if physical_info[0] == disks_map['k']:
-                        physical_type = \
-                            constant.DISK_TYPE.get(physical_info[1])
-                        speed = physical_info[5]
-                        firmware = physical_info[4]
+                if len(physical_info) > 6 and \
+                        physical_info[0] == disks_map['k']:
+                    physical_type = \
+                        constant.DISK_TYPE.get(physical_info[1])
+                    speed = physical_info[5]
+                    firmware = physical_info[4]
             status = constants.DiskStatus.NORMAL
             if disks_map['k'] in error_disk_list:
                 status = constants.DiskStatus.ABNORMAL
@@ -775,8 +775,8 @@ class NetAppHandler(object):
                     share = {
                         'name': share_map['Share'],
                         'storage_id': storage_id,
-                        'native_share_id': share_id +
-                                           constants.ShareProtocol.CIFS,
+                        'native_share_id':
+                            share_id + constants.ShareProtocol.CIFS,
                         'native_filesystem_id': fs_id,
                         'path': share_map['Path'],
                         'protocol': constants.ShareProtocol.CIFS
@@ -786,8 +786,8 @@ class NetAppHandler(object):
                     share = {
                         'name': share_map['Share'],
                         'storage_id': storage_id,
-                        'native_share_id': share_id +
-                                           constants.ShareProtocol.NFS,
+                        'native_share_id':
+                            share_id + constants.ShareProtocol.NFS,
                         'native_filesystem_id': fs_id,
                         'path': share_map['Path'],
                         'protocol': constants.ShareProtocol.NFS

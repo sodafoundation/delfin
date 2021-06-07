@@ -1313,7 +1313,7 @@ SHARES_INFO = """
 SHARES_AGREEMENT_INFO = """
 vserver allowed-protocols\r
 ------- -----------------\r
-svm4.example.com 
+svm4.example.com
 nfs,cifs,fcp,iscsi\r
 7 entries were displayed.\r
 """
