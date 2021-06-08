@@ -464,7 +464,7 @@ class UnityStorDriver(driver.StorageDriver):
         quota_configs = self.rest_handler.get_quota_configs()
         qts = self.rest_handler.get_all_qtrees()
         if qts is None:
-            return
+            return quotas_list
         qt_entries = qts.get('entries')
         conf_entries = quota_configs.get('entries')
         for quota in qt_entries:
@@ -508,7 +508,7 @@ class UnityStorDriver(driver.StorageDriver):
         quota_configs = self.rest_handler.get_quota_configs()
         user_qts = self.rest_handler.get_all_userquotas()
         if user_qts is None:
-            return
+            return quotas_list
         conf_entries = quota_configs.get('entries')
         user_entries = user_qts.get('entries')
         for user_quota in user_entries:
