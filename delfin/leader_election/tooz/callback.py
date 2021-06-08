@@ -12,17 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
-from apscheduler.schedulers.background import BackgroundScheduler
-
-from delfin import utils
+from delfin.leader_election.interface import LeaderCallback
 
 
-@six.add_metaclass(utils.Singleton)
-class Scheduler:
-    @staticmethod
-    def get_instance():
-        return Scheduler().background_scheduler
+class ToozLeaderElectionCallback(LeaderCallback):
 
-    def __init__(self):
-        self.background_scheduler = BackgroundScheduler()
+    def on_started_leading(self, *args, **kwargs):
+        return self.on_started_leading_callback()
+
+    def on_stopped_leading(self, *args, **kwargs):
+        return self.on_stopped_leading_callback()

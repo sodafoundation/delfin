@@ -14,9 +14,12 @@
 import copy
 import random
 import decorator
+
 import math
-import six
 import time
+
+import six
+from eventlet import greenthread
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
@@ -89,7 +92,7 @@ def wait_random(low, high):
     def _wait(f, *a, **k):
         rd = random.randint(0, 100)
         secs = low + (high - low) * rd / 100
-        time.sleep(secs)
+        greenthread.sleep(secs)
         return f(*a, **k)
 
     return _wait
