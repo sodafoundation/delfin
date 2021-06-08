@@ -243,6 +243,7 @@ class SSHPool(pools.Pool):
 
     def do_exec(self, command_str):
         result = ''
+
         try:
             with eventlet.Timeout(30, False):
                 with self.item() as ssh:
