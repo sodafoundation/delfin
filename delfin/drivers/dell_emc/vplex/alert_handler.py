@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import hashlib
-import time
 
 from oslo_log import log
 
-from delfin import exception
+from delfin import exception, utils
 from delfin.common import constants
 from delfin.i18n import _
 
@@ -49,8 +48,7 @@ class AlertHandler(object):
                 constants.Severity.INFORMATIONAL)
             alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            occur_time = int(time.time()) * AlertHandler.SECONDS_TO_MS
-            alert_model['occur_time'] = occur_time
+            alert_model['occur_time'] = utils.utcnow_ms()
             alert_model['description'] = description
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['location'] = ''
