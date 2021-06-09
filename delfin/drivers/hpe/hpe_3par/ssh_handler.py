@@ -57,7 +57,7 @@ class SSHHandler(object):
         """Test SSH connection """
         version = ''
         try:
-            re = self.ssh_pool.do_exec(SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
+            re = self.exec_command(SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
             wsapi_infos = re.split('\n')
             if len(wsapi_infos) > 1:
                 version = self.get_version(wsapi_infos)
@@ -85,10 +85,10 @@ class SSHHandler(object):
 
            return: System is healthy
         """
-        return self.ssh_pool.do_exec(SSHHandler.HPE3PAR_COMMAND_CHECKHEALTH)
+        return self.exec_command(SSHHandler.HPE3PAR_COMMAND_CHECKHEALTH)
 
     def get_all_alerts(self):
-        return self.ssh_pool.do_exec(SSHHandler.HPE3PAR_COMMAND_SHOWALERT)
+        return self.exec_command(SSHHandler.HPE3PAR_COMMAND_SHOWALERT)
 
     def remove_alerts(self, alert_id):
         """Clear alert from storage system.
@@ -96,7 +96,7 @@ class SSHHandler(object):
         """
         utils.check_ssh_injection([alert_id])
         command_str = SSHHandler.HPE3PAR_COMMAND_REMOVEALERT % alert_id
-        res = self.ssh_pool.do_exec(command_str)
+        res = self.exec_command(command_str)
         if res:
             if self.ALERT_NOT_EXIST_MSG not in res:
                 raise exception.InvalidResults(six.text_type(res))
@@ -391,10 +391,7 @@ class SSHHandler(object):
 
     def get_resources_info(self, command, parse_type, pattern_str=None,
                            para_map=None, throw_excep=True):
-        re = self.ssh_pool.do_exec(command)
-        if re and 'invalid command name' in re:
-            LOG.error(re)
-            raise NotImplementedError(re)
+        re = self.exec_command(command)
         resources_info = None
         try:
             if re:
@@ -405,3 +402,14 @@ class SSHHandler(object):
             if throw_excep:
                 raise e
         return resources_info
+
+    def exec_command(self, command):
+        re = self.ssh_pool.do_exec(command)
+        if re:
+            if 'invalid command name' in re:
+                LOG.error(re)
+                raise NotImplementedError(re)
+            elif 'Too many local CLI connections' in re:
+                LOG.error("command %s failed: %s" % (command, re))
+                raise exception.SSHException(re)
+        return re
