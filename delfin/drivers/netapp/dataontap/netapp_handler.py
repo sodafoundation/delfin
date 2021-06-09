@@ -277,10 +277,9 @@ class NetAppHandler(object):
                 event_map['Time'],
                 constant.EVENT_TIME_TYPE)))
             if query_para is None or \
-                    (query_para['begin_time']
+                    (int(query_para['begin_time'])
                      <= occur_time
-                     <= query_para['end_time']):
-                print(event_map)
+                     <= int(query_para['end_time'])):
                 alert_model = {
                     'alert_id': event_map['Sequence#'],
                     'alert_name': event_map['MessageName'],
@@ -311,9 +310,9 @@ class NetAppHandler(object):
                 alert_map['IndicationTime'],
                 constant.ALTER_TIME_TYPE)))
             if query_para is None or \
-                    (query_para['begin_time']
+                    (int(query_para['begin_time'])
                      <= occur_time
-                     <= query_para['end_time']):
+                     <= int(query_para['end_time'])):
                 alert_model = {
                     'alert_id': alert_map['AlertID'],
                     'alert_name': alert_map['ProbableCause'],
