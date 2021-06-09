@@ -69,6 +69,12 @@ STORAGE_MODEL = "cmodel"
 QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
 QUOTA_SPLIT_STR = "    Vserve"
 
+AGGREGATE_NAME = "e"
+POOL_NAME = "ame"
+DISK_NAME = "k"
+CONTROLLER_NAME = "e"
+VSERVER_NAME = "r"
+
 STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
     'ok-with-suppressed': constants.StorageStatus.NORMAL,

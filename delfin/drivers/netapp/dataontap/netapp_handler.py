@@ -144,7 +144,7 @@ class NetAppHandler(object):
             Tools.split_value_map(agg, agg_map, split=':')
             status = constant.AGGREGATE_STATUS.get(agg_map['State'])
             pool_model = {
-                'name': agg_map['e'],
+                'name': agg_map[constant.AGGREGATE_NAME],
                 'storage_id': storage_id,
                 'native_storage_pool_id': agg_map['UUIDString'],
                 'description': None,
@@ -172,7 +172,7 @@ class NetAppHandler(object):
             if pool_map['IsPoolHealthy?'] == 'true':
                 status = constants.StoragePoolStatus.NORMAL
             pool_model = {
-                'name': pool_map['ame'],
+                'name': pool_map[constant.POOL_NAME],
                 'storage_id': storage_id,
                 'native_storage_pool_id': pool_map['UUIDofStoragePool'],
                 'description': None,
@@ -403,12 +403,12 @@ class NetAppHandler(object):
                     speed = physical_info[5]
                     firmware = physical_info[4]
             status = constants.DiskStatus.NORMAL
-            if disks_map['k'] in error_disk_list:
+            if disks_map[constant.DISK_NAME] in error_disk_list:
                 status = constants.DiskStatus.ABNORMAL
             disk_model = {
-                'name': disks_map['k'],
+                'name': disks_map[constant.DISK_NAME],
                 'storage_id': storage_id,
-                'native_disk_id': disks_map['k'],
+                'native_disk_id': disks_map[constant.DISK_NAME],
                 'serial_number': disks_map['SerialNumber'],
                 'manufacturer': disks_map['Vendor'],
                 'model': disks_map['Model'],
@@ -497,7 +497,7 @@ class NetAppHandler(object):
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
                     controller_model = {
-                        'name': controller_map['e'],
+                        'name': controller_map[constant.CONTROLLER_NAME],
                         'storage_id': storage_id,
                         'native_controller_id': controller_map['SystemID'],
                         'status': status,
@@ -599,7 +599,8 @@ class NetAppHandler(object):
                 Tools.split_value_map(eth, eth_map, split=':')
                 logical_type = constant.ETH_LOGICAL_TYPE.get(
                     eth_map['PortType'])
-                port_id = eth_map['e'] + '_' + eth_map['Port']
+                port_id = \
+                    eth_map[constant.CONTROLLER_NAME] + '_' + eth_map['Port']
                 eth_model = {
                     'name': eth_map['Port'],
                     'storage_id': storage_id,
@@ -650,7 +651,8 @@ class NetAppHandler(object):
                 fc_map = {}
                 Tools.split_value_map(fc, fc_map, split=':')
                 type = constant.FC_TYPE.get(fc_map['PhysicalProtocol'])
-                port_id = fc_map['e'] + '_' + fc_map['Adapter']
+                port_id = \
+                    fc_map[constant.CONTROLLER_NAME] + '_' + fc_map['Adapter']
                 fc_model = {
                     'name': fc_map['Adapter'],
                     'storage_id': storage_id,
@@ -768,8 +770,11 @@ class NetAppHandler(object):
             Tools.split_value_map(cifs_share, share_map, split=':')
             if 'VolumeName' in share_map.keys() and \
                     share_map['VolumeName'] != '-':
-                protocol_str = protocol_map.get(share_map['r'])
-                fs_id = share_map['r'] + '_' + share_map['VolumeName']
+                protocol_str = protocol_map.get(
+                    share_map[constant.VSERVER_NAME])
+                fs_id = \
+                    share_map[constant.VSERVER_NAME] +\
+                    '_' + share_map['VolumeName']
                 share_id = fs_id + '_' + share_map['Share'] + '_'
                 if constants.ShareProtocol.CIFS in protocol_str:
                     share = {
@@ -846,7 +851,7 @@ class NetAppHandler(object):
                 Tools.split_value_map(quota_info, quota_map, ":")
                 if 'VolumeName' in quota_map.keys():
                     quota_id = \
-                        quota_map['r'] + '_' + \
+                        quota_map[constant.VSERVER_NAME] + '_' + \
                         quota_map['VolumeName'] + '_' + \
                         quota_map['Type'] + '_' + \
                         quota_map['Target']
@@ -859,9 +864,12 @@ class NetAppHandler(object):
                             user_group_name = quota_map['Target']
                         if quota_map['QtreeName'] != '':
                             native_qtree_id += '/' + quota_map['QtreeName']
-                    fs_id = quota_map['r'] + '_' + quota_map['VolumeName']
+                    fs_id = \
+                        quota_map[constant.VSERVER_NAME] +\
+                        '_' +\
+                        quota_map['VolumeName']
                     qt_id = \
-                        quota_map['r'] + '_' \
+                        quota_map[constant.VSERVER_NAME] + '_' \
                         + native_qtree_id
                     quota = {
                         'native_quota_id': quota_id,
