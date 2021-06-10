@@ -218,7 +218,7 @@ class TestOceanStorRestClient(TestCase):
         ]
         kwargs = ACCESS_INFO
         rest_client = RestClient(**kwargs)
-        metrics = rest_client.get_pool_metrics('', {'iops': 'iops'})
+        metrics = rest_client.get_pool_metrics('', {'iops': {'unit': 'IOPS'}})
         mock_call.assert_called_with(
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
@@ -228,6 +228,8 @@ class TestOceanStorRestClient(TestCase):
             'storage_id': '',
             'resource_type': 'pool',
             'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
             'resource_name': 'pool'
         }
         self.assertEqual(metrics[0].name, 'iops')
@@ -246,7 +248,8 @@ class TestOceanStorRestClient(TestCase):
         ]
         kwargs = ACCESS_INFO
         rest_client = RestClient(**kwargs)
-        metrics = rest_client.get_volume_metrics('', {'iops': 'iops'})
+        metrics = rest_client.get_volume_metrics(
+            '', {'iops': {'unit': 'IOPS'}})
         mock_call.assert_called_with(
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
@@ -256,6 +259,8 @@ class TestOceanStorRestClient(TestCase):
             'storage_id': '',
             'resource_type': 'volume',
             'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
             'resource_name': 'volume'
         }
         self.assertEqual(metrics[0].name, 'iops')
@@ -274,7 +279,8 @@ class TestOceanStorRestClient(TestCase):
         ]
         kwargs = ACCESS_INFO
         rest_client = RestClient(**kwargs)
-        metrics = rest_client.get_controller_metrics('', {'iops': 'iops'})
+        metrics = rest_client.get_controller_metrics(
+            '', {'iops': {'unit': 'IOPS'}})
         mock_call.assert_called_with(
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
@@ -284,6 +290,8 @@ class TestOceanStorRestClient(TestCase):
             'storage_id': '',
             'resource_type': 'controller',
             'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
             'resource_name': 'controller'
         }
         self.assertEqual(metrics[0].name, 'iops')
@@ -302,7 +310,7 @@ class TestOceanStorRestClient(TestCase):
         ]
         kwargs = ACCESS_INFO
         rest_client = RestClient(**kwargs)
-        metrics = rest_client.get_port_metrics('', {'iops': 'iops'})
+        metrics = rest_client.get_port_metrics('', {'iops': {'unit': 'IOPS'}})
         mock_call.assert_called_with(
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
@@ -312,6 +320,8 @@ class TestOceanStorRestClient(TestCase):
             'storage_id': '',
             'resource_type': 'port',
             'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
             'resource_name': 'port'
         }
         self.assertEqual(metrics[0].name, 'iops')
@@ -330,7 +340,7 @@ class TestOceanStorRestClient(TestCase):
         ]
         kwargs = ACCESS_INFO
         rest_client = RestClient(**kwargs)
-        metrics = rest_client.get_disk_metrics('', {'iops': 'iops'})
+        metrics = rest_client.get_disk_metrics('', {'iops': {'unit': 'IOPS'}})
         mock_call.assert_called_with(
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
@@ -340,7 +350,9 @@ class TestOceanStorRestClient(TestCase):
             'storage_id': '',
             'resource_type': 'disk',
             'resource_id': '123',
-            'resource_name': 'disk:0'
+            'resource_name': 'disk:0',
+            'type': 'RAW',
+            'unit': 'IOPS',
         }
         self.assertEqual(metrics[0].name, 'iops')
         self.assertDictEqual(metrics[0].labels, expected_label)

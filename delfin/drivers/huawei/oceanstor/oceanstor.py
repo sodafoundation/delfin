@@ -25,10 +25,11 @@ LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
 oceanstor_opts = [
-   cfg.StrOpt('enable_perf_config',
-              default=False,
-              help='Enable changing performance configs on storage array'
-                   'Settings for real-time, historical collection updated'),
+    cfg.StrOpt(
+        'enable_perf_config',
+        default=False,
+        help='Enable changing performance configs on storage array'
+             'Settings for real-time, historical collection updated'),
 ]
 
 CONF.register_opts(oceanstor_opts, "oceanstor_driver")
@@ -640,7 +641,7 @@ class OceanStorDriver(driver.StorageDriver):
             if resource_metrics.get(constants.ResourceType.VOLUME):
                 volume_metrics = self.client.get_volume_metrics(
                     storage_id,
-                    resource_metrics.get(constants.ResourceType.STORAGE_POOL))
+                    resource_metrics.get(constants.ResourceType.VOLUME))
                 metrics.extend(volume_metrics)
 
             # controller metrics

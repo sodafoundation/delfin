@@ -471,7 +471,9 @@ class RestClient(object):
                         'storage_id': storage_id,
                         'resource_type': 'pool',
                         'resource_id': pool['ID'],
-                        'resource_name': pool['NAME']
+                        'resource_name': pool['NAME'],
+                        'type': 'RAW',
+                        'unit': selection[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -497,7 +499,9 @@ class RestClient(object):
                         'storage_id': storage_id,
                         'resource_type': 'volume',
                         'resource_id': volume['ID'],
-                        'resource_name': volume['NAME']
+                        'resource_name': volume['NAME'],
+                        'type': 'RAW',
+                        'unit': selection[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -523,7 +527,9 @@ class RestClient(object):
                         'storage_id': storage_id,
                         'resource_type': 'controller',
                         'resource_id': controller['ID'],
-                        'resource_name': controller['NAME']
+                        'resource_name': controller['NAME'],
+                        'type': 'RAW',
+                        'unit': selection[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -552,7 +558,9 @@ class RestClient(object):
                         'storage_id': storage_id,
                         'resource_type': 'port',
                         'resource_id': port['ID'],
-                        'resource_name': port['NAME']
+                        'resource_name': port['NAME'],
+                        'type': 'RAW',
+                        'unit': selection[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -578,6 +586,8 @@ class RestClient(object):
                         'storage_id': storage_id,
                         'resource_type': 'disk',
                         'resource_id': disk['ID'],
+                        'type': 'RAW',
+                        'unit': selection[key]['unit'],
                         'resource_name':
                             disk['MODEL'] + ':' + disk['SERIALNUMBER']
                     }
