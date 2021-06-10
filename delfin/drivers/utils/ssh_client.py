@@ -244,7 +244,7 @@ class SSHPool(pools.Pool):
     def do_exec(self, command_str):
         result = ''
         try:
-            with eventlet.Timeout(30, False):
+            with eventlet.Timeout(10, False):
                 with self.item() as ssh:
                     utils.check_ssh_injection(command_str)
                     if command_str is not None and ssh is not None:

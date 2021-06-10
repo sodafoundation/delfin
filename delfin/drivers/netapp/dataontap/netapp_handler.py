@@ -474,8 +474,7 @@ class NetAppHandler(object):
                     'used_capacity':
                         int(Tools.get_capacity_size(fs_map['UsedSize'])),
                     'free_capacity':
-                        int(Tools.get_capacity_size(fs_map['VolumeSize'])) -
-                        int(Tools.get_capacity_size(fs_map['UsedSize']))
+                        int(Tools.get_capacity_size(fs_map['AvailableSize']))
                 }
                 fs_list.append(fs_model)
         return fs_list
