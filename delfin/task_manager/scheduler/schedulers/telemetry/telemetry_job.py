@@ -15,6 +15,7 @@
 from datetime import datetime
 
 import six
+from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
 from oslo_utils import uuidutils
@@ -25,6 +26,7 @@ from delfin.task_manager.scheduler import scheduler
 from delfin.task_manager.scheduler.schedulers.telemetry.failed_telemetry_job \
     import FailedTelemetryJob
 
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
@@ -77,7 +79,9 @@ class TelemetryJob(object):
                 instance = collection_class.get_instance(ctx, task_id)
                 self.scheduler.add_job(
                     instance, 'interval', seconds=task['interval'],
-                    next_run_time=next_collection_time, id=job_id)
+                    next_run_time=next_collection_time, id=job_id,
+                    misfire_grace_time=int(
+                        CONF.telemetry.performance_collection_interval / 2))
 
                 update_task_dict = {'job_id': job_id,
                                     'last_run_time': last_run_time}
@@ -96,4 +100,6 @@ class TelemetryJob(object):
             FailedTelemetryJob(ctx), 'interval',
             seconds=TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL,
             next_run_time=datetime.now(),
-            id=periodic_scheduler_job_id)
+            id=periodic_scheduler_job_id,
+            misfire_grace_time=int(
+                CONF.telemetry.performance_collection_interval / 2))
