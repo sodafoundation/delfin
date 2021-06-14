@@ -170,6 +170,42 @@ class VolumeNotFound(NotFound):
     msg_fmt = _("Volume {0} could not be found.")
 
 
+class StorageInitiatorNotFound(NotFound):
+    msg_fmt = _("Storage initiator {0} could not be found.")
+
+
+class StorageHostNotFound(NotFound):
+    msg_fmt = _("Storage host {0} could not be found.")
+
+
+class StorageHostGroupNotFound(NotFound):
+    msg_fmt = _("Storage host group {0} could not be found.")
+
+
+class PortGroupNotFound(NotFound):
+    msg_fmt = _("Port group {0} could not be found.")
+
+
+class VolumeGroupNotFound(NotFound):
+    msg_fmt = _("Port group {0} could not be found.")
+
+
+class MaskingViewNotFound(NotFound):
+    msg_fmt = _("Masking View {0} could not be found.")
+
+
+class StorageHostGrpHostRelationNotFound(NotFound):
+    msg_fmt = _("Storage Host Group Host Relation {0} could not be found.")
+
+
+class PortGrpPortRelationNotFound(NotFound):
+    msg_fmt = _("Port Group Port Relation {0} could not be found.")
+
+
+class VolumeGrpVolumeRelationNotFound(NotFound):
+    msg_fmt = _("Volume Group Volume Relation {0} could not be found.")
+
+
 class ControllerNotFound(NotFound):
     msg_fmt = _("Controller {0} could not be found.")
 
