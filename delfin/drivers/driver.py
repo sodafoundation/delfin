@@ -178,3 +178,33 @@ class StorageDriver(object):
     def get_capabilities(context):
         """Get capability of driver"""
         pass
+
+    def list_storage_initiators(self, context):
+        """List all storage initiators from storage system."""
+        raise NotImplementedError(
+            "Driver API list_storage_initiators() is not Implemented")
+
+    def list_storage_hosts(self, context):
+        """List all storage hosts from storage system."""
+        raise NotImplementedError(
+            "Driver API list_storage_hosts() is not Implemented")
+
+    def list_storage_host_groups(self, context):
+        """List all storage host groups from storage system."""
+        raise NotImplementedError(
+            "Driver API list_storage_host_groups() is not Implemented")
+
+    def list_port_groups(self, context):
+        """List all port groups from storage system."""
+        raise NotImplementedError(
+            "Driver API list_port_groups() is not Implemented")
+
+    def list_volume_groups(self, context):
+        """List all volume groups from storage system."""
+        raise NotImplementedError(
+            "Driver API list_volume_groups() is not Implemented")
+
+    def list_masking_views(self, context):
+        """List all masking views from storage system."""
+        raise NotImplementedError(
+            "Driver API list_masking_views() is not Implemented")
