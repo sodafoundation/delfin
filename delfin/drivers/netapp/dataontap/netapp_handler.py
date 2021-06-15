@@ -474,8 +474,7 @@ class NetAppHandler(object):
                     'used_capacity':
                         int(Tools.get_capacity_size(fs_map['UsedSize'])),
                     'free_capacity':
-                        int(Tools.get_capacity_size(fs_map['VolumeSize'])) -
-                        int(Tools.get_capacity_size(fs_map['UsedSize']))
+                        int(Tools.get_capacity_size(fs_map['AvailableSize']))
                 }
                 fs_list.append(fs_model)
         return fs_list
@@ -632,7 +631,6 @@ class NetAppHandler(object):
                       "netapp cmode: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
-
         except Exception as err:
             err_msg = "Failed to get storage ports from " \
                       "netapp cmode: %s" % (six.text_type(err))
@@ -653,7 +651,9 @@ class NetAppHandler(object):
                 port_id = \
                     fc_map[constant.CONTROLLER_NAME] + '_' + fc_map['Adapter']
                 fc_model = {
-                    'name': fc_map['Adapter'],
+                    'name':
+                        fc_map[constant.CONTROLLER_NAME] +
+                        '-' + fc_map['Adapter'],
                     'storage_id': storage_id,
                     'native_port_id': port_id,
                     'location': None,
