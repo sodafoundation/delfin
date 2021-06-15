@@ -631,7 +631,6 @@ class NetAppHandler(object):
                       "netapp cmode: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
-
         except Exception as err:
             err_msg = "Failed to get storage ports from " \
                       "netapp cmode: %s" % (six.text_type(err))
