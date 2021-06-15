@@ -170,8 +170,8 @@ class VolumeNotFound(NotFound):
     msg_fmt = _("Volume {0} could not be found.")
 
 
-class StorageInitiatorNotFound(NotFound):
-    msg_fmt = _("Storage initiator {0} could not be found.")
+class StorageHostInitiatorNotFound(NotFound):
+    msg_fmt = _("Storage host initiator{0} could not be found.")
 
 
 class StorageHostNotFound(NotFound):

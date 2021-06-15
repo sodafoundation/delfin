@@ -1851,35 +1851,37 @@ def _process_failed_tasks_info_filters(query, filters):
     return query
 
 
-def _storage_initiators_get_query(context, session=None):
-    return model_query(context, models.StorageInitiator, session=session)
+def _storage_host_initiators_get_query(context, session=None):
+    return model_query(context, models.StorageHostInitiator, session=session)
 
 
-def _storage_initiators_get(context, storage_initiator_id, session=None):
-    result = (_storage_initiators_get_query(context, session=session)
-              .filter_by(id=storage_initiator_id)
+def _storage_host_initiators_get(context, storage_host_initiator_id,
+                                 session=None):
+    result = (_storage_host_initiators_get_query(context, session=session)
+              .filter_by(id=storage_host_initiator_id)
               .first())
 
     if not result:
-        raise exception.StorageInitiatorNotFound(storage_initiator_id)
+        raise exception.StorageHostInitiatorNotFound(storage_host_initiator_id)
 
     return result
 
 
-def storage_initiators_create(context, storage_initiators):
+def storage_host_initiators_create(context, storage_host_initiators):
     """Create multiple storage initiators."""
     session = get_session()
     initiator_refs = []
     with session.begin():
 
-        for initiator in storage_initiators:
-            LOG.debug('Adding new storage initiator for '
-                      'native_storage_initiator_id {0}:'
-                      .format(initiator.get('native_storage_initiator_id')))
+        for initiator in storage_host_initiators:
+            LOG.debug('Adding new storage host initiator for '
+                      'native_storage_host_initiator_id {0}:'
+                      .format(initiator
+                              .get('native_storage_host_initiator_id')))
             if not initiator.get('id'):
                 initiator['id'] = uuidutils.generate_uuid()
 
-            initiator_ref = models.StorageInitiator()
+            initiator_ref = models.StorageHostInitiator()
             initiator_ref.update(initiator)
             initiator_refs.append(initiator_ref)
 
@@ -1888,73 +1890,77 @@ def storage_initiators_create(context, storage_initiators):
     return initiator_refs
 
 
-def storage_initiators_delete(context, storage_initiators_id_list):
+def storage_host_initiators_delete(context, storage_host_initiators_id_list):
     """Delete multiple storage initiators."""
     session = get_session()
     with session.begin():
-        for initiator_id in storage_initiators_id_list:
-            LOG.debug('Deleting storage initiator {0}:'.format(initiator_id))
-            query = _storage_initiators_get_query(context, session)
+        for initiator_id in storage_host_initiators_id_list:
+            LOG.debug('Deleting storage host initiator{0}:'
+                      .format(initiator_id))
+            query = _storage_host_initiators_get_query(context, session)
             result = query.filter_by(id=initiator_id).delete()
 
             if not result:
-                LOG.error(exception.StorageInitiatorNotFound(initiator_id))
+                LOG.error(exception.StorageHostInitiatorNotFound(initiator_id))
     return
 
 
-def storage_initiators_update(context, storage_initiators):
+def storage_host_initiators_update(context, storage_host_initiators):
     """Update multiple storage initiators."""
     session = get_session()
     with session.begin():
-        for initiator in storage_initiators:
-            LOG.debug('Updating storage initiator {0}:'
+        for initiator in storage_host_initiators:
+            LOG.debug('Updating storage host initiator{0}:'
                       .format(initiator.get('id')))
-            query = _storage_initiators_get_query(context, session)
+            query = _storage_host_initiators_get_query(context, session)
             result = query.filter_by(id=initiator.get('id')
                                      ).update(initiator)
 
             if not result:
-                LOG.error(exception.StorageInitiatorNotFound(initiator
-                                                             .get('id')))
+                LOG.error(exception.StorageHostInitiatorNotFound(initiator
+                                                                 .get('id')))
 
 
-def storage_initiators_get(context, storage_initiator_id):
-    """Get a storage initiator or raise an exception if it does not exist."""
-    return _storage_initiators_get(context, storage_initiator_id)
+def storage_host_initiators_get(context, storage_host_initiator_id):
+    """Get a storage host initiator or raise an exception if it does not
+    exist.
+    """
+    return _storage_host_initiators_get(context, storage_host_initiator_id)
 
 
-def storage_initiators_get_all(context, marker=None, limit=None,
-                               sort_keys=None, sort_dirs=None, filters=None,
-                               offset=None):
+def storage_host_initiators_get_all(context, marker=None, limit=None,
+                                    sort_keys=None, sort_dirs=None,
+                                    filters=None,
+                                    offset=None):
     """Retrieves all storage initiators"""
     session = get_session()
     with session.begin():
         # Generate the query
         query = _generate_paginate_query(context, session,
-                                         models.StorageInitiator, marker,
+                                         models.StorageHostInitiator, marker,
                                          limit, sort_keys, sort_dirs,
                                          filters, offset)
-        # No storage initiator would match, return empty list
+        # No storage host initiator would match, return empty list
         if query is None:
             return []
         return query.all()
 
 
-@apply_like_filters(model=models.StorageInitiator)
-def _process_storage_initiators_info_filters(query, filters):
+@apply_like_filters(model=models.StorageHostInitiator)
+def _process_storage_host_initiators_info_filters(query, filters):
     """Common filter processing for storage initiators queries."""
     if filters:
-        if not is_valid_model_filters(models.StorageInitiator, filters):
+        if not is_valid_model_filters(models.StorageHostInitiator, filters):
             return
         query = query.filter_by(**filters)
 
     return query
 
 
-def storage_initiators_delete_by_storage(context, storage_id):
+def storage_host_initiators_delete_by_storage(context, storage_id):
     """Delete all the storage initiators of a device"""
-    _storage_initiators_get_query(context).filter_by(storage_id=storage_id)\
-        .delete()
+    _storage_host_initiators_get_query(context)\
+        .filter_by(storage_id=storage_id).delete()
 
 
 def _storage_hosts_get_query(context, session=None):
@@ -2056,7 +2062,7 @@ def _process_storage_hosts_info_filters(query, filters):
 
 def storage_hosts_delete_by_storage(context, storage_id):
     """Delete all the storage hosts of a device"""
-    _storage_hosts_get_query(context).filter_by(storage_id=storage_id)\
+    _storage_hosts_get_query(context).filter_by(storage_id=storage_id) \
         .delete()
 
 
@@ -2268,8 +2274,7 @@ def _process_port_groups_info_filters(query, filters):
 
 def port_groups_delete_by_storage(context, storage_id):
     """Delete all the port groups of a device"""
-    _port_groups_get_query(context).filter_by(storage_id=storage_id)\
-        .delete()
+    _port_groups_get_query(context).filter_by(storage_id=storage_id).delete()
 
 
 def _volume_groups_get_query(context, session=None):
@@ -2374,7 +2379,7 @@ def _process_volume_groups_info_filters(query, filters):
 
 def volume_groups_delete_by_storage(context, storage_id):
     """Delete all the volume groups of a device"""
-    _volume_groups_get_query(context).filter_by(storage_id=storage_id)\
+    _volume_groups_get_query(context).filter_by(storage_id=storage_id) \
         .delete()
 
 
@@ -2720,7 +2725,7 @@ def _process_port_grp_port_relations_info_filters(query, filters):
 
 def port_grp_port_relations_delete_by_storage(context, storage_id):
     """Delete all the port grp port relations of a device"""
-    _port_grp_port_relations_get_query(context)\
+    _port_grp_port_relations_get_query(context) \
         .filter_by(storage_id=storage_id).delete()
 
 
@@ -2840,7 +2845,7 @@ def _process_volume_grp_volume_relations_info_filters(query, filters):
 
 def volume_grp_volume_relations_delete_by_storage(context, storage_id):
     """Delete all the volume grp volume relations of a device"""
-    _volume_grp_volume_relations_get_query(context)\
+    _volume_grp_volume_relations_get_query(context) \
         .filter_by(storage_id=storage_id).delete()
 
 
@@ -2877,9 +2882,10 @@ PAGINATION_HELPERS = {
     models.FailedTask: (_failed_tasks_get_query,
                         _process_failed_tasks_info_filters,
                         _failed_tasks_get),
-    models.StorageInitiator: (_storage_initiators_get_query,
-                              _process_storage_initiators_info_filters,
-                              _storage_initiators_get),
+    models.StorageHostInitiator: (
+        _storage_host_initiators_get_query,
+        _process_storage_host_initiators_info_filters,
+        _storage_host_initiators_get),
     models.StorageHost: (_storage_hosts_get_query,
                          _process_storage_hosts_info_filters,
                          _storage_hosts_get),

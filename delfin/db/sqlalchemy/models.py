@@ -289,9 +289,9 @@ class FailedTask(BASE, DelfinBase):
     deleted = Column(Boolean, default=False)
 
 
-class StorageInitiator(BASE, DelfinBase):
-    """Represents the storage initiator attributes."""
-    __tablename__ = 'storage_initiators'
+class StorageHostInitiator(BASE, DelfinBase):
+    """Represents the storage host initiator attributes."""
+    __tablename__ = 'storage_host_initiators'
     id = Column(String(36), primary_key=True)
     storage_id = Column(String(36))
     name = Column(String(255))
@@ -299,7 +299,7 @@ class StorageInitiator(BASE, DelfinBase):
     wwn = Column(String(255))
     status = Column(String(255))
     native_storage_host_id = Column(String(255))
-    native_storage_initiator_id = Column(String(255))
+    native_storage_host_initiator_id = Column(String(255))
 
 
 class StorageHost(BASE, DelfinBase):
@@ -310,7 +310,7 @@ class StorageHost(BASE, DelfinBase):
     name = Column(String(255))
     description = Column(String(255))
     os_type = Column(String(255))
-    storage_initiators = Column(Text)
+    storage_host_initiators = Column(Text)
     ip_address = Column(String(255))
     status = Column(String(255))
     native_storage_host_id = Column(String(255))
@@ -360,7 +360,7 @@ class MaskingView(BASE, DelfinBase):
     native_volume_group_id = Column(String(255))
     native_port_group_id = Column(String(255))
     native_storage_host_id = Column(String(255))
-    storage_initiators = Column(Text)
+    storage_host_initiators = Column(Text)
     volumes = Column(Text)
     ports = Column(Text)
     native_masking_view_id = Column(String(255))

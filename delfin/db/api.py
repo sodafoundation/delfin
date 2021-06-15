@@ -843,29 +843,31 @@ def failed_task_delete_by_storage(context, storage_id):
     return IMPL.failed_task_delete_by_storage(context, storage_id)
 
 
-def storage_initiators_create(context, values):
-    """Create a storage initiator entry from the values dictionary."""
-    return IMPL.storage_initiators_create(context, values)
+def storage_host_initiators_create(context, values):
+    """Create a storage host initiator entry from the values dictionary."""
+    return IMPL.storage_host_initiators_create(context, values)
 
 
-def storage_initiators_update(context, values):
-    """Update a storage initiator with the values dictionary."""
-    return IMPL.storage_initiators_update(context, values)
+def storage_host_initiators_update(context, values):
+    """Update a storage host initiator with the values dictionary."""
+    return IMPL.storage_host_initiators_update(context, values)
 
 
-def storage_initiators_delete(context, values):
+def storage_host_initiators_delete(context, values):
     """Delete multiple storage initiators."""
-    return IMPL.storage_initiators_delete(context, values)
+    return IMPL.storage_host_initiators_delete(context, values)
 
 
-def storage_initiators_get(context, storage_initiator_id):
-    """Get a storage initiator or raise an exception if it does not exist."""
-    return IMPL.storage_initiators_get(context, storage_initiator_id)
+def storage_host_initiators_get(context, storage_host_initiator_id):
+    """Get a storage host initiator or raise an exception if it does not
+    exist.
+    """
+    return IMPL.storage_host_initiators_get(context, storage_host_initiator_id)
 
 
-def storage_initiators_get_all(context, marker=None, limit=None,
-                               sort_keys=None, sort_dirs=None, filters=None,
-                               offset=None):
+def storage_host_initiators_get_all(context, marker=None, limit=None,
+                                    sort_keys=None, sort_dirs=None,
+                                    filters=None, offset=None):
     """Retrieves all storage initiators.
 
     If no sort parameters are specified then the returned storage initiators
@@ -885,13 +887,14 @@ def storage_initiators_get_all(context, marker=None, limit=None,
     :param offset: number of items to skip
     :returns: list of storage initiators
     """
-    return IMPL.storage_initiators_get_all(context, marker, limit, sort_keys,
-                                           sort_dirs, filters, offset)
+    return IMPL.storage_host_initiators_get_all(context, marker, limit,
+                                                sort_keys, sort_dirs,
+                                                filters, offset)
 
 
-def storage_initiators_delete_by_storage(context, storage_id):
+def storage_host_initiators_delete_by_storage(context, storage_id):
     """Delete all the storage initiators of a device."""
-    return IMPL.storage_initiators_delete_by_storage(context, storage_id)
+    return IMPL.storage_host_initiators_delete_by_storage(context, storage_id)
 
 
 def storage_hosts_create(context, values):
