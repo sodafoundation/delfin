@@ -372,9 +372,9 @@ class UnityStorDriver(driver.StorageDriver):
                         'status': status,
                         'type': fs_type,
                         'total_capacity': int(content.get('sizeTotal')),
-                        'used_capacity': int(content.get('sizeAllocated')),
+                        'used_capacity': int(content.get('sizeUsed')),
                         'free_capacity': int(content.get('sizeTotal')) - int(
-                            content.get('sizeAllocated')),
+                            content.get('sizeUsed')),
                         'worm': constants.WORMType.NON_WORM
                     }
                     fs_list.append(fs)
