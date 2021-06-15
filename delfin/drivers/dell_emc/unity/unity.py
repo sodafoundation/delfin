@@ -28,6 +28,11 @@ class UnityStorDriver(driver.StorageDriver):
     """UnityStorDriver implement the DELL EMC Storage driver"""
     HEALTH_OK = (5, 7)
 
+    FILESYSTEM_FLR_MAP = {0: constants.WORMType.NON_WORM,
+                          1: constants.WORMType.ENTERPRISE,
+                          2: constants.WORMType.COMPLIANCE
+                          }
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rest_handler = rest_handler.RestHandler(**kwargs)
@@ -364,6 +369,9 @@ class UnityStorDriver(driver.StorageDriver):
                     fs_type = constants.VolumeType.THICK
                     if content.get('isThinEnabled') is True:
                         fs_type = constants.VolumeType.THIN
+                    worm = UnityStorDriver.FILESYSTEM_FLR_MAP.get(
+                        content.get('flrVersion'),
+                        constants.WORMType.NON_WORM)
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
@@ -375,7 +383,7 @@ class UnityStorDriver(driver.StorageDriver):
                         'used_capacity': int(content.get('sizeUsed')),
                         'free_capacity': int(content.get('sizeTotal')) - int(
                             content.get('sizeUsed')),
-                        'worm': constants.WORMType.NON_WORM
+                        'worm': worm
                     }
                     fs_list.append(fs)
             return fs_list
