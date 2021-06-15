@@ -991,8 +991,8 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
         'worm': 'non_worm'
     }, {
         'name': 'ddd',
@@ -1002,8 +1002,8 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
         'worm': 'non_worm'
     }, {
         'name': 'fs_home',
@@ -1013,8 +1013,8 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 10737418240,
-        'used_capacity': 283156480,
-        'free_capacity': 10454261760,
+        'used_capacity': 1622458368,
+        'free_capacity': 9114959872,
         'worm': 'non_worm'
     }, {
         'name': 'fs_boga',
@@ -1024,8 +1024,8 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
         'worm': 'non_worm'
     }, {
         'name': 'fs2',
@@ -1035,8 +1035,8 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
         'worm': 'non_worm'
     }, {
         'name': 'FS_MULTI1',
@@ -1046,8 +1046,8 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
         'worm': 'non_worm'
     }
 ]
