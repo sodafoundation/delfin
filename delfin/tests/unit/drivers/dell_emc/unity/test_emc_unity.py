@@ -763,7 +763,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_1",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 1,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -804,7 +804,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_3",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 2,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -993,7 +993,7 @@ filesystem_result = [
         'total_capacity': 5368709120,
         'used_capacity': 1622450176,
         'free_capacity': 3746258944,
-        'worm': 'non_worm'
+        'worm': 'enterprise'
     }, {
         'name': 'ddd',
         'storage_id': '12345',
@@ -1004,7 +1004,7 @@ filesystem_result = [
         'total_capacity': 107374182400,
         'used_capacity': 1620303872,
         'free_capacity': 105753878528,
-        'worm': 'non_worm'
+        'worm': 'compliance'
     }, {
         'name': 'fs_home',
         'storage_id': '12345',
