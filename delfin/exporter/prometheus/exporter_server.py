@@ -11,11 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import glob
+import os
 
 from flask import Flask
 from oslo_config import cfg
 import sys
+from oslo_log import log
+
+LOG = log.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -26,9 +30,9 @@ prometheus_opts = [
                help='The exporter server host  ip'),
     cfg.IntOpt('metric_server_port', default=8195,
                help='The exporter server port'),
-    cfg.StrOpt('metrics_cache_file', default='/var/lib/delfin/delfin_exporter'
-                                             '.txt',
-               help='The temp cache file used for persisting metrics'),
+    cfg.StrOpt('metrics_dir', default='/var/lib/delfin/metrics',
+
+               help='The temp directory to keep incoming metrics'),
 ]
 cfg.CONF.register_opts(prometheus_opts, group=grp)
 cfg.CONF(sys.argv[1:])
@@ -36,9 +40,21 @@ cfg.CONF(sys.argv[1:])
 
 @app.route("/metrics", methods=['GET'])
 def getfile():
-    with open(cfg.CONF.PROMETHEUS_EXPORTER.metrics_cache_file, "r+") as f:
-        data = f.read()
-        f.truncate(0)
+    try:
+        os.chdir(cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir)
+    except OSError as e:
+        LOG.error('Error opening metrics folder')
+        raise Exception(e)
+    file_list = []
+    for file in glob.glob("*.prom"):
+        file_list.append(file)
+    data = ''
+    for file in file_list:
+        file_name = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir + '/' + file
+        with open(file_name, "r") as f:
+            data += f.read()
+            # Remove a metric file after reading it
+            os.remove(file_name)
     return data
 
 
