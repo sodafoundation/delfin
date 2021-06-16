@@ -103,13 +103,17 @@ class PrometheusExporter(object):
                 unit = labels.get('unit')
                 value_type = labels.get('value_type', 'gauge')
                 prom_labels = (
-                        "storage_id=\"%s\",storage_name=\"%s\","
-                        "storage_sn=\"%s\","
-                        "resource_type=\"%s\",resource_id=\"%s\""
-                        "type=\"%s\",unit=\"%s\",value_type=\"%s\"" %
-                        (storage_id, storage_name, storage_sn, resource_type,
-                         resource_id,
-                         'RAW', unit, value_type))
+                    "storage_id=\"%s\","
+                    "storage_name=\"%s\","
+                    "storage_sn=\"%s\","
+                    "resource_type=\"%s\","
+                    "resource_id=\"%s\","
+                    "type=\"%s\","
+                    "unit=\"%s\","
+                    "value_type=\"%s\"" %
+                    (storage_id, storage_name, storage_sn, resource_type,
+                        resource_id,
+                        'RAW', unit, value_type))
                 name = labels.get('resource_type') + '_' + name
                 self._write_to_prometheus_format(f, name, labels, prom_labels,
                                                  values)
