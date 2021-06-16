@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import copy
 import random
 import decorator
 import math
@@ -513,7 +513,7 @@ class FakeStorageDriver(driver.StorageDriver):
                 labels['unit'] = metric_list[key]['unit']
                 m = constants.metric_struct(name=key, labels=labels,
                                             values=fake_metrics[key])
-                resource_metrics.append(m)
+                resource_metrics.append(copy.deepcopy(m))
         return resource_metrics
 
     @wait_random(MIN_WAIT, MAX_WAIT)
