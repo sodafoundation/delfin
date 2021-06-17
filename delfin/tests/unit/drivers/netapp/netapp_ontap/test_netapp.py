@@ -120,8 +120,8 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_list_shares(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.QTREES_INFO,
-                         test_constans.SHARE_VSERVER_INFO,
+            side_effect=[test_constans.SHARE_VSERVER_INFO,
+                         test_constans.QTREES_INFO,
                          test_constans.SHARES_INFO,
                          test_constans.SHARES_AGREEMENT_INFO])
         data = self.netapp_client.list_shares(context)
