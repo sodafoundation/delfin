@@ -798,12 +798,7 @@ class NetAppHandler(object):
                         'storage_id': storage_id,
                         'native_share_id':
                             share_id + constants.ShareProtocol.NFS,
-                                Modify alarm conversion, add
-                    file
-                    system
-                    security
-                    mode, shared
-                    QTREE_ID                        'native_qtree_id': qt_id,
+                        'native_qtree_id': qt_id,
                         'native_filesystem_id': fs_id,
                         'path': share_map['Path'],
                         'protocol': constants.ShareProtocol.NFS
