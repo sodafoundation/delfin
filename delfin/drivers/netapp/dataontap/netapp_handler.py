@@ -469,7 +469,8 @@ class NetAppHandler(object):
                     'worm': constant.WORM_TYPE.get(fs_map['SnapLockType']),
                     'status': status,
                     'security_mode':
-                        constant.SECURITY_STYLE.get(fs_map['SecurityStyle']),
+                        constant.SECURITY_STYLE.get(
+                            fs_map['SecurityStyle'], fs_map['SecurityStyle']),
                     'type': type,
                     'total_capacity':
                         int(Tools.get_capacity_size(fs_map['VolumeSize'])),
@@ -754,6 +755,8 @@ class NetAppHandler(object):
 
     def get_shares(self, storage_id, vserver_name):
         shares_list = []
+        qtree_list = self.list_qtrees(None)
+
         share_info = self.ssh_pool.do_exec(
             (constant.CIFS_SHARE_SHOW_DETAIL_COMMAND %
              {'vserver_name': vserver_name}))
@@ -772,39 +775,42 @@ class NetAppHandler(object):
             Tools.split_value_map(cifs_share, share_map, split=':')
             if 'VolumeName' in share_map.keys() and \
                     share_map['VolumeName'] != '-':
-                protocol_str = protocol_map.get(
-                    share_map[constant.VSERVER_NAME])
-                fs_id = \
-                    share_map[constant.VSERVER_NAME] +\
-                    '_' + share_map['VolumeName']
-                share_id = fs_id + '_' + share_map['Share'] + '_'
-                qt_id = \
-                    share_map[constant.VSERVER_NAME] + \
-                    '_/vol/' + share_map['Path']
-                if constants.ShareProtocol.CIFS in protocol_str:
-                    share = {
-                        'name': share_map['Share'],
-                        'storage_id': storage_id,
-                        'native_share_id':
-                            share_id + constants.ShareProtocol.CIFS,
-                        'native_qtree_id': qt_id,
-                        'native_filesystem_id': fs_id,
-                        'path': share_map['Path'],
-                        'protocol': constants.ShareProtocol.CIFS
-                    }
-                    shares_list.append(share)
-                if constants.ShareProtocol.NFS in protocol_str:
-                    share = {
-                        'name': share_map['Share'],
-                        'storage_id': storage_id,
-                        'native_share_id':
-                            share_id + constants.ShareProtocol.NFS,
-                        'native_qtree_id': qt_id,
-                        'native_filesystem_id': fs_id,
-                        'path': share_map['Path'],
-                        'protocol': constants.ShareProtocol.NFS
-                    }
-                    shares_list.append(share)
+                for qtree in qtree_list:
+                    protocol_str = protocol_map.get(
+                        share_map[constant.VSERVER_NAME])
+                    fs_id = \
+                        share_map[constant.VSERVER_NAME] + \
+                        '_' + share_map['VolumeName']
+                    share_id = fs_id + '_' + share_map['Share'] + '_'
+                    qt_id = \
+                        share_map[constant.VSERVER_NAME] + \
+                        '_/vol/' + share_map['Path']
+                    if qtree['native_qtree_id'] != qt_id:
+                        qt_id = None
+                    if constants.ShareProtocol.CIFS in protocol_str:
+                        share = {
+                            'name': share_map['Share'],
+                            'storage_id': storage_id,
+                            'native_share_id':
+                                share_id + constants.ShareProtocol.CIFS,
+                            'native_qtree_id': qt_id,
+                            'native_filesystem_id': fs_id,
+                            'path': share_map['Path'],
+                            'protocol': constants.ShareProtocol.CIFS
+                        }
+                        shares_list.append(share)
+                    if constants.ShareProtocol.NFS in protocol_str:
+                        share = {
+                            'name': share_map['Share'],
+                            'storage_id': storage_id,
+                            'native_share_id':
+                                share_id + constants.ShareProtocol.NFS,
+                            'native_qtree_id': qt_id,
+                            'native_filesystem_id': fs_id,
+                            'path': share_map['Path'],
+                            'protocol': constants.ShareProtocol.NFS
+                        }
+                        shares_list.append(share)
         return shares_list
 
     def list_shares(self, storage_id):
