@@ -75,6 +75,12 @@ DISK_NAME = "k"
 CONTROLLER_NAME = "e"
 VSERVER_NAME = "r"
 
+SECURITY_STYLE = {
+    'mixed': constants.NASSecurityMode.MIXED,
+    'ntfs': constants.NASSecurityMode.NTFS,
+    'unix': constants.NASSecurityMode.UNIX
+}
+
 STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
     'ok-with-suppressed': constants.StorageStatus.NORMAL,
@@ -183,7 +189,8 @@ FC_TYPE = {
 WORM_TYPE = {
     'non-snaplock': constants.WORMType.NON_WORM,
     'compliance': constants.WORMType.COMPLIANCE,
-    'enterprise': constants.WORMType.ENTERPRISE
+    'enterprise': constants.WORMType.ENTERPRISE,
+    '-': constants.WORMType.NON_WORM
 }
 
 QUOTA_TYPE = {
