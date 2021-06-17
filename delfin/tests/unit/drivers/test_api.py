@@ -20,7 +20,7 @@ import sys
 
 from delfin import context
 from delfin import exception
-from delfin.common import config # noqa
+from delfin.common import config, constants  # noqa
 from delfin.drivers.api import API
 from delfin.drivers.fake_storage import FakeStorageDriver
 
@@ -350,3 +350,16 @@ class TestDriverAPI(TestCase):
 
         self.assertTrue('resource_metrics' in capabilities)
         driver_manager.assert_called_once()
+
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_collect_perf_metrics(self, driver_manager):
+        driver_manager.return_value = FakeStorageDriver()
+        storage_id = '12345'
+        capabilities = API().get_capabilities(context, storage_id)
+
+        metrics = API().collect_perf_metrics(context, storage_id,
+                                             capabilities['resource_metrics'],
+                                             1622808000000, 1622808000001)
+        self.assertTrue('resource_metrics' in capabilities)
+        self.assertTrue(True, isinstance(metrics[0], constants.metric_struct))
+        self.assertEqual(driver_manager.call_count, 2)
