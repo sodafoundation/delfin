@@ -28,6 +28,15 @@ class UnityStorDriver(driver.StorageDriver):
     """UnityStorDriver implement the DELL EMC Storage driver"""
     HEALTH_OK = (5, 7)
 
+    FILESYSTEM_FLR_MAP = {0: constants.WORMType.NON_WORM,
+                          1: constants.WORMType.ENTERPRISE,
+                          2: constants.WORMType.COMPLIANCE
+                          }
+    FILESYSTEM_SECURITY_MAP = {0: constants.NASSecurityMode.NATIVE,
+                               1: constants.NASSecurityMode.UNIX,
+                               2: constants.NASSecurityMode.NTFS
+                               }
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rest_handler = rest_handler.RestHandler(**kwargs)
@@ -364,6 +373,14 @@ class UnityStorDriver(driver.StorageDriver):
                     fs_type = constants.VolumeType.THICK
                     if content.get('isThinEnabled') is True:
                         fs_type = constants.VolumeType.THIN
+                    worm = UnityStorDriver.FILESYSTEM_FLR_MAP.get(
+                        content.get('flrVersion'),
+                        constants.WORMType.NON_WORM)
+                    security_model = \
+                        UnityStorDriver.FILESYSTEM_SECURITY_MAP.get(
+                            content.get('accessPolicy'),
+                            constants.NASSecurityMode.NATIVE
+                        )
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
@@ -372,10 +389,11 @@ class UnityStorDriver(driver.StorageDriver):
                         'status': status,
                         'type': fs_type,
                         'total_capacity': int(content.get('sizeTotal')),
-                        'used_capacity': int(content.get('sizeAllocated')),
+                        'used_capacity': int(content.get('sizeUsed')),
                         'free_capacity': int(content.get('sizeTotal')) - int(
-                            content.get('sizeAllocated')),
-                        'worm': constants.WORMType.NON_WORM
+                            content.get('sizeUsed')),
+                        'worm': worm,
+                        'security_mode': security_model
                     }
                     fs_list.append(fs)
             return fs_list
@@ -395,7 +413,7 @@ class UnityStorDriver(driver.StorageDriver):
                     path = '/%s%s' % (content.get('filesystem').get('id'),
                                       content.get('path'))
                     qt = {
-                        'name': content.get('id'),
+                        'name': content.get('path'),
                         'storage_id': self.storage_id,
                         'native_qtree_id': content.get('id'),
                         'native_filesystem_id':
@@ -464,7 +482,7 @@ class UnityStorDriver(driver.StorageDriver):
         quota_configs = self.rest_handler.get_quota_configs()
         qts = self.rest_handler.get_all_qtrees()
         if qts is None:
-            return
+            return quotas_list
         qt_entries = qts.get('entries')
         conf_entries = quota_configs.get('entries')
         for quota in qt_entries:
@@ -508,7 +526,7 @@ class UnityStorDriver(driver.StorageDriver):
         quota_configs = self.rest_handler.get_quota_configs()
         user_qts = self.rest_handler.get_all_userquotas()
         if user_qts is None:
-            return
+            return quotas_list
         conf_entries = quota_configs.get('entries')
         user_entries = user_qts.get('entries')
         for user_quota in user_entries:
