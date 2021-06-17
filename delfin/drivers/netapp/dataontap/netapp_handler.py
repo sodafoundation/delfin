@@ -21,7 +21,7 @@ from oslo_log import log as logging
 from oslo_utils import units
 
 from delfin.drivers.netapp.dataontap import constants as constant
-from delfin import exception
+from delfin import exception, utils
 from delfin.common import constants
 from delfin.drivers.utils.ssh_client import SSHPool
 from delfin.drivers.utils.tools import Tools
@@ -54,11 +54,11 @@ class NetAppHandler(object):
                         'severity': constants.Severity.CRITICAL,
                         'category': constants.Category.FAULT,
                         'type': constants.EventType.EQUIPMENT_ALARM,
-                        'occur_time': int(time.time()) * 1000,
+                        'occur_time': utils.utcnow_ms(),
                         'description': description,
                         'match_key': hashlib.md5(
                             (alert.get(NetAppHandler.OID_TRAP_DATA)
-                             + str(time.time())).encode()).hexdigest(),
+                             + str(utils.utcnow_ms())).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                         'location': None
                     }
