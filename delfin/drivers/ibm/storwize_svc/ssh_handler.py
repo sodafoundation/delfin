@@ -110,7 +110,9 @@ class SSHHandler(object):
     def login(self):
         try:
             with self.ssh_pool.item() as ssh:
-                SSHHandler.do_exec('lssystem', ssh)
+                result = SSHHandler.do_exec('lssystem', ssh)
+                if 'is not a recognized command' in result:
+                    raise exception.InvalidIpOrPort()
         except Exception as e:
             LOG.error("Failed to login ibm storwize_svc %s" %
                       (six.text_type(e)))
