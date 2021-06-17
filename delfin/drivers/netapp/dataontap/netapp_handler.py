@@ -470,8 +470,7 @@ class NetAppHandler(object):
                     'status': status,
                     'security_mode':
                         constant.SECURITY_STYLE.get(
-                            fs_map['SecurityStyle'],
-                            default=fs_map['SecurityStyle']),
+                            fs_map['SecurityStyle'], fs_map['SecurityStyle']),
                     'type': type,
                     'total_capacity':
                         int(Tools.get_capacity_size(fs_map['VolumeSize'])),
