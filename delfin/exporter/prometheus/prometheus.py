@@ -22,9 +22,9 @@ from tzlocal import get_localzone
 LOG = log.getLogger(__name__)
 
 grp = cfg.OptGroup('PROMETHEUS_EXPORTER')
-
+METRICS_CACHE_DIR = '/var/lib/delfin/metrics'
 prometheus_opts = [
-    cfg.StrOpt('metrics_dir', default='/var/lib/delfin/metrics',
+    cfg.StrOpt('metrics_dir', default=METRICS_CACHE_DIR,
 
                help='The temp directory to keep incoming metrics'),
     cfg.StrOpt('timezone',
@@ -33,6 +33,7 @@ prometheus_opts = [
                ),
 ]
 cfg.CONF.register_opts(prometheus_opts, group=grp)
+
 
 """"
 The metrics received from driver is should be in this format

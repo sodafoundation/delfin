@@ -24,13 +24,13 @@ LOG = log.getLogger(__name__)
 app = Flask(__name__)
 
 grp = cfg.OptGroup('PROMETHEUS_EXPORTER')
-
+METRICS_CACHE_DIR = '/var/lib/delfin/metrics'
 prometheus_opts = [
     cfg.StrOpt('metric_server_ip', default='0.0.0.0',
                help='The exporter server host  ip'),
     cfg.IntOpt('metric_server_port', default=8195,
                help='The exporter server port'),
-    cfg.StrOpt('metrics_dir', default='/var/lib/delfin/metrics',
+    cfg.StrOpt('metrics_dir', default=METRICS_CACHE_DIR,
 
                help='The temp directory to keep incoming metrics'),
 ]
