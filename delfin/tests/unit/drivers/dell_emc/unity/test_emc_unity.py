@@ -763,7 +763,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_1",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 1,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -804,7 +804,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_3",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 2,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -991,9 +991,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'enterprise',
+        'security_mode': 'native'
     }, {
         'name': 'ddd',
         'storage_id': '12345',
@@ -1002,9 +1003,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
-        'worm': 'non_worm'
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
+        'worm': 'compliance',
+        'security_mode': 'native'
     }, {
         'name': 'fs_home',
         'storage_id': '12345',
@@ -1013,9 +1015,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 10737418240,
-        'used_capacity': 283156480,
-        'free_capacity': 10454261760,
-        'worm': 'non_worm'
+        'used_capacity': 1622458368,
+        'free_capacity': 9114959872,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs_boga',
         'storage_id': '12345',
@@ -1024,9 +1027,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
@@ -1035,9 +1039,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'FS_MULTI1',
         'storage_id': '12345',
@@ -1046,9 +1051,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
-        'worm': 'non_worm'
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }
 ]
 GET_ALL_QTREE = {
@@ -1072,7 +1078,7 @@ GET_ALL_QTREE = {
 }
 qtree_result = [
     {
-        'name': 'qtree_1',
+        'name': '/',
         'storage_id': '12345',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'filesystem_1',
