@@ -782,18 +782,19 @@ class NetAppHandler(object):
                         share_map[constant.VSERVER_NAME] + \
                         '_' + share_map['VolumeName']
                     share_id = fs_id + '_' + share_map['Share'] + '_'
+                    qtree_id = None
                     qt_id = \
                         share_map[constant.VSERVER_NAME] + \
                         '_/vol/' + share_map['Path']
-                    if qtree['native_qtree_id'] != qt_id:
-                        qt_id = None
+                    if qtree['native_qtree_id'] == qt_id:
+                        qtree_id = qt_id
                     if constants.ShareProtocol.CIFS in protocol_str:
                         share = {
                             'name': share_map['Share'],
                             'storage_id': storage_id,
                             'native_share_id':
                                 share_id + constants.ShareProtocol.CIFS,
-                            'native_qtree_id': qt_id,
+                            'native_qtree_id': qtree_id,
                             'native_filesystem_id': fs_id,
                             'path': share_map['Path'],
                             'protocol': constants.ShareProtocol.CIFS
@@ -805,7 +806,7 @@ class NetAppHandler(object):
                             'storage_id': storage_id,
                             'native_share_id':
                                 share_id + constants.ShareProtocol.NFS,
-                            'native_qtree_id': qt_id,
+                            'native_qtree_id': qtree_id,
                             'native_filesystem_id': fs_id,
                             'path': share_map['Path'],
                             'protocol': constants.ShareProtocol.NFS
