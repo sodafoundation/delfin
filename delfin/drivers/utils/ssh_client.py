@@ -15,6 +15,7 @@
 #    under the License.
 import paramiko
 import six
+import eventlet
 from eventlet import pools
 from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
@@ -241,15 +242,16 @@ class SSHPool(pools.Pool):
         super(SSHPool, self).put(conn)
 
     def do_exec(self, command_str):
-        result = None
+        result = ''
         try:
-            with self.item() as ssh:
-                utils.check_ssh_injection(command_str)
-                if command_str is not None and ssh is not None:
-                    stdin, stdout, stderr = ssh.exec_command(command_str)
-                    res, err = stdout.read(), stderr.read()
-                    re = res if res else err
-                    result = re.decode()
+            with eventlet.Timeout(30, False):
+                with self.item() as ssh:
+                    utils.check_ssh_injection(command_str)
+                    if command_str is not None and ssh is not None:
+                        stdin, stdout, stderr = ssh.exec_command(command_str)
+                        res, err = stdout.read(), stderr.read()
+                        re = res if res else err
+                        result = re.decode()
         except paramiko.AuthenticationException as ae:
             LOG.error('doexec Authentication error:{}'.format(ae))
             raise exception.InvalidUsernameOrPassword()
