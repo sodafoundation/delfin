@@ -1,0 +1,15 @@
+{
+  "test_register_access_info": {
+    "vendor": "test_vendor",
+    "model": "test_model",
+    "rest": {
+      "host": "10.10.10.10",
+      "port": 8080,
+      "username": "user_1",
+      "password": "pass_1"
+    },
+    "extra_attributes": {
+      "path": "storage.json"
+    }
+  }
+}
