@@ -890,10 +890,10 @@ class NetAppHandler(object):
                             quota_map['SoftDiskLimit']),
                         'file_hard_limit':
                             int(quota_map['FilesLimit'])
-                            if quota_map['FilesLimit'] != '-' else 0,
+                            if quota_map['FilesLimit'] != '-' else '-',
                         'file_soft_limit':
                             int(quota_map['SoftFilesLimit'])
-                            if quota_map['SoftFilesLimit'] != '-' else 0,
+                            if quota_map['SoftFilesLimit'] != '-' else '-',
                         'file_count': None,
                         'used_capacity': None,
                         'user_group_name': user_group_name
