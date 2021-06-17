@@ -32,6 +32,10 @@ class UnityStorDriver(driver.StorageDriver):
                           1: constants.WORMType.ENTERPRISE,
                           2: constants.WORMType.COMPLIANCE
                           }
+    FILESYSTEM_SECURITY_MAP = {0: constants.NASSecurityMode.NATIVE,
+                               1: constants.NASSecurityMode.UNIX,
+                               2: constants.NASSecurityMode.NTFS
+                               }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -372,6 +376,11 @@ class UnityStorDriver(driver.StorageDriver):
                     worm = UnityStorDriver.FILESYSTEM_FLR_MAP.get(
                         content.get('flrVersion'),
                         constants.WORMType.NON_WORM)
+                    security_model = \
+                        UnityStorDriver.FILESYSTEM_SECURITY_MAP.get(
+                            content.get('accessPolicy'),
+                            constants.NASSecurityMode.NATIVE
+                        )
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
@@ -383,7 +392,8 @@ class UnityStorDriver(driver.StorageDriver):
                         'used_capacity': int(content.get('sizeUsed')),
                         'free_capacity': int(content.get('sizeTotal')) - int(
                             content.get('sizeUsed')),
-                        'worm': worm
+                        'worm': worm,
+                        'security_mode': security_model
                     }
                     fs_list.append(fs)
             return fs_list
@@ -405,7 +415,7 @@ class UnityStorDriver(driver.StorageDriver):
                     qt = {
                         'name': content.get('id'),
                         'storage_id': self.storage_id,
-                        'native_qtree_id': content.get('id'),
+                        'native_qtree_id': content.get('path'),
                         'native_filesystem_id':
                             content.get('filesystem').get('id'),
                         'path': path

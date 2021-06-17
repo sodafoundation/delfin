@@ -993,7 +993,8 @@ filesystem_result = [
         'total_capacity': 5368709120,
         'used_capacity': 1622450176,
         'free_capacity': 3746258944,
-        'worm': 'enterprise'
+        'worm': 'enterprise',
+        'security_mode': 'native'
     }, {
         'name': 'ddd',
         'storage_id': '12345',
@@ -1004,7 +1005,8 @@ filesystem_result = [
         'total_capacity': 107374182400,
         'used_capacity': 1620303872,
         'free_capacity': 105753878528,
-        'worm': 'compliance'
+        'worm': 'compliance',
+        'security_mode': 'native'
     }, {
         'name': 'fs_home',
         'storage_id': '12345',
@@ -1015,7 +1017,8 @@ filesystem_result = [
         'total_capacity': 10737418240,
         'used_capacity': 1622458368,
         'free_capacity': 9114959872,
-        'worm': 'non_worm'
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs_boga',
         'storage_id': '12345',
@@ -1026,7 +1029,8 @@ filesystem_result = [
         'total_capacity': 5368709120,
         'used_capacity': 1622450176,
         'free_capacity': 3746258944,
-        'worm': 'non_worm'
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
@@ -1037,7 +1041,8 @@ filesystem_result = [
         'total_capacity': 5368709120,
         'used_capacity': 1622450176,
         'free_capacity': 3746258944,
-        'worm': 'non_worm'
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'FS_MULTI1',
         'storage_id': '12345',
@@ -1048,7 +1053,8 @@ filesystem_result = [
         'total_capacity': 107374182400,
         'used_capacity': 1620303872,
         'free_capacity': 105753878528,
-        'worm': 'non_worm'
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }
 ]
 GET_ALL_QTREE = {
@@ -1074,7 +1080,7 @@ qtree_result = [
     {
         'name': 'qtree_1',
         'storage_id': '12345',
-        'native_qtree_id': 'qtree_1',
+        'native_qtree_id': '/',
         'native_filesystem_id': 'filesystem_1',
         'path': '/filesystem_1/'
     }
