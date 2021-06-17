@@ -52,9 +52,9 @@ class NetAppHandler(object):
                         'alert_id': alert_name,
                         'alert_name': alert_name,
                         'severity': constants.Severity.CRITICAL,
-                        'category': constants.Category.EVENT,
+                        'category': constants.Category.FAULT,
                         'type': constants.EventType.EQUIPMENT_ALARM,
-                        'occur_time': int(time.time()),
+                        'occur_time': int(time.time()) * 1000,
                         'description': description,
                         'match_key': hashlib.md5(
                             (alert.get(NetAppHandler.OID_TRAP_DATA)
@@ -468,11 +468,14 @@ class NetAppHandler(object):
                     'deduplicated': deduplicated,
                     'worm': constant.WORM_TYPE.get(fs_map['SnapLockType']),
                     'status': status,
+                    'security_mode':
+                        constant.SECURITY_STYLE.get(fs_map['SecurityStyle']),
                     'type': type,
                     'total_capacity':
                         int(Tools.get_capacity_size(fs_map['VolumeSize'])),
                     'used_capacity':
-                        int(Tools.get_capacity_size(fs_map['UsedSize'])),
+                        int(Tools.get_capacity_size(fs_map['VolumeSize'])) -
+                        int(Tools.get_capacity_size(fs_map['AvailableSize'])),
                     'free_capacity':
                         int(Tools.get_capacity_size(fs_map['AvailableSize']))
                 }
@@ -775,12 +778,16 @@ class NetAppHandler(object):
                     share_map[constant.VSERVER_NAME] +\
                     '_' + share_map['VolumeName']
                 share_id = fs_id + '_' + share_map['Share'] + '_'
+                qt_id = \
+                    share_map[constant.VSERVER_NAME] + \
+                    '_/vol/' + share_map['Path']
                 if constants.ShareProtocol.CIFS in protocol_str:
                     share = {
                         'name': share_map['Share'],
                         'storage_id': storage_id,
                         'native_share_id':
                             share_id + constants.ShareProtocol.CIFS,
+                        'native_qtree_id': qt_id,
                         'native_filesystem_id': fs_id,
                         'path': share_map['Path'],
                         'protocol': constants.ShareProtocol.CIFS
@@ -792,6 +799,7 @@ class NetAppHandler(object):
                         'storage_id': storage_id,
                         'native_share_id':
                             share_id + constants.ShareProtocol.NFS,
+                        'native_qtree_id': qt_id,
                         'native_filesystem_id': fs_id,
                         'path': share_map['Path'],
                         'protocol': constants.ShareProtocol.NFS
@@ -880,8 +888,12 @@ class NetAppHandler(object):
                             quota_map['DiskLimit']),
                         'capacity_soft_limit': Tools.get_capacity_size(
                             quota_map['SoftDiskLimit']),
-                        'file_hard_limit': int(quota_map['FilesLimit']),
-                        'file_soft_limit': int(quota_map['SoftFilesLimit']),
+                        'file_hard_limit':
+                            int(quota_map['FilesLimit'])
+                            if quota_map['FilesLimit'] != '-' else 0,
+                        'file_soft_limit':
+                            int(quota_map['SoftFilesLimit'])
+                            if quota_map['SoftFilesLimit'] != '-' else 0,
                         'file_count': None,
                         'used_capacity': None,
                         'user_group_name': user_group_name
