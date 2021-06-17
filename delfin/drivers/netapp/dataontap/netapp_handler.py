@@ -756,6 +756,7 @@ class NetAppHandler(object):
     def get_shares(self, storage_id, vserver_name):
         shares_list = []
         qtree_list = self.list_qtrees(None)
+
         share_info = self.ssh_pool.do_exec(
             (constant.CIFS_SHARE_SHOW_DETAIL_COMMAND %
              {'vserver_name': vserver_name}))
