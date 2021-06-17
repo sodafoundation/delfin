@@ -413,9 +413,9 @@ class UnityStorDriver(driver.StorageDriver):
                     path = '/%s%s' % (content.get('filesystem').get('id'),
                                       content.get('path'))
                     qt = {
-                        'name': content.get('id'),
+                        'name': content.get('path'),
                         'storage_id': self.storage_id,
-                        'native_qtree_id': content.get('path'),
+                        'native_qtree_id': content.get('id'),
                         'native_filesystem_id':
                             content.get('filesystem').get('id'),
                         'path': path

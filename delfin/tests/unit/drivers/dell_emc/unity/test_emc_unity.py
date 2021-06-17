@@ -1078,9 +1078,9 @@ GET_ALL_QTREE = {
 }
 qtree_result = [
     {
-        'name': 'qtree_1',
+        'name': '/',
         'storage_id': '12345',
-        'native_qtree_id': '/',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'filesystem_1',
         'path': '/filesystem_1/'
     }
