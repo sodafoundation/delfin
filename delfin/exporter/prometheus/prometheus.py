@@ -54,7 +54,7 @@ storage_metrics = [Metric(name='response_time',
 class PrometheusExporter(object):
 
     def __init__(self):
-        self.timestamp_offset_ms = self.set_timestamp_offset_from_utc_ms()
+        self.timestamp_offset_ms = 0
         self.metrics_dir = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir
 
     def set_timestamp_offset_from_utc_ms(self):
@@ -86,6 +86,7 @@ class PrometheusExporter(object):
                                         value, timestamp))
 
     def push_to_prometheus(self, storage_metrics):
+        self.timestamp_offset_ms = self.set_timestamp_offset_from_utc_ms()
         time_stamp = str(datetime.datetime.now().timestamp())
         temp_file_name = self.metrics_dir + '/' + time_stamp + ".prom.temp"
         actual_file_name = self.metrics_dir + '/' + time_stamp + ".prom"

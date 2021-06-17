@@ -45,16 +45,14 @@ def getfile():
     except OSError as e:
         LOG.error('Error opening metrics folder')
         raise Exception(e)
-    file_list = []
-    for file in glob.glob("*.prom"):
-        file_list.append(file)
     data = ''
-    for file in file_list:
+    for file in glob.glob("*.prom"):
         file_name = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir + '/' + file
         with open(file_name, "r") as f:
             data += f.read()
             # Remove a metric file after reading it
             os.remove(file_name)
+
     return data
 
 
