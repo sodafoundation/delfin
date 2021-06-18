@@ -310,7 +310,8 @@ controller_result = [
         'native_controller_id': 'CTL1',
         'status': 'normal',
         'location': 'CTL1'
-    }, {
+    },
+    {
         'name': 'CTL2',
         'storage_id': '12345',
         'native_controller_id': 'CTL2',
@@ -391,77 +392,68 @@ GET_ALL_PORTS = {
         }]
 }
 GET_DETAIL_PORT = {
-         'portId': 'CL1-B',
-         'portType': 'ISCSI',
-         'portSpeed': '10G',
-         'loopId': '00',
-         'fabricMode': False,
-         'lunSecuritySetting': True,
-         'logins': [{
-                  'loginIscsiName': 'iqn.1996-04.de.suse:01:a0cada20917f'
-         }],
-         'tcpOption': {
-                  'ipv6Mode': False,
-                  'selectiveAckMode': True,
-                  'delayedAckMode': True,
-                  'isnsService': False,
-                  'tagVLan': False
-         },
-         'tcpMtu': 1500,
-         'iscsiWindowSize': '64KB',
-         'keepAliveTimer': 60,
-         'tcpPort': '3260',
-         'ipv4Address': '192.168.116.19',
-         'ipv4Subnetmask': '255.255.0.0',
-         'ipv4GatewayAddress': '0.0.0.0',
-         'ipv6LinkLocalAddress': {
-                  'status': 'INV',
-                  'addressingMode': 'AM',
-                  'address': 'fe80::'
-         },
-         'ipv6GlobalAddress': {
-                  'status': 'INV',
-                  'addressingMode': 'AM',
-                  'address': '::'
-         },
-         'ipv6GatewayGlobalAddress': {
-                  'status': 'INV',
-                  'address': '::',
-                  'currentAddress': '::'
-         }
+    'portId': 'CL1-B',
+    'portType': 'ISCSI',
+    'portSpeed': '10G',
+    'loopId': '00',
+    'fabricMode': False,
+    'lunSecuritySetting': True,
+    'tcpMtu': 1500,
+    'iscsiWindowSize': '64KB',
+    'keepAliveTimer': 60,
+    'tcpPort': '3260',
+    'ipv4Address': '192.168.116.19',
+    'ipv4Subnetmask': '255.255.0.0',
+    'ipv4GatewayAddress': '0.0.0.0',
+    'ipv6LinkLocalAddress': {
+        'status': 'INV',
+        'addressingMode': 'AM',
+        'address': 'fe80::'
+    },
+    'ipv6GlobalAddress': {
+        'status': 'INV',
+        'addressingMode': 'AM',
+        'address': '::'
+    },
+    'ipv6GatewayGlobalAddress': {
+        'status': 'INV',
+        'address': '::',
+        'currentAddress': '::'
+    }
 }
-port_result = [{
-         'name': 'CL1-A',
-         'storage_id': '12345',
-         'native_port_id': 'CL1-A',
-         'location': 'CL1-A',
-         'connection_status': 'connected',
-         'health_status': 'normal',
-         'type': 'fc',
-         'logical_type': '',
-         'max_speed': 8589934592,
-         'mac_address': None,
-         'wwn': '50060E80124E3B00',
-         'ipv4': None,
-         'ipv4_mask': None,
-         'ipv6': None
-},
-{
-         'name': 'CL1-B',
-         'storage_id': '12345',
-         'native_port_id': 'CL1-B',
-         'location': 'CL1-B',
-         'connection_status': 'connected',
-         'health_status': 'normal',
-         'type': 'eth',
-         'logical_type': '',
-         'max_speed': 10737418240,
-         'mac_address': None,
-         'wwn': None,
-         'ipv4': '192.168.116.19',
-         'ipv4_mask': '255.255.0.0',
-         'ipv6': None
-}]
+port_result = [
+    {
+        'name': 'CL1-A',
+        'storage_id': '12345',
+        'native_port_id': 'CL1-A',
+        'location': 'CL1-A',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'fc',
+        'logical_type': '',
+        'max_speed': 8589934592,
+        'mac_address': None,
+        'wwn': '50060E80124E3B00',
+        'ipv4': None,
+        'ipv4_mask': None,
+        'ipv6': None
+    },
+    {
+        'name': 'CL1-B',
+        'storage_id': '12345',
+        'native_port_id': 'CL1-B',
+        'location': 'CL1-B',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'eth',
+        'logical_type': '',
+        'max_speed': 10737418240,
+        'mac_address': None,
+        'wwn': None,
+        'ipv4': '192.168.116.19',
+        'ipv4_mask': '255.255.0.0',
+        'ipv6': None
+    }]
 
 
 def create_driver():
