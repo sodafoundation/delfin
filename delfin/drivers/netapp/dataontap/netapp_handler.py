@@ -781,6 +781,7 @@ class NetAppHandler(object):
                     share_map[constant.VSERVER_NAME] + \
                     '_' + share_map['VolumeName']
                 share_id = fs_id + '_' + share_map['Share'] + '_'
+
                 qtree_id = None
                 for qtree in qtree_list:
                     qt_id = \
