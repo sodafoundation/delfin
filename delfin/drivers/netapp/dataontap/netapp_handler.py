@@ -793,7 +793,7 @@ class NetAppHandler(object):
                         'name': share_name,
                         'storage_id': storage_id,
                         'native_share_id':
-                            share_name + '-' + constants.ShareProtocol.NFS,
+                            share_name + '_' + constants.ShareProtocol.NFS,
                         'native_qtree_id': qtree_id,
                         'native_filesystem_id': fs_id,
                         'path': fs_map['JunctionPath'],
