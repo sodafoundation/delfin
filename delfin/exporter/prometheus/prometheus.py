@@ -34,7 +34,6 @@ prometheus_opts = [
 ]
 cfg.CONF.register_opts(prometheus_opts, group=grp)
 
-
 """"
 The metrics received from driver is should be in this format
 storage_metrics = [Metric(name='response_time',
@@ -89,8 +88,10 @@ class PrometheusExporter(object):
     def push_to_prometheus(self, storage_metrics):
         self.timestamp_offset_ms = self.set_timestamp_offset_from_utc_ms()
         time_stamp = str(datetime.datetime.now().timestamp())
-        temp_file_name = self.metrics_dir + '/' + time_stamp + ".prom.temp"
-        actual_file_name = self.metrics_dir + '/' + time_stamp + ".prom"
+        temp_file_name = os.path.join(self.metrics_dir,
+                                      time_stamp + ".prom.temp")
+        actual_file_name = os.path.join(self.metrics_dir,
+                                        time_stamp + ".prom")
         # make a temp  file with current timestamp
         with open(temp_file_name, "w") as f:
             for metric in storage_metrics:
@@ -103,19 +104,20 @@ class PrometheusExporter(object):
                 resource_type = labels.get('resource_type')
                 resource_id = labels.get('resource_id')
                 unit = labels.get('unit')
+                type = labels.get('type', 'RAW')
                 value_type = labels.get('value_type', 'gauge')
                 prom_labels = (
-                    "storage_id=\"%s\","
-                    "storage_name=\"%s\","
-                    "storage_sn=\"%s\","
-                    "resource_type=\"%s\","
-                    "resource_id=\"%s\","
-                    "type=\"%s\","
-                    "unit=\"%s\","
-                    "value_type=\"%s\"" %
-                    (storage_id, storage_name, storage_sn, resource_type,
-                        resource_id,
-                        'RAW', unit, value_type))
+                        "storage_id=\"%s\","
+                        "storage_name=\"%s\","
+                        "storage_sn=\"%s\","
+                        "resource_type=\"%s\","
+                        "resource_id=\"%s\","
+                        "type=\"%s\","
+                        "unit=\"%s\","
+                        "value_type=\"%s\"" %
+                        (storage_id, storage_name, storage_sn, resource_type,
+                         resource_id,
+                         type, unit, value_type))
                 name = labels.get('resource_type') + '_' + name
                 self._write_to_prometheus_format(f, name, labels, prom_labels,
                                                  values)
