@@ -41,6 +41,9 @@ cfg.CONF(sys.argv[1:])
 @app.route("/metrics", methods=['GET'])
 def getfile():
     try:
+        if not os.path.exists(cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir):
+            LOG.error('No metrics cache folder exists')
+            return ''
         os.chdir(cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir)
     except OSError as e:
         LOG.error('Error opening metrics folder')

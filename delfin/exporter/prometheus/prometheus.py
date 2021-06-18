@@ -57,6 +57,15 @@ class PrometheusExporter(object):
         self.timestamp_offset_ms = 0
         self.metrics_dir = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir
 
+    def check_metrics_dir_exists(self, directory):
+        try:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            return True
+        except Exception as e:
+            LOG.error('Error while creating metrics directory')
+            return False
+
     def set_timestamp_offset_from_utc_ms(self):
         """Set timestamp offset from utc required for all metrics"""
         try:
@@ -87,6 +96,8 @@ class PrometheusExporter(object):
 
     def push_to_prometheus(self, storage_metrics):
         self.timestamp_offset_ms = self.set_timestamp_offset_from_utc_ms()
+        if not self.check_metrics_dir_exists(self.metrics_dir):
+            return
         time_stamp = str(datetime.datetime.now().timestamp())
         temp_file_name = os.path.join(self.metrics_dir,
                                       time_stamp + ".prom.temp")
