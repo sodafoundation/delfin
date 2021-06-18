@@ -72,13 +72,13 @@ class Hpe3parStorDriver(driver.StorageDriver):
         return self.comhandler.list_volumes(context)
 
     def list_controllers(self, context):
-        pass
+        return self.comhandler.list_controllers(self.storage_id)
 
     def list_ports(self, context):
-        pass
+        return self.comhandler.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        pass
+        return self.comhandler.list_disks(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
         return self.alert_handler.list_alerts(context, query_para)
@@ -95,3 +95,12 @@ class Hpe3parStorDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         return self.alert_handler.clear_alert(context, alert)
+
+    def list_filesystems(self, context):
+        pass
+
+    def list_qtrees(self, context):
+        pass
+
+    def list_shares(self, context):
+        pass

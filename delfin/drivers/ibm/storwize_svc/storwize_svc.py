@@ -37,13 +37,13 @@ class StorwizeSVCDriver(driver.StorageDriver):
         return self.ssh_hanlder.list_volumes(self.storage_id)
 
     def list_controllers(self, context):
-        pass
+        return self.ssh_hanlder.list_controllers(self.storage_id)
 
     def list_ports(self, context):
-        pass
+        return self.ssh_hanlder.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        pass
+        return self.ssh_hanlder.list_disks(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
         return self.ssh_hanlder.list_alerts(query_para)

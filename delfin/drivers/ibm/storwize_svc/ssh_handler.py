@@ -45,6 +45,11 @@ class SSHHandler(object):
                     "error": "Major"
                     }
 
+    DISK_PHYSICAL_TYPE = {
+        'fc': constants.DiskPhysicalType.FC,
+        'sas_direct': constants.DiskPhysicalType.SAS
+    }
+
     SECONDS_TO_MS = 1000
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
 
@@ -391,3 +396,193 @@ class SSHHandler(object):
             if self.ALERT_NOT_FOUND_CODE not in result:
                 raise exception.InvalidResults(six.text_type(result))
             LOG.warning("Alert %s doesn't exist.", alert)
+
+    def list_controllers(self, storage_id):
+        try:
+            controller_list = []
+            control_info = self.exec_ssh_command('lscontroller')
+            control_res = control_info.split('\n')
+            for i in range(1, len(control_res)):
+                if control_res[i] is None or control_res[i] == '':
+                    continue
+                control_str = ' '.join(control_res[i].split())
+                str_info = control_str.split(' ')
+                control_id = str_info[0]
+                detail_command = 'lscontroller %s' % control_id
+                deltail_info = self.exec_ssh_command(detail_command)
+                control_map = {}
+                self.handle_detail(deltail_info, control_map, split=' ')
+                status = constants.ControllerStatus.NORMAL
+                if control_map.get('degraded') == 'yes':
+                    status = constants.ControllerStatus.OFFLINE
+                soft_version = '%s_%s' % (control_map.get('vendor_id'),
+                                          control_map.get('product_id_low'))
+                controller_result = {
+                    'name': control_map.get('controller_name'),
+                    'storage_id': storage_id,
+                    'native_controller_id': control_map.get('id'),
+                    'status': status,
+                    'soft_version': soft_version,
+                    'location': control_map.get('controller_name')
+                }
+                controller_list.append(controller_result)
+            return controller_list
+        except Exception as err:
+            err_msg = "Failed to get controller attributes from Storwize: %s"\
+                      % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_disks(self, storage_id):
+        try:
+            disk_list = []
+            disk_info = self.exec_ssh_command('lsmdisk')
+            disk_res = disk_info.split('\n')
+            for i in range(1, len(disk_res)):
+                if disk_res[i] is None or disk_res[i] == '':
+                    continue
+                control_str = ' '.join(disk_res[i].split())
+                str_info = control_str.split(' ')
+                disk_id = str_info[0]
+                detail_command = 'lsmdisk %s' % disk_id
+                deltail_info = self.exec_ssh_command(detail_command)
+                disk_map = {}
+                self.handle_detail(deltail_info, disk_map, split=' ')
+                status = constants.DiskStatus.NORMAL
+                if disk_map.get('status') == 'offline':
+                    status = constants.DiskStatus.OFFLINE
+                physical_type = SSHHandler.DISK_PHYSICAL_TYPE.get(
+                    disk_map.get('fabric_type'),
+                    constants.DiskPhysicalType.UNKNOWN)
+                location = '%s_%s' % (disk_map.get('controller_name'),
+                                      disk_map.get('name'))
+                disk_result = {
+                    'name': disk_map.get('name'),
+                    'storage_id': storage_id,
+                    'native_disk_id': disk_map.get('id'),
+                    'capacity': int(self.parse_string(
+                        disk_map.get('capacity'))),
+                    'status': status,
+                    'physical_type': physical_type,
+                    'native_disk_group_id': disk_map.get('mdisk_grp_name'),
+                    'location': location
+                }
+                disk_list.append(disk_result)
+            return disk_list
+        except Exception as err:
+            err_msg = "Failed to get disk attributes from Storwize: %s" % \
+                      (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
+
+    def get_fc_port(self, storage_id):
+        port_list = []
+        fc_info = self.exec_ssh_command('lsportfc')
+        fc_res = fc_info.split('\n')
+        for i in range(1, len(fc_res)):
+            if fc_res[i] is None or fc_res[i] == '':
+                continue
+            control_str = ' '.join(fc_res[i].split())
+            str_info = control_str.split(' ')
+            port_id = str_info[0]
+            detail_command = 'lsportfc %s' % port_id
+            deltail_info = self.exec_ssh_command(detail_command)
+            port_map = {}
+            self.handle_detail(deltail_info, port_map, split=' ')
+            status = constants.PortHealthStatus.NORMAL
+            conn_status = constants.PortConnectionStatus.CONNECTED
+            if port_map.get('status') != 'active':
+                status = constants.PortHealthStatus.ABNORMAL
+                conn_status = constants.PortConnectionStatus.DISCONNECTED
+            port_type = constants.PortType.FC
+            if port_map.get('type') == 'ethernet':
+                port_type = constants.PortType.ETH
+            location = '%s_%s' % (port_map.get('node_name'),
+                                  port_map.get('id'))
+            port_result = {
+                'name': port_map.get('id'),
+                'storage_id': storage_id,
+                'native_port_id': port_map.get('id'),
+                'location': location,
+                'connection_status': conn_status,
+                'health_status': status,
+                'type': port_type,
+                'max_speed':
+                    int(self.parse_string(port_map.get('port_speed'))),
+                'native_parent_id': port_map.get('node_name'),
+                'wwn': port_map.get('WWPN')
+            }
+            port_list.append(port_result)
+        return port_list
+
+    def get_iscsi_port(self, storage_id):
+        port_list = []
+        for i in range(1, 3):
+            port_array = []
+            port_command = 'lsportip %s' % i
+            port_info = self.exec_ssh_command(port_command)
+            port_arr = port_info.split('\n')
+            port_map = {}
+            for detail in port_arr:
+                if detail is not None and detail != '':
+                    strinfo = detail.split(' ', 1)
+                    key = strinfo[0]
+                    value = ''
+                    if len(strinfo) > 1:
+                        value = strinfo[1]
+                    port_map[key] = value
+                else:
+                    if len(port_map) > 1:
+                        port_array.append(port_map)
+                        port_map = {}
+                        continue
+            for port in port_array:
+                if port.get('failover') == 'yes':
+                    continue
+                status = constants.PortHealthStatus.ABNORMAL
+                if port.get('state') == 'online':
+                    status = constants.PortHealthStatus.NORMAL
+                conn_status = constants.PortConnectionStatus.DISCONNECTED
+                if port.get('link_state') == 'active':
+                    conn_status = constants.PortConnectionStatus.CONNECTED
+                port_type = constants.PortType.ETH
+                location = '%s_%s' % (port.get('node_name'),
+                                      port.get('id'))
+                port_result = {
+                    'name': location,
+                    'storage_id': storage_id,
+                    'native_port_id': location,
+                    'location': location,
+                    'connection_status': conn_status,
+                    'health_status': status,
+                    'type': port_type,
+                    'max_speed': int(self.handle_port_bps(port.get('speed'))),
+                    'native_parent_id': port.get('node_name'),
+                    'mac_address': port.get('MAC'),
+                    'ipv4': port.get('IP_address'),
+                    'ipv4_mask': port.get('mask'),
+                    'ipv6': port.get('IP_address_6')
+                }
+                port_list.append(port_result)
+        return port_list
+
+    def handle_port_bps(self, value):
+        speed = 0
+        if value:
+            if value.isdigit():
+                speed = float(value)
+            else:
+                unit = value[-4:-2]
+                speed = float(value[:-4]) * int(
+                    self.change_capacity_to_bytes(unit))
+        return speed
+
+    def list_ports(self, storage_id):
+        try:
+            port_list = []
+            port_list.extend(self.get_fc_port(storage_id))
+            port_list.extend(self.get_iscsi_port(storage_id))
+            return port_list
+        except Exception as err:
+            err_msg = "Failed to get ports attributes from Storwize: %s" % \
+                      (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
