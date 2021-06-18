@@ -766,7 +766,7 @@ class NetAppHandler(object):
                 if constants.ShareProtocol.NFS in protocol:
                     fs_id = fs_map['Name'] + '_' + fs_map['VolumeName']
                     share_name = \
-                        fs_map['Name'] + '_/vol/' + fs_map['VolumeName']
+                        fs_map['Name'] + '_/vol/' + fs_map['JunctionPath']
                     qt_id = fs_map['Name'] + '_/vol/' + fs_map['VolumeName']
                     qtree_id = None
                     for qtree in qtree_list:
@@ -918,6 +918,7 @@ class NetAppHandler(object):
                         quota_map[constant.VSERVER_NAME] + '_' + \
                         quota_map['VolumeName'] + '_' + \
                         quota_map['Type'] + '_' + \
+                        quota_map['QtreeName'] + '_' + \
                         quota_map['Target']
                     type = constant.QUOTA_TYPE.get(quota_map['Type'])
                     native_qtree_id = '/vol/' + quota_map['VolumeName']
