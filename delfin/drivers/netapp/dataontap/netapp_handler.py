@@ -766,7 +766,7 @@ class NetAppHandler(object):
                 if constants.ShareProtocol.NFS in protocol:
                     fs_id = fs_map['Name'] + '_' + fs_map['VolumeName']
                     share_name = \
-                        fs_map['Name'] + '_/vol/' + fs_map['JunctionPath']
+                        fs_map['Name'] + '_/vol' + fs_map['JunctionPath']
                     qt_id = fs_map['Name'] + '_/vol/' + fs_map['VolumeName']
                     qtree_id = None
                     for qtree in qtree_list:
@@ -779,7 +779,7 @@ class NetAppHandler(object):
                                 'name': qt_share_name,
                                 'storage_id': storage_id,
                                 'native_share_id':
-                                    share_name +
+                                    qt_share_name + '_' +
                                     constants.ShareProtocol.NFS,
                                 'native_qtree_id':
                                     qtree['native_qtree_id'],
@@ -793,7 +793,7 @@ class NetAppHandler(object):
                         'name': share_name,
                         'storage_id': storage_id,
                         'native_share_id':
-                            share_name + constants.ShareProtocol.NFS,
+                            share_name + '_' + constants.ShareProtocol.NFS,
                         'native_qtree_id': qtree_id,
                         'native_filesystem_id': fs_id,
                         'path': fs_map['JunctionPath'],
