@@ -774,44 +774,33 @@ class NetAppHandler(object):
             share_map = {}
             Tools.split_value_map(cifs_share, share_map, split=':')
             if 'VolumeName' in share_map.keys() and \
-                    share_map['VolumeName'] != '-':
+                share_map['VolumeName'] != '-':
+                protocol_str = protocol_map.get(
+                    share_map[constant.VSERVER_NAME])
+                fs_id = \
+                    share_map[constant.VSERVER_NAME] + \
+                    '_' + share_map['VolumeName']
+                share_id = fs_id + '_' + share_map['Share'] + '_'
+                qtree_id = None
                 for qtree in qtree_list:
-                    protocol_str = protocol_map.get(
-                        share_map[constant.VSERVER_NAME])
-                    fs_id = \
-                        share_map[constant.VSERVER_NAME] + \
-                        '_' + share_map['VolumeName']
-                    share_id = fs_id + '_' + share_map['Share'] + '_'
-                    qtree_id = None
                     qt_id = \
                         share_map[constant.VSERVER_NAME] + \
                         '_/vol/' + share_map['Path']
                     if qtree['native_qtree_id'] == qt_id:
                         qtree_id = qt_id
-                    if constants.ShareProtocol.CIFS in protocol_str:
-                        share = {
-                            'name': share_map['Share'],
-                            'storage_id': storage_id,
-                            'native_share_id':
-                                share_id + constants.ShareProtocol.CIFS,
-                            'native_qtree_id': qtree_id,
-                            'native_filesystem_id': fs_id,
-                            'path': share_map['Path'],
-                            'protocol': constants.ShareProtocol.CIFS
-                        }
-                        shares_list.append(share)
-                    if constants.ShareProtocol.NFS in protocol_str:
-                        share = {
-                            'name': share_map['Share'],
-                            'storage_id': storage_id,
-                            'native_share_id':
-                                share_id + constants.ShareProtocol.NFS,
-                            'native_qtree_id': qtree_id,
-                            'native_filesystem_id': fs_id,
-                            'path': share_map['Path'],
-                            'protocol': constants.ShareProtocol.NFS
-                        }
-                        shares_list.append(share)
+                        break
+                if constants.ShareProtocol.CIFS in protocol_str:
+                    share = {
+                        'name': share_map['Share'],
+                        'storage_id': storage_id,
+                        'native_share_id':
+                            share_id + constants.ShareProtocol.CIFS,
+                        'native_qtree_id': qtree_id,
+                        'native_filesystem_id': fs_id,
+                        'path': share_map['Path'],
+                        'protocol': constants.ShareProtocol.CIFS
+                    }
+                    shares_list.append(share)
         return shares_list
 
     def list_shares(self, storage_id):
