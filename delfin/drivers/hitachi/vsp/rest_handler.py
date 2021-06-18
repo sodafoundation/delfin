@@ -39,6 +39,7 @@ class RestHandler(RestClient):
         self.storage_device_id = None
         self.device_model = None
         self.serial_number = None
+        self.rest_host = '51.10.192.90'
 
     def call(self, url, data=None, method=None,
              calltimeout=consts.SOCKET_TIMEOUT):
@@ -229,4 +230,28 @@ class RestHandler(RestClient):
     def get_system_info(self):
         result_json = self.get_rest_info(RestHandler.COMM_URL, timeout=10)
 
+        return result_json
+
+    def get_controllers(self):
+        url = '%s/%s/components/instance' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_disks(self):
+        url = '%s/%s/drives' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_all_ports(self):
+        url = '%s/%s/ports' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_detail_ports(self, port_id):
+        url = '%s/%s/ports/%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id)
+        result_json = self.get_rest_info(url)
         return result_json

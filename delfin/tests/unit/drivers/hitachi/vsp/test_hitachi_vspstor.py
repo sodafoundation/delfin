@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from unittest import TestCase, mock
+sys.modules['delfin.cryptor'] = mock.Mock()
 
 from requests import Session
 
@@ -53,7 +55,7 @@ GET_DEVICE_ID = {
             "storageDeviceId": "800000011633",
             "model": "VSP F1500",
             "serialNumber": 11633,
-            "svpIp": "110.143.132.231",
+            "svpIp": "51.10.192.90",
         }
     ]
 }
@@ -140,6 +142,72 @@ GET_ALL_VOLUMES = {
         }
     ]
 }
+GET_ALL_DISKS = {
+    "data": [
+        {
+            "driveLocationId": "0-0",
+            "driveTypeName": "SAS",
+            "driveSpeed": 10000,
+            "totalCapacity": 600,
+            "driveType": "DKR5D-J600SS",
+            "usageType": "DATA",
+            "status": "NML",
+            "parityGroupId": "1-6",
+            "serialNumber": "123456789012345678901"
+        }, {
+            "driveLocationId": "0-1",
+            "driveTypeName": "SAS",
+            "driveSpeed": 10000,
+            "totalCapacity": 600,
+            "driveType": "DKR5D-J600SS",
+            "usageType": "DATA",
+            "status": "NML",
+            "parityGroupId": "1-6",
+            "serialNumber": "123456789012345678902"
+        }, {
+            "driveLocationId": "0-2",
+            "driveTypeName": "SAS",
+            "driveSpeed": 10000,
+            "totalCapacity": 600,
+            "driveType": "DKR5D-J600SS",
+            "usageType": "DATA",
+            "status": "NML",
+            "parityGroupId": "1-6",
+            "serialNumber": "123456789012345678903"
+        }, {
+            "driveLocationId": "0-3",
+            "driveTypeName": "SAS",
+            "driveSpeed": 10000,
+            "totalCapacity": 600,
+            "driveType": "DKR5D-J600SS",
+            "usageType": "DATA",
+            "status": "NML",
+            "parityGroupId": "1-6",
+            "serialNumber": "123456789012345678904"
+        }
+    ]
+}
+GET_ALL_CONTROLLERS = {
+    "system": {
+        "powerConsumption": 283
+    },
+    "ctls": [
+        {
+            "location": "CTL1",
+            "status": "Normal",
+            "temperature": 29,
+            "temperatureStatus": "Normal",
+            "type": "Controller Board"
+        }, {
+            "location": "CTL2",
+            "status": "Normal",
+            "temperature": 29,
+            "temperatureStatus": "Normal",
+            "charge": 100,
+            "type": "Controller Board"
+        }
+    ]
+}
 TRAP_INFO = {
     "1.3.6.1.2.1.1.3.0": "0",
     '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.116.3.11.4.1.1.0.1',
@@ -163,7 +231,7 @@ ALERT_INFO = [
 ]
 
 storage_result = {
-    'name': 'VSP F1500_110.143.132.231',
+    'name': 'VSP F1500_51.10.192.90',
     'vendor': 'Hitachi',
     'description': 'Hitachi VSP Storage',
     'model': 'VSP F1500',
@@ -235,6 +303,165 @@ trap_alert_result = {
     'location': ' System Version = 7.4.0.11 ',
     'match_key': '338d811d532553557ca33be45b6bde55'
 }
+controller_result = [
+    {
+        'name': 'CTL1',
+        'storage_id': '12345',
+        'native_controller_id': 'CTL1',
+        'status': 'normal',
+        'location': 'CTL1'
+    }, {
+        'name': 'CTL2',
+        'storage_id': '12345',
+        'native_controller_id': 'CTL2',
+        'status': 'normal',
+        'location': 'CTL2'
+    }
+]
+disk_result = [
+    {
+        'name': '0-0',
+        'storage_id': '12345',
+        'native_disk_id': '0-0',
+        'serial_number': '123456789012345678901',
+        'speed': 10000,
+        'capacity': 644245094400,
+        'status': 'abnormal',
+        'physical_type': 'sas',
+        'logical_type': 'member',
+        'native_disk_group_id': '1-6',
+        'location': '0-0'
+    }, {
+        'name': '0-1',
+        'storage_id': '12345',
+        'native_disk_id': '0-1',
+        'serial_number': '123456789012345678902',
+        'speed': 10000,
+        'capacity': 644245094400,
+        'status': 'abnormal',
+        'physical_type': 'sas',
+        'logical_type': 'member',
+        'native_disk_group_id': '1-6',
+        'location': '0-1'
+    }, {
+        'name': '0-2',
+        'storage_id': '12345',
+        'native_disk_id': '0-2',
+        'serial_number': '123456789012345678903',
+        'speed': 10000,
+        'capacity': 644245094400,
+        'status': 'abnormal',
+        'physical_type': 'sas',
+        'logical_type': 'member',
+        'native_disk_group_id': '1-6',
+        'location': '0-2'
+    }, {
+        'name': '0-3',
+        'storage_id': '12345',
+        'native_disk_id': '0-3',
+        'serial_number': '123456789012345678904',
+        'speed': 10000,
+        'capacity': 644245094400,
+        'status': 'abnormal',
+        'physical_type': 'sas',
+        'logical_type': 'member',
+        'native_disk_group_id': '1-6',
+        'location': '0-3'
+    }
+]
+GET_ALL_PORTS = {
+    'data': [
+        {
+            'portId': 'CL1-A',
+            'portType': 'FIBRE',
+            'portSpeed': 'AUT',
+            'loopId': 'EF',
+            'fabricMode': True,
+            'portConnection': 'PtoP',
+            'lunSecuritySetting': True,
+            'wwn': '50060e80124e3b00'
+        },
+        {
+            'portId': 'CL1-B',
+            'portType': 'ISCSI',
+            'portSpeed': '10G',
+            'loopId': '00',
+            'fabricMode': False,
+            'lunSecuritySetting': True
+        }]
+}
+GET_DETAIL_PORT = {
+         'portId': 'CL1-B',
+         'portType': 'ISCSI',
+         'portSpeed': '10G',
+         'loopId': '00',
+         'fabricMode': False,
+         'lunSecuritySetting': True,
+         'logins': [{
+                  'loginIscsiName': 'iqn.1996-04.de.suse:01:a0cada20917f'
+         }],
+         'tcpOption': {
+                  'ipv6Mode': False,
+                  'selectiveAckMode': True,
+                  'delayedAckMode': True,
+                  'isnsService': False,
+                  'tagVLan': False
+         },
+         'tcpMtu': 1500,
+         'iscsiWindowSize': '64KB',
+         'keepAliveTimer': 60,
+         'tcpPort': '3260',
+         'ipv4Address': '192.168.116.19',
+         'ipv4Subnetmask': '255.255.0.0',
+         'ipv4GatewayAddress': '0.0.0.0',
+         'ipv6LinkLocalAddress': {
+                  'status': 'INV',
+                  'addressingMode': 'AM',
+                  'address': 'fe80::'
+         },
+         'ipv6GlobalAddress': {
+                  'status': 'INV',
+                  'addressingMode': 'AM',
+                  'address': '::'
+         },
+         'ipv6GatewayGlobalAddress': {
+                  'status': 'INV',
+                  'address': '::',
+                  'currentAddress': '::'
+         }
+}
+port_result = [{
+         'name': 'CL1-A',
+         'storage_id': '12345',
+         'native_port_id': 'CL1-A',
+         'location': 'CL1-A',
+         'connection_status': 'connected',
+         'health_status': 'normal',
+         'type': 'fc',
+         'logical_type': '',
+         'max_speed': 8589934592,
+         'mac_address': None,
+         'wwn': '50060E80124E3B00',
+         'ipv4': None,
+         'ipv4_mask': None,
+         'ipv6': None
+},
+{
+         'name': 'CL1-B',
+         'storage_id': '12345',
+         'native_port_id': 'CL1-B',
+         'location': 'CL1-B',
+         'connection_status': 'connected',
+         'health_status': 'normal',
+         'type': 'eth',
+         'logical_type': '',
+         'max_speed': 10737418240,
+         'mac_address': None,
+         'wwn': None,
+         'ipv4': '192.168.116.19',
+         'ipv4_mask': '255.255.0.0',
+         'ipv6': None
+}]
 
 
 def create_driver():
@@ -309,3 +536,26 @@ class TestHitachiVspStorStorageDriver(TestCase):
             self.driver.rest_handler.get_token()
         self.assertEqual('Exception from Storage Backend: KART30005-E.',
                          str(exc.exception))
+
+    @mock.patch.object(RestHandler, 'get_controllers')
+    def test_list_controllers(self, mock_controller):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_controller.return_value = GET_ALL_CONTROLLERS
+        controller = HitachiVspDriver(**ACCESS_INFO).list_controllers(context)
+        self.assertEqual(controller, controller_result)
+
+    @mock.patch.object(RestHandler, 'get_disks')
+    def test_list_disks(self, mock_disk):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_disk.return_value = GET_ALL_DISKS
+        disk = HitachiVspDriver(**ACCESS_INFO).list_disks(context)
+        self.assertEqual(disk, disk_result)
+
+    @mock.patch.object(RestHandler, 'get_all_ports')
+    @mock.patch.object(RestHandler, 'get_detail_ports')
+    def test_list_ports(self, mock_detail, mock_all):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_all.return_value = GET_ALL_PORTS
+        mock_detail.return_value = GET_DETAIL_PORT
+        port = HitachiVspDriver(**ACCESS_INFO).list_ports(context)
+        self.assertEqual(port, port_result)
