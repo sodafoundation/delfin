@@ -1082,7 +1082,7 @@ qtree_result = [
         'storage_id': '12345',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'filesystem_1',
-        'path': '/filesystem_1/'
+        'path': '/'
     }
 ]
 GET_ALL_CIFSSHARE = {
@@ -1179,50 +1179,57 @@ share_result = [
         'name': 'fs1',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_2',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
-        'path': '/fs1/',
+        'path': '/',
         'protocol': 'cifs'
     }, {
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_14',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
-        'path': '/fs_boga/',
+        'path': '/',
         'protocol': 'cifs'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_18',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
-        'path': '/fs2/',
+        'path': '/',
         'protocol': 'cifs'
     }, {
         'name': 'fs1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_2',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
-        'path': '/fs1/',
+        'path': '/',
         'protocol': 'nfs'
     }, {
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_14',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
-        'path': '/fs_boga/',
+        'path': '/',
         'protocol': 'nfs'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_18',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
-        'path': '/fs2/',
+        'path': '/',
         'protocol': 'nfs'
     }, {
         'name': 'FS_MULTI1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_19',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_22',
-        'path': '/FS_MULTI1/',
+        'path': '/',
         'protocol': 'nfs'
     }
 ]
@@ -1440,13 +1447,13 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_nfsshares')
     @mock.patch.object(RestHandler, 'get_all_cifsshares')
-    @mock.patch.object(RestHandler, 'get_all_filesystems')
-    def test_list_shares(self, mock_file, mock_cifs, mock_nfs):
+    @mock.patch.object(RestHandler, 'get_all_qtrees')
+    def test_list_shares(self, mock_qtree, mock_cifs, mock_nfs):
         RestHandler.login = mock.Mock(return_value=None)
         mock_cifs.return_value = GET_ALL_CIFSSHARE
-        mock_file.return_value = GET_ALL_FILESYSTEMS
+        mock_qtree.return_value = GET_ALL_QTREE
         mock_nfs.return_value = GET_ALL_NFSSHARE
-        mock_file.return_value = GET_ALL_FILESYSTEMS
+        mock_qtree.return_value = GET_ALL_QTREE
         share = UnityStorDriver(**ACCESS_INFO).list_shares(context)
         self.assertEqual(share, share_result)
 

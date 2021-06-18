@@ -410,15 +410,13 @@ class UnityStorDriver(driver.StorageDriver):
                 qts_entries = qts.get('entries')
                 for qtree in qts_entries:
                     content = qtree.get('content', {})
-                    path = '/%s%s' % (content.get('filesystem').get('id'),
-                                      content.get('path'))
                     qt = {
                         'name': content.get('path'),
                         'storage_id': self.storage_id,
                         'native_qtree_id': content.get('id'),
                         'native_filesystem_id':
                             content.get('filesystem').get('id'),
-                        'path': path
+                        'path': content.get('path')
                     }
                     qt_list.append(qt)
             return qt_list
@@ -426,6 +424,17 @@ class UnityStorDriver(driver.StorageDriver):
             err_msg = "Failed to get qtree metrics from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
+
+    def get_share_qtree(self, path):
+        qtree_id = None
+        qtrees = self.rest_handler.get_all_qtrees()
+        qts_entries = qtrees.get('entries')
+        for qtree in qts_entries:
+            content = qtree.get('content', {})
+            if content.get('path') == path:
+                qtree_id = content.get('id')
+                break
+        return qtree_id
 
     def get_share(self, protocol):
         try:
@@ -437,26 +446,18 @@ class UnityStorDriver(driver.StorageDriver):
                 shares = self.rest_handler.get_all_nfsshares()
                 protocol = constants.ShareProtocol.NFS
             if shares is not None:
-                filesystems = self.rest_handler.get_all_filesystems()
                 share_entries = shares.get('entries')
                 for share in share_entries:
                     content = share.get('content', {})
-                    file_entries = filesystems.get('entries')
-                    file_name = ''
-                    for file in file_entries:
-                        file_content = file.get('content', {})
-                        if file_content.get('id') == content.get(
-                                'filesystem', {}).get('id'):
-                            file_name = file_content.get('name')
-                            break
-                    path = '/%s%s' % (file_name, content.get('path'))
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
                         'native_share_id': content.get('id'),
+                        'native_qtree_id': self.get_share_qtree(
+                            content.get('path')),
                         'native_filesystem_id':
                             content.get('filesystem').get('id'),
-                        'path': path,
+                        'path': content.get('path'),
                         'protocol': protocol
                     }
                     share_list.append(fs)
