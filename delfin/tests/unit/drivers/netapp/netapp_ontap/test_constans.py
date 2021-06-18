@@ -1397,3 +1397,191 @@ Threshold for Disk Limit: 4.88MB\r
          Soft Disk Limit: 4.88MB\r
         Soft Files Limit: 1000\r
 5 entries were displayed."""
+
+NFS_SHARE_INFO = """\r
+                                   Vserver Name: svm4.example.com\r
+                                    Volume Name: svm4examplecom_root\r
+                                 Aggregate Name: aggr1\r
+  List of Aggregates for FlexGroup Constituents: -\r
+                                    Volume Size: 20MB\r
+                             Volume Data Set ID: 1036\r
+                      Volume Master Data Set ID: 2155388532\r
+                                   Volume State: online\r
+                                   Volume Style: flex\r
+                          Extended Volume Style: flexvol\r
+                         Is Cluster-Mode Volume: true\r
+                          Is Constituent Volume: false\r
+                                  Export Policy: default\r
+                                        User ID: -\r
+                                       Group ID: -\r
+                                 Security Style: ntfs\r
+                               UNIX Permissions: ------------\r
+                                  Junction Path: /\r
+                           Junction Path Source: -\r
+                                Junction Active: true\r
+                         Junction Parent Volume: -\r
+                                        Comment:\r
+                                 Available Size: 18.79MB\r
+                                Filesystem Size: 20MB\r
+                        Total User-Visible Size: 19MB\r
+                                      Used Size: 220KB\r
+                                Used Percentage: 6%\r
+           Volume Nearly Full Threshold Percent: 95%\r
+                  Volume Full Threshold Percent: 98%\r
+           Maximum Autosize (for flexvols only): 24MB\r
+                               Minimum Autosize: 20MB\r
+             Autosize Grow Threshold Percentage: 85%\r
+           Autosize Shrink Threshold Percentage: 50%\r
+                                  Autosize Mode: off\r
+            Total Files (for user-visible data): 566\r
+             Files Used (for user-visible data): 104\r
+                      Space Guarantee in Effect: true\r
+                            Space SLO in Effect: true\r
+                                      Space SLO: none\r
+                          Space Guarantee Style: volume\r
+                             Fractional Reserve: 100%\r
+                                    Volume Type: RW\r
+              Snapshot Directory Access Enabled: true\r
+             Space Reserved for Snapshot Copies: 5%\r
+                          Snapshot Reserve Used: 100%\r
+                                Snapshot Policy: default\r
+                                  Creation Time: Sat Mar 13 20:15:43 20\r
+                                       Language: C.UTF-8\r
+                                   Clone Volume: false\r
+                                      Node name: cl-01\r
+                      Clone Parent Vserver Name: -\r
+                        FlexClone Parent Volume: -\r
+                                  NVFAIL Option: off\r
+                          Volume's NVFAIL State: false\r
+        Force NVFAIL on MetroCluster Switchover: off\r
+                      Is File System Size Fixed: false\r
+                     (DEPRECATED)-Extent Option: off\r
+                  Reserved Space for Overwrites: 0B\r
+              Primary Space Management Strategy: volume_grow\r
+                       Read Reallocation Option: off\r
+    Naming Scheme for Automatic Snapshot Copies: create_time\r
+               Inconsistency in the File System: false\r
+                   Is Volume Quiesced (On-Disk): false\r
+                 Is Volume Quiesced (In-Memory): false\r
+      Volume Contains Shared or Compressed Data: false\r
+              Space Saved by Storage Efficiency: 0B\r
+         Percentage Saved by Storage Efficiency: 0%\r
+                   Space Saved by Deduplication: 0B\r
+              Percentage Saved by Deduplication: 0%\r
+                  Space Shared by Deduplication: 0B\r
+                     Space Saved by Compression: 0B\r
+          Percentage Space Saved by Compression: 0%\r
+            Volume Size Used by Snapshot Copies: 1.00MB\r
+                                     Block Type: 64-bit\r
+                               Is Volume Moving: false\r
+                 Flash Pool Caching Eligibility: read-write\r
+  Flash Pool Write Caching Ineligibility Reason: -\r
+                     Managed By Storage Service: -\r
+Create Namespace Mirror Constituents For SnapDiff Use: -\r
+                        Constituent Volume Role: -\r
+                          QoS Policy Group Name: -\r
+                            Caching Policy Name: -\r
+                Is Volume Move in Cutover Phase: false\r
+        Number of Snapshot Copies in the Volume: 8\r
+VBN_BAD may be present in the active filesystem: false\r
+                Is Volume on a hybrid aggregate: false\r
+                       Total Physical Used Size: 1.21MB\r
+                       Physical Used Percentage: 6%\r
+                                  List of Nodes: -\r
+                          Is Volume a FlexGroup: false\r
+                                  SnapLock Type: non-snaplock\r
+                          Vserver DR Protection: -\r
+\r
+                                   Vserver Name: svm4.example.com\r
+                                    Volume Name: vol_svm4_1\r
+                                 Aggregate Name: aggr1\r
+  List of Aggregates for FlexGroup Constituents: -\r
+                                    Volume Size: 1GB\r
+                             Volume Data Set ID: 1037\r
+                      Volume Master Data Set ID: 2155388533\r
+                                   Volume State: online\r
+                                   Volume Style: flex\r
+                          Extended Volume Style: flexvol\r
+                         Is Cluster-Mode Volume: true\r
+                          Is Constituent Volume: false\r
+                                  Export Policy: default\r
+                                        User ID: 0\r
+                                       Group ID: 0\r
+                                 Security Style: mixed\r
+                               UNIX Permissions: ---rwxrwxrwx\r
+                                  Junction Path: /vol_svm4_1\r
+                           Junction Path Source: RW_volume\r
+                                Junction Active: true\r
+                         Junction Parent Volume: svm4examplecom_root\r
+                                        Comment:\r
+                                 Available Size: 972.5MB\r
+                                Filesystem Size: 1GB\r
+                        Total User-Visible Size: 972.8MB\r
+                                      Used Size: 340KB\r
+                                Used Percentage: 5%\r
+           Volume Nearly Full Threshold Percent: 95%\r
+                  Volume Full Threshold Percent: 98%\r
+           Maximum Autosize (for flexvols only): 1.20GB\r
+                               Minimum Autosize: 1GB\r
+             Autosize Grow Threshold Percentage: 85%\r
+           Autosize Shrink Threshold Percentage: 50%\r
+                                  Autosize Mode: off\r
+            Total Files (for user-visible data): 31122\r
+             Files Used (for user-visible data): 97\r
+                      Space Guarantee in Effect: true\r
+                            Space SLO in Effect: true\r
+                                      Space SLO: none\r
+                          Space Guarantee Style: volume\r
+                             Fractional Reserve: 100%\r
+                                    Volume Type: RW\r
+              Snapshot Directory Access Enabled: true\r
+             Space Reserved for Snapshot Copies: 5%\r
+                          Snapshot Reserve Used: 3%\r
+                                Snapshot Policy: default\r
+                                  Creation Time: Sat Mar 13 20:35:56 20\r
+                                       Language: C.UTF-8\r
+                                   Clone Volume: false\r
+                                      Node name: cl-01\r
+                      Clone Parent Vserver Name: -\r
+                        FlexClone Parent Volume: -\r
+                                  NVFAIL Option: off\r
+                          Volume's NVFAIL State: false\r
+        Force NVFAIL on MetroCluster Switchover: off\r
+                      Is File System Size Fixed: false\r
+                     (DEPRECATED)-Extent Option: off\r
+                  Reserved Space for Overwrites: 0B\r
+              Primary Space Management Strategy: volume_grow\r
+                       Read Reallocation Option: off\r
+    Naming Scheme for Automatic Snapshot Copies: create_time\r
+               Inconsistency in the File System: false\r
+                   Is Volume Quiesced (On-Disk): false\r
+                 Is Volume Quiesced (In-Memory): false\r
+      Volume Contains Shared or Compressed Data: false\r
+              Space Saved by Storage Efficiency: 0B\r
+         Percentage Saved by Storage Efficiency: 0%\r
+                   Space Saved by Deduplication: 0B\r
+              Percentage Saved by Deduplication: 0%\r
+                  Space Shared by Deduplication: 0B\r
+                     Space Saved by Compression: 0B\r
+          Percentage Space Saved by Compression: 0%\r
+            Volume Size Used by Snapshot Copies: 1.45MB\r
+                                     Block Type: 64-bit\r
+                               Is Volume Moving: false\r
+                 Flash Pool Caching Eligibility: read-write\r
+  Flash Pool Write Caching Ineligibility Reason: -\r
+                     Managed By Storage Service: -\r
+Create Namespace Mirror Constituents For SnapDiff Use: -\r
+                        Constituent Volume Role: -\r
+                          QoS Policy Group Name: -\r
+                            Caching Policy Name: -\r
+                Is Volume Move in Cutover Phase: false\r
+        Number of Snapshot Copies in the Volume: 8\r
+VBN_BAD may be present in the active filesystem: false\r
+                Is Volume on a hybrid aggregate: false\r
+                       Total Physical Used Size: 1.78MB\r
+                       Physical Used Percentage: 0%\r
+                                  List of Nodes: -\r
+                          Is Volume a FlexGroup: false\r
+                                  SnapLock Type: non-snaplock\r
+                          Vserver DR Protection: -\r
+8 entries were displayed.\r"""

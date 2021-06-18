@@ -753,28 +753,78 @@ class NetAppHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def get_shares(self, storage_id, vserver_name):
-        shares_list = []
-        qtree_list = self.list_qtrees(None)
+    def get_nfs_shares(self, storage_id, qtree_list, protocol_map):
+        try:
+            nfs_info = self.ssh_pool.do_exec(
+                constant.NFS_SHARE_SHOW_COMMAND)
+            nfs_list = []
+            nfs_array = nfs_info.split(constant.FS_SPLIT_STR)
+            fs_map = {}
+            for nfs_share in nfs_array[1:]:
+                Tools.split_value_map(nfs_share, fs_map, split=':')
+                protocol = protocol_map.get(fs_map['Name'])
+                if constants.ShareProtocol.NFS in protocol:
+                    fs_id = fs_map['Name'] + '_' + fs_map['VolumeName']
+                    share_name = \
+                        fs_map['Name'] + '_/vol/' + fs_map['VolumeName']
+                    qt_id = fs_map['Name'] + '_/vol/' + fs_map['VolumeName']
+                    qtree_id = None
+                    for qtree in qtree_list:
+                        if qtree['native_qtree_id'] == qt_id:
+                            qtree_id = qt_id
+                        if fs_id == qtree['native_filesystem_id'] \
+                                and qtree['name'] != "":
+                            qt_share_name = share_name + '/' + qtree['name']
+                            share = {
+                                'name': qt_share_name,
+                                'storage_id': storage_id,
+                                'native_share_id':
+                                    share_name +
+                                    constants.ShareProtocol.NFS,
+                                'native_qtree_id':
+                                    qtree['native_qtree_id'],
+                                'native_filesystem_id':
+                                    qtree['native_filesystem_id'],
+                                'path': qtree['path'],
+                                'protocol': constants.ShareProtocol.NFS
+                            }
+                            nfs_list.append(share)
+                    share = {
+                        'name': share_name,
+                        'storage_id': storage_id,
+                        'native_share_id':
+                            share_name + constants.ShareProtocol.NFS,
+                        'native_qtree_id': qtree_id,
+                        'native_filesystem_id': fs_id,
+                        'path': fs_map['JunctionPath'],
+                        'protocol': constants.ShareProtocol.NFS
+                    }
+                    nfs_list.append(share)
+            return nfs_list
+        except exception.DelfinException as err:
+            err_msg = "Failed to get storage qtrees from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+        except Exception as err:
+            err_msg = "Failed to get storage qtrees from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
 
+    def get_cifs_shares(self, storage_id, vserver_name,
+                        qtree_list, protocol_map):
+        shares_list = []
         share_info = self.ssh_pool.do_exec(
             (constant.CIFS_SHARE_SHOW_DETAIL_COMMAND %
              {'vserver_name': vserver_name}))
         cifs_share_array = share_info.split(
             constant.CIFS_SHARE_SPLIT_STR)
-        protocol_info = self.ssh_pool.do_exec(
-            constant.SHARE_AGREEMENT_SHOW_COMMAND)
-        protocol_map = {}
-        protocol_arr = protocol_info.split('\r\n')
-        for protocol in protocol_arr[1:]:
-            agr_arr = protocol.split()
-            if len(agr_arr) > 1:
-                protocol_map[agr_arr[0]] = agr_arr[1]
         for cifs_share in cifs_share_array[1:]:
             share_map = {}
             Tools.split_value_map(cifs_share, share_map, split=':')
             if 'VolumeName' in share_map.keys() and \
-                share_map['VolumeName'] != '-':
+                    share_map['VolumeName'] != '-':
                 protocol_str = protocol_map.get(
                     share_map[constant.VSERVER_NAME])
                 fs_id = \
@@ -806,14 +856,25 @@ class NetAppHandler(object):
     def list_shares(self, storage_id):
         try:
             shares_list = []
+            qtree_list = self.list_qtrees(None)
+            protocol_info = self.ssh_pool.do_exec(
+                constant.SHARE_AGREEMENT_SHOW_COMMAND)
+            protocol_map = {}
+            protocol_arr = protocol_info.split('\r\n')
+            for protocol in protocol_arr[1:]:
+                agr_arr = protocol.split()
+                if len(agr_arr) > 1:
+                    protocol_map[agr_arr[0]] = agr_arr[1]
             vserver_info = self.ssh_pool.do_exec(
                 constant.VSERVER_SHOW_COMMAND)
             vserver_array = vserver_info.split("\r\n")
             for vserver in vserver_array[3:]:
                 vserver_name = vserver.split()
                 if len(vserver_name) > 1:
-                    shares_list += \
-                        self.get_shares(storage_id, vserver_name[0])
+                    shares_list += self.get_cifs_shares(
+                        storage_id, vserver_name[0], qtree_list, protocol_map)
+            shares_list += self.get_nfs_shares(
+                storage_id, qtree_list, protocol_map)
             return shares_list
         except exception.DelfinException as err:
             err_msg = "Failed to get storage shares from " \
