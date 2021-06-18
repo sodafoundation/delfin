@@ -425,10 +425,9 @@ class UnityStorDriver(driver.StorageDriver):
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
-    def get_share_qtree(self, path):
+    def get_share_qtree(self, path, qtree_list):
         qtree_id = None
-        qtrees = self.rest_handler.get_all_qtrees()
-        qts_entries = qtrees.get('entries')
+        qts_entries = qtree_list.get('entries')
         for qtree in qts_entries:
             content = qtree.get('content', {})
             if content.get('path') == path:
@@ -436,7 +435,7 @@ class UnityStorDriver(driver.StorageDriver):
                 break
         return qtree_id
 
-    def get_share(self, protocol):
+    def get_share(self, protocol, qtree_list):
         try:
             share_list = []
             if protocol == 'cifs':
@@ -454,7 +453,7 @@ class UnityStorDriver(driver.StorageDriver):
                         'storage_id': self.storage_id,
                         'native_share_id': content.get('id'),
                         'native_qtree_id': self.get_share_qtree(
-                            content.get('path')),
+                            content.get('path'), qtree_list),
                         'native_filesystem_id':
                             content.get('filesystem').get('id'),
                         'path': content.get('path'),
@@ -470,8 +469,9 @@ class UnityStorDriver(driver.StorageDriver):
     def list_shares(self, context):
         try:
             share_list = []
-            share_list.extend(self.get_share('cifs'))
-            share_list.extend(self.get_share('nfs'))
+            qtrees = self.rest_handler.get_all_qtrees()
+            share_list.extend(self.get_share('cifs', qtrees))
+            share_list.extend(self.get_share('nfs', qtrees))
             return share_list
         except Exception as err:
             err_msg = "Failed to get shares metrics from Unity: %s"\

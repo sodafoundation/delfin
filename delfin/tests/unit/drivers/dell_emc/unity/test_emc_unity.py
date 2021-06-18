@@ -1453,7 +1453,6 @@ class TestUNITYStorDriver(TestCase):
         mock_cifs.return_value = GET_ALL_CIFSSHARE
         mock_qtree.return_value = GET_ALL_QTREE
         mock_nfs.return_value = GET_ALL_NFSSHARE
-        mock_qtree.return_value = GET_ALL_QTREE
         share = UnityStorDriver(**ACCESS_INFO).list_shares(context)
         self.assertEqual(share, share_result)
 
