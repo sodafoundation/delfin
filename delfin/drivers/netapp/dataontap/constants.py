@@ -62,6 +62,7 @@ CIFS_SHARE_SHOW_DETAIL_COMMAND = "vserver cifs share show -instance" \
 CIFS_SHARE_SPLIT_STR = "  Vserve"
 SHARE_AGREEMENT_SHOW_COMMAND = "vserver show -fields Allowed-protocols"
 VSERVER_SHOW_COMMAND = "vserver show -type data"
+NFS_SHARE_SHOW_COMMAND = "volume show -junction-active true -instance"
 
 STORAGE_VENDOR = "netapp"
 STORAGE_MODEL = "cmodel"
