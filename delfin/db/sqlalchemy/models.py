@@ -310,7 +310,6 @@ class StorageHost(BASE, DelfinBase):
     name = Column(String(255))
     description = Column(String(255))
     os_type = Column(String(255))
-    storage_host_initiators = Column(Text)
     ip_address = Column(String(255))
     status = Column(String(255))
     native_storage_host_id = Column(String(255))
