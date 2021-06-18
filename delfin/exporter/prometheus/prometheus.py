@@ -14,6 +14,7 @@
 import datetime
 import os
 import pytz
+import six
 
 from oslo_config import cfg
 from oslo_log import log
@@ -63,7 +64,9 @@ class PrometheusExporter(object):
                 os.makedirs(directory)
             return True
         except Exception as e:
-            LOG.error('Error while creating metrics directory')
+            msg = six.text_type(e)
+            LOG.error("Error while creating metrics directory. Reason: %s",
+                      msg)
             return False
 
     def set_timestamp_offset_from_utc_ms(self):
@@ -115,20 +118,20 @@ class PrometheusExporter(object):
                 resource_type = labels.get('resource_type')
                 resource_id = labels.get('resource_id')
                 unit = labels.get('unit')
-                type = labels.get('type', 'RAW')
+                m_type = labels.get('type', 'RAW')
                 value_type = labels.get('value_type', 'gauge')
                 prom_labels = (
-                        "storage_id=\"%s\","
-                        "storage_name=\"%s\","
-                        "storage_sn=\"%s\","
-                        "resource_type=\"%s\","
-                        "resource_id=\"%s\","
-                        "type=\"%s\","
-                        "unit=\"%s\","
-                        "value_type=\"%s\"" %
-                        (storage_id, storage_name, storage_sn, resource_type,
-                         resource_id,
-                         type, unit, value_type))
+                    "storage_id=\"%s\","
+                    "storage_name=\"%s\","
+                    "storage_sn=\"%s\","
+                    "resource_type=\"%s\","
+                    "resource_id=\"%s\","
+                    "type=\"%s\","
+                    "unit=\"%s\","
+                    "value_type=\"%s\"" %
+                    (storage_id, storage_name, storage_sn, resource_type,
+                        resource_id,
+                        m_type, unit, value_type))
                 name = labels.get('resource_type') + '_' + name
                 self._write_to_prometheus_format(f, name, labels, prom_labels,
                                                  values)
