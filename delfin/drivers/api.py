@@ -163,10 +163,10 @@ class API(object):
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.get_capabilities(context)
 
-    def list_storage_initiators(self, context, storage_id):
+    def list_storage_host_initiators(self, context, storage_id):
         """List all storage initiators from storage system."""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
-        return driver.list_storage_initiators(context)
+        return driver.list_storage_host_initiators(context)
 
     def list_storage_hosts(self, context, storage_id):
         """List all storage hosts from storage system."""

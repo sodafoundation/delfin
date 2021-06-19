@@ -350,3 +350,75 @@ class TestDriverAPI(TestCase):
 
         self.assertTrue('resource_metrics' in capabilities)
         driver_manager.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_storage_host_initiators')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_storage_host_initiators(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_storage_host_initiators(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_storage_hosts')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_storage_hosts(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_storage_hosts(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_storage_host_groups')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_storage_host_groups(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_storage_host_groups(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_port_groups')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_port_groups(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_port_groups(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_volume_groups')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_volume_groups(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_volume_groups(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()
+
+    @mock.patch.object(FakeStorageDriver, 'list_masking_views')
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
+    def test_list_masking_views(self, driver_manager, mock_fake):
+        driver_manager.return_value = FakeStorageDriver()
+        mock_fake.return_value = []
+        api = API()
+        storage_id = '12345'
+
+        api.list_masking_views(context, storage_id)
+        driver_manager.assert_called_once()
+        mock_fake.assert_called_once()

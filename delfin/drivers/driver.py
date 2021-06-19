@@ -179,10 +179,10 @@ class StorageDriver(object):
         """Get capability of driver"""
         pass
 
-    def list_storage_initiators(self, context):
+    def list_storage_host_initiators(self, context):
         """List all storage initiators from storage system."""
         raise NotImplementedError(
-            "Driver API list_storage_initiators() is not Implemented")
+            "Driver API list_storage_host_initiators() is not Implemented")
 
     def list_storage_hosts(self, context):
         """List all storage hosts from storage system."""
