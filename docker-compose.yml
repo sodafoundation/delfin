@@ -108,6 +108,9 @@ services:
     command: "exporter"
     volumes:
       - ./etc/delfin:/etc/delfin
+      - db_data:/var/lib/delfin
+    ports:
+      - 8195:8195
     restart: always
     environment:
       - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER}:${DELFIN_RABBITMQ_PASS}@${DELFIN_HOST_IP}:5672//
