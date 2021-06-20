@@ -216,8 +216,8 @@ class RestHandler(RestClient):
 
     def get_all_filesystems(self):
         url = '%s?%s' % (RestHandler.REST_FILESYSTEM_URL,
-                         'fields=id,name,health,sizeAllocated,'
-                         'sizeTotal,sizeUsed,isThinEnabled,pool')
+                         'fields=id,name,health,sizeAllocated,accessPolicy,'
+                         'sizeTotal,sizeUsed,isThinEnabled,pool,flrVersion')
         result_json = self.get_rest_info(url)
         return result_json
 

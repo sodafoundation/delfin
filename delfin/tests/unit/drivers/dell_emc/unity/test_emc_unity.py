@@ -763,7 +763,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_1",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 1,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -804,7 +804,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_3",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 2,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -991,9 +991,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'enterprise',
+        'security_mode': 'native'
     }, {
         'name': 'ddd',
         'storage_id': '12345',
@@ -1002,9 +1003,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
-        'worm': 'non_worm'
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
+        'worm': 'compliance',
+        'security_mode': 'native'
     }, {
         'name': 'fs_home',
         'storage_id': '12345',
@@ -1013,9 +1015,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 10737418240,
-        'used_capacity': 283156480,
-        'free_capacity': 10454261760,
-        'worm': 'non_worm'
+        'used_capacity': 1622458368,
+        'free_capacity': 9114959872,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs_boga',
         'storage_id': '12345',
@@ -1024,9 +1027,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
@@ -1035,9 +1039,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'FS_MULTI1',
         'storage_id': '12345',
@@ -1046,9 +1051,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
-        'worm': 'non_worm'
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }
 ]
 GET_ALL_QTREE = {
@@ -1072,11 +1078,11 @@ GET_ALL_QTREE = {
 }
 qtree_result = [
     {
-        'name': 'qtree_1',
+        'name': '/',
         'storage_id': '12345',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'filesystem_1',
-        'path': '/filesystem_1/'
+        'path': '/'
     }
 ]
 GET_ALL_CIFSSHARE = {
@@ -1173,50 +1179,57 @@ share_result = [
         'name': 'fs1',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_2',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
-        'path': '/fs1/',
+        'path': '/',
         'protocol': 'cifs'
     }, {
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_14',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
-        'path': '/fs_boga/',
+        'path': '/',
         'protocol': 'cifs'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_18',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
-        'path': '/fs2/',
+        'path': '/',
         'protocol': 'cifs'
     }, {
         'name': 'fs1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_2',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
-        'path': '/fs1/',
+        'path': '/',
         'protocol': 'nfs'
     }, {
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_14',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
-        'path': '/fs_boga/',
+        'path': '/',
         'protocol': 'nfs'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_18',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
-        'path': '/fs2/',
+        'path': '/',
         'protocol': 'nfs'
     }, {
         'name': 'FS_MULTI1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_19',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_22',
-        'path': '/FS_MULTI1/',
+        'path': '/',
         'protocol': 'nfs'
     }
 ]
@@ -1434,13 +1447,12 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_nfsshares')
     @mock.patch.object(RestHandler, 'get_all_cifsshares')
-    @mock.patch.object(RestHandler, 'get_all_filesystems')
-    def test_list_shares(self, mock_file, mock_cifs, mock_nfs):
+    @mock.patch.object(RestHandler, 'get_all_qtrees')
+    def test_list_shares(self, mock_qtree, mock_cifs, mock_nfs):
         RestHandler.login = mock.Mock(return_value=None)
         mock_cifs.return_value = GET_ALL_CIFSSHARE
-        mock_file.return_value = GET_ALL_FILESYSTEMS
+        mock_qtree.return_value = GET_ALL_QTREE
         mock_nfs.return_value = GET_ALL_NFSSHARE
-        mock_file.return_value = GET_ALL_FILESYSTEMS
         share = UnityStorDriver(**ACCESS_INFO).list_shares(context)
         self.assertEqual(share, share_result)
 
