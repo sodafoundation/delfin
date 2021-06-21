@@ -23,6 +23,7 @@ from delfin import exception
 from delfin.common import constants
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
+from delfin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
@@ -53,6 +54,11 @@ def set_synced_after():
                     storage['sync_status'] -= sync_result
                     db.storage_update(self.context, self.storage_id, storage)
 
+                    if storage['sync_status'] == 0:
+                        # When all resource sync is done,trigger
+                        # building relations from host mapping attributes
+                        task_rpcapi.TaskAPI().build_host_mapping_relations(
+                            self.context, self.storage_id)
         return ret
 
     return _set_synced_after
@@ -608,3 +614,328 @@ class StorageShareTask(StorageResourceTask):
         LOG.info('Remove shares for storage id:{0}'
                  .format(self.storage_id))
         db.share_delete_by_storage(self.context, self.storage_id)
+
+
+class StorageHostInitiatorTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageHostInitiatorTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing storage host initiator for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the storage host initiator list from driver and database
+            storage_host_initiators = self.driver_api \
+                .list_storage_host_initiators(self.context, self.storage_id)
+            db_storage_host_initiators = db.storage_host_initiators_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_host_initiators, db_storage_host_initiators,
+                'native_storage_host_initiator_id')
+
+            LOG.debug('###StorageHostInitiatorTask for {0}:add={1},delete={2},'
+                      'update={3}'.format(self.storage_id,
+                                          len(add_list),
+                                          len(delete_id_list),
+                                          len(update_list)))
+            if delete_id_list:
+                db.storage_host_initiators_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.storage_host_initiators_update(self.context, update_list)
+
+            if add_list:
+                db.storage_host_initiators_create(self.context, add_list)
+
+        except AttributeError as e:
+            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
+        except Exception as e:
+            msg = _('Failed to sync storage host initiators entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing storage host initiators successful!!!")
+
+    def remove(self):
+        LOG.info('Remove storage host initiators for storage id:{0}'
+                 .format(self.storage_id))
+        db.storage_host_initiators_delete_by_storage(self.context,
+                                                     self.storage_id)
+
+
+class StorageHostTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageHostTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing storage hosts for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the storage hosts list from driver and database
+            storage_hosts = self.driver_api.list_storage_hosts(
+                self.context, self.storage_id)
+            db_storage_hosts = db.storage_hosts_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_hosts, db_storage_hosts, 'native_storage_host_id'
+            )
+
+            LOG.debug('###StorageHostTask for {0}:add={1},delete={2},'
+                      'update={3}'.format(self.storage_id,
+                                          len(add_list),
+                                          len(delete_id_list),
+                                          len(update_list)))
+            if delete_id_list:
+                db.storage_hosts_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.storage_hosts_update(self.context, update_list)
+
+            if add_list:
+                db.storage_hosts_create(self.context, add_list)
+
+        except AttributeError as e:
+            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
+        except Exception as e:
+            msg = _('Failed to sync storage hosts entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing storage hosts successful!!!")
+
+    def remove(self):
+        LOG.info('Remove storage hosts for storage id:{0}'
+                 .format(self.storage_id))
+        db.storage_hosts_delete_by_storage(self.context, self.storage_id)
+
+
+class StorageHostGroupTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(StorageHostGroupTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing storage host group for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the storage host group list from driver and database
+            storage_host_groups = self.driver_api \
+                .list_storage_host_groups(self.context, self.storage_id)
+            db_storage_host_groups = db.storage_host_groups_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                storage_host_groups, db_storage_host_groups,
+                'native_storage_host_group_id')
+
+            LOG.debug('###StorageHostGroupTask for {0}:add={1},delete={2},'
+                      'update={3}'.format(self.storage_id,
+                                          len(add_list),
+                                          len(delete_id_list),
+                                          len(update_list)))
+            if delete_id_list:
+                db.storage_host_groups_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.storage_host_groups_update(self.context, update_list)
+
+            if add_list:
+                db.storage_host_groups_create(self.context, add_list)
+
+        except AttributeError as e:
+            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
+        except Exception as e:
+            msg = _('Failed to sync storage host groups entry in DB: {0}'
+                    .format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing storage host groups successful!!!")
+
+    def remove(self):
+        LOG.info('Remove storage host groups for storage id:{0}'
+                 .format(self.storage_id))
+        db.storage_host_groups_delete_by_storage(self.context, self.storage_id)
+
+
+class PortGroupTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(PortGroupTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing port group for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the port groups from driver and database
+            port_groups = self.driver_api \
+                .list_port_groups(self.context, self.storage_id)
+            db_port_groups = db.port_groups_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                port_groups, db_port_groups, 'native_port_group_id')
+
+            LOG.debug('###PortGroupTask for {0}:add={1},delete={2},'
+                      'update={3}'.format(self.storage_id,
+                                          len(add_list),
+                                          len(delete_id_list),
+                                          len(update_list)))
+            if delete_id_list:
+                db.port_groups_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.port_groups_update(self.context, update_list)
+
+            if add_list:
+                db.port_groups_create(self.context, add_list)
+
+        except AttributeError as e:
+            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
+        except Exception as e:
+            msg = _('Failed to sync port groups entry in DB: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing port groups successful!!!")
+
+    def remove(self):
+        LOG.info('Remove port groups for storage id:{0}'
+                 .format(self.storage_id))
+        db.port_groups_delete_by_storage(self.context, self.storage_id)
+
+
+class VolumeGroupTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(VolumeGroupTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing volume group for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the volume groups from driver and database
+            volume_groups = self.driver_api \
+                .list_volume_groups(self.context, self.storage_id)
+            db_volume_groups = db.volume_groups_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                volume_groups, db_volume_groups, 'native_volume_group_id')
+
+            LOG.debug('###VolumeGroupTask for {0}:add={1},delete={2},'
+                      'update={3}'.format(self.storage_id,
+                                          len(add_list),
+                                          len(delete_id_list),
+                                          len(update_list)))
+            if delete_id_list:
+                db.volume_groups_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.volume_groups_update(self.context, update_list)
+
+            if add_list:
+                db.volume_groups_create(self.context, add_list)
+
+        except AttributeError as e:
+            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
+        except Exception as e:
+            msg = _('Failed to sync volume groups entry in DB: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing volume groups successful!!!")
+
+    def remove(self):
+        LOG.info('Remove volume groups for storage id:{0}'
+                 .format(self.storage_id))
+        db.volume_groups_delete_by_storage(self.context, self.storage_id)
+
+
+class MaskingViewTask(StorageResourceTask):
+    def __init__(self, context, storage_id):
+        super(MaskingViewTask, self).__init__(context, storage_id)
+
+    @check_deleted()
+    @set_synced_after()
+    def sync(self):
+        """
+        :return:
+        """
+        LOG.info('Syncing masking view for storage id:{0}'
+                 .format(self.storage_id))
+        try:
+            # collect the masking views from driver and database
+            masking_views = self.driver_api \
+                .list_masking_views(self.context, self.storage_id)
+            db_masking_views = db.masking_views_get_all(
+                self.context, filters={"storage_id": self.storage_id})
+
+            add_list, update_list, delete_id_list = self._classify_resources(
+                masking_views, db_masking_views, 'native_masking_view_id')
+
+            LOG.debug('###MaskingViewTask for {0}:add={1},delete={2},'
+                      'update={3}'.format(self.storage_id,
+                                          len(add_list),
+                                          len(delete_id_list),
+                                          len(update_list)))
+            if delete_id_list:
+                db.masking_views_delete(self.context, delete_id_list)
+
+            if update_list:
+                db.masking_views_update(self.context, update_list)
+
+            if add_list:
+                db.masking_views_create(self.context, add_list)
+
+        except AttributeError as e:
+            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
+        except Exception as e:
+            msg = _('Failed to sync masking views entry in DB: {0}'.format(e))
+            LOG.error(msg)
+        else:
+            LOG.info("Syncing masking views successful!!!")
+
+    def remove(self):
+        LOG.info('Remove masking views for storage id:{0}'
+                 .format(self.storage_id))
+        db.masking_views_delete_by_storage(self.context, self.storage_id)
