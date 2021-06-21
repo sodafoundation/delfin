@@ -171,7 +171,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.alert_source_get')
     def test_delete_v3_config_success(self, mock_alert_source_get,
                                       mock_alert_source_delete):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_delete.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -185,7 +185,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.alert_source_get',
                 fakes.alert_source_get_exception)
     def test_delete_v3_config_failure(self, mock_alert_source_delete):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_delete.return_value = {}
 

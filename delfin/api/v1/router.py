@@ -76,7 +76,7 @@ class APIRouter(common.APIRouter):
                        controller=self.resources['alert_sources'],
                        action="show",
                        conditions={"method": ["GET"]})
-        mapper.connect("storages", "/storages/{id}/alert-source",
+        mapper.connect("storages", "/storages/{id}/snmp-config",
                        controller=self.resources['alert_sources'],
                        action="delete",
                        conditions={"method": ["DELETE"]})
