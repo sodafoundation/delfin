@@ -176,8 +176,8 @@ OCEANSTOR_METRICS = {
     'writeCacheHitRatio': '95',
 }
 
-US_TO_MS_LIST = [
-    'responseTime',
+CONVERT_TO_MILLI_SECOND_LIST = [
+    'responseTime'
 ]
 
 IOPS_DESCRIPTION = {

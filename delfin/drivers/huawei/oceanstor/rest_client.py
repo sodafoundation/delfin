@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import datetime
 import json
 
 import requests
@@ -34,7 +33,7 @@ LOG = logging.getLogger(__name__)
 
 
 def _get_timestamp_values(metric, value):
-    timestamp = int(float(datetime.datetime.now().timestamp()) * 1000)
+    timestamp = int(metric['CMO_STATISTIC_TIMESTAMP']) * 1000
     return {timestamp: value}
 
 
@@ -436,6 +435,7 @@ class RestClient(object):
     def _get_metrics(self, resource_type, resource_id, metrics_ids):
         url = "/performace_statistic/cur_statistic_data"
         params = "CMO_STATISTIC_UUID={0}:{1}&CMO_STATISTIC_DATA_ID_LIST={2}&"\
+                 "timeConversion=0&"\
             .format(resource_type, resource_id, metrics_ids)
         return self.paginated_call(url, None, "GET",
                                    params=params, log_filter_flag=True)
@@ -465,7 +465,7 @@ class RestClient(object):
                 data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
                 for index, key in enumerate(select_metrics):
                     data = int(data_list[index])
-                    if key in consts.US_TO_MS_LIST:
+                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
                         data = data * 1000
                     labels = {
                         'storage_id': storage_id,
@@ -493,7 +493,7 @@ class RestClient(object):
                 data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
                 for index, key in enumerate(select_metrics):
                     data = int(data_list[index])
-                    if key in consts.US_TO_MS_LIST:
+                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
                         data = data * 1000
                     labels = {
                         'storage_id': storage_id,
@@ -521,7 +521,7 @@ class RestClient(object):
                 data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
                 for index, key in enumerate(select_metrics):
                     data = int(data_list[index])
-                    if key in consts.US_TO_MS_LIST:
+                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
                         data = data * 1000
                     labels = {
                         'storage_id': storage_id,
@@ -552,7 +552,7 @@ class RestClient(object):
                 data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
                 for index, key in enumerate(select_metrics):
                     data = int(data_list[index])
-                    if key in consts.US_TO_MS_LIST:
+                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
                         data = data * 1000
                     labels = {
                         'storage_id': storage_id,
@@ -580,7 +580,7 @@ class RestClient(object):
                 data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
                 for index, key in enumerate(select_metrics):
                     data = int(data_list[index])
-                    if key in consts.US_TO_MS_LIST:
+                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
                         data = data * 1000
                     labels = {
                         'storage_id': storage_id,
