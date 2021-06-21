@@ -11,19 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import datetime
+import os
+import pytz
+import six
 
 from oslo_config import cfg
+from oslo_log import log
+from tzlocal import get_localzone
+
+LOG = log.getLogger(__name__)
 
 grp = cfg.OptGroup('PROMETHEUS_EXPORTER')
-
+METRICS_CACHE_DIR = '/var/lib/delfin/metrics'
 prometheus_opts = [
-    cfg.StrOpt('metrics_cache_file', default='/var/lib/delfin/delfin_exporter'
-                                             '.txt',
-               help='The temp cache file used for persisting metrics'),
+    cfg.StrOpt('metrics_dir', default=METRICS_CACHE_DIR,
+
+               help='The temp directory to keep incoming metrics'),
+    cfg.StrOpt('timezone',
+               default='local',
+               help='time zone of prometheus server '
+               ),
 ]
 cfg.CONF.register_opts(prometheus_opts, group=grp)
-
 
 """"
 The metrics received from driver is should be in this format
@@ -41,26 +51,63 @@ storage_metrics = [Metric(name='response_time',
      values={1600998817585: 20.264160223426305})]
 """
 
-unit_of_metric = {'response_time': 'ms', 'throughput': 'IOPS',
-                  'read_throughput': 'IOPS', 'write_throughput': 'IOPS',
-                  'bandwidth': 'MBps', 'read_bandwidth': 'MBps',
-                  'write_bandwidth': 'MBps'
-                  }
-
 
 class PrometheusExporter(object):
 
+    def __init__(self):
+        self.timestamp_offset_ms = 0
+        self.metrics_dir = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir
+
+    def check_metrics_dir_exists(self, directory):
+        try:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            return True
+        except Exception as e:
+            msg = six.text_type(e)
+            LOG.error("Error while creating metrics directory. Reason: %s",
+                      msg)
+            return False
+
+    def set_timestamp_offset_from_utc_ms(self):
+        """Set timestamp offset from utc required for all metrics"""
+        try:
+            timez = get_localzone()
+            if cfg.CONF.PROMETHEUS_EXPORTER.timezone != 'local':
+                timez = pytz.timezone(cfg.CONF.PROMETHEUS_EXPORTER.timezone)
+            timez.utcoffset(datetime.datetime.now())
+            return int(timez.utcoffset(
+                datetime.datetime.now()).total_seconds() * 1000)
+        except Exception:
+            LOG.error('Error while setting timestamp'
+                      ' offset for prometheus exporter')
+            # return no offset in case of an error
+            return 0
+
     # Print metrics in Prometheus format.
-    def _write_to_prometheus_format(self, f, metric, labels, values):
-        f.write("# HELP storage_%s storage metric for %s\n" % (metric, metric))
-        f.write("# TYPE storage_%s gauge\n" % metric)
+    def _write_to_prometheus_format(self, f, metric,
+                                    labels, prom_labels, values):
+        f.write("# HELP %s  metric for resource %s and instance %s\n"
+                % (metric, labels.get('resource_type'),
+                   labels.get('resource_id')))
+        f.write("# TYPE %s gauge\n" % metric)
 
         for timestamp, value in values.items():
-            f.write("storage_%s{%s} %f %d\n" % (metric, labels,
-                                                value, timestamp))
+            timestamp += self.timestamp_offset_ms
+            f.write("%s{%s} %f %d\n" % (metric, prom_labels,
+                                        value, timestamp))
 
     def push_to_prometheus(self, storage_metrics):
-        with open(cfg.CONF.PROMETHEUS_EXPORTER.metrics_cache_file, "a+") as f:
+        self.timestamp_offset_ms = self.set_timestamp_offset_from_utc_ms()
+        if not self.check_metrics_dir_exists(self.metrics_dir):
+            return
+        time_stamp = str(datetime.datetime.now().timestamp())
+        temp_file_name = os.path.join(self.metrics_dir,
+                                      time_stamp + ".prom.temp")
+        actual_file_name = os.path.join(self.metrics_dir,
+                                        time_stamp + ".prom")
+        # make a temp  file with current timestamp
+        with open(temp_file_name, "w") as f:
             for metric in storage_metrics:
                 name = metric.name
                 labels = metric.labels
@@ -69,14 +116,28 @@ class PrometheusExporter(object):
                 storage_name = labels.get('name')
                 storage_sn = labels.get('serial_number')
                 resource_type = labels.get('resource_type')
-                unit = unit_of_metric.get(name)
+                resource_id = labels.get('resource_id')
+                unit = labels.get('unit')
+                m_type = labels.get('type', 'RAW')
                 value_type = labels.get('value_type', 'gauge')
-                storage_labels = (
-                    "storage_id=\"%s\",storage_name=\"%s\",storage_sn=\"%s\","
-                    "resource_type=\"%s\", "
-                    "type=\"%s\",unit=\"%s\",value_type=\"%s\"" %
+                prom_labels = (
+                    "storage_id=\"%s\","
+                    "storage_name=\"%s\","
+                    "storage_sn=\"%s\","
+                    "resource_type=\"%s\","
+                    "resource_id=\"%s\","
+                    "type=\"%s\","
+                    "unit=\"%s\","
+                    "value_type=\"%s\"" %
                     (storage_id, storage_name, storage_sn, resource_type,
-                     'RAW', unit, value_type))
-
-                self._write_to_prometheus_format(f, name, storage_labels,
+                        resource_id,
+                        m_type, unit, value_type))
+                name = labels.get('resource_type') + '_' + name
+                self._write_to_prometheus_format(f, name, labels, prom_labels,
                                                  values)
+        # this is done so that the exporter server never see an incomplete file
+        try:
+            f.close()
+            os.renames(temp_file_name, actual_file_name)
+        except Exception:
+            LOG.error('Error while renaming the temporary metric file')
