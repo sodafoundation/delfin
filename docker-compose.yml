@@ -81,6 +81,7 @@ services:
     volumes:
       - ./etc/delfin:/etc/delfin
       - db_data:/var/lib/delfin
+      - metrics_dir:${DELFIN_METRICS_DIR}
     restart: always
     environment:
       - OS_COORDINATION__BACKEND_SERVER=${DELFIN_HOST_IP}:6379
@@ -108,7 +109,7 @@ services:
     command: "exporter"
     volumes:
       - ./etc/delfin:/etc/delfin
-      - db_data:/var/lib/delfin
+      - metrics_dir:${DELFIN_METRICS_DIR}
     ports:
       - 8195:8195
     restart: always
@@ -119,3 +120,4 @@ services:
 
 volumes:
   db_data: {}
+  metrics_dir: {}
