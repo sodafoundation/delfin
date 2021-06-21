@@ -509,7 +509,7 @@ class FakeStorageDriver(driver.StorageDriver):
         for i in range(resource_count):
             labels = {'storage_id': storage_id,
                       'resource_type': resource_type,
-                      'resource_id': resource_type + str(i),
+                      'resource_id': resource_type + '_' + str(i),
                       'type': 'RAW'}
             fake_metrics = self._get_random_performance(metric_list,
                                                         start_time, end_time)
