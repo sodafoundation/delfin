@@ -21,7 +21,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
 
-from delfin import exception
+from delfin import exception, db
 from delfin.common import constants
 from delfin.drivers import driver
 
@@ -63,11 +63,11 @@ MINIMUM_SAMPLE_DURATION_IN_MS = 5 * 1000
 # count of instances for each resource type
 RESOURCE_COUNT_DICT = {
     "storage": 1,
-    "storagePool": 10,
-    "volume": 1000,
-    "port": 10,
-    "controller": 4,
-    "disk": 10,
+    "storagePool": MAX_POOL,
+    "volume": MAX_VOLUME,
+    "port": MAX_PORTS,
+    "controller": MAX_CONTROLLERS,
+    "disk": MAX_DISK,
 }
 
 
@@ -125,6 +125,10 @@ class FakeStorageDriver(driver.StorageDriver):
     def get_storage(self, context):
         # Do something here
         sn = six.text_type(uuidutils.generate_uuid())
+        # get sn for already registered storage from DB
+        storage = db.storage_get(context, self.storage_id)
+        if storage:
+            sn = storage['serial_number']
         total, used, free = self._get_random_capacity()
         raw = random.randint(2000, 3000)
         subscribed = random.randint(3000, 4000)
@@ -153,9 +157,9 @@ class FakeStorageDriver(driver.StorageDriver):
         for idx in range(rd_pools_count):
             total, used, free = self._get_random_capacity()
             p = {
-                "name": "fake_pool_" + str(idx),
+                "name": "storagePool_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_storage_pool_id": "fake_original_id_" + str(idx),
+                "native_storage_pool_id": "storagePool_" + str(idx),
                 "description": "Fake Pool",
                 "status": "normal",
                 "total_capacity": total,
@@ -192,9 +196,9 @@ class FakeStorageDriver(driver.StorageDriver):
             sts = list(constants.ControllerStatus.ALL)
             sts_len = len(constants.ControllerStatus.ALL) - 1
             c = {
-                "name": "fake_ctrl_" + str(idx),
+                "name": "controller_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_controller_id": "fake_original_id_" + str(idx),
+                "native_controller_id": "controller_" + str(idx),
                 "location": "loc_" + str(random.randint(0, 99)),
                 "status": sts[random.randint(0, sts_len)],
                 "memory_size": total,
@@ -220,9 +224,9 @@ class FakeStorageDriver(driver.StorageDriver):
             logic_type = list(constants.PortLogicalType.ALL)
             logic_type_len = len(constants.PortLogicalType.ALL) - 1
             c = {
-                "name": "fake_port_" + str(idx),
+                "name": "port_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_port_id": "fake_original_id_" + str(idx),
+                "native_port_id": "port_" + str(idx),
                 "location": "location_" + str(random.randint(0, 99)),
                 "connection_status": conn_sts[
                     random.randint(0, conn_sts_len)],
@@ -260,9 +264,9 @@ class FakeStorageDriver(driver.StorageDriver):
             logic_type = list(constants.DiskLogicalType.ALL)
             logic_type_len = len(constants.DiskLogicalType.ALL) - 1
             c = {
-                "name": "fake_disk_" + str(idx),
+                "name": "disk_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_disk_id": "fake_original_id_" + str(idx),
+                "native_disk_id": "disk_" + str(idx),
                 "serial_number": "serial_" + str(random.randint(0, 9999)),
                 "manufacturer": manufacturer[random.randint(0, 4)],
                 "model": "model_" + str(random.randint(0, 9999)),
@@ -295,12 +299,12 @@ class FakeStorageDriver(driver.StorageDriver):
             hlimit = random.randint(max_cap * 8000, max_cap * 9000)
             user_group = ['usr_', 'grp_']
             q = {
-                "native_quota_id": "fake_original_id_" + str(idx),
+                "native_quota_id": "quota_" + str(idx),
                 "type": qtype[random.randint(0, qtype_len)],
                 "storage_id": self.storage_id,
-                "native_filesystem_id": "fake_original_id_"
+                "native_filesystem_id": "quota_"
                                         + str(random.randint(0, 99)),
-                "native_qtree_id": "fake_original_id_"
+                "native_qtree_id": "qtree_"
                                    + str(random.randint(0, 99)),
                 "capacity_hard_limit": hlimit,
                 "capacity_soft_limit": slimit,
@@ -331,10 +335,10 @@ class FakeStorageDriver(driver.StorageDriver):
             security = list(constants.NASSecurityMode.ALL)
             security_len = len(constants.NASSecurityMode.ALL) - 1
             f = {
-                "name": "fake_filesystem_" + str(idx),
+                "name": "filesystem_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_filesystem_id": "fake_original_id_" + str(idx),
-                "native_pool_id": "fake_pool_id_" + str(idx),
+                "native_filesystem_id": "filesystem_" + str(idx),
+                "native_pool_id": "storagePool_" + str(idx),
                 "status": sts[random.randint(0, sts_len)],
                 "type": alloc_type[random.randint(0, alloc_type_len)],
                 "security_mode": security[random.randint(0, security_len)],
@@ -358,10 +362,10 @@ class FakeStorageDriver(driver.StorageDriver):
             security_len = len(constants.NASSecurityMode.ALL) - 1
 
             t = {
-                "name": "fake_qtree_" + str(idx),
+                "name": "qtree_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_qtree_id": "fake_original_id_" + str(idx),
-                "native_filesystem_id": "fake_filesystem_id_"
+                "native_qtree_id": "qtree_" + str(idx),
+                "native_filesystem_id": "filesystem_"
                                         + str(random.randint(0, 99)),
                 "security_mode": security[random.randint(0, security_len)],
                 "path": "/path/qtree_" + str(random.randint(0, 99)),
@@ -379,12 +383,12 @@ class FakeStorageDriver(driver.StorageDriver):
             pro = list(constants.ShareProtocol.ALL)
             pro_len = len(constants.ShareProtocol.ALL) - 1
             c = {
-                "name": "fake_share_" + str(idx),
+                "name": "share_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_share_id": "fake_original_id_" + str(idx),
-                "native_filesystem_id": "fake_filesystem_id_"
+                "native_share_id": "share_" + str(idx),
+                "native_filesystem_id": "filesystem_"
                                         + str(random.randint(0, 99)),
-                "native_qtree_id": "fake_qtree_id_"
+                "native_qtree_id": "qtree_"
                                    + str(random.randint(0, 99)),
                 "protocol": pro[random.randint(0, pro_len)],
                 "path": "/path/share_" + str(random.randint(0, 99)),
@@ -464,11 +468,11 @@ class FakeStorageDriver(driver.StorageDriver):
         for i in range(start, end):
             total, used, free = self._get_random_capacity()
             v = {
-                "name": "fake_vol_" + str(i),
+                "name": "volume" + str(i),
                 "storage_id": self.storage_id,
                 "description": "Fake Volume",
                 "status": "normal",
-                "native_volume_id": "fake_original_id_" + str(i),
+                "native_volume_id": "volume_" + str(i),
                 "wwn": "fake_wwn_" + str(i),
                 "total_capacity": total,
                 "used_capacity": used,
