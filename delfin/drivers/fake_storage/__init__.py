@@ -124,11 +124,17 @@ class FakeStorageDriver(driver.StorageDriver):
     @wait_random(MIN_WAIT, MAX_WAIT)
     def get_storage(self, context):
         # Do something here
+
         sn = six.text_type(uuidutils.generate_uuid())
-        # get sn for already registered storage from DB
-        storage = db.storage_get(context, self.storage_id)
-        if storage:
-            sn = storage['serial_number']
+        try:
+            # use existing sn if already registered storage
+            storage = db.storage_get(context, self.storage_id)
+            if storage:
+                sn = storage['serial_number']
+        except exception.StorageNotFound:
+            LOG.debug('Registering new storage')
+        except Exception:
+            LOG.info('Error while retrieving storage from DB')
         total, used, free = self._get_random_capacity()
         raw = random.randint(2000, 3000)
         subscribed = random.randint(3000, 4000)
