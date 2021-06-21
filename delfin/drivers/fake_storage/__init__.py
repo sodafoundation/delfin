@@ -220,9 +220,9 @@ class FakeStorageDriver(driver.StorageDriver):
             logic_type = list(constants.PortLogicalType.ALL)
             logic_type_len = len(constants.PortLogicalType.ALL) - 1
             c = {
-                "name": "fake_port_" + str(idx),
+                "name": "port_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_port_id": "native_port_" + str(idx),
+                "native_port_id": "port_" + str(idx),
                 "location": "location_" + str(random.randint(0, 99)),
                 "connection_status": conn_sts[
                     random.randint(0, conn_sts_len)],
@@ -464,11 +464,11 @@ class FakeStorageDriver(driver.StorageDriver):
         for i in range(start, end):
             total, used, free = self._get_random_capacity()
             v = {
-                "name": "fake_vol_" + str(i),
+                "name": "volume_" + str(i),
                 "storage_id": self.storage_id,
                 "description": "Fake Volume",
                 "status": "normal",
-                "native_volume_id": "native_volume_" + str(i),
+                "native_volume_id": "volume_" + str(i),
                 "wwn": "fake_wwn_" + str(i),
                 "total_capacity": total,
                 "used_capacity": used,
@@ -564,14 +564,15 @@ class FakeStorageDriver(driver.StorageDriver):
         storage_host_initiators_list = []
         for idx in range(rd_storage_host_initiators_count):
             f = {
-                "name": "fake_storage_host_initiator_" + str(idx),
-                "description": "fake_storage_host_initiator_" + str(idx),
+                "name": "storage_host_initiator_" + str(idx),
+                "description": "storage_host_initiator_" + str(idx),
+                "alias": "storage_host_initiator_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_storage_host_initiator_id":
-                    "native_storage_host_initiator_" + str(idx),
+                    "storage_host_initiator_" + str(idx),
                 "wwn": "wwn_" + str(idx),
                 "status": "Normal",
-                "native_storage_host_id": "native_storage_host_" + str(idx),
+                "native_storage_host_id": "storage_host_" + str(idx),
             }
             storage_host_initiators_list.append(f)
         return storage_host_initiators_list
@@ -584,10 +585,10 @@ class FakeStorageDriver(driver.StorageDriver):
         storage_host_list = []
         for idx in range(rd_storage_hosts_count):
             f = {
-                "name": "fake_storage_host_" + str(idx),
-                "description": "fake_storage_host_" + str(idx),
+                "name": "storage_host_" + str(idx),
+                "description": "storage_host_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_storage_host_id": "native_storage_host_" + str(idx),
+                "native_storage_host_id": "storage_host_" + str(idx),
                 "os_type": "linux",
                 "status": "Normal",
                 "ip_address": "1.2.3." + str(idx)
@@ -603,12 +604,11 @@ class FakeStorageDriver(driver.StorageDriver):
         storage_host_grp_list = []
         for idx in range(rd_storage_host_groups_count):
             f = {
-                "name": "fake_storage_host_group_" + str(idx),
-                "description": "fake_storage_host_group_" + str(idx),
+                "name": "storage_host_group_" + str(idx),
+                "description": "storage_host_group_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_storage_host_group_id": "native_storage_host_group_"
+                "native_storage_host_group_id": "storage_host_group_"
                                                 + str(idx),
-                "storage_hosts": ""
             }
             storage_host_grp_list.append(f)
         return storage_host_grp_list
@@ -620,11 +620,10 @@ class FakeStorageDriver(driver.StorageDriver):
         port_grp_list = []
         for idx in range(rd_port_groups_count):
             f = {
-                "name": "fake_port_group_" + str(idx),
-                "description": "fake_port_group_" + str(idx),
+                "name": "port_group_" + str(idx),
+                "description": "port_group_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_port_group_id": "native_port_group_" + str(idx),
-                "ports": ""
+                "native_port_group_id": "port_group_" + str(idx),
             }
 
             port_grp_list.append(f)
@@ -638,11 +637,10 @@ class FakeStorageDriver(driver.StorageDriver):
         volume_grp_list = []
         for idx in range(rd_volume_groups_count):
             f = {
-                "name": "fake_volume_group_" + str(idx),
-                "description": "fake_volume_group_" + str(idx),
+                "name": "volume_group_" + str(idx),
+                "description": "volume_group_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_volume_group_id": "native_volume_group_" + str(idx),
-                "volumes": ""
+                "native_volume_group_id": "volume_group_" + str(idx),
             }
             volume_grp_list.append(f)
         return volume_grp_list
@@ -650,18 +648,18 @@ class FakeStorageDriver(driver.StorageDriver):
     def list_masking_views(self, ctx):
         rd_masking_views_count = random.randint(MIN_MASKING_VIEWS,
                                                 MAX_MASKING_VIEWS)
-        LOG.info("###########fake_masking_views for %s: %d"
+        LOG.info("##########fake_masking_views for %s: %d"
                  % (self.storage_id, rd_masking_views_count))
         masking_view_list = []
         for idx in range(rd_masking_views_count):
             f = {
-                "name": "fake_masking_view_" + str(idx),
-                "description": "fake_masking_view_" + str(idx),
+                "name": "masking_view_" + str(idx),
+                "description": "masking_view_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_masking_view_id": "native_masking_view_" + str(idx),
-                "native_storage_host_id": "native_storage_host_" + str(idx),
-                "volumes": "native_volume_" + str(idx),
-                "ports": "native_port_" + str(idx)
+                "native_masking_view_id": "masking_view_" + str(idx),
+                "native_storage_host_id": "storage_host_" + str(idx),
+                "volumes": "volume_" + str(idx),
+                "ports": "port_" + str(idx)
             }
             masking_view_list.append(f)
         return masking_view_list
