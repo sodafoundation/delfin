@@ -3359,7 +3359,8 @@ components:
                 authPriv is set as security_level
             host:
               type: string
-              example: 10.0.0.1
+              description: All alert source ips of the device
+              example: 10.0.0.1,127.0.0.1
             context_name:
               type: string
               description: Context name of the alert source

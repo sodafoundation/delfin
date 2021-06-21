@@ -177,16 +177,10 @@ class AlertSourceController(wsgi.Controller):
 
     def show_all(self, req):
         """Show all snmp configs."""
-        all_snmp_configs = []
         ctx = req.environ['delfin.context']
         snmp_configs = db.alert_source_get_all(ctx)
-        for snmp_config in snmp_configs:
-            hosts = snmp_config['host'].split(',')
-            for host in hosts:
-                temp_snmp_config = copy.deepcopy(snmp_config)
-                temp_snmp_config['host'] = host
-                all_snmp_configs.append(temp_snmp_config)
-        return alert_view.show_all_snmp_configs(all_snmp_configs)
+
+        return alert_view.show_all_snmp_configs(snmp_configs)
 
 
 def create_resource():
