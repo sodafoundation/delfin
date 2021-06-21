@@ -431,7 +431,7 @@ paths:
     get:
       tags:
         - Storages
-      description: Get all access info of a registered storage backend
+      description: Get access info of all registered storages
       operationId: GetAllStorageAccessInfos
       responses:
         '200':
