@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
 from oslo_log import log
 from pyasn1.type.univ import OctetString
 
@@ -99,7 +98,7 @@ class AlertSourceController(wsgi.Controller):
                       "security_level are required."
                 raise exception.InvalidInput(msg)
 
-            if security_level == constants.SecurityLevel.AUTHNOPRIV \
+            if security_level == constants.SecurityLevel.AUTHNOPRIV\
                     or security_level == constants.SecurityLevel.AUTHPRIV:
                 auth_protocol = alert_source.get('auth_protocol')
                 auth_key = alert_source.get('auth_key')
