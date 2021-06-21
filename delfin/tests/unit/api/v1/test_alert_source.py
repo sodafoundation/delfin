@@ -38,7 +38,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.alert_source_get')
     def test_put_v3_authpriv_config_create_success(self, mock_alert_source_get,
                                                    mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
                                  'host': '127.0.0.1',
@@ -72,7 +72,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
                                                        mock_alert_source_get,
                                                        mock_alert_source_update
                                                        ):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = fakes. \
             fake_v3_alert_source_noauth_nopriv()
@@ -108,7 +108,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     def test_put_v3_config_authnopriv_create_success(self,
                                                      mock_alert_source_get,
                                                      mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = fakes. \
             fake_v3_alert_source_auth_nopriv()
@@ -142,7 +142,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.alert_source_get')
     def test_put_v2_config_success(self, mock_alert_source_get,
                                    mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         return_v2_alert_source = fakes.fake_v2_alert_source()
         return_v2_alert_source['community_string'] = cryptor.encode(
@@ -201,7 +201,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.storage_get', mock.Mock())
     @mock.patch('delfin.db.alert_source_get')
     def test_show_v3_config(self, mock_alert_source_get):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
         expected_alert_source = {'storage_id': 'abcd-1234-5678',
@@ -229,7 +229,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     def test_put_v3_authpriv_no_priv_key(self,
                                          mock_alert_source_get,
                                          mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -251,7 +251,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     def test_put_v3_authpriv_no_priv_protocol(self,
                                               mock_alert_source_get,
                                               mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -273,7 +273,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     def test_put_v3_authnopriv_no_auth_protocol(self,
                                                 mock_alert_source_get,
                                                 mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -295,7 +295,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     def test_put_v3_authnopriv_no_auth_key(self,
                                            mock_alert_source_get,
                                            mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -316,7 +316,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.alert_source_get')
     def test_put_without_username(self, mock_alert_source_get,
                                   mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -338,7 +338,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.alert_source_get')
     def test_put_without_engine_id(self, mock_alert_source_get,
                                    mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v3_alert_source()
@@ -360,7 +360,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     @mock.patch('delfin.db.alert_source_get')
     def test_put_without_community_str(self, mock_alert_source_get,
                                        mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = {}
         mock_alert_source_get.return_value = fakes.fake_v2_alert_source()
@@ -385,7 +385,7 @@ class AlertSourceControllerTestCase(unittest.TestCase):
     def test_put_v3_snmp_validation_success(self,
                                             mock_alert_source_get,
                                             mock_alert_source_update):
-        req = fakes.HTTPRequest.blank('/storages/fake_id/alert-source')
+        req = fakes.HTTPRequest.blank('/storages/fake_id/snmp-config')
         fake_storage_id = 'abcd-1234-5678'
         mock_alert_source_update.return_value = fakes. \
             fake_v3_alert_source_auth_nopriv()
@@ -412,4 +412,29 @@ class AlertSourceControllerTestCase(unittest.TestCase):
 
         output_alert_source = alert_controller_inst.put(req, fake_storage_id,
                                                         body=body)
+        self.assertDictEqual(expected_alert_source, output_alert_source)
+
+    @mock.patch('delfin.db.alert_source_get_all')
+    def test_show_all_snmp_configs(self, mock_alert_source_get_all):
+        req = fakes.HTTPRequest.blank('/storages/snmp-configs')
+        mock_alert_source_get_all.return_value = fakes.fake_all_snmp_configs()
+        expected_alert_source = {
+            'snmp_configs': [{'storage_id': 'abcd-1234-5678',
+                              'host': '127.0.0.1',
+                              'version': 'snmpv3',
+                              'engine_id': '800000d30300000e112245',
+                              'security_level': None,
+                              'username': 'test1',
+                              'auth_protocol': 'HMACMD5',
+                              'privacy_protocol': 'DES',
+                              'port': 161,
+                              'context_name': "",
+                              'retry_num': 1,
+                              'expiration': 1,
+                              "created_at": '2020-06-15T09:50:31.698956',
+                              "updated_at": '2020-06-15T09:50:31.698956'
+                              }]
+        }
+        alert_controller_inst = self._get_alert_controller()
+        output_alert_source = alert_controller_inst.show_all(req)
         self.assertDictEqual(expected_alert_source, output_alert_source)
