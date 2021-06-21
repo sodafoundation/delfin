@@ -474,7 +474,7 @@ class FakeStorageDriver(driver.StorageDriver):
         for i in range(start, end):
             total, used, free = self._get_random_capacity()
             v = {
-                "name": "volume" + str(i),
+                "name": "volume_" + str(i),
                 "storage_id": self.storage_id,
                 "description": "Fake Volume",
                 "status": "normal",
