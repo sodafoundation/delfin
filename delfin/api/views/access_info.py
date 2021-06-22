@@ -23,3 +23,10 @@ class ViewBuilder(object):
             if access_info.get(access):
                 access_info[access].pop('password', None)
         return access_info_dict
+
+    def show_all(self, access_infos):
+        infos = []
+        for access_info in access_infos:
+            access_info_dict = self.show(access_info)
+            infos.append(access_info_dict)
+        return dict(access_infos=infos)
