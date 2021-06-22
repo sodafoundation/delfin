@@ -174,6 +174,13 @@ class AlertSourceController(wsgi.Controller):
 
         return alert_source
 
+    def show_all(self, req):
+        """Show all snmp configs."""
+        ctx = req.environ['delfin.context']
+        snmp_configs = db.alert_source_get_all(ctx)
+
+        return alert_view.show_all_snmp_configs(snmp_configs)
+
 
 def create_resource():
     return wsgi.Resource(AlertSourceController())

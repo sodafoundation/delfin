@@ -427,6 +427,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/access-infos':
+    get:
+      tags:
+        - Storages
+      description: Get access info of all registered storages
+      operationId: GetAllStorageAccessInfos
+      responses:
+        '200':
+          description: Storage Access-info  available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageAccessInfosResponse'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
   /v1/storage-pools:
     get:
       tags:
@@ -1948,10 +1979,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/{storage_id}/alert-source':
+  '/v1/storages/{storage_id}/snmp-config':
     get:
       tags:
-        - AlertSource
+        - SnmpConfig
       description: >-
         Get details snmp alert source information configured on behalf of
         backend devices
@@ -1970,7 +2001,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AlertSourceRespSpec'
+                $ref: '#/components/schemas/SnmpConfigRespSpec'
         '400':
           description: BadRequest
           content:
@@ -2003,11 +2034,11 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
     put:
       tags:
-        - AlertSource
+        - SnmpConfig
       description: >-
         Modify snmp alert source information configured on behalf of backend
         devices
-      operationId: putAlertSourceInfo
+      operationId: putSnmpConfigInfo
       parameters:
         - name: storage_id
           in: path
@@ -2018,14 +2049,14 @@ paths:
           schema:
             type: string
       requestBody:
-        $ref: '#/components/requestBodies/AlertSourceUpdateSpec'
+        $ref: '#/components/requestBodies/SnmpConfigUpdateSpec'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AlertSourceRespSpec'
+                $ref: '#/components/schemas/SnmpConfigRespSpec'
         '400':
           description: BadRequest
           content:
@@ -2058,7 +2089,7 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
     delete:
       tags:
-        - AlertSource
+        - SnmpConfig
       description: >-
         Removes snmp alert source information configured on behalf of backend
         devices
@@ -2247,6 +2278,44 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
         '505':
           description: Capability feature not supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/snmp-configs':
+    get:
+      tags:
+        - Storages
+      description: >-
+        Get all details snmp alert source information configured on behalf of
+        backend devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnmpConfigsRespSpec'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
           content:
             application/json:
               schema:
@@ -2643,6 +2712,15 @@ components:
             type: string
           example:
             array_id: string
+    StorageAccessInfosResponse:
+      description: Response for all access infos configuration.
+      type: object
+      properties:
+        snmp_configs:
+          type: array
+          description: the list of access info
+          items:
+            $ref: '#/components/schemas/StorageAccessInfoResponse'
 
 
     StoragePoolSpec:
@@ -3133,7 +3211,7 @@ components:
               type: string
             native_storage_pool_id:
               type: string
-    AlertSourceUpdateSpec:
+    SnmpConfigUpdateSpec:
       required:
         - host
         - version
@@ -3220,7 +3298,7 @@ components:
             By default, set to 161
           example: 20162
       description: SNMP alert source configuration attributes.
-    AlertSourceRespSpec:
+    SnmpConfigRespSpec:
       description: Response for snmp alert source configuration.
       allOf:
         - $ref: '#/components/schemas/BaseModel'
@@ -3281,7 +3359,8 @@ components:
                 authPriv is set as security_level
             host:
               type: string
-              example: 10.0.0.1
+              description: All alert source ips of the device
+              example: 10.0.0.1,127.0.0.1
             context_name:
               type: string
               description: Context name of the alert source
@@ -3304,6 +3383,15 @@ components:
                 Port for connecting to alert source
                 By default, set to 161
               example: 20162
+    SnmpConfigsRespSpec:
+      description: Response for all snmp alert source configuration.
+      type: object
+      properties:
+        snmp_configs:
+          type: array
+          description: the list of snmp configs
+          items:
+            $ref: '#/components/schemas/SnmpConfigRespSpec'
     StorageBackendAlertSync:
       type: object
       properties:
@@ -3491,11 +3579,11 @@ components:
       schema:
         type: string
   requestBodies:
-    AlertSourceUpdateSpec:
+    SnmpConfigUpdateSpec:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/AlertSourceUpdateSpec'
+            $ref: '#/components/schemas/SnmpConfigUpdateSpec'
     StorageBackendAlertSync:
       content:
         application/json:
