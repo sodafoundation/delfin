@@ -211,7 +211,7 @@ class UnityStorDriver(driver.StorageDriver):
                     controller_list.append(controller_result)
             return controller_list
         except Exception as err:
-            err_msg = "Failed to get controller metrics from Unity: %s" %\
+            err_msg = "Failed to get controller attributes from Unity: %s" %\
                       (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -323,7 +323,7 @@ class UnityStorDriver(driver.StorageDriver):
             port_list.extend(self.get_fc_ports())
             return port_list
         except Exception as err:
-            err_msg = "Failed to get ports metrics from Unity: %s" % \
+            err_msg = "Failed to get ports attributes from Unity: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -363,7 +363,7 @@ class UnityStorDriver(driver.StorageDriver):
             return disk_list
 
         except Exception as err:
-            err_msg = "Failed to get disk metrics from Unity: %s" % \
+            err_msg = "Failed to get disk attributes from Unity: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -410,7 +410,7 @@ class UnityStorDriver(driver.StorageDriver):
                     fs_list.append(fs)
             return fs_list
         except Exception as err:
-            err_msg = "Failed to get filesystem metrics from Unity: %s"\
+            err_msg = "Failed to get filesystem attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -435,7 +435,7 @@ class UnityStorDriver(driver.StorageDriver):
                     qt_list.append(qt)
             return qt_list
         except Exception as err:
-            err_msg = "Failed to get qtree metrics from Unity: %s"\
+            err_msg = "Failed to get qtree attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -480,7 +480,7 @@ class UnityStorDriver(driver.StorageDriver):
                     share_list.append(fs)
             return share_list
         except Exception as err:
-            err_msg = "Failed to get share metrics from Unity: %s"\
+            err_msg = "Failed to get share attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -492,7 +492,7 @@ class UnityStorDriver(driver.StorageDriver):
             share_list.extend(self.get_share('nfs', qtrees))
             return share_list
         except Exception as err:
-            err_msg = "Failed to get shares metrics from Unity: %s"\
+            err_msg = "Failed to get shares attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -551,7 +551,7 @@ class UnityStorDriver(driver.StorageDriver):
             quotas_list.extend(self.get_user_quotas())
             return quotas_list
         except Exception as err:
-            err_msg = "Failed to get quotas metrics from Unity: %s"\
+            err_msg = "Failed to get quotas attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
