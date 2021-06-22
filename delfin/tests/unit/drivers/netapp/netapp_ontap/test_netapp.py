@@ -114,13 +114,14 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_list_qtrees(self):
         SSHPool.do_exec = mock.Mock(side_effect=[
-            test_constans.QTREES_INFO])
+            test_constans.QTREES_INFO, test_constans.FS_INFO])
         data = self.netapp_client.list_qtrees(context)
         self.assertEqual(data[0]['security_mode'], 'ntfs')
 
     def test_list_shares(self):
         SSHPool.do_exec = mock.Mock(
             side_effect=[test_constans.QTREES_INFO,
+                         test_constans.FS_INFO,
                          test_constans.SHARES_AGREEMENT_INFO,
                          test_constans.SHARE_VSERVER_INFO,
                          test_constans.SHARES_INFO,
