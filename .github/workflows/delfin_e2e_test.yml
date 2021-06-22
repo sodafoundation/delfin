@@ -1,0 +1,71 @@
+name: Delfin E2E Test
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      max-parallel: 6
+      matrix:
+        platform:
+          - ubuntu-16.04
+          - ubuntu-18.04
+        python-version: [ 3.6, 3.7, 3.8 ]
+
+    steps:
+      - name: Checkout delfin code
+        uses: actions/checkout@v2
+      - name: Install Python version ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r test-requirements.txt
+          pip install tox codecov
+      - name: E2E Testing - Add Test Driver to Delfin
+        run: |
+          str="\ \ \ \ \ \ \ \ \ \ \ \ 'test_vendor test_model = delfin.tests.e2e.testdriver:TestDriver',"
+          sed -i "/FakeStorageDriver',/ a $str" ./setup.py
+        shell: bash
+      - name: E2E Testing - Install RabbitMQ
+        uses: getong/rabbitmq-action@v1.2
+        with:
+          rabbitmq version: '3.8.2-management-alpine'
+          host port: 5672
+          rabbitmq user: 'guest'
+          rabbitmq password: 'guest'
+      - name: E2E Testing - Install Redis
+        uses: supercharge/redis-github-action@1.2.0
+        with:
+          redis-version: 6
+      - name: E2E Testing - Build and Deploy Delfin with Test driver
+        run: |
+          sudo mkdir -p /var/lib/delfin
+          sudo chmod 0777 /var/lib/delfin
+          sudo mkdir -p /etc/delfin
+          sudo chmod 0777 /etc/delfin
+          python3 setup.py install
+          cp ./etc/delfin/api-paste.ini /etc/delfin/
+          python3 ./script/create_db.py --config-file ./etc/delfin/delfin.conf
+          sleep 1
+          python3 ./delfin/cmd/task.py --config-file ./etc/delfin/delfin.conf > /tmp/task.log 2>&1 &
+          python3 ./delfin/cmd/alert.py --config-file ./etc/delfin/delfin.conf > /tmp/alert.log 2>&1 &
+          python3 ./delfin/cmd/api.py --config-file ./etc/delfin/delfin.conf > /tmp/api.log 2>&1 &
+        shell: bash
+      - name: E2E Testing - Run RobotFramework
+        run: |
+          sleep 3
+          pip install robotframework
+          pip install robotframework-requests
+          pip install robotframework-jsonlibrary
+          DELFIN_DIR=`pwd`
+          TOP_DIR="${DELFIN_DIR}/delfin/tests/e2e"
+          ORIG_PATH='"storage.json"'
+          FILE_PATH="${TOP_DIR}/testdriver/storage.json"
+          sed -i "s|${ORIG_PATH}|\"${FILE_PATH}\"|g" $TOP_DIR/test.json
+          sleep 1
+          robot delfin/tests/e2e
+        shell: bash
