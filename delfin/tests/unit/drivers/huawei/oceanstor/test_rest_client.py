@@ -212,7 +212,8 @@ class TestOceanStorRestClient(TestCase):
     def test_get_pool_metrics(self, mock_login, mock_call,
                               mock_pools):
         mock_login.return_value = None
-        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25'}]
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
         mock_pools.return_value = [
             {'ID': '123', 'TYPE': '100', 'NAME': 'pool'}
         ]
@@ -223,6 +224,7 @@ class TestOceanStorRestClient(TestCase):
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
             params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
         )
         expected_label = {
             'storage_id': '',
@@ -242,7 +244,8 @@ class TestOceanStorRestClient(TestCase):
     def test_get_volume_metrics(self, mock_login, mock_call,
                                 mock_volumes):
         mock_login.return_value = None
-        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25'}]
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
         mock_volumes.return_value = [
             {'ID': '123', 'TYPE': '100', 'NAME': 'volume'}
         ]
@@ -254,6 +257,7 @@ class TestOceanStorRestClient(TestCase):
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
             params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
         )
         expected_label = {
             'storage_id': '',
@@ -273,7 +277,8 @@ class TestOceanStorRestClient(TestCase):
     def test_get_controller_metrics(self, mock_login, mock_call,
                                     mock_controllers):
         mock_login.return_value = None
-        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25'}]
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
         mock_controllers.return_value = [
             {'ID': '123', 'TYPE': '100', 'NAME': 'controller'}
         ]
@@ -285,6 +290,7 @@ class TestOceanStorRestClient(TestCase):
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
             params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
         )
         expected_label = {
             'storage_id': '',
@@ -304,7 +310,8 @@ class TestOceanStorRestClient(TestCase):
     def test_get_port_metrics(self, mock_login, mock_call,
                               mock_ports):
         mock_login.return_value = None
-        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25'}]
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
         mock_ports.return_value = [
             {'ID': '123', 'TYPE': '100', 'NAME': 'port'}
         ]
@@ -315,6 +322,7 @@ class TestOceanStorRestClient(TestCase):
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
             params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
         )
         expected_label = {
             'storage_id': '',
@@ -334,7 +342,8 @@ class TestOceanStorRestClient(TestCase):
     def test_get_disk_metrics(self, mock_login, mock_call,
                               mock_disks):
         mock_login.return_value = None
-        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25'}]
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
         mock_disks.return_value = [
             {'ID': '123', 'TYPE': '100', 'MODEL': 'disk', 'SERIALNUMBER': '0'}
         ]
@@ -345,6 +354,7 @@ class TestOceanStorRestClient(TestCase):
             "/performace_statistic/cur_statistic_data",
             None, 'GET', log_filter_flag=True,
             params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
         )
         expected_label = {
             'storage_id': '',

@@ -28,6 +28,15 @@ class UnityStorDriver(driver.StorageDriver):
     """UnityStorDriver implement the DELL EMC Storage driver"""
     HEALTH_OK = (5, 7)
 
+    FILESYSTEM_FLR_MAP = {0: constants.WORMType.NON_WORM,
+                          1: constants.WORMType.ENTERPRISE,
+                          2: constants.WORMType.COMPLIANCE
+                          }
+    FILESYSTEM_SECURITY_MAP = {0: constants.NASSecurityMode.NATIVE,
+                               1: constants.NASSecurityMode.UNIX,
+                               2: constants.NASSecurityMode.NTFS
+                               }
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rest_handler = rest_handler.RestHandler(**kwargs)
@@ -182,7 +191,9 @@ class UnityStorDriver(driver.StorageDriver):
             if controller_info is not None:
                 pool_entries = controller_info.get('entries')
                 for pool in pool_entries:
-                    content = pool.get('content', {})
+                    content = pool.get('content')
+                    if not content:
+                        continue
                     health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.ControllerStatus.NORMAL
@@ -220,7 +231,9 @@ class UnityStorDriver(driver.StorageDriver):
         if ports is not None:
             port_entries = ports.get('entries')
             for port in port_entries:
-                content = port.get('content', {})
+                content = port.get('content')
+                if not content:
+                    continue
                 health_value = content.get('health', {}).get('value')
                 if health_value in UnityStorDriver.HEALTH_OK:
                     status = constants.PortHealthStatus.NORMAL
@@ -234,7 +247,9 @@ class UnityStorDriver(driver.StorageDriver):
                 ipv6 = None
                 ipv6_mask = None
                 for ip_info in ip_interfaces.get('entries'):
-                    ip_content = ip_info.get('content', {})
+                    ip_content = ip_info.get('content')
+                    if not ip_content:
+                        continue
                     if content.get('id') == ip_content.get(
                             'ipPort').get('id'):
                         if ip_content.get('ipProtocolVersion') == 4:
@@ -258,7 +273,7 @@ class UnityStorDriver(driver.StorageDriver):
                     'logical_type': '',
                     'max_speed': int(content.get('speed')) * units.Mi,
                     'native_parent_id':
-                        content.get('storageProcessor').get('id'),
+                        content.get('storageProcessor', {}).get('id'),
                     'wwn': '',
                     'mac_address': content.get('macAddress'),
                     'ipv4': ipv4,
@@ -275,7 +290,9 @@ class UnityStorDriver(driver.StorageDriver):
         if ports is not None:
             port_entries = ports.get('entries')
             for port in port_entries:
-                content = port.get('content', {})
+                content = port.get('content')
+                if not content:
+                    continue
                 health_value = content.get('health', {}).get('value')
                 if health_value in UnityStorDriver.HEALTH_OK:
                     status = constants.PortHealthStatus.NORMAL
@@ -293,7 +310,7 @@ class UnityStorDriver(driver.StorageDriver):
                     'logical_type': '',
                     'max_speed': int(content.get('currentSpeed')) * units.Gi,
                     'native_parent_id':
-                        content.get('storageProcessor').get('id'),
+                        content.get('storageProcessor', {}).get('id'),
                     'wwn': content.get('wwn')
                 }
                 port_list.append(port_result)
@@ -317,7 +334,9 @@ class UnityStorDriver(driver.StorageDriver):
             if disks is not None:
                 disk_entries = disks.get('entries')
                 for disk in disk_entries:
-                    content = disk.get('content', {})
+                    content = disk.get('content')
+                    if not content:
+                        continue
                     health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.DiskStatus.NORMAL
@@ -337,7 +356,7 @@ class UnityStorDriver(driver.StorageDriver):
                         'physical_type': constants.DiskPhysicalType.SAS,
                         'logical_type': '',
                         'native_disk_group_id':
-                            content.get('diskGroup').get('id'),
+                            content.get('diskGroup', {}).get('id'),
                         'location': content.get('slotNumber')
                     }
                     disk_list.append(disk_result)
@@ -355,7 +374,9 @@ class UnityStorDriver(driver.StorageDriver):
             if files is not None:
                 fs_entries = files.get('entries')
                 for file in fs_entries:
-                    content = file.get('content', {})
+                    content = file.get('content')
+                    if not content:
+                        continue
                     health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.FilesystemStatus.NORMAL
@@ -364,18 +385,27 @@ class UnityStorDriver(driver.StorageDriver):
                     fs_type = constants.VolumeType.THICK
                     if content.get('isThinEnabled') is True:
                         fs_type = constants.VolumeType.THIN
+                    worm = UnityStorDriver.FILESYSTEM_FLR_MAP.get(
+                        content.get('flrVersion'),
+                        constants.WORMType.NON_WORM)
+                    security_model = \
+                        UnityStorDriver.FILESYSTEM_SECURITY_MAP.get(
+                            content.get('accessPolicy'),
+                            constants.NASSecurityMode.NATIVE
+                        )
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
                         'native_filesystem_id': content.get('id'),
-                        'native_pool_id': content.get('pool').get('id'),
+                        'native_pool_id': content.get('pool', {}).get('id'),
                         'status': status,
                         'type': fs_type,
                         'total_capacity': int(content.get('sizeTotal')),
-                        'used_capacity': int(content.get('sizeAllocated')),
+                        'used_capacity': int(content.get('sizeUsed')),
                         'free_capacity': int(content.get('sizeTotal')) - int(
-                            content.get('sizeAllocated')),
-                        'worm': constants.WORMType.NON_WORM
+                            content.get('sizeUsed')),
+                        'worm': worm,
+                        'security_mode': security_model
                     }
                     fs_list.append(fs)
             return fs_list
@@ -391,16 +421,16 @@ class UnityStorDriver(driver.StorageDriver):
             if qts is not None:
                 qts_entries = qts.get('entries')
                 for qtree in qts_entries:
-                    content = qtree.get('content', {})
-                    path = '/%s%s' % (content.get('filesystem').get('id'),
-                                      content.get('path'))
+                    content = qtree.get('content')
+                    if not content:
+                        continue
                     qt = {
-                        'name': content.get('id'),
+                        'name': content.get('path'),
                         'storage_id': self.storage_id,
                         'native_qtree_id': content.get('id'),
                         'native_filesystem_id':
-                            content.get('filesystem').get('id'),
-                        'path': path
+                            content.get('filesystem', {}).get('id'),
+                        'path': content.get('path')
                     }
                     qt_list.append(qt)
             return qt_list
@@ -409,7 +439,19 @@ class UnityStorDriver(driver.StorageDriver):
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
-    def get_share(self, protocol):
+    def get_share_qtree(self, path, qtree_list):
+        qtree_id = None
+        qts_entries = qtree_list.get('entries')
+        for qtree in qts_entries:
+            content = qtree.get('content')
+            if not content:
+                continue
+            if content.get('path') == path:
+                qtree_id = content.get('id')
+                break
+        return qtree_id
+
+    def get_share(self, protocol, qtree_list):
         try:
             share_list = []
             if protocol == 'cifs':
@@ -419,26 +461,20 @@ class UnityStorDriver(driver.StorageDriver):
                 shares = self.rest_handler.get_all_nfsshares()
                 protocol = constants.ShareProtocol.NFS
             if shares is not None:
-                filesystems = self.rest_handler.get_all_filesystems()
                 share_entries = shares.get('entries')
                 for share in share_entries:
-                    content = share.get('content', {})
-                    file_entries = filesystems.get('entries')
-                    file_name = ''
-                    for file in file_entries:
-                        file_content = file.get('content', {})
-                        if file_content.get('id') == content.get(
-                                'filesystem', {}).get('id'):
-                            file_name = file_content.get('name')
-                            break
-                    path = '/%s%s' % (file_name, content.get('path'))
+                    content = share.get('content')
+                    if not content:
+                        continue
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
                         'native_share_id': content.get('id'),
+                        'native_qtree_id': self.get_share_qtree(
+                            content.get('path'), qtree_list),
                         'native_filesystem_id':
-                            content.get('filesystem').get('id'),
-                        'path': path,
+                            content.get('filesystem', {}).get('id'),
+                        'path': content.get('path'),
                         'protocol': protocol
                     }
                     share_list.append(fs)
@@ -451,8 +487,9 @@ class UnityStorDriver(driver.StorageDriver):
     def list_shares(self, context):
         try:
             share_list = []
-            share_list.extend(self.get_share('cifs'))
-            share_list.extend(self.get_share('nfs'))
+            qtrees = self.rest_handler.get_all_qtrees()
+            share_list.extend(self.get_share('cifs', qtrees))
+            share_list.extend(self.get_share('nfs', qtrees))
             return share_list
         except Exception as err:
             err_msg = "Failed to get shares metrics from Unity: %s"\
@@ -464,7 +501,7 @@ class UnityStorDriver(driver.StorageDriver):
         quota_configs = self.rest_handler.get_quota_configs()
         qts = self.rest_handler.get_all_qtrees()
         if qts is None:
-            return
+            return quotas_list
         qt_entries = qts.get('entries')
         conf_entries = quota_configs.get('entries')
         for quota in qt_entries:
@@ -473,9 +510,13 @@ class UnityStorDriver(driver.StorageDriver):
             file_hard_limit = 0
             file_soft_limit = 0
             limit_type = 'block'
-            content = quota.get('content', {})
+            content = quota.get('content')
+            if not content:
+                continue
             for conf in conf_entries:
-                conf_content = conf.get('content', {})
+                conf_content = conf.get('content')
+                if not conf_content:
+                    continue
                 if conf_content.get('id') == content.get(
                         'quotaConfig').get('id'):
                     if int(conf_content.get('quotaPolicy')) == 0:
@@ -492,7 +533,7 @@ class UnityStorDriver(driver.StorageDriver):
                 "type": constants.QuotaType.TREE,
                 "storage_id": self.storage_id,
                 "native_filesystem_id":
-                    content.get('filesystem').get('id'),
+                    content.get('filesystem', {}).get('id'),
                 "native_qtree_id": content.get('id'),
                 "capacity_hard_limit": capacity_hard_limit,
                 "capacity_soft_limit": capacity_soft_limit,
@@ -508,7 +549,7 @@ class UnityStorDriver(driver.StorageDriver):
         quota_configs = self.rest_handler.get_quota_configs()
         user_qts = self.rest_handler.get_all_userquotas()
         if user_qts is None:
-            return
+            return quotas_list
         conf_entries = quota_configs.get('entries')
         user_entries = user_qts.get('entries')
         for user_quota in user_entries:
@@ -517,10 +558,14 @@ class UnityStorDriver(driver.StorageDriver):
             file_hard_limit = 0
             file_soft_limit = 0
             limit_type = 'block'
-            content = user_quota.get('content', {})
+            content = user_quota.get('content')
+            if not content:
+                continue
             if content.get('treeQuota'):
                 for conf in conf_entries:
-                    conf_content = conf.get('content', {})
+                    conf_content = conf.get('content')
+                    if not conf_content:
+                        continue
                     if conf_content.get('treeQuota').get('id')\
                             == content.get('treeQuota').get('id'):
                         if int(conf_content.get('quotaPolicy')) == 0:
@@ -537,7 +582,7 @@ class UnityStorDriver(driver.StorageDriver):
                 "type": constants.QuotaType.USER,
                 "storage_id": self.storage_id,
                 "native_filesystem_id":
-                    content.get('filesystem').get('id'),
+                    content.get('filesystem', {}).get('id'),
                 "native_qtree_id": content.get('id'),
                 "capacity_hard_limit": capacity_hard_limit,
                 "capacity_soft_limit": capacity_soft_limit,
