@@ -66,7 +66,7 @@ Register Storage with valid access_info Test
 
 Register Storage with same access_info Test
     [Tags]    DELFIN
-    Sleep                   1s
+    Sleep                   5s
     ${storage_test}=        Register Test Storage
 
     ${test}=                Load Json From File   ${CURDIR}/test.json
