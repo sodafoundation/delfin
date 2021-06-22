@@ -810,7 +810,7 @@ class NetAppHandler(object):
                                 'name': qt_share_name,
                                 'storage_id': storage_id,
                                 'native_share_id':
-                                    share_name + '_' +
+                                    qt_share_name + '_' +
                                     constants.ShareProtocol.NFS,
                                 'native_qtree_id':
                                     qtree['native_qtree_id'],
@@ -824,7 +824,7 @@ class NetAppHandler(object):
                         'name': share_name,
                         'storage_id': storage_id,
                         'native_share_id':
-                            share_name + constants.ShareProtocol.NFS,
+                            share_name + '_' + constants.ShareProtocol.NFS,
                         'native_qtree_id': qtree_id,
                         'native_filesystem_id': fs_id,
                         'path': fs_map['JunctionPath'],
@@ -948,6 +948,7 @@ class NetAppHandler(object):
                         quota_map[constant.VSERVER_NAME] + '_' + \
                         quota_map['VolumeName'] + '_' + \
                         quota_map['Type'] + '_' + \
+                        quota_map['QtreeName'] + '_' + \
                         quota_map['Target']
                     type = constant.QUOTA_TYPE.get(quota_map['Type'])
                     qt_id = self.get_qt_id(
