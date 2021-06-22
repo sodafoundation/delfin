@@ -94,6 +94,6 @@ class TaskAPI(object):
 
     def build_host_mapping_relations(self, context, storage_id):
         call_context = self.client.prepare(version='1.0')
-        return call_context.cast(context,
+        return call_context.call(context,
                                  'build_host_mapping_relations',
                                  storage_id=storage_id)

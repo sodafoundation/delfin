@@ -52,13 +52,13 @@ def set_synced_after():
                 # means all the sync tasks are completed
                 if storage['sync_status'] != constants.SyncStatus.SYNCED:
                     storage['sync_status'] -= sync_result
-                    db.storage_update(self.context, self.storage_id, storage)
 
                     if storage['sync_status'] == 0:
                         # When all resource sync is done,trigger
                         # building relations from host mapping attributes
                         task_rpcapi.TaskAPI().build_host_mapping_relations(
                             self.context, self.storage_id)
+                    db.storage_update(self.context, self.storage_id, storage)
         return ret
 
     return _set_synced_after
