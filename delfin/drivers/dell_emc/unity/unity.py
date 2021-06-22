@@ -542,7 +542,6 @@ class UnityStorDriver(driver.StorageDriver):
                 "used_capacity": int(content.get('sizeUsed'))
             }
             quotas_list.append(qt)
-        LOG.error(quotas_list)
         return quotas_list
 
     def list_quotas(self, context):
