@@ -16,6 +16,7 @@
 import time
 import six
 import hashlib
+import eventlet
 
 from oslo_log import log as logging
 from oslo_utils import units
@@ -48,6 +49,11 @@ class NetAppHandler(object):
         if qtree != '':
             qt_id += '/' + qtree
         return qt_id
+
+    def ssh_do_exec(self, command):
+        with eventlet.Timeout(10, False):
+            res = self.ssh_pool.do_exec(command)
+        return res
 
     @staticmethod
     def parse_alert(alert):
@@ -82,7 +88,7 @@ class NetAppHandler(object):
 
     def login(self):
         try:
-            self.ssh_pool.do_exec('version')
+            self.ssh_do_exec('version')
         except Exception as e:
             LOG.error("Failed to login netapp %s" %
                       (six.text_type(e)))
@@ -92,13 +98,13 @@ class NetAppHandler(object):
         try:
             raw_capacity = total_capacity = used_capacity = free_capacity = 0
             controller_map = {}
-            system_info = self.ssh_pool.do_exec(
+            system_info = self.ssh_do_exec(
                 constant.CLUSTER_SHOW_COMMAND)
-            version_info = self.ssh_pool.do_exec(
+            version_info = self.ssh_do_exec(
                 constant.VERSION_SHOW_COMMAND)
-            status_info = self.ssh_pool.do_exec(
+            status_info = self.ssh_do_exec(
                 constant.STORAGE_STATUS_COMMAND)
-            controller_info = self.ssh_pool.do_exec(
+            controller_info = self.ssh_do_exec(
                 constant.CONTROLLER_SHOW_DETAIL_COMMAND)
             controller_array = controller_info.split(
                 constant.CONTROLLER_SPLIT_STR)
@@ -146,7 +152,7 @@ class NetAppHandler(object):
 
     def get_aggregate(self, storage_id):
         agg_list = []
-        agg_info = self.ssh_pool.do_exec(
+        agg_info = self.ssh_do_exec(
             constant.AGGREGATE_SHOW_DETAIL_COMMAND)
         agg_array = agg_info.split(
             constant.AGGREGATE_SPLIT_STR)
@@ -173,7 +179,7 @@ class NetAppHandler(object):
 
     def get_pool(self, storage_id):
         pool_list = []
-        pool_info = self.ssh_pool.do_exec(
+        pool_info = self.ssh_do_exec(
             constant.POOLS_SHOW_DETAIL_COMMAND)
         pool_array = pool_info.split(constant.POOLS_SPLIT_STR)
         pool_map = {}
@@ -223,7 +229,7 @@ class NetAppHandler(object):
     def list_volumes(self, storage_id):
         try:
             volume_list = []
-            volume_info = self.ssh_pool.do_exec(
+            volume_info = self.ssh_do_exec(
                 constant.LUN_SHOW_DETAIL_COMMAND)
             volume_array = volume_info.split(constant.LUN_SPLIT_STR)
             fs_list = self.get_filesystems(storage_id)
@@ -278,7 +284,7 @@ class NetAppHandler(object):
 
     def get_events(self, query_para):
         event_list = []
-        event_info = self.ssh_pool.do_exec(
+        event_info = self.ssh_do_exec(
             constant.EVENT_SHOW_DETAIL_COMMAND)
         event_array = event_info.split(constant.ALTER_SPLIT_STR)
         event_map = {}
@@ -311,7 +317,7 @@ class NetAppHandler(object):
 
     def get_alerts(self, query_para):
         alert_list = []
-        alert_info = self.ssh_pool.do_exec(
+        alert_info = self.ssh_do_exec(
             constant.ALTER_SHOW_DETAIL_COMMAND)
         alert_array = alert_info.split(constant.ALTER_SPLIT_STR)
         alert_map = {}
@@ -365,7 +371,7 @@ class NetAppHandler(object):
         try:
             ssh_command = \
                 constant.CLEAR_ALERT_COMMAND + alert['alert_id']
-            self.ssh_pool.do_exec(ssh_command)
+            self.ssh_do_exec(ssh_command)
         except exception.DelfinException as e:
             err_msg = "Failed to get storage alert from " \
                       "netapp cmode: %s" % (six.text_type(e))
@@ -380,13 +386,13 @@ class NetAppHandler(object):
     def get_disks(self, storage_id):
         disks_list = []
         physicals_list = []
-        disks_info = self.ssh_pool.do_exec(
+        disks_info = self.ssh_do_exec(
             constant.DISK_SHOW_DETAIL_COMMAND)
         disks_array = disks_info.split(
             constant.DISK_SPLIT_STR)
-        physicals_info = self.ssh_pool.do_exec(
+        physicals_info = self.ssh_do_exec(
             constant.DISK_SHOW_PHYSICAL_COMMAND)
-        error_disk = self.ssh_pool.do_exec(
+        error_disk = self.ssh_do_exec(
             constant.DISK_ERROR_COMMAND
         )
         error_disk_list = []
@@ -437,11 +443,11 @@ class NetAppHandler(object):
 
     def get_filesystems(self, storage_id):
         fs_list = []
-        fs_info = self.ssh_pool.do_exec(
+        fs_info = self.ssh_do_exec(
             constant.FS_SHOW_DETAIL_COMMAND)
         fs_array = fs_info.split(
             constant.FS_SPLIT_STR)
-        thin_fs_info = self.ssh_pool.do_exec(
+        thin_fs_info = self.ssh_do_exec(
             constant.THIN_FS_SHOW_COMMAND)
         pool_list = self.list_storage_pools(storage_id)
         thin_fs_array = thin_fs_info.split("\r\n")
@@ -498,7 +504,7 @@ class NetAppHandler(object):
     def list_controllers(self, storage_id):
         try:
             controller_list = []
-            controller_info = self.ssh_pool.do_exec(
+            controller_info = self.ssh_do_exec(
                 constant.CONTROLLER_SHOW_DETAIL_COMMAND)
             controller_array = controller_info.split(
                 constant.CONTROLLER_SPLIT_STR)
@@ -537,7 +543,7 @@ class NetAppHandler(object):
     def get_network_port(self, storage_id):
         try:
             ports_list = []
-            interfaces_info = self.ssh_pool.do_exec(
+            interfaces_info = self.ssh_do_exec(
                 constant.INTERFACE_SHOW_DETAIL_COMMAND)
             interface_array = interfaces_info.split(
                 constant.INTERFACE_SPLIT_STR)
@@ -604,7 +610,7 @@ class NetAppHandler(object):
     def get_eth_port(self, storage_id):
         try:
             eth_list = []
-            eth_info = self.ssh_pool.do_exec(
+            eth_info = self.ssh_do_exec(
                 constant.PORT_SHOW_DETAIL_COMMAND)
             eth_array = eth_info.split(
                 constant.PORT_SPLIT_STR)
@@ -656,7 +662,7 @@ class NetAppHandler(object):
     def get_fc_port(self, storage_id):
         try:
             fc_list = []
-            fc_info = self.ssh_pool.do_exec(
+            fc_info = self.ssh_do_exec(
                 constant.FC_PORT_SHOW_DETAIL_COMMAND)
             fc_array = fc_info.split(
                 constant.PORT_SPLIT_STR)
@@ -732,9 +738,9 @@ class NetAppHandler(object):
     def list_qtrees(self, storage_id):
         try:
             qt_list = []
-            qt_info = self.ssh_pool.do_exec(
+            qt_info = self.ssh_do_exec(
                 constant.QTREE_SHOW_DETAIL_COMMAND)
-            fs_info = self.ssh_pool.do_exec(
+            fs_info = self.ssh_do_exec(
                 constant.FS_SHOW_DETAIL_COMMAND)
             fs_array = fs_info.split(constant.FS_SPLIT_STR)
             qt_array = qt_info.split(constant.QTREE_SPLIT_STR)
@@ -784,7 +790,7 @@ class NetAppHandler(object):
 
     def get_nfs_shares(self, storage_id, qtree_list, protocol_map):
         try:
-            nfs_info = self.ssh_pool.do_exec(
+            nfs_info = self.ssh_do_exec(
                 constant.NFS_SHARE_SHOW_COMMAND)
             nfs_list = []
             nfs_array = nfs_info.split(constant.FS_SPLIT_STR)
@@ -846,7 +852,7 @@ class NetAppHandler(object):
     def get_cifs_shares(self, storage_id, vserver_name,
                         qtree_list, protocol_map):
         shares_list = []
-        share_info = self.ssh_pool.do_exec(
+        share_info = self.ssh_do_exec(
             (constant.CIFS_SHARE_SHOW_DETAIL_COMMAND %
              {'vserver_name': vserver_name}))
         cifs_share_array = share_info.split(
@@ -863,9 +869,16 @@ class NetAppHandler(object):
                 share_id = fs_id + '_' + share_map['Share'] + '_'
                 qtree_id = None
                 for qtree in qtree_list:
-                    qt_id = \
-                        share_map[constant.VSERVER_NAME] + \
-                        '_' + share_map['Path']
+                    name_array = share_map['Path'].split('/')
+                    if len(name_array) > 0:
+                        qtree_name = name_array[len(name_array) - 1]
+                        if qtree_name == share_map['VolumeName']:
+                            qtree_name = ''
+                        qt_id = self.get_qt_id(
+                            share_map[constant.VSERVER_NAME],
+                            share_map['VolumeName'], qtree_name)
+                    else:
+                        break
                     if qtree['native_qtree_id'] == qt_id:
                         qtree_id = qt_id
                         break
@@ -887,7 +900,7 @@ class NetAppHandler(object):
         try:
             shares_list = []
             qtree_list = self.list_qtrees(None)
-            protocol_info = self.ssh_pool.do_exec(
+            protocol_info = self.ssh_do_exec(
                 constant.SHARE_AGREEMENT_SHOW_COMMAND)
             protocol_map = {}
             protocol_arr = protocol_info.split('\r\n')
@@ -895,7 +908,7 @@ class NetAppHandler(object):
                 agr_arr = protocol.split()
                 if len(agr_arr) > 1:
                     protocol_map[agr_arr[0]] = agr_arr[1]
-            vserver_info = self.ssh_pool.do_exec(
+            vserver_info = self.ssh_do_exec(
                 constant.VSERVER_SHOW_COMMAND)
             vserver_array = vserver_info.split("\r\n")
             for vserver in vserver_array[3:]:
@@ -936,7 +949,7 @@ class NetAppHandler(object):
     def list_quotas(self, storage_id):
         try:
             quota_list = []
-            quotas_info = self.ssh_pool.do_exec(
+            quotas_info = self.ssh_do_exec(
                 constant.QUOTA_SHOW_DETAIL_COMMAND)
             quotas_array = quotas_info.split(constant.QUOTA_SPLIT_STR)
             for quota_info in quotas_array[1:]:
