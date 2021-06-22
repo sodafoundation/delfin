@@ -39,7 +39,6 @@ class RestHandler(RestClient):
         self.storage_device_id = None
         self.device_model = None
         self.serial_number = None
-        self.rest_host = '51.10.192.90'
 
     def call(self, url, data=None, method=None,
              calltimeout=consts.SOCKET_TIMEOUT):

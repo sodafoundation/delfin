@@ -31,7 +31,7 @@ class Request:
 ACCESS_INFO = {
     "storage_id": "12345",
     "rest": {
-        "host": "110.143.132.231",
+        "host": "51.10.192.90",
         "port": "8443",
         "username": "username",
         "password": "cGFzc3dvcmQ="

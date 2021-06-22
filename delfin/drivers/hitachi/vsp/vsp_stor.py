@@ -309,13 +309,12 @@ class HitachiVspDriver(driver.StorageDriver):
                 if port.get('portType') == 'ISCSI':
                     iscsi_port = self.rest_handler.get_detail_ports(
                         port.get('portId'))
-                    LOG.error(iscsi_port)
                     ipv4 = iscsi_port.get('ipv4Address')
                     ipv4_mask = iscsi_port.get('ipv4Subnetmask')
-                    if iscsi_port.get('ipv6LinkLocalAddress', {}).get(
-                        "status") == 'VAL':
-                        ipv6 = iscsi_port.get('ipv6LinkLocalAddress', {}).get(
-                            "address")
+                    if iscsi_port.get(
+                            'ipv6LinkLocalAddress', {}).get("status") == 'VAL':
+                        ipv6 = iscsi_port.get(
+                            'ipv6LinkLocalAddress', {}).get("address")
                 speed = HitachiVspDriver.AUTO_PORT_SPEED if \
                     port.get('portSpeed') == 'AUT' else \
                     int(port.get('portSpeed')[:-1]) * units.Gi
@@ -343,7 +342,6 @@ class HitachiVspDriver(driver.StorageDriver):
                     'ipv6': ipv6
                 }
                 port_list.append(port_result)
-            LOG.error(port_list)
             return port_list
         except Exception as err:
             err_msg = "Failed to get ports attributes from vsp: %s" % \
