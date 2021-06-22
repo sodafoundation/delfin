@@ -296,6 +296,7 @@ class StorageHostInitiator(BASE, DelfinBase):
     storage_id = Column(String(36))
     name = Column(String(255))
     description = Column(String(255))
+    alias = Column(String(255))
     wwn = Column(String(255))
     status = Column(String(255))
     native_storage_host_id = Column(String(255))
@@ -322,7 +323,6 @@ class StorageHostGroup(BASE, DelfinBase):
     storage_id = Column(String(36))
     name = Column(String(255))
     description = Column(String(255))
-    storage_hosts = Column(Text)
     native_storage_host_group_id = Column(String(255))
 
 
@@ -333,7 +333,6 @@ class PortGroup(BASE, DelfinBase):
     storage_id = Column(String(36))
     name = Column(String(255))
     description = Column(String(255))
-    ports = Column(Text)
     native_port_group_id = Column(String(255))
 
 
@@ -344,7 +343,6 @@ class VolumeGroup(BASE, DelfinBase):
     storage_id = Column(String(36))
     name = Column(String(255))
     description = Column(String(255))
-    volumes = Column(Text)
     native_volume_group_id = Column(String(255))
 
 
@@ -365,11 +363,11 @@ class MaskingView(BASE, DelfinBase):
     native_masking_view_id = Column(String(255))
 
 
-class StorageHostGrpStorageHostRelation(BASE, DelfinBase):
+class StorageHostGrpHostRel(BASE, DelfinBase):
     """Represents the storage host group and storage host relation
     attributes.
     """
-    __tablename__ = 'storage_host_group_storage_host_relations'
+    __tablename__ = 'storage_host_grp_host_rels'
     id = Column(String(36), primary_key=True)
     storage_id = Column(String(36))
     name = Column(String(255))
@@ -378,9 +376,9 @@ class StorageHostGrpStorageHostRelation(BASE, DelfinBase):
     native_storage_host_id = Column(String(255))
 
 
-class PortGrpPortRelation(BASE, DelfinBase):
+class PortGrpPortRel(BASE, DelfinBase):
     """Represents port group and port relation attributes."""
-    __tablename__ = 'port_group_port_relations'
+    __tablename__ = 'port_grp_port_rels'
     id = Column(String(36), primary_key=True)
     storage_id = Column(String(36))
     name = Column(String(255))
@@ -389,9 +387,9 @@ class PortGrpPortRelation(BASE, DelfinBase):
     native_port_id = Column(String(255))
 
 
-class VolumeGrpVolumeRelation(BASE, DelfinBase):
+class VolGrpVolRel(BASE, DelfinBase):
     """Represents the volume group and volume relation attributes."""
-    __tablename__ = 'volume_group_volume_relations'
+    __tablename__ = 'vol_grp_vol_rels'
     id = Column(String(36), primary_key=True)
     storage_id = Column(String(36))
     name = Column(String(255))

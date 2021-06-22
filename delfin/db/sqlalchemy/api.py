@@ -2489,26 +2489,26 @@ def masking_views_delete_by_storage(context, storage_id):
         .delete()
 
 
-def _storage_host_grp_host_relations_get_query(context, session=None):
-    return model_query(context, models.StorageHostGrpStorageHostRelation,
+def _storage_host_grp_host_rels_get_query(context, session=None):
+    return model_query(context, models.StorageHostGrpHostRel,
                        session=session)
 
 
-def _storage_host_grp_host_relations_get(context, host_grp_host_relation_id,
-                                         session=None):
+def _storage_host_grp_host_rels_get(context, host_grp_host_relation_id,
+                                    session=None):
     result = (
-        _storage_host_grp_host_relations_get_query(context, session=session)
+        _storage_host_grp_host_rels_get_query(context, session=session)
         .filter_by(id=host_grp_host_relation_id).first())
 
     if not result:
-        raise exception.StorageHostGrpHostRelationNotFound(
+        raise exception.StorageHostGrpHostRelNotFound(
             host_grp_host_relation_id)
 
     return result
 
 
-def storage_host_grp_host_relations_create(context,
-                                           host_grp_host_relations):
+def storage_host_grp_host_rels_create(context,
+                                      host_grp_host_relations):
     """Create multiple storage host grp host relations."""
     session = get_session()
     host_grp_host_relation_refs = []
@@ -2523,7 +2523,7 @@ def storage_host_grp_host_relations_create(context,
                 host_grp_host_relation['id'] = uuidutils.generate_uuid()
 
             host_grp_host_relation_ref \
-                = models.StorageHostGrpStorageHostRelation()
+                = models.StorageHostGrpHostRel()
             host_grp_host_relation_ref.update(host_grp_host_relation)
             host_grp_host_relation_refs.append(host_grp_host_relation_ref)
 
@@ -2532,59 +2532,59 @@ def storage_host_grp_host_relations_create(context,
     return host_grp_host_relation_refs
 
 
-def storage_host_grp_host_relations_delete(context,
-                                           host_grp_host_relations_list):
+def storage_host_grp_host_rels_delete(context,
+                                      host_grp_host_relations_list):
     """Delete multiple storage host grp host relations."""
     session = get_session()
     with session.begin():
         for host_grp_host_relation_id in host_grp_host_relations_list:
             LOG.debug('deleting storage host grp host relation {0}:'.format(
                 host_grp_host_relation_id))
-            query = _storage_host_grp_host_relations_get_query(context,
-                                                               session)
+            query = _storage_host_grp_host_rels_get_query(context,
+                                                          session)
             result = query.filter_by(id=host_grp_host_relation_id).delete()
 
             if not result:
-                LOG.error(exception.StorageHostGrpHostRelationNotFound(
+                LOG.error(exception.StorageHostGrpHostRelNotFound(
                     host_grp_host_relation_id))
     return
 
 
-def storage_host_grp_host_relations_update(context,
-                                           host_grp_host_relations_list):
+def storage_host_grp_host_rels_update(context,
+                                      host_grp_host_relations_list):
     """Update multiple storage host grp host relations."""
     session = get_session()
     with session.begin():
         for host_grp_host_relation in host_grp_host_relations_list:
             LOG.debug('Updating storage host grp host relations {0}:'
                       .format(host_grp_host_relation.get('id')))
-            query = _storage_host_grp_host_relations_get_query(context,
-                                                               session)
+            query = _storage_host_grp_host_rels_get_query(context,
+                                                          session)
             result = query.filter_by(id=host_grp_host_relation.get('id')
                                      ).update(host_grp_host_relation)
 
             if not result:
-                LOG.error(exception.StorageHostGrpHostRelationNotFound(
+                LOG.error(exception.StorageHostGrpHostRelNotFound(
                     host_grp_host_relation.get('id')))
 
 
-def storage_host_grp_host_relations_get(context, host_grp_host_relation_id):
+def storage_host_grp_host_rels_get(context, host_grp_host_relation_id):
     """Get a storage host grp host relation or raise an exception if it does
     not exist.
     """
-    return _storage_host_grp_host_relations_get(context,
-                                                host_grp_host_relation_id)
+    return _storage_host_grp_host_rels_get(context,
+                                           host_grp_host_relation_id)
 
 
-def storage_host_grp_host_relations_get_all(context, marker=None, limit=None,
-                                            sort_keys=None, sort_dirs=None,
-                                            filters=None, offset=None):
+def storage_host_grp_host_rels_get_all(context, marker=None, limit=None,
+                                       sort_keys=None, sort_dirs=None,
+                                       filters=None, offset=None):
     """Retrieves all storage host grp host relations"""
     session = get_session()
     with session.begin():
         # Generate the query
         query = _generate_paginate_query(context, session, models
-                                         .StorageHostGrpStorageHostRelation,
+                                         .StorageHostGrpHostRel,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset)
         # No storage host grp host relation would match, return empty list
@@ -2593,11 +2593,11 @@ def storage_host_grp_host_relations_get_all(context, marker=None, limit=None,
         return query.all()
 
 
-@apply_like_filters(model=models.StorageHostGrpStorageHostRelation)
-def _process_storage_host_grp_host_relations_info_filters(query, filters):
+@apply_like_filters(model=models.StorageHostGrpHostRel)
+def _process_storage_host_grp_host_rels_info_filters(query, filters):
     """Common filter processing for storage host grp host relations queries."""
     if filters:
-        if not is_valid_model_filters(models.StorageHostGrpStorageHostRelation,
+        if not is_valid_model_filters(models.StorageHostGrpHostRel,
                                       filters):
             return
         query = query.filter_by(**filters)
@@ -2605,35 +2605,35 @@ def _process_storage_host_grp_host_relations_info_filters(query, filters):
     return query
 
 
-def storage_host_grp_host_relations_delete_by_storage(context, storage_id):
+def storage_host_grp_host_rels_delete_by_storage(context, storage_id):
     """Delete all the storage host grp host relations of a device"""
-    _storage_host_grp_host_relations_get_query(context)\
+    _storage_host_grp_host_rels_get_query(context) \
         .filter_by(storage_id=storage_id).delete()
 
 
-def _port_grp_port_relations_get_query(context, session=None):
-    return model_query(context, models.PortGrpPortRelation,
+def _port_grp_port_rels_get_query(context, session=None):
+    return model_query(context, models.PortGrpPortRel,
                        session=session)
 
 
-def _port_grp_port_relations_get(context, port_grp_port_relation_id,
-                                 session=None):
-    result = (_port_grp_port_relations_get_query(context, session=session)
+def _port_grp_port_rels_get(context, port_grp_port_relation_id,
+                            session=None):
+    result = (_port_grp_port_rels_get_query(context, session=session)
               .filter_by(id=port_grp_port_relation_id).first())
 
     if not result:
-        raise exception.PortGrpPortRelationNotFound(port_grp_port_relation_id)
+        raise exception.PortGrpPortRelNotFound(port_grp_port_relation_id)
 
     return result
 
 
-def port_grp_port_relations_create(context, port_grp_port_relations):
+def port_grp_port_rels_create(context, port_grp_port_rels):
     """Create multiple port grp port relations."""
     session = get_session()
     port_grp_port_relation_refs = []
     with session.begin():
 
-        for port_grp_port_relation in port_grp_port_relations:
+        for port_grp_port_relation in port_grp_port_rels:
             LOG.debug('adding new port group port relation for '
                       'native port group id {0}:'
                       .format(port_grp_port_relation
@@ -2642,7 +2642,7 @@ def port_grp_port_relations_create(context, port_grp_port_relations):
                 port_grp_port_relation['id'] = uuidutils.generate_uuid()
 
             port_grp_port_relation_ref \
-                = models.PortGrpPortRelation()
+                = models.PortGrpPortRel()
             port_grp_port_relation_ref.update(port_grp_port_relation)
             port_grp_port_relation_refs.append(port_grp_port_relation_ref)
 
@@ -2651,58 +2651,58 @@ def port_grp_port_relations_create(context, port_grp_port_relations):
     return port_grp_port_relation_refs
 
 
-def port_grp_port_relations_delete(context,
-                                   port_grp_port_relations_list):
+def port_grp_port_rels_delete(context,
+                              port_grp_port_rels_list):
     """Delete multiple port grp port relations."""
     session = get_session()
     with session.begin():
-        for port_grp_port_relation_id in port_grp_port_relations_list:
+        for port_grp_port_relation_id in port_grp_port_rels_list:
             LOG.debug('deleting port grp port relation {0}:'.format(
                 port_grp_port_relation_id))
-            query = _port_grp_port_relations_get_query(context, session)
+            query = _port_grp_port_rels_get_query(context, session)
             result = query.filter_by(id=port_grp_port_relation_id).delete()
 
             if not result:
-                LOG.error(exception.PortGrpPortRelationNotFound(
+                LOG.error(exception.PortGrpPortRelNotFound(
                     port_grp_port_relation_id))
     return
 
 
-def port_grp_port_relations_update(context,
-                                   port_grp_port_relations_list):
+def port_grp_port_rels_update(context,
+                              port_grp_port_rels_list):
     """Update multiple port grp port relations."""
     session = get_session()
     with session.begin():
-        for port_grp_port_relation in port_grp_port_relations_list:
+        for port_grp_port_relation in port_grp_port_rels_list:
             LOG.debug('Updating port grp port relations {0}:'
                       .format(port_grp_port_relation.get('id')))
-            query = _port_grp_port_relations_get_query(context,
-                                                       session)
+            query = _port_grp_port_rels_get_query(context,
+                                                  session)
             result = query.filter_by(id=port_grp_port_relation.get('id')
                                      ).update(port_grp_port_relation)
 
             if not result:
-                LOG.error(exception.PortGrpPortRelationNotFound(
+                LOG.error(exception.PortGrpPortRelNotFound(
                     port_grp_port_relation.get('id')))
 
 
-def port_grp_port_relations_get(context, port_grp_port_relation_id):
+def port_grp_port_rels_get(context, port_grp_port_relation_id):
     """Get a port grp port relation or raise an exception if it does
     not exist.
     """
-    return _port_grp_port_relations_get(context,
-                                        port_grp_port_relation_id)
+    return _port_grp_port_rels_get(context,
+                                   port_grp_port_relation_id)
 
 
-def port_grp_port_relations_get_all(context, marker=None, limit=None,
-                                    sort_keys=None, sort_dirs=None,
-                                    filters=None, offset=None):
+def port_grp_port_rels_get_all(context, marker=None, limit=None,
+                               sort_keys=None, sort_dirs=None,
+                               filters=None, offset=None):
     """Retrieves all port grp port relations"""
     session = get_session()
     with session.begin():
         # Generate the query
         query = _generate_paginate_query(context, session, models.
-                                         PortGrpPortRelation,
+                                         PortGrpPortRel,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset)
         # No port grp port relation would match, return empty list
@@ -2711,11 +2711,11 @@ def port_grp_port_relations_get_all(context, marker=None, limit=None,
         return query.all()
 
 
-@apply_like_filters(model=models.PortGrpPortRelation)
-def _process_port_grp_port_relations_info_filters(query, filters):
+@apply_like_filters(model=models.PortGrpPortRel)
+def _process_port_grp_port_rels_info_filters(query, filters):
     """Common filter processing for port grp port relations queries."""
     if filters:
-        if not is_valid_model_filters(models.PortGrpPortRelation,
+        if not is_valid_model_filters(models.PortGrpPortRel,
                                       filters):
             return
         query = query.filter_by(**filters)
@@ -2723,36 +2723,36 @@ def _process_port_grp_port_relations_info_filters(query, filters):
     return query
 
 
-def port_grp_port_relations_delete_by_storage(context, storage_id):
+def port_grp_port_rels_delete_by_storage(context, storage_id):
     """Delete all the port grp port relations of a device"""
-    _port_grp_port_relations_get_query(context) \
+    _port_grp_port_rels_get_query(context) \
         .filter_by(storage_id=storage_id).delete()
 
 
-def _volume_grp_volume_relations_get_query(context, session=None):
-    return model_query(context, models.VolumeGrpVolumeRelation,
+def _vol_grp_vol_rels_get_query(context, session=None):
+    return model_query(context, models.VolGrpVolRel,
                        session=session)
 
 
-def _volume_grp_volume_relations_get(context, volume_grp_volume_relation_id,
-                                     session=None):
-    result = (_volume_grp_volume_relations_get_query(context, session=session)
+def _vol_grp_vol_rels_get(context, volume_grp_volume_relation_id,
+                          session=None):
+    result = (_vol_grp_vol_rels_get_query(context, session=session)
               .filter_by(id=volume_grp_volume_relation_id).first())
 
     if not result:
-        raise exception.VolumeGrpVolumeRelationNotFound(
+        raise exception.VolGrpVolRelNotFound(
             volume_grp_volume_relation_id)
 
     return result
 
 
-def volume_grp_volume_relations_create(context, volume_grp_volume_relations):
+def vol_grp_vol_rels_create(context, vol_grp_vol_rels):
     """Create multiple volume grp volume relations."""
     session = get_session()
     volume_grp_volume_relation_refs = []
     with session.begin():
 
-        for volume_grp_volume_relation in volume_grp_volume_relations:
+        for volume_grp_volume_relation in vol_grp_vol_rels:
             LOG.debug('adding new volume group volume relation for '
                       'native volume group  id {0}:'
                       .format(volume_grp_volume_relation
@@ -2761,7 +2761,7 @@ def volume_grp_volume_relations_create(context, volume_grp_volume_relations):
                 volume_grp_volume_relation['id'] = uuidutils.generate_uuid()
 
             volume_grp_volume_relation_ref \
-                = models.VolumeGrpVolumeRelation()
+                = models.VolGrpVolRel()
             volume_grp_volume_relation_ref.update(volume_grp_volume_relation)
             volume_grp_volume_relation_refs.append(
                 volume_grp_volume_relation_ref)
@@ -2771,58 +2771,58 @@ def volume_grp_volume_relations_create(context, volume_grp_volume_relations):
     return volume_grp_volume_relation_refs
 
 
-def volume_grp_volume_relations_delete(context,
-                                       volume_grp_volume_relations_list):
+def vol_grp_vol_rels_delete(context,
+                            vol_grp_vol_rels_list):
     """Delete multiple volume grp volume relations."""
     session = get_session()
     with session.begin():
-        for volume_grp_volume_relation_id in volume_grp_volume_relations_list:
+        for volume_grp_volume_relation_id in vol_grp_vol_rels_list:
             LOG.debug('deleting volume grp volume relation {0}:'.format(
                 volume_grp_volume_relation_id))
-            query = _volume_grp_volume_relations_get_query(context, session)
+            query = _vol_grp_vol_rels_get_query(context, session)
             result = query.filter_by(id=volume_grp_volume_relation_id).delete()
 
             if not result:
-                LOG.error(exception.VolumeGrpVolumeRelationNotFound(
+                LOG.error(exception.VolGrpVolRelationNotFound(
                     volume_grp_volume_relation_id))
     return
 
 
-def volume_grp_volume_relations_update(context,
-                                       volume_grp_volume_relations_list):
+def vol_grp_vol_rels_update(context,
+                            vol_grp_vol_rels_list):
     """Update multiple volume grp volume relations."""
     session = get_session()
     with session.begin():
-        for volume_grp_volume_relation in volume_grp_volume_relations_list:
+        for volume_grp_volume_relation in vol_grp_vol_rels_list:
             LOG.debug('Updating volume grp volume relations {0}:'
                       .format(volume_grp_volume_relation.get('id')))
-            query = _volume_grp_volume_relations_get_query(context,
-                                                           session)
+            query = _vol_grp_vol_rels_get_query(context,
+                                                session)
             result = query.filter_by(id=volume_grp_volume_relation.get('id')
                                      ).update(volume_grp_volume_relation)
 
             if not result:
-                LOG.error(exception.VolumeGrpVolumeRelationNotFound(
+                LOG.error(exception.VolGrpVolRelationNotFound(
                     volume_grp_volume_relation.get('id')))
 
 
-def volume_grp_volume_relations_get(context, volume_grp_volume_relation_id):
+def vol_grp_vol_rels_get(context, volume_grp_volume_relation_id):
     """Get a volume grp volume relation or raise an exception if it does
     not exist.
     """
-    return _volume_grp_volume_relations_get(context,
-                                            volume_grp_volume_relation_id)
+    return _vol_grp_vol_rels_get(context,
+                                 volume_grp_volume_relation_id)
 
 
-def volume_grp_volume_relations_get_all(context, marker=None, limit=None,
-                                        sort_keys=None, sort_dirs=None,
-                                        filters=None, offset=None):
+def vol_grp_vol_rels_get_all(context, marker=None, limit=None,
+                             sort_keys=None, sort_dirs=None,
+                             filters=None, offset=None):
     """Retrieves all volume grp volume relations"""
     session = get_session()
     with session.begin():
         # Generate the query
         query = _generate_paginate_query(context, session, models.
-                                         VolumeGrpVolumeRelation,
+                                         VolGrpVolRelation,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset)
         # No volume grp volume relation would match, return empty list
@@ -2831,11 +2831,11 @@ def volume_grp_volume_relations_get_all(context, marker=None, limit=None,
         return query.all()
 
 
-@apply_like_filters(model=models.VolumeGrpVolumeRelation)
-def _process_volume_grp_volume_relations_info_filters(query, filters):
+@apply_like_filters(model=models.VolGrpVolRel)
+def _process_vol_grp_vol_rels_info_filters(query, filters):
     """Common filter processing for volume grp volume relations queries."""
     if filters:
-        if not is_valid_model_filters(models.VolumeGrpVolumeRelation,
+        if not is_valid_model_filters(models.VolGrpVolRel,
                                       filters):
             return
         query = query.filter_by(**filters)
@@ -2843,9 +2843,9 @@ def _process_volume_grp_volume_relations_info_filters(query, filters):
     return query
 
 
-def volume_grp_volume_relations_delete_by_storage(context, storage_id):
+def vol_grp_vol_rels_delete_by_storage(context, storage_id):
     """Delete all the volume grp volume relations of a device"""
-    _volume_grp_volume_relations_get_query(context) \
+    _vol_grp_vol_rels_get_query(context) \
         .filter_by(storage_id=storage_id).delete()
 
 
@@ -2901,18 +2901,18 @@ PAGINATION_HELPERS = {
     models.MaskingView: (_masking_views_get_query,
                          _process_masking_views_info_filters,
                          _masking_views_get),
-    models.StorageHostGrpStorageHostRelation: (
-        _storage_host_grp_host_relations_get_query,
-        _process_storage_host_grp_host_relations_info_filters,
-        _storage_host_grp_host_relations_get),
+    models.StorageHostGrpHostRel: (
+        _storage_host_grp_host_rels_get_query,
+        _process_storage_host_grp_host_rels_info_filters,
+        _storage_host_grp_host_rels_get),
 
-    models.PortGrpPortRelation: (_port_grp_port_relations_get_query,
-                                 _process_port_grp_port_relations_info_filters,
-                                 _port_grp_port_relations_get),
-    models.VolumeGrpVolumeRelation: (
-        _volume_grp_volume_relations_get_query,
-        _process_volume_grp_volume_relations_info_filters,
-        _volume_grp_volume_relations_get),
+    models.PortGrpPortRel: (_port_grp_port_rels_get_query,
+                            _process_port_grp_port_rels_info_filters,
+                            _port_grp_port_rels_get),
+    models.VolGrpVolRel: (
+        _vol_grp_vol_rels_get_query,
+        _process_vol_grp_vol_rels_info_filters,
+        _vol_grp_vol_rels_get),
 
 }
 

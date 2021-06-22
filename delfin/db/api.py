@@ -1151,35 +1151,35 @@ def masking_views_delete_by_storage(context, storage_id):
     return IMPL.masking_views_delete_by_storage(context, storage_id)
 
 
-def storage_host_grp_host_relations_create(context, values):
+def storage_host_grp_host_rels_create(context, values):
     """Create a storage host grp host relation entry from the values
     dictionary.
     """
-    return IMPL.storage_host_grp_host_relations_create(context, values)
+    return IMPL.storage_host_grp_host_rels_create(context, values)
 
 
-def storage_host_grp_host_relations_update(context, values):
+def storage_host_grp_host_rels_update(context, values):
     """Update a storage host grp host relation with the values dictionary."""
-    return IMPL.storage_host_grp_host_relations_update(context, values)
+    return IMPL.storage_host_grp_host_rels_update(context, values)
 
 
-def storage_host_grp_host_relations_delete(context, values):
+def storage_host_grp_host_rels_delete(context, values):
     """Delete multiple storage host grp host relations."""
-    return IMPL.storage_host_grp_host_relations_delete(context, values)
+    return IMPL.storage_host_grp_host_rels_delete(context, values)
 
 
-def storage_host_grp_host_relations_get(context, host_grp_host_relation_id):
+def storage_host_grp_host_rels_get(context, host_grp_host_relation_id):
     """Get a storage host grp host relation or raise an exception if it does
     not exist.
     """
-    return IMPL.storage_host_grp_host_relations_get(context,
-                                                    host_grp_host_relation_id)
+    return IMPL.storage_host_grp_host_rels_get(context,
+                                               host_grp_host_relation_id)
 
 
-def storage_host_grp_host_relations_get_all(context, marker=None, limit=None,
-                                            sort_keys=None,
-                                            sort_dirs=None, filters=None,
-                                            offset=None):
+def storage_host_grp_host_rels_get_all(context, marker=None, limit=None,
+                                       sort_keys=None,
+                                       sort_dirs=None, filters=None,
+                                       offset=None):
     """Retrieves all storage host grp host relation.
 
     If no sort parameters are specified then the returned
@@ -1200,47 +1200,47 @@ def storage_host_grp_host_relations_get_all(context, marker=None, limit=None,
     :param offset: number of items to skip
     :returns: list of storage host grp host relations
     """
-    return IMPL.storage_host_grp_host_relations_get_all(context, marker, limit,
-                                                        sort_keys,
-                                                        sort_dirs, filters,
-                                                        offset)
+    return IMPL.storage_host_grp_host_rels_get_all(context, marker, limit,
+                                                   sort_keys,
+                                                   sort_dirs, filters,
+                                                   offset)
 
 
-def storage_host_grp_host_relations_delete_by_storage(context, storage_id):
+def storage_host_grp_host_rels_delete_by_storage(context, storage_id):
     """Delete all the storage host grp host relations of a device."""
-    return IMPL.storage_host_grp_host_relations_delete_by_storage(context,
-                                                                  storage_id)
+    return IMPL.storage_host_grp_host_rels_delete_by_storage(context,
+                                                             storage_id)
 
 
-def port_grp_port_relations_create(context, values):
+def port_grp_port_rels_create(context, values):
     """Create a port grp port relation entry from the values
     dictionary.
     """
-    return IMPL.port_grp_port_relations_create(context, values)
+    return IMPL.port_grp_port_rels_create(context, values)
 
 
-def port_grp_port_relations_update(context, values):
+def port_grp_port_rels_update(context, values):
     """Update a port grp port relation with the values dictionary."""
-    return IMPL.port_grp_port_relations_update(context, values)
+    return IMPL.port_grp_port_rels_update(context, values)
 
 
-def port_grp_port_relations_delete(context, values):
+def port_grp_port_rels_delete(context, values):
     """Delete multiple port grp port relations."""
-    return IMPL.port_grp_port_relations_delete(context, values)
+    return IMPL.port_grp_port_rels_delete(context, values)
 
 
-def port_grp_port_relations_get(context, port_grp_port_relation_id):
+def port_grp_port_rels_get(context, port_grp_port_relation_id):
     """Get a port grp port relation or raise an exception if it does
     not exist.
     """
-    return IMPL.port_grp_port_relations_get(context,
-                                            port_grp_port_relation_id)
+    return IMPL.port_grp_port_rels_get(context,
+                                       port_grp_port_relation_id)
 
 
-def port_grp_port_relations_get_all(context, marker=None, limit=None,
-                                    sort_keys=None,
-                                    sort_dirs=None, filters=None,
-                                    offset=None):
+def port_grp_port_rels_get_all(context, marker=None, limit=None,
+                               sort_keys=None,
+                               sort_dirs=None, filters=None,
+                               offset=None):
     """Retrieves all port grp port relation.
 
     If no sort parameters are specified then the returned
@@ -1261,47 +1261,47 @@ def port_grp_port_relations_get_all(context, marker=None, limit=None,
     :param offset: number of items to skip
     :returns: list of port grp port relations
     """
-    return IMPL.port_grp_port_relations_get_all(context, marker, limit,
-                                                sort_keys,
-                                                sort_dirs, filters,
-                                                offset)
+    return IMPL.port_grp_port_rels_get_all(context, marker, limit,
+                                           sort_keys,
+                                           sort_dirs, filters,
+                                           offset)
 
 
-def port_grp_port_relations_delete_by_storage(context, storage_id):
+def port_grp_port_rels_delete_by_storage(context, storage_id):
     """Delete all the port grp port relations of a device."""
-    return IMPL.port_grp_port_relations_delete_by_storage(context,
-                                                          storage_id)
+    return IMPL.port_grp_port_rels_delete_by_storage(context,
+                                                     storage_id)
 
 
-def volume_grp_volume_relations_create(context, values):
+def vol_grp_vol_rels_create(context, values):
     """Create a volume grp volume relation entry from the values
     dictionary.
     """
-    return IMPL.volume_grp_volume_relations_create(context, values)
+    return IMPL.vol_grp_vol_rels_create(context, values)
 
 
-def volume_grp_volume_relations_update(context, values):
+def vol_grp_vol_rels_update(context, values):
     """Update a volume grp volume relation with the values dictionary."""
-    return IMPL.volume_grp_volume_relations_update(context, values)
+    return IMPL.vol_grp_vol_rels_update(context, values)
 
 
-def volume_grp_volume_relations_delete(context, values):
+def vol_grp_vol_rels_delete(context, values):
     """Delete multiple volume grp volume relations."""
-    return IMPL.volume_grp_volume_relations_delete(context, values)
+    return IMPL.vol_grp_vol_rels_delete(context, values)
 
 
-def volume_grp_volume_relations_get(context, volume_grp_volume_relation_id):
+def vol_grp_vol_rels_get(context, volume_grp_volume_relation_id):
     """Get a volume grp volume relation or raise an exception if it does
     not exist.
     """
-    return IMPL.volume_grp_volume_relations_get(context,
-                                                volume_grp_volume_relation_id)
+    return IMPL.vol_grp_vol_rels_get(context,
+                                     volume_grp_volume_relation_id)
 
 
-def volume_grp_volume_relations_get_all(context, marker=None, limit=None,
-                                        sort_keys=None,
-                                        sort_dirs=None, filters=None,
-                                        offset=None):
+def vol_grp_vol_rels_get_all(context, marker=None, limit=None,
+                             sort_keys=None,
+                             sort_dirs=None, filters=None,
+                             offset=None):
     """Retrieves all volume grp volume relation.
 
     If no sort parameters are specified then the returned
@@ -1322,13 +1322,13 @@ def volume_grp_volume_relations_get_all(context, marker=None, limit=None,
     :param offset: number of items to skip
     :returns: list of volume grp volume relations
     """
-    return IMPL.volume_grp_volume_relations_get_all(context, marker, limit,
-                                                    sort_keys,
-                                                    sort_dirs, filters,
-                                                    offset)
+    return IMPL.vol_grp_vol_rels_get_all(context, marker, limit,
+                                         sort_keys,
+                                         sort_dirs, filters,
+                                         offset)
 
 
-def volume_grp_volume_relations_delete_by_storage(context, storage_id):
+def vol_grp_vol_rels_delete_by_storage(context, storage_id):
     """Delete all the volume grp volume relations of a device."""
-    return IMPL.volume_grp_volume_relations_delete_by_storage(context,
-                                                              storage_id)
+    return IMPL.vol_grp_vol_rels_delete_by_storage(context,
+                                                   storage_id)
