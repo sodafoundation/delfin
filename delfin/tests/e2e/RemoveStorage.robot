@@ -12,7 +12,7 @@ ${delfin_url}           http://localhost:8190/v1
 
 Delete Storage with valid storage_id
     [Tags]    DELFIN
-    Sleep                   1s
+    Sleep                   5s
     ${storage_id_test}=     Register Test Storage
     Create Session          delfin      ${delfin_url}
     ${resp_del}=            DELETE On Session    delfin     storages/${storage_id_test}

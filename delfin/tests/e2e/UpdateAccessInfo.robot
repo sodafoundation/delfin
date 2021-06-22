@@ -111,9 +111,9 @@ Close Application
             ${storage_id}=  Get Value From Json	    ${storage} 	        $..id
             Delete Storage With ID                  ${storage_id[0]}
     END
-    Sleep       1s
+    Sleep       5s
 
 Open Application
     ${array_id}=            Register Test Storage
-    Sleep       1s
+    Sleep       5s
 
