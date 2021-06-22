@@ -39,6 +39,17 @@ class NetAppHandler(object):
         self.ssh_pool = SSHPool(**kwargs)
 
     @staticmethod
+    def get_fs_id(vserver, volume):
+        return vserver + '_' + volume
+
+    @staticmethod
+    def get_qt_id(vserver, volume, qtree):
+        qt_id = vserver + '_/' + volume
+        if qtree != '':
+            qt_id += '/' + qtree
+        return qt_id
+
+    @staticmethod
     def parse_alert(alert):
         try:
             alert_info = alert.get(NetAppHandler.OID_TRAP_DATA)
@@ -458,7 +469,7 @@ class NetAppHandler(object):
                         'false':
                     compressed = False
                 status = constant.FS_STATUS.get(fs_map['VolumeState'])
-                fs_id = fs_map['Name'] + '_' + fs_map['VolumeName']
+                fs_id = self.get_fs_id(fs_map['Name'], fs_map['VolumeName'])
                 fs_model = {
                     'name': fs_map['VolumeName'],
                     'storage_id': storage_id,
@@ -480,7 +491,8 @@ class NetAppHandler(object):
                     'free_capacity':
                         int(Tools.get_capacity_size(fs_map['AvailableSize']))
                 }
-                fs_list.append(fs_model)
+                if fs_model['total_capacity'] > 0:
+                    fs_list.append(fs_model)
         return fs_list
 
     def list_controllers(self, storage_id):
@@ -722,20 +734,37 @@ class NetAppHandler(object):
             qt_list = []
             qt_info = self.ssh_pool.do_exec(
                 constant.QTREE_SHOW_DETAIL_COMMAND)
+            fs_info = self.ssh_pool.do_exec(
+                constant.FS_SHOW_DETAIL_COMMAND)
+            fs_array = fs_info.split(constant.FS_SPLIT_STR)
             qt_array = qt_info.split(constant.QTREE_SPLIT_STR)
             for qt in qt_array[1:]:
                 qt_map = {}
                 Tools.split_value_map(qt, qt_map, split=':')
                 if 'QtreeName' in qt_map.keys():
-                    fs_id = qt_map['Name'] + '_' + qt_map['VolumeName']
-                    qt_id = \
-                        qt_map['Name'] + '_' \
-                        + qt_map['Actual(Non-Junction)QtreePath']
+                    fs_id = self.get_fs_id(qt_map['Name'],
+                                           qt_map['VolumeName'])
+                    qtree_path = None
+                    for fs in fs_array[1:]:
+                        fs_map = {}
+                        Tools.split_value_map(fs, fs_map, split=':')
+                        if fs_id == self.get_fs_id(
+                                fs_map['Name'],
+                                fs_map['VolumeName']) \
+                                and fs_map['JunctionPath'] != '-':
+                            qtree_path = fs_map['JunctionPath']
+                            break
+                    qt_id = self.get_qt_id(
+                        qt_map['Name'],
+                        qt_map['VolumeName'],
+                        qt_map['QtreeName'])
+                    if qt_map['QtreeName'] != '' and qtree_path is not None:
+                        qtree_path += '/' + qt_map['QtreeName']
                     qt_model = {
                         'name': qt_map['QtreeName'],
                         'storage_id': storage_id,
                         'native_qtree_id': qt_id,
-                        'path': qt_map['Actual(Non-Junction)QtreePath'],
+                        'path': qtree_path,
                         'native_filesystem_id': fs_id,
                         'security_mode': qt_map['SecurityStyle'],
                     }
@@ -764,10 +793,12 @@ class NetAppHandler(object):
                 Tools.split_value_map(nfs_share, fs_map, split=':')
                 protocol = protocol_map.get(fs_map['Name'])
                 if constants.ShareProtocol.NFS in protocol:
-                    fs_id = fs_map['Name'] + '_' + fs_map['VolumeName']
+                    fs_id = self.get_fs_id(fs_map['Name'],
+                                           fs_map['VolumeName'])
                     share_name = \
-                        fs_map['Name'] + '_/vol/' + fs_map['VolumeName']
-                    qt_id = fs_map['Name'] + '_/vol/' + fs_map['VolumeName']
+                        fs_map['Name'] + '_/' + fs_map['VolumeName']
+                    qt_id = self.get_qt_id(fs_map['Name'],
+                                           fs_map['VolumeName'], '')
                     qtree_id = None
                     for qtree in qtree_list:
                         if qtree['native_qtree_id'] == qt_id:
@@ -779,7 +810,7 @@ class NetAppHandler(object):
                                 'name': qt_share_name,
                                 'storage_id': storage_id,
                                 'native_share_id':
-                                    share_name +
+                                    share_name + '_' +
                                     constants.ShareProtocol.NFS,
                                 'native_qtree_id':
                                     qtree['native_qtree_id'],
@@ -827,15 +858,14 @@ class NetAppHandler(object):
                     share_map['VolumeName'] != '-':
                 protocol_str = protocol_map.get(
                     share_map[constant.VSERVER_NAME])
-                fs_id = \
-                    share_map[constant.VSERVER_NAME] + \
-                    '_' + share_map['VolumeName']
+                fs_id = self.get_fs_id(share_map[constant.VSERVER_NAME],
+                                       share_map['VolumeName'])
                 share_id = fs_id + '_' + share_map['Share'] + '_'
                 qtree_id = None
                 for qtree in qtree_list:
                     qt_id = \
                         share_map[constant.VSERVER_NAME] + \
-                        '_/vol/' + share_map['Path']
+                        '_' + share_map['Path']
                     if qtree['native_qtree_id'] == qt_id:
                         qtree_id = qt_id
                         break
@@ -920,21 +950,18 @@ class NetAppHandler(object):
                         quota_map['Type'] + '_' + \
                         quota_map['Target']
                     type = constant.QUOTA_TYPE.get(quota_map['Type'])
-                    native_qtree_id = '/vol/' + quota_map['VolumeName']
+                    qt_id = self.get_qt_id(
+                        quota_map[constant.VSERVER_NAME],
+                        quota_map['VolumeName'], '')
                     if type == 'tree' and quota_map['Target'] != '':
-                        native_qtree_id += '/' + quota_map['Target']
+                        qt_id += '/' + quota_map['Target']
                     else:
-                        if type == 'group':
+                        if type == 'user' or 'group':
                             user_group_name = quota_map['Target']
                         if quota_map['QtreeName'] != '':
-                            native_qtree_id += '/' + quota_map['QtreeName']
-                    fs_id = \
-                        quota_map[constant.VSERVER_NAME] +\
-                        '_' +\
-                        quota_map['VolumeName']
-                    qt_id = \
-                        quota_map[constant.VSERVER_NAME] + '_' \
-                        + native_qtree_id
+                            qt_id += '/' + quota_map['QtreeName']
+                    fs_id = self.get_fs_id(quota_map[constant.VSERVER_NAME],
+                                           quota_map['VolumeName'])
                     quota = {
                         'native_quota_id': quota_id,
                         'type': type,
