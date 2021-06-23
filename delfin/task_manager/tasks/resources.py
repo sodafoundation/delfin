@@ -23,7 +23,6 @@ from delfin import exception
 from delfin.common import constants
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
-from delfin.task_manager import rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
@@ -52,13 +51,8 @@ def set_synced_after():
                 # means all the sync tasks are completed
                 if storage['sync_status'] != constants.SyncStatus.SYNCED:
                     storage['sync_status'] -= sync_result
-
-                    if storage['sync_status'] == 0:
-                        # When all resource sync is done,trigger
-                        # building relations from host mapping attributes
-                        task_rpcapi.TaskAPI().build_host_mapping_relations(
-                            self.context, self.storage_id)
                     db.storage_update(self.context, self.storage_id, storage)
+
         return ret
 
     return _set_synced_after
@@ -629,7 +623,7 @@ class StorageHostInitiatorTask(StorageResourceTask):
         LOG.info('Syncing storage host initiator for storage id:{0}'
                  .format(self.storage_id))
         try:
-            # collect the storage host initiator list from driver and database
+            # Collect the storage host initiator list from driver and database
             storage_host_initiators = self.driver_api \
                 .list_storage_host_initiators(self.context, self.storage_id)
             db_storage_host_initiators = db.storage_host_initiators_get_all(
@@ -685,7 +679,7 @@ class StorageHostTask(StorageResourceTask):
         LOG.info('Syncing storage hosts for storage id:{0}'
                  .format(self.storage_id))
         try:
-            # collect the storage hosts list from driver and database
+            # Collect the storage hosts list from driver and database
             storage_hosts = self.driver_api.list_storage_hosts(
                 self.context, self.storage_id)
             db_storage_hosts = db.storage_hosts_get_all(
@@ -740,7 +734,8 @@ class StorageHostGroupTask(StorageResourceTask):
         LOG.info('Syncing storage host group for storage id:{0}'
                  .format(self.storage_id))
         try:
-            # collect the storage host group list from driver and database
+            # Collect the storage host group list from driver and database.
+            # Build relation between host grp and host to be handled here.
             storage_host_groups = self.driver_api \
                 .list_storage_host_groups(self.context, self.storage_id)
             db_storage_host_groups = db.storage_host_groups_get_all(
@@ -795,7 +790,8 @@ class PortGroupTask(StorageResourceTask):
         LOG.info('Syncing port group for storage id:{0}'
                  .format(self.storage_id))
         try:
-            # collect the port groups from driver and database
+            # Collect the port groups from driver and database
+            # Build relation between port grp and port to be handled here.
             port_groups = self.driver_api \
                 .list_port_groups(self.context, self.storage_id)
             db_port_groups = db.port_groups_get_all(
@@ -848,7 +844,8 @@ class VolumeGroupTask(StorageResourceTask):
         LOG.info('Syncing volume group for storage id:{0}'
                  .format(self.storage_id))
         try:
-            # collect the volume groups from driver and database
+            # Collect the volume groups from driver and database
+            # Build relation between volume grp and volume to be handled here.
             volume_groups = self.driver_api \
                 .list_volume_groups(self.context, self.storage_id)
             db_volume_groups = db.volume_groups_get_all(
@@ -901,7 +898,7 @@ class MaskingViewTask(StorageResourceTask):
         LOG.info('Syncing masking view for storage id:{0}'
                  .format(self.storage_id))
         try:
-            # collect the masking views from driver and database
+            # Collect the masking views from driver and database
             masking_views = self.driver_api \
                 .list_masking_views(self.context, self.storage_id)
             db_masking_views = db.masking_views_get_all(
