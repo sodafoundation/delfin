@@ -48,6 +48,12 @@ class AccessInfoController(wsgi.Controller):
         access_info = self.driver_api.update_access_info(ctxt, access_info)
         return self._view_builder.show(access_info)
 
+    def show_all(self, req):
+        """Show all access information."""
+        ctxt = req.environ.get('delfin.context')
+        access_infos = db.access_info_get_all(ctxt)
+        return self._view_builder.show_all(access_infos)
+
 
 def create_resource():
     return wsgi.Resource(AccessInfoController())

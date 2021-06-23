@@ -62,19 +62,28 @@ class APIRouter(common.APIRouter):
                        action="update",
                        conditions={"method": ["PUT"]})
 
+        mapper.connect("storages", "/access-infos",
+                       controller=self.resources['access_info'],
+                       action="show_all",
+                       conditions={"method": ["GET"]})
+
         self.resources['alert_sources'] = alert_source.create_resource()
-        mapper.connect("storages", "/storages/{id}/alert-source",
+        mapper.connect("storages", "/storages/{id}/snmp-config",
                        controller=self.resources['alert_sources'],
                        action="put",
                        conditions={"method": ["PUT"]})
-        mapper.connect("storages", "/storages/{id}/alert-source",
+        mapper.connect("storages", "/storages/{id}/snmp-config",
                        controller=self.resources['alert_sources'],
                        action="show",
                        conditions={"method": ["GET"]})
-        mapper.connect("storages", "/storages/{id}/alert-source",
+        mapper.connect("storages", "/storages/{id}/snmp-config",
                        controller=self.resources['alert_sources'],
                        action="delete",
                        conditions={"method": ["DELETE"]})
+        mapper.connect("storages", "/snmp-configs",
+                       controller=self.resources['alert_sources'],
+                       action="show_all",
+                       conditions={"method": ["GET"]})
 
         self.resources['alerts'] = alerts.create_resource()
         mapper.connect("storages", "/storages/{id}/alerts/{sequence_number}",
