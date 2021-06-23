@@ -99,9 +99,18 @@ class PortType(object):
     ETH = 'eth'
     SAS = 'sas'
     IB = 'ib'
+    LOGIC = 'logic'
+    CIFS = 'cifs'
+    NFS = 'nfs'
+    FCACHE = 'fcache'
+    COMBO = 'combo'
+    CNA = 'cna'
+    RCIP = 'rcip'
+    NFS_CIFS = 'nfs-cifs'
     OTHER = 'other'
 
-    ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, OTHER)
+    ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, LOGIC,
+           CIFS, NFS, FCACHE, COMBO, CNA, RCIP, NFS_CIFS, OTHER)
 
 
 class PortLogicalType(object):
@@ -112,10 +121,19 @@ class PortLogicalType(object):
     INTERNAL = 'internal'
     MAINTENANCE = 'maintenance'
     INTERCONNECT = 'interconnect'
+    CLUSTER = 'cluster'
+    DATA = 'data'
+    NODE_MGMT = 'node-mgmt'
+    INTERCLUSTER = 'intercluster'
+    CLUSTER_MGMT = 'cluster-mgmt'
+    PHYSICAL = 'physical'
+    IF_GROUP = 'if-group'
+    VLAN = 'vlan'
     OTHER = 'other'
 
     ALL = (FRONTEND, BACKEND, SERVICE, MANAGEMENT,
-           INTERNAL, MAINTENANCE, INTERCONNECT, OTHER)
+           INTERNAL, MAINTENANCE, INTERCONNECT, CLUSTER, DATA, NODE_MGMT,
+           INTERCLUSTER, CLUSTER_MGMT, PHYSICAL, IF_GROUP, VLAN, OTHER)
 
 
 class DiskStatus(object):
@@ -131,9 +149,19 @@ class DiskPhysicalType(object):
     SAS = 'sas'
     SSD = 'ssd'
     NL_SSD = 'nl-ssd'
+    FC = 'fc'
+    LUN = 'lun'
+    ATA = 'ata'
+    FLASH = 'flash'
+    VMDISK = 'vmdisk'
+    NL_SAS = 'nl-sas'
+    SSD_CARD = 'ssd-card'
+    SAS_FLASH_VP = 'sas-flash-vp'
     UNKNOWN = 'unknown'
 
-    ALL = (SATA, SAS, SSD, NL_SSD, UNKNOWN)
+    ALL = (
+        SATA, SAS, SSD, NL_SSD, FC, LUN, ATA, FLASH, VMDISK,
+        NL_SAS, SSD_CARD, SAS_FLASH_VP, UNKNOWN)
 
 
 class DiskLogicalType(object):
@@ -141,9 +169,22 @@ class DiskLogicalType(object):
     MEMBER = 'member'
     HOTSPARE = 'hotspare'
     CACHE = 'cache'
+    AGGREGATE = 'aggregate'
+    BROKEN = 'broken'
+    FOREIGN = 'foreign'
+    LABELMAINT = 'labelmaint'
+    MAINTENANCE = 'maintenance'
+    SHARED = 'shared'
+    SPARE = 'spare'
+    UNASSIGNED = 'unassigned'
+    UNSUPPORTED = 'unsupported'
+    REMOTE = 'remote'
+    MEDIATOR = 'mediator'
     UNKNOWN = 'unknown'
 
-    ALL = (FREE, MEMBER, HOTSPARE, CACHE, UNKNOWN)
+    ALL = (FREE, MEMBER, HOTSPARE, CACHE, AGGREGATE, BROKEN, FOREIGN,
+           LABELMAINT, MAINTENANCE, SHARED, SPARE, UNASSIGNED, UNSUPPORTED,
+           REMOTE, MEDIATOR, UNKNOWN)
 
 
 class FilesystemStatus(object):
@@ -280,6 +321,21 @@ class SecurityLevel(object):
 # Performance collection constants and common models
 # Metric model
 metric_struct = namedtuple("Metric", "name labels values")
+
+
+class ResourceType(object):
+    STORAGE = 'storage'
+    STORAGE_POOL = 'storagePool'
+    VOLUME = 'volume'
+    CONTROLLER = 'controller'
+    PORT = 'port'
+    DISK = 'disk'
+    FILESYSTEM = 'filesystem'
+    SHARE = 'share'
+
+    ALL = (STORAGE, STORAGE_POOL, VOLUME, CONTROLLER,
+           PORT, DISK, FILESYSTEM, SHARE)
+
 
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [

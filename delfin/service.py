@@ -33,7 +33,7 @@ from oslo_utils import importutils
 from delfin import context
 from delfin import coordination
 from delfin import rpc
-from delfin.task_manager.scheduler import schedule_manager
+from delfin.leader_election.factory import LeaderElectionFactory
 
 LOG = log.getLogger(__name__)
 
@@ -69,6 +69,10 @@ service_opts = [
     cfg.PortOpt('trap_receiver_port',
                 default=162,
                 help='Port at which trap receiver listens.'),
+    cfg.StrOpt('leader_election_plugin',
+               default="tooz",
+               help='Supported plugin for leader election. Options: '
+                    'tooz(Default)'),
 ]
 
 CONF = cfg.CONF
@@ -269,7 +273,62 @@ class TaskService(Service):
 
     def start(self):
         super(TaskService, self).start()
-        schedule_manager.SchedulerManager().start()
+
+
+class LeaderElectionService(service.Service):
+    """Leader election service for distributed system
+
+    The service takes callback functions and leader election unique
+    key to synchronize leaders in distributed environment
+    """
+
+    def __init__(self, leader_elector, *args, **kwargs):
+        super(LeaderElectionService, self).__init__()
+        self.leader_elector = leader_elector
+
+    def start(self):
+        """Start leader election service
+        """
+        while True:
+            # start/restart participating in leader election
+            self.leader_elector.run()
+
+            # cleanup and again start participating for leadership
+            self.leader_elector.cleanup()
+
+    def __getattr__(self, key):
+        leader = self.__dict__.get('leader', None)
+        return getattr(leader, key)
+
+    @classmethod
+    def create(cls, *args, **kwargs):
+        """Instantiates class and passes back application object.
+        """
+        leader_elector = LeaderElectionFactory.construct_elector(
+            CONF.leader_election_plugin)
+
+        service_obj = cls(leader_elector, *args, **kwargs)
+
+        return service_obj
+
+    def kill(self):
+        """Destroy the service object in the datastore."""
+        self.stop()
+
+    def stop(self, graceful=False):
+        # Try to shut the connection down, but if we get any sort of
+        # errors, go ahead and ignore them.. as we're shutting down anyway
+        try:
+            # cleanup when losses the leadership
+            if self.leader_elector:
+                self.leader_elector.cleanup()
+        except Exception:
+            pass
+
+        super(LeaderElectionService, self).stop(graceful)
+
+    def wait(self):
+        pass
 
 
 class WSGIService(service.ServiceBase):
@@ -396,10 +455,10 @@ _launcher = None
 
 def serve(server, workers=None):
     global _launcher
-    if _launcher:
-        raise RuntimeError('serve() can only be called once')
-    _launcher = service.launch(CONF, server, workers=workers,
-                               restart_method='mutate')
+    if not _launcher:
+        _launcher = service.Launcher(CONF, restart_method='mutate')
+
+    _launcher.launch_service(server, workers=workers)
 
 
 def wait():
