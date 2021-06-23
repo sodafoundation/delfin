@@ -41,21 +41,9 @@ class TestIMDBAPIStoragePool(test.TestCase):
         mock_session.return_value.__enter__.return_value.query.return_value \
             = expected
         got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
-        utils.validate_db_schema_storage_pool_model(got[0])
-        utils.validate_db_schema_storage_pool_model(expected[0])
+        utils.validate_db_schema_model(got[0], models.StoragePool)
+        utils.validate_db_schema_model(expected[0], models.StoragePool)
         self.assertDictMatch(got[0], expected[0])
-
-    @mock.patch('delfin.db.sqlalchemy.api.get_session')
-    def test_invalid_attribute_value_storage_pool_create(self, mock_session):
-        storage_pool_model_lst = fake_data.fake_storage_pool_create()
-        expected = fake_data.fake_expected_storage_pool_create()
-        mock_session.return_value.__enter__.return_value.query.return_value \
-            = expected
-        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
-        try:
-            self.assertDictMatch(got[1], expected[1])
-        except AssertionError as msg:
-            print(msg)
 
     @mock.patch('delfin.db.sqlalchemy.api.get_session')
     def test_unknown_attribute_storage_pool_model_create(self, mock_session):
@@ -64,11 +52,9 @@ class TestIMDBAPIStoragePool(test.TestCase):
         mock_session.return_value.__enter__.return_value.query.return_value \
             = expected
         got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
-        try:
-            utils.validate_db_schema_storage_pool_model(got[2])
-            utils.validate_db_schema_storage_pool_model(expected[2])
-        except AssertionError as msg:
-            print(msg)
+        self.assertRaisesRegex(AssertionError, "",
+                               utils.validate_db_schema_model,
+                               got[1], models.StoragePool)
 
 
 class TestSIMDBAPI(test.TestCase):

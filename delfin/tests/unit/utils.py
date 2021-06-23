@@ -33,14 +33,13 @@ def get_db_schema_attributes_list(schema):
     return sorted(db_attrib_lst)
 
 
-def validate_db_schema_storage_pool_model(got):
+def validate_db_schema_model(got, model):
     try:
-        res = check_isinstance(got, models.StoragePool)
+        res = check_isinstance(got, model)
         if res:
-            storage_pool_attributes = \
-                get_db_schema_attributes_list(models.StoragePool)
+            attributes = get_db_schema_attributes_list(model)
             lst = sorted(list(got.keys()))
-            case.assertListEqual(storage_pool_attributes, lst)
-            case.assertCountEqual(storage_pool_attributes, lst)
-    except AssertionError as msg:
+            case.assertListEqual(attributes, lst)
+            case.assertCountEqual(attributes, lst)
+    except AssertionError:
         raise
