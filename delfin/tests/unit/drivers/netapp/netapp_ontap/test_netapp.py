@@ -143,3 +143,10 @@ class TestNetAppCmodeDriver(TestCase):
             side_effect=[test_constans.QUOTAS_INFO])
         data = self.netapp_client.list_quotas(context)
         self.assertEqual(data[0]['file_soft_limit'], 1000)
+
+    def test_ge_alert_sources(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.NODE_IPS_INFO,
+                         test_constans.CLUSTER_IPS_INFO])
+        data = self.netapp_client.ge_alert_sources()
+        self.assertEqual(data[0]['host'], '192.168.159.131')

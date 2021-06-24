@@ -70,6 +70,9 @@ STORAGE_MODEL = "cmodel"
 QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
 QUOTA_SPLIT_STR = "    Vserve"
 
+MGT_IP_COMMAND = "network interface show -fields address -role cluster-mgmt"
+NODE_IP_COMMAND = "network interface show -fields address -role node-mgmt"
+
 AGGREGATE_NAME = "e"
 POOL_NAME = "ame"
 DISK_NAME = "k"

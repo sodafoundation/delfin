@@ -564,6 +564,8 @@ class NetAppHandler(object):
                     interface_info, interface_map, split=':')
                 logical_type = constant.NETWORK_LOGICAL_TYPE.get(
                     interface_map['Role'])
+                port_type = constant.NETWORK_PORT_TYPE.get(
+                    interface_map['DataProtocol'])
                 port_id = \
                     interface_map['Name'] + \
                     '_' + \
@@ -587,7 +589,7 @@ class NetAppHandler(object):
                         constants.PortHealthStatus.NORMAL
                         if interface_map['OperationalStatus'] == 'up'
                         else constants.PortHealthStatus.ABNORMAL,
-                    'type': constants.PortType.LOGIC,
+                    'type': port_type,
                     'logical_type': logical_type,
                     'speed': None,
                     'max_speed': None,
@@ -1012,6 +1014,30 @@ class NetAppHandler(object):
             raise e
         except Exception as err:
             err_msg = "Failed to get storage volume from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def ge_alert_sources(self):
+        try:
+            ip_list = []
+            mgt_ip = self.ssh_pool.do_exec(constant.MGT_IP_COMMAND)
+            node_ip = self.ssh_pool.do_exec(constant.NODE_IP_COMMAND)
+            mgt_ip_array = mgt_ip.split("\r\n")
+            node_ip_array = node_ip.split("\r\n")
+            for node in node_ip_array[2:]:
+                ip_array = node.split()
+                if len(ip_array) == 3:
+                    ip_list.append({'host': ip_array[2]})
+            ip_list.append({'host': mgt_ip_array[2].split()[2]})
+            return ip_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage ip from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage ip from " \
                       "netapp cmode: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
