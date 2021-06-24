@@ -50,11 +50,12 @@ def getfile():
         raise Exception(e)
     data = ''
     for file in glob.glob("*.prom"):
-        file_name = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir + '/' + file
+        file_name = os.path.join(cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir,
+                                 file)
         with open(file_name, "r") as f:
             data += f.read()
-            # Remove a metric file after reading it
-            os.remove(file_name)
+        # Remove a metric file after reading it
+        os.remove(file_name)
 
     return data
 
