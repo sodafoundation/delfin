@@ -1590,6 +1590,6 @@ NODE_IPS_INFO = """vserver lif         address\r
 ------- ----------- ---------------\r
 cl      cl-01_mgmt1 192.168.159.130"""
 
-CLUSTER_IPS_INFO = """vserver lif          address\r
+CLUSTER_IPS_INFO = """vserver lif         address\r
 ------- ------------ ---------------\r
 cl      cluster_mgmt 192.168.159.131"""
