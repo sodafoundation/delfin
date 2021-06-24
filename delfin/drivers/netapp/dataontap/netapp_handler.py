@@ -33,7 +33,6 @@ LOG = logging.getLogger(__name__)
 class NetAppHandler(object):
     OID_SERIAL_NUM = '1.3.6.1.4.1.789.1.1.9.0'
     OID_TRAP_DATA = '1.3.6.1.4.1.789.1.1.12.0'
-
     SECONDS_TO_MS = 1000
 
     def __init__(self, **kwargs):
@@ -55,6 +54,15 @@ class NetAppHandler(object):
         with eventlet.Timeout(10, False):
             res = self.ssh_pool.do_exec(command)
         return res
+
+    @staticmethod
+    def get_size(limit):
+        if limit == '-':
+            return '-'
+        elif limit == '0B':
+            return 0
+        else:
+            return int(Tools.get_capacity_size(limit))
 
     @staticmethod
     def parse_alert(alert):
@@ -556,8 +564,6 @@ class NetAppHandler(object):
                     interface_info, interface_map, split=':')
                 logical_type = constant.NETWORK_LOGICAL_TYPE.get(
                     interface_map['Role'])
-                port_type = constant.NETWORK_PORT_TYPE.get(
-                    interface_map['DataProtocol'])
                 port_id = \
                     interface_map['Name'] + \
                     '_' + \
@@ -581,7 +587,7 @@ class NetAppHandler(object):
                         constants.PortHealthStatus.NORMAL
                         if interface_map['OperationalStatus'] == 'up'
                         else constants.PortHealthStatus.ABNORMAL,
-                    'type': port_type,
+                    'type': constants.PortType.LOGIC,
                     'logical_type': logical_type,
                     'speed': None,
                     'max_speed': None,
@@ -983,10 +989,10 @@ class NetAppHandler(object):
                         'storage_id': storage_id,
                         'native_filesystem_id': fs_id,
                         'native_qtree_id': qt_id,
-                        'capacity_hard_limit': Tools.get_capacity_size(
-                            quota_map['DiskLimit']),
-                        'capacity_soft_limit': Tools.get_capacity_size(
-                            quota_map['SoftDiskLimit']),
+                        'capacity_hard_limit':
+                            self.get_size(quota_map['DiskLimit']),
+                        'capacity_soft_limit':
+                            self.get_size(quota_map['SoftDiskLimit']),
                         'file_hard_limit':
                             int(quota_map['FilesLimit'])
                             if quota_map['FilesLimit'] != '-' else '-',
