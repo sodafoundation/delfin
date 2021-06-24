@@ -26,6 +26,7 @@
 #    $ export DELFIN_RABBITMQ_USER=delfinuser
 #    $ export DELFIN_RABBITMQ_PASS=delfinpass
 #    $ export DELFIN_HOST_IP=192.168.0.2
+#    $ export DELFIN_METRICS_DIR=/var/lib/delfin/metrics
 #
 # 3. Bring up delfin project using following command
 #
@@ -81,10 +82,12 @@ services:
     volumes:
       - ./etc/delfin:/etc/delfin
       - db_data:/var/lib/delfin
+      - metrics_dir:${DELFIN_METRICS_DIR}
     restart: always
     environment:
       - OS_COORDINATION__BACKEND_SERVER=${DELFIN_HOST_IP}:6379
       - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER}:${DELFIN_RABBITMQ_PASS}@${DELFIN_HOST_IP}:5672//
+      - OS_PROMETHEUS_EXPORTER__METRICS_DIR=${DELFIN_METRICS_DIR}
     depends_on:
       - redis
       - rabbitmq
@@ -108,11 +111,16 @@ services:
     command: "exporter"
     volumes:
       - ./etc/delfin:/etc/delfin
+      - metrics_dir:${DELFIN_METRICS_DIR}
+    ports:
+      - 8195:8195
     restart: always
     environment:
       - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER}:${DELFIN_RABBITMQ_PASS}@${DELFIN_HOST_IP}:5672//
+      - OS_PROMETHEUS_EXPORTER__METRICS_DIR=${DELFIN_METRICS_DIR}
     depends_on:
       - rabbitmq
 
 volumes:
   db_data: {}
+  metrics_dir: {}
