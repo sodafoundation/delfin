@@ -77,5 +77,5 @@ class NetAppCmodeDriver(driver.StorageDriver):
     def get_access_url():
         return 'https://{ip}'
 
-    def get_alert_sources(self):
+    def get_alert_sources(self, context):
         return self.netapp_handler.get_alert_sources()
