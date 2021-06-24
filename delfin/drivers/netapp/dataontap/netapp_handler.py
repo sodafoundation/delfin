@@ -33,7 +33,6 @@ LOG = logging.getLogger(__name__)
 class NetAppHandler(object):
     OID_SERIAL_NUM = '1.3.6.1.4.1.789.1.1.9.0'
     OID_TRAP_DATA = '1.3.6.1.4.1.789.1.1.12.0'
-
     SECONDS_TO_MS = 1000
 
     def __init__(self, **kwargs):
