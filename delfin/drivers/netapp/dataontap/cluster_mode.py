@@ -78,4 +78,4 @@ class NetAppCmodeDriver(driver.StorageDriver):
         return 'https://{ip}'
 
     def ge_alert_sources(self):
-        return self.netapp_handler.ge_alert_sources(self.storage_id)
+        return self.netapp_handler.ge_alert_sources()

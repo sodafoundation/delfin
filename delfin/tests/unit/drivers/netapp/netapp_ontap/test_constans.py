@@ -1585,3 +1585,11 @@ VBN_BAD may be present in the active filesystem: false\r
                                   SnapLock Type: non-snaplock\r
                           Vserver DR Protection: -\r
 8 entries were displayed.\r"""
+
+NODE_IPS_INFO = """vserver lif         address\r
+------- ----------- ---------------\r
+cl      cl-01_mgmt1 192.168.159.130"""
+
+CLUSTER_IPS_INFO = """vserver lif          address\r
+------- ------------ ---------------\r
+cl      cluster_mgmt 192.168.159.131"""
