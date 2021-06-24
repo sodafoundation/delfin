@@ -14,9 +14,12 @@
 import copy
 import random
 import decorator
+
 import math
-import six
 import time
+
+import six
+from eventlet import greenthread
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
@@ -59,7 +62,7 @@ MIN_FS, MAX_FS = 1, 10
 MIN_QTREE, MAX_QTREE = 1, 100
 MIN_SHARE, MAX_SHARE = 1, 100
 # Minimum sampling interval
-MINIMUM_SAMPLE_DURATION_IN_MS = 5 * 1000
+MINIMUM_SAMPLE_DURATION_IN_MS = 60 * 1000
 # count of instances for each resource type
 RESOURCE_COUNT_DICT = {
     "storage": 1,
@@ -89,7 +92,7 @@ def wait_random(low, high):
     def _wait(f, *a, **k):
         rd = random.randint(0, 100)
         secs = low + (high - low) * rd / 100
-        time.sleep(secs)
+        greenthread.sleep(secs)
         return f(*a, **k)
 
     return _wait

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import datetime
+import glob
 import os
 import pytz
 import six
@@ -24,6 +25,8 @@ LOG = log.getLogger(__name__)
 
 grp = cfg.OptGroup('PROMETHEUS_EXPORTER')
 METRICS_CACHE_DIR = '/var/lib/delfin/metrics'
+# Metrics file retention time
+RETENTION_TIME_SEC = 3600
 prometheus_opts = [
     cfg.StrOpt('metrics_dir', default=METRICS_CACHE_DIR,
 
@@ -97,10 +100,32 @@ class PrometheusExporter(object):
             f.write("%s{%s} %f %d\n" % (metric, prom_labels,
                                         value, timestamp))
 
+    def get_file_age(self, path):
+        # getting ctime of the file/folder
+        # time will be in seconds
+        ctime = os.stat(path).st_ctime
+        # returning the time
+        return ctime
+
+    def clean_old_metric_files(self, metrics_dir):
+        os.chdir(metrics_dir)
+        files = glob.glob("*.prom")
+        for file in files:
+            file_age = datetime.datetime.now().timestamp()\
+                - self.get_file_age(file)
+            if file_age >= RETENTION_TIME_SEC:
+                LOG.info("Removing metric file %s"
+                         " as it crossed the retention period", file)
+                os.remove(file)
+
     def push_to_prometheus(self, storage_metrics):
         self.timestamp_offset_ms = self.set_timestamp_offset_from_utc_ms()
         if not self.check_metrics_dir_exists(self.metrics_dir):
             return
+        try:
+            self.clean_old_metric_files(self.metrics_dir)
+        except Exception:
+            LOG.error('Error while cleaning old metrics files')
         time_stamp = str(datetime.datetime.now().timestamp())
         temp_file_name = os.path.join(self.metrics_dir,
                                       time_stamp + ".prom.temp")
@@ -139,5 +164,7 @@ class PrometheusExporter(object):
         try:
             f.close()
             os.renames(temp_file_name, actual_file_name)
+            LOG.info('A new metric file %s has been generated',
+                     actual_file_name)
         except Exception:
             LOG.error('Error while renaming the temporary metric file')
