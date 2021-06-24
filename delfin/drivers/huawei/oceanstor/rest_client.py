@@ -473,7 +473,7 @@ class RestClient(object):
                         'resource_id': pool['ID'],
                         'resource_name': pool['NAME'],
                         'type': 'RAW',
-                        'unit': selection[key]['unit']
+                        'unit': consts.POOL_CAP[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -501,7 +501,7 @@ class RestClient(object):
                         'resource_id': volume['ID'],
                         'resource_name': volume['NAME'],
                         'type': 'RAW',
-                        'unit': selection[key]['unit']
+                        'unit': consts.VOLUME_CAP[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -529,7 +529,7 @@ class RestClient(object):
                         'resource_id': controller['ID'],
                         'resource_name': controller['NAME'],
                         'type': 'RAW',
-                        'unit': selection[key]['unit']
+                        'unit': consts.CONTROLLER_CAP[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -560,7 +560,7 @@ class RestClient(object):
                         'resource_id': port['ID'],
                         'resource_name': port['NAME'],
                         'type': 'RAW',
-                        'unit': selection[key]['unit']
+                        'unit': consts.PORT_CAP[key]['unit']
                     }
                     values = _get_timestamp_values(metric, data)
                     m = constants.metric_struct(name=key, labels=labels,
@@ -587,7 +587,7 @@ class RestClient(object):
                         'resource_type': 'disk',
                         'resource_id': disk['ID'],
                         'type': 'RAW',
-                        'unit': selection[key]['unit'],
+                        'unit': consts.DISK_CAP[key]['unit'],
                         'resource_name':
                             disk['MODEL'] + ':' + disk['SERIALNUMBER']
                     }
