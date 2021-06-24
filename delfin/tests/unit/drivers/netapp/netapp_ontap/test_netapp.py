@@ -30,6 +30,7 @@ class Request:
 class TestNetAppCmodeDriver(TestCase):
     SSHPool.get = mock.Mock(
         return_value={paramiko.SSHClient()})
+
     NetAppHandler.login = mock.Mock()
     netapp_client = NetAppCmodeDriver(**test_constans.ACCESS_INFO)
 
@@ -148,5 +149,5 @@ class TestNetAppCmodeDriver(TestCase):
         SSHPool.do_exec = mock.Mock(
             side_effect=[test_constans.NODE_IPS_INFO,
                          test_constans.CLUSTER_IPS_INFO])
-        data = self.netapp_client.ge_alert_sources()
+        data = self.netapp_client.get_alert_sources()
         self.assertEqual(data[0]['host'], '192.168.159.131')

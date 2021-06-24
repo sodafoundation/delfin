@@ -1018,7 +1018,7 @@ class NetAppHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def ge_alert_sources(self):
+    def get_alert_sources(self):
         try:
             ip_list = []
             mgt_ip = self.ssh_pool.do_exec(constant.MGT_IP_COMMAND)
