@@ -57,6 +57,15 @@ class NetAppHandler(object):
         return res
 
     @staticmethod
+    def get_size(limit):
+        if limit == '-':
+            return '-'
+        elif limit == '0B':
+            return 0
+        else:
+            return int(Tools.get_capacity_size(limit))
+
+    @staticmethod
     def parse_alert(alert):
         try:
             alert_info = alert.get(NetAppHandler.OID_TRAP_DATA)
@@ -556,8 +565,6 @@ class NetAppHandler(object):
                     interface_info, interface_map, split=':')
                 logical_type = constant.NETWORK_LOGICAL_TYPE.get(
                     interface_map['Role'])
-                port_type = constant.NETWORK_PORT_TYPE.get(
-                    interface_map['DataProtocol'])
                 port_id = \
                     interface_map['Name'] + \
                     '_' + \
@@ -581,7 +588,7 @@ class NetAppHandler(object):
                         constants.PortHealthStatus.NORMAL
                         if interface_map['OperationalStatus'] == 'up'
                         else constants.PortHealthStatus.ABNORMAL,
-                    'type': port_type,
+                    'type': constants.PortType.LOGIC,
                     'logical_type': logical_type,
                     'speed': None,
                     'max_speed': None,
@@ -983,10 +990,10 @@ class NetAppHandler(object):
                         'storage_id': storage_id,
                         'native_filesystem_id': fs_id,
                         'native_qtree_id': qt_id,
-                        'capacity_hard_limit': Tools.get_capacity_size(
-                            quota_map['DiskLimit']),
-                        'capacity_soft_limit': Tools.get_capacity_size(
-                            quota_map['SoftDiskLimit']),
+                        'capacity_hard_limit':
+                            self.get_size(quota_map['DiskLimit']),
+                        'capacity_soft_limit':
+                            self.get_size(quota_map['SoftDiskLimit']),
                         'file_hard_limit':
                             int(quota_map['FilesLimit'])
                             if quota_map['FilesLimit'] != '-' else '-',
