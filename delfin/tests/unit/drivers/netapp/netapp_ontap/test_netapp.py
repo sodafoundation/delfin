@@ -30,6 +30,7 @@ class Request:
 class TestNetAppCmodeDriver(TestCase):
     SSHPool.get = mock.Mock(
         return_value={paramiko.SSHClient()})
+
     NetAppHandler.login = mock.Mock()
     netapp_client = NetAppCmodeDriver(**test_constans.ACCESS_INFO)
 
