@@ -459,26 +459,31 @@ class RestClient(object):
 
         select_metrics, select_ids = _get_selection(selection)
         for pool in pools:
-            metrics = self._get_metrics(pool['TYPE'], pool['ID'],
-                                        select_ids)
-            for metric in metrics:
-                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
-                for index, key in enumerate(select_metrics):
-                    data = int(data_list[index])
-                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
-                        data = data * 1000
-                    labels = {
-                        'storage_id': storage_id,
-                        'resource_type': 'pool',
-                        'resource_id': pool['ID'],
-                        'resource_name': pool['NAME'],
-                        'type': 'RAW',
-                        'unit': consts.POOL_CAP[key]['unit']
-                    }
-                    values = _get_timestamp_values(metric, data)
-                    m = constants.metric_struct(name=key, labels=labels,
-                                                values=values)
-                    pool_metrics.append(m)
+            try:
+                metrics = self._get_metrics(pool['TYPE'], pool['ID'],
+                                            select_ids)
+                for metric in metrics:
+                    data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                    for index, key in enumerate(select_metrics):
+                        data = int(data_list[index])
+                        if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
+                            data = data * 1000
+                        labels = {
+                            'storage_id': storage_id,
+                            'resource_type': 'pool',
+                            'resource_id': pool['ID'],
+                            'resource_name': pool['NAME'],
+                            'type': 'RAW',
+                            'unit': consts.POOL_CAP[key]['unit']
+                        }
+                        values = _get_timestamp_values(metric, data)
+                        m = constants.metric_struct(name=key, labels=labels,
+                                                    values=values)
+                        pool_metrics.append(m)
+            except Exception as ex:
+                msg = "Failed to get metrics for pool:{0} error: {1}" \
+                    .format(pool['NAME'], ex)
+                LOG.error(msg)
         return pool_metrics
 
     def get_volume_metrics(self, storage_id, selection):
@@ -487,26 +492,32 @@ class RestClient(object):
 
         select_metrics, select_ids = _get_selection(selection)
         for volume in volumes:
-            metrics = self._get_metrics(volume['TYPE'], volume['ID'],
-                                        select_ids)
-            for metric in metrics:
-                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
-                for index, key in enumerate(select_metrics):
-                    data = int(data_list[index])
-                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
-                        data = data * 1000
-                    labels = {
-                        'storage_id': storage_id,
-                        'resource_type': 'volume',
-                        'resource_id': volume['ID'],
-                        'resource_name': volume['NAME'],
-                        'type': 'RAW',
-                        'unit': consts.VOLUME_CAP[key]['unit']
-                    }
-                    values = _get_timestamp_values(metric, data)
-                    m = constants.metric_struct(name=key, labels=labels,
-                                                values=values)
-                    volume_metrics.append(m)
+            try:
+                metrics = self._get_metrics(volume['TYPE'], volume['ID'],
+                                            select_ids)
+                for metric in metrics:
+                    data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                    for index, key in enumerate(select_metrics):
+                        data = int(data_list[index])
+                        if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
+                            data = data * 1000
+                        labels = {
+                            'storage_id': storage_id,
+                            'resource_type': 'volume',
+                            'resource_id': volume['ID'],
+                            'resource_name': volume['NAME'],
+                            'type': 'RAW',
+                            'unit': consts.VOLUME_CAP[key]['unit']
+                        }
+                        values = _get_timestamp_values(metric, data)
+                        m = constants.metric_struct(name=key, labels=labels,
+                                                    values=values)
+                        volume_metrics.append(m)
+            except Exception as ex:
+                msg = "Failed to get metrics for volume:{0} error: {1}" \
+                    .format(volume['NAME'], ex)
+                LOG.error(msg)
+
         return volume_metrics
 
     def get_controller_metrics(self, storage_id, selection):
@@ -515,26 +526,33 @@ class RestClient(object):
 
         select_metrics, select_ids = _get_selection(selection)
         for controller in controllers:
-            metrics = self._get_metrics(controller['TYPE'], controller['ID'],
-                                        select_ids)
-            for metric in metrics:
-                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
-                for index, key in enumerate(select_metrics):
-                    data = int(data_list[index])
-                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
-                        data = data * 1000
-                    labels = {
-                        'storage_id': storage_id,
-                        'resource_type': 'controller',
-                        'resource_id': controller['ID'],
-                        'resource_name': controller['NAME'],
-                        'type': 'RAW',
-                        'unit': consts.CONTROLLER_CAP[key]['unit']
-                    }
-                    values = _get_timestamp_values(metric, data)
-                    m = constants.metric_struct(name=key, labels=labels,
-                                                values=values)
-                    controller_metrics.append(m)
+            try:
+                metrics = self._get_metrics(controller['TYPE'],
+                                            controller['ID'],
+                                            select_ids)
+                for metric in metrics:
+                    data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                    for index, key in enumerate(select_metrics):
+                        data = int(data_list[index])
+                        if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
+                            data = data * 1000
+                        labels = {
+                            'storage_id': storage_id,
+                            'resource_type': 'controller',
+                            'resource_id': controller['ID'],
+                            'resource_name': controller['NAME'],
+                            'type': 'RAW',
+                            'unit': consts.CONTROLLER_CAP[key]['unit']
+                        }
+                        values = _get_timestamp_values(metric, data)
+                        m = constants.metric_struct(name=key, labels=labels,
+                                                    values=values)
+                        controller_metrics.append(m)
+            except Exception as ex:
+                msg = "Failed to get metrics for controller:{0} error: {1}" \
+                    .format(controller['NAME'], ex)
+                LOG.error(msg)
+
         return controller_metrics
 
     def get_port_metrics(self, storage_id, selection):
@@ -546,26 +564,32 @@ class RestClient(object):
             # ETH_PORT collection not supported
             if port['TYPE'] == 213:
                 continue
-            metrics = self._get_metrics(port['TYPE'], port['ID'],
-                                        select_ids)
-            for metric in metrics:
-                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
-                for index, key in enumerate(select_metrics):
-                    data = int(data_list[index])
-                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
-                        data = data * 1000
-                    labels = {
-                        'storage_id': storage_id,
-                        'resource_type': 'port',
-                        'resource_id': port['ID'],
-                        'resource_name': port['NAME'],
-                        'type': 'RAW',
-                        'unit': consts.PORT_CAP[key]['unit']
-                    }
-                    values = _get_timestamp_values(metric, data)
-                    m = constants.metric_struct(name=key, labels=labels,
-                                                values=values)
-                    port_metrics.append(m)
+            try:
+                metrics = self._get_metrics(port['TYPE'], port['ID'],
+                                            select_ids)
+                for metric in metrics:
+                    data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                    for index, key in enumerate(select_metrics):
+                        data = int(data_list[index])
+                        if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
+                            data = data * 1000
+                        labels = {
+                            'storage_id': storage_id,
+                            'resource_type': 'port',
+                            'resource_id': port['ID'],
+                            'resource_name': port['NAME'],
+                            'type': 'RAW',
+                            'unit': consts.PORT_CAP[key]['unit']
+                        }
+                        values = _get_timestamp_values(metric, data)
+                        m = constants.metric_struct(name=key, labels=labels,
+                                                    values=values)
+                        port_metrics.append(m)
+            except Exception as ex:
+                msg = "Failed to get metrics for port:{0} error: {1}" \
+                    .format(port['NAME'], ex)
+                LOG.error(msg)
+
         return port_metrics
 
     def get_disk_metrics(self, storage_id, selection):
@@ -574,25 +598,31 @@ class RestClient(object):
 
         select_metrics, select_ids = _get_selection(selection)
         for disk in disks:
-            metrics = self._get_metrics(disk['TYPE'], disk['ID'],
-                                        select_ids)
-            for metric in metrics:
-                data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
-                for index, key in enumerate(select_metrics):
-                    data = int(data_list[index])
-                    if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
-                        data = data * 1000
-                    labels = {
-                        'storage_id': storage_id,
-                        'resource_type': 'disk',
-                        'resource_id': disk['ID'],
-                        'type': 'RAW',
-                        'unit': consts.DISK_CAP[key]['unit'],
-                        'resource_name':
-                            disk['MODEL'] + ':' + disk['SERIALNUMBER']
-                    }
-                    values = _get_timestamp_values(metric, data)
-                    m = constants.metric_struct(name=key, labels=labels,
-                                                values=values)
-                    disk_metrics.append(m)
+            try:
+                metrics = self._get_metrics(disk['TYPE'], disk['ID'],
+                                            select_ids)
+                for metric in metrics:
+                    data_list = metric['CMO_STATISTIC_DATA_LIST'].split(",")
+                    for index, key in enumerate(select_metrics):
+                        data = int(data_list[index])
+                        if key in consts.CONVERT_TO_MILLI_SECOND_LIST:
+                            data = data * 1000
+                        labels = {
+                            'storage_id': storage_id,
+                            'resource_type': 'disk',
+                            'resource_id': disk['ID'],
+                            'type': 'RAW',
+                            'unit': consts.DISK_CAP[key]['unit'],
+                            'resource_name':
+                                disk['MODEL'] + ':' + disk['SERIALNUMBER']
+                        }
+                        values = _get_timestamp_values(metric, data)
+                        m = constants.metric_struct(name=key, labels=labels,
+                                                    values=values)
+                        disk_metrics.append(m)
+            except Exception as ex:
+                msg = "Failed to get metrics for disk:{0} error: {1}"\
+                    .format(disk['ID'], ex)
+                LOG.error(msg)
+
         return disk_metrics
