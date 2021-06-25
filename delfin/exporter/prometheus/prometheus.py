@@ -14,12 +14,10 @@
 import datetime
 import glob
 import os
-import pytz
 import six
 
 from oslo_config import cfg
 from oslo_log import log
-from tzlocal import get_localzone
 
 LOG = log.getLogger(__name__)
 
@@ -71,7 +69,6 @@ class PrometheusExporter(object):
                       msg)
             return False
 
-
     # Print metrics in Prometheus format.
     def _write_to_prometheus_format(self, f, metric,
                                     labels, prom_labels, values):
@@ -95,7 +92,7 @@ class PrometheusExporter(object):
         os.chdir(metrics_dir)
         files = glob.glob("*.prom")
         for file in files:
-            file_age = datetime.datetime.now().timestamp()\
+            file_age = datetime.datetime.now().timestamp() \
                 - self.get_file_age(file)
             if file_age >= RETENTION_TIME_SEC:
                 LOG.info("Removing metric file %s"
