@@ -62,7 +62,7 @@ MIN_FS, MAX_FS = 1, 10
 MIN_QTREE, MAX_QTREE = 1, 100
 MIN_SHARE, MAX_SHARE = 1, 100
 # Minimum sampling interval
-MINIMUM_SAMPLE_DURATION_IN_MS = 5 * 1000
+MINIMUM_SAMPLE_DURATION_IN_MS = 60 * 1000
 # count of instances for each resource type
 RESOURCE_COUNT_DICT = {
     "storage": 1,
