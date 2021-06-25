@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-
 import six
-from apscheduler.schedulers.background import BackgroundScheduler
+from eventlet import event
 from oslo_log import log
 from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import context
 from delfin import utils
+# from apscheduler.schedulers.background import BackgroundScheduler
+from delfin.task_manager.scheduler.fixed_interval_looping_scheduler import \
+    FixedIntervalLoopingScheduler
 from delfin.task_manager.scheduler.schedulers.telemetry.failed_telemetry_job \
     import FailedTelemetryJob
 from delfin.task_manager.scheduler.schedulers.telemetry.telemetry_job import \
@@ -39,20 +40,19 @@ SCHEDULER_BOOT_JOBS = [
 class SchedulerManager(object):
     def __init__(self, scheduler=None):
         if not scheduler:
-            scheduler = BackgroundScheduler()
+            # scheduler = BackgroundScheduler()
+            scheduler = FixedIntervalLoopingScheduler()
         self.scheduler = scheduler
-        self.scheduler_started = False
 
-        self.boot_jobs = dict()
         self.boot_jobs_scheduled = False
         self.ctx = context.get_admin_context()
 
     def start(self):
         """ Initialise the schedulers for periodic job creation
         """
-        if not self.scheduler_started:
+        if not self.scheduler.running:
+            LOG.info("Starting job scheduler")
             self.scheduler.start()
-            self.scheduler_started = True
 
         if not self.boot_jobs_scheduled:
             try:
@@ -62,12 +62,10 @@ class SchedulerManager(object):
 
                     # Create a jobs for periodic scheduling
                     job_id = uuidutils.generate_uuid()
-                    self.scheduler.add_job(job_instance, 'interval',
-                                           seconds=job_class.job_interval(),
-                                           next_run_time=datetime.now(),
-                                           id=job_id)
-                    # book keeping of jobs
-                    self.boot_jobs[job_id] = job_instance
+                    self.scheduler.add_job(job_instance,
+                                           interval=job_class.job_interval(),
+                                           job_id=job_id)
+                    LOG.info("[%s] boot job scheduled" % job)
 
             except Exception as e:
                 # TODO: Currently failure of scheduler is failing task manager
@@ -78,12 +76,8 @@ class SchedulerManager(object):
 
     def stop(self):
         """Cleanup periodic jobs"""
-
-        for job_id, job in self.boot_jobs.items():
-            self.scheduler.remove_job(job_id)
-            job.stop()
-        self.boot_jobs.clear()
-        self.boot_jobs_scheduled = False
+        LOG.info("Shutting down scheduler")
+        self.scheduler.shutdown()
 
     def get_scheduler(self):
         return self.scheduler

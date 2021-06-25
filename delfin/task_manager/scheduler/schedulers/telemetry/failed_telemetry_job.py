@@ -33,16 +33,11 @@ class FailedTelemetryJob(object):
         # create the object of periodic scheduler
         self.scheduler = schedule_manager.SchedulerManager().get_scheduler()
         self.ctx = ctx
-        self.stopped = False
-        self.job_ids = set()
 
     def __call__(self):
         """
         :return:
         """
-
-        if self.stopped:
-            return
 
         try:
             # Remove jobs from scheduler when marked for delete
@@ -112,9 +107,8 @@ class FailedTelemetryJob(object):
                 instance = \
                     collection_class.get_instance(self.ctx, failed_task_id)
                 self.scheduler.add_job(
-                    instance, 'interval',
-                    seconds=failed_task[FailedTask.interval.name],
-                    next_run_time=datetime.now(), id=job_id)
+                    instance, interval=failed_task[FailedTask.interval.name],
+                    job_id=job_id)
                 self.job_ids.add(job_id)
 
         except Exception as e:
@@ -128,15 +122,8 @@ class FailedTelemetryJob(object):
         self.remove_scheduled_job(job_id)
 
     def remove_scheduled_job(self, job_id):
-        if job_id in self.job_ids:
-            self.job_ids.remove(job_id)
         if job_id and self.scheduler.get_job(job_id):
             self.scheduler.remove_job(job_id)
-
-    def stop(self):
-        self.stopped = True
-        for job_id in self.job_ids.copy():
-            self.remove_scheduled_job(job_id)
 
     @classmethod
     def job_interval(cls):

@@ -88,6 +88,7 @@ class Elector(LeaderElector):
                       {'timeout': has_to_sleep_for, 'leader': self.leader})
 
             self._stop.wait(has_to_sleep_for)
+        LOG.error("Returning from leader loop -----------------> ")
 
     def set_leader_callback(self, *args, **kwargs):
         self.leader = True

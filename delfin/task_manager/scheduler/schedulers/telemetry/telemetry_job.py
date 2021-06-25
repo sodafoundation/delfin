@@ -37,15 +37,8 @@ class TelemetryJob(object):
         for task in task_list:
             db.task_update(ctx, task['id'], {'last_run_time': None})
 
-        self.stopped = False
-        self.job_ids = set()
-
     def __call__(self):
         """ Schedule the collection tasks based on interval """
-
-        if self.stopped:
-            """If Job is stopped return immediately"""
-            return
 
         try:
             # Remove jobs from scheduler when marked for delete
@@ -72,21 +65,13 @@ class TelemetryJob(object):
                 # indicates the specific collection task to be triggered
                 current_time = int(datetime.now().timestamp())
                 last_run_time = current_time
-                next_collection_time = last_run_time + task['interval']
                 task_id = task['id']
                 job_id = uuidutils.generate_uuid()
-                next_collection_time = datetime \
-                    .fromtimestamp(next_collection_time) \
-                    .strftime('%Y-%m-%d %H:%M:%S')
 
                 collection_class = importutils.import_class(task['method'])
                 instance = collection_class.get_instance(self.ctx, task_id)
                 self.scheduler.add_job(
-                    instance, 'interval', seconds=task['interval'],
-                    next_run_time=next_collection_time, id=job_id)
-
-                # jobs book keeping
-                self.job_ids.add(job_id)
+                    instance, interval=task['interval'], job_id=job_id)
 
                 update_task_dict = {'job_id': job_id,
                                     'last_run_time': last_run_time}
@@ -99,18 +84,10 @@ class TelemetryJob(object):
         else:
             LOG.debug("Periodic collection task Scheduling completed.")
 
-    def stop(self):
-        self.stopped = True
-        for job_id in self.job_ids.copy():
-            self.remove_scheduled_job(job_id)
-        LOG.info("Stopping telemetry jobs")
-
     @classmethod
     def job_interval(cls):
         return TelemetryCollection.PERIODIC_JOB_INTERVAL
 
     def remove_scheduled_job(self, job_id):
-        if job_id in self.job_ids:
-            self.job_ids.remove(job_id)
         if job_id and self.scheduler.get_job(job_id):
             self.scheduler.remove_job(job_id)
