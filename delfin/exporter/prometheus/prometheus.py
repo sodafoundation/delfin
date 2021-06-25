@@ -58,7 +58,6 @@ storage_metrics = [Metric(name='response_time',
 class PrometheusExporter(object):
 
     def __init__(self):
-        self.timestamp_offset_ms = 0
         self.metrics_dir = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir
 
     def check_metrics_dir_exists(self, directory):
@@ -72,20 +71,6 @@ class PrometheusExporter(object):
                       msg)
             return False
 
-    def set_timestamp_offset_from_utc_ms(self):
-        """Set timestamp offset from utc required for all metrics"""
-        try:
-            timez = get_localzone()
-            if cfg.CONF.PROMETHEUS_EXPORTER.timezone != 'local':
-                timez = pytz.timezone(cfg.CONF.PROMETHEUS_EXPORTER.timezone)
-            timez.utcoffset(datetime.datetime.now())
-            return int(timez.utcoffset(
-                datetime.datetime.now()).total_seconds() * 1000)
-        except Exception:
-            LOG.error('Error while setting timestamp'
-                      ' offset for prometheus exporter')
-            # return no offset in case of an error
-            return 0
 
     # Print metrics in Prometheus format.
     def _write_to_prometheus_format(self, f, metric,
@@ -96,7 +81,6 @@ class PrometheusExporter(object):
         f.write("# TYPE %s gauge\n" % metric)
 
         for timestamp, value in values.items():
-            timestamp += self.timestamp_offset_ms
             f.write("%s{%s} %f %d\n" % (metric, prom_labels,
                                         value, timestamp))
 
@@ -119,7 +103,6 @@ class PrometheusExporter(object):
                 os.remove(file)
 
     def push_to_prometheus(self, storage_metrics):
-        self.timestamp_offset_ms = self.set_timestamp_offset_from_utc_ms()
         if not self.check_metrics_dir_exists(self.metrics_dir):
             return
         try:
