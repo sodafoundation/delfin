@@ -178,3 +178,6 @@ class StorageDriver(object):
     def get_capabilities(context):
         """Get capability of driver"""
         pass
+
+    def get_alert_sources(self, context):
+        return []

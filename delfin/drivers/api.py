@@ -162,3 +162,10 @@ class API(object):
         """Get capabilities from supported driver"""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.get_capabilities(context)
+
+    def get_alert_sources(self, context, storage_id):
+        access_info = db.access_info_get(context, storage_id)
+        driver = self.driver_manager.get_driver(context,
+                                                cache_on_load=False,
+                                                **access_info)
+        return driver.get_alert_sources(context)
