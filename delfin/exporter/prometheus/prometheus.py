@@ -101,10 +101,10 @@ class PrometheusExporter(object):
                                         value, timestamp))
 
     def get_file_age(self, path):
-        # getting ctime of the file/folder
-        # time will be in seconds
+        # Getting ctime of the file/folder
+        # Time will be in seconds
         ctime = os.stat(path).st_ctime
-        # returning the time
+        # Returning the time
         return ctime
 
     def clean_old_metric_files(self, metrics_dir):
