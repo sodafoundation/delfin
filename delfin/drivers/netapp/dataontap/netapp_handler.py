@@ -580,7 +580,9 @@ class NetAppHandler(object):
                     'name': interface_map['LogicalInterfaceName'],
                     'storage_id': storage_id,
                     'native_port_id': port_id,
-                    'location': None,
+                    'location':
+                        interface_map['HomeNode'] +
+                        ":" + interface_map['HomePort'],
                     'connection_status':
                         constants.PortConnectionStatus.CONNECTED
                         if interface_map['OperationalStatus'] == 'up'
@@ -634,7 +636,9 @@ class NetAppHandler(object):
                     'name': eth_map['Port'],
                     'storage_id': storage_id,
                     'native_port_id': port_id,
-                    'location': None,
+                    'location':
+                        eth_map[constant.CONTROLLER_NAME] +
+                        ':' + eth_map['Port'],
                     'connection_status':
                         constants.PortConnectionStatus.CONNECTED
                         if eth_map['Link'] == 'up'
@@ -684,10 +688,12 @@ class NetAppHandler(object):
                 fc_model = {
                     'name':
                         fc_map[constant.CONTROLLER_NAME] +
-                        '-' + fc_map['Adapter'],
+                        ':' + fc_map['Adapter'],
                     'storage_id': storage_id,
                     'native_port_id': port_id,
-                    'location': None,
+                    'location':
+                        fc_map[constant.CONTROLLER_NAME] +
+                        ':' + fc_map['Adapter'],
                     'connection_status':
                         constants.PortConnectionStatus.CONNECTED
                         if fc_map['AdministrativeStatus'] == 'up'
