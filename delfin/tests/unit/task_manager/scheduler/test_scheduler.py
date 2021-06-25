@@ -15,16 +15,16 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from delfin import test
-from delfin.task_manager.scheduler import scheduler
+from delfin.task_manager.scheduler import schedule_manager
 
 
 class TestScheduler(test.TestCase):
 
-    def test_scheduler_singleton(self):
-        first_instance = scheduler.Scheduler.get_instance()
+    def test_scheduler_manager_singleton(self):
+        first_instance = schedule_manager.SchedulerManager().get_scheduler()
         self.assertIsInstance(first_instance, BackgroundScheduler)
 
-        second_instance = scheduler.Scheduler.get_instance()
+        second_instance = schedule_manager.SchedulerManager().get_scheduler()
         self.assertIsInstance(second_instance, BackgroundScheduler)
 
         self.assertEqual(first_instance, second_instance)

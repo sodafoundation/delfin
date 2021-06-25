@@ -20,26 +20,30 @@ from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import db
-from delfin import utils
 from delfin.common.constants import TelemetryJobStatus, TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
 from delfin.exception import TaskNotFound
-from delfin.task_manager.scheduler import scheduler
+from delfin.task_manager.scheduler import schedule_manager
 
 LOG = log.getLogger(__name__)
 
 
-@six.add_metaclass(utils.Singleton)
 class FailedTelemetryJob(object):
     def __init__(self, ctx):
         # create the object of periodic scheduler
-        self.scheduler = scheduler.Scheduler.get_instance()
+        self.scheduler = schedule_manager.SchedulerManager().get_scheduler()
         self.ctx = ctx
+        self.stopped = False
+        self.job_ids = set()
 
     def __call__(self):
         """
         :return:
         """
+
+        if self.stopped:
+            return
+
         try:
             # Remove jobs from scheduler when marked for delete
             filters = {'deleted': True}
@@ -48,8 +52,7 @@ class FailedTelemetryJob(object):
                       "in this cycle:%s" % len(failed_tasks))
             for failed_task in failed_tasks:
                 job_id = failed_task['job_id']
-                if job_id and self.scheduler.get_job(job_id):
-                    self.scheduler.remove_job(job_id)
+                self.remove_scheduled_job(job_id)
                 db.failed_task_delete(self.ctx, failed_task['id'])
         except Exception as e:
             LOG.error("Failed to remove periodic scheduling job , reason: %s.",
@@ -112,6 +115,7 @@ class FailedTelemetryJob(object):
                     instance, 'interval',
                     seconds=failed_task[FailedTask.interval.name],
                     next_run_time=datetime.now(), id=job_id)
+                self.job_ids.add(job_id)
 
         except Exception as e:
             LOG.error("Failed to schedule retry tasks for performance "
@@ -121,4 +125,19 @@ class FailedTelemetryJob(object):
 
     def _teardown_task(self, ctx, failed_task_id, job_id):
         db.failed_task_delete(ctx, failed_task_id)
-        self.scheduler.remove_job(job_id)
+        self.remove_scheduled_job(job_id)
+
+    def remove_scheduled_job(self, job_id):
+        if job_id in self.job_ids:
+            self.job_ids.remove(job_id)
+        if job_id and self.scheduler.get_job(job_id):
+            self.scheduler.remove_job(job_id)
+
+    def stop(self):
+        self.stopped = True
+        for job_id in self.job_ids.copy():
+            self.remove_scheduled_job(job_id)
+
+    @classmethod
+    def job_interval(cls):
+        return TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL
