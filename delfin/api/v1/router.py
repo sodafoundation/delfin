@@ -27,6 +27,12 @@ from delfin.api.v1 import shares
 from delfin.api.v1 import storage_pools
 from delfin.api.v1 import storages
 from delfin.api.v1 import volumes
+from delfin.api.v1 import storage_hosts
+from delfin.api.v1 import storage_host_initiators
+from delfin.api.v1 import storage_host_groups
+from delfin.api.v1 import port_groups
+from delfin.api.v1 import volume_groups
+from delfin.api.v1 import masking_views
 
 
 class APIRouter(common.APIRouter):
@@ -136,3 +142,44 @@ class APIRouter(common.APIRouter):
         self.resources['shares'] = shares.create_resource()
         mapper.resource("shares", "shares",
                         controller=self.resources['shares'])
+
+        self.resources['storage_host_initiators'] \
+            = storage_host_initiators.create_resource()
+        mapper.connect("storages", "/storages/{id}/storage-host-initiators",
+                       controller=self.resources['storage_host_initiators'],
+                       action="show",
+                       conditions={"method": ["GET"]})
+
+        self.resources['storage_hosts'] = storage_hosts.create_resource()
+        mapper.connect("storages", "/storages/{id}/storage-hosts",
+                       controller=self.resources['storage_hosts'],
+                       action="show",
+                       conditions={"method": ["GET"]})
+
+        self.resources['storage_host_groups'] \
+            = storage_host_groups.create_resource()
+        mapper.connect("storages", "/storages/{id}/storage-host-groups",
+                       controller=self.resources['storage_host_groups'],
+                       action="show",
+                       conditions={"method": ["GET"]})
+
+        self.resources['port_groups'] \
+            = port_groups.create_resource()
+        mapper.connect("storages", "/storages/{id}/port-groups",
+                       controller=self.resources['port_groups'],
+                       action="show",
+                       conditions={"method": ["GET"]})
+
+        self.resources['volume_groups'] \
+            = volume_groups.create_resource()
+        mapper.connect("storages", "/storages/{id}/volume-groups",
+                       controller=self.resources['volume_groups'],
+                       action="show",
+                       conditions={"method": ["GET"]})
+
+        self.resources['masking_views'] \
+            = masking_views.create_resource()
+        mapper.connect("storages", "/storages/{id}/masking-views",
+                       controller=self.resources['masking_views'],
+                       action="show",
+                       conditions={"method": ["GET"]})
