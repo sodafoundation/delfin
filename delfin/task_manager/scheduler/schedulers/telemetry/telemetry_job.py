@@ -15,6 +15,7 @@
 from datetime import datetime
 
 import six
+from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
 from oslo_utils import uuidutils
@@ -23,6 +24,7 @@ from delfin import db
 from delfin.common.constants import TelemetryCollection
 from delfin.task_manager.scheduler import schedule_manager
 
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
@@ -83,7 +85,9 @@ class TelemetryJob(object):
                 instance = collection_class.get_instance(self.ctx, task_id)
                 self.scheduler.add_job(
                     instance, 'interval', seconds=task['interval'],
-                    next_run_time=next_collection_time, id=job_id)
+                    next_run_time=next_collection_time, id=job_id,
+                    misfire_grace_time=int(
+                        CONF.telemetry.performance_collection_interval / 2))
 
                 # jobs book keeping
                 self.job_ids.add(job_id)
