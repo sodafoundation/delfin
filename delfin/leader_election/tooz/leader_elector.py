@@ -93,15 +93,16 @@ class Elector(LeaderElector):
         self.leader = True
 
     def cleanup(self):
-        self._stop.set()
-
-        if self._coordinator:
-            self._coordinator.stop()
-            self._coordinator = None
+        if not self._stop.is_set():
+            self._stop.set()
 
         if self.leader:
             self.on_stopped_leading()
             self.leader = False
+
+        if self._coordinator:
+            self._coordinator.stop()
+            self._coordinator = None
 
     def on_stopped_leading(self):
         self.callbacks.on_stopped_leading()
