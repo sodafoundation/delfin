@@ -23,13 +23,4 @@ def build_masking_views(masking_views):
 
 def build_masking_view(masking_view):
     view = copy.deepcopy(masking_view)
-
-    if view['volumes']:
-        volumes = view['volumes']
-        view['volumes'] = volumes.split(',')
-
-    if view['ports']:
-        ports = view['ports']
-        view['ports'] = ports.split(',')
-
     return dict(view)

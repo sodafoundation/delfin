@@ -23,10 +23,12 @@ class MaskingViewController(wsgi.Controller):
     def __init__(self):
         super(MaskingViewController, self).__init__()
         self.search_options = ['name', 'id', 'storage_id',
-                               'native_storage_host_id',
                                'native_storage_host_group_id',
                                'native_storage_port_group_id',
                                'native_storage_volume_group_id',
+                               'native_storage_host_id',
+                               'native_volume_id',
+                               'native_port_id',
                                'native_masking_view_id']
 
     def _get_masking_view_search_options(self):
