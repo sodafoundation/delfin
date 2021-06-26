@@ -44,7 +44,11 @@ def main():
 
     task_server = service.TaskService.create(binary='delfin-task',
                                              coordination=True)
+    leader_election = service.LeaderElectionService.create()
+
     service.serve(task_server)
+    service.serve(leader_election)
+
     service.wait()
 
 

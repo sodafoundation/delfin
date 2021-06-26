@@ -1152,3 +1152,79 @@ class TestOceanStorStorageDriver(TestCase):
                 driver.list_shares(context)
             self.assertIn('The results are invalid',
                           str(exc.exception))
+
+    @mock.patch.object(RestClient, 'get_disk_metrics')
+    @mock.patch.object(RestClient, 'get_port_metrics')
+    @mock.patch.object(RestClient, 'get_controller_metrics')
+    @mock.patch.object(RestClient, 'get_volume_metrics')
+    @mock.patch.object(RestClient, 'get_pool_metrics')
+    @mock.patch.object(RestClient, 'enable_metrics_collection')
+    @mock.patch.object(RestClient, 'disable_metrics_collection')
+    def test_collect_perf_metrics(self, mock_di, mock_en,
+                                  mock_pool, mock_volume, mock_controller,
+                                  mock_port, mock_disk):
+        driver = create_driver()
+
+        ret = [
+            {
+                'data': [{}],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        mock_di.return_value = None
+        mock_en.return_value = None
+
+        mock_pool.return_value = [{}]
+        mock_volume.return_value = [{}]
+        mock_controller.return_value = [{}]
+        mock_port.return_value = [{}]
+        mock_disk.return_value = [{}]
+        with mock.patch.object(RestClient,
+                               'do_call', side_effect=ret):
+            storage_id = 123
+            resource_metrics = {
+                'storagePool': {'iops': 'iops description'},
+                'volume': {'iops': 'iops description'},
+                'port': {'iops': 'iops description'},
+                'disk': {'iops': 'iops description'},
+            }
+            start, end = 0, 1
+            driver.collect_perf_metrics(
+                context, storage_id, resource_metrics, start, end)
+            mock_en.assert_called()
+            mock_di.assert_called()
+        mock_pool.assert_called()
+        mock_volume.assert_called()
+        mock_controller.assert_not_called()
+        mock_port.assert_called()
+        mock_disk.assert_called()
+
+        with mock.patch.object(RestClient, 'get_disk_metrics',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.collect_perf_metrics(context, 0,
+                                            {'disk': {'iops': 'iops'}},
+                                            0, 0)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+        with mock.patch.object(RestClient, 'get_disk_metrics',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.collect_perf_metrics(context, 0,
+                                            {'disk': {'iops': 'iops'}},
+                                            0, 0)
+            self.assertIn('The results are invalid',
+                          str(exc.exception))
+
+    def test_get_capabilities(self):
+        driver = create_driver()
+        cap = driver.get_capabilities(context)
+        self.assertIsNotNone(cap.get('resource_metrics'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('storagePool'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('volume'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('controller'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('port'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('disk'))

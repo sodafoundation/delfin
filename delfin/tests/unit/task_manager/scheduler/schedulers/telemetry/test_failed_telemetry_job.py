@@ -33,7 +33,7 @@ fake_failed_job = {
     FailedTask.id.name: 43,
     FailedTask.retry_count.name: 0,
     FailedTask.result.name: "Init",
-    FailedTask.job_id.name: None,
+    FailedTask.job_id.name: "fake_job_id",
     FailedTask.task_id.name: uuidutils.generate_uuid(),
     FailedTask.method.name: FailedPerformanceCollectionHandler.__module__ +
                             '.' +
@@ -75,10 +75,13 @@ class TestFailedTelemetryJob(test.TestCase):
 
     @mock.patch(
         'apscheduler.schedulers.background.BackgroundScheduler.remove_job')
+    @mock.patch(
+        'apscheduler.schedulers.background.BackgroundScheduler.get_job')
     @mock.patch.object(db, 'failed_task_delete')
     @mock.patch.object(db, 'failed_task_get_all')
     def test_failed_job_with_max_retry(self, mock_failed_get_all,
                                        mock_failed_task_delete,
+                                       mock_get_job,
                                        mock_remove_job):
         # configure to return entry with max retry count
         failed_jobs = fake_failed_jobs.copy()
@@ -90,9 +93,11 @@ class TestFailedTelemetryJob(test.TestCase):
         # call failed job scheduling
         failed_job()
 
+        mock_get_job.return_value = True
+
         # entry get deleted and job get removed
         self.assertEqual(mock_failed_task_delete.call_count, 2)
-        self.assertEqual(mock_remove_job.call_count, 1)
+        self.assertEqual(mock_remove_job.call_count, 2)
 
     @mock.patch(
         'apscheduler.schedulers.background.BackgroundScheduler.get_job')
@@ -134,4 +139,4 @@ class TestFailedTelemetryJob(test.TestCase):
 
         # entry get deleted and job get removed
         self.assertEqual(mock_failed_task_delete.call_count, 2)
-        self.assertEqual(mock_remove_job.call_count, 1)
+        self.assertEqual(mock_remove_job.call_count, 0)

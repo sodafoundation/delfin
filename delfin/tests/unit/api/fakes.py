@@ -217,6 +217,26 @@ def fake_v3_alert_source():
     return alert_source
 
 
+def fake_all_snmp_configs():
+    alert_source = models.AlertSource()
+    alert_source.host = '127.0.0.1'
+    alert_source.storage_id = 'abcd-1234-5678'
+    alert_source.version = 'snmpv3'
+    alert_source.engine_id = '800000d30300000e112245'
+    alert_source.username = 'test1'
+    alert_source.auth_key = 'YWJjZDEyMzQ1Njc='
+    alert_source.auth_protocol = 'HMACMD5'
+    alert_source.privacy_key = 'YWJjZDEyMzQ1Njc='
+    alert_source.privacy_protocol = 'DES'
+    alert_source.port = 161
+    alert_source.context_name = ""
+    alert_source.retry_num = 1
+    alert_source.expiration = 1
+    alert_source.created_at = '2020-06-15T09:50:31.698956'
+    alert_source.updated_at = '2020-06-15T09:50:31.698956'
+    return [alert_source]
+
+
 def fake_v3_alert_source_noauth_nopriv():
     alert_source = models.AlertSource()
     alert_source.host = '127.0.0.1'
@@ -288,6 +308,25 @@ def fake_access_info_show(context, storage_id):
     access_info.extra_attributes = {'array_id': '0001234567897'}
 
     return access_info
+
+
+def fake_access_infos_show_all(context):
+    access_info = models.AccessInfo()
+
+    access_info.updated_at = '2020-06-15T09:50:31.698956'
+    access_info.storage_id = '865ffd4d-f1f7-47de-abc3-5541ef44d0c1'
+    access_info.created_at = '2020-06-15T09:50:31.698956'
+    access_info.vendor = 'fake_storage'
+    access_info.model = 'fake_driver'
+    access_info.rest = {
+        'host': '10.0.0.0',
+        'username': 'admin',
+        'password': 'YWJjZA==',
+        'port': 1234
+    }
+    access_info.extra_attributes = {'array_id': '0001234567897'}
+
+    return [access_info]
 
 
 def fake_update_access_info(self, context, access_info):
@@ -439,7 +478,7 @@ def fake_get_capabilities(context, storage_id):
                         "description": "Average time taken for an IO "
                                        "operation in ms"
                     },
-                    "requests": {
+                    "iops": {
                         "unit": "IOPS",
                         "description": "Input/output operations per second"
                     },
@@ -453,21 +492,223 @@ def fake_get_capabilities(context, storage_id):
                         "description": "Represents how much data write is "
                                        "successfully transferred in MB/s"
                     },
-                    "readRequests": {
+                    "readIops": {
                         "unit": "IOPS",
                         "description": "Read requests per second"
                     },
-                    "writeRequests": {
+                    "writeIops": {
                         "unit": "IOPS",
                         "description": "Write requests per second"
                     },
-                }
+                },
+                "storagePool": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write operations per second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per"
+                                       " second"
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "volume": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+                    "cacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of io that are cache "
+                                       "hits"
+                    },
+                    "readCacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of read ops that are cache"
+                                       " hits"
+                    },
+                    "writeCacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of write ops that are cache"
+                                       " hits"
+                    },
+                    "ioSize": {
+                        "unit": "KB",
+                        "description": "The average size of IO requests in KB"
+                    },
+                    "readIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests "
+                                       "in KB."
+                    },
+                    "writeIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests"
+                                       " in KB."
+                    },
+                },
+                "controller": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per "
+                                       "second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per "
+                                       "second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "port": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per "
+                                       "second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per "
+                                       "second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "disk": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per"
+                                       " second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+
             }
             }
 
 
 def custom_fake_get_capabilities(capabilities):
-
     def get_capability(context, storage_id):
         return capabilities
 
