@@ -97,6 +97,8 @@ Delete Storage With ID
     Create Session          delfin      ${delfin_url}
     ${resp_del}=            DELETE On Session    delfin     storages/${storage_id}
     Status Should Be        202    ${resp_del}
+    Sleep       5s
+
 
 Get All Storages
     Create Session          delfin      ${delfin_url}
