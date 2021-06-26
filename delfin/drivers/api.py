@@ -163,6 +163,36 @@ class API(object):
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
         return driver.get_capabilities(context)
 
+    def list_storage_host_initiators(self, context, storage_id):
+        """List all storage initiators from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_storage_host_initiators(context)
+
+    def list_storage_hosts(self, context, storage_id):
+        """List all storage hosts from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_storage_hosts(context)
+
+    def list_storage_host_groups(self, context, storage_id):
+        """List all storage host groups from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_storage_host_groups(context)
+
+    def list_port_groups(self, context, storage_id):
+        """List all port groups from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_port_groups(context)
+
+    def list_volume_groups(self, context, storage_id):
+        """List all volume groups from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_volume_groups(context)
+
+    def list_masking_views(self, context, storage_id):
+        """List all masking views from storage system."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.list_masking_views(context)
+
     def get_alert_sources(self, context, storage_id):
         access_info = db.access_info_get(context, storage_id)
         driver = self.driver_manager.get_driver(context,
