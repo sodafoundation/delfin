@@ -23,8 +23,7 @@ SQLAlchemy models for Delfin  data.
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_db.sqlalchemy.types import JsonEncodedDict
-from sqlalchemy import Column, Integer, String, Boolean, BigInteger, \
-    DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, BigInteger, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 from delfin.common import constants
@@ -357,9 +356,8 @@ class MaskingView(BASE, DelfinBase):
     native_volume_group_id = Column(String(255))
     native_port_group_id = Column(String(255))
     native_storage_host_id = Column(String(255))
-    storage_host_initiators = Column(Text)
-    volumes = Column(Text)
-    ports = Column(Text)
+    native_volume_id = Column(String(255))
+    native_port_id = Column(String(255))
     native_masking_view_id = Column(String(255))
 
 
