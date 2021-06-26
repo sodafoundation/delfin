@@ -658,8 +658,8 @@ class FakeStorageDriver(driver.StorageDriver):
                 "storage_id": self.storage_id,
                 "native_masking_view_id": "masking_view_" + str(idx),
                 "native_storage_host_id": "storage_host_" + str(idx),
-                "volumes": "volume_" + str(idx),
-                "ports": "port_" + str(idx)
+                "native_volume_id": "volume_" + str(idx),
+                "native_port_id": "port_" + str(idx)
             }
             masking_view_list.append(f)
         return masking_view_list

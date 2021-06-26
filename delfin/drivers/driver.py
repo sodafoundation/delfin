@@ -264,26 +264,25 @@ class StorageDriver(object):
         native_port_group_id: Native id of port grp at backend side
         native_volume_group_id: Native id of volume grp at backend side
         native_storage_host_id: Native id of host at backend side
-        volumes: String containing list of associated volumes(, separated list)
-        ports: String containing list of associated ports(, separated list)
-        storage_host_initiators: String containing list of associated
-                                 initiators (, separated list)
+        native_volume_id: Native id of volume at backend side
+        native_port_id: Native id of port at backend side
         storage_id: Storage id at delfin side
 
         Masking view filling guidelines:
         Driver can have different backend scenarios such as
-         - Direct host -> direct volume(s) mapping
+         - Direct host -> direct volume mapping
+         - Direct host -> direct volume -> direct port mapping
          - Direct host -> volume group mapping
          - Host grp -> volume group mapping
          - Host grp -> direct volume(s) mapping
-         - Initiator(s) (no host) -> direct volume(s) mapping
          So driver need to fill in group to item order based on availability
          as given below
         From host side: Mandatorily one of the (native_storage_host_group_id
-                        | native_storage_host_id | storage_host_initiators)
+                        | native_storage_host_id)
         From volume side: Mandatorily one of the (native_volume_group_id
-                                                 | volumes)
-        From port side: Optionally One of the (native_port_group_id | ports)
+                                                 | native_volume_id)
+        From port side: Optionally One of the (native_port_group_id
+                                                 | native_port_id)
         """
         raise NotImplementedError(
             "Driver API list_masking_views() is not Implemented")
