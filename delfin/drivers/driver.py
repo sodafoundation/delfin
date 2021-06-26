@@ -286,3 +286,6 @@ class StorageDriver(object):
         """
         raise NotImplementedError(
             "Driver API list_masking_views() is not Implemented")
+
+    def get_alert_sources(self, context):
+        return []

@@ -1,0 +1,276 @@
+{
+  "access_info": {
+    "vendor":"test_vendor",
+    "model":"test_model",
+    "rest": {
+      "host": "10.10.10.10",
+      "port": 8080,
+      "username": "user_1",
+      "password": "pass_1"
+    },
+    "extra_attributes": {
+      "array_json": null,
+      "return_exception": null
+    }
+  },
+  "storage": {
+    "name":"test_storage",
+    "description": "Test storage array",
+    "location": "Test location",
+    "status": "normal",
+    "vendor": "test_vendor",
+    "model": "test_model",
+    "serial_number": "Serial_123_ABC",
+    "firmware_version": "1.10.100",
+    "total_capacity": 1000000,
+    "used_capacity": 750000,
+    "free_capacity": 250000,
+    "raw_capacity": 2000000,
+    "subscribed_capacity": 1500000
+  },
+  "storage_pools": [
+    {
+      "name": "test_pool_1",
+      "storage_id": null,
+      "native_storage_pool_id": "test_native_pool_id_1",
+      "description": "Test Storage Pool",
+      "status": "normal",
+      "storage_type": "block",
+      "total_capacity": 10000,
+      "used_capacity": 7500,
+      "free_capacity": 2500
+    },
+    {
+      "name": "test_pool_2",
+      "storage_id": null,
+      "native_storage_pool_id": "test_native_pool_id_2",
+      "description": "Test Storage Pool",
+      "status": "normal",
+      "total_capacity": 50000,
+      "used_capacity": 57500,
+      "free_capacity": 2500
+    }
+  ],
+  "volumes": [
+    {
+      "name": "test_volume_1",
+      "storage_id": null,
+      "native_volume_id": "test_native_volume_id_1",
+      "native_storage_pool_id": "test_native_pool_id_1",
+      "description": "Test Storage Pool",
+      "status": "normal",
+      "total_capacity": 10000,
+      "used_capacity": 7500,
+      "free_capacity": 2500
+    },
+    {
+      "name": "test_volume_2",
+      "storage_id": null,
+      "native_volume_id": "test_native_volume_id_2",
+      "native_storage_pool_id": "test_native_pool_id_2",
+      "description": "Test Storage Pool",
+      "status": "normal",
+      "total_capacity": 50000,
+      "used_capacity": 57500,
+      "free_capacity": 2500
+    }
+  ],
+  "controllers": [
+    {
+      "name": "test_controller_1",
+      "storage_id": null,
+      "native_controller_id": "test_native_ctrl_id_1",
+      "location": "location_controller_1",
+      "status": "normal",
+      "memory_size": 10000,
+      "cpu_info": "Intel Xenon",
+      "soft_version": "ver_100"
+    },
+    {
+      "name": "test_controller_2",
+      "storage_id": null,
+      "native_controller_id": "test_native_ctrl_id_2",
+      "location": "location_controller_2",
+      "status": "normal",
+      "memory_size": 10000,
+      "cpu_info": "ARM x64",
+      "soft_version": "ver_200"
+    }
+  ],
+  "ports": [
+    {
+      "name": "test_port_1",
+      "storage_id": null,
+      "native_port_id": "test_native_port_id_1",
+      "location": "location_port_1",
+      "connection_status": "connected",
+      "health_status": "normal",
+      "type": "fc",
+      "logical_type": "location_port_1",
+      "speed": 100,
+      "max_speed": 1000,
+      "native_parent_id": "test_ports_parent_id_1",
+      "wwn": "wwn_10000",
+      "mac_address": "mac_abcd",
+      "ipv4": "0.0.0.0",
+      "ipv4_mask": "255.255.255.0",
+      "ipv6": "0",
+      "ipv6_mask": "::"
+    },
+    {
+      "name": "test_port_2",
+      "storage_id": null,
+      "native_port_id": "test_native_port_id_2",
+      "location": "location_port_2",
+      "connection_status": "connected",
+      "health_status": "normal",
+      "type": "fc",
+      "logical_type": "location_port_2",
+      "speed": 100,
+      "max_speed": 1000,
+      "native_parent_id": "test_ports_parent_id_2",
+      "wwn": "wwn_20000",
+      "mac_address": "mac_abcd",
+      "ipv4": "100.0.0.0",
+      "ipv4_mask": "255.255.255.0",
+      "ipv6": "0",
+      "ipv6_mask": "::"
+    }
+  ],
+  "disks": [
+    {
+      "name": "test_disk_id_1",
+      "storage_id": null,
+      "native_disk_id": "test_native_disk_id_2",
+      "serial_number": "serial_1000",
+      "manufacturer": "Crucial",
+      "model": "model_SSD3D",
+      "firmware": "firmware_123",
+      "speed": 1000,
+      "capacity": 10000,
+      "status": "normal",
+      "physical_type": "ssd",
+      "logical_type": "free",
+      "health_score": 75,
+      "native_diskgroup_id": "test_dg_id_100",
+      "location": "location_disk_1"
+    },
+    {
+      "name": "test_disk_id_1",
+      "storage_id": null,
+      "native_disk_id": "test_native_disk_id_2",
+      "serial_number": "serial_1000",
+      "manufacturer": "Crucial",
+      "model": "model_SSD3D",
+      "firmware": "firmware_123",
+      "speed": 1000,
+      "capacity": 10000,
+      "status": "normal",
+      "physical_type": "ssd",
+      "logical_type": "free",
+      "health_score": 75,
+      "native_diskgroup_id": "test_dg_id_100",
+      "location": "location_disk_1"
+    }
+  ],
+  "quotas": [
+    {
+      "native_quota_id": "test_quota_id_1",
+      "type": "tree",
+      "storage_id": null,
+      "native_filesystem_id": "test_native_filesystem_id_1",
+      "native_qtree_id": "test_native_qtree_id_1",
+      "capacity_hard_limit": 10000,
+      "capacity_soft_limit": 9000,
+      "file_hard_limit": 1000,
+      "file_soft_limit": 900,
+      "file_count": 500,
+      "used_capacity": 5000,
+      "user_group_name": "usr0"
+    },
+    {
+      "native_quota_id": "test_quota_id_2",
+      "type": "group",
+      "storage_id": null,
+      "native_filesystem_id": "test_native_filesystem_id_2",
+      "native_qtree_id": "test_native_qtree_id_2",
+      "capacity_hard_limit": 20000,
+      "capacity_soft_limit": 9000,
+      "file_hard_limit": 2000,
+      "file_soft_limit": 900,
+      "file_count": 700,
+      "used_capacity": 7000,
+      "user_group_name": "grp0"
+    }
+  ],
+  "filesystems": [
+    {
+      "name": "test_filesystem_1",
+      "storage_id": null,
+      "native_filesystem_id": "test_native_fs_id_1",
+      "native_pool_id": "test_native_pool_id_1",
+      "status": "normal",
+      "type": "thin",
+      "security_mode": "ntfs",
+      "total_capacity": 10000,
+      "used_capacity": 9000,
+      "free_capacity": 1000,
+      "worm": "non_worm",
+      "deduplicated": true,
+      "compressed": true
+    },
+    {
+      "name": "test_filesystem_2",
+      "storage_id": null,
+      "native_filesystem_id": "test_native_fs_id_2",
+      "native_pool_id": "test_native_pool_id_2",
+      "status": "faulty",
+      "type": "thick",
+      "security_mode": "unix",
+      "total_capacity": 10000,
+      "used_capacity": 9000,
+      "free_capacity": 1000,
+      "worm": "non_worm",
+      "deduplicated": true,
+      "compressed": true
+    }
+  ],
+  "qtrees": [
+    {
+      "name": "test_qtree_1",
+      "storage_id": null,
+      "native_qtree_id": "test_native_qtree_id_1",
+      "native_filesystem_id": "test_native_filesystem_id_1",
+      "security_mode": "ntfs",
+      "path": "/root/qtree_1"
+    },
+    {
+      "name": "test_qtree_2",
+      "storage_id": null,
+      "native_qtree_id": "test_native_qtree_id_2",
+      "native_filesystem_id": "test_native_filesystem_id_2",
+      "security_mode": "unix",
+      "path": "/root/qtree_2"
+    }
+  ],
+  "shares": [
+    {
+      "name": "test_share_1",
+      "storage_id": null,
+      "native_share_id": "test_native_share_id_1",
+      "native_filesystem_id": "test_native_fs_id_1",
+      "native_qtree_id": "test_native_qtree_id_1",
+      "protocol": "cifs",
+      "path": "/root/share_1"
+    },
+    {
+      "name": "test_share_2",
+      "storage_id": null,
+      "native_share_id": "test_native_share_id_2",
+      "native_filesystem_id": "test_native_fs_id_2",
+      "native_qtree_id": "test_native_qtree_id_2",
+      "protocol": "cifs",
+      "path": "/root/share_2"
+    }
+  ]
+}
