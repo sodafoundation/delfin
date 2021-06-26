@@ -841,3 +841,494 @@ def failed_task_delete_by_storage(context, storage_id):
     does not exist.
     """
     return IMPL.failed_task_delete_by_storage(context, storage_id)
+
+
+def storage_host_initiators_create(context, values):
+    """Create a storage host initiator entry from the values dictionary."""
+    return IMPL.storage_host_initiators_create(context, values)
+
+
+def storage_host_initiators_update(context, values):
+    """Update a storage host initiator with the values dictionary."""
+    return IMPL.storage_host_initiators_update(context, values)
+
+
+def storage_host_initiators_delete(context, values):
+    """Delete multiple storage initiators."""
+    return IMPL.storage_host_initiators_delete(context, values)
+
+
+def storage_host_initiators_get(context, storage_host_initiator_id):
+    """Get a storage host initiator or raise an exception if it does not
+    exist.
+    """
+    return IMPL.storage_host_initiators_get(context, storage_host_initiator_id)
+
+
+def storage_host_initiators_get_all(context, marker=None, limit=None,
+                                    sort_keys=None, sort_dirs=None,
+                                    filters=None, offset=None):
+    """Retrieves all storage initiators.
+
+    If no sort parameters are specified then the returned storage initiators
+    are sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage initiators
+    """
+    return IMPL.storage_host_initiators_get_all(context, marker, limit,
+                                                sort_keys, sort_dirs,
+                                                filters, offset)
+
+
+def storage_host_initiators_delete_by_storage(context, storage_id):
+    """Delete all the storage initiators of a device."""
+    return IMPL.storage_host_initiators_delete_by_storage(context, storage_id)
+
+
+def storage_hosts_create(context, values):
+    """Create a storage host entry from the values dictionary."""
+    return IMPL.storage_hosts_create(context, values)
+
+
+def storage_hosts_update(context, values):
+    """Update a storage host with the values dictionary."""
+    return IMPL.storage_hosts_update(context, values)
+
+
+def storage_hosts_delete(context, values):
+    """Delete multiple storage hosts."""
+    return IMPL.storage_hosts_delete(context, values)
+
+
+def storage_hosts_get(context, storage_host_id):
+    """Get a storage host or raise an exception if it does not exist."""
+    return IMPL.storage_hosts_get(context, storage_host_id)
+
+
+def storage_hosts_get_all(context, marker=None, limit=None, sort_keys=None,
+                          sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage hosts.
+
+    If no sort parameters are specified then the returned storage hosts are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage hosts
+    """
+    return IMPL.storage_hosts_get_all(context, marker, limit, sort_keys,
+                                      sort_dirs, filters, offset)
+
+
+def storage_hosts_delete_by_storage(context, storage_id):
+    """Delete all the storage hosts of a device."""
+    return IMPL.storage_hosts_delete_by_storage(context, storage_id)
+
+
+def storage_host_groups_create(context, values):
+    """Create a storage host grp entry from the values dictionary."""
+    return IMPL.storage_host_groups_create(context, values)
+
+
+def storage_host_groups_update(context, values):
+    """Update a storage host grp with the values dictionary."""
+    return IMPL.storage_host_groups_update(context, values)
+
+
+def storage_host_groups_delete(context, values):
+    """Delete multiple storage host groups."""
+    return IMPL.storage_host_groups_delete(context, values)
+
+
+def storage_host_groups_get(context, storage_host_grp_id):
+    """Get a storage host group or raise an exception if it does not exist."""
+    return IMPL.storage_host_groups_get(context, storage_host_grp_id)
+
+
+def storage_host_groups_get_all(context, marker=None, limit=None,
+                                sort_keys=None,
+                                sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage host groups.
+
+    If no sort parameters are specified then the returned storage host groups
+    are sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage host groups
+    """
+    return IMPL.storage_host_groups_get_all(context, marker, limit, sort_keys,
+                                            sort_dirs, filters, offset)
+
+
+def storage_host_groups_delete_by_storage(context, storage_id):
+    """Delete all the storage host groups of a device."""
+    return IMPL.storage_host_groups_delete_by_storage(context, storage_id)
+
+
+def port_groups_create(context, values):
+    """Create a port group entry from the values dictionary."""
+    return IMPL.port_groups_create(context, values)
+
+
+def port_groups_update(context, values):
+    """Update a port group with the values dictionary."""
+    return IMPL.port_groups_update(context, values)
+
+
+def port_groups_delete(context, values):
+    """Delete multiple port groups."""
+    return IMPL.port_groups_delete(context, values)
+
+
+def port_groups_get(context, port_grp_id):
+    """Get a port group or raise an exception if it does not exist."""
+    return IMPL.port_groups_get(context, port_grp_id)
+
+
+def port_groups_get_all(context, marker=None, limit=None,
+                        sort_keys=None,
+                        sort_dirs=None, filters=None, offset=None):
+    """Retrieves all port groups.
+
+    If no sort parameters are specified then the returned port groups are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of port groups
+    """
+    return IMPL.port_groups_get_all(context, marker, limit, sort_keys,
+                                    sort_dirs, filters, offset)
+
+
+def port_groups_delete_by_storage(context, storage_id):
+    """Delete all the port groups of a device."""
+    return IMPL.port_groups_delete_by_storage(context, storage_id)
+
+
+def volume_groups_create(context, values):
+    """Create a volume group entry from the values dictionary."""
+    return IMPL.volume_groups_create(context, values)
+
+
+def volume_groups_update(context, values):
+    """Update a volume group with the values dictionary."""
+    return IMPL.volume_groups_update(context, values)
+
+
+def volume_groups_delete(context, values):
+    """Delete multiple volume groups."""
+    return IMPL.volume_groups_delete(context, values)
+
+
+def volume_groups_get(context, volume_grp_id):
+    """Get a volume group or raise an exception if it does not exist."""
+    return IMPL.volume_groups_get(context, volume_grp_id)
+
+
+def volume_groups_get_all(context, marker=None, limit=None,
+                          sort_keys=None,
+                          sort_dirs=None, filters=None, offset=None):
+    """Retrieves all volume groups.
+
+    If no sort parameters are specified then the returned volume groups are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of volume groups
+    """
+    return IMPL.volume_groups_get_all(context, marker, limit, sort_keys,
+                                      sort_dirs, filters, offset)
+
+
+def volume_groups_delete_by_storage(context, storage_id):
+    """Delete all the volume groups of a device."""
+    return IMPL.volume_groups_delete_by_storage(context, storage_id)
+
+
+def masking_views_create(context, values):
+    """Create a masking view entry from the values dictionary."""
+    return IMPL.masking_views_create(context, values)
+
+
+def masking_views_update(context, values):
+    """Update a masking view with the values dictionary."""
+    return IMPL.masking_views_update(context, values)
+
+
+def masking_views_delete(context, values):
+    """Delete multiple masking views."""
+    return IMPL.masking_views_delete(context, values)
+
+
+def masking_views_get(context, masking_view_id):
+    """Get a masking view or raise an exception if it does not exist."""
+    return IMPL.masking_views_get(context, masking_view_id)
+
+
+def masking_views_get_all(context, marker=None, limit=None,
+                          sort_keys=None,
+                          sort_dirs=None, filters=None, offset=None):
+    """Retrieves all masking views.
+
+    If no sort parameters are specified then the returned masking views are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of masking views
+    """
+    return IMPL.masking_views_get_all(context, marker, limit, sort_keys,
+                                      sort_dirs, filters, offset)
+
+
+def masking_views_delete_by_storage(context, storage_id):
+    """Delete all the masking views of a device."""
+    return IMPL.masking_views_delete_by_storage(context, storage_id)
+
+
+def storage_host_grp_host_rels_create(context, values):
+    """Create a storage host grp host relation entry from the values
+    dictionary.
+    """
+    return IMPL.storage_host_grp_host_rels_create(context, values)
+
+
+def storage_host_grp_host_rels_update(context, values):
+    """Update a storage host grp host relation with the values dictionary."""
+    return IMPL.storage_host_grp_host_rels_update(context, values)
+
+
+def storage_host_grp_host_rels_delete(context, values):
+    """Delete multiple storage host grp host relations."""
+    return IMPL.storage_host_grp_host_rels_delete(context, values)
+
+
+def storage_host_grp_host_rels_get(context, host_grp_host_relation_id):
+    """Get a storage host grp host relation or raise an exception if it does
+    not exist.
+    """
+    return IMPL.storage_host_grp_host_rels_get(context,
+                                               host_grp_host_relation_id)
+
+
+def storage_host_grp_host_rels_get_all(context, marker=None, limit=None,
+                                       sort_keys=None,
+                                       sort_dirs=None, filters=None,
+                                       offset=None):
+    """Retrieves all storage host grp host relation.
+
+    If no sort parameters are specified then the returned
+    storage host grp host relations are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of storage host grp host relations
+    """
+    return IMPL.storage_host_grp_host_rels_get_all(context, marker, limit,
+                                                   sort_keys,
+                                                   sort_dirs, filters,
+                                                   offset)
+
+
+def storage_host_grp_host_rels_delete_by_storage(context, storage_id):
+    """Delete all the storage host grp host relations of a device."""
+    return IMPL.storage_host_grp_host_rels_delete_by_storage(context,
+                                                             storage_id)
+
+
+def port_grp_port_rels_create(context, values):
+    """Create a port grp port relation entry from the values
+    dictionary.
+    """
+    return IMPL.port_grp_port_rels_create(context, values)
+
+
+def port_grp_port_rels_update(context, values):
+    """Update a port grp port relation with the values dictionary."""
+    return IMPL.port_grp_port_rels_update(context, values)
+
+
+def port_grp_port_rels_delete(context, values):
+    """Delete multiple port grp port relations."""
+    return IMPL.port_grp_port_rels_delete(context, values)
+
+
+def port_grp_port_rels_get(context, port_grp_port_relation_id):
+    """Get a port grp port relation or raise an exception if it does
+    not exist.
+    """
+    return IMPL.port_grp_port_rels_get(context,
+                                       port_grp_port_relation_id)
+
+
+def port_grp_port_rels_get_all(context, marker=None, limit=None,
+                               sort_keys=None,
+                               sort_dirs=None, filters=None,
+                               offset=None):
+    """Retrieves all port grp port relation.
+
+    If no sort parameters are specified then the returned
+    port grp port relations are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of port grp port relations
+    """
+    return IMPL.port_grp_port_rels_get_all(context, marker, limit,
+                                           sort_keys,
+                                           sort_dirs, filters,
+                                           offset)
+
+
+def port_grp_port_rels_delete_by_storage(context, storage_id):
+    """Delete all the port grp port relations of a device."""
+    return IMPL.port_grp_port_rels_delete_by_storage(context,
+                                                     storage_id)
+
+
+def vol_grp_vol_rels_create(context, values):
+    """Create a volume grp volume relation entry from the values
+    dictionary.
+    """
+    return IMPL.vol_grp_vol_rels_create(context, values)
+
+
+def vol_grp_vol_rels_update(context, values):
+    """Update a volume grp volume relation with the values dictionary."""
+    return IMPL.vol_grp_vol_rels_update(context, values)
+
+
+def vol_grp_vol_rels_delete(context, values):
+    """Delete multiple volume grp volume relations."""
+    return IMPL.vol_grp_vol_rels_delete(context, values)
+
+
+def vol_grp_vol_rels_get(context, volume_grp_volume_relation_id):
+    """Get a volume grp volume relation or raise an exception if it does
+    not exist.
+    """
+    return IMPL.vol_grp_vol_rels_get(context,
+                                     volume_grp_volume_relation_id)
+
+
+def vol_grp_vol_rels_get_all(context, marker=None, limit=None,
+                             sort_keys=None,
+                             sort_dirs=None, filters=None,
+                             offset=None):
+    """Retrieves all volume grp volume relation.
+
+    If no sort parameters are specified then the returned
+    volume grp volume relations are
+    sorted first by the 'created_at' key and then by the 'id' key in
+    descending order.
+
+    :param context: context of this request, it's helpful to trace the request
+    :param marker: the last item of the previous page, used to determine the
+                   next page of results to return
+    :param limit: maximum number of items to return
+    :param sort_keys: list of attributes by which results should be sorted,
+                      paired with corresponding item in sort_dirs
+    :param sort_dirs: list of directions in which results should be sorted,
+                      paired with corresponding item in sort_keys, for example
+                      'desc' for descending order
+    :param filters: dictionary of filters
+    :param offset: number of items to skip
+    :returns: list of volume grp volume relations
+    """
+    return IMPL.vol_grp_vol_rels_get_all(context, marker, limit,
+                                         sort_keys,
+                                         sort_dirs, filters,
+                                         offset)
+
+
+def vol_grp_vol_rels_delete_by_storage(context, storage_id):
+    """Delete all the volume grp volume relations of a device."""
+    return IMPL.vol_grp_vol_rels_delete_by_storage(context,
+                                                   storage_id)
