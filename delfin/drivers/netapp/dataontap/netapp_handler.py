@@ -44,7 +44,7 @@ class NetAppHandler(object):
 
     @staticmethod
     def get_qt_id(vserver, volume, qtree):
-        qt_id = vserver + '_/' + volume
+        qt_id = vserver + '/' + volume
         if qtree != '':
             qt_id += '/' + qtree
         return qt_id
@@ -260,7 +260,7 @@ class NetAppHandler(object):
                         'storage_id': storage_id,
                         'description': None,
                         'status': status,
-                        'native_volume_id': volume_map['LUNUUID'],
+                        'native_volume_id': volume_map['SerialNumber'],
                         'native_storage_pool_id': pool_id,
                         'wwn': None,
                         'compressed': None,
@@ -817,7 +817,7 @@ class NetAppHandler(object):
                     fs_id = self.get_fs_id(fs_map['Name'],
                                            fs_map['VolumeName'])
                     share_name = \
-                        fs_map['Name'] + '_/' + fs_map['VolumeName']
+                        fs_map['Name'] + '/' + fs_map['VolumeName']
                     qt_id = self.get_qt_id(fs_map['Name'],
                                            fs_map['VolumeName'], '')
                     qtree_id = None
@@ -854,12 +854,12 @@ class NetAppHandler(object):
                     nfs_list.append(share)
             return nfs_list
         except exception.DelfinException as err:
-            err_msg = "Failed to get storage qtrees from " \
+            err_msg = "Failed to get storage nfs share from " \
                       "netapp cmode: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise err
         except Exception as err:
-            err_msg = "Failed to get storage qtrees from " \
+            err_msg = "Failed to get storage nfs share from " \
                       "netapp cmode: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
