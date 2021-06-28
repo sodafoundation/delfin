@@ -15,6 +15,7 @@
 from datetime import datetime
 
 import six
+from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
 from oslo_utils import uuidutils
@@ -25,6 +26,7 @@ from delfin.db.sqlalchemy.models import FailedTask
 from delfin.exception import TaskNotFound
 from delfin.task_manager.scheduler import schedule_manager
 
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
@@ -114,7 +116,10 @@ class FailedTelemetryJob(object):
                 self.scheduler.add_job(
                     instance, 'interval',
                     seconds=failed_task[FailedTask.interval.name],
-                    next_run_time=datetime.now(), id=job_id)
+                    next_run_time=datetime.now(), id=job_id,
+                    misfire_grace_time=int(
+                        CONF.telemetry.performance_collection_interval / 2)
+                )
                 self.job_ids.add(job_id)
 
         except Exception as e:

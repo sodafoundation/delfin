@@ -14,6 +14,7 @@
 import glob
 import os
 
+import six
 from flask import Flask
 from oslo_config import cfg
 import sys
@@ -40,6 +41,9 @@ cfg.CONF(sys.argv[1:])
 
 @app.route("/metrics", methods=['GET'])
 def getfile():
+    """Read the earliest metric file from the
+    available *.prom files
+    """
     try:
         if not os.path.exists(cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir):
             LOG.error('No metrics cache folder exists')
@@ -48,13 +52,25 @@ def getfile():
     except OSError as e:
         LOG.error('Error opening metrics folder')
         raise Exception(e)
-    data = ''
-    for file in glob.glob("*.prom"):
-        file_name = cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir + '/' + file
-        with open(file_name, "r") as f:
-            data += f.read()
+    try:
+        files = glob.glob("*.prom")
+        data = ''
+        if files:
+            files.sort(key=os.path.getmtime)
+            # Read only earliest file in one scrape to /metrics
+            file_name = os.path.join(cfg.CONF.PROMETHEUS_EXPORTER.metrics_dir,
+                                     files[0])
+
+            with open(file_name, "r") as f:
+                data = f.read()
             # Remove a metric file after reading it
+            LOG.info('Metric file %s has been read', file_name)
             os.remove(file_name)
+            LOG.info('Metric file %s has been deleted', file_name)
+    except Exception as e:
+        msg = six.text_type(e)
+        LOG.error('Error while reading metrics %s', msg)
+        return ''
 
     return data
 

@@ -115,6 +115,22 @@ installer/install
 root@root1:~/delfin-demo/delfin$ installer/install
 ```
 
+#### Configure multiple instances of delfin components
+Respective environment variable required to set for running multiple instances 
+of delfin component before executing install command
+
+```sh
+$ export DELFIN_<<delfin component name>>_INSTANCES=<<number of instances>>
+$ installer/install
+
+# Example: Deploy delfin with 3 task and 2 alert instances 
+  $ export DELFIN_TASK_INSTANCES=3
+  $ export DELFIN_ALERT_INSTANCES=2
+  $ installer/install
+```
+
+Note: Multiple instances of exporter and api is not allowed currently.
+
 # Uninstall
 Running the uninstall script will stop all delfin processes and do cleanup
 ```sh

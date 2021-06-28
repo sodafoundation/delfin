@@ -22,11 +22,14 @@ import inspect
 import os
 import random
 
+import eventlet
 import oslo_messaging as messaging
+from eventlet import event
 from oslo_config import cfg
 from oslo_log import log
 from oslo_service import loopingcall
 from oslo_service import service
+from oslo_service import threadgroup
 from oslo_service import wsgi
 from oslo_utils import importutils
 
@@ -286,15 +289,36 @@ class LeaderElectionService(service.Service):
         super(LeaderElectionService, self).__init__()
         self.leader_elector = leader_elector
 
+        self._tg = threadgroup.ThreadGroup()
+        self._stop = event.Event()
+
     def start(self):
         """Start leader election service
         """
-        while True:
-            # start/restart participating in leader election
-            self.leader_elector.run()
 
-            # cleanup and again start participating for leadership
-            self.leader_elector.cleanup()
+        def run_leader_service(stop):
+            while not stop.ready():
+                try:
+                    # Start/restart participating in leader election
+                    LOG.info("Starting leader election service")
+                    self.leader_elector.run()
+                except Exception as e:
+                    LOG.error("Exception in leader election run [%s]" % e)
+
+                try:
+                    # Cleanup and again start participating for leadership
+                    LOG.info("Cleaning leader election residue")
+                    self.leader_elector.cleanup()
+                except Exception as e:
+                    LOG.error("Exception in leader election cleanup [%s]" % e)
+
+                # Wait for grace period
+                LOG.info(
+                    "Waiting till grace period[%s] to restart leader "
+                    "election" % CONF.coordination.lease_timeout)
+                eventlet.greenthread.sleep(CONF.coordination.lease_timeout)
+
+        self._tg.add_thread(run_leader_service, self._stop)
 
     def __getattr__(self, key):
         leader = self.__dict__.get('leader', None)
@@ -312,23 +336,27 @@ class LeaderElectionService(service.Service):
         return service_obj
 
     def kill(self):
-        """Destroy the service object in the datastore."""
         self.stop()
 
     def stop(self, graceful=False):
-        # Try to shut the connection down, but if we get any sort of
-        # errors, go ahead and ignore them.. as we're shutting down anyway
+        # Stop leader election service
+        if not self._stop.ready():
+            self._stop.send()
+
         try:
-            # cleanup when losses the leadership
+            # cleanup after stop
             if self.leader_elector:
                 self.leader_elector.cleanup()
-        except Exception:
-            pass
+        except Exception as e:
+            LOG.warning("Exception in leader election cleanup [%s]" % e)
+
+        # Reap thread group:
+        self.tg.stop(graceful)
 
         super(LeaderElectionService, self).stop(graceful)
 
     def wait(self):
-        pass
+        self._tg.wait()
 
 
 class WSGIService(service.ServiceBase):

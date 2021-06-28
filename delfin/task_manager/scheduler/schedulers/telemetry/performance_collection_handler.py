@@ -67,7 +67,7 @@ class PerformanceCollectionHandler(object):
         try:
             LOG.debug('Collecting performance metrics for task id: %s'
                       % self.task_id)
-            current_time = int(datetime.utcnow().timestamp())
+            current_time = int(datetime.now().timestamp())
 
             # Times are epoch time in milliseconds
             end_time = current_time * 1000
