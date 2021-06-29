@@ -411,5 +411,5 @@ class SSHHandler(object):
                 raise NotImplementedError(re)
             elif 'Too many local CLI connections' in re:
                 LOG.error("command %s failed: %s" % (command, re))
-                raise exception.SSHException(re)
+                raise exception.StorageBackendException(re)
         return re
