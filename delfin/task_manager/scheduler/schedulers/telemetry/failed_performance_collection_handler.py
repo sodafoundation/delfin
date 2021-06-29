@@ -23,7 +23,7 @@ from delfin.db.sqlalchemy.models import FailedTask
 from delfin.db.sqlalchemy.models import Task
 from delfin.i18n import _
 from delfin.task_manager import rpcapi as task_rpcapi
-from delfin.task_manager.scheduler import scheduler
+from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
 
 LOG = log.getLogger(__name__)
@@ -42,7 +42,8 @@ class FailedPerformanceCollectionHandler(object):
         self.start_time = start_time
         self.end_time = end_time
         self.task_rpcapi = task_rpcapi.TaskAPI()
-        self.scheduler_instance = scheduler.Scheduler.get_instance()
+        self.scheduler_instance = \
+            schedule_manager.SchedulerManager().get_scheduler()
         self.result = TelemetryJobStatus.FAILED_JOB_STATUS_INIT
 
     @staticmethod

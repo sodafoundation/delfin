@@ -211,7 +211,7 @@ class UnityStorDriver(driver.StorageDriver):
                     controller_list.append(controller_result)
             return controller_list
         except Exception as err:
-            err_msg = "Failed to get controller metrics from Unity: %s" %\
+            err_msg = "Failed to get controller attributes from Unity: %s" %\
                       (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -323,7 +323,7 @@ class UnityStorDriver(driver.StorageDriver):
             port_list.extend(self.get_fc_ports())
             return port_list
         except Exception as err:
-            err_msg = "Failed to get ports metrics from Unity: %s" % \
+            err_msg = "Failed to get ports attributes from Unity: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -363,7 +363,7 @@ class UnityStorDriver(driver.StorageDriver):
             return disk_list
 
         except Exception as err:
-            err_msg = "Failed to get disk metrics from Unity: %s" % \
+            err_msg = "Failed to get disk attributes from Unity: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -410,7 +410,7 @@ class UnityStorDriver(driver.StorageDriver):
                     fs_list.append(fs)
             return fs_list
         except Exception as err:
-            err_msg = "Failed to get filesystem metrics from Unity: %s"\
+            err_msg = "Failed to get filesystem attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -435,7 +435,7 @@ class UnityStorDriver(driver.StorageDriver):
                     qt_list.append(qt)
             return qt_list
         except Exception as err:
-            err_msg = "Failed to get qtree metrics from Unity: %s"\
+            err_msg = "Failed to get qtree attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -480,7 +480,7 @@ class UnityStorDriver(driver.StorageDriver):
                     share_list.append(fs)
             return share_list
         except Exception as err:
-            err_msg = "Failed to get share metrics from Unity: %s"\
+            err_msg = "Failed to get share attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
@@ -492,42 +492,20 @@ class UnityStorDriver(driver.StorageDriver):
             share_list.extend(self.get_share('nfs', qtrees))
             return share_list
         except Exception as err:
-            err_msg = "Failed to get shares metrics from Unity: %s"\
+            err_msg = "Failed to get shares attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 
     def get_tree_quotas(self):
         quotas_list = []
-        quota_configs = self.rest_handler.get_quota_configs()
         qts = self.rest_handler.get_all_qtrees()
         if qts is None:
             return quotas_list
         qt_entries = qts.get('entries')
-        conf_entries = quota_configs.get('entries')
         for quota in qt_entries:
-            capacity_hard_limit = 0
-            capacity_soft_limit = 0
-            file_hard_limit = 0
-            file_soft_limit = 0
-            limit_type = 'block'
             content = quota.get('content')
             if not content:
                 continue
-            for conf in conf_entries:
-                conf_content = conf.get('content')
-                if not conf_content:
-                    continue
-                if conf_content.get('id') == content.get(
-                        'quotaConfig').get('id'):
-                    if int(conf_content.get('quotaPolicy')) == 0:
-                        limit_type = 'file'
-                    break
-            if limit_type == 'file':
-                file_hard_limit = content.get('hardLimit')
-                file_soft_limit = content.get('softLimit')
-            else:
-                capacity_hard_limit = content.get('hardLimit')
-                capacity_soft_limit = content.get('softLimit')
             qt = {
                 "native_quota_id": content.get('id'),
                 "type": constants.QuotaType.TREE,
@@ -535,10 +513,8 @@ class UnityStorDriver(driver.StorageDriver):
                 "native_filesystem_id":
                     content.get('filesystem', {}).get('id'),
                 "native_qtree_id": content.get('id'),
-                "capacity_hard_limit": capacity_hard_limit,
-                "capacity_soft_limit": capacity_soft_limit,
-                "file_hard_limit": file_hard_limit,
-                "file_soft_limit": file_soft_limit,
+                "capacity_hard_limit": content.get('hardLimit'),
+                "capacity_soft_limit": content.get('softLimit'),
                 "used_capacity": int(content.get('sizeUsed'))
             }
             quotas_list.append(qt)
@@ -546,48 +522,23 @@ class UnityStorDriver(driver.StorageDriver):
 
     def get_user_quotas(self):
         quotas_list = []
-        quota_configs = self.rest_handler.get_quota_configs()
         user_qts = self.rest_handler.get_all_userquotas()
         if user_qts is None:
             return quotas_list
-        conf_entries = quota_configs.get('entries')
         user_entries = user_qts.get('entries')
         for user_quota in user_entries:
-            capacity_hard_limit = 0
-            capacity_soft_limit = 0
-            file_hard_limit = 0
-            file_soft_limit = 0
-            limit_type = 'block'
             content = user_quota.get('content')
             if not content:
                 continue
-            if content.get('treeQuota'):
-                for conf in conf_entries:
-                    conf_content = conf.get('content')
-                    if not conf_content:
-                        continue
-                    if conf_content.get('treeQuota').get('id')\
-                            == content.get('treeQuota').get('id'):
-                        if int(conf_content.get('quotaPolicy')) == 0:
-                            limit_type = 'file'
-                        break
-            if limit_type == 'file':
-                file_hard_limit = content.get('hardLimit')
-                file_soft_limit = content.get('softLimit')
-            else:
-                capacity_hard_limit = content.get('hardLimit')
-                capacity_soft_limit = content.get('softLimit')
             qt = {
                 "native_quota_id": content.get('id'),
                 "type": constants.QuotaType.USER,
                 "storage_id": self.storage_id,
                 "native_filesystem_id":
                     content.get('filesystem', {}).get('id'),
-                "native_qtree_id": content.get('id'),
-                "capacity_hard_limit": capacity_hard_limit,
-                "capacity_soft_limit": capacity_soft_limit,
-                "file_hard_limit": file_hard_limit,
-                "file_soft_limit": file_soft_limit,
+                "native_qtree_id": content.get('treeQuota', {}).get('id'),
+                "capacity_hard_limit": content.get('hardLimit'),
+                "capacity_soft_limit": content.get('softLimit'),
                 "used_capacity": int(content.get('sizeUsed'))
             }
             quotas_list.append(qt)
@@ -600,7 +551,7 @@ class UnityStorDriver(driver.StorageDriver):
             quotas_list.extend(self.get_user_quotas())
             return quotas_list
         except Exception as err:
-            err_msg = "Failed to get quotas metrics from Unity: %s"\
+            err_msg = "Failed to get quotas attributes from Unity: %s"\
                       % (six.text_type(err))
             raise exception.InvalidResults(err_msg)
 

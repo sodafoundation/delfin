@@ -45,7 +45,10 @@ coordination_opts = [
                help='The backend server for distributed coordination.'),
     cfg.IntOpt('expiration',
                default=100,
-               help='The expiration(in second) of the lock.')
+               help='The expiration(in second) of the lock.'),
+    cfg.IntOpt('lease_timeout',
+               default=15,
+               help='The expiration(in second) of the lock.'),
 ]
 
 CONF = cfg.CONF
@@ -76,6 +79,10 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
+
+        LOG.info('Started Coordinator (Agent ID: %(agent)s, prefix: '
+                 '%(prefix)s)', {'agent': self.agent_id,
+                                 'prefix': self.prefix})
 
         backend_url = _get_redis_backend_url()
         self.coordinator = coordination.get_coordinator(
@@ -110,6 +117,78 @@ class Coordinator(object):
 
 
 LOCK_COORDINATOR = Coordinator(prefix='delfin-')
+
+
+class LeaderElectionCoordinator(Coordinator):
+
+    def __init__(self, agent_id=None):
+        super(LeaderElectionCoordinator, self). \
+            __init__(agent_id=agent_id, prefix="leader_election")
+        self.group = None
+
+    def start(self):
+        """Connect to coordination back end."""
+        if self.started:
+            return
+
+        # NOTE(gouthamr): Tooz expects member_id as a byte string.
+        member_id = (self.prefix + "-" + self.agent_id).encode('ascii')
+        LOG.info('Started Coordinator (Agent ID: %(agent)s, '
+                 'prefix: %(prefix)s)', {'agent': self.agent_id,
+                                         'prefix': self.prefix})
+
+        backend_url = _get_redis_backend_url()
+        self.coordinator = coordination.get_coordinator(
+            backend_url, member_id,
+            timeout=CONF.coordination.lease_timeout)
+        self.coordinator.start()
+        self.started = True
+
+    def ensure_group(self, group):
+        req = self.coordinator.get_groups()
+        groups = req.get()
+        try:
+            # Check if group exist
+            groups.index(group)
+        except Exception:
+            # Create a group if not exist
+            LOG.debug("Exception is expected as requested group not available "
+                      "in tooz backend. Creating the group")
+            request = self.coordinator.create_group(group)
+            request.get()
+        else:
+            LOG.info("Leader group already exist")
+
+        self.group = group
+
+    def join_group(self):
+        if self.group:
+            request = self.coordinator.join_group(self.group)
+            request.get()
+
+    def register_on_start_leading_callback(self, callback):
+        return self.coordinator.watch_elected_as_leader(self.group, callback)
+
+    def send_heartbeat(self):
+        return self.coordinator.heartbeat()
+
+    def start_leader_watch(self):
+        return self.coordinator.run_watchers()
+
+    def stop(self):
+        """Disconnect from coordination back end."""
+        if self.started:
+            self.coordinator.stop()
+            self.coordinator = None
+            self.started = False
+
+        LOG.info('Stopped Coordinator (Agent ID: %(agent)s',
+                 {'agent': self.agent_id})
+
+    def is_still_leader(self):
+        for acquired_lock in self.coordinator._acquired_locks:
+            return acquired_lock.is_still_owner()
+        return False
 
 
 class Lock(locking.Lock):

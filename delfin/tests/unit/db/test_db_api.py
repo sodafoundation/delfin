@@ -1,11 +1,60 @@
+# Copyright 2021 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from unittest import mock
 
 from delfin import context, exception
 from delfin import test
 from delfin.db import api as db_api
 from delfin.db.sqlalchemy import api, models
+from delfin.tests.unit import fake_data, utils
 
 ctxt = context.get_admin_context()
+
+
+class TestIMDBAPIStoragePool(test.TestCase):
+    @mock.patch('sqlalchemy.create_engine', mock.Mock())
+    def test_register_db(self):
+        db_api.register_db()
+
+    def test_get_session(self):
+        api.get_session()
+
+    def test_get_engine(self):
+        api.get_engine()
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_basic_storage_pool_create(self, mock_session):
+        storage_pool_model_lst = fake_data.fake_storage_pool_create()
+        expected = fake_data.fake_expected_storage_pool_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
+        utils.validate_db_schema_model(got[0], models.StoragePool)
+        utils.validate_db_schema_model(expected[0], models.StoragePool)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_unknown_attribute_storage_pool_model_create(self, mock_session):
+        storage_pool_model_lst = fake_data.fake_storage_pool_create()
+        expected = fake_data.fake_expected_storage_pool_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
+        self.assertRaisesRegex(AssertionError, "",
+                               utils.validate_db_schema_model,
+                               got[1], models.StoragePool)
 
 
 class TestSIMDBAPI(test.TestCase):
@@ -837,4 +886,283 @@ class TestSIMDBAPI(test.TestCase):
             = fake_failed_task_storage_id
         result = db_api \
             .task_delete_by_storage(context, fake_failed_task_storage_id)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_basic_storage_pool_create(self, mock_session):
+        storage_pool_model_lst = fake_data.fake_storage_pool_create()
+        expected = fake_data.fake_expected_storage_pool_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
+        utils.validate_db_schema_model(got[0], models.StoragePool)
+        utils.validate_db_schema_model(expected[0], models.StoragePool)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_unknown_attribute_storage_pool_model_create(self, mock_session):
+        storage_pool_model_lst = fake_data.fake_storage_pool_create()
+        expected = fake_data.fake_expected_storage_pool_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_pools_create(ctxt, storage_pool_model_lst)
+        self.assertRaisesRegex(AssertionError, "",
+                               utils.validate_db_schema_model,
+                               got[1], models.StoragePool)
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_initiator_create(self, mock_session):
+        storage_host_initiator_model_lst \
+            = fake_data.fake_storage_host_initiator_create()
+        expected = fake_data.fake_expected_storage_host_initiator_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_host_initiators_create(
+            ctxt, storage_host_initiator_model_lst)
+        utils.validate_db_schema_model(got[0], models.StorageHostInitiator)
+        utils.validate_db_schema_model(expected[0],
+                                       models.StorageHostInitiator)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_initiator_update(self, mock_session):
+        storage_host_initiator_model_lst \
+            = fake_data.fake_storage_host_initiator_create()
+        expected = fake_data.fake_expected_storage_host_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        result = db_api.storage_host_initiators_update(
+            ctxt, storage_host_initiator_model_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_initiator_delete(self, mock_session):
+        storage_host_initiator_model_lst \
+            = fake_data.fake_storage_host_initiator_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = storage_host_initiator_model_lst
+        result = db_api.storage_host_initiators_delete(
+            ctxt, storage_host_initiator_model_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_initiator_delete_by_storage(self, mock_session):
+        storage_host_initiator_model_lst \
+            = fake_data.fake_storage_host_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = storage_host_initiator_model_lst
+        result = db_api.storage_host_initiators_delete_by_storage(
+            ctxt, storage_host_initiator_model_lst[0]['storage_id'])
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_create(self, mock_session):
+        storage_host_model_lst \
+            = fake_data.fake_storage_host_create()
+        expected = fake_data.fake_expected_storage_host_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_hosts_create(
+            ctxt, storage_host_model_lst)
+        utils.validate_db_schema_model(got[0], models.StorageHost)
+        utils.validate_db_schema_model(expected[0], models.StorageHost)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_update(self, mock_session):
+        storage_host_model_lst \
+            = fake_data.fake_storage_host_create()
+        expected = fake_data.fake_expected_storage_host_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        result = db_api.storage_hosts_update(ctxt, storage_host_model_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_delete(self, mock_session):
+        storage_host_model_lst \
+            = fake_data.fake_storage_host_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = storage_host_model_lst
+        result = db_api.storage_hosts_delete(ctxt, storage_host_model_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_delete_by_storage(self, mock_session):
+        storage_host_model_lst \
+            = fake_data.fake_storage_host_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = storage_host_model_lst
+        result = db_api.storage_hosts_delete_by_storage(
+            ctxt, storage_host_model_lst[0]['storage_id'])
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_groups_create(self, mock_session):
+        storage_host_group_lst \
+            = fake_data.fake_storage_host_group_create()
+        expected = fake_data.fake_expected_storage_host_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.storage_host_groups_create(
+            ctxt, storage_host_group_lst)
+        utils.validate_db_schema_model(got[0], models.StorageHostGroup)
+        utils.validate_db_schema_model(expected[0], models.StorageHostGroup)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_group_update(self, mock_session):
+        storage_host_group_lst \
+            = fake_data.fake_storage_host_group_create()
+        expected = fake_data.fake_expected_storage_host_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        result = db_api.storage_host_groups_update(ctxt,
+                                                   storage_host_group_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_group_delete(self, mock_session):
+        storage_host_group_lst \
+            = fake_data.fake_storage_host_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = storage_host_group_lst
+        result = db_api.storage_host_groups_delete(ctxt,
+                                                   storage_host_group_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_storage_host_group_delete_by_storage(self, mock_session):
+        storage_host_group_lst \
+            = fake_data.fake_storage_host_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = storage_host_group_lst
+        result = db_api.storage_host_groups_delete_by_storage(
+            ctxt, storage_host_group_lst[0]['storage_id'])
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_groups_create(self, mock_session):
+        port_group_lst \
+            = fake_data.fake_port_group_create()
+        expected = fake_data.fake_expected_port_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.port_groups_create(
+            ctxt, port_group_lst)
+        utils.validate_db_schema_model(got[0], models.PortGroup)
+        utils.validate_db_schema_model(expected[0], models.PortGroup)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_group_update(self, mock_session):
+        port_group_lst \
+            = fake_data.fake_port_group_create()
+        expected = fake_data.fake_expected_port_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        result = db_api.port_groups_update(ctxt, port_group_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_group_delete(self, mock_session):
+        port_group_lst \
+            = fake_data.fake_port_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = port_group_lst
+        result = db_api.port_groups_delete(ctxt, port_group_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_port_group_delete_by_storage(self, mock_session):
+        port_group_lst \
+            = fake_data.fake_port_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = port_group_lst
+        result = db_api.port_groups_delete_by_storage(
+            ctxt, port_group_lst[0]['storage_id'])
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_volume_groups_create(self, mock_session):
+        volume_group_lst \
+            = fake_data.fake_volume_group_create()
+        expected = fake_data.fake_expected_volume_groups_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.volume_groups_create(
+            ctxt, volume_group_lst)
+        utils.validate_db_schema_model(got[0], models.VolumeGroup)
+        utils.validate_db_schema_model(expected[0], models.VolumeGroup)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_volume_group_update(self, mock_session):
+        volume_group_lst \
+            = fake_data.fake_volume_group_create()
+        expected = fake_data.fake_expected_volume_groups_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        result = db_api.volume_groups_update(ctxt, volume_group_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_volume_group_delete(self, mock_session):
+        volume_group_lst \
+            = fake_data.fake_volume_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = volume_group_lst
+        result = db_api.volume_groups_delete(ctxt, volume_group_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_volume_group_delete_by_storage(self, mock_session):
+        volume_group_lst \
+            = fake_data.fake_volume_group_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = volume_group_lst
+        result = db_api.volume_groups_delete_by_storage(
+            ctxt, volume_group_lst[0]['storage_id'])
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_masking_views_create(self, mock_session):
+        masking_view_lst \
+            = fake_data.fake_masking_view_create()
+        expected = fake_data.fake_expected_masking_views_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        got = db_api.masking_views_create(
+            ctxt, masking_view_lst)
+        utils.validate_db_schema_model(got[0], models.MaskingView)
+        utils.validate_db_schema_model(expected[0], models.MaskingView)
+        self.assertDictMatch(got[0], expected[0])
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_masking_view_update(self, mock_session):
+        masking_view_lst \
+            = fake_data.fake_masking_view_create()
+        expected = fake_data.fake_expected_masking_views_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = expected
+        result = db_api.masking_views_update(ctxt, masking_view_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_masking_view_delete(self, mock_session):
+        masking_view_lst \
+            = fake_data.fake_masking_view_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = masking_view_lst
+        result = db_api.masking_views_delete(ctxt, masking_view_lst)
+        assert result is None
+
+    @mock.patch('delfin.db.sqlalchemy.api.get_session')
+    def test_masking_view_delete_by_storage(self, mock_session):
+        masking_view_lst \
+            = fake_data.fake_masking_view_create()
+        mock_session.return_value.__enter__.return_value.query.return_value \
+            = masking_view_lst
+        result = db_api.masking_views_delete_by_storage(
+            ctxt, masking_view_lst[0]['storage_id'])
         assert result is None
