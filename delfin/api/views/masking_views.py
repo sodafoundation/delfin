@@ -11,20 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from apscheduler.schedulers.background import BackgroundScheduler
-
-from delfin import test
-from delfin.task_manager.scheduler import schedule_manager
+import copy
 
 
-class TestScheduler(test.TestCase):
+def build_masking_views(masking_views):
+    # Build list of masking views
+    views = [build_masking_view(masking_view)
+             for masking_view in masking_views]
+    return dict(masking_views=views)
 
-    def test_scheduler_manager_singleton(self):
-        first_instance = schedule_manager.SchedulerManager().get_scheduler()
-        self.assertIsInstance(first_instance, BackgroundScheduler)
 
-        second_instance = schedule_manager.SchedulerManager().get_scheduler()
-        self.assertIsInstance(second_instance, BackgroundScheduler)
-
-        self.assertEqual(first_instance, second_instance)
+def build_masking_view(masking_view):
+    view = copy.deepcopy(masking_view)
+    return dict(view)

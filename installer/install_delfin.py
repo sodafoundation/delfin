@@ -16,8 +16,9 @@
 
 import os
 import subprocess
-from subprocess import CalledProcessError
 import traceback as tb
+from subprocess import CalledProcessError
+
 from installer.helper import copy_files, create_dir, \
     logger, logfile, delfin_log_dir, create_file
 
@@ -53,40 +54,43 @@ def create_delfin_db():
 
 
 def start_processes():
-    # start api process
-    proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'api.py')
-    command = 'python3 ' + proc_path + ' --config-file ' +\
-              conf_file + ' >' + DEVNULL + ' 2>&1 &'
-    # >/dev/null 2>&1
-    logger.info("Executing command [%s]", command)
-    os.system(command)
-    logger.info("API process_started")
-
-    # Start task process
-    proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'task.py')
-    command = 'python3 ' + proc_path + ' --config-file ' +\
-              conf_file + ' >' + DEVNULL + ' 2>&1 &'
-    logger.info("Executing command [%s]", command)
-    os.system(command)
-
-    logger.info("TASK process_started")
-
-    # Start alert process
-    proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd', 'alert.py')
-    command = 'python3 ' + proc_path + ' --config-file ' +\
-              conf_file + ' >' + DEVNULL + ' 2>&1 &'
-    logger.info("Executing command [%s]", command)
-    os.system(command)
-    logger.info("ALERT process_started")
+    processes = ['api', 'task', 'alert']
+    # Start cmd processes
+    for process in processes:
+        env_var = 'DELFIN_' + process.upper() + '_INSTANCES'
+        try:
+            instances = os.environ.get(env_var)
+            # Ignore multiple instance of api
+            if not instances or process == 'api':
+                instances = '1'
+            start_process(process, int(instances))
+        except CalledProcessError as cpe:
+            logger.error("Got CPE error [%s]:[%s]" % (cpe, tb.print_exc()))
+            return
+        except ValueError as e:
+            logger.error(
+                "Got invalid [%s] environment variable:[%s]" % (env_var, e))
+            return
 
     # Start exporter server process
     proc_path = os.path.join(delfin_source_path, 'delfin', 'exporter',
                              'prometheus', 'exporter_server.py')
-    command = 'python3 ' + proc_path + ' --config-file ' +\
+    command = 'python3 ' + proc_path + ' --config-file ' + \
               conf_file + ' >' + DEVNULL + ' 2>&1 &'
     logger.info("Executing command [%s]", command)
     os.system(command)
     logger.info("Exporter process_started")
+
+
+def start_process(process, instances=1):
+    for instance in range(0, instances):
+        proc_path = os.path.join(delfin_source_path, 'delfin', 'cmd',
+                                 process + '.py')
+        command = 'python3 ' + proc_path + ' --config-file ' + \
+                  conf_file + ' >' + DEVNULL + ' 2>&1 &'
+        logger.info("Executing command [%s]", command)
+        os.system(command)
+        logger.info("[%s] process_started", process)
 
 
 def install_delfin():
@@ -99,7 +103,7 @@ def install_delfin():
     setup_file = os.path.join(delfin_source_path, 'setup.py')
     for command in python_setup_comm:
         try:
-            command = 'python3 ' + setup_file + ' ' +\
+            command = 'python3 ' + setup_file + ' ' + \
                       command + ' >>' + logfile
             logger.info("Executing [%s]", command)
             os.system(command)

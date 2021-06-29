@@ -11,20 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from apscheduler.schedulers.background import BackgroundScheduler
-
-from delfin import test
-from delfin.task_manager.scheduler import schedule_manager
+import copy
 
 
-class TestScheduler(test.TestCase):
+def build_storage_host_initiators(storage_host_initiators):
+    # Build list of storage host initiators
+    views = [build_storage_host_initiator(storage_host_initiator)
+             for storage_host_initiator in storage_host_initiators]
+    return dict(storage_host_initiators=views)
 
-    def test_scheduler_manager_singleton(self):
-        first_instance = schedule_manager.SchedulerManager().get_scheduler()
-        self.assertIsInstance(first_instance, BackgroundScheduler)
 
-        second_instance = schedule_manager.SchedulerManager().get_scheduler()
-        self.assertIsInstance(second_instance, BackgroundScheduler)
-
-        self.assertEqual(first_instance, second_instance)
+def build_storage_host_initiator(storage_host_initiator):
+    view = copy.deepcopy(storage_host_initiator)
+    return dict(view)
