@@ -242,8 +242,8 @@ class RestHandler(RestClient):
 
     def get_all_userquotas(self):
         url = '%s?%s' % (RestHandler.REST_USERQUOTA_URL,
-                         'fields=id,filesystem,description,path,hardLimit,'
-                         'softLimit,sizeUsed')
+                         'fields=id,filesystem,hardLimit,softLimit,'
+                         'sizeUsed,treeQuota')
         result_json = self.get_rest_info(url)
         return result_json
 
