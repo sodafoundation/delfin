@@ -448,7 +448,7 @@ controller_result = [
         'storage_id': '12345',
         'native_controller_id': '16',
         'status': 'normal',
-        'soft_version': 'HUAWEI_XSG1',
+        'soft_version': 'HUAWEI XSG1',
         'location': 'controller13'
     }
 ]
