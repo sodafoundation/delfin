@@ -79,8 +79,8 @@ class TestTelemetryJob(test.TestCase):
         ctx = context.get_admin_context()
         telemetry_job = TelemetryJob(ctx)
         # call telemetry job scheduling
-        telemetry_job(ctx)
-        self.assertEqual(mock_add_job.call_count, 2)
+        telemetry_job()
+        self.assertEqual(mock_add_job.call_count, 1)
 
     @mock.patch.object(db, 'task_get_all',
                        mock.Mock(return_value=Incorrect_telemetry_jobs))
@@ -96,7 +96,7 @@ class TestTelemetryJob(test.TestCase):
         ctx = context.get_admin_context()
         telemetry_job = TelemetryJob(ctx)
         # call telemetry job scheduling
-        telemetry_job(ctx)
+        telemetry_job()
         self.assertEqual(mock_log_error.call_count, 2)
 
     @mock.patch.object(db, 'task_delete',
@@ -115,5 +115,5 @@ class TestTelemetryJob(test.TestCase):
         ctx = context.get_admin_context()
         telemetry_job = TelemetryJob(ctx)
         # call telemetry job scheduling
-        telemetry_job(ctx)
+        telemetry_job()
         self.assertEqual(mock_log_error.call_count, 1)

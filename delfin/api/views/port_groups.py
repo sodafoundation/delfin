@@ -11,18 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import six
-from apscheduler.schedulers.background import BackgroundScheduler
-
-from delfin import utils
+import copy
 
 
-@six.add_metaclass(utils.Singleton)
-class Scheduler:
-    @staticmethod
-    def get_instance():
-        return Scheduler().background_scheduler
+def build_port_groups(port_groups):
+    # Build list of port groups
+    views = [build_port_group(port_group)
+             for port_group in port_groups]
+    return dict(port_groups=views)
 
-    def __init__(self):
-        self.background_scheduler = BackgroundScheduler()
+
+def build_port_group(port_group):
+    view = copy.deepcopy(port_group)
+    return dict(view)

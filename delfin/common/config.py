@@ -31,6 +31,8 @@ from oslo_log import log
 from oslo_middleware import cors
 from oslo_utils import netutils
 
+from delfin.common import constants
+
 LOG = log.getLogger(__name__)
 
 CONF = cfg.CONF
@@ -106,6 +108,15 @@ storage_driver_opts = [
 ]
 
 CONF.register_opts(storage_driver_opts, group='storage_driver')
+
+telemetry_opts = [
+    cfg.IntOpt('performance_collection_interval',
+               default=constants.TelemetryCollection
+               .DEF_PERFORMANCE_COLLECTION_INTERVAL,
+               help='default interval (in sec) for performance collection'),
+]
+
+CONF.register_opts(telemetry_opts, "telemetry")
 
 
 def set_middleware_defaults():

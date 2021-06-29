@@ -22,18 +22,21 @@ import inspect
 import os
 import random
 
+import eventlet
 import oslo_messaging as messaging
+from eventlet import event
 from oslo_config import cfg
 from oslo_log import log
 from oslo_service import loopingcall
 from oslo_service import service
+from oslo_service import threadgroup
 from oslo_service import wsgi
 from oslo_utils import importutils
 
 from delfin import context
 from delfin import coordination
 from delfin import rpc
-from delfin.task_manager.scheduler import schedule_manager
+from delfin.leader_election.factory import LeaderElectionFactory
 
 LOG = log.getLogger(__name__)
 
@@ -69,6 +72,10 @@ service_opts = [
     cfg.PortOpt('trap_receiver_port',
                 default=162,
                 help='Port at which trap receiver listens.'),
+    cfg.StrOpt('leader_election_plugin',
+               default="tooz",
+               help='Supported plugin for leader election. Options: '
+                    'tooz(Default)'),
 ]
 
 CONF = cfg.CONF
@@ -269,7 +276,87 @@ class TaskService(Service):
 
     def start(self):
         super(TaskService, self).start()
-        schedule_manager.SchedulerManager().start()
+
+
+class LeaderElectionService(service.Service):
+    """Leader election service for distributed system
+
+    The service takes callback functions and leader election unique
+    key to synchronize leaders in distributed environment
+    """
+
+    def __init__(self, leader_elector, *args, **kwargs):
+        super(LeaderElectionService, self).__init__()
+        self.leader_elector = leader_elector
+
+        self._tg = threadgroup.ThreadGroup()
+        self._stop = event.Event()
+
+    def start(self):
+        """Start leader election service
+        """
+
+        def run_leader_service(stop):
+            while not stop.ready():
+                try:
+                    # Start/restart participating in leader election
+                    LOG.info("Starting leader election service")
+                    self.leader_elector.run()
+                except Exception as e:
+                    LOG.error("Exception in leader election run [%s]" % e)
+
+                try:
+                    # Cleanup and again start participating for leadership
+                    LOG.info("Cleaning leader election residue")
+                    self.leader_elector.cleanup()
+                except Exception as e:
+                    LOG.error("Exception in leader election cleanup [%s]" % e)
+
+                # Wait for grace period
+                LOG.info(
+                    "Waiting till grace period[%s] to restart leader "
+                    "election" % CONF.coordination.lease_timeout)
+                eventlet.greenthread.sleep(CONF.coordination.lease_timeout)
+
+        self._tg.add_thread(run_leader_service, self._stop)
+
+    def __getattr__(self, key):
+        leader = self.__dict__.get('leader', None)
+        return getattr(leader, key)
+
+    @classmethod
+    def create(cls, *args, **kwargs):
+        """Instantiates class and passes back application object.
+        """
+        leader_elector = LeaderElectionFactory.construct_elector(
+            CONF.leader_election_plugin)
+
+        service_obj = cls(leader_elector, *args, **kwargs)
+
+        return service_obj
+
+    def kill(self):
+        self.stop()
+
+    def stop(self, graceful=False):
+        # Stop leader election service
+        if not self._stop.ready():
+            self._stop.send()
+
+        try:
+            # cleanup after stop
+            if self.leader_elector:
+                self.leader_elector.cleanup()
+        except Exception as e:
+            LOG.warning("Exception in leader election cleanup [%s]" % e)
+
+        # Reap thread group:
+        self.tg.stop(graceful)
+
+        super(LeaderElectionService, self).stop(graceful)
+
+    def wait(self):
+        self._tg.wait()
 
 
 class WSGIService(service.ServiceBase):
@@ -396,10 +483,10 @@ _launcher = None
 
 def serve(server, workers=None):
     global _launcher
-    if _launcher:
-        raise RuntimeError('serve() can only be called once')
-    _launcher = service.launch(CONF, server, workers=workers,
-                               restart_method='mutate')
+    if not _launcher:
+        _launcher = service.Launcher(CONF, restart_method='mutate')
+
+    _launcher.launch_service(server, workers=workers)
 
 
 def wait():

@@ -142,7 +142,7 @@ check_install_p3_venv(){
     fi
 
     if [[ $(lsb_release -rs) == "18.04" ]]; then
-        virtualenv ${BASEDIR}/${PROJECT_NAME}
+        virtualenv -p python3 ${BASEDIR}/${PROJECT_NAME}
     else
         venv_dir=$(python3 -m venv ${BASEDIR}/${PROJECT_NAME})
     fi

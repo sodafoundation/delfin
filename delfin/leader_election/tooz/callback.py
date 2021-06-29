@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from apscheduler.schedulers.background import BackgroundScheduler
-
-from delfin import test
-from delfin.task_manager.scheduler import schedule_manager
+from delfin.leader_election.interface import LeaderCallback
 
 
-class TestScheduler(test.TestCase):
+class ToozLeaderElectionCallback(LeaderCallback):
 
-    def test_scheduler_manager_singleton(self):
-        first_instance = schedule_manager.SchedulerManager().get_scheduler()
-        self.assertIsInstance(first_instance, BackgroundScheduler)
+    def on_started_leading(self, *args, **kwargs):
+        return self.on_started_leading_callback()
 
-        second_instance = schedule_manager.SchedulerManager().get_scheduler()
-        self.assertIsInstance(second_instance, BackgroundScheduler)
-
-        self.assertEqual(first_instance, second_instance)
+    def on_stopped_leading(self, *args, **kwargs):
+        return self.on_stopped_leading_callback()

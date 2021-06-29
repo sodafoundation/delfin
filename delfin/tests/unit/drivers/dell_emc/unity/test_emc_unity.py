@@ -1277,8 +1277,7 @@ GET_ALL_USERQUOTA = {
                 "path": "/",
                 "filesystem": {
                     "id": "filesystem_1"
-                },
-                "treeQuota": None
+                }
             }
         }
     ]
@@ -1290,32 +1289,26 @@ quota_result = [
         'storage_id': '12345',
         'native_filesystem_id': 'filesystem_1',
         'native_qtree_id': 'qtree_1',
-        'capacity_hard_limit': 0,
-        'capacity_soft_limit': 0,
-        'file_hard_limit': 1000,
-        'file_soft_limit': 1110,
+        'capacity_hard_limit': 1000,
+        'capacity_soft_limit': 1110,
         'used_capacity': 20000000
     }, {
         'native_quota_id': 'user_1',
         'type': 'user',
         'storage_id': '12345',
         'native_filesystem_id': 'filesystem_1',
-        'native_qtree_id': 'user_1',
-        'capacity_hard_limit': 0,
-        'capacity_soft_limit': 0,
-        'file_hard_limit': 1000,
-        'file_soft_limit': 1110,
+        'native_qtree_id': 'qtree_1',
+        'capacity_hard_limit': 1000,
+        'capacity_soft_limit': 1110,
         'used_capacity': 20000000
     }, {
         'native_quota_id': 'user_2',
         'type': 'user',
         'storage_id': '12345',
         'native_filesystem_id': 'filesystem_1',
-        'native_qtree_id': 'user_2',
+        'native_qtree_id': None,
         'capacity_hard_limit': 1000,
         'capacity_soft_limit': 1110,
-        'file_hard_limit': 0,
-        'file_soft_limit': 0,
         'used_capacity': 20000000
     }
 ]
@@ -1458,10 +1451,8 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_qtrees')
     @mock.patch.object(RestHandler, 'get_all_userquotas')
-    @mock.patch.object(RestHandler, 'get_quota_configs')
-    def test_list_quotas(self, mock_config, mock_user, mock_qtree):
+    def test_list_quotas(self, mock_user, mock_qtree):
         RestHandler.login = mock.Mock(return_value=None)
-        mock_config.return_value = GET_ALL_QUOTACONFIG
         mock_user.return_value = GET_ALL_USERQUOTA
         mock_qtree.return_value = GET_ALL_QTREE
         quota = UnityStorDriver(**ACCESS_INFO).list_quotas(context)
