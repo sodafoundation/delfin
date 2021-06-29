@@ -179,5 +179,113 @@ class StorageDriver(object):
         """Get capability of driver"""
         pass
 
+    def list_storage_host_initiators(self, context):
+        """List all storage initiators from storage system."""
+        """
+        *********Model description**********
+        native_storage_host_initiator_id: Native id at backend side(mandatory)
+        native_storage_host_id: Native id of host at backend side if associated
+        name: Name of the initiator
+        description: Description of the initiator
+        alias: Alias of the initiator
+        type: initiator type (fc, iscsi, nvme_over_roce)
+        status: Health status(normal, offline, abnormal, unknown)
+        wwn: Worldwide name
+        storage_id: Storage id at delfin side
+        """
+        raise NotImplementedError(
+            "Driver API list_storage_host_initiators() is not Implemented")
+
+    def list_storage_hosts(self, context):
+        """List all storage hosts from storage system."""
+        """
+        *********Model description**********
+        native_storage_host_id: Native id of host at backend side(mandatory)
+        name: Name of the host
+        description: Description of the host
+        os_type: operating system type
+        status: Health status(normal, offline, abnormal, unknown)
+        ip_address: Ip address of the host
+        storage_id: Storage id at delfin side
+        """
+        raise NotImplementedError(
+            "Driver API list_storage_hosts() is not Implemented")
+
+    def list_storage_host_groups(self, context):
+        """List all storage host groups from storage system."""
+        """
+        *********Model description**********
+        native_storage_host_group_id: Native id of host grp at backend side
+                                      (mandatory)
+        name: Name of the host grp
+        description: Description of the host grp
+        storage_hosts: List of associated hosts if any(, separated list)
+        storage_id: Storage id at delfin side
+        """
+        raise NotImplementedError(
+            "Driver API list_storage_host_groups() is not Implemented")
+
+    def list_port_groups(self, context):
+        """List all port groups from storage system."""
+        """
+        *********Model description**********
+        native_port_group_id: Native id of port grp at backend side (mandatory)
+        name: Name of the port grp
+        description: Description of the port grp
+        ports: List of associated ports if any(, separated list)
+        storage_id: Storage id at delfin side
+        """
+        raise NotImplementedError(
+            "Driver API list_port_groups() is not Implemented")
+
+    def list_volume_groups(self, context):
+        """List all volume groups from storage system."""
+        """
+        *********Model description**********
+        native_volume_group_id: Native id of volume grp at backend side
+                                (mandatory)
+        name: Name of the volume grp
+        description: Description of the volume grp
+        volumes: List of associated volumes if any(, separated list)
+        storage_id: Storage id at delfin side
+        """
+        raise NotImplementedError(
+            "Driver API list_volume_groups() is not Implemented")
+
+    def list_masking_views(self, context):
+        """List all masking views from storage system."""
+        """
+        *********Model description**********
+        native_masking_view_id: Native id of volume grp at backend side
+                                (mandatory)
+        name: Name of the masking view
+        description: Description of the masking view
+        native_storage_host_group_id: Native id of host grp at backend side
+        native_port_group_id: Native id of port grp at backend side
+        native_volume_group_id: Native id of volume grp at backend side
+        native_storage_host_id: Native id of host at backend side
+        native_volume_id: Native id of volume at backend side
+        native_port_id: Native id of port at backend side
+        storage_id: Storage id at delfin side
+
+        Masking view filling guidelines:
+        Driver can have different backend scenarios such as
+         - Direct host -> direct volume mapping
+         - Direct host -> direct volume -> direct port mapping
+         - Direct host -> volume group mapping
+         - Host grp -> volume group mapping
+         - Host grp -> direct volume(s) mapping
+         So driver need to fill in group to item order based on availability
+         as given below
+        From host side: Mandatorily one of the (native_storage_host_group_id
+                        | native_storage_host_id)
+        From volume side: Mandatorily one of the (native_volume_group_id
+                                                 | native_volume_id)
+        From port side: Optionally One of the (native_port_group_id
+                                                 | native_port_id)
+        """
+        raise NotImplementedError(
+            "Driver API list_masking_views() is not Implemented")
+
     def get_alert_sources(self, context):
         return []
