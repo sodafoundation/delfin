@@ -30,6 +30,7 @@ class Request:
 class TestNetAppCmodeDriver(TestCase):
     SSHPool.get = mock.Mock(
         return_value={paramiko.SSHClient()})
+
     NetAppHandler.login = mock.Mock()
     netapp_client = NetAppCmodeDriver(**test_constans.ACCESS_INFO)
 
@@ -114,15 +115,18 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_list_qtrees(self):
         SSHPool.do_exec = mock.Mock(side_effect=[
-            test_constans.QTREES_INFO])
+            test_constans.QTREES_INFO, test_constans.FS_INFO])
         data = self.netapp_client.list_qtrees(context)
         self.assertEqual(data[0]['security_mode'], 'ntfs')
 
     def test_list_shares(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.SHARE_VSERVER_INFO,
+            side_effect=[test_constans.QTREES_INFO,
+                         test_constans.FS_INFO,
+                         test_constans.SHARES_AGREEMENT_INFO,
+                         test_constans.SHARE_VSERVER_INFO,
                          test_constans.SHARES_INFO,
-                         test_constans.SHARES_AGREEMENT_INFO])
+                         test_constans.NFS_SHARE_INFO])
         data = self.netapp_client.list_shares(context)
         self.assertEqual(data[0]['name'], 'admin$')
 
@@ -140,3 +144,10 @@ class TestNetAppCmodeDriver(TestCase):
             side_effect=[test_constans.QUOTAS_INFO])
         data = self.netapp_client.list_quotas(context)
         self.assertEqual(data[0]['file_soft_limit'], 1000)
+
+    def test_ge_alert_sources(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.NODE_IPS_INFO,
+                         test_constans.CLUSTER_IPS_INFO])
+        data = self.netapp_client.get_alert_sources(context)
+        self.assertEqual(data[0]['host'], '192.168.159.131')
