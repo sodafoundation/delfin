@@ -62,6 +62,7 @@ CIFS_SHARE_SHOW_DETAIL_COMMAND = "vserver cifs share show -instance" \
 CIFS_SHARE_SPLIT_STR = "  Vserve"
 SHARE_AGREEMENT_SHOW_COMMAND = "vserver show -fields Allowed-protocols"
 VSERVER_SHOW_COMMAND = "vserver show -type data"
+NFS_SHARE_SHOW_COMMAND = "volume show -junction-active true -instance"
 
 STORAGE_VENDOR = "netapp"
 STORAGE_MODEL = "cmodel"
@@ -69,11 +70,20 @@ STORAGE_MODEL = "cmodel"
 QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
 QUOTA_SPLIT_STR = "    Vserve"
 
+MGT_IP_COMMAND = "network interface show -fields address -role cluster-mgmt"
+NODE_IP_COMMAND = "network interface show -fields address -role node-mgmt"
+
 AGGREGATE_NAME = "e"
 POOL_NAME = "ame"
 DISK_NAME = "k"
 CONTROLLER_NAME = "e"
 VSERVER_NAME = "r"
+
+SECURITY_STYLE = {
+    'mixed': constants.NASSecurityMode.MIXED,
+    'ntfs': constants.NASSecurityMode.NTFS,
+    'unix': constants.NASSecurityMode.UNIX
+}
 
 STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
@@ -183,7 +193,8 @@ FC_TYPE = {
 WORM_TYPE = {
     'non-snaplock': constants.WORMType.NON_WORM,
     'compliance': constants.WORMType.COMPLIANCE,
-    'enterprise': constants.WORMType.ENTERPRISE
+    'enterprise': constants.WORMType.ENTERPRISE,
+    '-': constants.WORMType.NON_WORM
 }
 
 QUOTA_TYPE = {
