@@ -25,7 +25,7 @@ Ubuntu 16.04, Ubuntu 18.04
     export PYTHONPATH=$(pwd)
     ```
 
-- #### Setup Prometheus (for monitor performance metric)
+- #### [Optional] Setup Prometheus (for monitor performance metric through prometheus)
 
   Follow the below steps to setup delfin with prometheus. Once your setup is ready, you can register the storage devices for performance monitoring. Later, the performance metrics can be viewed on prometheus server. This example also guides you to configure and update the targets and interval for scraping the metrics.
 
@@ -41,7 +41,7 @@ Ubuntu 16.04, Ubuntu 18.04
         ###### prometheus.yml
         ```
         global:
-          scrape_interval: 900s
+          scrape_interval: 10s
         scrape_configs:
           - job_name: delfin-prometheus
             metrics_path: /metrics
@@ -185,28 +185,7 @@ The logs can be uniquely identified based upon the timestamp.
     
      use storage_id for registering storage for performance collection or alert monitoring
 
-  4. Register storage for performance collection
-
-     a. There are two exporters supported as of now for performance collection, prometheus and kafka. Uncomment performance_exporters option in <delfin_path>/etc/delffin/delfin.conf as below to enable exporter for prometheus and kafka
-        ```
-         Ex:
-          # Uncomment or add exporters
-          performance_exporters = PerformanceExporterPrometheus, PerformanceExporterKafka
-        ```
-     b. Use API to register the storages for performance collection
-
-        PUT http://localhost:8190/v1/storages/<storage_id>/metrics-config
-
-        body:
-        ```
-        {
-           "array_polling":{
-              "perf_collection":true,
-              "interval":900,
-              "is_historic":true
-           }
-        }
-        ```
-  5. Monitor the performance metrics on prometheus server at default location
+    
+  4. [Optional] If prometheus is configured, monitor the performance metrics on prometheus server at default location
 
      http://localhost:9090/graph
