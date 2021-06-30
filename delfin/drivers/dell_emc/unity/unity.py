@@ -451,7 +451,7 @@ class UnityStorDriver(driver.StorageDriver):
                 break
         return qtree_id
 
-    def get_share(self, protocol, qtree_list):
+    def get_share(self, protocol, qtree_list, filesystems):
         try:
             share_list = []
             if protocol == 'cifs':
@@ -466,6 +466,18 @@ class UnityStorDriver(driver.StorageDriver):
                     content = share.get('content')
                     if not content:
                         continue
+                    file_entries = filesystems.get('entries')
+                    file_name = ''
+                    for file in file_entries:
+                        file_content = file.get('content')
+                        if not file_content:
+                            continue
+                        if file_content.get('id') == content.get(
+                                'filesystem', {}).get('id'):
+                            file_name = file_content.get('name')
+                            break
+                    path = '/%s%s' % (file_name, content.get('path')) if \
+                        file_name != '' else content.get('path')
                     fs = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
@@ -474,7 +486,7 @@ class UnityStorDriver(driver.StorageDriver):
                             content.get('path'), qtree_list),
                         'native_filesystem_id':
                             content.get('filesystem', {}).get('id'),
-                        'path': content.get('path'),
+                        'path': path,
                         'protocol': protocol
                     }
                     share_list.append(fs)
@@ -488,8 +500,9 @@ class UnityStorDriver(driver.StorageDriver):
         try:
             share_list = []
             qtrees = self.rest_handler.get_all_qtrees()
-            share_list.extend(self.get_share('cifs', qtrees))
-            share_list.extend(self.get_share('nfs', qtrees))
+            filesystems = self.rest_handler.get_all_filesystems()
+            share_list.extend(self.get_share('cifs', qtrees, filesystems))
+            share_list.extend(self.get_share('nfs', qtrees, filesystems))
             return share_list
         except Exception as err:
             err_msg = "Failed to get shares attributes from Unity: %s"\
