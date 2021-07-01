@@ -416,7 +416,7 @@ class SSHHandler(object):
                 self.handle_detail(deltail_info, control_map, split=' ')
                 status = constants.ControllerStatus.NORMAL
                 if control_map.get('degraded') == 'yes':
-                    status = constants.ControllerStatus.OFFLINE
+                    status = constants.ControllerStatus.DEGRADED
                 soft_version = '%s %s' % (control_map.get('vendor_id'),
                                           control_map.get('product_id_low'))
                 controller_result = {
