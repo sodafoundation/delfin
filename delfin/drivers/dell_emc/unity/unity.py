@@ -201,7 +201,7 @@ class UnityStorDriver(driver.StorageDriver):
                     health_value = content.get('health', {}).get('value')
                     status = UnityStorDriver.CONTROLLER_STATUS_MAP.get(
                         health_value,
-                        constants.ControllerStatus.OFFLINE
+                        constants.ControllerStatus.FAULT
                     )
                     controller_result = {
                         'name': content.get('name'),
