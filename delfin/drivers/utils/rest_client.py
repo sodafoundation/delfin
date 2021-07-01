@@ -88,7 +88,7 @@ class RestClient(object):
             raise exception.InvalidIpOrPort()
         except requests.exceptions.ReadTimeout as rt:
             LOG.error('Read timed out err: {}'.format(rt))
-            raise exception.StorageBackendException()
+            raise exception.StorageBackendException(six.text_type(rt))
         except requests.exceptions.SSLError as e:
             LOG.error('SSLError for %s %s' % (method, url))
             err_str = six.text_type(e)
@@ -105,7 +105,7 @@ class RestClient(object):
                 LOG.error('Failed to establish: {}'.format(err))
                 raise exception.InvalidIpOrPort()
             elif 'Read timed out' in str(err):
-                raise exception.StorageBackendException()
+                raise exception.StorageBackendException(six.text_type(err))
             else:
                 raise exception.BadResponse()
 

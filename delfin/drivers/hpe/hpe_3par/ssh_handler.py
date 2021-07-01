@@ -74,9 +74,9 @@ class SSHHandler(object):
             str_line = ' '.join(wsapi_infos[1].split())
             wsapi_values = str_line.split(' ')
             version = wsapi_values[6]
-
         except Exception as e:
-            LOG.error("Get version error: %s", six.text_type(e))
+            LOG.error("Get version error: %s, wsapi info: %s" % (
+                six.text_type(e), wsapi_infos))
         return version
 
     def get_health_state(self):
