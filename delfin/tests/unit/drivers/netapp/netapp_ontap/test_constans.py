@@ -792,64 +792,6 @@ PORTS_INFO = """\r
                    Ignore Port Health Status: false\r
                 Port Health Degraded Reasons: -\r"""
 
-INTERFACE_INFO = """\r
-                    Vserver Name: cl\r
-          Logical Interface Name: cl-01_mgmt1\r
-                            Role: node-mgmt\r
-                   Data Protocol: none\r
-                       Home Node: cl-01\r
-                       Home Port: e0c\r
-                    Current Node: cl-01\r
-                    Current Port: e0c\r
-              Operational Status: up\r
-                 Extended Status: -\r
-                         Is Home: true\r
-                 Network Address: 192.168.159.130\r
-                         Netmask: 255.255.255.0\r
-             Bits in the Netmask: 24\r
-                     Subnet Name: -\r
-           Administrative Status: up\r
-                 Failover Policy: local-only\r
-                 Firewall Policy: mgmt\r
-                     Auto Revert: true\r
-   Fully Qualified DNS Zone Name: none\r
-         DNS Query Listen Enable: false\r
-             Failover Group Name: Default\r
-                        FCP WWPN: -\r
-                  Address family: ipv4\r
-                         Comment: -\r
-                  IPspace of LIF: Default\r
-  Is Dynamic DNS Update Enabled?: -\r
-\r
-                    Vserver Name: cl\r
-          Logical Interface Name: cluster_mgmt\r
-                            Role: cluster-mgmt\r
-                   Data Protocol: none\r
-                       Home Node: cl-01\r
-                       Home Port: e0d\r
-                    Current Node: cl-01\r
-                    Current Port: e0a\r
-              Operational Status: up\r
-                 Extended Status: -\r
-                         Is Home: false\r
-                 Network Address: 192.168.159.131\r
-                         Netmask: 255.255.255.0\r
-             Bits in the Netmask: 24\r
-                     Subnet Name: -\r
-           Administrative Status: up\r
-                 Failover Policy: broadcast-domain-wide\r
-                 Firewall Policy: mgmt\r
-                     Auto Revert: false\r
-   Fully Qualified DNS Zone Name: none\r
-         DNS Query Listen Enable: false\r
-             Failover Group Name: Default\r
-                        FCP WWPN: -\r
-                  Address family: ipv6\r
-                         Comment: -\r
-                  IPspace of LIF: Default\r
-  Is Dynamic DNS Update Enabled?: -\r
-2 entries were displayed.\r"""
-
 FC_PORT_INFO = """
 \r
                           Node: cl-01\r
