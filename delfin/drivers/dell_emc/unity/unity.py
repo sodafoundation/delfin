@@ -40,6 +40,7 @@ class UnityStorDriver(driver.StorageDriver):
                              7: constants.ControllerStatus.NORMAL,
                              10: constants.ControllerStatus.DEGRADED
                              }
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rest_handler = rest_handler.RestHandler(**kwargs)
