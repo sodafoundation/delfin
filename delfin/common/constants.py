@@ -51,9 +51,11 @@ class VolumeStatus(object):
 class ControllerStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
+    FAULT = 'fault'
+    DEGRADED = 'degraded'
     UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, UNKNOWN)
+    ALL = (NORMAL, OFFLINE, FAULT, DEGRADED, UNKNOWN)
 
 
 class StorageType(object):
