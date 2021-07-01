@@ -97,7 +97,9 @@ class NetAppHandler(object):
 
     def login(self):
         try:
-            self.ssh_do_exec('version')
+            result = self.ssh_do_exec('version')
+            if 'is not a recognized command' in result:
+                raise exception.InvalidIpOrPort()
         except Exception as e:
             LOG.error("Failed to login netapp %s" %
                       (six.text_type(e)))
@@ -549,75 +551,6 @@ class NetAppHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def get_network_port(self, storage_id):
-        try:
-            ports_list = []
-            interfaces_info = self.ssh_do_exec(
-                constant.INTERFACE_SHOW_DETAIL_COMMAND)
-            interface_array = interfaces_info.split(
-                constant.INTERFACE_SPLIT_STR)
-            interface_map = {}
-            """Traversal to get port IP address information"""
-            for interface_info in interface_array[1:]:
-                ipv4 = ipv4_mask = ipv6 = ipv6_mask = None
-                Tools.split_value_map(
-                    interface_info, interface_map, split=':')
-                logical_type = constant.NETWORK_LOGICAL_TYPE.get(
-                    interface_map['Role'])
-                port_type = constant.NETWORK_PORT_TYPE.get(
-                    interface_map['DataProtocol'])
-                port_id = \
-                    interface_map['Name'] + \
-                    '_' + \
-                    interface_map['LogicalInterfaceName']
-                if interface_map['Addressfamily'] == 'ipv4':
-                    ipv4 = interface_map['NetworkAddress']
-                    ipv4_mask = interface_map['Netmask']
-                elif interface_map['Addressfamily'] == 'ipv6':
-                    ipv6 = interface_map['NetworkAddress']
-                    ipv6_mask = interface_map['Netmask']
-                port_model = {
-                    'name': interface_map['LogicalInterfaceName'],
-                    'storage_id': storage_id,
-                    'native_port_id': port_id,
-                    'location':
-                        interface_map['HomeNode'] +
-                        ":" + interface_map['HomePort'],
-                    'connection_status':
-                        constants.PortConnectionStatus.CONNECTED
-                        if interface_map['OperationalStatus'] == 'up'
-                        else constants.PortConnectionStatus.DISCONNECTED,
-                    'health_status':
-                        constants.PortHealthStatus.NORMAL
-                        if interface_map['OperationalStatus'] == 'up'
-                        else constants.PortHealthStatus.ABNORMAL,
-                    'type': port_type,
-                    'logical_type': logical_type,
-                    'speed': None,
-                    'max_speed': None,
-                    'native_parent_id': None,
-                    'wwn': interface_map['FCPWWPN']
-                    if interface_map['FCPWWPN'] != '-' else None,
-                    'mac_address': None,
-                    'ipv4': ipv4,
-                    'ipv4_mask': ipv4_mask,
-                    'ipv6': ipv6,
-                    'ipv6_mask': ipv6_mask,
-                }
-                ports_list.append(port_model)
-            return ports_list
-        except exception.DelfinException as e:
-            err_msg = "Failed to get storage ports from " \
-                      "netapp cmode: %s" % (six.text_type(e))
-            LOG.error(err_msg)
-            raise e
-
-        except Exception as err:
-            err_msg = "Failed to get storage ports from " \
-                      "netapp cmode: %s" % (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
-
     def get_eth_port(self, storage_id):
         try:
             eth_list = []
@@ -730,7 +663,6 @@ class NetAppHandler(object):
 
     def list_ports(self, storage_id):
         ports_list = \
-            self.get_network_port(storage_id) + \
             self.get_fc_port(storage_id) + \
             self.get_eth_port(storage_id)
         return ports_list
@@ -779,10 +711,13 @@ class NetAppHandler(object):
                         qt_map['Name'],
                         qt_map['VolumeName'],
                         qt_map['QtreeName'])
+                    qtree_name = qt_map['QtreeName']
                     if qt_map['QtreeName'] != '' and qtree_path is not None:
                         qtree_path += '/' + qt_map['QtreeName']
+                    else:
+                        qtree_name = qt_id
                     qt_model = {
-                        'name': qt_map['QtreeName'],
+                        'name': qtree_name,
                         'storage_id': storage_id,
                         'native_qtree_id': qt_id,
                         'path': qtree_path,
@@ -825,7 +760,8 @@ class NetAppHandler(object):
                         if qtree['native_qtree_id'] == qt_id:
                             qtree_id = qt_id
                         if fs_id == qtree['native_filesystem_id'] \
-                                and qtree['name'] != "":
+                                and qtree['name'] != "" \
+                                and qtree['name'] != qtree['native_qtree_id']:
                             qt_share_name = share_name + '/' + qtree['name']
                             share = {
                                 'name': qt_share_name,
