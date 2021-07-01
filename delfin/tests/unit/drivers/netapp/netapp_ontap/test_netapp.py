@@ -99,11 +99,10 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_list_ports(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.INTERFACE_INFO,
-                         test_constans.FC_PORT_INFO,
+            side_effect=[test_constans.FC_PORT_INFO,
                          test_constans.PORTS_INFO])
         data = self.netapp_client.list_ports(context)
-        self.assertEqual(data[0]['name'], 'cl-01_mgmt1')
+        self.assertEqual(data[0]['name'], 'cl-01:0a')
 
     def test_list_disks(self):
         SSHPool.do_exec = mock.Mock(
