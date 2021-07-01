@@ -36,6 +36,10 @@ class UnityStorDriver(driver.StorageDriver):
                                1: constants.NASSecurityMode.UNIX,
                                2: constants.NASSecurityMode.NTFS
                                }
+    CONTROLLER_STATUS_MAP = {5: constants.ControllerStatus.NORMAL,
+                             7: constants.ControllerStatus.NORMAL,
+                             10: constants.ControllerStatus.DEGRADED
+                             }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -195,10 +199,10 @@ class UnityStorDriver(driver.StorageDriver):
                     if not content:
                         continue
                     health_value = content.get('health', {}).get('value')
-                    if health_value in UnityStorDriver.HEALTH_OK:
-                        status = constants.ControllerStatus.NORMAL
-                    else:
-                        status = constants.ControllerStatus.OFFLINE
+                    status = UnityStorDriver.CONTROLLER_STATUS_MAP.get(
+                        health_value,
+                        constants.ControllerStatus.OFFLINE
+                    )
                     controller_result = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
