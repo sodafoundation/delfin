@@ -177,12 +177,9 @@ class NetAppHandler(object):
                 'description': None,
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
-                'total_capacity':
-                    int(self.get_size(agg_map['Size'])),
-                'used_capacity':
-                    int(self.get_size(agg_map['UsedSize'])),
-                'free_capacity':
-                    int(self.get_size(agg_map['AvailableSize'])),
+                'total_capacity': self.get_size(agg_map['Size']),
+                'used_capacity': self.get_size(agg_map['UsedSize']),
+                'free_capacity': self.get_size(agg_map['AvailableSize']),
             }
             agg_list.append(pool_model)
         return agg_list
@@ -205,17 +202,12 @@ class NetAppHandler(object):
                 'description': None,
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
-                'total_capacity':
-                    int(self.get_size(
-                        pool_map['StoragePoolTotalSize'])),
+                'total_capacity': self.get_size(pool_map['StoragePoolTotalSize']),
                 'used_capacity':
-                    int(self.get_size(
-                        pool_map['StoragePoolTotalSize'], True)) -
-                    int(self.get_size(
-                        pool_map['StoragePoolUsableSize'], True)),
+                    self.get_size(pool_map['StoragePoolTotalSize'], True) -
+                    self.get_size(pool_map['StoragePoolUsableSize'], True),
                 'free_capacity':
-                    int(self.get_size(
-                        pool_map['StoragePoolUsableSize']))
+                    self.get_size(pool_map['StoragePoolUsableSize'])
             }
             pool_list.append(pool_model)
         return pool_list
@@ -267,15 +259,11 @@ class NetAppHandler(object):
                         'compressed': None,
                         'deduplicated': None,
                         'type': type,
-                        'total_capacity':
-                            int(self.get_size(
-                                volume_map['LUNSize'])),
-                        'used_capacity':
-                            int(self.get_size(
-                                volume_map['UsedSize'])),
+                        'total_capacity': self.get_size(volume_map['LUNSize']),
+                        'used_capacity': self.get_size(volume_map['UsedSize']),
                         'free_capacity':
-                            int(self.get_size(volume_map['LUNSize'], True)) -
-                            int(self.get_size(volume_map['UsedSize'], True))
+                            self.get_size(volume_map['LUNSize'], True) -
+                            self.get_size(volume_map['UsedSize'], True)
                     }
                     volume_list.append(volume_model)
             return volume_list
@@ -438,8 +426,7 @@ class NetAppHandler(object):
                 'model': disks_map['Model'],
                 'firmware': firmware,
                 'speed': speed,
-                'capacity':
-                    int(self.get_size(disks_map['PhysicalSize'])),
+                'capacity': self.get_size(disks_map['PhysicalSize']),
                 'status': status,
                 'physical_type': physical_type,
                 'logical_type': logical_type,
@@ -497,13 +484,11 @@ class NetAppHandler(object):
                         constant.SECURITY_STYLE.get(
                             fs_map['SecurityStyle'], fs_map['SecurityStyle']),
                     'type': type,
-                    'total_capacity':
-                        int(self.get_size(fs_map['VolumeSize'])),
+                    'total_capacity': self.get_size(fs_map['VolumeSize']),
                     'used_capacity':
-                        int(self.get_size(fs_map['VolumeSize'], True)) -
-                        int(self.get_size(fs_map['AvailableSize'], True)),
-                    'free_capacity':
-                        int(self.get_size(fs_map['AvailableSize']))
+                        self.get_size(fs_map['VolumeSize'], True) -
+                        self.get_size(fs_map['AvailableSize'], True),
+                    'free_capacity': self.get_size(fs_map['AvailableSize'])
                 }
                 if fs_model['total_capacity'] > 0:
                     fs_list.append(fs_model)
