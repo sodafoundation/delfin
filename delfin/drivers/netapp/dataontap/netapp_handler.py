@@ -202,7 +202,8 @@ class NetAppHandler(object):
                 'description': None,
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
-                'total_capacity': self.get_size(pool_map['StoragePoolTotalSize']),
+                'total_capacity':
+                    self.get_size(pool_map['StoragePoolTotalSize']),
                 'used_capacity':
                     self.get_size(pool_map['StoragePoolTotalSize'], True) -
                     self.get_size(pool_map['StoragePoolUsableSize'], True),
