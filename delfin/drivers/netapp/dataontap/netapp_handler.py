@@ -179,11 +179,11 @@ class NetAppHandler(object):
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
                 'total_capacity':
-                    int(Tools.get_capacity_size(agg_map['Size'])),
+                    int(self.get_size(agg_map['Size'])),
                 'used_capacity':
-                    int(Tools.get_capacity_size(agg_map['UsedSize'])),
+                    int(self.get_size(agg_map['UsedSize'])),
                 'free_capacity':
-                    int(Tools.get_capacity_size(agg_map['AvailableSize'])),
+                    int(self.get_size(agg_map['AvailableSize'])),
             }
             agg_list.append(pool_model)
         return agg_list
@@ -207,15 +207,15 @@ class NetAppHandler(object):
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
                 'total_capacity':
-                    int(Tools.get_capacity_size(
+                    int(self.get_size(
                         pool_map['StoragePoolTotalSize'])),
                 'used_capacity':
-                    int(Tools.get_capacity_size(
+                    int(self.get_size(
                         pool_map['StoragePoolTotalSize'])) -
-                    int(Tools.get_capacity_size(
+                    int(self.get_size(
                         pool_map['StoragePoolUsableSize'])),
                 'free_capacity':
-                    int(Tools.get_capacity_size(
+                    int(self.get_size(
                         pool_map['StoragePoolUsableSize']))
             }
             pool_list.append(pool_model)
@@ -269,15 +269,15 @@ class NetAppHandler(object):
                         'deduplicated': None,
                         'type': type,
                         'total_capacity':
-                            int(Tools.get_capacity_size(
+                            int(self.get_size(
                                 volume_map['LUNSize'])),
                         'used_capacity':
-                            int(Tools.get_capacity_size(
+                            int(self.get_size(
                                 volume_map['UsedSize'])),
                         'free_capacity':
-                            int(Tools.get_capacity_size(
+                            int(self.get_size(
                                 volume_map['LUNSize'])) -
-                            int(Tools.get_capacity_size(
+                            int(self.get_size(
                                 volume_map['UsedSize']))
                     }
                     volume_list.append(volume_model)
@@ -442,7 +442,7 @@ class NetAppHandler(object):
                 'firmware': firmware,
                 'speed': speed,
                 'capacity':
-                    int(Tools.get_capacity_size(disks_map['PhysicalSize'])),
+                    int(self.get_size(disks_map['PhysicalSize'])),
                 'status': status,
                 'physical_type': physical_type,
                 'logical_type': logical_type,
@@ -501,12 +501,12 @@ class NetAppHandler(object):
                             fs_map['SecurityStyle'], fs_map['SecurityStyle']),
                     'type': type,
                     'total_capacity':
-                        int(Tools.get_capacity_size(fs_map['VolumeSize'])),
+                        int(self.get_size(fs_map['VolumeSize'])),
                     'used_capacity':
-                        int(Tools.get_capacity_size(fs_map['VolumeSize'])) -
-                        int(Tools.get_capacity_size(fs_map['AvailableSize'])),
+                        int(self.get_size(fs_map['VolumeSize'])) -
+                        int(self.get_size(fs_map['AvailableSize'])),
                     'free_capacity':
-                        int(Tools.get_capacity_size(fs_map['AvailableSize']))
+                        int(self.get_size(fs_map['AvailableSize']))
                 }
                 if fs_model['total_capacity'] > 0:
                     fs_list.append(fs_model)
