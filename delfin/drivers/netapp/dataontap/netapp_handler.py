@@ -261,8 +261,10 @@ class NetAppHandler(object):
                         'compressed': None,
                         'deduplicated': None,
                         'type': type,
-                        'total_capacity': self.get_size(volume_map['LUNSize']),
-                        'used_capacity': self.get_size(volume_map['UsedSize']),
+                        'total_capacity':
+                            self.get_size(volume_map['LUNSize'], True),
+                        'used_capacity':
+                            self.get_size(volume_map['UsedSize'], True),
                         'free_capacity':
                             self.get_size(volume_map['LUNSize'], True) -
                             self.get_size(volume_map['UsedSize'], True)
