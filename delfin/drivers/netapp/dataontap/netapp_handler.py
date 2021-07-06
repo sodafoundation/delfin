@@ -177,9 +177,10 @@ class NetAppHandler(object):
                 'description': None,
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
-                'total_capacity': self.get_size(agg_map['Size']),
-                'used_capacity': self.get_size(agg_map['UsedSize']),
-                'free_capacity': self.get_size(agg_map['AvailableSize']),
+                'total_capacity': self.get_size(agg_map['Size'], True),
+                'used_capacity': self.get_size(agg_map['UsedSize'], True),
+                'free_capacity':
+                    self.get_size(agg_map['AvailableSize'], True),
             }
             agg_list.append(pool_model)
         return agg_list
@@ -203,12 +204,12 @@ class NetAppHandler(object):
                 'status': status,
                 'storage_type': constants.StorageType.UNIFIED,
                 'total_capacity':
-                    self.get_size(pool_map['StoragePoolTotalSize']),
+                    self.get_size(pool_map['StoragePoolTotalSize'], True),
                 'used_capacity':
                     self.get_size(pool_map['StoragePoolTotalSize'], True) -
                     self.get_size(pool_map['StoragePoolUsableSize'], True),
                 'free_capacity':
-                    self.get_size(pool_map['StoragePoolUsableSize'])
+                    self.get_size(pool_map['StoragePoolUsableSize'], True)
             }
             pool_list.append(pool_model)
         return pool_list
@@ -427,7 +428,7 @@ class NetAppHandler(object):
                 'model': disks_map['Model'],
                 'firmware': firmware,
                 'speed': speed,
-                'capacity': self.get_size(disks_map['PhysicalSize']),
+                'capacity': self.get_size(disks_map['PhysicalSize'], True),
                 'status': status,
                 'physical_type': physical_type,
                 'logical_type': logical_type,
