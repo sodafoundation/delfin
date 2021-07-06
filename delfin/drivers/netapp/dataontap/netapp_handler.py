@@ -492,7 +492,8 @@ class NetAppHandler(object):
                         self.get_size(fs_map['AvailableSize'], True),
                     'free_capacity': self.get_size(fs_map['AvailableSize'])
                 }
-                if fs_model['total_capacity'] > 0:
+                if fs_model['total_capacity'] != '-' \
+                        and fs_model['total_capacity'] > 0:
                     fs_list.append(fs_model)
         return fs_list
 
