@@ -163,7 +163,7 @@ AGGREGATE_DETAIL_INFO = """\r
                                               Size: 855MB\r
                                              State: online\r
                         Maximum Write Alloc Blocks: 0\r
-                                         Used Size: -\r
+                                         Used Size: 0\r
                                  Uses Shared Disks: false\r
                                        UUID String: a71b1e4e-d151-abebf8\r
                                  Number Of Volumes: 1
@@ -404,7 +404,7 @@ FS_INFO = """\r
                                  Available Size: 135.4MB\r
                                 Filesystem Size: 807.3MB\r
                         Total User-Visible Size: 766.9MB\r
-                                      Used Size: 631.5MB\r
+                                      Used Size: -\r
                                 Used Percentage: 83%\r
            Volume Nearly Full Threshold Percent: 95%\r
                   Volume Full Threshold Percent: 98%\r
