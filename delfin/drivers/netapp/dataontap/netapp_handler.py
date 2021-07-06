@@ -57,9 +57,7 @@ class NetAppHandler(object):
 
     @staticmethod
     def get_size(limit):
-        if limit == '-':
-            return '-'
-        elif limit == '0B':
+        if limit == '-' or limit == '0B':
             return 0
         else:
             return int(Tools.get_capacity_size(limit))

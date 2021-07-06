@@ -17,12 +17,6 @@ ACCESS_INFO = {
     "storage_id": "12345",
     "vendor": "hpe",
     "model": "3par",
-    "rest": {
-        "host": "10.0.0.1",
-        "port": 8443,
-        "username": "user",
-        "password": "pass"
-    },
     "ssh": {
         "host": "192.168.159.130",
         "port": 22,
@@ -137,7 +131,7 @@ AGGREGATE_DETAIL_INFO = """\r
                                    RAID Lost Write: on\r
                              Enable Thorough Scrub: off\r
                                     Hybrid Enabled: false\r
-                                    Available Size: 30.34MB\r
+                                    Available Size: 0B\r
                                   Checksum Enabled: true\r
                                    Checksum Status: active\r
                                            Cluster: cl\r
@@ -169,7 +163,7 @@ AGGREGATE_DETAIL_INFO = """\r
                                               Size: 855MB\r
                                              State: online\r
                         Maximum Write Alloc Blocks: 0\r
-                                         Used Size: 824.7MB\r
+                                         Used Size: -\r
                                  Uses Shared Disks: false\r
                                        UUID String: a71b1e4e-d151-abebf8\r
                                  Number Of Volumes: 1
