@@ -56,11 +56,12 @@ class NetAppHandler(object):
         return res
 
     @staticmethod
-    def get_size(limit):
-        if limit == '-' or limit == '0B':
+    def get_size(limit, is_calculate=False):
+        if limit == '0B':
             return 0
-        else:
-            return int(Tools.get_capacity_size(limit))
+        if limit == '-':
+            return 0 if is_calculate else '-'
+        return int(Tools.get_capacity_size(limit))
 
     @staticmethod
     def parse_alert(alert):
@@ -209,9 +210,9 @@ class NetAppHandler(object):
                         pool_map['StoragePoolTotalSize'])),
                 'used_capacity':
                     int(self.get_size(
-                        pool_map['StoragePoolTotalSize'])) -
+                        pool_map['StoragePoolTotalSize'], True)) -
                     int(self.get_size(
-                        pool_map['StoragePoolUsableSize'])),
+                        pool_map['StoragePoolUsableSize'], True)),
                 'free_capacity':
                     int(self.get_size(
                         pool_map['StoragePoolUsableSize']))
@@ -273,10 +274,8 @@ class NetAppHandler(object):
                             int(self.get_size(
                                 volume_map['UsedSize'])),
                         'free_capacity':
-                            int(self.get_size(
-                                volume_map['LUNSize'])) -
-                            int(self.get_size(
-                                volume_map['UsedSize']))
+                            int(self.get_size(volume_map['LUNSize'], True)) -
+                            int(self.get_size(volume_map['UsedSize'], True))
                     }
                     volume_list.append(volume_model)
             return volume_list
@@ -501,8 +500,8 @@ class NetAppHandler(object):
                     'total_capacity':
                         int(self.get_size(fs_map['VolumeSize'])),
                     'used_capacity':
-                        int(self.get_size(fs_map['VolumeSize'])) -
-                        int(self.get_size(fs_map['AvailableSize'])),
+                        int(self.get_size(fs_map['VolumeSize'], True)) -
+                        int(self.get_size(fs_map['AvailableSize'], True)),
                     'free_capacity':
                         int(self.get_size(fs_map['AvailableSize']))
                 }
