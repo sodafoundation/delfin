@@ -117,7 +117,7 @@ class NetAppHandler(object):
     def get_storage(self):
         try:
             raw_capacity = total_capacity = used_capacity = free_capacity = 0
-            controller_map = {}
+            controller_map_list = []
             system_info = self.ssh_do_exec(
                 constant.CLUSTER_SHOW_COMMAND)
             version_info = self.ssh_do_exec(
@@ -126,39 +126,38 @@ class NetAppHandler(object):
                 constant.STORAGE_STATUS_COMMAND)
             controller_info = self.ssh_do_exec(
                 constant.CONTROLLER_SHOW_DETAIL_COMMAND)
-            controller_array = controller_info.split(
-                constant.CONTROLLER_SPLIT_STR)
-            Tools.split_value_map(controller_array[1], controller_map, ":")
-            version_array = self.get_table_data(version_info)
-            version = version_array[0].split(":")
+            Tools.split_value_map_list(controller_info, controller_map_list, ":")
+            version_array = version_info.split("\r\n")
+            version = version_array[len(version_array)-1].split(":")
             status = self.get_table_data(status_info)
             status = constant.STORAGE_STATUS.get(status[0].split()[0])
             disk_list = self.get_disks(None)
             pool_list = self.list_storage_pools(None)
-            storage_map = {}
-            Tools.split_value_map(system_info, storage_map, split=':')
-            for disk in disk_list:
-                raw_capacity += disk['capacity']
-
-            for pool in pool_list:
-                total_capacity += pool['total_capacity']
-                free_capacity += pool['free_capacity']
-                used_capacity += pool['used_capacity']
-
-            storage_model = {
-                "name": storage_map['ClusterName'],
-                "vendor": constant.STORAGE_VENDOR,
-                "model": controller_map['Model'],
-                "status": status,
-                "serial_number": storage_map['ClusterSerialNumber'],
-                "firmware_version": version[0],
-                "location": controller_map['Location'],
-                "total_capacity": total_capacity,
-                "raw_capacity": raw_capacity,
-                "used_capacity": used_capacity,
-                "free_capacity": free_capacity
-            }
-            return storage_model
+            storage_map_list = []
+            Tools.split_value_map_list(system_info, storage_map_list, split=':')
+            if len(storage_map_list) > 0:
+                storage_map = storage_map_list[0]
+                controller_map = controller_map_list[0]
+                for disk in disk_list:
+                    raw_capacity += disk['capacity']
+                for pool in pool_list:
+                    total_capacity += pool['total_capacity']
+                    free_capacity += pool['free_capacity']
+                    used_capacity += pool['used_capacity']
+                storage_model = {
+                    "name": storage_map['ClusterName'],
+                    "vendor": constant.STORAGE_VENDOR,
+                    "model": controller_map['Model'],
+                    "status": status,
+                    "serial_number": storage_map['ClusterSerialNumber'],
+                    "firmware_version": version[0],
+                    "location": controller_map['Location'],
+                    "total_capacity": total_capacity,
+                    "raw_capacity": raw_capacity,
+                    "used_capacity": used_capacity,
+                    "free_capacity": free_capacity
+                }
+                return storage_model
         except exception.DelfinException as e:
             err_msg = "Failed to get storage from " \
                       "netapp cmode: %s" % (six.text_type(e.msg))
@@ -174,14 +173,12 @@ class NetAppHandler(object):
         agg_list = []
         agg_info = self.ssh_do_exec(
             constant.AGGREGATE_SHOW_DETAIL_COMMAND)
-        agg_array = agg_info.split(
-            constant.AGGREGATE_SPLIT_STR)
-        agg_map = {}
-        for agg in agg_array[1:]:
-            Tools.split_value_map(agg, agg_map, split=':')
+        agg_map_list = []
+        Tools.split_value_map_list(agg_info, agg_map_list, split=':')
+        for agg_map in agg_map_list:
             status = constant.AGGREGATE_STATUS.get(agg_map['State'])
             pool_model = {
-                'name': agg_map[constant.AGGREGATE_NAME],
+                'name': agg_map['Aggregate'],
                 'storage_id': storage_id,
                 'native_storage_pool_id': agg_map['UUIDString'],
                 'description': None,
@@ -199,15 +196,14 @@ class NetAppHandler(object):
         pool_list = []
         pool_info = self.ssh_do_exec(
             constant.POOLS_SHOW_DETAIL_COMMAND)
-        pool_array = pool_info.split(constant.POOLS_SPLIT_STR)
-        pool_map = {}
-        for pool_str in pool_array[1:]:
-            Tools.split_value_map(pool_str, pool_map, split=':')
+        pool_map_list = []
+        Tools.split_value_map_list(pool_info, pool_map_list, split=':')
+        for pool_map in pool_map_list:
             status = constants.StoragePoolStatus.ABNORMAL
             if pool_map['IsPoolHealthy?'] == 'true':
                 status = constants.StoragePoolStatus.NORMAL
             pool_model = {
-                'name': pool_map[constant.POOL_NAME],
+                'name': pool_map['StoragePoolName'],
                 'storage_id': storage_id,
                 'native_storage_pool_id': pool_map['UUIDofStoragePool'],
                 'description': None,
@@ -245,11 +241,10 @@ class NetAppHandler(object):
             volume_list = []
             volume_info = self.ssh_do_exec(
                 constant.LUN_SHOW_DETAIL_COMMAND)
-            volume_array = volume_info.split(constant.LUN_SPLIT_STR)
             fs_list = self.get_filesystems(storage_id)
-            volume_map = {}
-            for volume_str in volume_array[1:]:
-                Tools.split_value_map(volume_str, volume_map, split=':')
+            volume_map_list = []
+            Tools.split_value_map_list(volume_info, volume_map_list, split=':')
+            for volume_map in volume_map_list:
                 if volume_map is not None or volume_map != {}:
                     pool_id = None
                     status = 'normal' if volume_map['State'] == 'online' \
@@ -296,10 +291,9 @@ class NetAppHandler(object):
         event_list = []
         event_info = self.ssh_do_exec(
             constant.EVENT_SHOW_DETAIL_COMMAND)
-        event_array = event_info.split(constant.ALTER_SPLIT_STR)
-        event_map = {}
-        for event_str in event_array[1:]:
-            Tools.split_value_map(event_str, event_map, split=':')
+        event_map_list = []
+        Tools.split_value_map_list(event_info, event_map_list, split=':')
+        for event_map in event_map_list:
             occur_time = int(time.mktime(time.strptime(
                 event_map['Time'],
                 constant.EVENT_TIME_TYPE)))
@@ -329,10 +323,9 @@ class NetAppHandler(object):
         alert_list = []
         alert_info = self.ssh_do_exec(
             constant.ALTER_SHOW_DETAIL_COMMAND)
-        alert_array = alert_info.split(constant.ALTER_SPLIT_STR)
-        alert_map = {}
-        for alert_str in alert_array[1:]:
-            Tools.split_value_map(alert_str, alert_map, split=':')
+        alert_map_list = []
+        Tools.split_value_map_list(alert_info, alert_map_list, split=':')
+        for alert_map in alert_map_list:
             occur_time = int(time.mktime(time.strptime(
                 alert_map['IndicationTime'],
                 constant.ALTER_TIME_TYPE)))
@@ -354,7 +347,9 @@ class NetAppHandler(object):
                         (alert_map['AlertID'] +
                          str(occur_time)).encode()).hexdigest(),
                     'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                    'location': alert_map['AlertingResourceName']
+                    'location':
+                        alert_map['ProbableCause'] +
+                        ':' + alert_map['PossibleEffect']
                 }
                 alert_list.append(alert_model)
         return alert_list
@@ -398,8 +393,6 @@ class NetAppHandler(object):
         physicals_list = []
         disks_info = self.ssh_do_exec(
             constant.DISK_SHOW_DETAIL_COMMAND)
-        disks_array = disks_info.split(
-            constant.DISK_SPLIT_STR)
         physicals_info = self.ssh_do_exec(
             constant.DISK_SHOW_PHYSICAL_COMMAND)
         error_disk = self.ssh_do_exec(
@@ -411,59 +404,58 @@ class NetAppHandler(object):
             error_array = error_disk.split()
             if len(error_array) > 2:
                 error_disk_list.append(error_array[0])
-        disks_map = {}
+        disks_map_list = []
         physical_array = self.get_table_data(physicals_info)
         for physical in physical_array:
             physicals_list.append(physical.split())
-        for disk_str in disks_array[1:]:
-            speed = physical_type = firmware = None
-            Tools.split_value_map(disk_str, disks_map, split=':')
-            logical_type = constant.DISK_LOGICAL. \
-                get(disks_map['ContainerType'])
-            """Map disk physical information"""
-            for physical_info in physicals_list:
-                if len(physical_info) > 6 and \
-                        physical_info[0] == disks_map['k']:
-                    physical_type = \
-                        constant.DISK_TYPE.get(physical_info[1])
-                    speed = physical_info[5] if physical_info[5] != '-' else 0
-                    firmware = physical_info[4]
-            status = constants.DiskStatus.NORMAL
-            if disks_map[constant.DISK_NAME] in error_disk_list:
-                status = constants.DiskStatus.ABNORMAL
-            disk_model = {
-                'name': disks_map[constant.DISK_NAME],
-                'storage_id': storage_id,
-                'native_disk_id': disks_map[constant.DISK_NAME],
-                'serial_number': disks_map['SerialNumber'],
-                'manufacturer': disks_map['Vendor'],
-                'model': disks_map['Model'],
-                'firmware': firmware,
-                'speed': speed,
-                'capacity': self.get_size(disks_map['PhysicalSize'], True),
-                'status': status,
-                'physical_type': physical_type,
-                'logical_type': logical_type,
-                'native_disk_group_id': disks_map['Aggregate'],
-                'location': None,
-            }
-            disks_list.append(disk_model)
+        Tools.split_value_map_list(disks_info, disks_map_list, split=':')
+        for disks_map in disks_map_list:
+            if 'Disk' in disks_map.keys():
+                speed = physical_type = firmware = None
+                logical_type = constant.DISK_LOGICAL. \
+                    get(disks_map['ContainerType'])
+                """Map disk physical information"""
+                for physical_info in physicals_list:
+                    if len(physical_info) > 6 and \
+                            physical_info[0] == disks_map['Disk']:
+                        physical_type = \
+                            constant.DISK_TYPE.get(physical_info[1])
+                        speed = physical_info[5] if physical_info[5] != '-' else 0
+                        firmware = physical_info[4]
+                status = constants.DiskStatus.NORMAL
+                if disks_map['Disk'] in error_disk_list:
+                    status = constants.DiskStatus.ABNORMAL
+                disk_model = {
+                    'name': disks_map['Disk'],
+                    'storage_id': storage_id,
+                    'native_disk_id': disks_map['Disk'],
+                    'serial_number': disks_map['SerialNumber'],
+                    'manufacturer': disks_map['Vendor'],
+                    'model': disks_map['Model'],
+                    'firmware': firmware,
+                    'speed': speed,
+                    'capacity': self.get_size(disks_map['PhysicalSize'], True),
+                    'status': status,
+                    'physical_type': physical_type,
+                    'logical_type': logical_type,
+                    'native_disk_group_id': disks_map['Aggregate'],
+                    'location': None,
+                }
+                disks_list.append(disk_model)
         return disks_list
 
     def get_filesystems(self, storage_id):
         fs_list = []
         fs_info = self.ssh_do_exec(
             constant.FS_SHOW_DETAIL_COMMAND)
-        fs_array = fs_info.split(
-            constant.FS_SPLIT_STR)
         thin_fs_info = self.ssh_do_exec(
             constant.THIN_FS_SHOW_COMMAND)
         pool_list = self.list_storage_pools(storage_id)
         thin_fs_array = self.get_table_data(thin_fs_info)
-        fs_map = {}
-        for fs_str in fs_array[1:]:
+        fs_map_list = []
+        Tools.split_value_map_list(fs_info, fs_map_list, split=':')
+        for fs_map in fs_map_list:
             type = constants.FSType.THICK
-            Tools.split_value_map(fs_str, fs_map, split=':')
             if fs_map is not None or fs_map != {}:
                 pool_id = ""
                 """get pool id"""
@@ -484,7 +476,7 @@ class NetAppHandler(object):
                         'false':
                     compressed = False
                 status = constant.FS_STATUS.get(fs_map['VolumeState'])
-                fs_id = self.get_fs_id(fs_map['Name'], fs_map['VolumeName'])
+                fs_id = self.get_fs_id(fs_map['VserverName'], fs_map['VolumeName'])
                 fs_model = {
                     'name': fs_map['VolumeName'],
                     'storage_id': storage_id,
@@ -514,18 +506,16 @@ class NetAppHandler(object):
             controller_list = []
             controller_info = self.ssh_do_exec(
                 constant.CONTROLLER_SHOW_DETAIL_COMMAND)
-            controller_array = controller_info.split(
-                constant.CONTROLLER_SPLIT_STR)
-            controller_map = {}
-            for controller_str in controller_array[1:]:
-                Tools.split_value_map(
-                    controller_str, controller_map, split=':')
+            controller_map_list = []
+            Tools.split_value_map_list(
+                controller_info, controller_map_list, split=':')
+            for controller_map in controller_map_list:
                 if controller_map is not None or controller_map != {}:
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
                     controller_model = {
-                        'name': controller_map[constant.CONTROLLER_NAME],
+                        'name': controller_map['Node'],
                         'storage_id': storage_id,
                         'native_controller_id': controller_map['SystemID'],
                         'status': status,
@@ -553,21 +543,20 @@ class NetAppHandler(object):
             eth_list = []
             eth_info = self.ssh_do_exec(
                 constant.PORT_SHOW_DETAIL_COMMAND)
-            eth_array = eth_info.split(
-                constant.PORT_SPLIT_STR)
-            for eth in eth_array[1:]:
-                eth_map = {}
-                Tools.split_value_map(eth, eth_map, split=':')
+
+            eth_map_list = []
+            Tools.split_value_map_list(eth_info, eth_map_list, split=':')
+            for eth_map in eth_map_list:
                 logical_type = constant.ETH_LOGICAL_TYPE.get(
                     eth_map['PortType'])
                 port_id = \
-                    eth_map[constant.CONTROLLER_NAME] + '_' + eth_map['Port']
+                    eth_map['Node'] + '_' + eth_map['Port']
                 eth_model = {
                     'name': eth_map['Port'],
                     'storage_id': storage_id,
                     'native_port_id': port_id,
                     'location':
-                        eth_map[constant.CONTROLLER_NAME] +
+                        eth_map['Node'] +
                         ':' + eth_map['Port'],
                     'connection_status':
                         constants.PortConnectionStatus.CONNECTED
@@ -609,22 +598,20 @@ class NetAppHandler(object):
             fc_list = []
             fc_info = self.ssh_do_exec(
                 constant.FC_PORT_SHOW_DETAIL_COMMAND)
-            fc_array = fc_info.split(
-                constant.PORT_SPLIT_STR)
-            for fc in fc_array[1:]:
-                fc_map = {}
-                Tools.split_value_map(fc, fc_map, split=':')
+            fc_map_list = []
+            Tools.split_value_map_list(fc_info, fc_map_list, split=':')
+            for fc_map in fc_map_list:
                 type = constant.FC_TYPE.get(fc_map['PhysicalProtocol'])
                 port_id = \
-                    fc_map[constant.CONTROLLER_NAME] + '_' + fc_map['Adapter']
+                    fc_map['Node'] + '_' + fc_map['Adapter']
                 fc_model = {
                     'name':
-                        fc_map[constant.CONTROLLER_NAME] +
+                        fc_map['Node'] +
                         ':' + fc_map['Adapter'],
                     'storage_id': storage_id,
                     'native_port_id': port_id,
                     'location':
-                        fc_map[constant.CONTROLLER_NAME] +
+                        fc_map['Node'] +
                         ':' + fc_map['Adapter'],
                     'connection_status':
                         constants.PortConnectionStatus.CONNECTED
@@ -690,26 +677,24 @@ class NetAppHandler(object):
                 constant.QTREE_SHOW_DETAIL_COMMAND)
             fs_info = self.ssh_do_exec(
                 constant.FS_SHOW_DETAIL_COMMAND)
-            fs_array = fs_info.split(constant.FS_SPLIT_STR)
-            qt_array = qt_info.split(constant.QTREE_SPLIT_STR)
-            for qt in qt_array[1:]:
-                qt_map = {}
-                Tools.split_value_map(qt, qt_map, split=':')
+            fs_map_list = []
+            qt_map_list = []
+            Tools.split_value_map_list(fs_info, fs_map_list, split=':')
+            Tools.split_value_map_list(qt_info, qt_map_list, split=':')
+            for qt_map in qt_map_list:
                 if 'QtreeName' in qt_map.keys():
-                    fs_id = self.get_fs_id(qt_map['Name'],
+                    fs_id = self.get_fs_id(qt_map['VserverName'],
                                            qt_map['VolumeName'])
                     qtree_path = None
-                    for fs in fs_array[1:]:
-                        fs_map = {}
-                        Tools.split_value_map(fs, fs_map, split=':')
+                    for fs_map in fs_map_list:
                         if fs_id == self.get_fs_id(
-                                fs_map['Name'],
+                                fs_map['VserverName'],
                                 fs_map['VolumeName']) \
                                 and fs_map['JunctionPath'] != '-':
                             qtree_path = fs_map['JunctionPath']
                             break
                     qt_id = self.get_qt_id(
-                        qt_map['Name'],
+                        qt_map['VserverName'],
                         qt_map['VolumeName'],
                         qt_map['QtreeName'])
                     qtree_name = qt_map['QtreeName']
@@ -744,17 +729,16 @@ class NetAppHandler(object):
             nfs_info = self.ssh_do_exec(
                 constant.NFS_SHARE_SHOW_COMMAND)
             nfs_list = []
-            nfs_array = nfs_info.split(constant.FS_SPLIT_STR)
-            fs_map = {}
-            for nfs_share in nfs_array[1:]:
-                Tools.split_value_map(nfs_share, fs_map, split=':')
-                protocol = protocol_map.get(fs_map['Name'])
+            fs_map_list = []
+            Tools.split_value_map_list(nfs_info, fs_map_list, split=':')
+            for fs_map in fs_map_list:
+                protocol = protocol_map.get(fs_map['VserverName'])
                 if constants.ShareProtocol.NFS in protocol:
-                    fs_id = self.get_fs_id(fs_map['Name'],
+                    fs_id = self.get_fs_id(fs_map['VserverName'],
                                            fs_map['VolumeName'])
                     share_name = \
-                        fs_map['Name'] + '/' + fs_map['VolumeName']
-                    qt_id = self.get_qt_id(fs_map['Name'],
+                        fs_map['VserverName'] + '/' + fs_map['VolumeName']
+                    qt_id = self.get_qt_id(fs_map['VserverName'],
                                            fs_map['VolumeName'], '')
                     qtree_id = None
                     for qtree in qtree_list:
@@ -807,16 +791,14 @@ class NetAppHandler(object):
         share_info = self.ssh_do_exec(
             (constant.CIFS_SHARE_SHOW_DETAIL_COMMAND %
              {'vserver_name': vserver_name}))
-        cifs_share_array = share_info.split(
-            constant.CIFS_SHARE_SPLIT_STR)
-        for cifs_share in cifs_share_array[1:]:
-            share_map = {}
-            Tools.split_value_map(cifs_share, share_map, split=':')
+        share_map_list = []
+        Tools.split_value_map_list(share_info, share_map_list, split=':')
+        for share_map in share_map_list:
             if 'VolumeName' in share_map.keys() and \
                     share_map['VolumeName'] != '-':
                 protocol_str = protocol_map.get(
-                    share_map[constant.VSERVER_NAME])
-                fs_id = self.get_fs_id(share_map[constant.VSERVER_NAME],
+                    share_map['Vserver'])
+                fs_id = self.get_fs_id(share_map['Vserver'],
                                        share_map['VolumeName'])
                 share_id = fs_id + '_' + share_map['Share'] + '_'
                 qtree_id = None
@@ -827,7 +809,7 @@ class NetAppHandler(object):
                         if qtree_name == share_map['VolumeName']:
                             qtree_name = ''
                         qt_id = self.get_qt_id(
-                            share_map[constant.VSERVER_NAME],
+                            share_map['Vserver'],
                             share_map['VolumeName'], qtree_name)
                     else:
                         break
@@ -903,21 +885,20 @@ class NetAppHandler(object):
             quota_list = []
             quotas_info = self.ssh_do_exec(
                 constant.QUOTA_SHOW_DETAIL_COMMAND)
-            quotas_array = quotas_info.split(constant.QUOTA_SPLIT_STR)
-            for quota_info in quotas_array[1:]:
-                quota_map = {}
+            quota_map_list = []
+            Tools.split_value_map_list(quotas_info, quota_map_list, ":")
+            for quota_map in quota_map_list:
                 user_group_name = None
-                Tools.split_value_map(quota_info, quota_map, ":")
                 if 'VolumeName' in quota_map.keys():
                     quota_id = \
-                        quota_map[constant.VSERVER_NAME] + '_' + \
+                        quota_map['Vserver'] + '_' + \
                         quota_map['VolumeName'] + '_' + \
                         quota_map['Type'] + '_' + \
                         quota_map['QtreeName'] + '_' + \
                         quota_map['Target']
                     type = constant.QUOTA_TYPE.get(quota_map['Type'])
                     qt_id = self.get_qt_id(
-                        quota_map[constant.VSERVER_NAME],
+                        quota_map['Vserver'],
                         quota_map['VolumeName'], '')
                     if type == 'tree' and quota_map['Target'] != '':
                         qt_id += '/' + quota_map['Target']
@@ -926,7 +907,7 @@ class NetAppHandler(object):
                             user_group_name = quota_map['Target']
                         if quota_map['QtreeName'] != '':
                             qt_id += '/' + quota_map['QtreeName']
-                    fs_id = self.get_fs_id(quota_map[constant.VSERVER_NAME],
+                    fs_id = self.get_fs_id(quota_map['Vserver'],
                                            quota_map['VolumeName'])
                     quota = {
                         'native_quota_id': quota_id,
