@@ -46,7 +46,7 @@ class NetAppHandler(object):
         for i in range(0, len(table)):
             if pattern.search(table[i]) is not None:
                 header_index = i
-        return table[(header_index+1):]
+        return table[(header_index + 1):]
 
     @staticmethod
     def get_fs_id(vserver, volume):
@@ -131,8 +131,8 @@ class NetAppHandler(object):
             Tools.split_value_map(controller_array[1], controller_map, ":")
             version_array = version_info.split('\r\n')
             version = version_array[0].split(":")
-            status = constant.STORAGE_STATUS.get(
-                status_info.split("\r\n")[2])
+            status = self.get_table_data(status_info)
+            status = constant.STORAGE_STATUS.get(status[0].split()[0])
             disk_list = self.get_disks(None)
             pool_list = self.list_storage_pools(None)
             storage_map = {}
@@ -426,7 +426,7 @@ class NetAppHandler(object):
                         physical_info[0] == disks_map['k']:
                     physical_type = \
                         constant.DISK_TYPE.get(physical_info[1])
-                    speed = physical_info[5]
+                    speed = physical_info[5] if physical_info[5] != '-' else 0
                     firmware = physical_info[4]
             status = constants.DiskStatus.NORMAL
             if disks_map[constant.DISK_NAME] in error_disk_list:
