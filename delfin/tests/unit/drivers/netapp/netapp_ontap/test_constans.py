@@ -689,7 +689,8 @@ ALERT_INFO = """\r
        Indication Time: Mon Mar 10 10:26:38 2021\r
     Perceived Severity: Major\r
         Probable Cause: Connection_establishment_error\r
-           Description: Disk shelf 2 does not \r
+           Description: Disk shelf 2 does not disk\r
+           disk 12312\r
     Corrective Actions: 1. Halt controller node1 and \r
                         2. Connect disk shelf 2 t\r
                         3. Reboot the halted controllers.\r

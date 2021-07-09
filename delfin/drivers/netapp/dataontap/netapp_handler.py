@@ -126,15 +126,17 @@ class NetAppHandler(object):
                 constant.STORAGE_STATUS_COMMAND)
             controller_info = self.ssh_do_exec(
                 constant.CONTROLLER_SHOW_DETAIL_COMMAND)
-            Tools.split_value_map_list(controller_info, controller_map_list, ":")
+            Tools.split_value_map_list(
+                controller_info, controller_map_list, ":")
             version_array = version_info.split("\r\n")
-            version = version_array[len(version_array)-1].split(":")
+            version = version_array[len(version_array) - 1].split(":")
             status = self.get_table_data(status_info)
             status = constant.STORAGE_STATUS.get(status[0].split()[0])
             disk_list = self.get_disks(None)
             pool_list = self.list_storage_pools(None)
             storage_map_list = []
-            Tools.split_value_map_list(system_info, storage_map_list, split=':')
+            Tools.split_value_map_list(
+                system_info, storage_map_list, split=':')
             if len(storage_map_list) > 0:
                 storage_map = storage_map_list[0]
                 controller_map = controller_map_list[0]
@@ -324,7 +326,8 @@ class NetAppHandler(object):
         alert_info = self.ssh_do_exec(
             constant.ALTER_SHOW_DETAIL_COMMAND)
         alert_map_list = []
-        Tools.split_value_map_list(alert_info, alert_map_list, split=':')
+        Tools.split_value_map_list(
+            alert_info, alert_map_list, True, split=':')
         for alert_map in alert_map_list:
             occur_time = int(time.mktime(time.strptime(
                 alert_map['IndicationTime'],
@@ -420,7 +423,8 @@ class NetAppHandler(object):
                             physical_info[0] == disks_map['Disk']:
                         physical_type = \
                             constant.DISK_TYPE.get(physical_info[1])
-                        speed = physical_info[5] if physical_info[5] != '-' else 0
+                        speed = physical_info[5] \
+                            if physical_info[5] != '-' else 0
                         firmware = physical_info[4]
                 status = constants.DiskStatus.NORMAL
                 if disks_map['Disk'] in error_disk_list:
@@ -476,7 +480,8 @@ class NetAppHandler(object):
                         'false':
                     compressed = False
                 status = constant.FS_STATUS.get(fs_map['VolumeState'])
-                fs_id = self.get_fs_id(fs_map['VserverName'], fs_map['VolumeName'])
+                fs_id = self.get_fs_id(
+                    fs_map['VserverName'], fs_map['VolumeName'])
                 fs_model = {
                     'name': fs_map['VolumeName'],
                     'storage_id': storage_id,
