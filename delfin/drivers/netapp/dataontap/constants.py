@@ -48,7 +48,7 @@ LUN_SPLIT_STR = "  Vserver"
 CONTROLLER_SHOW_DETAIL_COMMAND = "node show -instance"
 CONTROLLER_SPLIT_STR = "  Nod"
 
-PORT_SHOW_DETAIL_COMMAND = "port show -instance"
+PORT_SHOW_DETAIL_COMMAND = "network port show -instance"
 INTERFACE_SHOW_DETAIL_COMMAND = "network interface show -instance"
 FC_PORT_SHOW_DETAIL_COMMAND = "fcp adapter show -instance"
 PORT_SPLIT_STR = "   Nod"
@@ -89,7 +89,8 @@ STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
     'ok-with-suppressed': constants.StorageStatus.NORMAL,
     'degraded': constants.StorageStatus.ABNORMAL,
-    'unreachable': constants.StorageStatus.ABNORMAL
+    'unreachable': constants.StorageStatus.ABNORMAL,
+    'unknown': constants.StorageStatus.ABNORMAL
 }
 
 AGGREGATE_STATUS = {

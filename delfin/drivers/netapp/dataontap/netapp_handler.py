@@ -12,7 +12,7 @@
 # WarrayANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import re
 import time
 import six
 import hashlib
@@ -37,6 +37,16 @@ class NetAppHandler(object):
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
+
+    @staticmethod
+    def get_table_data(values):
+        pattern = re.compile('^[-]{3,}')
+        header_index = 0
+        table = values.split("\r\n")
+        for i in range(0, len(table)):
+            if pattern.search(table[i]) is not None:
+                header_index = i
+        return table[(header_index+1):]
 
     @staticmethod
     def get_fs_id(vserver, volume):
@@ -293,7 +303,7 @@ class NetAppHandler(object):
             occur_time = int(time.mktime(time.strptime(
                 event_map['Time'],
                 constant.EVENT_TIME_TYPE)))
-            if query_para is None or \
+            if query_para is None or query_para == {} or\
                     (int(query_para['begin_time'])
                      <= occur_time
                      <= int(query_para['end_time'])):
@@ -326,13 +336,13 @@ class NetAppHandler(object):
             occur_time = int(time.mktime(time.strptime(
                 alert_map['IndicationTime'],
                 constant.ALTER_TIME_TYPE)))
-            if query_para is None or \
+            if query_para is None or query_para == {} or\
                     (int(query_para['begin_time'])
                      <= occur_time
                      <= int(query_para['end_time'])):
                 alert_model = {
                     'alert_id': alert_map['AlertID'],
-                    'alert_name': alert_map['ProbableCause'],
+                    'alert_name': alert_map['AlertID'],
                     'severity': constant.ALERT_SEVERITY
                     [alert_map['PerceivedSeverity']],
                     'category': constants.Category.FAULT,
@@ -396,15 +406,15 @@ class NetAppHandler(object):
             constant.DISK_ERROR_COMMAND
         )
         error_disk_list = []
-        error_disk_array = error_disk.split('\r\n')
-        for error_disk in error_disk_array[1:]:
+        error_disk_array = self.get_table_data(error_disk)
+        for error_disk in error_disk_array:
             error_array = error_disk.split()
             if len(error_array) > 2:
                 error_disk_list.append(error_array[0])
         disks_map = {}
-        physical_array = physicals_info.split('\r\n')
-        for i in range(2, len(physical_array), 2):
-            physicals_list.append(physical_array[i].split())
+        physical_array = self.get_table_data(physicals_info)
+        for physical in physical_array:
+            physicals_list.append(physical.split())
         for disk_str in disks_array[1:]:
             speed = physical_type = firmware = None
             Tools.split_value_map(disk_str, disks_map, split=':')
@@ -449,7 +459,7 @@ class NetAppHandler(object):
         thin_fs_info = self.ssh_do_exec(
             constant.THIN_FS_SHOW_COMMAND)
         pool_list = self.list_storage_pools(storage_id)
-        thin_fs_array = thin_fs_info.split("\r\n")
+        thin_fs_array = self.get_table_data(thin_fs_info)
         fs_map = {}
         for fs_str in fs_array[1:]:
             type = constants.FSType.THICK
@@ -464,7 +474,7 @@ class NetAppHandler(object):
                 if fs_map['SpaceSavedbyDeduplication'] == '0B':
                     deduplicated = False
                 if len(thin_fs_array) > 2:
-                    for thin_vol in thin_fs_array[2:]:
+                    for thin_vol in thin_fs_array:
                         thin_array = thin_vol.split()
                         if len(thin_array) > 4:
                             if thin_array[1] == fs_map['VolumeName']:
@@ -569,8 +579,10 @@ class NetAppHandler(object):
                         else constants.PortHealthStatus.ABNORMAL,
                     'type': constants.PortType.ETH,
                     'logical_type': logical_type,
-                    'speed': int(eth_map['SpeedOperational']) * units.Mi,
-                    'max_speed': int(eth_map['SpeedOperational']) * units.Mi,
+                    'speed': int(eth_map['SpeedOperational']) * units.Mi
+                    if eth_map['SpeedOperational'] != '-' else 0,
+                    'max_speed': int(eth_map['SpeedOperational']) * units.Mi
+                    if eth_map['SpeedOperational'] != '-' else 0,
                     'native_parent_id': None,
                     'wwn': None,
                     'mac_address': eth_map['MACAddress'],
@@ -624,8 +636,10 @@ class NetAppHandler(object):
                         else constants.PortHealthStatus.ABNORMAL,
                     'type': type,
                     'logical_type': None,
-                    'speed': int(fc_map['DataLinkRate(Gbit)']) * units.Gi,
-                    'max_speed': int(fc_map['MaximumSpeed']) * units.Gi,
+                    'speed': int(fc_map['DataLinkRate(Gbit)']) * units.Gi
+                    if fc_map['DataLinkRate(Gbit)'] != '-' else 0,
+                    'max_speed': int(fc_map['MaximumSpeed']) * units.Gi
+                    if fc_map['MaximumSpeed'] != '-' else 0,
                     'native_parent_id': None,
                     'wwn': fc_map['AdapterWWNN'],
                     'mac_address': None,
@@ -841,15 +855,15 @@ class NetAppHandler(object):
             protocol_info = self.ssh_do_exec(
                 constant.SHARE_AGREEMENT_SHOW_COMMAND)
             protocol_map = {}
-            protocol_arr = protocol_info.split('\r\n')
-            for protocol in protocol_arr[1:]:
+            protocol_arr = self.get_table_data(protocol_info)
+            for protocol in protocol_arr:
                 agr_arr = protocol.split()
                 if len(agr_arr) > 1:
                     protocol_map[agr_arr[0]] = agr_arr[1]
             vserver_info = self.ssh_do_exec(
                 constant.VSERVER_SHOW_COMMAND)
-            vserver_array = vserver_info.split("\r\n")
-            for vserver in vserver_array[3:]:
+            vserver_array = self.get_table_data(vserver_info)
+            for vserver in vserver_array:
                 vserver_name = vserver.split()
                 if len(vserver_name) > 1:
                     shares_list += self.get_cifs_shares(
@@ -952,13 +966,13 @@ class NetAppHandler(object):
             ip_list = []
             mgt_ip = self.ssh_pool.do_exec(constant.MGT_IP_COMMAND)
             node_ip = self.ssh_pool.do_exec(constant.NODE_IP_COMMAND)
-            mgt_ip_array = mgt_ip.split("\r\n")
-            node_ip_array = node_ip.split("\r\n")
-            for node in node_ip_array[2:]:
+            mgt_ip_array = self.get_table_data(mgt_ip)
+            node_ip_array = self.get_table_data(node_ip)
+            for node in node_ip_array:
                 ip_array = node.split()
                 if len(ip_array) == 3:
                     ip_list.append({'host': ip_array[2]})
-            ip_list.append({'host': mgt_ip_array[2].split()[2]})
+            ip_list.append({'host': mgt_ip_array[0].split()[2]})
             return ip_list
         except exception.DelfinException as e:
             err_msg = "Failed to get storage ip from " \
