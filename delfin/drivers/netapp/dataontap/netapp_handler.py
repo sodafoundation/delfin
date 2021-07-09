@@ -129,7 +129,7 @@ class NetAppHandler(object):
             controller_array = controller_info.split(
                 constant.CONTROLLER_SPLIT_STR)
             Tools.split_value_map(controller_array[1], controller_map, ":")
-            version_array = version_info.split('\r\n')
+            version_array = self.get_table_data(version_info)
             version = version_array[0].split(":")
             status = self.get_table_data(status_info)
             status = constant.STORAGE_STATUS.get(status[0].split()[0])
