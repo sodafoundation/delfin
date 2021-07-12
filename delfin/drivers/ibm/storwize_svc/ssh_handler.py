@@ -504,7 +504,7 @@ class SSHHandler(object):
                 speed = None
             else:
                 speed = int(self.parse_string(port_map.get('port_speed')))
-                
+
             port_result = {
                 'name': port_map.get('id'),
                 'storage_id': storage_id,
