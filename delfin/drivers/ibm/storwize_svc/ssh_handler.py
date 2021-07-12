@@ -500,6 +500,10 @@ class SSHHandler(object):
                 port_type = constants.PortType.ETH
             location = '%s_%s' % (port_map.get('node_name'),
                                   port_map.get('id'))
+            if 'N/A' in port_map.get('port_speed'):
+                speed = None
+            else:
+                speed = int(self.parse_string(port_map.get('port_speed')))
             port_result = {
                 'name': port_map.get('id'),
                 'storage_id': storage_id,
@@ -508,8 +512,7 @@ class SSHHandler(object):
                 'connection_status': conn_status,
                 'health_status': status,
                 'type': port_type,
-                'max_speed':
-                    int(self.parse_string(port_map.get('port_speed'))),
+                'max_speed': speed,
                 'native_parent_id': port_map.get('node_name'),
                 'wwn': port_map.get('WWPN')
             }
