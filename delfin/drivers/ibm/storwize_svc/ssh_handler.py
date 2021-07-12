@@ -54,6 +54,7 @@ class SSHHandler(object):
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
 
     def __init__(self, **kwargs):
+        kwargs["ssh_max_size"] = 1
         self.ssh_pool = SSHPool(**kwargs)
 
     @staticmethod
@@ -500,11 +501,9 @@ class SSHHandler(object):
                 port_type = constants.PortType.ETH
             location = '%s_%s' % (port_map.get('node_name'),
                                   port_map.get('id'))
-            if 'N/A' in port_map.get('port_speed'):
-                speed = None
-            else:
+            speed = None
+            if port_map.get('port_speed')[:-2].isdigit():
                 speed = int(self.parse_string(port_map.get('port_speed')))
-                
             port_result = {
                 'name': port_map.get('id'),
                 'storage_id': storage_id,
