@@ -129,7 +129,11 @@ class NetAppHandler(object):
             Tools.split_value_map_list(
                 controller_info, controller_map_list, ":")
             version_array = version_info.split("\r\n")
-            version = version_array[len(version_array) - 1].split(":")
+            storage_version = ''
+            for version in version_array:
+                if 'NetApp' in version:
+                    storage_version = version.split(":")
+                    break
             status = self.get_table_data(status_info)
             status = constant.STORAGE_STATUS.get(status[0].split()[0])
             disk_list = self.get_disks(None)
@@ -153,7 +157,7 @@ class NetAppHandler(object):
                     "model": controller_map['Model'],
                     "status": status,
                     "serial_number": storage_map['ClusterSerialNumber'],
-                    "firmware_version": version[0],
+                    "firmware_version": storage_version[0],
                     "location": controller_map['Location'],
                     "total_capacity": total_capacity,
                     "raw_capacity": raw_capacity,
