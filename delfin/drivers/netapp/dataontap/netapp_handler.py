@@ -668,7 +668,8 @@ class NetAppHandler(object):
                                            qt_map['VolumeName'])
                     qtree_path = None
                     for fs_map in fs_map_list:
-                        if fs_id == self.get_fs_id(
+                        if 'VserverName' in fs_map.keys() \
+                                and fs_id == self.get_fs_id(
                                 fs_map['VserverName'],
                                 fs_map['VolumeName']) \
                                 and fs_map['JunctionPath'] != '-':
