@@ -178,20 +178,21 @@ class NetAppHandler(object):
         agg_map_list = []
         Tools.split_value_map_list(agg_info, agg_map_list, split=':')
         for agg_map in agg_map_list:
-            status = constant.AGGREGATE_STATUS.get(agg_map['State'])
-            pool_model = {
-                'name': agg_map['Aggregate'],
-                'storage_id': storage_id,
-                'native_storage_pool_id': agg_map['UUIDString'],
-                'description': None,
-                'status': status,
-                'storage_type': constants.StorageType.UNIFIED,
-                'total_capacity': self.get_size(agg_map['Size'], True),
-                'used_capacity': self.get_size(agg_map['UsedSize'], True),
-                'free_capacity':
-                    self.get_size(agg_map['AvailableSize'], True),
-            }
-            agg_list.append(pool_model)
+            if 'Aggregate' in agg_map.keys():
+                status = constant.AGGREGATE_STATUS.get(agg_map['State'])
+                pool_model = {
+                    'name': agg_map['Aggregate'],
+                    'storage_id': storage_id,
+                    'native_storage_pool_id': agg_map['UUIDString'],
+                    'description': None,
+                    'status': status,
+                    'storage_type': constants.StorageType.UNIFIED,
+                    'total_capacity': self.get_size(agg_map['Size'], True),
+                    'used_capacity': self.get_size(agg_map['UsedSize'], True),
+                    'free_capacity':
+                        self.get_size(agg_map['AvailableSize'], True),
+                }
+                agg_list.append(pool_model)
         return agg_list
 
     def get_pool(self, storage_id):
@@ -201,25 +202,26 @@ class NetAppHandler(object):
         pool_map_list = []
         Tools.split_value_map_list(pool_info, pool_map_list, split=':')
         for pool_map in pool_map_list:
-            status = constants.StoragePoolStatus.ABNORMAL
-            if pool_map['IsPoolHealthy?'] == 'true':
-                status = constants.StoragePoolStatus.NORMAL
-            pool_model = {
-                'name': pool_map['StoragePoolName'],
-                'storage_id': storage_id,
-                'native_storage_pool_id': pool_map['UUIDofStoragePool'],
-                'description': None,
-                'status': status,
-                'storage_type': constants.StorageType.UNIFIED,
-                'total_capacity':
-                    self.get_size(pool_map['StoragePoolTotalSize'], True),
-                'used_capacity':
-                    self.get_size(pool_map['StoragePoolTotalSize'], True) -
-                    self.get_size(pool_map['StoragePoolUsableSize'], True),
-                'free_capacity':
-                    self.get_size(pool_map['StoragePoolUsableSize'], True)
-            }
-            pool_list.append(pool_model)
+            if 'StoragePoolName' in pool_map.keys():
+                status = constants.StoragePoolStatus.ABNORMAL
+                if pool_map['IsPoolHealthy?'] == 'true':
+                    status = constants.StoragePoolStatus.NORMAL
+                pool_model = {
+                    'name': pool_map['StoragePoolName'],
+                    'storage_id': storage_id,
+                    'native_storage_pool_id': pool_map['UUIDofStoragePool'],
+                    'description': None,
+                    'status': status,
+                    'storage_type': constants.StorageType.UNIFIED,
+                    'total_capacity':
+                        self.get_size(pool_map['StoragePoolTotalSize'], True),
+                    'used_capacity':
+                        self.get_size(pool_map['StoragePoolTotalSize'], True) -
+                        self.get_size(pool_map['StoragePoolUsableSize'], True),
+                    'free_capacity':
+                        self.get_size(pool_map['StoragePoolUsableSize'], True)
+                }
+                pool_list.append(pool_model)
         return pool_list
 
     def list_storage_pools(self, storage_id):
@@ -247,7 +249,8 @@ class NetAppHandler(object):
             volume_map_list = []
             Tools.split_value_map_list(volume_info, volume_map_list, split=':')
             for volume_map in volume_map_list:
-                if volume_map is not None or volume_map != {}:
+                if volume_map is not None and volume_map != {} \
+                        and 'LUNName' in volume_map.keys():
                     pool_id = None
                     status = 'normal' if volume_map['State'] == 'online' \
                         else 'offline'
@@ -289,38 +292,6 @@ class NetAppHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def get_events(self, query_para):
-        event_list = []
-        event_info = self.ssh_do_exec(
-            constant.EVENT_SHOW_DETAIL_COMMAND)
-        event_map_list = []
-        Tools.split_value_map_list(event_info, event_map_list, split=':')
-        for event_map in event_map_list:
-            occur_time = int(time.mktime(time.strptime(
-                event_map['Time'],
-                constant.EVENT_TIME_TYPE)))
-            if query_para is None or query_para == {} or\
-                    (int(query_para['begin_time'])
-                     <= occur_time
-                     <= int(query_para['end_time'])):
-                alert_model = {
-                    'alert_id': event_map['Sequence#'],
-                    'alert_name': event_map['MessageName'],
-                    'severity': constants.Severity.CRITICAL,
-                    'category': constants.Category.FAULT,
-                    'type': constants.EventType.EQUIPMENT_ALARM,
-                    'occur_time': occur_time * 1000,
-                    'description': event_map['Event'],
-                    'match_key': hashlib.md5(
-                        (event_map['Sequence#'] +
-                         str(occur_time)).encode()).hexdigest(),
-                    'sequence_number': event_map['Sequence#'],
-                    'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                    'location': event_map['Source']
-                }
-                event_list.append(alert_model)
-        return event_list
-
     def get_alerts(self, query_para):
         alert_list = []
         alert_info = self.ssh_do_exec(
@@ -329,40 +300,39 @@ class NetAppHandler(object):
         Tools.split_value_map_list(
             alert_info, alert_map_list, True, split=':')
         for alert_map in alert_map_list:
-            occur_time = int(time.mktime(time.strptime(
-                alert_map['IndicationTime'],
-                constant.ALTER_TIME_TYPE)))
-            if query_para is None or query_para == {} or\
-                    (int(query_para['begin_time'])
-                     <= occur_time
-                     <= int(query_para['end_time'])):
-                alert_model = {
-                    'alert_id': alert_map['AlertID'],
-                    'alert_name': alert_map['AlertID'],
-                    'severity': constant.ALERT_SEVERITY
-                    [alert_map['PerceivedSeverity']],
-                    'category': constants.Category.FAULT,
-                    'type': constants.EventType.EQUIPMENT_ALARM,
-                    'occur_time': occur_time * 1000,
-                    'description': alert_map['Description'],
-                    'sequence_number': alert_map['AlertID'],
-                    'match_key': hashlib.md5(
-                        (alert_map['AlertID'] +
-                         str(occur_time)).encode()).hexdigest(),
-                    'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                    'location':
-                        alert_map['ProbableCause'] +
-                        ':' + alert_map['PossibleEffect']
-                }
-                alert_list.append(alert_model)
+            if 'AlertID' in alert_map.keys():
+                occur_time = int(time.mktime(time.strptime(
+                    alert_map['IndicationTime'],
+                    constant.ALTER_TIME_TYPE)))
+                if query_para is None or query_para == {} or\
+                        (int(query_para['begin_time'])
+                         <= occur_time
+                         <= int(query_para['end_time'])):
+                    alert_model = {
+                        'alert_id': alert_map['AlertID'],
+                        'alert_name': alert_map['AlertID'],
+                        'severity': constant.ALERT_SEVERITY
+                        [alert_map['PerceivedSeverity']],
+                        'category': constants.Category.FAULT,
+                        'type': constants.EventType.EQUIPMENT_ALARM,
+                        'occur_time': occur_time * 1000,
+                        'description': alert_map['Description'],
+                        'sequence_number': alert_map['AlertID'],
+                        'match_key': hashlib.md5(
+                            (alert_map['AlertID'] +
+                             str(occur_time)).encode()).hexdigest(),
+                        'resource_type': constants.DEFAULT_RESOURCE_TYPE,
+                        'location':
+                            alert_map['ProbableCause'] +
+                            ':' + alert_map['PossibleEffect']
+                    }
+                    alert_list.append(alert_model)
         return alert_list
 
     def list_alerts(self, query_para):
         try:
-            alert_list = []
             """Query the two alarms separately"""
-            alert_list += self.get_events(query_para)
-            alert_list += self.get_alerts(query_para)
+            alert_list = self.get_alerts(query_para)
             return alert_list
         except exception.DelfinException as e:
             err_msg = "Failed to get storage alert from " \
@@ -460,7 +430,8 @@ class NetAppHandler(object):
         Tools.split_value_map_list(fs_info, fs_map_list, split=':')
         for fs_map in fs_map_list:
             type = constants.FSType.THICK
-            if fs_map is not None or fs_map != {}:
+            if fs_map is not None and fs_map != {} \
+                    and 'VolumeName' in fs_map.keys():
                 pool_id = ""
                 """get pool id"""
                 for pool in pool_list:
@@ -515,7 +486,8 @@ class NetAppHandler(object):
             Tools.split_value_map_list(
                 controller_info, controller_map_list, split=':')
             for controller_map in controller_map_list:
-                if controller_map is not None or controller_map != {}:
+                if controller_map is not None and controller_map != {} \
+                        and 'Node' in controller_map.keys():
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
@@ -552,40 +524,42 @@ class NetAppHandler(object):
             eth_map_list = []
             Tools.split_value_map_list(eth_info, eth_map_list, split=':')
             for eth_map in eth_map_list:
-                logical_type = constant.ETH_LOGICAL_TYPE.get(
-                    eth_map['PortType'])
-                port_id = \
-                    eth_map['Node'] + '_' + eth_map['Port']
-                eth_model = {
-                    'name': eth_map['Port'],
-                    'storage_id': storage_id,
-                    'native_port_id': port_id,
-                    'location':
-                        eth_map['Node'] +
-                        ':' + eth_map['Port'],
-                    'connection_status':
-                        constants.PortConnectionStatus.CONNECTED
-                        if eth_map['Link'] == 'up'
-                        else constants.PortConnectionStatus.DISCONNECTED,
-                    'health_status':
-                        constants.PortHealthStatus.NORMAL
-                        if eth_map['PortHealthStatus'] == 'healthy'
-                        else constants.PortHealthStatus.ABNORMAL,
-                    'type': constants.PortType.ETH,
-                    'logical_type': logical_type,
-                    'speed': int(eth_map['SpeedOperational']) * units.Mi
-                    if eth_map['SpeedOperational'] != '-' else 0,
-                    'max_speed': int(eth_map['SpeedOperational']) * units.Mi
-                    if eth_map['SpeedOperational'] != '-' else 0,
-                    'native_parent_id': None,
-                    'wwn': None,
-                    'mac_address': eth_map['MACAddress'],
-                    'ipv4': None,
-                    'ipv4_mask': None,
-                    'ipv6': None,
-                    'ipv6_mask': None,
-                }
-                eth_list.append(eth_model)
+                if 'Port' in eth_map.keys():
+                    logical_type = constant.ETH_LOGICAL_TYPE.get(
+                        eth_map['PortType'])
+                    port_id = \
+                        eth_map['Node'] + '_' + eth_map['Port']
+                    eth_model = {
+                        'name': eth_map['Port'],
+                        'storage_id': storage_id,
+                        'native_port_id': port_id,
+                        'location':
+                            eth_map['Node'] +
+                            ':' + eth_map['Port'],
+                        'connection_status':
+                            constants.PortConnectionStatus.CONNECTED
+                            if eth_map['Link'] == 'up'
+                            else constants.PortConnectionStatus.DISCONNECTED,
+                        'health_status':
+                            constants.PortHealthStatus.NORMAL
+                            if eth_map['PortHealthStatus'] == 'healthy'
+                            else constants.PortHealthStatus.ABNORMAL,
+                        'type': constants.PortType.ETH,
+                        'logical_type': logical_type,
+                        'speed': int(eth_map['SpeedOperational']) * units.Mi
+                        if eth_map['SpeedOperational'] != '-' else 0,
+                        'max_speed':
+                            int(eth_map['SpeedOperational']) * units.Mi
+                        if eth_map['SpeedOperational'] != '-' else 0,
+                        'native_parent_id': None,
+                        'wwn': None,
+                        'mac_address': eth_map['MACAddress'],
+                        'ipv4': None,
+                        'ipv4_mask': None,
+                        'ipv6': None,
+                        'ipv6_mask': None,
+                    }
+                    eth_list.append(eth_model)
             return eth_list
         except exception.DelfinException as e:
             err_msg = "Failed to get storage ports from " \
@@ -606,41 +580,42 @@ class NetAppHandler(object):
             fc_map_list = []
             Tools.split_value_map_list(fc_info, fc_map_list, split=':')
             for fc_map in fc_map_list:
-                type = constant.FC_TYPE.get(fc_map['PhysicalProtocol'])
-                port_id = \
-                    fc_map['Node'] + '_' + fc_map['Adapter']
-                fc_model = {
-                    'name':
-                        fc_map['Node'] +
-                        ':' + fc_map['Adapter'],
-                    'storage_id': storage_id,
-                    'native_port_id': port_id,
-                    'location':
-                        fc_map['Node'] +
-                        ':' + fc_map['Adapter'],
-                    'connection_status':
-                        constants.PortConnectionStatus.CONNECTED
-                        if fc_map['AdministrativeStatus'] == 'up'
-                        else constants.PortConnectionStatus.DISCONNECTED,
-                    'health_status':
-                        constants.PortHealthStatus.NORMAL
-                        if fc_map['OperationalStatus'] == 'online'
-                        else constants.PortHealthStatus.ABNORMAL,
-                    'type': type,
-                    'logical_type': None,
-                    'speed': int(fc_map['DataLinkRate(Gbit)']) * units.Gi
-                    if fc_map['DataLinkRate(Gbit)'] != '-' else 0,
-                    'max_speed': int(fc_map['MaximumSpeed']) * units.Gi
-                    if fc_map['MaximumSpeed'] != '-' else 0,
-                    'native_parent_id': None,
-                    'wwn': fc_map['AdapterWWNN'],
-                    'mac_address': None,
-                    'ipv4': None,
-                    'ipv4_mask': None,
-                    'ipv6': None,
-                    'ipv6_mask': None,
-                }
-                fc_list.append(fc_model)
+                if 'Node' in fc_map.keys():
+                    type = constant.FC_TYPE.get(fc_map['PhysicalProtocol'])
+                    port_id = \
+                        fc_map['Node'] + '_' + fc_map['Adapter']
+                    fc_model = {
+                        'name':
+                            fc_map['Node'] +
+                            ':' + fc_map['Adapter'],
+                        'storage_id': storage_id,
+                        'native_port_id': port_id,
+                        'location':
+                            fc_map['Node'] +
+                            ':' + fc_map['Adapter'],
+                        'connection_status':
+                            constants.PortConnectionStatus.CONNECTED
+                            if fc_map['AdministrativeStatus'] == 'up'
+                            else constants.PortConnectionStatus.DISCONNECTED,
+                        'health_status':
+                            constants.PortHealthStatus.NORMAL
+                            if fc_map['OperationalStatus'] == 'online'
+                            else constants.PortHealthStatus.ABNORMAL,
+                        'type': type,
+                        'logical_type': None,
+                        'speed': int(fc_map['DataLinkRate(Gbit)']) * units.Gi
+                        if fc_map['DataLinkRate(Gbit)'] != '-' else 0,
+                        'max_speed': int(fc_map['MaximumSpeed']) * units.Gi
+                        if fc_map['MaximumSpeed'] != '-' else 0,
+                        'native_parent_id': None,
+                        'wwn': fc_map['AdapterWWNN'],
+                        'mac_address': None,
+                        'ipv4': None,
+                        'ipv4_mask': None,
+                        'ipv6': None,
+                        'ipv6_mask': None,
+                    }
+                    fc_list.append(fc_model)
             return fc_list
         except exception.DelfinException as e:
             err_msg = "Failed to get storage ports from " \
@@ -737,47 +712,50 @@ class NetAppHandler(object):
             fs_map_list = []
             Tools.split_value_map_list(nfs_info, fs_map_list, split=':')
             for fs_map in fs_map_list:
-                protocol = protocol_map.get(fs_map['VserverName'])
-                if constants.ShareProtocol.NFS in protocol:
-                    fs_id = self.get_fs_id(fs_map['VserverName'],
-                                           fs_map['VolumeName'])
-                    share_name = \
-                        fs_map['VserverName'] + '/' + fs_map['VolumeName']
-                    qt_id = self.get_qt_id(fs_map['VserverName'],
-                                           fs_map['VolumeName'], '')
-                    qtree_id = None
-                    for qtree in qtree_list:
-                        if qtree['native_qtree_id'] == qt_id:
-                            qtree_id = qt_id
-                        if fs_id == qtree['native_filesystem_id'] \
-                                and qtree['name'] != "" \
-                                and qtree['name'] != qtree['native_qtree_id']:
-                            qt_share_name = share_name + '/' + qtree['name']
-                            share = {
-                                'name': qt_share_name,
-                                'storage_id': storage_id,
-                                'native_share_id':
-                                    qt_share_name + '_' +
-                                    constants.ShareProtocol.NFS,
-                                'native_qtree_id':
-                                    qtree['native_qtree_id'],
-                                'native_filesystem_id':
-                                    qtree['native_filesystem_id'],
-                                'path': qtree['path'],
-                                'protocol': constants.ShareProtocol.NFS
-                            }
-                            nfs_list.append(share)
-                    share = {
-                        'name': share_name,
-                        'storage_id': storage_id,
-                        'native_share_id':
-                            share_name + '_' + constants.ShareProtocol.NFS,
-                        'native_qtree_id': qtree_id,
-                        'native_filesystem_id': fs_id,
-                        'path': fs_map['JunctionPath'],
-                        'protocol': constants.ShareProtocol.NFS
-                    }
-                    nfs_list.append(share)
+                if 'VserverName' in fs_map.keys():
+                    protocol = protocol_map.get(fs_map['VserverName'])
+                    if constants.ShareProtocol.NFS in protocol:
+                        fs_id = self.get_fs_id(fs_map['VserverName'],
+                                               fs_map['VolumeName'])
+                        share_name = \
+                            fs_map['VserverName'] + '/' + fs_map['VolumeName']
+                        qt_id = self.get_qt_id(fs_map['VserverName'],
+                                               fs_map['VolumeName'], '')
+                        qtree_id = None
+                        for qtree in qtree_list:
+                            if qtree['native_qtree_id'] == qt_id:
+                                qtree_id = qt_id
+                            if fs_id == qtree['native_filesystem_id']\
+                                    and qtree['name'] != ""\
+                                    and qtree['name'] != \
+                                    qtree['native_qtree_id']:
+                                qt_share_name = \
+                                    share_name + '/' + qtree['name']
+                                share = {
+                                    'name': qt_share_name,
+                                    'storage_id': storage_id,
+                                    'native_share_id':
+                                        qt_share_name + '_' +
+                                        constants.ShareProtocol.NFS,
+                                    'native_qtree_id':
+                                        qtree['native_qtree_id'],
+                                    'native_filesystem_id':
+                                        qtree['native_filesystem_id'],
+                                    'path': qtree['path'],
+                                    'protocol': constants.ShareProtocol.NFS
+                                }
+                                nfs_list.append(share)
+                        share = {
+                            'name': share_name,
+                            'storage_id': storage_id,
+                            'native_share_id':
+                                share_name + '_' + constants.ShareProtocol.NFS,
+                            'native_qtree_id': qtree_id,
+                            'native_filesystem_id': fs_id,
+                            'path': fs_map['JunctionPath'],
+                            'protocol': constants.ShareProtocol.NFS
+                        }
+                        nfs_list.append(share)
             return nfs_list
         except exception.DelfinException as err:
             err_msg = "Failed to get storage nfs share from " \
