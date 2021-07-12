@@ -76,11 +76,10 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_list_alerts(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.EVENT_INFO,
-                         test_constans.ALERT_INFO])
+            side_effect=[test_constans.ALERT_INFO])
         data = self.netapp_client.list_alerts(context)
         self.assertEqual(data[0]['alert_name'],
-                         'mgmtgwd.configbr.noSNCBackup')
+                         'DualPathToDiskShelf_Alert')
 
     def test_clear_alters(self):
         alert = {'alert_id': '123'}

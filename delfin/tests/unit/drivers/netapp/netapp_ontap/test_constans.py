@@ -659,27 +659,6 @@ VBN_BAD may be present in the active filesystem: false\r
                           Vserver DR Protection: -\r
 7 entries were displayed."""
 
-EVENT_INFO = """\r
-                  Node: cl-01\r
-             Sequence#: 9102\r
-                  Time: 3/10/2021 18:19:14\r
-              Severity: ERROR\r
-                Source: mgwd\r
-          Message Name: mgmtgwd.configbr.noSNCBackup\r
-                 Event: mgmtgwd.confiigured.\r
-     Corrective Action: Configutination <destin man pagestion.\r
-           Description: This message occurURL is configured.\r
-\r
-                  Node: cl-01\r
-             Sequence#: 7855\r
-                  Time: 3/10/2021 10:18:36\r
-              Severity: ERROR\r
-                Source: mgwd\r
-          Message Name: mgmtgwd.configbr.noSNCBackup\r
-                 Event: mgmtgwd.configbr.noSNCBackup: \r
-     Corrective Action: Configure an o modify -desinformation.\r
-           Description: This mes."""
-
 ALERT_INFO = """\r
                   Node: node1\r
                Monitor: node-connect\r
