@@ -281,12 +281,14 @@ class StorageControllerTask(StorageResourceTask):
 
             if add_list:
                 db.controllers_create(self.context, add_list)
-        except AttributeError as e:
-            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
         except Exception as e:
             msg = _('Failed to sync controllers entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing controllers successful!!!")
 
@@ -332,12 +334,14 @@ class StoragePortTask(StorageResourceTask):
 
             if add_list:
                 db.ports_create(self.context, add_list)
-        except AttributeError as e:
-            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
         except Exception as e:
             msg = _('Failed to sync ports entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing ports successful!!!")
 
@@ -382,12 +386,14 @@ class StorageDiskTask(StorageResourceTask):
 
             if add_list:
                 db.disks_create(self.context, add_list)
-        except AttributeError as e:
-            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
         except Exception as e:
             msg = _('Failed to sync disks entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing disks successful!!!")
 
@@ -432,12 +438,14 @@ class StorageQuotaTask(StorageResourceTask):
 
             if add_list:
                 db.quotas_create(self.context, add_list)
-        except AttributeError as e:
-            LOG.error(e)
+        except NotImplementedError:
+            # Ignore this exception because driver may not support it.
+            pass
         except Exception as e:
             msg = _('Failed to sync Quotas entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing quotas successful!!!")
 
@@ -482,9 +490,6 @@ class StorageFilesystemTask(StorageResourceTask):
 
             if add_list:
                 db.filesystems_create(self.context, add_list)
-
-        except AttributeError as e:
-            LOG.error(e)
         except NotImplementedError:
             # Ignore this exception because driver may not support it.
             pass
@@ -492,6 +497,7 @@ class StorageFilesystemTask(StorageResourceTask):
             msg = _('Failed to sync filesystems entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing Filesystems successful!!!")
 
@@ -537,9 +543,6 @@ class StorageQtreeTask(StorageResourceTask):
 
             if add_list:
                 db.qtrees_create(self.context, add_list)
-
-        except AttributeError as e:
-            LOG.error(e)
         except NotImplementedError:
             # Ignore this exception because driver may not support it.
             pass
@@ -547,6 +550,7 @@ class StorageQtreeTask(StorageResourceTask):
             msg = _('Failed to sync Qtrees entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing Qtrees successful!!!")
 
@@ -592,8 +596,6 @@ class StorageShareTask(StorageResourceTask):
 
             if add_list:
                 db.shares_create(self.context, add_list)
-        except AttributeError as e:
-            LOG.error(e)
         except NotImplementedError:
             # Ignore this exception because driver may not support it.
             pass
@@ -601,6 +603,7 @@ class StorageShareTask(StorageResourceTask):
             msg = _('Failed to sync Shares entry in DB: {0}'
                     .format(e))
             LOG.error(msg)
+            raise
         else:
             LOG.info("Syncing Shares successful!!!")
 
