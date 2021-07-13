@@ -12,7 +12,7 @@
 # WarrayANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import re
+
 import time
 import six
 import hashlib
@@ -40,11 +40,10 @@ class NetAppHandler(object):
 
     @staticmethod
     def get_table_data(values):
-        pattern = re.compile('^[-]{3,}')
         header_index = 0
         table = values.split("\r\n")
         for i in range(0, len(table)):
-            if pattern.search(table[i]) is not None:
+            if constant.PATTERN.search(table[i]):
                 header_index = i
         return table[(header_index + 1):]
 
@@ -183,7 +182,7 @@ class NetAppHandler(object):
         agg_map_list = []
         Tools.split_value_map_list(agg_info, agg_map_list, split=':')
         for agg_map in agg_map_list:
-            if 'Aggregate' in agg_map.keys():
+            if agg_map and 'Aggregate' in agg_map.keys():
                 status = constant.AGGREGATE_STATUS.get(agg_map['State'])
                 pool_model = {
                     'name': agg_map['Aggregate'],
@@ -207,7 +206,7 @@ class NetAppHandler(object):
         pool_map_list = []
         Tools.split_value_map_list(pool_info, pool_map_list, split=':')
         for pool_map in pool_map_list:
-            if 'StoragePoolName' in pool_map.keys():
+            if pool_map and 'StoragePoolName' in pool_map.keys():
                 status = constants.StoragePoolStatus.ABNORMAL
                 if pool_map['IsPoolHealthy?'] == 'true':
                     status = constants.StoragePoolStatus.NORMAL
@@ -254,8 +253,7 @@ class NetAppHandler(object):
             volume_map_list = []
             Tools.split_value_map_list(volume_info, volume_map_list, split=':')
             for volume_map in volume_map_list:
-                if volume_map is not None and volume_map != {} \
-                        and 'LUNName' in volume_map.keys():
+                if volume_map and 'LUNName' in volume_map.keys():
                     pool_id = None
                     status = 'normal' if volume_map['State'] == 'online' \
                         else 'offline'
@@ -305,11 +303,11 @@ class NetAppHandler(object):
         Tools.split_value_map_list(
             alert_info, alert_map_list, True, split=':')
         for alert_map in alert_map_list:
-            if 'AlertID' in alert_map.keys():
+            if alert_map and 'AlertID' in alert_map.keys():
                 occur_time = int(time.mktime(time.strptime(
                     alert_map['IndicationTime'],
                     constant.ALTER_TIME_TYPE)))
-                if query_para is None or query_para == {} or\
+                if not query_para or \
                         (int(query_para['begin_time'])
                          <= occur_time
                          <= int(query_para['end_time'])):
@@ -388,7 +386,7 @@ class NetAppHandler(object):
             physicals_list.append(physical.split())
         Tools.split_value_map_list(disks_info, disks_map_list, split=':')
         for disks_map in disks_map_list:
-            if 'Disk' in disks_map.keys():
+            if disks_map and 'Disk' in disks_map.keys():
                 speed = physical_type = firmware = None
                 logical_type = constant.DISK_LOGICAL. \
                     get(disks_map['ContainerType'])
@@ -435,8 +433,7 @@ class NetAppHandler(object):
         Tools.split_value_map_list(fs_info, fs_map_list, split=':')
         for fs_map in fs_map_list:
             type = constants.FSType.THICK
-            if fs_map is not None and fs_map != {} \
-                    and 'VolumeName' in fs_map.keys():
+            if fs_map and 'VolumeName' in fs_map.keys():
                 pool_id = ""
                 """get pool id"""
                 for pool in pool_list:
@@ -491,8 +488,7 @@ class NetAppHandler(object):
             Tools.split_value_map_list(
                 controller_info, controller_map_list, split=':')
             for controller_map in controller_map_list:
-                if controller_map is not None and controller_map != {} \
-                        and 'Node' in controller_map.keys():
+                if controller_map and 'Node' in controller_map.keys():
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
@@ -529,7 +525,7 @@ class NetAppHandler(object):
             eth_map_list = []
             Tools.split_value_map_list(eth_info, eth_map_list, split=':')
             for eth_map in eth_map_list:
-                if 'Port' in eth_map.keys():
+                if eth_map and 'Port' in eth_map.keys():
                     logical_type = constant.ETH_LOGICAL_TYPE.get(
                         eth_map['PortType'])
                     port_id = \
@@ -585,7 +581,7 @@ class NetAppHandler(object):
             fc_map_list = []
             Tools.split_value_map_list(fc_info, fc_map_list, split=':')
             for fc_map in fc_map_list:
-                if 'Node' in fc_map.keys():
+                if fc_map and 'Node' in fc_map.keys():
                     type = constant.FC_TYPE.get(fc_map['PhysicalProtocol'])
                     port_id = \
                         fc_map['Node'] + '_' + fc_map['Adapter']
@@ -667,12 +663,12 @@ class NetAppHandler(object):
             Tools.split_value_map_list(fs_info, fs_map_list, split=':')
             Tools.split_value_map_list(qt_info, qt_map_list, split=':')
             for qt_map in qt_map_list:
-                if 'QtreeName' in qt_map.keys():
+                if qt_map and 'QtreeName' in qt_map.keys():
                     fs_id = self.get_fs_id(qt_map['VserverName'],
                                            qt_map['VolumeName'])
                     qtree_path = None
                     for fs_map in fs_map_list:
-                        if 'VserverName' in fs_map.keys() \
+                        if fs_map and 'VserverName' in fs_map.keys() \
                                 and fs_id == self.get_fs_id(
                                 fs_map['VserverName'],
                                 fs_map['VolumeName']) \
@@ -684,7 +680,7 @@ class NetAppHandler(object):
                         qt_map['VolumeName'],
                         qt_map['QtreeName'])
                     qtree_name = qt_map['QtreeName']
-                    if qt_map['QtreeName'] != '' and qtree_path is not None:
+                    if qt_map['QtreeName'] and qtree_path:
                         qtree_path += '/' + qt_map['QtreeName']
                     else:
                         qtree_name = qt_id
@@ -718,7 +714,7 @@ class NetAppHandler(object):
             fs_map_list = []
             Tools.split_value_map_list(nfs_info, fs_map_list, split=':')
             for fs_map in fs_map_list:
-                if 'VserverName' in fs_map.keys():
+                if fs_map and 'VserverName' in fs_map.keys():
                     protocol = protocol_map.get(fs_map['VserverName'])
                     if constants.ShareProtocol.NFS in protocol:
                         fs_id = self.get_fs_id(fs_map['VserverName'],
@@ -783,7 +779,7 @@ class NetAppHandler(object):
         share_map_list = []
         Tools.split_value_map_list(share_info, share_map_list, split=':')
         for share_map in share_map_list:
-            if 'VolumeName' in share_map.keys() and \
+            if share_map and 'VolumeName' in share_map.keys() and \
                     share_map['VolumeName'] != '-':
                 protocol_str = protocol_map.get(
                     share_map['Vserver'])
@@ -878,7 +874,7 @@ class NetAppHandler(object):
             Tools.split_value_map_list(quotas_info, quota_map_list, ":")
             for quota_map in quota_map_list:
                 user_group_name = None
-                if 'VolumeName' in quota_map.keys():
+                if quota_map and 'VolumeName' in quota_map.keys():
                     quota_id = \
                         quota_map['Vserver'] + '_' + \
                         quota_map['VolumeName'] + '_' + \

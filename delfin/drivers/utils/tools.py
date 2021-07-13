@@ -73,7 +73,7 @@ class Tools(object):
         value_map = {}
         temp_key = ''
         for detail in detail_array:
-            if detail is not None and detail != '':
+            if detail:
                 string_info = detail.split(split + " ")
                 key = string_info[0].replace(' ', '')
                 value = ''
@@ -88,7 +88,7 @@ class Tools(object):
                     value_map[temp_key] += string_info[0]
                 if key == 'CorrectiveActions':
                     temp_key = ''
-            if detail == '' or detail is None:
+            else:
                 if value_map != {}:
                     map_list.append(value_map)
                 value_map = {}
