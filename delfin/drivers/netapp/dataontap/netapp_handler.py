@@ -12,7 +12,7 @@
 # WarrayANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import re
+
 import time
 import six
 import hashlib
@@ -307,7 +307,7 @@ class NetAppHandler(object):
                 occur_time = int(time.mktime(time.strptime(
                     alert_map['IndicationTime'],
                     constant.ALTER_TIME_TYPE)))
-                if query_para or \
+                if not query_para or \
                         (int(query_para['begin_time'])
                          <= occur_time
                          <= int(query_para['end_time'])):
@@ -680,7 +680,7 @@ class NetAppHandler(object):
                         qt_map['VolumeName'],
                         qt_map['QtreeName'])
                     qtree_name = qt_map['QtreeName']
-                    if qt_map['QtreeName'] and not qtree_path:
+                    if qt_map['QtreeName'] and qtree_path:
                         qtree_path += '/' + qt_map['QtreeName']
                     else:
                         qtree_name = qt_id
