@@ -25,13 +25,19 @@ ACCESS_INFO = {
     }
 }
 
-SYSTEM_INFO = """Cluster UUID: 47096983-8018-11eb-bd5b-000c293284bd\r
+SYSTEM_INFO = """
+----cluster----\r
+last login time : 12 456 789\r
+\r
+Cluster UUID: 47096983-8018-11eb-bd5b-000c293284bd\r
           Cluster Name: cl\r
  Cluster Serial Number: -\r
       Cluster Location:\r
        Cluster Contact: \r"""
 
-AGGREGATE_INFO = """\r
+AGGREGATE_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 Aggregate     Size Available Used% State   #Vols  Nodes   RAID Status\r
 --------- -------- --------- ----- ------- ------ --------------------\r
 aggr0        855MB   42.14MB   95% online       1 cl-01   raid_dp,\r
@@ -41,13 +47,22 @@ aggr1       8.79GB    3.98GB   55% online       3 cl-01   raid_dp,\r
 aggr2       8.79GB    4.98GB   43% online       3 cl-01   raid_dp,\r
                                 normal\r"""
 
-VERSION = """NetApp Release 9.0: Fri Aug 19 06:39:33 UTC 2016"""
+VERSION = """----cluster----\r
+last login time : 12 456 789\r
+\r
+NetApp Release 9.0: Fri Aug 19 06:39:33 UTC 2016\r
+"""
 
-SYSTEM_STATUS = """Status\r
+SYSTEM_STATUS = """----cluster----\r
+last login time : 12 456 789\r
+\r
+Status\r
 ---------------\r
 ok"""
 
-DISK_INFO = """
+DISK_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                      Usable           Disk    Container   Container\r
 Disk                   Size Shelf Bay Type    Type        Name      Owner\r
 ---------------- ---------- ----- --- ------- ----------- --------- -----\r
@@ -81,7 +96,8 @@ NET-1.27             1020MB     -  29 FCAL    aggregate   aggr2     cl-01\r
 NET-1.28             1020MB     -  32 FCAL    spare       Pool0     cl-01\r
 28 entries were displayed."""
 
-POOLS_INFO = """
+POOLS_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                         Storage Pool Name: Pool1\r
                      UUID of Storage Pool: 60f2f1b9-e60f-11e3\r
@@ -109,7 +125,8 @@ Job ID of the Currently Running Operation: - \r
   Reason for storage pool being unhealthy: -\r
 Job ID of the Currently Running Operation: - \r"""
 
-AGGREGATE_DETAIL_INFO = """\r
+AGGREGATE_DETAIL_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                                          Aggregate: aggr0\r
                                       Storage Type: hdd\r
@@ -344,7 +361,10 @@ Threshold When Aggregate Is Considered Balanced (%): 40\r
 3 entries were displayed.\r
 """
 
-LUN_INFO = """              Vserver Name: svm5\r
+LUN_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+              Vserver Name: svm5\r
                   LUN Path: /vol/lun_0_vol/lun_0\r
                Volume Name: lun_0_vol\r
                 Qtree Name: ""\r
@@ -378,7 +398,9 @@ Space Reservations Honored: true\r
        Inconsistent Import: false\r
        """
 
-FS_INFO = """\r
+FS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                    Vserver Name: cl-01\r
                                     Volume Name: vol0\r
                                  Aggregate Name: aggr0\r
@@ -659,7 +681,9 @@ VBN_BAD may be present in the active filesystem: false\r
                           Vserver DR Protection: -\r
 7 entries were displayed."""
 
-ALERT_INFO = """\r
+ALERT_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                   Node: node1\r
                Monitor: node-connect\r
               Alert ID: DualPathToDiskShelf_Alert\r
@@ -690,7 +714,9 @@ Additional Information: Shelf uuid: 50:05:0c:c1:02:00:0f:02\r
 Alerting Resource Name: Shelf ID 2\r
  Additional Alert Tags: quality-of-service, nondisruptive-upgrade\r"""
 
-CONTROLLER_INFO = """\r
+CONTROLLER_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                               Node: cl-01\r
                                              Owner: \r
                                           Location: \r
@@ -707,7 +733,9 @@ CONTROLLER_INFO = """\r
                                All-Flash Optimized: false\r
                                """
 
-PORTS_INFO = """\r
+PORTS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                         Node: cl-01\r
                                         Port: e0a\r
                                         Link: up\r
@@ -766,7 +794,8 @@ PORTS_INFO = """\r
                    Ignore Port Health Status: false\r
                 Port Health Degraded Reasons: -\r"""
 
-FC_PORT_INFO = """
+FC_PORT_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                           Node: cl-01\r
                        Adapter: 0a\r
@@ -954,7 +983,9 @@ FC Capabilities Of Transceiver: 10 (Gbit/sec)\r
         Is Xmit Power In Range: true\r
 5 entries were displayed.\r"""
 
-DISKS_INFO = """\r
+DISKS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                   Disk: NET-1.1\r
         Container Type: aggregate\r
             Owner/Home: cl-01 / cl-01\r
@@ -1009,7 +1040,9 @@ Errors:\r
 -\r
 """
 
-PHYSICAL_INFO = """
+PHYSICAL_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 Disk             Type    Vendor   Model                Revision     RPM  BPS\r
 ---------------- ------- -------- -------------------- -------- ------- ----\r
 NET-1.1          FCAL    NETAPP   VD-1000MB-FZ-520     0042       15000  520\r
@@ -1070,11 +1103,15 @@ NET-1.28         FCAL    NETAPP   VD-1000MB-FZ-520     0042       15000  520\r
                  SerialNumber: 07294313\r
 28 entries were displayed.\r"""
 
-ERROR_DISK_INFO = """Disk             Error Type        Error Text\r
+ERROR_DISK_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+Disk             Error Type        Error Text\r
 ---------------- ----------------- ----------------------------------\r
 NET-1.25         diskfail          ."""
 
-QTREES_INFO = """
+QTREES_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                       Vserver Name: svm1\r
                        Volume Name: svm1_root\r
@@ -1124,13 +1161,16 @@ QTREES_INFO = """
                      Export Policy: default\r
         Is Export Policy Inherited: true"""
 
-SHARE_VSERVER_INFO = """
+SHARE_VSERVER_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                Admin      Operational Root\r
 Vserver     Type    Subtype    State      State       Volume     Aggregate\r
 ----------- ------- ---------- ---------- ----------- ---------- ----------\r
 svm4.example.com      data    default    running    running  SVC_FC_ NETAPP"""
 
-SHARES_INFO = """
+SHARES_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                                       Vserver: svm4.example.com\r
                                         Share: admin$\r
@@ -1226,7 +1266,9 @@ SHARES_INFO = """
             Maximum Tree Connections on Share: 4294967295\r
                    UNIX Group for File Create: -"""
 
-SHARES_AGREEMENT_INFO = """
+SHARES_AGREEMENT_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 vserver allowed-protocols\r
 ------- -----------------\r
 svm4.example.com
@@ -1234,7 +1276,9 @@ nfs,cifs,fcp,iscsi\r
 7 entries were displayed.\r
 """
 
-THIN_FS_INFO = """
+THIN_FS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 Vserver Volume Aggregate State Type Size Available Used%\r
 --------- ------------ ------------ ---------- ---- -\r
 svm1 vol_svm1_2 aggr1 online RW 2GB 2.00GB 0%\r"""
@@ -1247,7 +1291,9 @@ TRAP_MAP = {
 }
 
 
-QUOTAS_INFO = """\r
+QUOTAS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                  Vserver: svm5\r
              Policy Name: default\r
              Volume Name: svm5_vol1\r
@@ -1314,7 +1360,9 @@ Threshold for Disk Limit: 4.88MB\r
         Soft Files Limit: 1000\r
 5 entries were displayed."""
 
-NFS_SHARE_INFO = """\r
+NFS_SHARE_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                    Vserver Name: svm4.example.com\r
                                     Volume Name: svm4examplecom_root\r
                                  Aggregate Name: aggr1\r
@@ -1502,10 +1550,16 @@ VBN_BAD may be present in the active filesystem: false\r
                           Vserver DR Protection: -\r
 8 entries were displayed.\r"""
 
-NODE_IPS_INFO = """vserver lif         address\r
+NODE_IPS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+vserver lif         address\r
 ------- ----------- ---------------\r
 cl      cl-01_mgmt1 192.168.159.130"""
 
-CLUSTER_IPS_INFO = """vserver lif         address\r
+CLUSTER_IPS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+vserver lif         address\r
 ------- ------------ ---------------\r
 cl      cluster_mgmt 192.168.159.131"""
