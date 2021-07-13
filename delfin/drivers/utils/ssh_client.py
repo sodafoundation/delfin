@@ -147,7 +147,10 @@ class SSHPool(pools.Pool):
         self.conn_timeout = self.SOCKET_TIMEOUT
         if self.ssh_conn_timeout is None:
             self.ssh_conn_timeout = SSHPool.SOCKET_TIMEOUT
-        super(SSHPool, self).__init__(min_size=0, max_size=3)
+        ssh_max_size = kwargs.get('ssh_max_size')
+        if ssh_max_size is None:
+            ssh_max_size = 3
+        super(SSHPool, self).__init__(min_size=0, max_size=ssh_max_size)
 
     def set_host_key(self, host_key, ssh):
         """
