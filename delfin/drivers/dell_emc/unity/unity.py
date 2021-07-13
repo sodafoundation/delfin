@@ -556,7 +556,8 @@ class UnityStorDriver(driver.StorageDriver):
                 "native_qtree_id": content.get('treeQuota', {}).get('id'),
                 "capacity_hard_limit": content.get('hardLimit'),
                 "capacity_soft_limit": content.get('softLimit'),
-                "used_capacity": int(content.get('sizeUsed'))
+                "used_capacity": int(content.get('sizeUsed')),
+                "user_group_name": str(content.get('uid'))
             }
             quotas_list.append(qt)
         return quotas_list

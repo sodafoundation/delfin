@@ -1260,6 +1260,7 @@ GET_ALL_USERQUOTA = {
                 "softLimit": 1110,
                 "sizeUsed": 20000000,
                 "path": "/",
+                "uid": 1111,
                 "filesystem": {
                     "id": "filesystem_1"
                 },
@@ -1275,6 +1276,7 @@ GET_ALL_USERQUOTA = {
                 "softLimit": 1110,
                 "sizeUsed": 20000000,
                 "path": "/",
+                "uid": 22222,
                 "filesystem": {
                     "id": "filesystem_1"
                 }
@@ -1300,7 +1302,8 @@ quota_result = [
         'native_qtree_id': 'qtree_1',
         'capacity_hard_limit': 1000,
         'capacity_soft_limit': 1110,
-        'used_capacity': 20000000
+        'used_capacity': 20000000,
+        'user_group_name': '1111'
     }, {
         'native_quota_id': 'user_2',
         'type': 'user',
@@ -1309,7 +1312,8 @@ quota_result = [
         'native_qtree_id': None,
         'capacity_hard_limit': 1000,
         'capacity_soft_limit': 1110,
-        'used_capacity': 20000000
+        'used_capacity': 20000000,
+        'user_group_name': '22222'
     }
 ]
 
