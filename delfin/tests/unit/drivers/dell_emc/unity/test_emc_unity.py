@@ -1260,7 +1260,7 @@ GET_ALL_USERQUOTA = {
                 "softLimit": 1110,
                 "sizeUsed": 20000000,
                 "path": "/",
-                "uid": 11111,
+                "uid": 1111,
                 "filesystem": {
                     "id": "filesystem_1"
                 },
@@ -1303,7 +1303,7 @@ quota_result = [
         'capacity_hard_limit': 1000,
         'capacity_soft_limit': 1110,
         'used_capacity': 20000000,
-        'user_group_name': '11111'
+        'user_group_name': '1111'
     }, {
         'native_quota_id': 'user_2',
         'type': 'user',
