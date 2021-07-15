@@ -92,7 +92,6 @@ class Tools(object):
                 if value_map != {}:
                     map_list.append(value_map)
                 value_map = {}
-                continue
         if value_map != {}:
             map_list.append(value_map)
         return map_list

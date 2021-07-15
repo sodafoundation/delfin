@@ -56,7 +56,7 @@ SHARE_AGREEMENT_SHOW_COMMAND = "vserver show -fields Allowed-protocols"
 VSERVER_SHOW_COMMAND = "vserver show -type data"
 NFS_SHARE_SHOW_COMMAND = "volume show -junction-active true -instance"
 
-STORAGE_VENDOR = "netapp"
+STORAGE_VENDOR = "NetApp"
 STORAGE_MODEL = "cmodel"
 
 QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"

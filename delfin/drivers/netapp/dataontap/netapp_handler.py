@@ -682,6 +682,7 @@ class NetAppHandler(object):
                     qtree_name = qt_map['QtreeName']
                     if qt_map['QtreeName'] and qtree_path:
                         qtree_path += '/' + qt_map['QtreeName']
+                        qtree_path = qtree_path.replace('//', '/')
                     else:
                         qtree_name = qt_id
                     qt_model = {
