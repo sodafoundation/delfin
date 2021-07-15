@@ -54,6 +54,7 @@ class SSHHandler(object):
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
 
     def __init__(self, **kwargs):
+        kwargs["ssh_max_size"] = 1
         self.ssh_pool = SSHPool(**kwargs)
 
     @staticmethod
