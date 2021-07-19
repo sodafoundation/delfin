@@ -48,20 +48,20 @@ class StorageDriver(object):
         """List all storage volumes from storage system."""
         pass
 
-    @abc.abstractmethod
     def list_controllers(self, context):
         """List all storage controllers from storage system."""
-        pass
+        raise NotImplementedError(
+            "Driver API list_controllers() is not Implemented")
 
-    @abc.abstractmethod
     def list_ports(self, context):
         """List all ports from storage system."""
-        pass
+        raise NotImplementedError(
+            "Driver API list_ports() is not Implemented")
 
-    @abc.abstractmethod
     def list_disks(self, context):
         """List all disks from storage system."""
-        pass
+        raise NotImplementedError(
+            "Driver API list_disks() is not Implemented")
 
     @abc.abstractmethod
     def add_trap_config(self, context, trap_config):
