@@ -222,10 +222,14 @@ class SSHPool(pools.Pool):
                     return conn
                 else:
                     conn.close()
-            return self.create()
+                    self.current_size -= 1
         if self.current_size < self.max_size:
-            created = self.create()
-            self.current_size += 1
+            try:
+                created = self.create()
+                self.current_size += 1
+            except Exception as e:
+                err = six.text_type(e)
+                raise exception.SSHException(err)
             return created
         return self.channel.get()
 
