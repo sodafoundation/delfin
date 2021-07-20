@@ -52,10 +52,8 @@ class SSHHandler(object):
 
     SECONDS_TO_MS = 1000
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
-    MAX_POOL_SIZE = 1
 
     def __init__(self, **kwargs):
-        kwargs["ssh_max_size"] = self.MAX_POOL_SIZE
         self.ssh_pool = SSHPool(**kwargs)
 
     @staticmethod
