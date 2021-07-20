@@ -45,7 +45,6 @@ class NetAppHandler(object):
         for i in range(0, len(table)):
             if constant.PATTERN.search(table[i]):
                 header_index = i
-                break
         return table[(header_index + 1):]
 
     @staticmethod
