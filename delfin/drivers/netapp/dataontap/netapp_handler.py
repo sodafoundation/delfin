@@ -45,6 +45,7 @@ class NetAppHandler(object):
         for i in range(0, len(table)):
             if constant.PATTERN.search(table[i]):
                 header_index = i
+                break
         return table[(header_index + 1):]
 
     @staticmethod
@@ -141,9 +142,8 @@ class NetAppHandler(object):
             Tools.split_value_map_list(
                 system_info, storage_map_list, split=':')
             if len(storage_map_list) > 0:
-                storage_map = storage_map_list[len(storage_map_list) - 1]
-                controller_map = \
-                    controller_map_list[len(controller_map_list) - 1]
+                storage_map = storage_map_list[-1]
+                controller_map = controller_map_list[1]
                 for disk in disk_list:
                     raw_capacity += disk['capacity']
                 for pool in pool_list:
