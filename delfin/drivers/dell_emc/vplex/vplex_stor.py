@@ -394,10 +394,6 @@ class VplexStorageDriver(driver.StorageDriver):
             port_list.append(port)
         return port_list
 
-    def list_disks(self, context):
-        """List all disks from storage system."""
-        pass
-
     @staticmethod
     def get_context_list(response):
         context_list = []

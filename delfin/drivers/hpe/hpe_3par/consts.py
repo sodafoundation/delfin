@@ -658,8 +658,8 @@ IPV4_PATTERN = "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
 CONTROLLER_STATUS_MAP = {
     'OK': constants.ControllerStatus.NORMAL,
     'NORMAL': constants.ControllerStatus.NORMAL,
-    'DEGRADED': constants.ControllerStatus.OFFLINE,
-    'FAILED': constants.ControllerStatus.OFFLINE
+    'DEGRADED': constants.ControllerStatus.DEGRADED,
+    'FAILED': constants.ControllerStatus.FAULT
 }
 DISK_PHYSICAL_TYPE_MAP = {
     'FC': constants.DiskPhysicalType.FC,

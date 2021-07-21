@@ -52,9 +52,7 @@ class ComponentHandler():
         self.storage_id = storage_id
 
     def get_storage(self, context):
-        # get storage info
         storage = self.rest_handler.get_storage()
-        # default state is offline
         status = constants.StorageStatus.NORMAL
 
         if storage:
@@ -90,7 +88,7 @@ class ComponentHandler():
             # may be a problem with the network or the device.
             # Default return OFFLINE
             result = {
-                'status': status
+                'status': constants.StorageStatus.OFFLINE
             }
         return result
 
