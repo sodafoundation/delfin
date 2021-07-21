@@ -1181,7 +1181,7 @@ share_result = [
         'native_share_id': 'SMBShare_2',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
-        'path': '/',
+        'path': '/fs1/',
         'protocol': 'cifs'
     }, {
         'name': 'boga',
@@ -1189,7 +1189,7 @@ share_result = [
         'native_share_id': 'SMBShare_14',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
-        'path': '/',
+        'path': '/fs_boga/',
         'protocol': 'cifs'
     }, {
         'name': 'fs2',
@@ -1197,7 +1197,7 @@ share_result = [
         'native_share_id': 'SMBShare_18',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
-        'path': '/',
+        'path': '/fs2/',
         'protocol': 'cifs'
     }, {
         'name': 'fs1',
@@ -1205,7 +1205,7 @@ share_result = [
         'native_share_id': 'NFSShare_2',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
-        'path': '/',
+        'path': '/fs1/',
         'protocol': 'nfs'
     }, {
         'name': 'boga',
@@ -1213,7 +1213,7 @@ share_result = [
         'native_share_id': 'NFSShare_14',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
-        'path': '/',
+        'path': '/fs_boga/',
         'protocol': 'nfs'
     }, {
         'name': 'fs2',
@@ -1221,7 +1221,7 @@ share_result = [
         'native_share_id': 'NFSShare_18',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
-        'path': '/',
+        'path': '/fs2/',
         'protocol': 'nfs'
     }, {
         'name': 'FS_MULTI1',
@@ -1229,7 +1229,7 @@ share_result = [
         'native_share_id': 'NFSShare_19',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_22',
-        'path': '/',
+        'path': '/FS_MULTI1/',
         'protocol': 'nfs'
     }
 ]
@@ -1260,6 +1260,7 @@ GET_ALL_USERQUOTA = {
                 "softLimit": 1110,
                 "sizeUsed": 20000000,
                 "path": "/",
+                "uid": 1111,
                 "filesystem": {
                     "id": "filesystem_1"
                 },
@@ -1275,6 +1276,7 @@ GET_ALL_USERQUOTA = {
                 "softLimit": 1110,
                 "sizeUsed": 20000000,
                 "path": "/",
+                "uid": 22222,
                 "filesystem": {
                     "id": "filesystem_1"
                 }
@@ -1300,7 +1302,8 @@ quota_result = [
         'native_qtree_id': 'qtree_1',
         'capacity_hard_limit': 1000,
         'capacity_soft_limit': 1110,
-        'used_capacity': 20000000
+        'used_capacity': 20000000,
+        'user_group_name': '1111'
     }, {
         'native_quota_id': 'user_2',
         'type': 'user',
@@ -1309,7 +1312,8 @@ quota_result = [
         'native_qtree_id': None,
         'capacity_hard_limit': 1000,
         'capacity_soft_limit': 1110,
-        'used_capacity': 20000000
+        'used_capacity': 20000000,
+        'user_group_name': '22222'
     }
 ]
 
@@ -1441,11 +1445,13 @@ class TestUNITYStorDriver(TestCase):
     @mock.patch.object(RestHandler, 'get_all_nfsshares')
     @mock.patch.object(RestHandler, 'get_all_cifsshares')
     @mock.patch.object(RestHandler, 'get_all_qtrees')
-    def test_list_shares(self, mock_qtree, mock_cifs, mock_nfs):
+    @mock.patch.object(RestHandler, 'get_all_filesystems')
+    def test_list_shares(self, mock_file, mock_qtree, mock_cifs, mock_nfs):
         RestHandler.login = mock.Mock(return_value=None)
         mock_cifs.return_value = GET_ALL_CIFSSHARE
         mock_qtree.return_value = GET_ALL_QTREE
         mock_nfs.return_value = GET_ALL_NFSSHARE
+        mock_file.return_value = GET_ALL_FILESYSTEMS
         share = UnityStorDriver(**ACCESS_INFO).list_shares(context)
         self.assertEqual(share, share_result)
 
