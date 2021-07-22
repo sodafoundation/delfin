@@ -12,24 +12,23 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import re
+
 from delfin.common import constants
 
+PATTERN = re.compile('^[-]{3,}')
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
 STORAGE_STATUS_COMMAND = "system health status show"
 
 POOLS_SHOW_DETAIL_COMMAND = "storage pool show -instance"
 AGGREGATE_SHOW_DETAIL_COMMAND = "storage aggregate show -instance"
-POOLS_SPLIT_STR = "   Storage Pool N"
-AGGREGATE_SPLIT_STR = "                                       Aggregat"
 
 FS_SHOW_DETAIL_COMMAND = "vol show -instance"
-FS_SPLIT_STR = "                                   Vserver"
 THIN_FS_SHOW_COMMAND = "vol show -space-guarantee none"
 
 ALTER_SHOW_DETAIL_COMMAND = "system health alert show -instance"
 EVENT_SHOW_DETAIL_COMMAND = "event show -instance -severity EMERGENCY"
-ALTER_SPLIT_STR = " Node"
 EVENT_TIME_TYPE = '%m/%d/%Y %H:%M:%S'
 
 ALTER_TIME_TYPE = '%a %b %d %H:%M:%S %Y'
@@ -39,45 +38,31 @@ CLEAR_ALERT_COMMAND = \
 
 DISK_SHOW_DETAIL_COMMAND = "disk show -instance"
 DISK_SHOW_PHYSICAL_COMMAND = "disk show -physical"
-DISK_SPLIT_STR = "     Dis"
 DISK_ERROR_COMMAND = "disk error show"
 
 LUN_SHOW_DETAIL_COMMAND = "lun show -instance"
-LUN_SPLIT_STR = "  Vserver"
 
 CONTROLLER_SHOW_DETAIL_COMMAND = "node show -instance"
-CONTROLLER_SPLIT_STR = "  Nod"
 
-PORT_SHOW_DETAIL_COMMAND = "port show -instance"
+PORT_SHOW_DETAIL_COMMAND = "network port show -instance"
 INTERFACE_SHOW_DETAIL_COMMAND = "network interface show -instance"
 FC_PORT_SHOW_DETAIL_COMMAND = "fcp adapter show -instance"
-PORT_SPLIT_STR = "   Nod"
-INTERFACE_SPLIT_STR = " Vserver "
 
 QTREE_SHOW_DETAIL_COMMAND = "qtree show -instance"
-QTREE_SPLIT_STR = " Vserver "
 
 CIFS_SHARE_SHOW_DETAIL_COMMAND = "vserver cifs share show -instance" \
                                  " -vserver %(vserver_name)s"
-CIFS_SHARE_SPLIT_STR = "  Vserve"
 SHARE_AGREEMENT_SHOW_COMMAND = "vserver show -fields Allowed-protocols"
 VSERVER_SHOW_COMMAND = "vserver show -type data"
 NFS_SHARE_SHOW_COMMAND = "volume show -junction-active true -instance"
 
-STORAGE_VENDOR = "netapp"
+STORAGE_VENDOR = "NetApp"
 STORAGE_MODEL = "cmodel"
 
 QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
-QUOTA_SPLIT_STR = "    Vserve"
 
 MGT_IP_COMMAND = "network interface show -fields address -role cluster-mgmt"
 NODE_IP_COMMAND = "network interface show -fields address -role node-mgmt"
-
-AGGREGATE_NAME = "e"
-POOL_NAME = "ame"
-DISK_NAME = "k"
-CONTROLLER_NAME = "e"
-VSERVER_NAME = "r"
 
 SECURITY_STYLE = {
     'mixed': constants.NASSecurityMode.MIXED,
@@ -89,7 +74,8 @@ STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
     'ok-with-suppressed': constants.StorageStatus.NORMAL,
     'degraded': constants.StorageStatus.ABNORMAL,
-    'unreachable': constants.StorageStatus.ABNORMAL
+    'unreachable': constants.StorageStatus.ABNORMAL,
+    'unknown': constants.StorageStatus.ABNORMAL
 }
 
 AGGREGATE_STATUS = {
