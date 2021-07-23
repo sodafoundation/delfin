@@ -240,11 +240,12 @@ class SSHPool(pools.Pool):
             return
         super(SSHPool, self).put(conn)
 
-    def do_exec(self, command_str):
+    def do_exec(self, command_str, is_check=True):
         result = ''
         try:
             with self.item() as ssh:
-                utils.check_ssh_injection(command_str)
+                if is_check:
+                    utils.check_ssh_injection(command_str.split())
                 if command_str is not None and ssh is not None:
                     stdin, stdout, stderr = ssh.exec_command(command_str)
                     res, err = stdout.read(), stderr.read()
