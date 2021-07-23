@@ -195,7 +195,7 @@ class SSHPool(pools.Pool):
             return ssh
         except Exception as e:
             err = six.text_type(e)
-            LOG.error('doexec InvalidUsernameOrPassword error')
+            LOG.error(err)
             if 'timed out' in err:
                 raise exception.InvalidIpOrPort()
             elif 'No authentication methods available' in err \
@@ -264,10 +264,11 @@ class SSHPool(pools.Pool):
             raise exception.InvalidUsernameOrPassword()
         except Exception as e:
             err = six.text_type(e)
-            LOG.error('doexec InvalidUsernameOrPassword error')
+            LOG.error(err)
             if 'timed out' in err \
-                    or 'SSH connect timeout' in err:
-                raise exception.SSHConnectTimeout()
+                    or 'SSH connect timeout' in err\
+                    or 'Unable to connect to port' in err:
+                raise exception.ConnectTimeout()
             elif 'No authentication methods available' in err \
                     or 'Authentication failed' in err \
                     or 'Invalid username or password' in err:
@@ -277,4 +278,7 @@ class SSHPool(pools.Pool):
                 raise exception.InvalidPrivateKey()
             else:
                 raise exception.SSHException(err)
+        if 'invalid command name' in result or 'login failed' in result or\
+                'is not a recognized command' in result:
+            raise exception.StorageBackendException(result)
         return result
