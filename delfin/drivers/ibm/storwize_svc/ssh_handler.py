@@ -122,7 +122,7 @@ class SSHHandler(object):
     def do_exec(command_str, ssh):
         """Execute command"""
         try:
-            utils.check_ssh_injection(command_str)
+            utils.check_ssh_injection(command_str.split())
             if command_str is not None and ssh is not None:
                 stdin, stdout, stderr = ssh.exec_command(command_str)
                 res, err = stdout.read(), stderr.read()
