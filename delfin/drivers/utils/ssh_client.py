@@ -243,14 +243,15 @@ class SSHPool(pools.Pool):
     def do_exec(self, command_str, is_check=True):
         result = ''
         try:
-            with self.item() as ssh:
+            if command_str:
                 if is_check:
                     utils.check_ssh_injection(command_str.split())
-                if command_str is not None and ssh is not None:
-                    stdin, stdout, stderr = ssh.exec_command(command_str)
-                    res, err = stdout.read(), stderr.read()
-                    re = res if res else err
-                    result = re.decode()
+                with self.item() as ssh:
+                    if ssh:
+                        stdin, stdout, stderr = ssh.exec_command(command_str)
+                        res, err = stdout.read(), stderr.read()
+                        re = res if res else err
+                        result = re.decode()
         except paramiko.AuthenticationException as ae:
             LOG.error('doexec Authentication error:{}'.format(ae))
             raise exception.InvalidUsernameOrPassword()
