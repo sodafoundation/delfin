@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
 from oslo_log import log
 
-from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.vmax import client
@@ -137,20 +135,13 @@ class VMAXStorageDriver(driver.StorageDriver):
             if resource_metrics.get(constants.ResourceType.PORT):
                 port_metrics = self.client.get_port_metrics(
                     storage_id,
-                    resource_metrics.get(constants.ResourceType.PORT))
+                    resource_metrics.get(constants.ResourceType.PORT),
+                    start_time, end_time)
                 metrics.extend(port_metrics)
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to collect metrics from VMAX: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to collect metrics from VMAX: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to collect metrics from VMAX")
+            raise
 
         return metrics
 
@@ -158,7 +149,7 @@ class VMAXStorageDriver(driver.StorageDriver):
     def get_capabilities(context):
         """Get capability of supported driver"""
         return {
-            'is_historic': False,
+            'is_historic': True,
             'resource_metrics': {
                 constants.ResourceType.STORAGE: consts.STORAGE_CAP,
                 constants.ResourceType.STORAGE_POOL: consts.POOL_CAP,

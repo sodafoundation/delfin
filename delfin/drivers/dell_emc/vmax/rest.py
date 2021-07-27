@@ -28,10 +28,12 @@ from delfin import cryptor
 from delfin import exception
 from delfin import ssl_utils
 from delfin.common import alert_util
-from delfin.drivers.dell_emc.vmax import perf_utils, constants
+from delfin.common import constants as delfin_const
+from delfin.drivers.dell_emc.vmax import constants
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
+PERFORMANCE = 'performance'
 SLOPROVISIONING = 'sloprovisioning'
 SYSTEM = 'system'
 SYMMETRIX = 'symmetrix'
@@ -115,7 +117,6 @@ class VMaxRest(object):
         :raises: StorageBackendException, Timeout, ConnectionError,
                  HTTPError, SSLError
         """
-
         url, message, status_code, response = None, None, None, None
         if not self.session:
             self.establish_rest_session()
@@ -200,7 +201,7 @@ class VMaxRest(object):
             exception_message = (
                 _("Error %(operation)s. The status code received is %(sc)s "
                   "and the message is %(message)s.") % {
-                    'operation': operation, 'sc': status_code,
+                    'operation': operation, 'sc': str(status_code),
                     'message': message})
             raise exception.StorageBackendException(
                 message=exception_message)
@@ -707,13 +708,28 @@ class VMaxRest(object):
         :param payload: the payload
         :returns: status_code -- int, message -- string, server response
         """
-
         status_code, message = self.request(target_uri, POST,
                                             request_object=payload)
-        operation = 'POST request for URL' % {target_uri}
+        resource_object = None
+        if status_code == STATUS_200:
+            resource_object = message
+            resource_object = self.list_pagination(resource_object)
+        operation = 'POST request for URL'
         self.check_status_code_success(
-            operation, status_code, message)
-        return status_code, message
+            operation, status_code, resource_object)
+
+        return status_code, resource_object
+
+    def get_array_keys(self, array):
+        target_uri = '/performance/Array/keys'
+
+        response = self.get_request(target_uri, PERFORMANCE, None)
+        if response is None:
+            err_msg = "Failed to get Array keys from VMAX: {0}"\
+                .format(str(array))
+            LOG.error(err_msg)
+
+        return response
 
     def get_resource_keys(self, array, resource, payload=None):
         if payload is None:
@@ -721,13 +737,12 @@ class VMaxRest(object):
 
         payload['symmetrixId'] = str(array)
         target_uri = '/performance/{0}/keys'.format(resource)
-
-        status_code, response = self.post_request(target_uri, payload)
-        if status_code != STATUS_200:
-            err_msg = "Failed to get {0} keys from VMAX: {1}"\
-                .format(resource, str(array))
+        sc, response = self.post_request(target_uri, payload)
+        if response is None:
+            err_msg = "Failed to get {0} keys from VMAX: {1} status: {2}"\
+                .format(resource, str(array), sc)
             LOG.error(err_msg)
-            return None
+
         return response
 
     def get_resource_metrics(self, array, start_time,
@@ -765,7 +780,7 @@ class VMaxRest(object):
             if vmax_key:
                 storage_metrics.append(vmax_key)
 
-        keys = self.get_resource_keys(array, 'Array')
+        keys = self.get_array_keys(array)
         keys_dict = None
         if keys:
             keys_dict = keys.get('arrayInfo', None)
@@ -777,7 +792,13 @@ class VMaxRest(object):
                     array, start_time, end_time, 'Array',
                     storage_metrics, payload=None)
                 if metrics_res:
-                    metrics_list.append(metrics_res)
+                    label = {
+                        'resource_id': key_dict.get('symmetrixId'),
+                        'resource_name': 'VMAX' + key_dict.get('symmetrixId'),
+                        'resource_type': delfin_const.ResourceType.STORAGE,
+                        'metrics': metrics_res
+                    }
+                    metrics_list.append(label)
 
         return metrics_list
 
@@ -802,12 +823,18 @@ class VMaxRest(object):
 
         metrics_list = []
         for key_dict in keys_dict:
-            payload = {'srpId': key_dict.get('srpInfo')}
+            payload = {'srpId': key_dict.get('srpId')}
             metrics_res = self.get_resource_metrics(
                 array, start_time, end_time, 'SRP',
                 pool_metrics, payload=payload)
             if metrics_res:
-                metrics_list.append(metrics_res)
+                label = {
+                    'resource_id': key_dict.get('srpId'),
+                    'resource_name': key_dict.get('srpId'),
+                    'resource_type': delfin_const.ResourceType.STORAGE_POOL,
+                    'metrics': metrics_res
+                }
+                metrics_list.append(label)
 
         return metrics_list
 
@@ -841,6 +868,7 @@ class VMaxRest(object):
                     'resource_id': key_dict.get('directorId'),
                     'resource_name': 'FEDirector_' +
                                      key_dict.get('directorId'),
+                    'resource_type': delfin_const.ResourceType.CONTROLLER,
                     'metrics': metrics_res
                 }
                 metrics_list.append(label)
@@ -877,6 +905,7 @@ class VMaxRest(object):
                     'resource_id': key_dict.get('directorId'),
                     'resource_name': 'BEDirector_' +
                                      key_dict.get('directorId'),
+                    'resource_type': delfin_const.ResourceType.CONTROLLER,
                     'metrics': metrics_res
                 }
                 metrics_list.append(label)
@@ -913,6 +942,7 @@ class VMaxRest(object):
                     'resource_id': key_dict.get('directorId'),
                     'resource_name': 'RDFDirector_' +
                                      key_dict.get('directorId'),
+                    'resource_type': delfin_const.ResourceType.CONTROLLER,
                     'metrics': metrics_res
                 }
                 metrics_list.append(label)
@@ -927,18 +957,14 @@ class VMaxRest(object):
         :param end_time: end time for collection
         :returns: message -- response from unipshere REST API
          """
-        metrics_list = []
         be_metrics = self.get_bedirector_metrics(
-            array, start_time, end_time, metrics)
+            array, metrics, start_time, end_time)
         fe_metrics = self.get_fedirector_metrics(
-            array, start_time, end_time, metrics)
+            array, metrics, start_time, end_time)
         rdf_metrics = self.get_rdfdirector_metrics(
-            array, start_time, end_time, metrics)
-        metrics_list.extend(be_metrics)
-        metrics_list.extend(fe_metrics)
-        metrics_list.extend(rdf_metrics)
+            array, metrics, start_time, end_time)
 
-        return metrics_list
+        return be_metrics, fe_metrics, rdf_metrics
 
     def get_feport_metrics(self, array, metrics, start_time, end_time):
         """Get a array performance metrics from VMAX unipshere REST API.
@@ -978,6 +1004,7 @@ class VMaxRest(object):
                         'resource_name': 'FEPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
+                        'resource_type': delfin_const.ResourceType.PORT,
                         'metrics': metrics_res
                     }
                     metrics_list.append(label)
@@ -992,6 +1019,7 @@ class VMaxRest(object):
         :param end_time: end time for collection
         :returns: message -- response from unipshere REST API
          """
+
         beport_metrics = []
         for k in metrics.keys():
             vmax_key = constants.BEPORT_METRICS.get(k)
@@ -1022,6 +1050,7 @@ class VMaxRest(object):
                         'resource_name': 'BEPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
+                        'resource_type': delfin_const.ResourceType.PORT,
                         'metrics': metrics_res
                     }
                     metrics_list.append(label)
@@ -1066,6 +1095,7 @@ class VMaxRest(object):
                         'resource_name': 'BEPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
+                        'resource_type': delfin_const.ResourceType.PORT,
                         'metrics': metrics_res
                     }
                     metrics_list.append(label)
@@ -1081,36 +1111,13 @@ class VMaxRest(object):
         :returns: message -- response from unipshere REST API
          """
 
-        metrics_list = []
         be_metrics = self.get_beport_metrics(
-            array, start_time, end_time, metrics)
+            array, metrics, start_time, end_time)
         fe_metrics = self.get_feport_metrics(
-            array, start_time, end_time, metrics)
+            array, metrics, start_time, end_time)
         rdf_metrics = self.get_rdfport_metrics(
-            array, start_time, end_time, metrics)
-        metrics_list.extend(be_metrics)
-        metrics_list.extend(fe_metrics)
-        metrics_list.extend(rdf_metrics)
-
-        return metrics_list
-
-    def get_array_metrics(self, array, start_time, end_time):
-        """Get a array performance metrics from VMAX unipshere REST API.
-        :param array: the array serial number
-        :param start_time: start time for collection
-        :param end_time: end time for collection
-        :returns: message -- response from unipshere REST API
-         """
-
-        target_uri = constants.VMAX_REST_TARGET_URI_ARRAY_PERF
-        payload = perf_utils.generate_performance_payload(
-            array, start_time, end_time, constants.ARRAY_METRICS)
-
-        status_code, message = self.post_request(target_uri, payload)
-        # Expected 200 when POST request has metrics in response body
-        if status_code != STATUS_200:
-            raise exception.StoragePerformanceCollectionFailed(message)
-        return message
+            array, metrics, start_time, end_time)
+        return be_metrics, fe_metrics, rdf_metrics
 
     def list_pagination(self, list_info):
         """Process lists under or over the maxPageSize

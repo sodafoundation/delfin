@@ -12,109 +12,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
-
-from collections import Counter
-
-from delfin.drivers.dell_emc.vmax import constants
+from delfin.common import constants
 
 
-def epoch_time_ms_now():
-    """Get current time in epoch ms.
-    :returns: epoch time in milli seconds
-     """
-    ms = int(time.time() * 1000)
-    return ms
-
-
-def epoch_time_interval_ago(interval_seconds=constants.VMAX_PERF_MIN_INTERVAL):
-    """Get epoch time in milliseconds  before an interval
-    :param interval_seconds: interval in seconds
-    :returns: epoch time in milliseconds
-    """
-    return int(epoch_time_ms_now() - (interval_seconds * 1000))
-
-
-def generate_performance_payload(array, start_time, end_time, metrics):
-    """Generate request payload for VMAX performance POST request
-    :param array: symmetrixID
-    :param start_time: start time for collection
-    :param end_time: end time for collection
-    :param metrics: metrics to be collected
-    :returns: payload dictionary
-    """
-    return {'symmetrixId': str(array),
-            "endDate": end_time,
-            "startDate": start_time,
-            "metrics": metrics,
-            "dataFormat": "Average"}
-
-
-def parse_performance_data(response):
+def parse_performance_data(metrics):
     """Parse metrics response to a map
-    :param response: response from unispshere REST API
+    :param metrics: metrics from unispshere REST API
     :returns: map with key as metric name and value as dictionary
         containing {timestamp: value} for a the timestamps available
     """
     metrics_map = {}
-    for metrics in response["resultList"]["result"]:
-        timestamp = metrics["timestamp"]
-        for key, value in metrics.items():
-            metrics_map[key] = metrics_map.get(key, {})
-            metrics_map[key][timestamp] = value
+    timestamp = metrics["timestamp"]
+    for key, value in metrics.items():
+        metrics_map[key] = metrics_map.get(key, {})
+        metrics_map[key][timestamp] = value
     return metrics_map
 
 
-def construct_metrics(metrics_map, storage_id, perf):
+def construct_metrics(storage_id, resource_metrics, unit_map, perf_list):
     metrics_list = []
-    for key in constants.VMAX_METRICS:
-        delfin_metrics = metrics_map.get(key)
-        if not delfin_metrics:
-            continue
-        labels = {
-            'storage_id': storage_id,
-            'resource_type': 'controller',
-            'resource_id': perf.get('resource_id'),
-            'resource_name': perf.get('resource_name'),
-            'type': 'RAW',
-            'unit': constants.CONTROLLER_CAP[key]['unit']
-        }
-        delfin_metrics = metrics_map[key]
-        metrics = constants.metric_struct(name=key, labels=labels,
-                                          values=delfin_metrics)
-        metrics_list.append(metrics)
+    metrics_values = {}
+    for perf in perf_list:
+        collected_metrics_list = perf.get('metrics')
+        for collected_metrics in collected_metrics_list:
+            metrics_map = parse_performance_data(collected_metrics)
+
+            for key, value in resource_metrics.items():
+                metrics_map_value = metrics_map.get(value)
+                if metrics_map_value:
+                    metrics_values[key] = metrics_values.get(key, {})
+                    for k, v in metrics_map_value.items():
+                        metrics_values[key][k] = v
+
+        for resource_key, resource_value in metrics_values.items():
+            labels = {
+                'storage_id': storage_id,
+                'resource_type': perf.get('resource_type'),
+                'resource_id': perf.get('resource_id'),
+                'resource_name': perf.get('resource_name'),
+                'type': 'RAW',
+                'unit': unit_map[resource_key]['unit']
+            }
+            metrics_res = constants.metric_struct(name=resource_key,
+                                                  labels=labels,
+                                                  values=resource_value)
+            metrics_list.append(metrics_res)
     return metrics_list
-
-
-def map_array_perf_metrics_to_delfin_metrics(metrics_value_map):
-    """map vmax array performance metrics values  to delfin metrics values
-        :param metrics_value_map: metric to values map of vmax metrics
-        :returns: map with key as delfin metric name and value as dictionary
-            containing {timestamp: value} for a the timestamps available
-        """
-    # read and write response_time
-    read_response_values_dict = metrics_value_map.get('ReadResponseTime')
-    write_response_values_dict = metrics_value_map.get('WriteResponseTime')
-    if read_response_values_dict or write_response_values_dict:
-        response_time_values_dict = \
-            Counter(read_response_values_dict) + \
-            Counter(write_response_values_dict)
-    # bandwidth metrics
-    read_bandwidth_values_dict = metrics_value_map.get('HostMBReads')
-    write_bandwidth_values_dict = metrics_value_map.get('HostMBWritten')
-    if read_bandwidth_values_dict or write_bandwidth_values_dict:
-        bandwidth_values_dict = \
-            Counter(read_bandwidth_values_dict) +\
-            Counter(write_bandwidth_values_dict)
-    throughput_values_dict = metrics_value_map.get('HostIOs')
-    read_throughput_values_dict = metrics_value_map.get('HostReads')
-    write_throughput_values_dict = metrics_value_map.get('HostWrites')
-    # map values to delfin metrics spec
-    delfin_metrics = {'responseTime': response_time_values_dict,
-                      'readThroughput': read_bandwidth_values_dict,
-                      'writeThroughput': write_bandwidth_values_dict,
-                      'requests': throughput_values_dict,
-                      'readRequests': read_throughput_values_dict,
-                      'writeRequests': write_throughput_values_dict,
-                      'throughput': bandwidth_values_dict}
-    return delfin_metrics

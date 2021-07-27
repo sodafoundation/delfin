@@ -17,26 +17,6 @@
 # minimum interval supported by VMAX
 VMAX_PERF_MIN_INTERVAL = 5
 
-ARRAY_METRICS = ["HostIOs",
-                 "HostMBWritten",
-                 "ReadResponseTime",
-                 "HostMBReads",
-                 "HostReads",
-                 "HostWrites",
-                 "WriteResponseTime"
-                 ]
-VMAX_REST_TARGET_URI_ARRAY_PERF = '/performance/Array/metrics'
-
-VMAX_METRICS = [
-    'iops',
-    'readIops',
-    'writeIops',
-    'throughput',
-    'readThroughput',
-    'writeThroughput',
-    'responseTime'
-]
-
 BEDIRECTOR_METRICS = {
     'iops': 'IOs',
     'throughput': 'MBs',
