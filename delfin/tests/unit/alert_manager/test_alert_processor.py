@@ -27,6 +27,7 @@ class AlertProcessorTestCase(unittest.TestCase):
     ALERT_PROCESSOR_CLASS = 'delfin.alert_manager.alert_processor' \
                             '.AlertProcessor'
 
+    @mock.patch('delfin.task_manager.rpcapi.TaskAPI', mock.Mock())
     def _get_alert_processor(self):
         alert_processor_class = importutils.import_class(
             self.ALERT_PROCESSOR_CLASS)
@@ -105,3 +106,28 @@ class AlertProcessorTestCase(unittest.TestCase):
         self.assertRaisesRegex(exception.InvalidResults,
                                "Failed to fill the alert model from driver.",
                                alert_processor_inst.process_alert_info, alert)
+
+    @mock.patch('delfin.context.get_admin_context')
+    @mock.patch('delfin.db.storage_get')
+    @mock.patch('delfin.drivers.api.API.parse_alert')
+    @mock.patch('delfin.alert_manager.alert_processor.'
+                'AlertProcessor.sync_storage_alert')
+    def test_process_alert_info_incompletetrap_exception(self, mock_sync_alert,
+                                                         mock_parse_alert,
+                                                         mock_storage,
+                                                         mock_ctxt):
+        """ Mock parse alert for raising exception"""
+        alert = {'storage_id': 'abcd-1234-56789',
+                 'storage_name': 'storage1',
+                 'vendor': 'fake vendor',
+                 'model': 'fake mode',
+                 'serial_number': 'serial-1234'}
+
+        mock_ctxt.return_value = context.get_admin_context()
+        mock_storage.return_value = fakes.fake_storage_info()
+        mock_parse_alert.side_effect = exception.IncompleteTrapInformation(
+            'abcd-1234-56789')
+        alert_processor_inst = self._get_alert_processor()
+        alert_processor_inst.process_alert_info(alert)
+
+        self.assertTrue(mock_sync_alert.called)
