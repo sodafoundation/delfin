@@ -396,7 +396,7 @@ class VMaxRest(object):
         resource_type = None
         if args:
             resource_type = args[2]
-        elif not args and kwargs:
+        elif kwargs:
             resource_type = kwargs.get('resource_level')
         target_uri = self.build_uri(*args, **kwargs)
         return self.get_request(
@@ -583,7 +583,8 @@ class VMaxRest(object):
                 version=version)
 
         if int(version) < 84:
-            raise NotImplementedError
+            LOG.error("Director is not supported in Unisphere version < 8.4")
+            return None
 
         if not director_dict:
             exception_message = (_("Director %(deviceID)s not found.")
@@ -613,7 +614,8 @@ class VMaxRest(object):
                 version=version, params=params)
 
         if int(version) < 84:
-            raise NotImplementedError
+            LOG.error("Director not supported in Unisphere version < 8.4")
+            return []
 
         if not response:
             exception_message = (_("Get Director list failed.")
@@ -641,7 +643,7 @@ class VMaxRest(object):
                 resource_type=DIRECTOR, resource_type_id=director_id,
                 resource=PORT, resource_id=port_id)
 
-        # Unisphere versions 90 and above
+        # Unisphere versions 84
         if int(version) == 84:
             port_dict = self.get_resource_kwargs(
                 category=SLOPROVISIONING, version=version,
@@ -650,7 +652,8 @@ class VMaxRest(object):
                 resource=PORT, resource_id=port_id)
 
         if int(version) < 84:
-            raise NotImplementedError
+            LOG.error("Port get is not supported in Unisphere version < 8.4")
+            return None
 
         if not port_dict:
             exception_message = (_("Port %(deviceID)s not found.")
@@ -685,7 +688,8 @@ class VMaxRest(object):
                 resource=PORT, params=params)
 
         if int(version) < 84:
-            raise NotImplementedError
+            LOG.error("Port list not supported in Unisphere version < 8.4")
+            return []
 
         if not response:
             exception_message = (_("Get Port list failed.")

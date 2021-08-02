@@ -145,7 +145,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.get_storage(context)
 
-        self.assertIn('Failed to get array details from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_array_details.side_effect = [{
@@ -157,7 +157,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.get_storage(context)
 
-        self.assertIn('Failed to get capacity from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_srp_by_name')
@@ -205,14 +205,14 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_storage_pools(context)
 
-        self.assertIn('Failed to get pool metrics from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_srp.side_effect = [exception.StorageBackendException, pool_info]
         with self.assertRaises(Exception) as exc:
             driver.list_storage_pools(context)
 
-        self.assertIn('Failed to get pool metrics from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_system_capacity')
@@ -319,7 +319,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_vols.side_effect = [['volume_1']]
@@ -328,7 +328,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_vols.side_effect = [exception.StorageBackendException]
@@ -337,7 +337,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_resource')
@@ -349,13 +349,13 @@ class TestVMAXStorageDriver(TestCase):
                               mock_array, mock_res):
         expected = [
             {
-                'name': 'director_1',
+                'name': 'DF-1C',
                 'storage_id': '12345',
                 'native_controller_id': 'DF-1C',
                 'status': 'offline',
                 'location': 'slot_10',
                 'soft_version': None,
-                'cpu_info': 'number_of_cores_64',
+                'cpu_info': 'Cores-64',
                 'memory_size': None
             }
         ]
@@ -408,13 +408,13 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_controllers(context)
 
-        self.assertIn('Controller 00112233 could not be found',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         with self.assertRaises(Exception) as exc:
             driver.list_controllers(context)
 
-        self.assertIn('Controller 00112233 could not be found',
+        self.assertIn('Exception from Storage Backend:',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_resource_kwargs')
@@ -426,17 +426,17 @@ class TestVMAXStorageDriver(TestCase):
                         mock_version,
                         mock_array, mock_dirs, mock_res):
         expected = [{
-            'name': 'DF-1C:30',
+            'name': 'DF-1D:30',
             'storage_id': '12345',
             'native_port_id': '30',
-            'location': 'director_DF-1C',
+            'location': 'director_DF-1D',
             'connection_status': 'connected',
             'health_status': 'normal',
             'type': 'other',
-            'logical_type': None,
+            'logical_type': 'backend',
             'speed': 0,
             'max_speed': 10737418240,
-            'native_parent_id': 'DF-1C',
+            'native_parent_id': 'DF-1D',
             'wwn': None,
             'mac_address': None,
             'ipv4': None,
@@ -453,7 +453,7 @@ class TestVMAXStorageDriver(TestCase):
             {
                 'symmetrixPortKey': [
                     {
-                        'directorId': 'DF-1C',
+                        'directorId': 'DF-1D',
                         'portId': '30'
                     },
                     {
@@ -560,13 +560,13 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_ports(context)
 
-        self.assertIn('Port 00112233 could not be found',
+        self.assertIn('Exception from Storage Backend:',
                       str(exc.exception))
 
         with self.assertRaises(Exception) as exc:
             driver.list_ports(context)
 
-        self.assertIn('Port 00112233 could not be found',
+        self.assertIn('Exception from Storage Backend:',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'post_request')
