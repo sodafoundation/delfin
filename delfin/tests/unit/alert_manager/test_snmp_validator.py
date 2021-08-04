@@ -19,7 +19,6 @@ from pysnmp.entity.rfc3413.oneliner import cmdgen
 from delfin import context
 from delfin import db
 from delfin import test
-from delfin import utils
 from delfin.alert_manager import snmp_validator
 from delfin.common import constants
 from delfin.exporter import base_exporter
@@ -127,8 +126,9 @@ class TestSNMPValidator(test.TestCase):
             'recovery_advice': "1. The network connection is abnormal. "
                                "2. SNMP authentication parameters "
                                "are invalid.",
-            'occur_time': utils.utcnow_ms(),
+            'occur_time': mock.ANY,
         }
+
         validator._dispatch_snmp_validation_alert(
             context, storage, constants.Category.FAULT)
         base_exporter.AlertExporterManager(). \
