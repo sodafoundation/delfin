@@ -372,3 +372,8 @@ class TelemetryTaskExecError(DelfinException):
 
 class ComponentNotFound(NotFound):
     msg_fmt = _("Component {0} could not be found.")
+
+
+class IncompleteTrapInformation(DelfinException):
+    msg_fmt = _("Incomplete trap information."
+                "Storage {0} alert information needs to be synchronized.")
