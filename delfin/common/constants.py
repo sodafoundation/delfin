@@ -238,6 +238,39 @@ class ShareProtocol(object):
     ALL = (CIFS, NFS, FTP, HDFS)
 
 
+class HostStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    ABNORMAL = 'abnormal'
+
+    ALL = (NORMAL, OFFLINE, ABNORMAL)
+
+
+class HostOSTypes(object):
+    LINUX = 'Linux'
+    WINDOWS = 'Windows'
+    SOLARIS = 'Solaris'
+    HP_UX = 'HP-UX'
+    AIX = 'AIX'
+    XEN_SERVER = 'XenServer'
+    VMWARE_ESX = 'VMware ESX'
+    LINUX_VIS = 'LINUX_VIS'
+    WINDOWS_SERVER_2012 = 'Windows Server 2012'
+    ORACLE_VM = 'Oracle VM'
+    OPEN_VMS = 'Open VMS'
+
+    ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
+           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS)
+
+
+class InitiatorStatus(object):
+    ONLINE = 'online'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (ONLINE, OFFLINE, UNKNOWN)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'

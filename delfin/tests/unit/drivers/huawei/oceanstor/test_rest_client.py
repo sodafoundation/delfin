@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from unittest import TestCase, mock
+from unittest.mock import call
+
 from requests.sessions import Session
 
 from delfin import exception
@@ -142,6 +144,93 @@ class TestOceanStorRestClient(TestCase):
         data = rest_client.get_all_pools()
         self.assertEqual(data['data']['data'], 'dummy')
         mock_call.assert_called_with("/storagepool", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_hosts(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_hosts()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/host", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_host_groups(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_host_groups()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/hostgroup", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_port_groups(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_port_groups()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/portgroup", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_volume_groups(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_volume_groups()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/lungroup", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_volumes(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_volumes()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/lun", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_initiators(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.side_effects = ["", "", ""]
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        rest_client.get_all_initiators()
+        call1 = call("/fc_initiator", None, 'GET', log_filter_flag=True)
+        call2 = call("/iscsi_initiator", None, 'GET', log_filter_flag=True)
+        call3 = call("/ib_initiator", None, 'GET', log_filter_flag=True)
+
+        calls = [call1, call2, call3]
+        mock_call.assert_has_calls(calls)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_mapping_views(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_mapping_views()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/mappingview", None,
                                      'GET', log_filter_flag=True)
 
     @mock.patch.object(RestClient, 'paginated_call')
