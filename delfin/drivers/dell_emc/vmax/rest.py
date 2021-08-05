@@ -33,6 +33,10 @@ from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
 SLOPROVISIONING = 'sloprovisioning'
+SYSTEM = 'system'
+SYMMETRIX = 'symmetrix'
+DIRECTOR = 'director'
+PORT = 'port'
 U4V_VERSION = '92'
 UCODE_5978 = '5978'
 # HTTP constants
@@ -371,6 +375,33 @@ class VMaxRest(object):
             private=private, version=version)
         return self.get_request(target_uri, resource_type, params)
 
+    def get_resource_kwargs(self, *args, **kwargs):
+        """Get resource details from the array.
+
+        :key version: Unisphere version -- int
+        :key no_version: if versionless uri -- bool
+        :key category: the resource category e.g. sloprovisioning
+        :key resource_level: resource level e.g. storagegroup
+        :key resource_level_id: resource level id
+        :key resource_type: optional resource type e.g. maskingview
+        :key resource_type_id: optional resource type id
+        :key resource: the name of a specific resource
+        :key resource_id: the name of a specific resource
+        :key object_type: optional name of resource
+        :key object_type_id: optional name of resource
+        :key params: query parameters  -- dict
+        :key private: empty string or '/private' if private url
+        :returns: resource object -- dict or None
+        """
+        resource_type = None
+        if args:
+            resource_type = args[2]
+        elif kwargs:
+            resource_type = kwargs.get('resource_level')
+        target_uri = self.build_uri(*args, **kwargs)
+        return self.get_request(
+            target_uri, resource_type, kwargs.get('params'))
+
     def get_array_detail(self, version=U4V_VERSION, array=''):
         """Get an array from its serial number.
         :param array: the array serial number
@@ -437,10 +468,10 @@ class VMaxRest(object):
         :returns: the VMax model
         """
         system_info = self.get_array_detail(version, array)
-        vmax_version = system_info.get('model')
+        vmax_model = system_info.get('model', 'VMAX')
         vmax_ucode = system_info.get('ucode')
-        vmax_display_name = system_info.get('display_name')
-        array_details = {"model": vmax_version,
+        vmax_display_name = system_info.get('display_name', vmax_model)
+        array_details = {"model": vmax_model,
                          "ucode": vmax_ucode,
                          "display_name": vmax_display_name}
         return array_details
@@ -529,6 +560,146 @@ class VMaxRest(object):
         except (KeyError, TypeError):
             pass
         return device_ids
+
+    def get_director(self, array, version, device_id):
+        """Get a VMAX director from array.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param device_id: the volume device id
+        :returns: volume dict
+        :raises: ControllerNotFound
+        """
+        director_dict = None
+        # Unisphere versions 90 and above
+        if int(version) > 84:
+            director_dict = self.get_resource(
+                array, SYSTEM, 'director', resource_name=device_id,
+                version=version)
+
+        # Unisphere versions 84
+        if int(version) == 84:
+            director_dict = self.get_resource(
+                array, SLOPROVISIONING, 'director', resource_name=device_id,
+                version=version)
+
+        if int(version) < 84:
+            LOG.error("Director is not supported in Unisphere version < 8.4")
+            return None
+
+        if not director_dict:
+            exception_message = (_("Director %(deviceID)s not found.")
+                                 % {'deviceID': device_id})
+            LOG.error(exception_message)
+            raise exception.ControllerNotFound(device_id)
+        return director_dict
+
+    def get_director_list(self, array, version, params=None):
+        """Get a filtered list of VMAX controllers from array.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: directors -- list
+        """
+        response = None
+        # Unisphere versions 90 and above
+        if int(version) > 84:
+            response = self.get_resource(
+                array, SYSTEM, 'director',
+                version=version, params=params)
+
+        # Unisphere versions 84
+        if int(version) == 84:
+            response = self.get_resource(
+                array, SLOPROVISIONING, 'director',
+                version=version, params=params)
+
+        if int(version) < 84:
+            LOG.error("Director not supported in Unisphere version < 8.4")
+            return []
+
+        if not response:
+            exception_message = (_("Get Director list failed.")
+                                 % {'deviceID': array})
+            LOG.error(exception_message)
+            raise exception.ControllerListNotFound(array)
+
+        return response.get('directorId', list()) if response else list()
+
+    def get_port(self, array, version, director_id, port_id):
+        """Get a VMAX director from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param director_id: the director id
+        :param port_id: the port id
+        :returns: volume dict
+        :raises: ControllerNotFound
+        """
+        port_dict = None
+        # Unisphere versions 90 and above
+        if int(version) > 84:
+            port_dict = self.get_resource_kwargs(
+                category=SYSTEM, version=version,
+                resource_level=SYMMETRIX, resource_level_id=array,
+                resource_type=DIRECTOR, resource_type_id=director_id,
+                resource=PORT, resource_id=port_id)
+
+        # Unisphere versions 84
+        if int(version) == 84:
+            port_dict = self.get_resource_kwargs(
+                category=SLOPROVISIONING, version=version,
+                resource_level=SYMMETRIX, resource_level_id=array,
+                resource_type=DIRECTOR, resource_type_id=director_id,
+                resource=PORT, resource_id=port_id)
+
+        if int(version) < 84:
+            LOG.error("Port get is not supported in Unisphere version < 8.4")
+            return None
+
+        if not port_dict:
+            exception_message = (_("Port %(deviceID)s not found.")
+                                 % {'deviceID': port_id})
+            LOG.error(exception_message)
+            raise exception.PortNotFound(port_id)
+        return port_dict
+
+    def get_port_list(self, array, version, director_id, params=None):
+        """Get a filtered list of VMAX controllers from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param params: filter parameters
+        :param director_id: director id
+        :returns: device_ids -- list
+        """
+        response = None
+        # Unisphere versions 90 and above
+        if int(version) > 84:
+            response = self.get_resource_kwargs(
+                category=SYSTEM, version=version,
+                resource_level=SYMMETRIX, resource_level_id=array,
+                resource_type=DIRECTOR, resource_type_id=director_id,
+                resource=PORT, params=params)
+
+        # Unisphere versions 84
+        if int(version) == 84:
+            response = self.get_resource_kwargs(
+                category=SLOPROVISIONING, version=version,
+                resource_level=SYMMETRIX, resource_level_id=array,
+                resource_type=DIRECTOR, resource_type_id=director_id,
+                resource=PORT, params=params)
+
+        if int(version) < 84:
+            LOG.error("Port list not supported in Unisphere version < 8.4")
+            return []
+
+        if not response:
+            exception_message = (_("Get Port list failed.")
+                                 % {'deviceID': array})
+            LOG.error(exception_message)
+            raise exception.PortListNotFound(array)
+
+        port_ids = response.get('symmetrixPortKey',
+                                list()) if response else list()
+        return port_ids
 
     def post_request(self, target_uri, payload):
         """Generate  a POST request.
