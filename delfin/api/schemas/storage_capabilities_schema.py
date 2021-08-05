@@ -489,6 +489,103 @@ STORAGE_CAPABILITIES_SCHEMA = {
                     },
                     'additionalProperties': False
                 },
+                'filesystem': {
+                    'type': 'object',
+                    'properties': {
+                        'throughput': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'iops': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'readThroughput': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'writeThroughput': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'readIops': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'writeIops': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'readResponseTime': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'writeResponseTime': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'readIoSize': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'writeIoSize': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+
+                    },
+                    'additionalProperties': False
+                },
             },
             'additionalProperties': False
         },
