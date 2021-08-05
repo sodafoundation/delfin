@@ -150,6 +150,7 @@ class Controller(BASE, DelfinBase):
     cpu_info = Column(String(255))
     memory_size = Column(BigInteger)
     storage_id = Column(String(36))
+    mgmt_ip = Column(String(255))
 
 
 class Port(BASE, DelfinBase):
