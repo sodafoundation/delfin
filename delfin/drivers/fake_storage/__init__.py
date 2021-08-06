@@ -71,6 +71,7 @@ RESOURCE_COUNT_DICT = {
     "port": MAX_PORTS,
     "controller": MAX_CONTROLLERS,
     "disk": MAX_DISK,
+    "filesystem": MAX_FS,
 }
 
 # Min and max are currently set to 1 to make sure at least one relation can be
@@ -793,6 +794,55 @@ class FakeStorageDriver(driver.StorageDriver):
                         "description": "Write operations per second"
                     },
 
+                },
+                "filesystem": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for a read"
+                                       "operation"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for a write "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+                    "readIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests "
+                                       "in KB."
+                    },
+                    "writeIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests"
+                                       " in KB."
+                    },
                 },
 
             }

@@ -210,8 +210,16 @@ class ControllerNotFound(NotFound):
     msg_fmt = _("Controller {0} could not be found.")
 
 
+class ControllerListNotFound(NotFound):
+    msg_fmt = _("Controller List for {0} could not be found.")
+
+
 class PortNotFound(NotFound):
     msg_fmt = _("Port {0} could not be found.")
+
+
+class PortListNotFound(NotFound):
+    msg_fmt = _("Port List for {0} could not be found.")
 
 
 class DiskNotFound(NotFound):
@@ -372,3 +380,8 @@ class TelemetryTaskExecError(DelfinException):
 
 class ComponentNotFound(NotFound):
     msg_fmt = _("Component {0} could not be found.")
+
+
+class IncompleteTrapInformation(DelfinException):
+    msg_fmt = _("Incomplete trap information."
+                "Storage {0} alert information needs to be synchronized.")

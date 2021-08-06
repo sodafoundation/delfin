@@ -145,7 +145,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.get_storage(context)
 
-        self.assertIn('Failed to get array details from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_array_details.side_effect = [{
@@ -157,7 +157,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.get_storage(context)
 
-        self.assertIn('Failed to get capacity from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_srp_by_name')
@@ -205,14 +205,14 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_storage_pools(context)
 
-        self.assertIn('Failed to get pool metrics from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_srp.side_effect = [exception.StorageBackendException, pool_info]
         with self.assertRaises(Exception) as exc:
             driver.list_storage_pools(context)
 
-        self.assertIn('Failed to get pool metrics from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_system_capacity')
@@ -319,7 +319,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_vols.side_effect = [['volume_1']]
@@ -328,7 +328,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_vols.side_effect = [exception.StorageBackendException]
@@ -337,7 +337,236 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_resource')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_controllers(self, mock_unisphere_version,
+                              mock_version,
+                              mock_array, mock_res):
+        expected = [
+            {
+                'name': 'DF-1C',
+                'storage_id': '12345',
+                'native_controller_id': 'DF-1C',
+                'status': 'offline',
+                'location': 'slot_10',
+                'soft_version': None,
+                'cpu_info': 'Cores-64',
+                'memory_size': None
+            }
+        ]
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_res.side_effect = [
+            {'directorId': ['DF-1C', 'DF-2C']},
+            {
+                'availability': 'ON',
+                'directorId': 'DF-1C',
+                'director_number': 1,
+                'director_slot_number': 10,
+                'num_of_cores': 64,
+                'num_of_ports': 2,
+                'srdf_groups': [
+                    {
+                        'label': 'label_1',
+                        'rdf_group_number': 1
+                    }
+                ]
+            },
+            {
+                'availability': 'ON',
+                'directorId': 'DF-2C',
+                'director_number': 2,
+                'director_slot_number': 10,
+                'num_of_cores': 64,
+                'num_of_ports': 2,
+                'srdf_groups': [
+                    {
+                        'label': 'label_1',
+                        'rdf_group_number': 1
+                    }
+                ]
+            },
+            {'directorId': ['DF-1C', 'DF-2C']},
+            exception.StorageBackendException,
+            exception.StorageBackendException
+        ]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+
+        ret = driver.list_controllers(context)
+        self.assertDictEqual(ret[0], expected[0])
+
+        with self.assertRaises(Exception) as exc:
+            driver.list_controllers(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        with self.assertRaises(Exception) as exc:
+            driver.list_controllers(context)
+
+        self.assertIn('Exception from Storage Backend:',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_resource_kwargs')
+    @mock.patch.object(VMaxRest, 'get_director_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_ports(self, mock_unisphere_version,
+                        mock_version,
+                        mock_array, mock_dirs, mock_res):
+        expected = [{
+            'name': 'DF-1D:30',
+            'storage_id': '12345',
+            'native_port_id': '30',
+            'location': 'director_DF-1D',
+            'connection_status': 'connected',
+            'health_status': 'normal',
+            'type': 'other',
+            'logical_type': 'backend',
+            'speed': 0,
+            'max_speed': 10737418240,
+            'native_parent_id': 'DF-1D',
+            'wwn': None,
+            'mac_address': None,
+            'ipv4': None,
+            'ipv4_mask': None,
+            'ipv6': None,
+            'ipv6_mask': None
+        }]
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_dirs.return_value = ['DF-1C']
+        mock_res.side_effect = [
+            {
+                'symmetrixPortKey': [
+                    {
+                        'directorId': 'DF-1D',
+                        'portId': '30'
+                    },
+                    {
+                        'directorId': 'DF-2C',
+                        'portId': '0'
+                    }
+                ]
+            },
+            {
+                'symmetrixPort': {
+                    'aclx': False,
+                    'avoid_reset_broadcast': False,
+                    'common_serial_number': True,
+                    'director_status': 'Offline',
+                    'disable_q_reset_on_ua': False,
+                    'enable_auto_negotiate': False,
+                    'environ_set': False,
+                    'hp_3000_mode': False,
+                    'ip_addresses': [
+                        '192.168.0.51'
+                    ],
+                    'iscsi_target': False,
+                    'max_speed': '10',
+                    'negotiate_reset': False,
+                    'num_of_cores': 6,
+                    'num_of_mapped_vols': 0,
+                    'num_of_masking_views': 0,
+                    'num_of_port_groups': 0,
+                    'port_status': 'PendOn',
+                    'scsi_3': False,
+                    'scsi_support1': False,
+                    'siemens': False,
+                    'soft_reset': False,
+                    'spc2_protocol_version': False,
+                    'sunapee': False,
+                    'symmetrixPortKey': {
+                        'directorId': 'DF-1C',
+                        'portId': '30'
+                    },
+                    'type': 'GigE',
+                    'vnx_attached': False,
+                    'volume_set_addressing': False
+                }
+            },
+            {
+                'symmetrixPort': {
+                    'aclx': False,
+                    'avoid_reset_broadcast': False,
+                    'common_serial_number': True,
+                    'director_status': 'Offline',
+                    'disable_q_reset_on_ua': False,
+                    'enable_auto_negotiate': False,
+                    'environ_set': False,
+                    'hp_3000_mode': False,
+                    'ip_addresses': [
+                        '192.168.0.51'
+                    ],
+                    'iscsi_target': False,
+                    'max_speed': '10',
+                    'negotiate_reset': False,
+                    'num_of_cores': 6,
+                    'num_of_mapped_vols': 0,
+                    'num_of_masking_views': 0,
+                    'num_of_port_groups': 0,
+                    'port_status': 'PendOn',
+                    'scsi_3': False,
+                    'scsi_support1': False,
+                    'siemens': False,
+                    'soft_reset': False,
+                    'spc2_protocol_version': False,
+                    'sunapee': False,
+                    'symmetrixPortKey': {
+                        'directorId': 'DF-2C',
+                        'portId': '0'
+                    },
+                    'type': 'GigE',
+                    'vnx_attached': False,
+                    'volume_set_addressing': False
+                }
+            },
+            {
+                'symmetrixPortKey': [
+                    {
+                        'directorId': 'DF-1C',
+                        'portId': '30'
+                    },
+                    {
+                        'directorId': 'DF-2C',
+                        'portId': '0'
+                    }
+                ]
+            },
+            exception.StorageBackendException,
+            exception.StorageBackendException
+        ]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+
+        ret = driver.list_ports(context)
+        self.assertDictEqual(ret[0], expected[0])
+
+        with self.assertRaises(Exception) as exc:
+            driver.list_ports(context)
+
+        self.assertIn('Exception from Storage Backend:',
+                      str(exc.exception))
+
+        with self.assertRaises(Exception) as exc:
+            driver.list_ports(context)
+
+        self.assertIn('Exception from Storage Backend:',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'post_request')

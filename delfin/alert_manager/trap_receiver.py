@@ -227,6 +227,12 @@ class TrapReceiver(manager.Manager):
             # Fill additional info to alert info
             alert['transport_address'] = source_ip
             alert['storage_id'] = alert_source['storage_id']
+            filters = {'mgmt_ip': source_ip,
+                       'storage_id': alert_source['storage_id']}
+            ctxt = context.RequestContext()
+            controllers = db.controller_get_all(ctxt, filters=filters)
+            if controllers:
+                alert['controller_name'] = controllers[0].get('name')
 
             # Handover to alert processor for model translation and export
             self.alert_processor.process_alert_info(alert)
