@@ -21,7 +21,7 @@ from oslo_utils import importutils
 
 from delfin import manager
 from delfin.drivers import manager as driver_manager
-from delfin.task_manager.tasks import alerts, telemetry
+from delfin.task_manager.tasks import alerts, telemetry, host_mapping
 
 LOG = log.getLogger(__name__)
 
@@ -34,6 +34,7 @@ class TaskManager(manager.Manager):
     def __init__(self, service_name=None, *args, **kwargs):
         self.alert_task = alerts.AlertSyncTask()
         self.telemetry_task = telemetry.TelemetryTask()
+        self.host_mapping_task = host_mapping.HostMappingTask()
         super(TaskManager, self).__init__(*args, **kwargs)
 
     def sync_storage_resource(self, context, storage_id, resource_task):
@@ -82,3 +83,9 @@ class TaskManager(manager.Manager):
         return self.alert_task.clear_alerts(context,
                                             storage_id,
                                             sequence_number_list)
+
+    def build_host_mapping_relations(self, context, storage_id):
+        LOG.info('Building host mapping relations for storage id: {0}'
+                 .format(storage_id))
+        return self.host_mapping_task.build_host_mapping_relations(context,
+                                                                   storage_id)
