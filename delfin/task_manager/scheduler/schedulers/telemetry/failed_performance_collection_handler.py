@@ -80,11 +80,9 @@ class FailedPerformanceCollectionHandler(object):
         # Pull performance collection info
         self.retry_count = self.retry_count + 1
         try:
-            status = self.task_rpcapi.collect_telemetry(
-                self.ctx, self.storage_id,
-                PerformanceCollectionTask.__module__ + '.' +
-                PerformanceCollectionTask.__name__,
-                self.args, self.start_time, self.end_time)
+            telemetry = PerformanceCollectionTask()
+            status = telemetry.collect(self.ctx, self.storage_id, self.args,
+                                       self.start_time, self.end_time)
 
             if not status:
                 raise exception.TelemetryTaskExecError()

@@ -22,10 +22,10 @@ from oslo_utils import uuidutils
 
 from delfin import context
 from delfin import utils
-from delfin.task_manager.scheduler.schedulers.telemetry.failed_telemetry_job \
+from delfin.leader_election.distributor.telemetry_failed_job_distributor\
     import FailedTelemetryJob
-from delfin.task_manager.scheduler.schedulers.telemetry.telemetry_job import \
-    TelemetryJob
+from delfin.leader_election.distributor.telemetry_job_distributor \
+    import TelemetryJob
 
 LOG = log.getLogger(__name__)
 
@@ -54,6 +54,7 @@ class SchedulerManager(object):
             self.scheduler.start()
             self.scheduler_started = True
 
+    def schedule_boot_jobs(self):
         if not self.boot_jobs_scheduled:
             try:
                 for job in SCHEDULER_BOOT_JOBS:
