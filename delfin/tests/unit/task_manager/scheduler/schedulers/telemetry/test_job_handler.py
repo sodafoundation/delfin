@@ -12,23 +12,69 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
 from unittest import mock
-
+from datetime import datetime
 from oslo_utils import uuidutils
 
 from delfin import context
 from delfin import db
 from delfin import test
-from delfin.common.constants import TelemetryCollection
-from delfin.db.sqlalchemy.models import FailedTask
+from delfin.common import constants
 from delfin.db.sqlalchemy.models import Task
+from delfin.task_manager.scheduler.schedulers.telemetry.job_handler import \
+    JobHandler
+from delfin.task_manager.scheduler.schedulers.telemetry.job_handler import \
+    FailedJobHandler
+from delfin.db.sqlalchemy.models import FailedTask
 from delfin.task_manager.scheduler.schedulers.telemetry. \
     failed_performance_collection_handler import \
     FailedPerformanceCollectionHandler
-from delfin.task_manager.scheduler.schedulers.telemetry.failed_telemetry_job \
-    import FailedTelemetryJob
+from delfin.common.constants import TelemetryCollection
 
+fake_executor = 'node1'
+fake_telemetry_job = {
+    Task.id.name: 2,
+    Task.storage_id.name: uuidutils.generate_uuid(),
+    Task.args.name: {},
+    Task.interval.name: 10,
+    Task.job_id.name: None,
+    Task.method.name: constants.TelemetryCollection.PERFORMANCE_TASK_METHOD,
+    Task.last_run_time.name: None,
+    Task.executor.name: fake_executor,
+}
+
+fake_telemetry_jobs = [
+    fake_telemetry_job,
+]
+
+fake_telemetry_job_deleted = {
+    Task.id.name: 2,
+    Task.storage_id.name: uuidutils.generate_uuid(),
+    Task.args.name: {},
+    Task.interval.name: 10,
+    Task.method.name: constants.TelemetryCollection.PERFORMANCE_TASK_METHOD,
+    Task.last_run_time.name: None,
+    Task.deleted.name: True,
+    Task.executor.name: fake_executor,
+}
+
+fake_telemetry_jobs_deleted = [
+    fake_telemetry_job_deleted,
+]
+# With method name as None
+Incorrect_telemetry_job = {
+    Task.id.name: 2,
+    Task.storage_id.name: uuidutils.generate_uuid(),
+    Task.args.name: {},
+    Task.interval.name: 10,
+    Task.method.name: None,
+    Task.last_run_time.name: None,
+    Task.executor.name: None,
+}
+
+Incorrect_telemetry_jobs = [
+    Incorrect_telemetry_job,
+]
 fake_failed_job = {
     FailedTask.id.name: 43,
     FailedTask.retry_count.name: 0,
@@ -42,17 +88,55 @@ fake_failed_job = {
     FailedTask.end_time.name: int(datetime.now().timestamp()) + 20,
     FailedTask.interval.name: 20,
     FailedTask.deleted.name: False,
+    FailedTask.executor.name: fake_executor,
 }
 
 fake_failed_jobs = [
     fake_failed_job,
 ]
 
-fake_telemetry_job = {
-    Task.id.name: 2,
-    Task.storage_id.name: uuidutils.generate_uuid(),
-    Task.args.name: {},
-}
+
+class TestTelemetryJob(test.TestCase):
+
+    @mock.patch.object(db, 'task_get_all',
+                       mock.Mock(return_value=fake_telemetry_jobs))
+    @mock.patch.object(db, 'task_update',
+                       mock.Mock(return_value=fake_telemetry_job))
+    @mock.patch.object(db, 'task_get',
+                       mock.Mock(return_value=fake_telemetry_job))
+    @mock.patch(
+        'apscheduler.schedulers.background.BackgroundScheduler.add_job')
+    def test_telemetry_job_scheduling(self, mock_add_job):
+        ctx = context.get_admin_context()
+        telemetry_job = JobHandler(ctx, fake_telemetry_job['id'],
+                                   fake_telemetry_job['storage_id'],
+                                   fake_telemetry_job['args'],
+                                   fake_telemetry_job['interval'])
+        # call telemetry job scheduling
+        telemetry_job.schedule_job(fake_telemetry_job)
+        self.assertEqual(mock_add_job.call_count, 1)
+
+    @mock.patch.object(db, 'task_delete',
+                       mock.Mock())
+    @mock.patch.object(db, 'task_get_all',
+                       mock.Mock(return_value=fake_telemetry_jobs_deleted))
+    @mock.patch.object(db, 'task_update',
+                       mock.Mock(return_value=fake_telemetry_job))
+    @mock.patch.object(db, 'task_get',
+                       mock.Mock(return_value=fake_telemetry_job))
+    @mock.patch(
+        'apscheduler.schedulers.background.BackgroundScheduler.add_job',
+        mock.Mock())
+    @mock.patch('logging.LoggerAdapter.error')
+    def test_telemetry_removal_success(self, mock_log_error):
+        ctx = context.get_admin_context()
+        telemetry_job = JobHandler(ctx, fake_telemetry_job['id'],
+                                   fake_telemetry_job['storage_id'],
+                                   fake_telemetry_job['args'],
+                                   fake_telemetry_job['interval'])
+        # call telemetry job scheduling
+        telemetry_job.remove_job(fake_telemetry_job['id'])
+        self.assertEqual(mock_log_error.call_count, 1)
 
 
 class TestFailedTelemetryJob(test.TestCase):
@@ -68,9 +152,9 @@ class TestFailedTelemetryJob(test.TestCase):
     @mock.patch(
         'apscheduler.schedulers.background.BackgroundScheduler.add_job')
     def test_failed_job_scheduling(self, mock_add_job):
-        failed_job = FailedTelemetryJob(context.get_admin_context())
+        failed_job = FailedJobHandler(context.get_admin_context())
         # call failed job scheduling
-        failed_job()
+        failed_job.schedule_failed_job(fake_failed_job)
         self.assertEqual(mock_add_job.call_count, 1)
 
     @mock.patch(
@@ -89,15 +173,15 @@ class TestFailedTelemetryJob(test.TestCase):
             TelemetryCollection.MAX_FAILED_JOB_RETRY_COUNT
         mock_failed_get_all.return_value = failed_jobs
 
-        failed_job = FailedTelemetryJob(context.get_admin_context())
+        failed_job = FailedJobHandler(context.get_admin_context())
         # call failed job scheduling
-        failed_job()
+        failed_job.schedule_failed_job(failed_jobs[0])
 
         mock_get_job.return_value = True
 
         # entry get deleted and job get removed
-        self.assertEqual(mock_failed_task_delete.call_count, 2)
-        self.assertEqual(mock_remove_job.call_count, 2)
+        self.assertEqual(mock_failed_task_delete.call_count, 1)
+        self.assertEqual(mock_remove_job.call_count, 1)
 
     @mock.patch(
         'apscheduler.schedulers.background.BackgroundScheduler.get_job')
@@ -114,9 +198,9 @@ class TestFailedTelemetryJob(test.TestCase):
         # configure to have job in scheduler
         mock_get_job.return_value = failed_jobs
 
-        failed_job = FailedTelemetryJob(context.get_admin_context())
+        failed_job = FailedJobHandler(context.get_admin_context())
         # call failed job scheduling
-        failed_job()
+        failed_job.remove_failed_job(fake_failed_job)
 
         # the job will not be scheduled
         self.assertEqual(mock_add_job.call_count, 0)
@@ -133,10 +217,10 @@ class TestFailedTelemetryJob(test.TestCase):
         failed_jobs[0][FailedTask.job_id.name] = uuidutils.generate_uuid()
         mock_failed_get_all.return_value = failed_jobs
 
-        failed_job = FailedTelemetryJob(context.get_admin_context())
+        failed_job = FailedJobHandler(context.get_admin_context())
         # call failed job scheduling
-        failed_job()
+        failed_job.remove_failed_job(fake_failed_job)
 
         # entry get deleted and job get removed
-        self.assertEqual(mock_failed_task_delete.call_count, 2)
+        self.assertEqual(mock_failed_task_delete.call_count, 1)
         self.assertEqual(mock_remove_job.call_count, 0)

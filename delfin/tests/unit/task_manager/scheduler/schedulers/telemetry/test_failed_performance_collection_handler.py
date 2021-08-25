@@ -81,7 +81,8 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
     @mock.patch(
         'apscheduler.schedulers.background.BackgroundScheduler.pause_job')
     @mock.patch('delfin.db.failed_task_update')
-    @mock.patch('delfin.task_manager.rpcapi.TaskAPI.collect_telemetry')
+    @mock.patch('delfin.task_manager.tasks.telemetry'
+                '.PerformanceCollectionTask.collect')
     def test_failed_job_success(self, mock_collect_telemetry,
                                 mock_failed_task_update, mock_pause_job):
         mock_collect_telemetry.return_value = TelemetryTaskStatus. \
