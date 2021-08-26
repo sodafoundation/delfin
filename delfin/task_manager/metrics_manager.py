@@ -41,18 +41,18 @@ class MetricsTaskManager(manager.Manager):
         scheduler = schedule_manager.SchedulerManager()
         scheduler.start()
 
-    def assign_job(self, context, job):
-        instance = JobHandler.get_instance(context, job['id'])
-        instance.schedule_job(job)
+    def assign_job(self, context, task_id):
+        instance = JobHandler.get_instance(context, task_id)
+        instance.schedule_job(task_id)
 
-    def remove_job(self, context, job):
-        instance = JobHandler.get_instance(context, job['id'])
-        instance.remove_job(job)
+    def remove_job(self, context, task_id):
+        instance = JobHandler.get_instance(context, task_id)
+        instance.remove_job(task_id)
 
-    def assign_failed_job(self, context, job):
-        instance = FailedJobHandler.get_instance(context, job['id'])
-        instance.schedule_failed_job(job)
+    def assign_failed_job(self, context, failed_task_id):
+        instance = FailedJobHandler.get_instance(context, failed_task_id)
+        instance.schedule_failed_job(failed_task_id)
 
-    def remove_failed_job(self, context, job):
-        instance = FailedJobHandler.get_instance(context, job['id'])
-        instance.remove_failed_job(job)
+    def remove_failed_job(self, context, failed_task_id):
+        instance = FailedJobHandler.get_instance(context, failed_task_id)
+        instance.remove_failed_job(failed_task_id)

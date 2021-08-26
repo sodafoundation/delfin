@@ -49,13 +49,14 @@ class JobHandler(object):
         return JobHandler(ctx, task_id, task['storage_id'],
                           task['args'], task['interval'])
 
-    def schedule_job(self, job):
+    def schedule_job(self, task_id):
 
         if self.stopped:
             """If Job is stopped return immediately"""
             return
 
-        LOG.info("JobHandler received A job %s to schedule" % job['id'])
+        LOG.info("JobHandler received A job %s to schedule" % task_id)
+        job = db.task_get(self.ctx, task_id)
         collection_class = importutils.import_class(
             job['method'])
         instance = collection_class.get_instance(self.ctx, self.task_id)
@@ -82,6 +83,7 @@ class JobHandler(object):
             update_task_dict = {'job_id': job_id,
                                 'last_run_time': last_run_time}
             db.task_update(self.ctx, self.task_id, update_task_dict)
+            self.job_ids.add(job_id)
             LOG.info('Periodic collection tasks scheduled for for job id: '
                      '%s ' % self.task_id)
         else:
@@ -99,9 +101,10 @@ class JobHandler(object):
         if job_id and self.scheduler.get_job(job_id):
             self.scheduler.remove_job(job_id)
 
-    def remove_job(self, job):
+    def remove_job(self, task_id):
         try:
-            LOG.info("Received job %s to remove", job['id'])
+            LOG.info("Received job %s to remove", task_id)
+            job = db.task_get(self.ctx, task_id)
             job_id = job['job_id']
             self.remove_scheduled_job(job_id)
             db.task_delete(self.ctx, job['id'])
@@ -123,7 +126,7 @@ class FailedJobHandler(object):
     def get_instance(ctx, failed_task_id):
         return FailedJobHandler(ctx)
 
-    def schedule_failed_job(self, job):
+    def schedule_failed_job(self, failed_task_id):
         """
         :return:
         """
@@ -132,7 +135,7 @@ class FailedJobHandler(object):
             return
 
         try:
-
+            job = db.failed_task_get(self.ctx, failed_task_id)
             retry_count = job['retry_count']
             result = job['result']
             job_id = job['job_id']
@@ -198,9 +201,10 @@ class FailedJobHandler(object):
         for job_id in self.job_ids.copy():
             self.remove_scheduled_job(job_id)
 
-    def remove_failed_job(self, job):
+    def remove_failed_job(self, failed_task_id):
         try:
-            LOG.info("Received failed job %s to remove", job['id'])
+            LOG.info("Received failed job %s to remove", failed_task_id)
+            job = db.failed_task_get(self.ctx, failed_task_id)
             job_id = job['job_id']
             self.remove_scheduled_job(job_id)
             db.failed_task_delete(self.ctx, job['id'])

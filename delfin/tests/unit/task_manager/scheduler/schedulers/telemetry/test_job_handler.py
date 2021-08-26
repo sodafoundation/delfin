@@ -113,7 +113,7 @@ class TestTelemetryJob(test.TestCase):
                                    fake_telemetry_job['args'],
                                    fake_telemetry_job['interval'])
         # call telemetry job scheduling
-        telemetry_job.schedule_job(fake_telemetry_job)
+        telemetry_job.schedule_job(fake_telemetry_job['id'])
         self.assertEqual(mock_add_job.call_count, 1)
 
     @mock.patch.object(db, 'task_delete',
@@ -136,7 +136,7 @@ class TestTelemetryJob(test.TestCase):
                                    fake_telemetry_job['interval'])
         # call telemetry job scheduling
         telemetry_job.remove_job(fake_telemetry_job['id'])
-        self.assertEqual(mock_log_error.call_count, 1)
+        self.assertEqual(mock_log_error.call_count, 0)
 
 
 class TestFailedTelemetryJob(test.TestCase):
@@ -154,9 +154,11 @@ class TestFailedTelemetryJob(test.TestCase):
     def test_failed_job_scheduling(self, mock_add_job):
         failed_job = FailedJobHandler(context.get_admin_context())
         # call failed job scheduling
-        failed_job.schedule_failed_job(fake_failed_job)
+        failed_job.schedule_failed_job(fake_failed_job['id'])
         self.assertEqual(mock_add_job.call_count, 1)
 
+    @mock.patch.object(db, 'failed_task_get',
+                       mock.Mock(return_value=fake_failed_job))
     @mock.patch(
         'apscheduler.schedulers.background.BackgroundScheduler.remove_job')
     @mock.patch(
@@ -200,11 +202,13 @@ class TestFailedTelemetryJob(test.TestCase):
 
         failed_job = FailedJobHandler(context.get_admin_context())
         # call failed job scheduling
-        failed_job.remove_failed_job(fake_failed_job)
+        failed_job.remove_failed_job(fake_failed_job['id'])
 
         # the job will not be scheduled
         self.assertEqual(mock_add_job.call_count, 0)
 
+    @mock.patch.object(db, 'failed_task_get',
+                       mock.Mock(return_value=fake_failed_job))
     @mock.patch(
         'apscheduler.schedulers.background.BackgroundScheduler.remove_job')
     @mock.patch.object(db, 'failed_task_delete')

@@ -25,7 +25,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
-class TelemetryJob(object):
+class TaskDistributor(object):
     def __init__(self, ctx):
         self.ctx = ctx
         self.task_rpcapi = task_rpcapi.TaskAPI()
@@ -47,7 +47,8 @@ class TelemetryJob(object):
                       "in this cycle:%s" % len(tasks))
             for task in tasks:
                 # Distribute to remove job form executor
-                self.task_rpcapi.remove_job(self.ctx, task)
+                self.task_rpcapi.remove_job(self.ctx, task['id'],
+                                            task['executor'])
         except Exception as e:
             LOG.error("Failed to remove periodic scheduling job , reason: %s.",
                       six.text_type(e))
@@ -55,21 +56,20 @@ class TelemetryJob(object):
         try:
 
             filters = {'last_run_time': None}
-            jobs = db.task_get_all(self.ctx, filters=filters)
+            tasks = db.task_get_all(self.ctx, filters=filters)
             LOG.debug("Distributing performance collection jobs: total "
-                      "jobs to be handled:%s" % len(jobs))
-            for job in jobs:
+                      "jobs to be handled:%s" % len(tasks))
+            for task in tasks:
                 # Todo Get executor for the job
                 # update task table with generated executor topic
                 executor = CONF.host
-                db.task_update(self.ctx, job['id'], {'executor': executor})
-                job['executor'] = executor
+                db.task_update(self.ctx, task['id'], {'executor': executor})
                 LOG.info('Assigning executor for collection job for id: '
-                         '%s' % job['id'])
-                self.task_rpcapi.assign_job(self.ctx, job)
+                         '%s' % task['id'])
+                self.task_rpcapi.assign_job(self.ctx, task['id'], executor)
 
                 LOG.debug('Periodic collection job assigned for id: '
-                          '%s ' % job['id'])
+                          '%s ' % task['id'])
         except Exception as e:
             LOG.error("Failed to distribute periodic collection, reason: %s.",
                       six.text_type(e))

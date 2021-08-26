@@ -25,7 +25,7 @@ CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
-class FailedTelemetryJob(object):
+class FailedTaskDistributor(object):
     def __init__(self, ctx):
         # create the object of periodic scheduler
         self.task_rpcapi = task_rpcapi.TaskAPI()
@@ -43,7 +43,8 @@ class FailedTelemetryJob(object):
             LOG.debug("Total failed_tasks found deleted "
                       "in this cycle:%s" % len(failed_tasks))
             for failed_task in failed_tasks:
-                self.task_rpcapi.remove_failed_job(self.ctx, failed_task)
+                self.task_rpcapi.remove_failed_job(self.ctx, failed_task['id'],
+                                                   failed_task['executor'])
         except Exception as e:
             LOG.error("Failed to remove periodic scheduling job , reason: %s.",
                       six.text_type(e))
@@ -51,16 +52,17 @@ class FailedTelemetryJob(object):
             # Create the object of periodic scheduler
             failed_tasks = db.failed_task_get_all(self.ctx)
 
-            for job in failed_tasks:
+            for failed_task in failed_tasks:
                 # Todo Get executor for the job
                 # update task table with executor topic
 
-                LOG.info('Assigning failed task for for id: '
-                         '%s' % job['id'])
-                self.task_rpcapi.assign_failed_job(self.ctx, job)
+                LOG.debug('Assigning failed task for for id: '
+                          '%s' % failed_task['id'])
+                self.task_rpcapi.assign_failed_job(self.ctx, failed_task['id'],
+                                                   failed_task['executor'])
 
-                LOG.debug('Assigned failed task for  id: '
-                          '%s ' % job['id'])
+                LOG.info('Assigned failed task for  id: '
+                         '%s ' % failed_task['id'])
         except Exception as e:
             LOG.error("Failed to schedule retry tasks for performance "
                       "collection, reason: %s", six.text_type(e))

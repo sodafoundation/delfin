@@ -46,34 +46,30 @@ class TaskAPI(object):
                                   version=self.RPC_API_VERSION)
         return rpc.get_client(target, version_cap=self.RPC_API_VERSION)
 
-    def assign_job(self, context, job):
-        executor = job['executor']
+    def assign_job(self, context, task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
                                           fanout=True)
         return call_context.cast(context, 'assign_job',
-                                 job=job)
+                                 task_id=task_id)
 
-    def remove_job(self, context, job):
-        executor = job['executor']
+    def remove_job(self, context, task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
                                           fanout=True)
         return call_context.cast(context, 'remove_job',
-                                 job=job)
+                                 task_id=task_id)
 
-    def assign_failed_job(self, context, job):
-        executor = job['executor']
+    def assign_failed_job(self, context, failed_task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
                                           fanout=True)
         return call_context.cast(context, 'assign_failed_job',
-                                 job=job)
+                                 failed_task_id=failed_task_id)
 
-    def remove_failed_job(self, context, job):
-        executor = job['executor']
+    def remove_failed_job(self, context, failed_task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
                                           fanout=True)
         return call_context.cast(context, 'remove_failed_job',
-                                 job=job)
+                                 failed_task_id=failed_task_id)
