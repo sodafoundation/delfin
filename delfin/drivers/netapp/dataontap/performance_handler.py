@@ -82,7 +82,7 @@ class PerformanceHandler(object):
                                 if value is not None:
                                     value = PerformanceHandler.\
                                         get_value(value, key)
-                                    values[timestamp] = value
+                                    values[str(timestamp)] = value
             if values != {}:
                 m = constants.metric_struct(name=key, labels=labels,
                                             values=values)

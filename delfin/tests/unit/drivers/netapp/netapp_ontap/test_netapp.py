@@ -186,4 +186,4 @@ class TestNetAppCmodeDriver(TestCase):
             test_constans.RESOURCE_METRICS,
             start_time=str(1485314300000),
             end_time=str(1485314500000))
-        self.assertEqual(data[0][2][1485314400000], 1000)
+        self.assertEqual(data[0][2]['1485314400000'], 1000)
