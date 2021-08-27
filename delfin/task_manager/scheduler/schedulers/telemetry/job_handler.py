@@ -19,12 +19,11 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils, importutils
 
-from delfin import db
+from delfin import db, context
 from delfin.common.constants import TelemetryCollection, TelemetryJobStatus
 from delfin.exception import TaskNotFound
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
-
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -49,10 +48,33 @@ class JobHandler(object):
         return JobHandler(ctx, task_id, task['storage_id'],
                           task['args'], task['interval'])
 
+    @staticmethod
+    def schedule_boot_jobs():
+        """Schedule periodic collection if any task is currently assigned to
+        this executor """
+        try:
+
+            filters = {'executor': CONF.host}
+            ctxt = context.get_admin_context()
+            tasks = db.task_get_all(ctxt, filters=filters)
+            LOG.info("Scheduling boot time jobs for this executor: total "
+                     "jobs to be handled :%s" % len(tasks))
+            for task in tasks:
+                instance = JobHandler.get_instance(ctxt, task['id'])
+                instance.schedule_job(task['id'])
+                LOG.debug('Periodic collection job assigned for id: '
+                          '%s ' % task['id'])
+        except Exception as e:
+            LOG.error("Failed to schedule boot jobs for this executor "
+                      "reason: %s.",
+                      six.text_type(e))
+        else:
+            LOG.debug("Boot job scheduling completed.")
+
     def schedule_job(self, task_id):
 
         if self.stopped:
-            """If Job is stopped return immediately"""
+            # If Job is stopped return immediately
             return
 
         LOG.info("JobHandler received A job %s to schedule" % task_id)
@@ -127,9 +149,6 @@ class FailedJobHandler(object):
         return FailedJobHandler(ctx)
 
     def schedule_failed_job(self, failed_task_id):
-        """
-        :return:
-        """
 
         if self.stopped:
             return
@@ -145,7 +164,6 @@ class FailedJobHandler(object):
                 LOG.info("Exiting Failure task processing for task [%d] "
                          "with result [%s] and retry count [%d] "
                          % (job['id'], result, retry_count))
-                # task ID is same as job id
                 self._teardown_task(self.ctx, job['id'], job_id)
                 return
             # If job already scheduled, skip

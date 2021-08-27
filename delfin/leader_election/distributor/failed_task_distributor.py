@@ -32,9 +32,6 @@ class FailedTaskDistributor(object):
         self.ctx = ctx
 
     def __call__(self):
-        """
-        :return:
-        """
 
         try:
             # Remove jobs from scheduler when marked for delete
@@ -49,13 +46,9 @@ class FailedTaskDistributor(object):
             LOG.error("Failed to remove periodic scheduling job , reason: %s.",
                       six.text_type(e))
         try:
-            # Create the object of periodic scheduler
             failed_tasks = db.failed_task_get_all(self.ctx)
-
             for failed_task in failed_tasks:
                 # Todo Get executor for the job
-                # update task table with executor topic
-
                 LOG.debug('Assigning failed task for for id: '
                           '%s' % failed_task['id'])
                 self.task_rpcapi.assign_failed_job(self.ctx, failed_task['id'],

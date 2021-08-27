@@ -40,6 +40,7 @@ class MetricsTaskManager(manager.Manager):
         super(MetricsTaskManager, self).__init__(*args, **kwargs)
         scheduler = schedule_manager.SchedulerManager()
         scheduler.start()
+        JobHandler.schedule_boot_jobs()
 
     def assign_job(self, context, task_id):
         instance = JobHandler.get_instance(context, task_id)

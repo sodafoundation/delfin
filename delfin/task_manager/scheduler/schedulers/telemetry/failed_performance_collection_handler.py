@@ -77,7 +77,6 @@ class FailedPerformanceCollectionHandler(object):
                       % (self.storage_id, self.failed_task_id))
             return
 
-        # Pull performance collection info
         self.retry_count = self.retry_count + 1
         try:
             telemetry = PerformanceCollectionTask()

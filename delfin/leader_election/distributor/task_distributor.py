@@ -46,7 +46,6 @@ class TaskDistributor(object):
             LOG.debug("Total tasks found deleted "
                       "in this cycle:%s" % len(tasks))
             for task in tasks:
-                # Distribute to remove job form executor
                 self.task_rpcapi.remove_job(self.ctx, task['id'],
                                             task['executor'])
         except Exception as e:
@@ -61,7 +60,6 @@ class TaskDistributor(object):
                       "jobs to be handled:%s" % len(tasks))
             for task in tasks:
                 # Todo Get executor for the job
-                # update task table with generated executor topic
                 executor = CONF.host
                 db.task_update(self.ctx, task['id'], {'executor': executor})
                 LOG.info('Assigning executor for collection job for id: '
