@@ -72,7 +72,7 @@ class PerformanceHandler(object):
                             time.strptime(
                                 per_info.get('timestamp'),
                                 PerformanceHandler.TIME_TYPE))) * 1000
-                    print(timestamp)
+                    LOG.error(timestamp)
                     if int(start_time) <= timestamp <= int(end_time) \
                             and timestamp % 60000 == 0:
                         key_list = constant.PER_MAP.get(key, [])
