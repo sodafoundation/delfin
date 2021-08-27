@@ -79,3 +79,8 @@ class NetAppCmodeDriver(driver.StorageDriver):
 
     def get_alert_sources(self, context):
         return self.netapp_handler.get_alert_sources()
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time, end_time):
+        return self.netapp_handler.collect_perf_metrics(
+            storage_id, resource_metrics, start_time, end_time)

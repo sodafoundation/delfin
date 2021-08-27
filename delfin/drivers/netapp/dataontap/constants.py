@@ -16,6 +16,52 @@ import re
 
 from delfin.common import constants
 
+SOCKET_TIMEOUT = 15
+AUTH_KEY = 'Authorization'
+
+RETURN_SUCCESS_CODE = 200
+CREATED_SUCCESS_CODE = 201
+ACCEPTED_RETURN_CODE = 202
+BAD_REQUEST_RETURN_CODE = 400
+UNAUTHORIZED_RETURN_CODE = 401
+FORBIDDEN_RETURN_CODE = 403
+NOT_FOUND_RETURN_CODE = 404
+METHOD_NOT_ALLOWED_CODE = 405
+CONFLICT_RETURN_CODE = 409
+INTERNAL_ERROR_CODE = 500
+
+HOUR_STAMP = '1h'
+DAY_STAMP = '1d'
+MONTH_STAMP = '1m'
+WEEK_STAMP = '1w'
+YEAR_STAMP = '1y'
+
+CLUSTER_PER_URL = '/api/cluster/metrics?interval=1h&fields=iops,throughput,' \
+                  'latency'
+POOL_PER_URL = '/api/storage/aggregates/%s/metrics?interval=1h&fields=iops,' \
+               'throughput,latency'
+VOLUME_PER_URL = '/api/storage/luns/%s/metrics?interval=1h&fields=iops,' \
+                 'throughput,latency'
+FS_PER_URL = '/api/storage/volumes/%s/metrics?interval=1h&fields=iops,' \
+             'throughput,latency'
+FC_PER_URL = '/api/network/fc/ports/%s/metrics?interval=1h&fields=iops,' \
+             'throughput,latency'
+ETH_PER_URL = '/api/network/ethernet/ports/%s/metrics?interval=1h&' \
+              'fields=throughput'
+
+FS_INFO_URL = '/api/storage/volumes?fields=svm'
+FC_INFO_URL = '/api/network/fc/ports'
+ETH_INFO_URL = '/api/network/ethernet/ports?fields=node'
+PER_MAP = {
+    'iops': ['iops', 'total'],
+    'readIops': ['iops', 'read'],
+    'writeIops': ['iops', 'write'],
+    'throughput': ['throughput', 'total'],
+    'readThroughput': ['throughput', 'read'],
+    'writeThroughput': ['throughput', 'write'],
+    'responseTime': ['latency', 'total']
+}
+
 PATTERN = re.compile('^[-]{3,}')
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
@@ -63,6 +109,9 @@ QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
 
 MGT_IP_COMMAND = "network interface show -fields address -role cluster-mgmt"
 NODE_IP_COMMAND = "network interface show -fields address -role node-mgmt"
+
+CONTROLLER_IP_COMMAND = \
+    "network interface show -fields address,curr-node  -role cluster-mgmt"
 
 SECURITY_STYLE = {
     'mixed': constants.NASSecurityMode.MIXED,
@@ -196,7 +245,6 @@ NETWORK_PORT_TYPE = {
     'fcp': constants.PortType.FC,
     'fcache': constants.PortType.FCACHE,
     'none': constants.PortType.OTHER,
-    'nfs, cifs': constants.PortType.NFS_CIFS
 }
 
 SEVERITY_MAP = {
@@ -453,3 +501,88 @@ SEVERITY_MAP = {
     'wafl.takeover.vol.fail': 'EMERGENCY',
     'wafl.vol.nvfail.offline': 'EMERGENCY',
     'wafl.vol.walloc.rsv.failmount': 'EMERGENCY'}
+
+IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read input/output operations per second"
+}
+WRITE_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write input/output operations per second"
+}
+THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data is "
+                   "successfully transferred in MB/s"
+}
+READ_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data read is "
+                   "successfully transferred in MB/s"
+}
+WRITE_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data write is "
+                   "successfully transferred in MB/s"
+}
+RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for an IO "
+                   "operation in ms"
+}
+CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of io that are cache hits"
+}
+READ_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of read ops that are cache hits"
+}
+WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of write ops that are cache hits"
+}
+IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of IO requests in KB"
+}
+READ_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of read IO requests in KB"
+}
+WRITE_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of write IO requests in KB"
+}
+CPU_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of CPU usage"
+}
+MEMORY_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of DISK memory usage in percentage"
+}
+SERVICE_TIME = {
+    "unit": 'ms',
+    "description": "Service time of the resource in ms"
+}
+
+CAP_MAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
+    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
+    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
+    "ioSize": IO_SIZE_DESCRIPTION,
+    "readIoSize": READ_IO_SIZE_DESCRIPTION,
+    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION,
+}
