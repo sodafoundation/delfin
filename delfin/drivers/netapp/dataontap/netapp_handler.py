@@ -12,7 +12,10 @@
 # WarrayANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import time
+
+import requests
 import six
 import hashlib
 import eventlet
@@ -23,6 +26,9 @@ from oslo_utils import units
 from delfin.drivers.netapp.dataontap import constants as constant
 from delfin import exception, utils
 from delfin.common import constants
+from delfin.drivers.netapp.dataontap.performance_handler \
+    import PerformanceHandler
+from delfin.drivers.utils.rest_client import RestClient
 from delfin.drivers.utils.ssh_client import SSHPool
 from delfin.drivers.utils.tools import Tools
 
@@ -32,10 +38,20 @@ LOG = logging.getLogger(__name__)
 class NetAppHandler(object):
     OID_SERIAL_NUM = '1.3.6.1.4.1.789.1.1.9.0'
     OID_TRAP_DATA = '1.3.6.1.4.1.789.1.1.12.0'
+    NODE_NAME = 'controller_name'
     SECONDS_TO_MS = 1000
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
+
+        self.rest_client = RestClient(**kwargs)
+
+        self.rest_client.verify = kwargs.get('verify', False)
+        if self.rest_client.session is None:
+            self.rest_client.init_http_head()
+        self.rest_client.session.auth = requests.auth.HTTPBasicAuth(
+            self.rest_client.rest_username,
+            self.rest_client.rest_password)
 
     @staticmethod
     def get_table_data(values):
@@ -75,26 +91,41 @@ class NetAppHandler(object):
     def parse_alert(alert):
         try:
             alert_info = alert.get(NetAppHandler.OID_TRAP_DATA)
-            alert_array = alert_info.split(":")
+            node_name = alert.get(NetAppHandler.NODE_NAME)
+            alert_info = alert_info.replace("]", '')
+            alert_array = alert_info.split("[")
             alert_model = {}
+            alert_map = {}
             if len(alert_array) > 1:
-                alert_name = alert_array[0]
-                description = alert_array[1]
-                if constant.SEVERITY_MAP.get(alert_name):
+                category = constants.Category.FAULT \
+                    if 'created' in alert_array[0] \
+                    else constants.Category.RECOVERY
+                alert_values = alert_array[1].split(",")
+                for alert_value in alert_values:
+                    array = alert_value.split("=")
+                    if len(array) > 1:
+                        key = array[0].replace(' ', '')
+                        value = array[1].replace(' ', '').replace('.', '')
+                        alert_map[key] = value
+                if alert_map and category == constants.Category.RECOVERY:
                     alert_model = {
-                        'alert_id': alert_name,
-                        'alert_name': alert_name,
-                        'severity': constants.Severity.CRITICAL,
-                        'category': constants.Category.FAULT,
+                        'alert_id': alert_map.get('AlertId'),
+                        'alert_name': alert_map.get('AlertId'),
+                        'severity': '',
+                        'category': category,
                         'type': constants.EventType.EQUIPMENT_ALARM,
                         'occur_time': utils.utcnow_ms(),
-                        'description': description,
+                        'description': '',
                         'match_key': hashlib.md5(
-                            (alert.get(NetAppHandler.OID_TRAP_DATA)
-                             + str(utils.utcnow_ms())).encode()).hexdigest(),
+                            (alert_map.get('AlertId') + node_name +
+                             alert_map['AlertingResource']
+                             ).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                        'location': None
+                        'location': ''
                     }
+                else:
+                    raise exception.IncompleteTrapInformation(
+                        constant.STORAGE_VENDOR)
             return alert_model
         except Exception as err:
             err_msg = "Failed to parse alert from " \
@@ -104,7 +135,7 @@ class NetAppHandler(object):
 
     def login(self):
         try:
-            result = self.ssh_do_exec('version')
+            result = self.ssh_do_exec('cluster identity show')
             if 'is not a recognized command' in result:
                 raise exception.InvalidIpOrPort()
         except Exception as e:
@@ -321,7 +352,9 @@ class NetAppHandler(object):
                         'sequence_number': alert_map['AlertID'],
                         'match_key': hashlib.md5(
                             (alert_map['AlertID'] +
-                             str(occur_time)).encode()).hexdigest(),
+                             alert_map['Node'] +
+                             alert_map['AlertingResource']
+                             ).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                         'location':
                             alert_map['ProbableCause'] +
@@ -482,6 +515,14 @@ class NetAppHandler(object):
             controller_list = []
             controller_info = self.ssh_do_exec(
                 constant.CONTROLLER_SHOW_DETAIL_COMMAND)
+            controller_ips = self.ssh_do_exec(
+                constant.CONTROLLER_IP_COMMAND)
+            ips_array = self.get_table_data(controller_ips)
+            ip_map = {}
+            for ips in ips_array:
+                ip_array = ips.split()
+                if len(ip_array) == 4:
+                    ip_map[ip_array[2]] = ip_array[3]
             controller_map_list = []
             Tools.split_value_map_list(
                 controller_info, controller_map_list, split=':')
@@ -499,6 +540,7 @@ class NetAppHandler(object):
                         'soft_version': None,
                         'cpu_info': None,
                         'memory_size': None,
+                        'mgmt_ip': ip_map.get(controller_map['Node'])
                     }
                     controller_list.append(controller_model)
             return controller_list
@@ -949,3 +991,217 @@ class NetAppHandler(object):
                       "netapp cmode: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
+
+    def do_rest_call(self, url, data):
+        try:
+            res = self.rest_client.do_call(
+                url, data, 'GET', constant.SOCKET_TIMEOUT)
+            if res.status_code == constant.RETURN_SUCCESS_CODE \
+                    or res.status_code == constant.CREATED_SUCCESS_CODE \
+                    or res.status_code == constant.ACCEPTED_RETURN_CODE:
+                result_json = res.json()
+                return result_json.get('records')
+            elif res.status_code == constant.BAD_REQUEST_RETURN_CODE:
+                raise exception.BadRequest()
+            elif res.status_code == constant.UNAUTHORIZED_RETURN_CODE:
+                raise exception.NotAuthorized()
+            elif res.status_code == constant.FORBIDDEN_RETURN_CODE:
+                raise exception.InvalidUsernameOrPassword()
+            elif res.status_code == constant.NOT_FOUND_RETURN_CODE:
+                raise exception.NotFound()
+            elif res.status_code == constant.METHOD_NOT_ALLOWED_CODE:
+                raise exception.Invalid()
+            elif res.status_code == constant.CONFLICT_RETURN_CODE:
+                raise exception.Invalid()
+            elif res.status_code == constant.INTERNAL_ERROR_CODE:
+                raise exception.BadResponse()
+        except exception.DelfinException as e:
+            err_msg = "Failed to rest call from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to rest call from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def collect_perf_metrics(self, storage_id,
+                             resource_metrics, start_time, end_time):
+        try:
+            version_info = self.ssh_do_exec(
+                constant.VERSION_SHOW_COMMAND)
+            version_array = version_info.split("\r\n")
+            storage_version = []
+            for version in version_array:
+                if 'NetApp' in version:
+                    storage_version = version.split(":")
+                    break
+            version = float(storage_version[0][-3:])
+            metrics = []
+            if start_time and end_time:
+                metrics_keys = resource_metrics.keys()
+                # storage metrics
+                if constants.ResourceType.STORAGE in metrics_keys:
+                    if version >= 9.6:
+                        metrics.extend(
+                            self.get_storage_per(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # pool metrics
+                if constants.ResourceType.STORAGE_POOL in metrics_keys:
+                    if version >= 9.7:
+                        metrics.extend(
+                            self.get_pool_per(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # volume metrics
+                if constants.ResourceType.VOLUME in metrics_keys:
+                    if version >= 9.7:
+                        metrics.extend(
+                            self.get_volume_per(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # controller metrics
+                if constants.ResourceType.CONTROLLER in metrics_keys:
+                    pass
+                # port metrics
+                if constants.ResourceType.PORT in metrics_keys:
+                    if version >= 9.8:
+                        metrics.extend(
+                            self.get_port_per(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # disk metrics
+                if constants.ResourceType.DISK in metrics_keys:
+                    pass
+                # filesystem metrics
+                if constants.ResourceType.FILESYSTEM in metrics_keys:
+                    if version >= 9.7:
+                        metrics.extend(
+                            self.get_fs_per(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # share metrics
+                if constants.ResourceType.SHARE in metrics_keys:
+                    pass
+            return metrics
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage performance from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage performance from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def get_storage_per(self, metrics, storage_id, start_time, end_time):
+        data = {}
+        json_info = self.do_rest_call(constant.CLUSTER_PER_URL, data)
+        if json_info is not None:
+            system_info = self.ssh_do_exec(
+                constant.CLUSTER_SHOW_COMMAND)
+            storage_map_list = []
+            Tools.split_value_map_list(
+                system_info, storage_map_list, split=':')
+            storage = storage_map_list[-1]
+            storage_metrics = PerformanceHandler.\
+                get_per_value(metrics, storage_id,
+                              start_time, end_time,
+                              json_info,
+                              storage['ClusterSerialNumber'],
+                              storage['ClusterName'], 'storage')
+            return storage_metrics
+
+    def get_pool_per(self, metrics, storage_id, start_time, end_time):
+        data = {}
+        agg_info = self.ssh_do_exec(
+            constant.AGGREGATE_SHOW_DETAIL_COMMAND)
+        agg_map_list = []
+        pool_metrics = []
+        Tools.split_value_map_list(agg_info, agg_map_list, split=':')
+        for agg_map in agg_map_list:
+            if 'UUIDString' in agg_map:
+                uuid = agg_map['UUIDString']
+                json_info = self.do_rest_call(
+                    constant.POOL_PER_URL % uuid, data)
+                pool_metrics.extend(
+                    PerformanceHandler.get_per_value(metrics, storage_id,
+                                                     start_time, end_time,
+                                                     json_info,
+                                                     agg_map['UUIDString'],
+                                                     agg_map['Aggregate'],
+                                                     'storagePool'))
+
+        return pool_metrics
+
+    def get_volume_per(self, metrics, storage_id, start_time, end_time):
+        data = {}
+        volume_info = \
+            self.ssh_do_exec(constant.LUN_SHOW_DETAIL_COMMAND)
+        volume_map_list = []
+        volume_metrics = []
+        Tools.split_value_map_list(volume_info, volume_map_list, split=':')
+        for volume in volume_map_list:
+            if 'LUNUUID' in volume:
+                uuid = volume['LUNUUID']
+                json_info = self.do_rest_call(
+                    constant.VOLUME_PER_URL % uuid, data)
+                volume_metrics.extend(
+                    PerformanceHandler.get_per_value(metrics, storage_id,
+                                                     start_time, end_time,
+                                                     json_info,
+                                                     volume['SerialNumber'],
+                                                     volume['LUNName'],
+                                                     'volume'))
+        return volume_metrics
+
+    def get_fs_per(self, metrics, storage_id, start_time, end_time):
+        fs_info = self.do_rest_call(
+            constant.FS_INFO_URL, {})
+        fs_metrics = []
+        for fs in fs_info:
+            if 'uuid' in fs:
+                data = {}
+                uuid = fs['uuid']
+                json_info = self.do_rest_call(
+                    constant.FS_PER_URL % uuid, data)
+                fs_id = self.get_fs_id(
+                    fs['svm']['name'], fs['name'])
+                fs_metrics.extend(
+                    PerformanceHandler.get_per_value(metrics, storage_id,
+                                                     start_time, end_time,
+                                                     json_info, fs_id,
+                                                     fs['name'],
+                                                     'filesystem'))
+        return fs_metrics
+
+    def get_port_per(self, metrics, storage_id, start_time, end_time):
+        fc_port = self.do_rest_call(constant.FC_INFO_URL, {})
+        port_metrics = []
+        for fc in fc_port:
+            if 'uuid' in fc:
+                uuid = fc['uuid']
+                json_info = self.do_rest_call(constant.FC_PER_URL % uuid, {})
+                port_id = fc['node']['name'] + '_' + fc['name']
+                port_metrics.extend(
+                    PerformanceHandler.get_per_value(metrics, storage_id,
+                                                     start_time, end_time,
+                                                     json_info, port_id,
+                                                     fc['name'],
+                                                     'port'))
+        eth_port = self.do_rest_call(constant.ETH_INFO_URL, {})
+        for eth in eth_port:
+            if 'uuid' in eth:
+                uuid = eth['uuid']
+                json_info = self.do_rest_call(constant.ETH_PER_URL % uuid, {})
+                port_id = eth['node']['name'] + '_' + eth['name']
+                port_metrics.extend(
+                    PerformanceHandler.get_per_value(metrics, storage_id,
+                                                     start_time, end_time,
+                                                     json_info, port_id,
+                                                     eth['name'],
+                                                     'port'))
+        return port_metrics

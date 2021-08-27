@@ -14,6 +14,7 @@
 from unittest import TestCase, mock
 
 import paramiko
+
 from delfin.tests.unit.drivers.netapp.netapp_ontap import test_constans
 from delfin import context
 from delfin.drivers.netapp.dataontap.netapp_handler import NetAppHandler
@@ -88,11 +89,12 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_parse_alert(self):
         data = self.netapp_client.parse_alert(context, test_constans.TRAP_MAP)
-        self.assertEqual(data['alert_name'], 'LUN.inconsistent.filesystem')
+        self.assertEqual(data['alert_name'], 'DisabledInuseSASPort_Alert')
 
     def test_list_controllers(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.CONTROLLER_INFO])
+            side_effect=[test_constans.CONTROLLER_INFO,
+                         test_constans.CONTROLLER_IP_INFP])
         data = self.netapp_client.list_controllers(context)
         self.assertEqual(data[0]['name'], 'cl-01')
 
@@ -149,3 +151,39 @@ class TestNetAppCmodeDriver(TestCase):
                          test_constans.CLUSTER_IPS_INFO])
         data = self.netapp_client.get_alert_sources(context)
         self.assertEqual(data[0]['host'], '192.168.159.131')
+
+    def test_get_storage_performance(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[
+                test_constans.VERSION,
+                # storage
+                test_constans.SYSTEM_INFO,
+                # pool
+                test_constans.AGGREGATE_DETAIL_INFO,
+                # volume
+                test_constans.LUN_INFO,
+            ])
+        self.netapp_client.netapp_handler.do_rest_call = mock.Mock(
+            side_effect=[  # storage
+                test_constans.CLUSTER_PER_INFO,
+                # pool
+                test_constans.POOL_PER_INFO,
+                test_constans.POOL_PER_INFO,
+                test_constans.POOL_PER_INFO,
+                # volume
+                test_constans.LUN_PER_INFO,
+                # port
+                test_constans.PORT_REST_INFO,
+                test_constans.FC_PER_INFO,
+                test_constans.PORT_REST_INFO,
+                test_constans.ETH_PER_INFO,
+                # fs
+                test_constans.FS_REST_INFO,
+                test_constans.FS_PER_INFO,
+            ])
+        data = self.netapp_client.collect_perf_metrics(
+            context, test_constans.ACCESS_INFO['storage_id'],
+            test_constans.RESOURCE_METRICS,
+            start_time=str(1435214300000),
+            end_time=str(1495315500000))
+        self.assertEqual(data[0][2]['1485343200000'], 1000)
