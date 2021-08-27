@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-
-**periodical task manager for metric collection tasks**
-
+periodical task manager for metric collection tasks**
 """
 from oslo_log import log
-
 from delfin import manager
 from delfin.task_manager.scheduler import schedule_manager
-
 from delfin.task_manager.scheduler.schedulers.telemetry.job_handler\
     import JobHandler
 from delfin.task_manager.scheduler.schedulers.telemetry.job_handler\
