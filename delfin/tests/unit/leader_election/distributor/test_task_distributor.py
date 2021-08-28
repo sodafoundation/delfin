@@ -54,3 +54,13 @@ class TestTaskDistributor(test.TestCase):
         # call telemetry job scheduling
         task_distributor()
         self.assertEqual(mock_assign_job.call_count, 1)
+
+    @mock.patch.object(db, 'task_update')
+    @mock.patch(
+        'delfin.task_manager.metrics_rpcapi.TaskAPI.assign_job')
+    def test_distribute_new_job(self, mock_task_update, mock_assign_job):
+        ctx = context.get_admin_context()
+        task_distributor = TaskDistributor(ctx)
+        task_distributor.distribute_new_job('fake_task_id')
+        self.assertEqual(mock_assign_job.call_count, 1)
+        self.assertEqual(mock_task_update.call_count, 1)
