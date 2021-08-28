@@ -22,16 +22,16 @@ from oslo_utils import uuidutils
 
 from delfin import context
 from delfin import utils
-from delfin.task_manager.scheduler.schedulers.telemetry.failed_telemetry_job \
-    import FailedTelemetryJob
-from delfin.task_manager.scheduler.schedulers.telemetry.telemetry_job import \
-    TelemetryJob
+from delfin.leader_election.distributor.failed_task_distributor\
+    import FailedTaskDistributor
+from delfin.leader_election.distributor.task_distributor \
+    import TaskDistributor
 
 LOG = log.getLogger(__name__)
 
 SCHEDULER_BOOT_JOBS = [
-    TelemetryJob.__module__ + '.' + TelemetryJob.__name__,
-    FailedTelemetryJob.__module__ + '.' + FailedTelemetryJob.__name__
+    TaskDistributor.__module__ + '.' + TaskDistributor.__name__,
+    FailedTaskDistributor.__module__ + '.' + FailedTaskDistributor.__name__
 ]
 
 
@@ -54,6 +54,7 @@ class SchedulerManager(object):
             self.scheduler.start()
             self.scheduler_started = True
 
+    def schedule_boot_jobs(self):
         if not self.boot_jobs_scheduled:
             try:
                 for job in SCHEDULER_BOOT_JOBS:
