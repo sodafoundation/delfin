@@ -15,12 +15,14 @@
 periodical task manager for metric collection tasks**
 """
 from oslo_log import log
+
 from delfin import manager
+from delfin.leader_election.distributor import task_distributor
 from delfin.task_manager.scheduler import schedule_manager
-from delfin.task_manager.scheduler.schedulers.telemetry.job_handler\
-    import JobHandler
-from delfin.task_manager.scheduler.schedulers.telemetry.job_handler\
+from delfin.task_manager.scheduler.schedulers.telemetry.job_handler \
     import FailedJobHandler
+from delfin.task_manager.scheduler.schedulers.telemetry.job_handler \
+    import JobHandler
 from delfin.task_manager.tasks import telemetry
 
 LOG = log.getLogger(__name__)
@@ -53,3 +55,7 @@ class MetricsTaskManager(manager.Manager):
     def remove_failed_job(self, context, failed_task_id):
         instance = FailedJobHandler.get_instance(context, failed_task_id)
         instance.remove_failed_job(failed_task_id)
+
+    def add_new_job(self, context, task_id):
+        distributor = task_distributor.TaskDistributor(context)
+        distributor.distribute_new_job(task_id)

@@ -74,6 +74,16 @@ class TaskDistributor(object):
         else:
             LOG.debug("Periodic job distribution completed.")
 
+    def distribute_new_job(self, task_id):
+        executor = CONF.host
+        try:
+            db.task_update(self.ctx, task_id, {'executor': executor})
+            LOG.info('Distribute a new job, id: %s' % task_id)
+            self.task_rpcapi.assign_job(self.ctx, task_id, executor)
+        except Exception as e:
+            LOG.error('Failed to distribute the new job, reason: %s',
+                      six.text_type(e))
+
     @classmethod
     def job_interval(cls):
         return TelemetryCollection.PERIODIC_JOB_INTERVAL

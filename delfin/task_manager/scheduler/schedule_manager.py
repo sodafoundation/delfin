@@ -16,11 +16,13 @@ from datetime import datetime
 
 import six
 from apscheduler.schedulers.background import BackgroundScheduler
+from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import context
+from delfin import service
 from delfin import utils
 from delfin.leader_election.distributor.failed_task_distributor\
     import FailedTaskDistributor
@@ -28,6 +30,7 @@ from delfin.leader_election.distributor.task_distributor \
     import TaskDistributor
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
 
 SCHEDULER_BOOT_JOBS = [
     TaskDistributor.__module__ + '.' + TaskDistributor.__name__,
@@ -76,6 +79,15 @@ class SchedulerManager(object):
                 LOG.error("Failed to initialize periodic tasks, reason: %s.",
                           six.text_type(e))
                 raise e
+        metrics_task_server = service. \
+            TaskService.create(binary='delfin-task',
+                               topic=CONF.host,
+                               manager='delfin.'
+                                       'task_manager.'
+                                       'metrics_manager.'
+                                       'MetricsTaskManager',
+                               coordination=True)
+        service.serve(metrics_task_server)
 
     def stop(self):
         """Cleanup periodic jobs"""

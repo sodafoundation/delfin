@@ -30,6 +30,7 @@ from delfin.api.views import storages as storage_view
 from delfin.common import constants
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
+from delfin.task_manager import perf_job_manager
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.tasks import resources
 from delfin.task_manager.tasks import telemetry as task_telemetry
@@ -43,6 +44,7 @@ class StorageController(wsgi.Controller):
         super().__init__()
         self.task_rpcapi = task_rpcapi.TaskAPI()
         self.driver_api = driverapi.API()
+        self.perf_job_manager = perf_job_manager.PerfJobManager()
         self.search_options = ['name', 'vendor', 'model', 'status',
                                'serial_number']
 
@@ -109,8 +111,8 @@ class StorageController(wsgi.Controller):
             capabilities = self.driver_api.get_capabilities(
                 context=ctxt, storage_id=storage['id'])
             validation.validate_capabilities(capabilities)
-            _create_performance_monitoring_task(ctxt, storage['id'],
-                                                capabilities)
+            self.perf_job_manager.create_perf_job(ctxt, storage['id'],
+                                                  capabilities)
         except exception.EmptyResourceMetrics:
             msg = _("Resource metric provided by capabilities is empty for "
                     "storage: %s") % storage['id']
@@ -265,18 +267,3 @@ def _set_synced_if_ok(context, storage_id, resource_count):
         storage['sync_status'] = resource_count * constants.ResourceSync.START
         storage['updated_at'] = current_time
         db.storage_update(context, storage['id'], storage)
-
-
-def _create_performance_monitoring_task(context, storage_id, capabilities):
-    # Check resource_metric attribute availability and
-    # check if resource_metric is empty
-    if 'resource_metrics' not in capabilities \
-            or not bool(capabilities.get('resource_metrics')):
-        raise exception.EmptyResourceMetrics()
-
-    task = dict()
-    task.update(storage_id=storage_id)
-    task.update(args=capabilities.get('resource_metrics'))
-    task.update(interval=CONF.telemetry.performance_collection_interval)
-    task.update(method=constants.TelemetryCollection.PERFORMANCE_TASK_METHOD)
-    db.task_create(context=context, values=task)
