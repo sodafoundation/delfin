@@ -76,13 +76,12 @@ class PerformanceHandler(object):
                             and timestamp % 60000 == 0:
                         key_list = constant.PER_MAP.get(key, [])
                         if len(key_list) > 0:
-                            value = per_info.get(key_list[0], None)
+                            value = per_info.get(key_list[0], {})\
+                                .get(key_list[1], None)
                             if value is not None:
-                                value = value.get(key_list[1], None)
-                                if value is not None:
-                                    value = PerformanceHandler.\
-                                        get_value(value, key)
-                                    values[str(timestamp)] = value
+                                value = PerformanceHandler.\
+                                    get_value(value, key)
+                                values[str(timestamp)] = value
             if values != {}:
                 m = constants.metric_struct(name=key, labels=labels,
                                             values=values)
