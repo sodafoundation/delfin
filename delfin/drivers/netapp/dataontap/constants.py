@@ -48,7 +48,6 @@ FC_PER_URL = '/api/network/fc/ports/%s/metrics?interval=1h&fields=iops,' \
              'throughput,latency'
 ETH_PER_URL = '/api/network/ethernet/ports/%s/metrics?interval=1h&' \
               'fields=throughput'
-
 FS_INFO_URL = '/api/storage/volumes?fields=svm'
 FC_INFO_URL = '/api/network/fc/ports'
 ETH_INFO_URL = '/api/network/ethernet/ports?fields=node'
