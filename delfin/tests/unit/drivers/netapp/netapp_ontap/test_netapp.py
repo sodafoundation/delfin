@@ -187,3 +187,8 @@ class TestNetAppCmodeDriver(TestCase):
             start_time=str(1435214300000),
             end_time=str(1495315500000))
         self.assertEqual(data[0][2]['1485343200000'], 1000)
+
+    def test_get_capabilities(self):
+        data = self.netapp_client.get_capabilities(context)
+        self.assertEqual(data['resource_metrics']['storage']
+                         ['throughput']['unit'], 'MB/s')
