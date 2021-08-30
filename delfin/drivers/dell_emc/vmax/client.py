@@ -17,6 +17,7 @@ from oslo_utils import units
 
 from delfin import exception
 from delfin.common import constants
+from delfin.drivers.dell_emc.vmax import constants as consts
 from delfin.drivers.dell_emc.vmax import rest, perf_utils
 
 LOG = log.getLogger(__name__)
@@ -164,7 +165,7 @@ class VMAXClient(object):
                 if int(self.uni_version) < 90:
                     total_cap = pool_info['total_usable_cap_gb'] * units.Gi
                     used_cap = pool_info['total_allocated_cap_gb'] * units.Gi
-                    subscribed_cap =\
+                    subscribed_cap = \
                         pool_info['total_subscribed_cap_gb'] * units.Gi
                 else:
                     srp_cap = pool_info['srp_capacity']
@@ -252,7 +253,7 @@ class VMAXClient(object):
                     sg = vol['storageGroupId'][0]
                     sg_info = self.rest.get_storage_group(
                         self.array_id, self.uni_version, sg)
-                    v['native_storage_pool_id'] =\
+                    v['native_storage_pool_id'] = \
                         sg_info.get('srp', default_srps[emulation_type])
                     v['compressed'] = sg_info.get('compression', False)
                 else:
@@ -386,29 +387,86 @@ class VMAXClient(object):
         return self.rest.clear_alert(sequence_number, version=self.uni_version,
                                      array=self.array_id)
 
-    def get_array_performance_metrics(self, storage_id, start_time, end_time):
+    def get_storage_metrics(self, storage_id, metrics, start_time, end_time):
         """Get performance metrics."""
         try:
-            # Fetch VMAX Array Performance data from REST client
-            # TODO  :
-            #  Check whether array is registered for performance collection
-            #  in unisphere
-            perf_data = self.rest.get_array_performance_metrics(
-                self.array_id, start_time, end_time)
-            # parse VMAX REST response to metric->values map
-            metrics_value_map = perf_utils.parse_performance_data(perf_data)
-            # prepare  labels required for array_leval performance data
-            labels = {'storage_id': storage_id, 'resource_type': 'array'}
-            # map to unified delifn  metrics
-            delfin_metrics = perf_utils.\
-                map_array_perf_metrics_to_delfin_metrics(metrics_value_map)
-            metrics_array = []
-            for key in constants.DELFIN_ARRAY_METRICS:
-                m = constants.metric_struct(name=key, labels=labels,
-                                            values=delfin_metrics[key])
-                metrics_array.append(m)
-            return metrics_array
+            perf_list = self.rest.get_storage_metrics(
+                self.array_id, metrics, start_time, end_time)
 
+            return perf_utils.construct_metrics(storage_id,
+                                                consts.STORAGE_METRICS,
+                                                consts.STORAGE_CAP,
+                                                perf_list)
         except Exception:
-            LOG.error("Failed to get performance metrics data for VMAX")
+            LOG.error("Failed to get STORAGE metrics for VMAX")
+            raise
+
+    def get_pool_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get performance metrics."""
+        try:
+            perf_list = self.rest.get_pool_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            metrics_array = perf_utils.construct_metrics(
+                storage_id, consts.POOL_METRICS, consts.POOL_CAP, perf_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get STORAGE POOL metrics for VMAX")
+            raise
+
+    def get_port_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get performance metrics."""
+        try:
+            be_perf_list, fe_perf_list, rdf_perf_list = \
+                self.rest.get_port_metrics(self.array_id,
+                                           metrics, start_time, end_time)
+
+            metrics_array = []
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.BEPORT_METRICS,
+                consts.PORT_CAP, be_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.FEPORT_METRICS,
+                consts.PORT_CAP, fe_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.RDFPORT_METRICS,
+                consts.PORT_CAP, rdf_perf_list)
+            metrics_array.extend(metrics_list)
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get PORT metrics for VMAX")
+            raise
+
+    def get_controller_metrics(self, storage_id,
+                               metrics, start_time, end_time):
+        """Get performance metrics."""
+        try:
+            be_perf_list, fe_perf_list, rdf_perf_list = self.rest.\
+                get_controller_metrics(self.array_id,
+                                       metrics, start_time, end_time)
+
+            metrics_array = []
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.BEDIRECTOR_METRICS,
+                consts.CONTROLLER_CAP, be_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.FEDIRECTOR_METRICS,
+                consts.CONTROLLER_CAP, fe_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.RDFDIRECTOR_METRICS,
+                consts.CONTROLLER_CAP, rdf_perf_list)
+            metrics_array.extend(metrics_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get CONTROLLER metrics for VMAX")
             raise
