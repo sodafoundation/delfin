@@ -21,6 +21,7 @@ from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import context
+from delfin import service
 from delfin import utils
 from delfin.leader_election.distributor.failed_task_distributor\
     import FailedTaskDistributor
@@ -76,6 +77,16 @@ class SchedulerManager(object):
                 LOG.error("Failed to initialize periodic tasks, reason: %s.",
                           six.text_type(e))
                 raise e
+        job_generator = service. \
+            TaskService.create(binary='delfin-task',
+                               topic='JobGenerator',
+                               manager='delfin.'
+                                       'leader_election.'
+                                       'distributor.'
+                                       'perf_job_manager.'
+                                       'PerfJobManager',
+                               coordination=True)
+        service.serve(job_generator)
 
     def stop(self):
         """Cleanup periodic jobs"""

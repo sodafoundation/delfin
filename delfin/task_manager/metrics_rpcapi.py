@@ -73,3 +73,9 @@ class TaskAPI(object):
                                           fanout=True)
         return call_context.cast(context, 'remove_failed_job',
                                  failed_task_id=failed_task_id)
+
+    def create_perf_job(self, context, task_id):
+        rpc_client = self.get_client('JobGenerator')
+        call_context = rpc_client.prepare(topic='JobGenerator', version='1.0')
+        return call_context.cast(context, 'add_new_job',
+                                 task_id=task_id)
