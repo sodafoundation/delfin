@@ -15,12 +15,14 @@
 import inspect
 
 import decorator
+import tooz
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
 import six
 from tooz import coordination
 from tooz import locking
+from tooz import partitioner
 
 from delfin import cryptor
 from delfin import exception
@@ -320,3 +322,31 @@ def _get_redis_backend_url():
             .format(backend_type=CONF.coordination.backend_type,
                     server=CONF.coordination.backend_server)
     return backend_url
+
+
+class ConsistentHashing(Coordinator):
+    GROUP_NAME = 'partitioner_group'
+
+    def __init__(self):
+        super(ConsistentHashing, self). \
+            __init__(agent_id=CONF.host, prefix="")
+
+    def join_group(self):
+        try:
+            self.coordinator.join_partitioned_group(self.GROUP_NAME)
+        except tooz.coordination.MemberAlreadyExist:
+            LOG.info('Member %s already in partitioner_group' % CONF.host)
+
+    def get_task_executor(self, task_id):
+        part = partitioner.Partitioner(self.coordinator, self.GROUP_NAME)
+        members = part.members_for_object(task_id)
+        for member in members:
+            LOG.info('For task id %s, host should be %s' % (task_id, member))
+            return member.decode('utf-8')
+
+    def register_watcher_func(self, on_node_join, on_node_leave):
+        self.coordinator.watch_join_group(self.GROUP_NAME, on_node_join)
+        self.coordinator.watch_leave_group(self.GROUP_NAME, on_node_leave)
+
+    def watch_group_change(self):
+        self.coordinator.run_watchers()

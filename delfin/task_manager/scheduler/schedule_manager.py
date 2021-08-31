@@ -21,12 +21,15 @@ from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import context
+from delfin import db
 from delfin import service
 from delfin import utils
-from delfin.leader_election.distributor.failed_task_distributor\
+from delfin.coordination import ConsistentHashing
+from delfin.leader_election.distributor.failed_task_distributor \
     import FailedTaskDistributor
 from delfin.leader_election.distributor.task_distributor \
     import TaskDistributor
+from delfin.task_manager import metrics_rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
@@ -38,6 +41,9 @@ SCHEDULER_BOOT_JOBS = [
 
 @six.add_metaclass(utils.Singleton)
 class SchedulerManager(object):
+
+    GROUP_CHANGE_DETECT_INTERVAL_SEC = 30
+
     def __init__(self, scheduler=None):
         if not scheduler:
             scheduler = BackgroundScheduler()
@@ -47,6 +53,7 @@ class SchedulerManager(object):
         self.boot_jobs = dict()
         self.boot_jobs_scheduled = False
         self.ctx = context.get_admin_context()
+        self.task_rpcapi = task_rpcapi.TaskAPI()
 
     def start(self):
         """ Initialise the schedulers for periodic job creation
@@ -54,6 +61,40 @@ class SchedulerManager(object):
         if not self.scheduler_started:
             self.scheduler.start()
             self.scheduler_started = True
+
+    def on_node_join(self, event):
+        # A new node joined the group, all the job would be re-distributed.
+        # If the job is already on the node, it would be ignore and would
+        # not be scheduled again
+        LOG.info('Member %s joined the group %s' % (event.member_id,
+                                                    event.group_id))
+        # Get all the jobs
+        tasks = db.task_get_all(self.ctx)
+        distributor = TaskDistributor(self.ctx)
+        partitioner = ConsistentHashing()
+        partitioner.start()
+        for task in tasks:
+            # Get the specific executor
+            origin_executor = task['executor']
+            # If the target executor is different from current executor,
+            # remove the job from old executor and add it to new executor
+            new_executor = partitioner.get_task_executor(task['id'])
+            if new_executor != origin_executor:
+                LOG.info('Re-distribute job %s from %s to %s' %
+                         (task['id'], origin_executor, new_executor))
+                self.task_rpcapi.remove_job(self.ctx, task['id'],
+                                            task['executor'])
+            distributor.distribute_new_job(task['id'])
+        partitioner.stop()
+
+    def on_node_leave(self, event):
+        LOG.info('Member %s left the group %s' % (event.member_id,
+                                                  event.group_id))
+        filters = {'executor': event.member_id.decode('utf-8')}
+        re_distribute_tasks = db.task_get_all(self.ctx, filters=filters)
+        distributor = TaskDistributor(self.ctx)
+        for task in re_distribute_tasks:
+            distributor.distribute_new_job(task['id'])
 
     def schedule_boot_jobs(self):
         if not self.boot_jobs_scheduled:
@@ -90,6 +131,13 @@ class SchedulerManager(object):
                                        'PerfJobManager',
                                coordination=True)
         service.serve(job_generator)
+        partitioner = ConsistentHashing()
+        partitioner.start()
+        partitioner.register_watcher_func(self.on_node_join,
+                                          self.on_node_leave)
+        self.scheduler.add_job(partitioner.watch_group_change, 'interval',
+                               seconds=self.GROUP_CHANGE_DETECT_INTERVAL_SEC,
+                               next_run_time=datetime.now())
 
     def stop(self):
         """Cleanup periodic jobs"""
@@ -104,5 +152,7 @@ class SchedulerManager(object):
         return self.scheduler
 
     def recover_job(self):
-        # TODO: would be implement when implement the consistent hashing
-        pass
+        all_tasks = db.task_get_all(self.ctx)
+        distributor = TaskDistributor(self.ctx)
+        for task in all_tasks:
+            distributor.distribute_new_job(task['id'])
