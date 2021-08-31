@@ -77,6 +77,9 @@ class SchedulerManager(object):
                 LOG.error("Failed to initialize periodic tasks, reason: %s.",
                           six.text_type(e))
                 raise e
+        # Recover the job in db
+        self.recover_job()
+        # Start the consumer of job creation message
         job_generator = service. \
             TaskService.create(binary='delfin-task',
                                topic='JobGenerator',
@@ -99,3 +102,7 @@ class SchedulerManager(object):
 
     def get_scheduler(self):
         return self.scheduler
+
+    def recover_job(self):
+        # TODO: would be implement when implement the consistent hashing
+        pass
