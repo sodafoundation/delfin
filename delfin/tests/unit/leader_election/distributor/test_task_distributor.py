@@ -40,21 +40,6 @@ fake_telemetry_jobs = [
 
 class TestTaskDistributor(test.TestCase):
 
-    @mock.patch.object(db, 'task_get_all',
-                       mock.Mock(return_value=fake_telemetry_jobs))
-    @mock.patch.object(db, 'task_update',
-                       mock.Mock(return_value=fake_telemetry_job))
-    @mock.patch.object(db, 'task_get',
-                       mock.Mock(return_value=fake_telemetry_job))
-    @mock.patch(
-        'delfin.task_manager.metrics_rpcapi.TaskAPI.assign_job')
-    def test_telemetry_job_scheduling(self, mock_assign_job):
-        ctx = context.get_admin_context()
-        task_distributor = TaskDistributor(ctx)
-        # call telemetry job scheduling
-        task_distributor()
-        self.assertEqual(mock_assign_job.call_count, 1)
-
     @mock.patch.object(db, 'task_update')
     @mock.patch(
         'delfin.task_manager.metrics_rpcapi.TaskAPI.assign_job')

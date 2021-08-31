@@ -30,12 +30,6 @@ class TaskDistributor(object):
         self.ctx = ctx
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
-        # Reset last run time of tasks to restart scheduling and
-        # start the failed task job
-        task_list = db.task_get_all(ctx)
-        for task in task_list:
-            db.task_update(ctx, task['id'], {'last_run_time': None})
-
     def __call__(self):
         """ Schedule the collection tasks based on interval """
 
@@ -51,28 +45,6 @@ class TaskDistributor(object):
         except Exception as e:
             LOG.error("Failed to remove periodic scheduling job , reason: %s.",
                       six.text_type(e))
-
-        try:
-
-            filters = {'last_run_time': None}
-            tasks = db.task_get_all(self.ctx, filters=filters)
-            LOG.debug("Distributing performance collection jobs: total "
-                      "jobs to be handled:%s" % len(tasks))
-            for task in tasks:
-                # Todo Get executor for the job
-                executor = CONF.host
-                db.task_update(self.ctx, task['id'], {'executor': executor})
-                LOG.info('Assigning executor for collection job for id: '
-                         '%s' % task['id'])
-                self.task_rpcapi.assign_job(self.ctx, task['id'], executor)
-
-                LOG.debug('Periodic collection job assigned for id: '
-                          '%s ' % task['id'])
-        except Exception as e:
-            LOG.error("Failed to distribute periodic collection, reason: %s.",
-                      six.text_type(e))
-        else:
-            LOG.debug("Periodic job distribution completed.")
 
     def distribute_new_job(self, task_id):
         executor = CONF.host
