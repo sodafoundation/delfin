@@ -12,7 +12,7 @@
 # WarrayANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import re
 import time
 
 import requests
@@ -1029,15 +1029,7 @@ class NetAppHandler(object):
     def collect_perf_metrics(self, storage_id,
                              resource_metrics, start_time, end_time):
         try:
-            version_info = self.ssh_do_exec(
-                constant.VERSION_SHOW_COMMAND)
-            version_array = version_info.split("\r\n")
-            storage_version = []
-            for version in version_array:
-                if 'NetApp' in version:
-                    storage_version = version.split(":")
-                    break
-            version = float(storage_version[0][-3:])
+            version = self.get_version()
             metrics = []
             if start_time and end_time:
                 metrics_keys = resource_metrics.keys()
@@ -1199,3 +1191,18 @@ class NetAppHandler(object):
                         json_info, port_id,
                         eth['name'], constants.ResourceType.PORT))
         return port_metrics
+
+    def get_version(self):
+        version_info = self.ssh_do_exec(
+            constant.VERSION_SHOW_COMMAND)
+        version_array = version_info.split("\r\n")
+        storage_version = []
+        for version in version_array:
+            if 'NetApp' in version:
+                storage_version = version.split(":")
+                break
+        version_List = re.findall(constant.FLOAT_PATTERN, storage_version[0])
+        for version in version_List:
+            if float(version) >= 9.0:
+                return float(version)
+        return 9.0

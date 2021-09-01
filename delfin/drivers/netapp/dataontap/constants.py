@@ -63,6 +63,7 @@ PER_MAP = {
 }
 
 PATTERN = re.compile('^[-]{3,}')
+FLOAT_PATTERN = r"[-+]?\d*\.\d+|\d+"
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
 STORAGE_STATUS_COMMAND = "system health status show"
