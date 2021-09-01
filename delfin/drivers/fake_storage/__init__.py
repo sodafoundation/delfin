@@ -76,12 +76,13 @@ RESOURCE_COUNT_DICT = {
 
 # Min and max are currently set to 1 to make sure at least one relation can be
 # built in fake driver for host mapping elements
-MIN_STORAGE_HOST_INITIATORS, MAX_STORAGE_HOST_INITIATORS = 1, 1
-MIN_STORAGE_HOSTS, MAX_STORAGE_HOSTS = 1, 1
-MIN_STORAGE_HOST_GROUPS, MAX_STORAGE_HOST_GROUPS = 1, 1
-MIN_VOLUME_GROUPS, MAX_VOLUME_GROUPS = 1, 1
-MIN_PORT_GROUPS, MAX_PORT_GROUPS = 1, 1
-MIN_MASKING_VIEWS, MAX_MASKING_VIEWS = 1, 1
+MIN_STORAGE_HOST_INITIATORS, MAX_STORAGE_HOST_INITIATORS = 1, 3
+MIN_STORAGE_HOSTS, MAX_STORAGE_HOSTS = 1, 5
+MIN_STORAGE_HOST_GROUPS, MAX_STORAGE_HOST_GROUPS = 1, 5
+MIN_VOLUME_GROUPS, MAX_VOLUME_GROUPS = 1, 5
+MIN_PORT_GROUPS, MAX_PORT_GROUPS = 1, 5
+MAX_GROUP_RESOURCES_SIZE = 5
+MIN_MASKING_VIEWS, MAX_MASKING_VIEWS = 1, 5
 
 
 def get_range_val(range_str, t):
@@ -124,6 +125,10 @@ class FakeStorageDriver(driver.StorageDriver):
         MIN_VOLUME, MAX_VOLUME = get_range_val(
             CONF.fake_driver.fake_volume_range, int)
         PAGE_LIMIT = int(CONF.fake_driver.fake_page_query_limit)
+        self.rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
+        self.rd_ports_count = random.randint(MIN_PORTS, MAX_PORTS)
+        self.rd_storage_hosts_count = random.randint(MIN_STORAGE_HOSTS,
+                                                     MAX_STORAGE_HOSTS)
 
     def _get_random_capacity(self):
         total = random.randint(1000, 2000)
@@ -190,7 +195,7 @@ class FakeStorageDriver(driver.StorageDriver):
 
     def list_volumes(self, ctx):
         # Get a random number as the volume count.
-        rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
+        rd_volumes_count = self.rd_volumes_count
         LOG.info("###########fake_volumes number for %s: %d" % (
             self.storage_id, rd_volumes_count))
         loops = math.ceil(rd_volumes_count / PAGE_LIMIT)
@@ -228,7 +233,7 @@ class FakeStorageDriver(driver.StorageDriver):
         return ctrl_list
 
     def list_ports(self, ctx):
-        rd_ports_count = random.randint(MIN_PORTS, MAX_PORTS)
+        rd_ports_count = self.rd_ports_count
         LOG.info("###########fake_ports for %s: %d" % (self.storage_id,
                                                        rd_ports_count))
         port_list = []
@@ -871,8 +876,7 @@ class FakeStorageDriver(driver.StorageDriver):
         return storage_host_initiators_list
 
     def list_storage_hosts(self, ctx):
-        rd_storage_hosts_count = random.randint(MIN_STORAGE_HOSTS,
-                                                MAX_STORAGE_HOSTS)
+        rd_storage_hosts_count = self.rd_storage_hosts_count
         LOG.info("###########fake_storage_hosts for %s: %d"
                  % (self.storage_id, rd_storage_hosts_count))
         storage_host_list = []
@@ -890,33 +894,72 @@ class FakeStorageDriver(driver.StorageDriver):
         return storage_host_list
 
     def list_storage_host_groups(self, ctx):
-        rd_storage_host_groups_count = random.randint(MIN_STORAGE_HOST_GROUPS,
-                                                      MAX_STORAGE_HOST_GROUPS)
+        rd_storage_host_groups_count = random.randint(
+            MIN_STORAGE_HOST_GROUPS, MAX_STORAGE_HOST_GROUPS)
         LOG.info("###########fake_storage_host_groups for %s: %d"
                  % (self.storage_id, rd_storage_host_groups_count))
         storage_host_grp_list = []
         for idx in range(rd_storage_host_groups_count):
+            # Create hosts in hosts group
+            host_name_list = []
+            storage_hosts_count = self.rd_storage_hosts_count - 1
+            if storage_hosts_count > 0:
+                for i in range(MAX_GROUP_RESOURCES_SIZE):
+                    host_name = "storage_host_" + str(
+                        random.randint(0, storage_hosts_count))
+                    if host_name not in host_name_list:
+                        host_name_list.append(host_name)
+
+            # Create comma separated list
+            storage_hosts = None
+            for host in host_name_list:
+                if storage_hosts:
+                    storage_hosts = storage_hosts + "," + host
+                else:
+                    storage_hosts = host
+
             f = {
                 "name": "storage_host_group_" + str(idx),
                 "description": "storage_host_group_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_storage_host_group_id": "storage_host_group_"
                                                 + str(idx),
+                "storage_hosts": storage_hosts
             }
             storage_host_grp_list.append(f)
         return storage_host_grp_list
 
     def list_port_groups(self, ctx):
-        rd_port_groups_count = random.randint(MIN_PORT_GROUPS, MAX_PORT_GROUPS)
+        rd_port_groups_count = random.randint(MIN_PORT_GROUPS,
+                                              MAX_PORT_GROUPS)
         LOG.info("###########fake_port_groups for %s: %d"
                  % (self.storage_id, rd_port_groups_count))
         port_grp_list = []
         for idx in range(rd_port_groups_count):
+            # Create ports in ports group
+            port_name_list = []
+            ports_count = self.rd_ports_count - 1
+            if ports_count > 0:
+                for i in range(MAX_GROUP_RESOURCES_SIZE):
+                    port_name = "port_" + str(
+                        random.randint(0, ports_count))
+                    if port_name not in port_name_list:
+                        port_name_list.append(port_name)
+
+            # Create comma separated list
+            ports = None
+            for port in port_name_list:
+                if ports:
+                    ports = ports + "," + port
+                else:
+                    ports = port
+
             f = {
                 "name": "port_group_" + str(idx),
                 "description": "port_group_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_port_group_id": "port_group_" + str(idx),
+                "ports": ports
             }
 
             port_grp_list.append(f)
@@ -929,11 +972,30 @@ class FakeStorageDriver(driver.StorageDriver):
                  % (self.storage_id, rd_volume_groups_count))
         volume_grp_list = []
         for idx in range(rd_volume_groups_count):
+            # Create volumes in volumes group
+            volume_name_list = []
+            volumes_count = self.rd_volumes_count - 1
+            if volumes_count > 0:
+                for i in range(MAX_GROUP_RESOURCES_SIZE):
+                    volume_name = "volume_" + str(
+                        random.randint(0, volumes_count))
+                    if volume_name not in volume_name_list:
+                        volume_name_list.append(volume_name)
+
+            # Create comma separated list
+            volumes = None
+            for volume in volume_name_list:
+                if volumes:
+                    volumes = volumes + "," + volume
+                else:
+                    volumes = volume
+
             f = {
                 "name": "volume_group_" + str(idx),
                 "description": "volume_group_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_volume_group_id": "volume_group_" + str(idx),
+                "volumes": volumes
             }
             volume_grp_list.append(f)
         return volume_grp_list
