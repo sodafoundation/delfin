@@ -1166,8 +1166,8 @@ class NetAppHandler(object):
         for fc in fc_port:
             if 'uuid' in fc:
                 uuid = fc['uuid']
-                json_info = self.do_rest_call\
-                    (constant.FC_PER_URL % uuid, None)
+                json_info = self.do_rest_call(
+                    constant.FC_PER_URL % uuid, None)
                 port_id = fc['node']['name'] + '_' + fc['name']
                 port_metrics.extend(
                     PerformanceHandler.get_per_value(
@@ -1179,8 +1179,8 @@ class NetAppHandler(object):
         for eth in eth_port:
             if 'uuid' in eth:
                 uuid = eth['uuid']
-                json_info = self.do_rest_call\
-                    (constant.ETH_PER_URL % uuid, None)
+                json_info = self.do_rest_call(
+                    constant.ETH_PER_URL % uuid, None)
                 port_id = eth['node']['name'] + '_' + eth['name']
                 port_metrics.extend(
                     PerformanceHandler.get_per_value(
