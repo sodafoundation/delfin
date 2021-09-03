@@ -1081,9 +1081,8 @@ class NetAppHandler(object):
             raise exception.InvalidResults(err_msg)
 
     def get_storage_per(self, metrics, storage_id, start_time, end_time):
-        data = None
-        json_info = self.do_rest_call(constant.CLUSTER_PER_URL, data)
-        if json_info is not None:
+        json_info = self.do_rest_call(constant.CLUSTER_PER_URL, None)
+        if json_info:
             system_info = self.ssh_do_exec(
                 constant.CLUSTER_SHOW_COMMAND)
             storage_map_list = []
@@ -1100,7 +1099,6 @@ class NetAppHandler(object):
             return storage_metrics
 
     def get_pool_per(self, metrics, storage_id, start_time, end_time):
-        data = None
         agg_info = self.ssh_do_exec(
             constant.AGGREGATE_SHOW_DETAIL_COMMAND)
         agg_map_list = []
@@ -1110,7 +1108,7 @@ class NetAppHandler(object):
             if 'UUIDString' in agg_map:
                 uuid = agg_map['UUIDString']
                 json_info = self.do_rest_call(
-                    constant.POOL_PER_URL % uuid, data)
+                    constant.POOL_PER_URL % uuid, None)
                 pool_metrics.extend(
                     PerformanceHandler.get_per_value(
                         metrics,
@@ -1124,7 +1122,6 @@ class NetAppHandler(object):
         return pool_metrics
 
     def get_volume_per(self, metrics, storage_id, start_time, end_time):
-        data = None
         volume_info = \
             self.ssh_do_exec(constant.LUN_SHOW_DETAIL_COMMAND)
         volume_map_list = []
@@ -1134,7 +1131,7 @@ class NetAppHandler(object):
             if 'LUNUUID' in volume:
                 uuid = volume['LUNUUID']
                 json_info = self.do_rest_call(
-                    constant.VOLUME_PER_URL % uuid, data)
+                    constant.VOLUME_PER_URL % uuid, None)
                 volume_metrics.extend(
                     PerformanceHandler.get_per_value(
                         metrics, storage_id,
@@ -1150,10 +1147,9 @@ class NetAppHandler(object):
         fs_metrics = []
         for fs in fs_info:
             if 'uuid' in fs:
-                data = None
                 uuid = fs['uuid']
                 json_info = self.do_rest_call(
-                    constant.FS_PER_URL % uuid, data)
+                    constant.FS_PER_URL % uuid, None)
                 fs_id = self.get_fs_id(
                     fs['svm']['name'], fs['name'])
                 fs_metrics.extend(
@@ -1165,12 +1161,12 @@ class NetAppHandler(object):
         return fs_metrics
 
     def get_port_per(self, metrics, storage_id, start_time, end_time):
-        fc_port = self.do_rest_call(constant.FC_INFO_URL, {})
+        fc_port = self.do_rest_call(constant.FC_INFO_URL, None)
         port_metrics = []
         for fc in fc_port:
             if 'uuid' in fc:
                 uuid = fc['uuid']
-                json_info = self.do_rest_call(constant.FC_PER_URL % uuid, {})
+                json_info = self.do_rest_call(constant.FC_PER_URL % uuid, None)
                 port_id = fc['node']['name'] + '_' + fc['name']
                 port_metrics.extend(
                     PerformanceHandler.get_per_value(
@@ -1182,7 +1178,7 @@ class NetAppHandler(object):
         for eth in eth_port:
             if 'uuid' in eth:
                 uuid = eth['uuid']
-                json_info = self.do_rest_call(constant.ETH_PER_URL % uuid, {})
+                json_info = self.do_rest_call(constant.ETH_PER_URL % uuid, None)
                 port_id = eth['node']['name'] + '_' + eth['name']
                 port_metrics.extend(
                     PerformanceHandler.get_per_value(
