@@ -629,7 +629,6 @@ PERF_CAPABILITIES = {
         },
         "filesystem": {
             "throughput": THROUGHPUT_DESCRIPTION,
-            "responseTime": RESPONSE_TIME_DESCRIPTION,
             "iops": IOPS_DESCRIPTION,
             "readThroughput": READ_THROUGHPUT_DESCRIPTION,
             "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
