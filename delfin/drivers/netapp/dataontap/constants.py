@@ -36,23 +36,23 @@ MONTH_STAMP = '1m'
 WEEK_STAMP = '1w'
 YEAR_STAMP = '1y'
 
-CLUSTER_PER_URL = '/api/cluster/metrics?interval=1h&fields=iops,throughput,' \
-                  'latency'
-POOL_PER_URL = '/api/storage/aggregates/%s/metrics?interval=1h&fields=iops,' \
-               'throughput,latency'
-VOLUME_PER_URL = '/api/storage/luns/%s/metrics?interval=1h&fields=iops,' \
-                 'throughput,latency'
-FS_PER_URL = '/api/storage/volumes/%s/metrics?interval=1h&fields=iops,' \
-             'throughput,latency'
-FC_PER_URL = '/api/network/fc/ports/%s/metrics?interval=1h&fields=iops,' \
-             'throughput,latency'
-ETH_PER_URL = '/api/network/ethernet/ports/%s/metrics?interval=1h&' \
-              'fields=throughput'
+CLUSTER_PERF_URL = '/api/cluster/metrics?interval=1h&fields=iops,' \
+                   'throughput,'
+POOL_PERF_URL = '/api/storage/aggregates/%s/metrics?interval=1h&'\
+                'fields=iops,throughput,latency'
+VOLUME_PERF_URL = '/api/storage/luns/%s/metrics?interval=1h&fields=iops,'\
+                  'throughput,latency'
+FS_PERF_URL = '/api/storage/volumes/%s/metrics?interval=1h&fields=iops,'\
+              'throughput,latency'
+FC_PERF_URL = '/api/network/fc/ports/%s/metrics?interval=1h&fields=iops,'\
+              'throughput,latency'
+ETH_PERF_URL = '/api/network/ethernet/ports/%s/metrics?interval=1h&'\
+               'fields=throughput'
 
 FS_INFO_URL = '/api/storage/volumes?fields=svm'
 FC_INFO_URL = '/api/network/fc/ports'
 ETH_INFO_URL = '/api/network/ethernet/ports?fields=node'
-PER_MAP = {
+PERF_MAP = {
     'iops': ['iops', 'total'],
     'readIops': ['iops', 'read'],
     'writeIops': ['iops', 'write'],

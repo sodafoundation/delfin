@@ -51,8 +51,8 @@ class PerformanceHandler(object):
         return round(int(value) / capacity, 2)
 
     @staticmethod
-    def get_per_value(metrics, storage_id, start_time, end_time,
-                      data_info, resource_id, resource_name, resource_type):
+    def get_perf_value(metrics, storage_id, start_time, end_time,
+                       data_info, resource_id, resource_name, resource_type):
         fs_metrics = []
         selection = metrics.get(resource_type)
         for key in selection:
@@ -65,11 +65,11 @@ class PerformanceHandler(object):
                 'unit': constant.CAP_MAP[key]['unit']
             }
             values = {}
-            for per_info in data_info:
-                if per_info.get('timestamp'):
+            for perf_info in data_info:
+                if perf_info.get('timestamp'):
                     occur_time = \
                         int(time.mktime(time.strptime(
-                            per_info.get('timestamp'),
+                            perf_info.get('timestamp'),
                             PerformanceHandler.TIME_TYPE)))
                     second_offset = \
                         (time.mktime(time.localtime()) -
@@ -78,12 +78,12 @@ class PerformanceHandler(object):
                         (occur_time + int(second_offset)) * 1000
                     if int(start_time) <= timestamp <= int(end_time) \
                             and timestamp % 60000 == 0:
-                        key_list = constant.PER_MAP.get(key, [])
+                        key_list = constant.PERF_MAP.get(key, [])
                         if len(key_list) > 0:
-                            value = per_info.get(key_list[0], {})\
+                            value = perf_info.get(key_list[0], {}) \
                                 .get(key_list[1], None)
                             if value is not None:
-                                value = PerformanceHandler.\
+                                value = PerformanceHandler. \
                                     get_value(value, key)
                                 values[timestamp] = value
             if values:
