@@ -1602,7 +1602,7 @@ RESOURCE_METRICS = {
          'readThroughput', 'writeThroughput', 'responseTime'],
     'filesystem':
         ['iops', 'readIops', 'writeIops', 'throughput',
-         'readThroughput', 'writeThroughput', 'responseTime',
+         'readThroughput', 'writeThroughput',
          'ioSize', 'readIoSize', 'writeIoSize'],
 }
 
