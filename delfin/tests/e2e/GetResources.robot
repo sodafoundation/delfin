@@ -112,7 +112,7 @@ Get All Storages
 
 Open Application
     ${array_id}=            Register Test Storage
-    Sleep       5s
+    Sleep       10s
 
 Close Application
     @{storages}=            Get All Storages
@@ -120,4 +120,4 @@ Close Application
             ${storage_id}=  Get Value From Json	    ${storage} 	        $..id
             Delete Storage With ID                  ${storage_id[0]}
     END
-    Sleep       5s
+    Sleep       10s

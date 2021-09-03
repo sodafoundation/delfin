@@ -66,7 +66,7 @@ Register Storage with valid access_info Test
 
 Register Storage with same access_info Test
     [Tags]    DELFIN
-    Sleep                   5s
+    Sleep                   10s
     ${storage_test}=        Register Test Storage
 
     ${test}=                Load Json From File   ${CURDIR}/test.json
@@ -93,4 +93,4 @@ Delete Storage With ID
     Create Session          delfin      ${delfin_url}
     ${resp_del}=            DELETE On Session    delfin     storages/${storage_id}
     Status Should Be        202    ${resp_del}
-    Sleep       5s
+    Sleep                   10s
