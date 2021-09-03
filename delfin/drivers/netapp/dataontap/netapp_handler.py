@@ -1037,35 +1037,35 @@ class NetAppHandler(object):
                 if constants.ResourceType.STORAGE in metrics_keys:
                     if version >= 9.6:
                         metrics.extend(
-                            self.get_storage_per(
+                            self.get_storage_perf(
                                 resource_metrics,
                                 storage_id, start_time, end_time))
                 # pool metrics
                 if constants.ResourceType.STORAGE_POOL in metrics_keys:
                     if version >= 9.7:
                         metrics.extend(
-                            self.get_pool_per(
+                            self.get_pool_perf(
                                 resource_metrics,
                                 storage_id, start_time, end_time))
                 # volume metrics
                 if constants.ResourceType.VOLUME in metrics_keys:
                     if version >= 9.7:
                         metrics.extend(
-                            self.get_volume_per(
+                            self.get_volume_perf(
                                 resource_metrics,
                                 storage_id, start_time, end_time))
                 # port metrics
                 if constants.ResourceType.PORT in metrics_keys:
                     if version >= 9.8:
                         metrics.extend(
-                            self.get_port_per(
+                            self.get_port_perf(
                                 resource_metrics,
                                 storage_id, start_time, end_time))
                 # filesystem metrics
                 if constants.ResourceType.FILESYSTEM in metrics_keys:
                     if version >= 9.7:
                         metrics.extend(
-                            self.get_fs_per(
+                            self.get_fs_perf(
                                 resource_metrics,
                                 storage_id, start_time, end_time))
             return metrics
@@ -1080,8 +1080,8 @@ class NetAppHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def get_storage_per(self, metrics, storage_id, start_time, end_time):
-        json_info = self.do_rest_call(constant.CLUSTER_PER_URL, None)
+    def get_storage_perf(self, metrics, storage_id, start_time, end_time):
+        json_info = self.do_rest_call(constant.CLUSTER_PERF_URL, None)
         if json_info:
             system_info = self.ssh_do_exec(
                 constant.CLUSTER_SHOW_COMMAND)
@@ -1090,15 +1090,16 @@ class NetAppHandler(object):
                 system_info, storage_map_list, split=':')
             storage = storage_map_list[-1]
             storage_metrics = PerformanceHandler.\
-                get_per_value(metrics, storage_id,
-                              start_time, end_time,
-                              json_info,
-                              storage['ClusterSerialNumber'],
-                              storage['ClusterName'],
-                              constants.ResourceType.STORAGE)
+                get_perf_value(metrics, storage_id,
+                               start_time, end_time,
+                               json_info,
+                               storage['ClusterSerialNumber'],
+                               storage['ClusterName'],
+                               constants.ResourceType.STORAGE)
             return storage_metrics
+        return []
 
-    def get_pool_per(self, metrics, storage_id, start_time, end_time):
+    def get_pool_perf(self, metrics, storage_id, start_time, end_time):
         agg_info = self.ssh_do_exec(
             constant.AGGREGATE_SHOW_DETAIL_COMMAND)
         agg_map_list = []
@@ -1108,9 +1109,9 @@ class NetAppHandler(object):
             if 'UUIDString' in agg_map:
                 uuid = agg_map['UUIDString']
                 json_info = self.do_rest_call(
-                    constant.POOL_PER_URL % uuid, None)
+                    constant.POOL_PERF_URL % uuid, None)
                 pool_metrics.extend(
-                    PerformanceHandler.get_per_value(
+                    PerformanceHandler.get_perf_value(
                         metrics,
                         storage_id,
                         start_time,
@@ -1121,7 +1122,7 @@ class NetAppHandler(object):
                         constants.ResourceType.STORAGE_POOL))
         return pool_metrics
 
-    def get_volume_per(self, metrics, storage_id, start_time, end_time):
+    def get_volume_perf(self, metrics, storage_id, start_time, end_time):
         volume_info = \
             self.ssh_do_exec(constant.LUN_SHOW_DETAIL_COMMAND)
         volume_map_list = []
@@ -1131,9 +1132,9 @@ class NetAppHandler(object):
             if 'LUNUUID' in volume:
                 uuid = volume['LUNUUID']
                 json_info = self.do_rest_call(
-                    constant.VOLUME_PER_URL % uuid, None)
+                    constant.VOLUME_PERF_URL % uuid, None)
                 volume_metrics.extend(
-                    PerformanceHandler.get_per_value(
+                    PerformanceHandler.get_perf_value(
                         metrics, storage_id,
                         start_time, end_time,
                         json_info, volume['SerialNumber'],
@@ -1141,7 +1142,7 @@ class NetAppHandler(object):
                         constants.ResourceType.VOLUME))
         return volume_metrics
 
-    def get_fs_per(self, metrics, storage_id, start_time, end_time):
+    def get_fs_perf(self, metrics, storage_id, start_time, end_time):
         fs_info = self.do_rest_call(
             constant.FS_INFO_URL, {})
         fs_metrics = []
@@ -1149,28 +1150,28 @@ class NetAppHandler(object):
             if 'uuid' in fs:
                 uuid = fs['uuid']
                 json_info = self.do_rest_call(
-                    constant.FS_PER_URL % uuid, None)
+                    constant.FS_PERF_URL % uuid, None)
                 fs_id = self.get_fs_id(
                     fs['svm']['name'], fs['name'])
                 fs_metrics.extend(
-                    PerformanceHandler.get_per_value(
+                    PerformanceHandler.get_perf_value(
                         metrics, storage_id, start_time,
                         end_time, json_info, fs_id,
                         fs['name'],
                         constants.ResourceType.FILESYSTEM))
         return fs_metrics
 
-    def get_port_per(self, metrics, storage_id, start_time, end_time):
+    def get_port_perf(self, metrics, storage_id, start_time, end_time):
         fc_port = self.do_rest_call(constant.FC_INFO_URL, None)
         port_metrics = []
         for fc in fc_port:
             if 'uuid' in fc:
                 uuid = fc['uuid']
                 json_info = self.do_rest_call(
-                    constant.FC_PER_URL % uuid, None)
+                    constant.FC_PERF_URL % uuid, None)
                 port_id = fc['node']['name'] + '_' + fc['name']
                 port_metrics.extend(
-                    PerformanceHandler.get_per_value(
+                    PerformanceHandler.get_perf_value(
                         metrics, storage_id,
                         start_time, end_time,
                         json_info, port_id,
@@ -1180,10 +1181,10 @@ class NetAppHandler(object):
             if 'uuid' in eth:
                 uuid = eth['uuid']
                 json_info = self.do_rest_call(
-                    constant.ETH_PER_URL % uuid, None)
+                    constant.ETH_PERF_URL % uuid, None)
                 port_id = eth['node']['name'] + '_' + eth['name']
                 port_metrics.extend(
-                    PerformanceHandler.get_per_value(
+                    PerformanceHandler.get_perf_value(
                         metrics, storage_id,
                         start_time, end_time,
                         json_info, port_id,
