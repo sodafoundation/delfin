@@ -67,11 +67,15 @@ class PerformanceHandler(object):
             values = {}
             for per_info in data_info:
                 if per_info.get('timestamp'):
-                    timestamp = \
-                        int(time.mktime(
+                    occur_time = int(time.mktime(
                             time.strptime(
                                 per_info.get('timestamp'),
-                                PerformanceHandler.TIME_TYPE))) * 1000
+                                PerformanceHandler.TIME_TYPE)))
+                    second_offset = \
+                        (time.mktime(time.localtime()) -
+                         time.mktime(time.gmtime()))
+                    timestamp = \
+                        (occur_time + int(second_offset)) * 1000
                     if int(start_time) <= timestamp <= int(end_time) \
                             and timestamp % 60000 == 0:
                         key_list = constant.PER_MAP.get(key, [])
