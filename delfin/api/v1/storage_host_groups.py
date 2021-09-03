@@ -42,6 +42,23 @@ class StorageHostGroupController(wsgi.Controller):
 
         storage_host_groups = db.storage_host_groups_get_all(
             ctxt, marker, limit, sort_keys, sort_dirs, query_params, offset)
+
+        # Get Storage Host Group to Host relation from DB
+        for host_group in storage_host_groups:
+            params = {
+                "native_storage_host_group_id":
+                host_group['native_storage_host_group_id']
+            }
+            hosts = db.storage_host_grp_host_rels_get_all(
+                ctxt, filters=params)
+
+            native_storage_host_id_list = []
+            for host in hosts:
+                native_storage_host_id_list.append(
+                    host['native_storage_host_id'])
+
+            host_group['storage_hosts'] = native_storage_host_id_list
+
         return storage_host_group_view\
             .build_storage_host_groups(storage_host_groups)
 
