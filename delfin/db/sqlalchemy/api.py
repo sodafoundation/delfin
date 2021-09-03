@@ -2822,7 +2822,7 @@ def vol_grp_vol_rels_get_all(context, marker=None, limit=None,
     with session.begin():
         # Generate the query
         query = _generate_paginate_query(context, session, models.
-                                         VolGrpVolRelation,
+                                         VolGrpVolRel,
                                          marker, limit, sort_keys, sort_dirs,
                                          filters, offset)
         # No volume grp volume relation would match, return empty list

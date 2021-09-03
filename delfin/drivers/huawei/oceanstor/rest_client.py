@@ -368,6 +368,68 @@ class RestClient(object):
 
         return cifs + nfs + ftps
 
+    def get_all_mapping_views(self):
+        url = "/mappingview"
+        view = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        return view
+
+    def get_all_associate_resources(self, url, obj_type, obj_id):
+        params = "ASSOCIATEOBJTYPE={0}&ASSOCIATEOBJID={1}&".format(obj_type,
+                                                                   obj_id)
+        return self.paginated_call(url, None, "GET",
+                                   params=params, log_filter_flag=True)
+
+    def get_all_associate_mapping_views(self, obj_type, obj_id):
+        url = "/mappingview/associate"
+        return self.get_all_associate_resources(url, obj_type, obj_id)
+
+    def get_all_associate_hosts(self, obj_type, obj_id):
+        url = "/host/associate"
+        return self.get_all_associate_resources(url, obj_type, obj_id)
+
+    def get_all_associate_volumes(self, obj_type, obj_id):
+        url = "/lun/associate"
+        return self.get_all_associate_resources(url, obj_type, obj_id)
+
+    def get_all_associate_ports(self, obj_type, obj_id):
+        eth_ports = self.get_all_associate_resources(
+            "/eth_port/associate", obj_type, obj_id)
+        fc_ports = self.get_all_associate_resources(
+            "/fc_port/associate", obj_type, obj_id)
+        fcoe_ports = self.get_all_associate_resources(
+            "/fcoe_port/associate", obj_type, obj_id)
+
+        return eth_ports + fc_ports + fcoe_ports
+
+    def get_all_hosts(self):
+        url = "/host"
+        host = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        return host
+
+    def get_all_initiators(self):
+        url = "/fc_initiator"
+        fc_i = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        url = "/iscsi_initiator"
+        iscsi_i = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        url = "/ib_initiator"
+        ib_i = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        return fc_i + iscsi_i + ib_i
+
+    def get_all_host_groups(self):
+        url = "/hostgroup"
+        hostg = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        return hostg
+
+    def get_all_port_groups(self):
+        url = "/portgroup"
+        portg = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        return portg
+
+    def get_all_volume_groups(self):
+        url = "/lungroup"
+        lungroup = self.paginated_call(url, None, "GET", log_filter_flag=True)
+        return lungroup
+
     def clear_alert(self, sequence_number):
         url = "/alarm/currentalarm?sequence=%s" % sequence_number
 

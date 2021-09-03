@@ -97,7 +97,7 @@ Delete Storage With ID
     Create Session          delfin      ${delfin_url}
     ${resp_del}=            DELETE On Session    delfin     storages/${storage_id}
     Status Should Be        202    ${resp_del}
-    Sleep       5s
+    Sleep                   10s
 
 
 Get All Storages
@@ -113,9 +113,9 @@ Close Application
             ${storage_id}=  Get Value From Json	    ${storage} 	        $..id
             Delete Storage With ID                  ${storage_id[0]}
     END
-    Sleep       5s
+    Sleep                   10s
 
 Open Application
     ${array_id}=            Register Test Storage
-    Sleep       5s
+    Sleep                   10s
 
