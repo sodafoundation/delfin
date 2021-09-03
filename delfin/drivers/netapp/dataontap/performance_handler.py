@@ -67,10 +67,10 @@ class PerformanceHandler(object):
             values = {}
             for per_info in data_info:
                 if per_info.get('timestamp'):
-                    occur_time = int(time.mktime(
-                            time.strptime(
-                                per_info.get('timestamp'),
-                                PerformanceHandler.TIME_TYPE)))
+                    occur_time = \
+                        int(time.mktime(time.strptime(
+                            per_info.get('timestamp'),
+                            PerformanceHandler.TIME_TYPE)))
                     second_offset = \
                         (time.mktime(time.localtime()) -
                          time.mktime(time.gmtime()))
