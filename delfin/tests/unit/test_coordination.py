@@ -118,3 +118,33 @@ class CoordinationTestCase(test.TestCase):
         bar.__getitem__.return_value = 8
         func(foo, bar)
         get_lock.assert_called_with('lock-func-7-8')
+
+
+class ConsistentHashingTestCase(test.TestCase):
+
+    def setUp(self):
+        super(ConsistentHashingTestCase, self).setUp()
+        self.get_coordinator = self.mock_object(tooz_coordination,
+                                                'get_coordinator')
+
+    def test_join_group(self):
+        crd = self.get_coordinator.return_value
+        part = coordination.ConsistentHashing()
+        part.start()
+        part.join_group()
+        self.assertTrue(crd.join_partitioned_group.called)
+
+    def test_register_watcher_func(self):
+        crd = self.get_coordinator.return_value
+        part = coordination.ConsistentHashing()
+        part.start()
+        part.register_watcher_func(mock.Mock(), mock.Mock())
+        self.assertTrue(crd.watch_join_group.called)
+        self.assertTrue(crd.watch_leave_group.called)
+
+    def test_watch_group_change(self):
+        crd = self.get_coordinator.return_value
+        part = coordination.ConsistentHashing()
+        part.start()
+        part.watch_group_change()
+        self.assertTrue(crd.run_watchers.called)

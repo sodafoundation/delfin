@@ -17,6 +17,7 @@ periodical task manager for metric collection tasks**
 from oslo_log import log
 
 from delfin import manager
+from delfin.coordination import ConsistentHashing
 from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.scheduler.schedulers.telemetry.job_handler \
     import FailedJobHandler
@@ -38,6 +39,9 @@ class MetricsTaskManager(manager.Manager):
         scheduler = schedule_manager.SchedulerManager()
         scheduler.start()
         JobHandler.schedule_boot_jobs()
+        partitioner = ConsistentHashing()
+        partitioner.start()
+        partitioner.join_group()
 
     def assign_job(self, context, task_id):
         instance = JobHandler.get_instance(context, task_id)

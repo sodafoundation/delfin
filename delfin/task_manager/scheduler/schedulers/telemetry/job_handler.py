@@ -129,8 +129,6 @@ class JobHandler(object):
             job = db.task_get(self.ctx, task_id)
             job_id = job['job_id']
             self.remove_scheduled_job(job_id)
-            db.task_delete(self.ctx, job['id'])
-            LOG.info("Removed job %s ", job['id'])
         except Exception as e:
             LOG.error("Failed to remove periodic scheduling job , reason: %s.",
                       six.text_type(e))

@@ -19,6 +19,7 @@ from oslo_log import log
 
 from delfin import db
 from delfin.common.constants import TelemetryCollection
+from delfin.coordination import ConsistentHashing
 from delfin.task_manager import metrics_rpcapi as task_rpcapi
 
 CONF = cfg.CONF
@@ -47,7 +48,10 @@ class TaskDistributor(object):
                       six.text_type(e))
 
     def distribute_new_job(self, task_id):
-        executor = CONF.host
+        partitioner = ConsistentHashing()
+        partitioner.start()
+        executor = partitioner.get_task_executor(task_id)
+        partitioner.stop()
         try:
             db.task_update(self.ctx, task_id, {'executor': executor})
             LOG.info('Distribute a new job, id: %s' % task_id)
