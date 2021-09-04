@@ -96,11 +96,19 @@ class JobHandler(object):
 
         if not (existing_job_id and scheduler_job):
             LOG.info('JobHandler scheduling a new job')
-            self.scheduler.add_job(
-                instance, 'interval', seconds=job['interval'],
-                next_run_time=next_collection_time, id=job_id,
-                misfire_grace_time=int(
-                    CONF.telemetry.performance_collection_interval / 2))
+            if job['last_run_time']:
+                # Start collection now if it is an old job
+                self.scheduler.add_job(
+                    instance, 'interval', seconds=job['interval'],
+                    next_run_time=datetime.now(), id=job_id,
+                    misfire_grace_time=int(
+                        CONF.telemetry.performance_collection_interval / 2))
+            else:
+                self.scheduler.add_job(
+                    instance, 'interval', seconds=job['interval'],
+                    next_run_time=next_collection_time, id=job_id,
+                    misfire_grace_time=int(
+                        CONF.telemetry.performance_collection_interval / 2))
 
             update_task_dict = {'job_id': job_id,
                                 'last_run_time': last_run_time}
