@@ -160,6 +160,32 @@ QUERY_PAGE_SIZE = 100
 THICK_LUNTYPE = '0'
 THIN_LUNTYPE = '1'
 
+HOST_OS = [
+    constants.HostOSTypes.LINUX,
+    constants.HostOSTypes.WINDOWS,
+    constants.HostOSTypes.SOLARIS,
+    constants.HostOSTypes.HP_UX,
+    constants.HostOSTypes.AIX,
+    constants.HostOSTypes.XEN_SERVER,
+    constants.HostOSTypes.VMWARE_ESX,
+    constants.HostOSTypes.LINUX_VIS,
+    constants.HostOSTypes.WINDOWS_SERVER_2012,
+    constants.HostOSTypes.ORACLE_VM,
+    constants.HostOSTypes.OPEN_VMS,
+]
+
+HOST_RUNNINGSTATUS_NORMAL = '1'
+INITIATOR_RUNNINGSTATUS_UNKNOWN = '0'
+INITIATOR_RUNNINGSTATUS_ONLINE = '27'
+INITIATOR_RUNNINGSTATUS_OFFLINE = '28'
+ISCSI_INITIATOR_TYPE = 222
+FC_INITIATOR_TYPE = 223
+IB_INITIATOR_TYPE = 16499
+ISCSI_INITIATOR_DESCRIPTION = 'iSCSI Initiator'
+FC_INITIATOR_DESCRIPTION = 'FC Initiator'
+IB_INITIATOR_DESCRIPTION = 'IB Initiator'
+UNKNOWN_INITIATOR_DESCRIPTION = 'Unknown Initiator'
+
 OCEANSTOR_METRICS = {
     'iops': '22',
     'readIops': '25',
