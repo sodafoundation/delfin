@@ -335,7 +335,7 @@ class NetAppHandler(object):
                         'occur_time': occur_time * 1000,
                         'description': alert_map['Description'],
                         'sequence_number': alert_map['AlertID'],
-                         'match_key': hashlib.md5(
+                        'match_key': hashlib.md5(
                             (alert_map['AlertID'] +
                              str(occur_time)).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
