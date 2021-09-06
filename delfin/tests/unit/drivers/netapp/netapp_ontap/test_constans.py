@@ -1295,9 +1295,8 @@ svm1 vol_svm1_2 aggr1 online RW 2GB 2.00GB 0%\r"""
 
 TRAP_MAP = {
     '1.3.6.1.4.1.789.1.1.12.0':
-        'A Health Monitor has clear an alert. '
-        '[Alert Id = DisabledInuseSASPort_Alert , Alerting Resource = 0a].',
-    'controller_name': 'cl-01',
+        'LUN.inconsistent.filesystem:The on-disk structure of the LUN at path '
+        'test in volume 0 (DSID 0) is inconsistent in the WAFL file system.',
     '1.3.6.1.4.1.789.1.1.9.0': '1-80-000008'
 }
 

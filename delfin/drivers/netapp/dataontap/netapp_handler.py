@@ -91,41 +91,26 @@ class NetAppHandler(object):
     def parse_alert(alert):
         try:
             alert_info = alert.get(NetAppHandler.OID_TRAP_DATA)
-            node_name = alert.get(NetAppHandler.NODE_NAME)
-            alert_info = alert_info.replace("]", '')
-            alert_array = alert_info.split("[")
+            alert_array = alert_info.split(":")
             alert_model = {}
-            alert_map = {}
             if len(alert_array) > 1:
-                category = constants.Category.FAULT \
-                    if 'created' in alert_array[0] \
-                    else constants.Category.RECOVERY
-                alert_values = alert_array[1].split(",")
-                for alert_value in alert_values:
-                    array = alert_value.split("=")
-                    if len(array) > 1:
-                        key = array[0].replace(' ', '')
-                        value = array[1].replace(' ', '').replace('.', '')
-                        alert_map[key] = value
-                if alert_map and category == constants.Category.RECOVERY:
+                alert_name = alert_array[0]
+                description = alert_array[1]
+                if constant.SEVERITY_MAP.get(alert_name):
                     alert_model = {
-                        'alert_id': alert_map.get('AlertId'),
-                        'alert_name': alert_map.get('AlertId'),
-                        'severity': '',
-                        'category': category,
+                        'alert_id': alert_name,
+                        'alert_name': alert_name,
+                        'severity': constants.Severity.CRITICAL,
+                        'category': constants.Category.FAULT,
                         'type': constants.EventType.EQUIPMENT_ALARM,
                         'occur_time': utils.utcnow_ms(),
-                        'description': '',
+                        'description': description,
                         'match_key': hashlib.md5(
-                            (alert_map.get('AlertId') + node_name +
-                             alert_map['AlertingResource']
-                             ).encode()).hexdigest(),
+                            (alert.get(NetAppHandler.OID_TRAP_DATA)
+                             + str(utils.utcnow_ms())).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                        'location': ''
+                        'location': None
                     }
-                else:
-                    raise exception.IncompleteTrapInformation(
-                        constant.STORAGE_VENDOR)
             return alert_model
         except Exception as err:
             err_msg = "Failed to parse alert from " \
@@ -135,7 +120,7 @@ class NetAppHandler(object):
 
     def login(self):
         try:
-            result = self.ssh_do_exec('cluster identity show')
+            result = self.ssh_do_exec('version')
             if 'is not a recognized command' in result:
                 raise exception.InvalidIpOrPort()
         except Exception as e:
@@ -350,11 +335,9 @@ class NetAppHandler(object):
                         'occur_time': occur_time * 1000,
                         'description': alert_map['Description'],
                         'sequence_number': alert_map['AlertID'],
-                        'match_key': hashlib.md5(
+                         'match_key': hashlib.md5(
                             (alert_map['AlertID'] +
-                             alert_map['Node'] +
-                             alert_map['AlertingResource']
-                             ).encode()).hexdigest(),
+                             str(occur_time)).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                         'location':
                             alert_map['ProbableCause'] +
@@ -515,14 +498,6 @@ class NetAppHandler(object):
             controller_list = []
             controller_info = self.ssh_do_exec(
                 constant.CONTROLLER_SHOW_DETAIL_COMMAND)
-            controller_ips = self.ssh_do_exec(
-                constant.CONTROLLER_IP_COMMAND)
-            ips_array = self.get_table_data(controller_ips)
-            ip_map = {}
-            for ips in ips_array:
-                ip_array = ips.split()
-                if len(ip_array) == 4:
-                    ip_map[ip_array[2]] = ip_array[3]
             controller_map_list = []
             Tools.split_value_map_list(
                 controller_info, controller_map_list, split=':')
@@ -540,7 +515,6 @@ class NetAppHandler(object):
                         'soft_version': None,
                         'cpu_info': None,
                         'memory_size': None,
-                        'mgmt_ip': ip_map.get(controller_map['Node'])
                     }
                     controller_list.append(controller_model)
             return controller_list
