@@ -35,7 +35,6 @@ class TaskDistributor(object):
         partitioner = ConsistentHashing()
         partitioner.start()
         executor = partitioner.get_task_executor(task_id)
-        partitioner.stop()
         try:
             db.task_update(self.ctx, task_id, {'executor': executor})
             LOG.info('Distribute a new job, id: %s' % task_id)

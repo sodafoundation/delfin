@@ -24,7 +24,7 @@ from delfin import db
 from delfin import exception
 from delfin.common.constants import TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
-from delfin.task_manager import rpcapi as task_rpcapi
+from delfin.task_manager import metrics_rpcapi as metrics_task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
 
@@ -38,7 +38,7 @@ class PerformanceCollectionHandler(object):
         self.storage_id = storage_id
         self.args = args
         self.interval = interval
-        self.task_rpcapi = task_rpcapi.TaskAPI()
+        self.metric_task_rpcapi = metrics_task_rpcapi.TaskAPI()
         self.executor = executor
         self.scheduler = schedule_manager.SchedulerManager().get_scheduler()
 
@@ -108,3 +108,6 @@ class PerformanceCollectionHandler(object):
                        FailedTask.retry_count.name: 0,
                        FailedTask.executor.name: self.executor}
         db.failed_task_create(self.ctx, failed_task)
+        self.metric_task_rpcapi.assign_failed_job(self.ctx,
+                                                  failed_task['task_id'],
+                                                  failed_task['executor'])
