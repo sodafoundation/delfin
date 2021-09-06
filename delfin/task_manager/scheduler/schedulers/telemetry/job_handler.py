@@ -24,6 +24,7 @@ from delfin.common.constants import TelemetryCollection, TelemetryJobStatus
 from delfin.exception import TaskNotFound
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
+from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
 
 CONF = cfg.CONF
 LOG = log.getLogger(__name__)
@@ -97,21 +98,31 @@ class JobHandler(object):
         if not (existing_job_id and scheduler_job):
             LOG.info('JobHandler scheduling a new job')
             if job['last_run_time']:
-                # Start collection now if it is an old job
-                self.scheduler.add_job(
-                    instance, 'interval', seconds=job['interval'],
-                    next_run_time=datetime.now(), id=job_id,
-                    misfire_grace_time=int(
-                        CONF.telemetry.performance_collection_interval / 2))
-            else:
-                self.scheduler.add_job(
-                    instance, 'interval', seconds=job['interval'],
-                    next_run_time=next_collection_time, id=job_id,
-                    misfire_grace_time=int(
-                        CONF.telemetry.performance_collection_interval / 2))
+                # Trigger one historic collection to make sure we do not
+                # miss any Data points due to reschedule
+                LOG.debug('Triggering one historic collection for job %s',
+                          job['id'])
+                history_on_reschedule = CONF.telemetry. \
+                    performance_history_on_reschedule
+                end_time = current_time * 1000
+                start_time = end_time - (history_on_reschedule * 1000)
+                print(history_on_reschedule)
+                telemetry = PerformanceCollectionTask()
+                telemetry.collect(self.ctx, self.storage_id,
+                                  self.args,
+                                  start_time, end_time)
 
-            update_task_dict = {'job_id': job_id,
-                                'last_run_time': last_run_time}
+                db.task_update(self.ctx, self.task_id,
+                               {'last_run_time': last_run_time})
+
+            self.scheduler.add_job(
+                instance, 'interval', seconds=job['interval'],
+                next_run_time=next_collection_time, id=job_id,
+                misfire_grace_time=int(
+                    CONF.telemetry.performance_collection_interval / 2))
+
+            update_task_dict = {'job_id': job_id
+                                }
             db.task_update(self.ctx, self.task_id, update_task_dict)
             self.job_ids.add(job_id)
             LOG.info('Periodic collection tasks scheduled for for job id: '
