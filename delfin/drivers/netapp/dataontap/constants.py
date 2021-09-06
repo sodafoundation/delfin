@@ -37,7 +37,7 @@ WEEK_STAMP = '1w'
 YEAR_STAMP = '1y'
 
 CLUSTER_PERF_URL = '/api/cluster/metrics?interval=1h&fields=iops,' \
-                   'throughput,'
+                   'throughput,latency'
 POOL_PERF_URL = '/api/storage/aggregates/%s/metrics?interval=1h&'\
                 'fields=iops,throughput,latency'
 VOLUME_PERF_URL = '/api/storage/luns/%s/metrics?interval=1h&fields=iops,'\

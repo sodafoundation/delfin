@@ -89,12 +89,11 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_parse_alert(self):
         data = self.netapp_client.parse_alert(context, test_constans.TRAP_MAP)
-        self.assertEqual(data['alert_name'], 'DisabledInuseSASPort_Alert')
+        self.assertEqual(data['alert_name'], 'LUN.inconsistent.filesystem')
 
     def test_list_controllers(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.CONTROLLER_INFO,
-                         test_constans.CONTROLLER_IP_INFP])
+            side_effect=[test_constans.CONTROLLER_INFO])
         data = self.netapp_client.list_controllers(context)
         self.assertEqual(data[0]['name'], 'cl-01')
 
