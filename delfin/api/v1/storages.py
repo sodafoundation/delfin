@@ -142,6 +142,7 @@ class StorageController(wsgi.Controller):
                                                         '.'
                                                         + subclass.__name__)
         self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
+        perf_job_controller.delete_perf_job(ctxt, storage['id'])
 
     @wsgi.response(202)
     def sync_all(self, req):

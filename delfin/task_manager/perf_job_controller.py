@@ -47,3 +47,14 @@ def create_perf_job(context, storage_id, capabilities):
     filters = {'storage_id': storage_id}
     task_id = db.task_get_all(context, filters=filters)[0].get('id')
     metrics_rpcapi.TaskAPI().create_perf_job(context, task_id)
+
+
+def delete_perf_job(context, storage_id):
+    # Delete it from scheduler
+    filters = {'storage_id': storage_id}
+    tasks = db.task_get_all(context, filters=filters)
+    for task in tasks:
+        metrics_rpcapi.TaskAPI().remove_job(context, task.get('id'),
+                                            task.get('executor'))
+    # Delete it from db
+    db.task_delete_by_storage(context, storage_id)
