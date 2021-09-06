@@ -31,22 +31,6 @@ class TaskDistributor(object):
         self.ctx = ctx
         self.task_rpcapi = task_rpcapi.TaskAPI()
 
-    def __call__(self):
-        """ Schedule the collection tasks based on interval """
-
-        try:
-            # Remove jobs from scheduler when marked for delete
-            filters = {'deleted': True}
-            tasks = db.task_get_all(self.ctx, filters=filters)
-            LOG.debug("Total tasks found deleted "
-                      "in this cycle:%s" % len(tasks))
-            for task in tasks:
-                self.task_rpcapi.remove_job(self.ctx, task['id'],
-                                            task['executor'])
-        except Exception as e:
-            LOG.error("Failed to remove periodic scheduling job , reason: %s.",
-                      six.text_type(e))
-
     def distribute_new_job(self, task_id):
         partitioner = ConsistentHashing()
         partitioner.start()

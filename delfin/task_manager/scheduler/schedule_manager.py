@@ -34,7 +34,6 @@ from delfin.task_manager import metrics_rpcapi as task_rpcapi
 LOG = log.getLogger(__name__)
 
 SCHEDULER_BOOT_JOBS = [
-    TaskDistributor.__module__ + '.' + TaskDistributor.__name__,
     FailedTaskDistributor.__module__ + '.' + FailedTaskDistributor.__name__
 ]
 
