@@ -12,7 +12,10 @@
 # WarrayANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import re
 import time
+
+import requests
 import six
 import hashlib
 import eventlet
@@ -20,9 +23,13 @@ import eventlet
 from oslo_log import log as logging
 from oslo_utils import units
 
+from delfin import cryptor
 from delfin.drivers.netapp.dataontap import constants as constant
 from delfin import exception, utils
 from delfin.common import constants
+from delfin.drivers.netapp.dataontap.performance_handler \
+    import PerformanceHandler
+from delfin.drivers.utils.rest_client import RestClient
 from delfin.drivers.utils.ssh_client import SSHPool
 from delfin.drivers.utils.tools import Tools
 
@@ -32,10 +39,19 @@ LOG = logging.getLogger(__name__)
 class NetAppHandler(object):
     OID_SERIAL_NUM = '1.3.6.1.4.1.789.1.1.9.0'
     OID_TRAP_DATA = '1.3.6.1.4.1.789.1.1.12.0'
+    NODE_NAME = 'controller_name'
     SECONDS_TO_MS = 1000
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
+
+        self.rest_client = RestClient(**kwargs)
+
+        self.rest_client.verify = kwargs.get('verify', False)
+        self.rest_client.init_http_head()
+        self.rest_client.session.auth = requests.auth.HTTPBasicAuth(
+            self.rest_client.rest_username,
+            cryptor.decode(self.rest_client.rest_password))
 
     @staticmethod
     def get_table_data(values):
@@ -949,3 +965,217 @@ class NetAppHandler(object):
                       "netapp cmode: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
+
+    def do_rest_call(self, url, data):
+        try:
+            res = self.rest_client.do_call(
+                url, data, 'GET', constant.SOCKET_TIMEOUT)
+            if res.status_code == constant.RETURN_SUCCESS_CODE \
+                    or res.status_code == constant.CREATED_SUCCESS_CODE \
+                    or res.status_code == constant.ACCEPTED_RETURN_CODE:
+                result_json = res.json()
+                return result_json.get('records')
+            elif res.status_code == constant.BAD_REQUEST_RETURN_CODE:
+                raise exception.BadRequest()
+            elif res.status_code == constant.UNAUTHORIZED_RETURN_CODE:
+                raise exception.NotAuthorized()
+            elif res.status_code == constant.FORBIDDEN_RETURN_CODE:
+                raise exception.InvalidUsernameOrPassword()
+            elif res.status_code == constant.NOT_FOUND_RETURN_CODE:
+                raise exception.NotFound()
+            elif res.status_code == constant.METHOD_NOT_ALLOWED_CODE:
+                raise exception.Invalid()
+            elif res.status_code == constant.CONFLICT_RETURN_CODE:
+                raise exception.Invalid()
+            elif res.status_code == constant.INTERNAL_ERROR_CODE:
+                raise exception.BadResponse()
+        except exception.DelfinException as e:
+            err_msg = "Failed to rest call from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to rest call from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def collect_perf_metrics(self, storage_id,
+                             resource_metrics, start_time, end_time):
+        try:
+            version = self.get_version()
+            metrics = []
+            if start_time and end_time:
+                metrics_keys = resource_metrics.keys()
+                # storage metrics
+                if constants.ResourceType.STORAGE in metrics_keys:
+                    if version >= 9.6:
+                        metrics.extend(
+                            self.get_storage_perf(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # pool metrics
+                if constants.ResourceType.STORAGE_POOL in metrics_keys:
+                    if version >= 9.7:
+                        metrics.extend(
+                            self.get_pool_perf(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # volume metrics
+                if constants.ResourceType.VOLUME in metrics_keys:
+                    if version >= 9.7:
+                        metrics.extend(
+                            self.get_volume_perf(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # port metrics
+                if constants.ResourceType.PORT in metrics_keys:
+                    if version >= 9.8:
+                        metrics.extend(
+                            self.get_port_perf(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+                # filesystem metrics
+                if constants.ResourceType.FILESYSTEM in metrics_keys:
+                    if version >= 9.7:
+                        metrics.extend(
+                            self.get_fs_perf(
+                                resource_metrics,
+                                storage_id, start_time, end_time))
+            return metrics
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage performance from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage performance from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def get_storage_perf(self, metrics, storage_id, start_time, end_time):
+        json_info = self.do_rest_call(constant.CLUSTER_PERF_URL, None)
+        if json_info:
+            system_info = self.ssh_do_exec(
+                constant.CLUSTER_SHOW_COMMAND)
+            storage_map_list = []
+            Tools.split_value_map_list(
+                system_info, storage_map_list, split=':')
+            storage = storage_map_list[-1]
+            storage_metrics = PerformanceHandler.\
+                get_perf_value(metrics, storage_id,
+                               start_time, end_time,
+                               json_info,
+                               storage['ClusterSerialNumber'],
+                               storage['ClusterName'],
+                               constants.ResourceType.STORAGE)
+            return storage_metrics
+        return []
+
+    def get_pool_perf(self, metrics, storage_id, start_time, end_time):
+        agg_info = self.ssh_do_exec(
+            constant.AGGREGATE_SHOW_DETAIL_COMMAND)
+        agg_map_list = []
+        pool_metrics = []
+        Tools.split_value_map_list(agg_info, agg_map_list, split=':')
+        for agg_map in agg_map_list:
+            if 'UUIDString' in agg_map:
+                uuid = agg_map['UUIDString']
+                json_info = self.do_rest_call(
+                    constant.POOL_PERF_URL % uuid, None)
+                pool_metrics.extend(
+                    PerformanceHandler.get_perf_value(
+                        metrics,
+                        storage_id,
+                        start_time,
+                        end_time,
+                        json_info,
+                        agg_map['UUIDString'],
+                        agg_map['Aggregate'],
+                        constants.ResourceType.STORAGE_POOL))
+        return pool_metrics
+
+    def get_volume_perf(self, metrics, storage_id, start_time, end_time):
+        volume_info = \
+            self.ssh_do_exec(constant.LUN_SHOW_DETAIL_COMMAND)
+        volume_map_list = []
+        volume_metrics = []
+        Tools.split_value_map_list(volume_info, volume_map_list, split=':')
+        for volume in volume_map_list:
+            if 'LUNUUID' in volume:
+                uuid = volume['LUNUUID']
+                json_info = self.do_rest_call(
+                    constant.VOLUME_PERF_URL % uuid, None)
+                volume_metrics.extend(
+                    PerformanceHandler.get_perf_value(
+                        metrics, storage_id,
+                        start_time, end_time,
+                        json_info, volume['SerialNumber'],
+                        volume['LUNName'],
+                        constants.ResourceType.VOLUME))
+        return volume_metrics
+
+    def get_fs_perf(self, metrics, storage_id, start_time, end_time):
+        fs_info = self.do_rest_call(
+            constant.FS_INFO_URL, {})
+        fs_metrics = []
+        for fs in fs_info:
+            if 'uuid' in fs:
+                uuid = fs['uuid']
+                json_info = self.do_rest_call(
+                    constant.FS_PERF_URL % uuid, None)
+                fs_id = self.get_fs_id(
+                    fs['svm']['name'], fs['name'])
+                fs_metrics.extend(
+                    PerformanceHandler.get_perf_value(
+                        metrics, storage_id, start_time,
+                        end_time, json_info, fs_id,
+                        fs['name'],
+                        constants.ResourceType.FILESYSTEM))
+        return fs_metrics
+
+    def get_port_perf(self, metrics, storage_id, start_time, end_time):
+        fc_port = self.do_rest_call(constant.FC_INFO_URL, None)
+        port_metrics = []
+        for fc in fc_port:
+            if 'uuid' in fc:
+                uuid = fc['uuid']
+                json_info = self.do_rest_call(
+                    constant.FC_PERF_URL % uuid, None)
+                port_id = fc['node']['name'] + '_' + fc['name']
+                port_metrics.extend(
+                    PerformanceHandler.get_perf_value(
+                        metrics, storage_id,
+                        start_time, end_time,
+                        json_info, port_id,
+                        fc['name'], constants.ResourceType.PORT))
+        eth_port = self.do_rest_call(constant.ETH_INFO_URL, {})
+        for eth in eth_port:
+            if 'uuid' in eth:
+                uuid = eth['uuid']
+                json_info = self.do_rest_call(
+                    constant.ETH_PERF_URL % uuid, None)
+                port_id = eth['node']['name'] + '_' + eth['name']
+                port_metrics.extend(
+                    PerformanceHandler.get_perf_value(
+                        metrics, storage_id,
+                        start_time, end_time,
+                        json_info, port_id,
+                        eth['name'], constants.ResourceType.PORT))
+        return port_metrics
+
+    def get_version(self):
+        version_info = self.ssh_do_exec(
+            constant.VERSION_SHOW_COMMAND)
+        version_array = version_info.split("\r\n")
+        storage_version = []
+        for version in version_array:
+            if 'NetApp' in version:
+                storage_version = version.split(":")
+                break
+        version_List = re.findall(constant.FLOAT_PATTERN, storage_version[0])
+        for version in version_List:
+            if float(version) >= 9.0:
+                return float(version)
+        return 9.0
