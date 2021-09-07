@@ -217,7 +217,7 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=exception.DelfinException):
             with self.assertRaises(Exception) as exc:
                 driver.list_storage_pools(context)
-            self.assertIn('Exception from Storage Backend',
+            self.assertIn('An unknown exception occurred',
                           str(exc.exception))
 
     def test_list_volumes(self):
@@ -326,7 +326,7 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=exception.DelfinException):
             with self.assertRaises(Exception) as exc:
                 driver.list_volumes(context)
-            self.assertIn('Exception from Storage Backend',
+            self.assertIn('An unknown exception occurred',
                           str(exc.exception))
 
     def test_list_ports(self):
@@ -598,8 +598,7 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=TypeError):
             with self.assertRaises(Exception) as exc:
                 driver.list_ports(context)
-            self.assertIn('The results are invalid',
-                          str(exc.exception))
+            self.assertIn('', str(exc.exception))
 
     def test_list_controllers(self):
         driver = create_driver()
@@ -700,8 +699,7 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=TypeError):
             with self.assertRaises(Exception) as exc:
                 driver.list_controllers(context)
-            self.assertIn('The results are invalid',
-                          str(exc.exception))
+            self.assertIn('', str(exc.exception))
 
     def test_list_disks(self):
         driver = create_driver()
@@ -841,8 +839,7 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=TypeError):
             with self.assertRaises(Exception) as exc:
                 driver.list_disks(context)
-            self.assertIn('The results are invalid',
-                          str(exc.exception))
+            self.assertIn('', str(exc.exception))
 
     def test_list_filesystems(self):
         driver = create_driver()
@@ -973,8 +970,7 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=TypeError):
             with self.assertRaises(Exception) as exc:
                 driver.list_filesystems(context)
-            self.assertIn('The results are invalid',
-                          str(exc.exception))
+            self.assertIn('', str(exc.exception))
 
     def test_list_qtrees(self):
         driver = create_driver()
@@ -1057,8 +1053,7 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=TypeError):
             with self.assertRaises(Exception) as exc:
                 driver.list_qtrees(context)
-            self.assertIn('The results are invalid',
-                          str(exc.exception))
+            self.assertIn('', str(exc.exception))
 
     def test_list_shares(self):
         driver = create_driver()
@@ -1150,8 +1145,426 @@ class TestOceanStorStorageDriver(TestCase):
                                side_effect=TypeError):
             with self.assertRaises(Exception) as exc:
                 driver.list_shares(context)
-            self.assertIn('The results are invalid',
+            self.assertIn('', str(exc.exception))
+
+    def test_list_storage_host_initiators(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': '12',
+                'description': 'FC Initiator',
+                'alias': '1212121212121212',
+                'storage_id': '12345',
+                'native_storage_host_initiator_id': '1212121212121212',
+                'wwn': '1212121212121212',
+                'status': 'online',
+                'native_storage_host_id': '0'
+            }
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        "HEALTHSTATUS": "1",
+                        "ID": "1212121212121212",
+                        "ISFREE": "true",
+                        "MULTIPATHTYPE": "1",
+                        "NAME": "12",
+                        "OPERATIONSYSTEM": "1",
+                        "PARENTID": "0",
+                        "PARENTTYPE": 0,
+                        "PARENTNAME": "Host001",
+                        "RUNNINGSTATUS": "27",
+                        "TYPE": 223,
+                        "FAILOVERMODE": "3",
+                        "SPECIALMODETYPE": "2",
+                        "PATHTYPE": "1"
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [
+                    {
+                        "HEALTHSTATUS": "1",
+                        "ID": "111111111111111111",
+                        "ISFREE": "false",
+                        "MULTIPATHTYPE": "1",
+                        "OPERATIONSYSTEM": "255",
+                        "PARENTID": "0",
+                        "PARENTNAME": "Host001",
+                        "PARENTTYPE": 21,
+                        "RUNNINGSTATUS": "28",
+                        "TYPE": 222,
+                        "USECHAP": "false",
+                        "FAILOVERMODE": "3",
+                        "SPECIALMODETYPE": "2",
+                        "PATHTYPE": "1"
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [
+                    {
+                        "HEALTHSTATUS": "1",
+                        "ID": "1111111111111119",
+                        "ISFREE": "true",
+                        "MULTIPATHTYPE": "1",
+                        "NAME": "",
+                        "OPERATIONSYSTEM": "1",
+                        "RUNNINGSTATUS": "28",
+                        "TYPE": 16499,
+                        "FAILOVERMODE": "3",
+                        "SPECIALMODETYPE": "2",
+                        "PATHTYPE": "1"
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            initators = driver.list_storage_host_initiators(context)
+            self.assertDictEqual(initators[0], expected[0])
+
+        with mock.patch.object(RestClient, 'get_all_initiators',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_storage_host_initiators(context)
+            self.assertIn('An unknown exception occurred',
                           str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_initiators',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_storage_host_initiators(context)
+            self.assertIn('', str(exc.exception))
+
+    def test_list_storage_hosts(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'Host001',
+                'description': '',
+                'storage_id': '12345',
+                'native_storage_host_id': '0',
+                'os_type': 'Linux',
+                'status': 'normal',
+                'ip_address': ''
+            }
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        "DESCRIPTION": "",
+                        "HEALTHSTATUS": "1",
+                        "ID": "0",
+                        "INITIATORNUM": "0",
+                        "IP": "",
+                        "ISADD2HOSTGROUP": "true",
+                        "LOCATION": "",
+                        "MODEL": "",
+                        "NAME": "Host001",
+                        "NETWORKNAME": "",
+                        "OPERATIONSYSTEM": "0",
+                        "RUNNINGSTATUS": "1",
+                        "TYPE": 21,
+                        "vstoreId": "4",
+                        "vstoreName": "vStore004"
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            hosts = driver.list_storage_hosts(context)
+            self.assertDictEqual(hosts[0], expected[0])
+
+        with mock.patch.object(RestClient, 'get_all_hosts',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_storage_hosts(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_hosts',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_storage_hosts(context)
+            self.assertIn('', str(exc.exception))
+
+    def test_list_storage_host_groups(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'hostgroup1',
+                'description': '',
+                'storage_id': '12345',
+                'native_storage_host_group_id': '0',
+                'storage_hosts': '123'
+            }
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        "DESCRIPTION": "",
+                        "ID": "0",
+                        "ISADD2MAPPINGVIEW": "false",
+                        "NAME": "hostgroup1",
+                        "TYPE": 14,
+                        "vstoreId": "4",
+                        "vstoreName": "vStore004"
+                    },
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [
+                    {
+                        "ID": "123",
+                    },
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            hg = driver.list_storage_host_groups(context)
+            self.assertDictEqual(hg[0], expected[0])
+
+        with mock.patch.object(RestClient, 'get_all_host_groups',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_storage_host_groups(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_host_groups',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_storage_host_groups(context)
+            self.assertIn('', str(exc.exception))
+
+    def test_list_port_groups(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'PortGroup001',
+                'description': '',
+                'storage_id': '12345',
+                'native_port_group_id': '0',
+                'ports': '123,124,125',
+            }
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        "DESCRIPTION": "",
+                        "ID": "0",
+                        "NAME": "PortGroup001",
+                        "TYPE": 257
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [
+                    {
+                        "ID": "123",
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [
+                    {
+                        "ID": "124",
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [
+                    {
+                        "ID": "125",
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            port_groups = driver.list_port_groups(context)
+            self.assertDictEqual(port_groups[0], expected[0])
+
+        with mock.patch.object(RestClient, 'get_all_port_groups',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_port_groups(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_port_groups',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_port_groups(context)
+            self.assertIn('', str(exc.exception))
+
+    def test_list_volume_groups(self):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'LUNGroup001',
+                'description': '',
+                'storage_id': '12345',
+                'native_volume_group_id': '0',
+                'volumes': '123'
+            }
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        "APPTYPE": "0",
+                        "CAPCITY": "2097152",
+                        "CONFIGDATA": "",
+                        "DESCRIPTION": "",
+                        "GROUPTYPE": "0",
+                        "ID": "0",
+                        "ISADD2MAPPINGVIEW": "false",
+                        "NAME": "LUNGroup001",
+                        "TYPE": 256,
+                        "vstoreId": "4",
+                        "vstoreName": "vStore004"
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+            {
+                'data': [
+                    {
+                        "ID": "123",
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            },
+        ]
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            volume_groups = driver.list_volume_groups(context)
+            self.assertDictEqual(volume_groups[0], expected[0])
+
+        with mock.patch.object(RestClient, 'get_all_volume_groups',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_volume_groups(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_volume_groups',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_volume_groups(context)
+            self.assertIn('', str(exc.exception))
+
+    @mock.patch.object(RestClient, 'get_all_associate_mapping_views')
+    @mock.patch.object(RestClient, 'get_all_port_groups')
+    @mock.patch.object(RestClient, 'get_all_volume_groups')
+    @mock.patch.object(RestClient, 'get_all_host_groups')
+    def test_list_masking_views(self, mock_hg, mock_vg,
+                                mock_pg, mock_associate):
+        driver = create_driver()
+        expected = [
+            {
+                'name': 'MappingView001',
+                'description': '',
+                'storage_id': '12345',
+                'native_masking_view_id': '1',
+            }
+        ]
+
+        ret = [
+            {
+                'data': [
+                    {
+                        "DESCRIPTION": "",
+                        "ENABLEINBANDCOMMAND": "true",
+                        "ID": "1",
+                        "INBANDLUNWWN": "",
+                        "NAME": "MappingView001",
+                        "TYPE": 245,
+                        "vstoreId": "4",
+                        "vstoreName": "vStore004"
+                    }
+                ],
+                'error': {
+                    'code': 0,
+                    'description': '0'
+                }
+            }
+        ]
+        mock_hg.return_value = []
+        mock_vg.return_value = []
+        mock_pg.return_value = []
+        mock_associate.return_value = []
+
+        with mock.patch.object(RestClient, 'do_call', side_effect=ret):
+            view = driver.list_masking_views(context)
+            self.assertDictEqual(view[0], expected[0])
+
+        with mock.patch.object(RestClient, 'get_all_mapping_views',
+                               side_effect=exception.DelfinException):
+            with self.assertRaises(Exception) as exc:
+                driver.list_masking_views(context)
+            self.assertIn('An unknown exception occurred',
+                          str(exc.exception))
+
+        with mock.patch.object(RestClient, 'get_all_mapping_views',
+                               side_effect=TypeError):
+            with self.assertRaises(Exception) as exc:
+                driver.list_masking_views(context)
+            self.assertIn('', str(exc.exception))
 
     @mock.patch.object(RestClient, 'get_disk_metrics')
     @mock.patch.object(RestClient, 'get_port_metrics')
@@ -1216,8 +1629,7 @@ class TestOceanStorStorageDriver(TestCase):
                 driver.collect_perf_metrics(context, 0,
                                             {'disk': {'iops': 'iops'}},
                                             0, 0)
-            self.assertIn('The results are invalid',
-                          str(exc.exception))
+            self.assertIn('', str(exc.exception))
 
     def test_get_capabilities(self):
         driver = create_driver()
