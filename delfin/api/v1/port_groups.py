@@ -42,6 +42,22 @@ class PortGroupController(wsgi.Controller):
 
         port_groups = db.port_groups_get_all(
             ctxt, marker, limit, sort_keys, sort_dirs, query_params, offset)
+
+        # Get Port Group to Port relation from DB
+        for port_group in port_groups:
+            params = {
+                "native_port_group_id":
+                port_group['native_port_group_id']
+            }
+            ports = db.port_grp_port_rels_get_all(
+                ctxt, filters=params)
+
+            native_port_id_list = []
+            for port in ports:
+                native_port_id_list.append(port['native_port_id'])
+
+            port_group['ports'] = native_port_id_list
+
         return port_group_view.build_port_groups(port_groups)
 
 
