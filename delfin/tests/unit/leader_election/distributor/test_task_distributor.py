@@ -40,7 +40,6 @@ fake_telemetry_jobs = [
 
 class TestTaskDistributor(test.TestCase):
 
-    @mock.patch('delfin.coordination.ConsistentHashing.stop')
     @mock.patch('delfin.coordination.ConsistentHashing.get_task_executor')
     @mock.patch('delfin.coordination.ConsistentHashing.start')
     @mock.patch('delfin.task_manager.metrics_rpcapi.TaskAPI.assign_job')
@@ -49,7 +48,7 @@ class TestTaskDistributor(test.TestCase):
                 mock.Mock(return_value=None))
     def test_distribute_new_job(self, mock_task_update, mock_assign_job,
                                 mock_partitioner_start,
-                                mock_get_task_executor, mock_partitioner_stop):
+                                mock_get_task_executor):
         ctx = context.get_admin_context()
         task_distributor = TaskDistributor(ctx)
         task_distributor.distribute_new_job('fake_task_id')
@@ -57,4 +56,3 @@ class TestTaskDistributor(test.TestCase):
         self.assertEqual(mock_task_update.call_count, 1)
         self.assertEqual(mock_partitioner_start.call_count, 1)
         self.assertEqual(mock_get_task_executor.call_count, 1)
-        self.assertEqual(mock_partitioner_stop.call_count, 1)

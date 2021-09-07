@@ -17,7 +17,6 @@ from datetime import datetime
 import six
 from apscheduler.schedulers.background import BackgroundScheduler
 from oslo_log import log
-from oslo_utils import importutils
 from oslo_utils import uuidutils
 
 from delfin import context
@@ -25,17 +24,11 @@ from delfin import db
 from delfin import service
 from delfin import utils
 from delfin.coordination import ConsistentHashing
-from delfin.leader_election.distributor.failed_task_distributor \
-    import FailedTaskDistributor
 from delfin.leader_election.distributor.task_distributor \
     import TaskDistributor
 from delfin.task_manager import metrics_rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
-
-SCHEDULER_BOOT_JOBS = [
-    FailedTaskDistributor.__module__ + '.' + FailedTaskDistributor.__name__
-]
 
 
 @six.add_metaclass(utils.Singleton)
@@ -48,11 +41,9 @@ class SchedulerManager(object):
             scheduler = BackgroundScheduler()
         self.scheduler = scheduler
         self.scheduler_started = False
-
-        self.boot_jobs = dict()
-        self.boot_jobs_scheduled = False
         self.ctx = context.get_admin_context()
         self.task_rpcapi = task_rpcapi.TaskAPI()
+        self.watch_job_id = None
 
     def start(self):
         """ Initialise the schedulers for periodic job creation
@@ -96,27 +87,6 @@ class SchedulerManager(object):
             distributor.distribute_new_job(task['id'])
 
     def schedule_boot_jobs(self):
-        if not self.boot_jobs_scheduled:
-            try:
-                for job in SCHEDULER_BOOT_JOBS:
-                    job_class = importutils.import_class(job)
-                    job_instance = job_class(self.ctx)
-
-                    # Create a jobs for periodic scheduling
-                    job_id = uuidutils.generate_uuid()
-                    self.scheduler.add_job(job_instance, 'interval',
-                                           seconds=job_class.job_interval(),
-                                           next_run_time=datetime.now(),
-                                           id=job_id)
-                    # book keeping of jobs
-                    self.boot_jobs[job_id] = job_instance
-
-            except Exception as e:
-                # TODO: Currently failure of scheduler is failing task manager
-                #  start flow, it is logged and ignored.
-                LOG.error("Failed to initialize periodic tasks, reason: %s.",
-                          six.text_type(e))
-                raise e
         # Recover the job in db
         self.recover_job()
         # Start the consumer of job creation message
@@ -134,18 +104,16 @@ class SchedulerManager(object):
         partitioner.start()
         partitioner.register_watcher_func(self.on_node_join,
                                           self.on_node_leave)
+        self.watch_job_id = uuidutils.generate_uuid()
         self.scheduler.add_job(partitioner.watch_group_change, 'interval',
                                seconds=self.GROUP_CHANGE_DETECT_INTERVAL_SEC,
-                               next_run_time=datetime.now())
+                               next_run_time=datetime.now(),
+                               id=self.watch_job_id)
 
     def stop(self):
         """Cleanup periodic jobs"""
-
-        for job_id, job in self.boot_jobs.items():
-            self.scheduler.remove_job(job_id)
-            job.stop()
-        self.boot_jobs.clear()
-        self.boot_jobs_scheduled = False
+        if self.watch_job_id:
+            self.scheduler.remove_job(self.watch_job_id)
 
     def get_scheduler(self):
         return self.scheduler

@@ -75,13 +75,17 @@ class TestPerformanceCollectionHandler(test.TestCase):
         self.assertEqual(mock_collect_telemetry.call_count, 1)
         self.assertEqual(mock_task_update.call_count, 1)
 
+    @mock.patch('delfin.db.task_update')
+    @mock.patch('delfin.task_manager.metrics_rpcapi.TaskAPI.assign_failed_job')
     @mock.patch.object(db, 'task_get',
                        mock.Mock(return_value=fake_telemetry_job))
     @mock.patch('delfin.db.failed_task_create')
     @mock.patch('delfin.task_manager.tasks.telemetry'
                 '.PerformanceCollectionTask.collect')
     def test_performance_collection_failure(self, mock_collect_telemetry,
-                                            mock_failed_task_create):
+                                            mock_failed_task_create,
+                                            mock_assign_failed_job,
+                                            mock_task_update):
         mock_collect_telemetry.return_value = TelemetryTaskStatus. \
             TASK_EXEC_STATUS_FAILURE
         ctx = context.get_admin_context()
@@ -92,6 +96,8 @@ class TestPerformanceCollectionHandler(test.TestCase):
 
         # Verify that failed task create is called if collect telemetry fails
         self.assertEqual(mock_failed_task_create.call_count, 1)
+        self.assertEqual(mock_assign_failed_job.call_count, 1)
+        self.assertEqual(mock_task_update.call_count, 1)
 
     @mock.patch.object(db, 'task_get',
                        mock.Mock(return_value=fake_deleted_telemetry_job))
