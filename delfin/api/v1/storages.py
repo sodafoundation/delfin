@@ -33,7 +33,6 @@ from delfin.i18n import _
 from delfin.task_manager import perf_job_controller
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.tasks import resources
-from delfin.task_manager.tasks import telemetry as task_telemetry
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF

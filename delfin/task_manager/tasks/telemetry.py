@@ -70,5 +70,3 @@ class PerformanceCollectionTask(TelemetryTask):
                       "storage id :{0}, reason:{1}".format(storage_id,
                                                            six.text_type(e)))
             return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
-
-
