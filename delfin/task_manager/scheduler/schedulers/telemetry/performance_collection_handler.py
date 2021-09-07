@@ -107,7 +107,7 @@ class PerformanceCollectionHandler(object):
                            '.' + FailedPerformanceCollectionHandler.__name__,
                        FailedTask.retry_count.name: 0,
                        FailedTask.executor.name: self.executor}
-        db.failed_task_create(self.ctx, failed_task)
+        failed_task = db.failed_task_create(self.ctx, failed_task)
         self.metric_task_rpcapi.assign_failed_job(self.ctx,
-                                                  failed_task['task_id'],
+                                                  failed_task['id'],
                                                   failed_task['executor'])

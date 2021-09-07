@@ -53,8 +53,15 @@ def delete_perf_job(context, storage_id):
     # Delete it from scheduler
     filters = {'storage_id': storage_id}
     tasks = db.task_get_all(context, filters=filters)
+    failed_tasks = db.failed_task_get_all(context, filters=filters)
     for task in tasks:
         metrics_rpcapi.TaskAPI().remove_job(context, task.get('id'),
                                             task.get('executor'))
-    # Delete it from db
+    for failed_task in failed_tasks:
+        metrics_rpcapi.TaskAPI().remove_failed_job(context,
+                                                   failed_task.get('id'),
+                                                   failed_task.get('executor'))
+
+    # Soft delete tasks
     db.task_delete_by_storage(context, storage_id)
+    db.failed_task_delete_by_storage(context, storage_id)

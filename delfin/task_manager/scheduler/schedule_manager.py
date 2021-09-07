@@ -75,6 +75,20 @@ class SchedulerManager(object):
                 self.task_rpcapi.remove_job(self.ctx, task['id'],
                                             task['executor'])
             distributor.distribute_new_job(task['id'])
+        failed_tasks = db.failed_task_get_all(self.ctx)
+        for failed_task in failed_tasks:
+            # Get the parent task executor
+            task = db.task_get(self.ctx, failed_task['task_id'])
+            origin_executor = failed_tasks['executor']
+            new_executor = task['executor']
+            # If the target executor is different from current executor,
+            # remove the job from old executor and add it to new executor
+            if new_executor != origin_executor:
+                LOG.info('Re-distribute failed_job %s from %s to %s' %
+                         (failed_task['id'], origin_executor, new_executor))
+                self.task_rpcapi.remove_job(self.ctx, task['id'],
+                                            task['executor'])
+            distributor.distribute_failed_job(task['id'])
         partitioner.stop()
 
     def on_node_leave(self, event):
@@ -123,3 +137,11 @@ class SchedulerManager(object):
         distributor = TaskDistributor(self.ctx)
         for task in all_tasks:
             distributor.distribute_new_job(task['id'])
+
+    def recover_failed_job(self):
+        all_failed_tasks = db.failed_task_get_all(self.ctx)
+        distributor = TaskDistributor(self.ctx)
+        for failed_task in all_failed_tasks:
+            task = db.task_get(self.ctx, failed_task['task_id'])
+            executor = task['executor']
+            distributor.distribute_failed_job(failed_task['id'], executor)

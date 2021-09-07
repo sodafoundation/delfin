@@ -44,6 +44,19 @@ class TaskDistributor(object):
                       six.text_type(e))
             raise e
 
+    def distribute_failed_job(self, failed_task_id, executor):
+
+        try:
+            db.failed_task_update(self.ctx, failed_task_id,
+                                  {'executor': executor})
+            LOG.info('Distribute a failed job, id: %s' % failed_task_id)
+            self.task_rpcapi.assign_failed_job(self.ctx, failed_task_id,
+                                               executor)
+        except Exception as e:
+            LOG.error('Failed to distribute failed job, reason: %s',
+                      six.text_type(e))
+            raise e
+
     @classmethod
     def job_interval(cls):
         return TelemetryCollection.PERIODIC_JOB_INTERVAL

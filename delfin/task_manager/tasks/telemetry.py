@@ -71,11 +71,4 @@ class PerformanceCollectionTask(TelemetryTask):
                                                            six.text_type(e)))
             return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
 
-    def remove_telemetry(self, ctx, storage_id):
-        try:
-            db.task_delete_by_storage(ctx, storage_id)
-            db.failed_task_delete_by_storage(ctx, storage_id)
-        except Exception as e:
-            LOG.error("Failed to remove task entries from DB  for "
-                      "storage id :{0}, reason:{1}".format(storage_id,
-                                                           six.text_type(e)))
+
