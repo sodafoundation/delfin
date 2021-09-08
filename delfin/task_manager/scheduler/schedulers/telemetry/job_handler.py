@@ -55,9 +55,11 @@ class JobHandler(object):
         this executor """
         try:
 
-            filters = {'executor': CONF.host}
+            filters = {'executor': CONF.host,
+                       'deleted': False}
             ctxt = context.get_admin_context()
             tasks = db.task_get_all(ctxt, filters=filters)
+            failed_tasks = db.failed_task_get_all(ctxt, filters=filters)
             LOG.info("Scheduling boot time jobs for this executor: total "
                      "jobs to be handled :%s" % len(tasks))
             for task in tasks:
@@ -65,6 +67,13 @@ class JobHandler(object):
                 instance.schedule_job(task['id'])
                 LOG.debug('Periodic collection job assigned for id: '
                           '%s ' % task['id'])
+            for failed_task in failed_tasks:
+                instance = FailedJobHandler.get_instance(ctxt,
+                                                         failed_task['id'])
+                instance.schedule_failed_job(failed_task['id'])
+                LOG.debug('Failed job assigned for id: '
+                          '%s ' % failed_task['id'])
+
         except Exception as e:
             LOG.error("Failed to schedule boot jobs for this executor "
                       "reason: %s.",
@@ -80,6 +89,10 @@ class JobHandler(object):
 
         LOG.info("JobHandler received A job %s to schedule" % task_id)
         job = db.task_get(self.ctx, task_id)
+        # Check delete status of the task
+        deleted = job['deleted']
+        if deleted:
+            return
         collection_class = importutils.import_class(
             job['method'])
         instance = collection_class.get_instance(self.ctx, self.task_id)
@@ -106,7 +119,6 @@ class JobHandler(object):
                     performance_history_on_reschedule
                 end_time = current_time * 1000
                 start_time = end_time - (history_on_reschedule * 1000)
-                print(history_on_reschedule)
                 telemetry = PerformanceCollectionTask()
                 telemetry.collect(self.ctx, self.storage_id,
                                   self.args,

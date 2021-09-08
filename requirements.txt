@@ -41,3 +41,4 @@ flask
 kafka-python
 importlib-metadata==3.7.0; python_version < "3.8"
 tenacity==6.3.1
+tzlocal<3.0
