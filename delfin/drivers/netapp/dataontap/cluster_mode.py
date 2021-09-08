@@ -14,6 +14,7 @@
 
 from delfin.drivers import driver
 from delfin.drivers.netapp.dataontap import netapp_handler
+from delfin.drivers.netapp.dataontap import constants as constant
 from delfin.drivers.netapp.dataontap.netapp_handler import NetAppHandler
 
 
@@ -79,3 +80,11 @@ class NetAppCmodeDriver(driver.StorageDriver):
 
     def get_alert_sources(self, context):
         return self.netapp_handler.get_alert_sources()
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time, end_time):
+        return self.netapp_handler.collect_perf_metrics(
+            storage_id, resource_metrics, start_time, end_time)
+
+    def get_capabilities(self, context):
+        return constant.PERF_CAPABILITIES
