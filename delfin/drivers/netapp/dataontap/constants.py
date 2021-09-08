@@ -177,7 +177,7 @@ DISK_TYPE = {
     'BSAS': constants.DiskPhysicalType.SATA,
     'FCAL': constants.DiskPhysicalType.FC,
     'FSAS': constants.DiskPhysicalType.NL_SAS,
-    'LUN ': constants.DiskPhysicalType.LUN,
+    'LUN': constants.DiskPhysicalType.LUN,
     'SAS': constants.DiskPhysicalType.SAS,
     'MSATA': constants.DiskPhysicalType.SATA,
     'SSD': constants.DiskPhysicalType.SSD,
