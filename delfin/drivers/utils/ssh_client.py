@@ -132,7 +132,7 @@ class SSHClient(object):
 
 class SSHPool(pools.Pool):
     SOCKET_TIMEOUT = 10
-    MAX_POOL_SIZE = 5
+    MAX_POOL_SIZE = 3
 
     def __init__(self, **kwargs):
         ssh_access = kwargs.get('ssh')
