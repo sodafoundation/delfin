@@ -23,7 +23,7 @@ import eventlet
 from oslo_log import log as logging
 from oslo_utils import units
 
-from delfin import cryptor
+# from delfin import cryptor
 from delfin.drivers.netapp.dataontap import constants as constant
 from delfin import exception, utils
 from delfin.common import constants
@@ -51,7 +51,7 @@ class NetAppHandler(object):
         self.rest_client.init_http_head()
         self.rest_client.session.auth = requests.auth.HTTPBasicAuth(
             self.rest_client.rest_username,
-            cryptor.decode(self.rest_client.rest_password))
+            self.rest_client.rest_password)
 
     @staticmethod
     def get_table_data(values):
@@ -174,8 +174,9 @@ class NetAppHandler(object):
             Tools.split_value_map_list(
                 system_info, storage_map_list, split=':')
             if len(storage_map_list) > 0:
-                storage_map = storage_map_list[-1]
-                controller_map = controller_map_list[1]
+                storage_map = storage_map_list[len(storage_map_list) - 1]
+                controller_map = \
+                    controller_map_list[len(controller_map_list) - 1]
                 for disk in disk_list:
                     raw_capacity += disk['capacity']
                 for pool in pool_list:
@@ -537,6 +538,7 @@ class NetAppHandler(object):
                                 if constant.IP_PATTERN.search(ip):
                                     value = ip
                                 ip_map[key] = value
+                                continue
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
@@ -981,10 +983,13 @@ class NetAppHandler(object):
         try:
             ip_list = []
             mgt_ip = self.ssh_pool.do_exec(constant.MGT_IP_COMMAND)
-            controller_list = self.list_controllers(None)
-            for controller in controller_list:
-                ip_list.append({'host': controller['mgmt_ip']})
+            node_ip = self.ssh_pool.do_exec(constant.NODE_IP_COMMAND)
             mgt_ip_array = self.get_table_data(mgt_ip)
+            node_ip_array = self.get_table_data(node_ip)
+            for node in node_ip_array:
+                ip_array = node.split()
+                if len(ip_array) == 3:
+                    ip_list.append({'host': ip_array[2]})
             ip_list.append({'host': mgt_ip_array[0].split()[2]})
             return ip_list
         except exception.DelfinException as e:
