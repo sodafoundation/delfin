@@ -59,7 +59,8 @@ class SchedulerManager(object):
         LOG.info('Member %s joined the group %s' % (event.member_id,
                                                     event.group_id))
         # Get all the jobs
-        tasks = db.task_get_all(self.ctx)
+        filters = {'deleted': False}
+        tasks = db.task_get_all(self.ctx, filters=filters)
         distributor = TaskDistributor(self.ctx)
         partitioner = ConsistentHashing()
         partitioner.start()
@@ -75,11 +76,11 @@ class SchedulerManager(object):
                 self.task_rpcapi.remove_job(self.ctx, task['id'],
                                             task['executor'])
             distributor.distribute_new_job(task['id'])
-        failed_tasks = db.failed_task_get_all(self.ctx)
+        failed_tasks = db.failed_task_get_all(self.ctx, filters=filters)
         for failed_task in failed_tasks:
             # Get the parent task executor
             task = db.task_get(self.ctx, failed_task['task_id'])
-            origin_executor = failed_tasks['executor']
+            origin_executor = failed_task['executor']
             new_executor = task['executor']
             # If the target executor is different from current executor,
             # remove the job from old executor and add it to new executor
@@ -88,21 +89,30 @@ class SchedulerManager(object):
                          (failed_task['id'], origin_executor, new_executor))
                 self.task_rpcapi.remove_job(self.ctx, task['id'],
                                             task['executor'])
-            distributor.distribute_failed_job(task['id'])
+            distributor.distribute_failed_job(failed_task['id'])
         partitioner.stop()
 
     def on_node_leave(self, event):
         LOG.info('Member %s left the group %s' % (event.member_id,
                                                   event.group_id))
-        filters = {'executor': event.member_id.decode('utf-8')}
+        filters = {'executor': event.member_id.decode('utf-8'),
+                   'deleted': False}
         re_distribute_tasks = db.task_get_all(self.ctx, filters=filters)
         distributor = TaskDistributor(self.ctx)
         for task in re_distribute_tasks:
             distributor.distribute_new_job(task['id'])
 
+        re_distribute_failed_tasks = db.failed_task_get_all(self.ctx,
+                                                            filters=filters)
+        for failed_task in re_distribute_failed_tasks:
+            task = db.task_get(self.ctx, failed_task['task_id'])
+            executor = task['executor']
+            distributor.distribute_failed_job(failed_task['id'], executor)
+
     def schedule_boot_jobs(self):
         # Recover the job in db
         self.recover_job()
+        self.recover_failed_job()
         # Start the consumer of job creation message
         job_generator = service. \
             TaskService.create(binary='delfin-task',
@@ -133,13 +143,15 @@ class SchedulerManager(object):
         return self.scheduler
 
     def recover_job(self):
-        all_tasks = db.task_get_all(self.ctx)
+        filters = {'deleted': False}
+        all_tasks = db.task_get_all(self.ctx, filters=filters)
         distributor = TaskDistributor(self.ctx)
         for task in all_tasks:
             distributor.distribute_new_job(task['id'])
 
     def recover_failed_job(self):
-        all_failed_tasks = db.failed_task_get_all(self.ctx)
+        filters = {'deleted': False}
+        all_failed_tasks = db.failed_task_get_all(self.ctx, filters=filters)
         distributor = TaskDistributor(self.ctx)
         for failed_task in all_failed_tasks:
             task = db.task_get(self.ctx, failed_task['task_id'])

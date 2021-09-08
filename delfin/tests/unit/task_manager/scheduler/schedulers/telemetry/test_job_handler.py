@@ -41,6 +41,7 @@ fake_telemetry_job = {
     Task.method.name: constants.TelemetryCollection.PERFORMANCE_TASK_METHOD,
     Task.last_run_time.name: None,
     Task.executor.name: fake_executor,
+    Task.deleted.name: False,
 }
 
 fake_telemetry_jobs = [

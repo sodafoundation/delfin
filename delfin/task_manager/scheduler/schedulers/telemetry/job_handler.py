@@ -55,7 +55,8 @@ class JobHandler(object):
         this executor """
         try:
 
-            filters = {'executor': CONF.host}
+            filters = {'executor': CONF.host,
+                       'deleted': False}
             ctxt = context.get_admin_context()
             tasks = db.task_get_all(ctxt, filters=filters)
             failed_tasks = db.failed_task_get_all(ctxt, filters=filters)
@@ -88,6 +89,10 @@ class JobHandler(object):
 
         LOG.info("JobHandler received A job %s to schedule" % task_id)
         job = db.task_get(self.ctx, task_id)
+        # Check delete status of the task
+        deleted = job['deleted']
+        if deleted:
+            return
         collection_class = importutils.import_class(
             job['method'])
         instance = collection_class.get_instance(self.ctx, self.task_id)
