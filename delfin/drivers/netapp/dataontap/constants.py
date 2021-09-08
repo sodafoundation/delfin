@@ -78,6 +78,7 @@ POOLS_SHOW_DETAIL_COMMAND = "storage pool show -instance"
 AGGREGATE_SHOW_DETAIL_COMMAND = "storage aggregate show -instance"
 
 FS_SHOW_DETAIL_COMMAND = "vol show -instance"
+
 THIN_FS_SHOW_COMMAND = "vol show -space-guarantee none"
 
 ALTER_SHOW_DETAIL_COMMAND = "system health alert show -instance"
