@@ -111,22 +111,24 @@ class NetAppHandler(object):
                     alert_model = {
                         'alert_id': alert_map.get('AlertId'),
                         'alert_name': alert_map.get('AlertId'),
-                        'severity': '',
+                        'severity': None,
                         'category': category,
                         'type': constants.EventType.EQUIPMENT_ALARM,
                         'occur_time': utils.utcnow_ms(),
-                        'description': '',
+                        'description': None,
                         'match_key': hashlib.md5(
                             (alert_map.get('AlertId') + node_name +
                              alert_map['AlertingResource']
                              ).encode()).hexdigest(),
                         'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                        'location': ''
+                        'location': None
                     }
                 else:
                     raise exception.IncompleteTrapInformation(
                         constant.STORAGE_VENDOR)
             return alert_model
+        except exception.IncompleteTrapInformation as err:
+            raise err
         except Exception as err:
             err_msg = "Failed to parse alert from " \
                       "netapp cmode: %s" % (six.text_type(err))
@@ -656,7 +658,7 @@ class NetAppHandler(object):
                         'max_speed': int(fc_map['MaximumSpeed']) * units.Gi
                         if fc_map['MaximumSpeed'] != '-' else 0,
                         'native_parent_id': None,
-                        'wwn': fc_map['AdapterWWNN'],
+                        'wwn': fc_map['AdapterWWPN'],
                         'mac_address': None,
                         'ipv4': None,
                         'ipv4_mask': None,
