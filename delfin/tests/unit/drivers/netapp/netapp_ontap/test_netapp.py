@@ -152,7 +152,7 @@ class TestNetAppCmodeDriver(TestCase):
                          test_constans.CONTROLLER_INFO,
                          test_constans.CONTROLLER_IP_INFO])
         data = self.netapp_client.get_alert_sources(context)
-        self.assertEqual(data[0]['host'], '8.44.162.245')
+        self.assertEqual(data[0]['host'], '4082368-50-7')
 
     def test_get_storage_performance(self):
         SSHPool.do_exec = mock.Mock(
