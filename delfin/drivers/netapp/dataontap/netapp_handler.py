@@ -535,7 +535,6 @@ class NetAppHandler(object):
                                 if constant.IP_PATTERN.search(ip):
                                     value = ip
                                 ip_map[key] = value
-                                continue
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
