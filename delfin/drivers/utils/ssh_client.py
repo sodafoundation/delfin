@@ -226,8 +226,7 @@ class SSHPool(pools.Pool):
                 created = self.create()
                 self.current_size += 1
             except Exception as e:
-                err = six.text_type(e)
-                raise exception.SSHException(err)
+                raise e
 
             return created
         return self.channel.get()
