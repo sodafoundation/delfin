@@ -50,6 +50,7 @@ class TestNetAppCmodeDriver(TestCase):
                          test_constans.VERSION,
                          test_constans.SYSTEM_STATUS,
                          test_constans.CONTROLLER_INFO,
+                         test_constans.CONTROLLER_IP_INFO,
                          test_constans.DISKS_INFO,
                          test_constans.PHYSICAL_INFO,
                          test_constans.ERROR_DISK_INFO,
@@ -89,11 +90,12 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_parse_alert(self):
         data = self.netapp_client.parse_alert(context, test_constans.TRAP_MAP)
-        self.assertEqual(data['alert_name'], 'LUN.inconsistent.filesystem')
+        self.assertEqual(data['alert_name'], 'DisabledInuseSASPort_Alert')
 
     def test_list_controllers(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.CONTROLLER_INFO])
+            side_effect=[test_constans.CONTROLLER_INFO,
+                         test_constans.CONTROLLER_IP_INFO])
         data = self.netapp_client.list_controllers(context)
         self.assertEqual(data[0]['name'], 'cl-01')
 
@@ -146,10 +148,11 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_ge_alert_sources(self):
         SSHPool.do_exec = mock.Mock(
-            side_effect=[test_constans.NODE_IPS_INFO,
-                         test_constans.CLUSTER_IPS_INFO])
+            side_effect=[test_constans.CLUSTER_IPS_INFO,
+                         test_constans.CONTROLLER_INFO,
+                         test_constans.CONTROLLER_IP_INFO])
         data = self.netapp_client.get_alert_sources(context)
-        self.assertEqual(data[0]['host'], '192.168.159.131')
+        self.assertEqual(data[0]['host'], '8.44.162.245')
 
     def test_get_storage_performance(self):
         SSHPool.do_exec = mock.Mock(
