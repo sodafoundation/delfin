@@ -66,10 +66,6 @@ PATTERN = re.compile('^[-]{3,}')
 FLOAT_PATTERN = r"[-+]?\d*\.\d+|\d+"
 IP_PATTERN = re.compile(r'(([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])\.){3}'
                         r'([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])$')
-
-CONTROLLER_IP_COMMAND = "network interface show -fields " \
-                        "curr-node,address -role node-mgmt"
-
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
 STORAGE_STATUS_COMMAND = "system health status show"
@@ -117,6 +113,9 @@ QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
 
 MGT_IP_COMMAND = "network interface show -fields address -role cluster-mgmt"
 NODE_IP_COMMAND = "network interface show -fields address -role node-mgmt"
+
+CONTROLLER_IP_COMMAND = "network interface show -fields " \
+                        "curr-node,address -role node-mgmt"
 
 SECURITY_STYLE = {
     'mixed': constants.NASSecurityMode.MIXED,
@@ -178,7 +177,7 @@ DISK_TYPE = {
     'BSAS': constants.DiskPhysicalType.SATA,
     'FCAL': constants.DiskPhysicalType.FC,
     'FSAS': constants.DiskPhysicalType.NL_SAS,
-    'LUN ': constants.DiskPhysicalType.LUN,
+    'LUN ': constants.DiskPhysicalType.LUN,
     'SAS': constants.DiskPhysicalType.SAS,
     'MSATA': constants.DiskPhysicalType.SATA,
     'SSD': constants.DiskPhysicalType.SSD,
