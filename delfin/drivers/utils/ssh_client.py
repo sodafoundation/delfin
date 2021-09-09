@@ -221,9 +221,10 @@ class SSHPool(pools.Pool):
                     self.current_size -= 1
         if self.current_size < self.max_size:
             try:
-                created = self.create()
                 self.current_size += 1
+                created = self.create()
             except Exception as e:
+                self.current_size -= 1
                 raise e
 
             return created
