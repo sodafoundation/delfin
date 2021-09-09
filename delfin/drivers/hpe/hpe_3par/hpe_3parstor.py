@@ -112,8 +112,7 @@ class Hpe3parStorDriver(driver.StorageDriver):
                                                     resource_metrics,
                                                     start_time, end_time)
 
-    @staticmethod
-    def get_capabilities(context):
+    def get_capabilities(self, context):
         """Get capability of supported driver"""
         return {
             'is_historic': True,

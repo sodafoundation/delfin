@@ -60,7 +60,6 @@ class SSHHandler(object):
                                ' -btsecs %d -etsecs %d'
 
     def __init__(self, **kwargs):
-        kwargs['ssh_max_size'] = consts.SSH_MAX_SIZE
         self.kwargs = kwargs
         self.ssh_pool = SSHPool(**kwargs)
 

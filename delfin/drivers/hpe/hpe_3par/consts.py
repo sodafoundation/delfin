@@ -722,7 +722,6 @@ SSH_COLLECT_TIME_PATTERN = "\\(\\d+\\)"
 COLLECT_INTERVAL_HIRES = 60000
 SIXTY_SECONDS = 60
 REST_COLLEC_TTIME_PATTERN = '%Y-%m-%dT%H:%M:%SZ'
-SSH_MAX_SIZE = 9
 IOPS_DESCRIPTION = {
     "unit": "IOPS",
     "description": "Input/output operations per second"
