@@ -44,6 +44,7 @@ fake_failed_job = {
     FailedTask.end_time.name: int(datetime.now().timestamp()) + 20,
     FailedTask.interval.name: 20,
     FailedTask.deleted.name: False,
+    FailedTask.executor.name: 'node1',
 }
 
 fake_deleted_storage_failed_job = {
@@ -59,12 +60,14 @@ fake_deleted_storage_failed_job = {
     FailedTask.end_time.name: int(datetime.now().timestamp()) + 20,
     FailedTask.interval.name: 20,
     FailedTask.deleted.name: True,
+    FailedTask.executor.name: 'node1',
 }
 
 fake_telemetry_job = {
     Task.id.name: 2,
     Task.storage_id.name: uuidutils.generate_uuid(),
     Task.args.name: {},
+    Task.executor.name: 'node1',
 }
 
 
@@ -78,12 +81,12 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
                        mock.Mock(return_value=fake_telemetry_job))
     @mock.patch.object(db, 'failed_task_get',
                        mock.Mock(return_value=fake_failed_job))
-    @mock.patch(
-        'apscheduler.schedulers.background.BackgroundScheduler.pause_job')
+    @mock.patch('delfin.task_manager.metrics_rpcapi.TaskAPI.remove_failed_job')
     @mock.patch('delfin.db.failed_task_update')
-    @mock.patch('delfin.task_manager.rpcapi.TaskAPI.collect_telemetry')
+    @mock.patch('delfin.task_manager.tasks.telemetry'
+                '.PerformanceCollectionTask.collect')
     def test_failed_job_success(self, mock_collect_telemetry,
-                                mock_failed_task_update, mock_pause_job):
+                                mock_failed_task_update, mock_failed_job):
         mock_collect_telemetry.return_value = TelemetryTaskStatus. \
             TASK_EXEC_STATUS_SUCCESS
         ctx = context.get_admin_context()
@@ -92,7 +95,7 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
         # call failed job
         failed_job_handler()
 
-        self.assertEqual(mock_pause_job.call_count, 1)
+        self.assertEqual(mock_failed_job.call_count, 1)
         mock_failed_task_update.assert_called_once_with(
             ctx,
             fake_failed_job_id,
@@ -105,12 +108,11 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
                        mock.Mock(return_value=fake_telemetry_job))
     @mock.patch.object(db, 'failed_task_get',
                        mock.Mock(return_value=fake_failed_job))
-    @mock.patch(
-        'apscheduler.schedulers.background.BackgroundScheduler.pause_job')
+    @mock.patch('delfin.task_manager.metrics_rpcapi.TaskAPI.remove_failed_job')
     @mock.patch('delfin.db.failed_task_update')
     @mock.patch('delfin.task_manager.rpcapi.TaskAPI.collect_telemetry')
     def test_failed_job_failure(self, mock_collect_telemetry,
-                                mock_failed_task_update, mock_pause_job):
+                                mock_failed_task_update, mock_failed_job):
         mock_collect_telemetry.return_value = TelemetryTaskStatus. \
             TASK_EXEC_STATUS_FAILURE
         ctx = context.get_admin_context()
@@ -120,7 +122,7 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
         # call failed job
         failed_job_handler()
 
-        self.assertEqual(mock_pause_job.call_count, 0)
+        self.assertEqual(mock_failed_job.call_count, 0)
         mock_failed_task_update.assert_called_once_with(
             ctx,
             fake_failed_job_id,
@@ -132,12 +134,12 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
     @mock.patch.object(db, 'task_get',
                        mock.Mock(return_value=fake_telemetry_job))
     @mock.patch.object(db, 'failed_task_get')
-    @mock.patch(
-        'apscheduler.schedulers.background.BackgroundScheduler.pause_job')
+    @mock.patch('delfin.task_manager.metrics_rpcapi.TaskAPI.remove_failed_job')
     @mock.patch('delfin.db.failed_task_update')
     @mock.patch('delfin.task_manager.rpcapi.TaskAPI.collect_telemetry')
     def test_failed_job_fail_max_times(self, mock_collect_telemetry,
-                                       mock_failed_task_update, mock_pause_job,
+                                       mock_failed_task_update,
+                                       mock_remove_job,
                                        mock_failed_task_get):
         mock_collect_telemetry.return_value = TelemetryTaskStatus. \
             TASK_EXEC_STATUS_FAILURE
@@ -155,7 +157,7 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
         # call failed job
         failed_job_handler()
 
-        self.assertEqual(mock_pause_job.call_count, 1)
+        self.assertEqual(mock_remove_job.call_count, 1)
         mock_failed_task_update.assert_called_once_with(
             ctx,
             fake_failed_job_id,
@@ -169,8 +171,7 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
                        mock.Mock(return_value=fake_telemetry_job))
     @mock.patch.object(db, 'failed_task_get',
                        mock.Mock(return_value=fake_deleted_storage_failed_job))
-    @mock.patch(
-        'apscheduler.schedulers.background.BackgroundScheduler.pause_job')
+    @mock.patch('delfin.task_manager.metrics_rpcapi.TaskAPI.remove_failed_job')
     @mock.patch('delfin.db.failed_task_update')
     @mock.patch('delfin.task_manager.rpcapi.TaskAPI.collect_telemetry')
     def test_failed_job_deleted_storage(self, mock_collect_telemetry,
@@ -189,7 +190,7 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
                        mock.Mock(return_value=fake_telemetry_job))
     @mock.patch.object(db, 'failed_task_get', failed_task_not_found_exception)
     @mock.patch(
-        'apscheduler.schedulers.background.BackgroundScheduler.pause_job',
+        'delfin.task_manager.metrics_rpcapi.TaskAPI.remove_failed_job',
         mock.Mock())
     @mock.patch('delfin.db.failed_task_update')
     @mock.patch('delfin.task_manager.rpcapi.TaskAPI.collect_telemetry')
@@ -198,7 +199,7 @@ class TestFailedPerformanceCollectionHandler(test.TestCase):
         ctx = context.get_admin_context()
         failed_job_handler = FailedPerformanceCollectionHandler(
             ctx, 1122, '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6', '',
-            1234, 2, 1122334400, 1122334800)
+            1234, 2, 1122334400, 1122334800, 'node1')
         failed_job_handler()
 
         # Verify that no action performed for deleted storage failed tasks
