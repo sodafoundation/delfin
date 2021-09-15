@@ -70,16 +70,3 @@ class TestPerformanceCollectionTask(test.TestCase):
         # when collect metric fails
         self.assertEqual(mock_dispatch.call_count, 0)
         self.assertEqual(mock_log_error.call_count, 1)
-
-    @mock.patch('delfin.db.failed_task_delete_by_storage')
-    @mock.patch('delfin.db.task_delete_by_storage')
-    def test_successful_remove(self, mock_task_del, mock_failed_task_del):
-        telemetry_obj = telemetry.PerformanceCollectionTask(
-        )
-        telemetry_obj.remove_telemetry(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
-
-        mock_task_del.assert_called_with(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
-        mock_failed_task_del.assert_called_with(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
