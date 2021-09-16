@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import six
-
 from oslo_config import cfg
 from oslo_log import log
 from delfin.common import constants
 from delfin.drivers.huawei.oceanstor import rest_client, consts, alert_handler
 from delfin.drivers import driver
-from delfin import exception
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -125,11 +122,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return pool_list
 
-        except Exception as err:
-            LOG.error(
-                "Failed to get pool metrics from OceanStor: {}".format(err))
-            raise exception.StorageBackendException(
-                'Failed to get pool metrics from OceanStor')
+        except Exception:
+            LOG.error("Failed to get pool metrics from OceanStor")
+            raise
 
     def _get_orig_pool_id(self, pools, volume):
         for pool in pools:
@@ -187,11 +182,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return volume_list
 
-        except Exception as err:
-            LOG.error(
-                "Failed to get list volumes from OceanStor: {}".format(err))
-            raise exception.StorageBackendException(
-                'Failed to get list volumes from OceanStor')
+        except Exception:
+            LOG.error("Failed to get list volumes from OceanStor")
+            raise
 
     def list_controllers(self, context):
         try:
@@ -220,17 +213,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return controller_list
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to get controller metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to get controller metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to get controller metrics from OceanStor")
+            raise
 
     def list_ports(self, context):
         try:
@@ -299,17 +284,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return port_list
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to get port metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to get port metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to get port metrics from OceanStor")
+            raise
 
     def list_disks(self, context):
         try:
@@ -355,17 +332,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return disk_list
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to get disk metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to get disk metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to get disk metrics from OceanStor")
+            raise
 
     def _list_quotas(self, quotas, fs_id, qt_id):
         q_type = {
@@ -428,17 +397,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return quotas_list
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to get quotas from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to get quotas from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to get quotas from OceanStor")
+            raise
 
     def list_filesystems(self, context):
         try:
@@ -495,17 +456,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return fs_list
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to get filesystems from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to get filesystems from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to get filesystems from OceanStor")
+            raise
 
     def list_qtrees(self, context):
         try:
@@ -535,17 +488,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return qt_list
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to get qtrees from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to get qtrees from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to get qtrees from OceanStor")
+            raise
 
     def list_shares(self, context):
         try:
@@ -575,17 +520,9 @@ class OceanStorDriver(driver.StorageDriver):
 
             return s_list
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to get shares from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to get shares from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to get shares from OceanStor")
+            raise
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -616,17 +553,9 @@ class OceanStorDriver(driver.StorageDriver):
                 self.client.configure_metrics_collection()
                 self.init_perf_config = False
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to configure collection in OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to configure collection in OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to configure collection in OceanStor")
+            raise
 
         metrics = []
         try:
@@ -665,22 +594,14 @@ class OceanStorDriver(driver.StorageDriver):
                     resource_metrics.get(constants.ResourceType.DISK))
                 metrics.extend(disk_metrics)
 
-        except exception.DelfinException as err:
-            err_msg = "Failed to collect metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise err
-
-        except Exception as err:
-            err_msg = "Failed to collect metrics from OceanStor: %s" %\
-                      (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+        except Exception:
+            LOG.error("Failed to collect metrics from OceanStor")
+            raise
 
         return metrics
 
     @staticmethod
-    def get_capabilities(context):
+    def get_capabilities(context, filters=None):
         """Get capability of supported driver"""
         return {
             'is_historic': False,
@@ -692,3 +613,235 @@ class OceanStorDriver(driver.StorageDriver):
                 constants.ResourceType.DISK: consts.DISK_CAP
             }
         }
+
+    def list_storage_host_initiators(self, ctx):
+        try:
+            # Get list of OceanStor initiators details
+            initiators = self.client.get_all_initiators()
+            initiator_list = []
+            switcher = {
+                consts.INITIATOR_RUNNINGSTATUS_ONLINE:
+                    constants.InitiatorStatus.ONLINE,
+                consts.INITIATOR_RUNNINGSTATUS_OFFLINE:
+                    constants.InitiatorStatus.OFFLINE,
+                consts.INITIATOR_RUNNINGSTATUS_UNKNOWN:
+                    constants.InitiatorStatus.UNKNOWN,
+            }
+            type_switch = {
+                consts.ISCSI_INITIATOR_TYPE:
+                    consts.ISCSI_INITIATOR_DESCRIPTION,
+                consts.FC_INITIATOR_TYPE:
+                    consts.FC_INITIATOR_DESCRIPTION,
+                consts.IB_INITIATOR_TYPE:
+                    consts.IB_INITIATOR_DESCRIPTION,
+            }
+            for initiator in initiators:
+                status = switcher.get(initiator['RUNNINGSTATUS'],
+                                      constants.InitiatorStatus.UNKNOWN)
+                description = type_switch.get(
+                    initiator['TYPE'], consts.UNKNOWN_INITIATOR_DESCRIPTION)
+
+                initiator_item = {
+                    "name": initiator.get('NAME'),
+                    "description": description,
+                    "alias": initiator['ID'],
+                    "storage_id": self.storage_id,
+                    "native_storage_host_initiator_id": initiator['ID'],
+                    "wwn": initiator['ID'],
+                    "status": status,
+                    "native_storage_host_id": initiator.get('PARENTID'),
+                }
+                initiator_list.append(initiator_item)
+
+            return initiator_list
+
+        except Exception:
+            LOG.error("Failed to get initiators from OceanStor")
+            raise
+
+    def list_storage_hosts(self, ctx):
+        try:
+            # Get list of OceanStor host details
+            hosts = self.client.get_all_hosts()
+            host_list = []
+            for host in hosts:
+                os_type = ''
+                host_os = int(host['OPERATIONSYSTEM'])
+                if host_os < len(consts.HOST_OS):
+                    os_type = consts.HOST_OS[host_os]
+                status = constants.HostStatus.NORMAL
+                if host['RUNNINGSTATUS'] != consts.HOST_RUNNINGSTATUS_NORMAL:
+                    status = constants.HostStatus.ABNORMAL
+
+                h = {
+                    "name": host['NAME'],
+                    "description": host['DESCRIPTION'],
+                    "storage_id": self.storage_id,
+                    "native_storage_host_id": host['ID'],
+                    "os_type": os_type,
+                    "status": status,
+                    "ip_address": host['IP']
+                }
+                host_list.append(h)
+
+            return host_list
+
+        except Exception:
+            LOG.error("Failed to get host metrics from OceanStor")
+            raise
+
+    def list_storage_host_groups(self, ctx):
+        try:
+            # Get list of OceanStor host_groups details
+            host_groups = self.client.get_all_host_groups()
+            host_group_list = []
+            for host_group in host_groups:
+                hosts = self.client.get_all_associate_hosts(
+                    host_group['TYPE'], host_group['ID'])
+                hosts_str = None
+                for host in hosts:
+                    if hosts_str:
+                        hosts_str = "{0},{1}".format(hosts_str, host['ID'])
+                    else:
+                        hosts_str = "{0}".format(host['ID'])
+
+                host_g = {
+                    "name": host_group['NAME'],
+                    "description": host_group['DESCRIPTION'],
+                    "storage_id": self.storage_id,
+                    "native_storage_host_group_id": host_group['ID'],
+                    "storage_hosts": hosts_str
+                }
+                host_group_list.append(host_g)
+
+            return host_group_list
+
+        except Exception:
+            LOG.error("Failed to get host_groups from OceanStor")
+            raise
+
+    def list_port_groups(self, ctx):
+        try:
+            # Get list of OceanStor port_groups details
+            port_groups = self.client.get_all_port_groups()
+            port_group_list = []
+            for port_group in port_groups:
+                ports = self.client.get_all_associate_ports(
+                    port_group['TYPE'], port_group['ID'])
+                ports_str = None
+                for port in ports:
+                    if ports_str:
+                        ports_str = "{0},{1}".format(ports_str, port['ID'])
+                    else:
+                        ports_str = "{0}".format(port['ID'])
+
+                port_g = {
+                    "name": port_group['NAME'],
+                    "description": port_group['DESCRIPTION'],
+                    "storage_id": self.storage_id,
+                    "native_port_group_id": port_group['ID'],
+                    "ports": ports_str
+                }
+                port_group_list.append(port_g)
+
+            return port_group_list
+
+        except Exception:
+            LOG.error("Failed to get port_groups from OceanStor")
+            raise
+
+    def list_volume_groups(self, ctx):
+        try:
+            # Get list of OceanStor vol_groups details
+            vol_groups = self.client.get_all_volume_groups()
+            vol_group_list = []
+            for vol_group in vol_groups:
+                volumes = self.client.get_all_associate_volumes(
+                    vol_group['TYPE'], vol_group['ID'])
+                volumes_str = None
+                for volume in volumes:
+                    if volumes_str:
+                        volumes_str = "{0},{1}".format(volumes_str,
+                                                       volume['ID'])
+                    else:
+                        volumes_str = "{0}".format(volume['ID'])
+
+                vol_g = {
+                    "name": vol_group['NAME'],
+                    "description": vol_group['DESCRIPTION'],
+                    "storage_id": self.storage_id,
+                    "native_volume_group_id": vol_group['ID'],
+                    "volumes": volumes_str
+                }
+                vol_group_list.append(vol_g)
+
+            return vol_group_list
+
+        except Exception:
+            LOG.error("Failed to get vol_groups from OceanStor")
+            raise
+
+    def list_masking_views(self, ctx):
+        try:
+            # Get list of OceanStor masking view details
+            views = self.client.get_all_mapping_views()
+
+            view_dict = {}
+            for view in views:
+                v = {
+                    "name": view['NAME'],
+                    "description": view['DESCRIPTION'],
+                    "storage_id": self.storage_id,
+                    "native_masking_view_id": view['ID'],
+                }
+                view_dict[view['ID']] = v
+
+            view_keys = view_dict.keys()
+
+            host_groups = self.client.get_all_host_groups()
+            for host_group in host_groups:
+                hg_views = self.client.get_all_associate_mapping_views(
+                    host_group['TYPE'], host_group['ID'])
+                for hg_view in hg_views:
+                    v_id = hg_view['ID']
+                    if v_id in view_keys:
+                        view_dict[v_id]['native_storage_host_group_id'] =\
+                            host_group['ID']
+                    else:
+                        msg = "Missing mapping view for host group id {0}".\
+                            format(host_group['ID'])
+                        LOG.info(msg)
+
+            volume_groups = self.client.get_all_volume_groups()
+            for volume_group in volume_groups:
+                vg_views = self.client.get_all_associate_mapping_views(
+                    volume_group['TYPE'], volume_group['ID'])
+                for vg_view in vg_views:
+                    v_id = vg_view['ID']
+                    if v_id in view_keys:
+                        view_dict[v_id]['native_volume_group_id'] =\
+                            volume_group['ID']
+                    else:
+                        msg = "Missing mapping view for volume group id {0}".\
+                            format(volume_group['ID'])
+                        LOG.info(msg)
+
+            port_groups = self.client.get_all_port_groups()
+            for port_group in port_groups:
+                pg_views = self.client.get_all_associate_mapping_views(
+                    port_group['TYPE'], port_group['ID'])
+                for pg_view in pg_views:
+                    v_id = pg_view['ID']
+                    if v_id in view_keys:
+                        view_dict[v_id]['native_port_group_id'] =\
+                            port_group['ID']
+                    else:
+                        msg = "Missing mapping view for port group id {0}".\
+                            format(port_group['ID'])
+                        LOG.info(msg)
+
+            return list(view_dict.values())
+
+        except Exception:
+            LOG.error("Failed to get view metrics from OceanStor")
+            raise

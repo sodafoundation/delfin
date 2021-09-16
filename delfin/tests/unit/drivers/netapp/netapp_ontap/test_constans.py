@@ -22,7 +22,14 @@ ACCESS_INFO = {
         "port": 22,
         "username": "admin",
         "password": "aq114477",
-    }
+    },
+    "rest": {
+        "host": "192.168.159.130",
+        "port": 22,
+        "username": "admin",
+        "password": "cGFzc3dvcmQ=",
+    },
+
 }
 
 SYSTEM_INFO = """
@@ -50,7 +57,7 @@ aggr2       8.79GB    4.98GB   43% online       3 cl-01   raid_dp,\r
 VERSION = """----cluster----\r
 last login time : 12 456 789\r
 \r
-NetApp Release 9.0: Fri Aug 19 06:39:33 UTC 2016\r
+NetApp Release 9.8: Fri Aug 19 06:39:33 UTC 2016\r
 """
 
 SYSTEM_STATUS = """----cluster----\r
@@ -493,6 +500,7 @@ VBN_BAD may be present in the active filesystem: false\r
                           Is Volume a FlexGroup: false\r
                                   SnapLock Type: non-snaplock\r
                           Vserver DR Protection: -\r
+ UUID of the Efficiency Policy: b0f36cd7-e7bc-11e2-9994-123478563412\r
 \r
                                    Vserver Name: svm1\r
                                     Volume Name: svm1_root\r
@@ -586,6 +594,7 @@ VBN_BAD may be present in the active filesystem: false\r
                           Is Volume a FlexGroup: false\r
                                   SnapLock Type: non-snaplock\r
                           Vserver DR Protection: -\r
+ UUID of the Efficiency Policy: b0f36cd7-e7bc-11e2-9994-123478563412\r
 \r
                                    Vserver Name: svm1\r
                                     Volume Name: vol_svm1_1\r
@@ -679,6 +688,7 @@ VBN_BAD may be present in the active filesystem: false\r
                           Is Volume a FlexGroup: false\r
                                   SnapLock Type: non-snaplock\r
                           Vserver DR Protection: -\r
+ UUID of the Efficiency Policy: b0f36cd7-e7bc-11e2-9994-123478563412\r
 7 entries were displayed."""
 
 ALERT_INFO = """----cluster----\r
@@ -1285,8 +1295,9 @@ svm1 vol_svm1_2 aggr1 online RW 2GB 2.00GB 0%\r"""
 
 TRAP_MAP = {
     '1.3.6.1.4.1.789.1.1.12.0':
-        'LUN.inconsistent.filesystem:The on-disk structure of the LUN at path '
-        'test in volume 0 (DSID 0) is inconsistent in the WAFL file system.',
+        'A Health Monitor has clear an alert. '
+        '[Alert Id = DisabledInuseSASPort_Alert , Alerting Resource = 0a].',
+    'controller_name': 'cl-01',
     '1.3.6.1.4.1.789.1.1.9.0': '1-80-000008'
 }
 
@@ -1563,3 +1574,234 @@ last login time : 12 456 789\r
 vserver lif         address\r
 ------- ------------ ---------------\r
 cl      cluster_mgmt 192.168.159.131"""
+
+CONTROLLER_IP_INFO = """vserver   lif     curr-node address\r
+--------- --------------- --------- ------------\r
+NetappFSA Netapp-01_mgmt1 cl-01 8.44.162.245"""
+
+RESOURCE_METRICS = {
+    'storage':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'storagePool':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'volume':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime',
+         'cacheHitRatio', 'readCacheHitRatio', 'writeCacheHitRatio',
+         'ioSize', 'readIoSize', 'writeIoSize'],
+    'controller':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'port':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'disk':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'filesystem':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput',
+         'ioSize', 'readIoSize', 'writeIoSize'],
+}
+
+CLUSTER_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+POOL_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+LUN_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+FS_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+FS_REST_INFO = [
+    {
+        "name": "vol1",
+        "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7",
+        "svm": {
+            "_links": {
+                "self": {
+                    "href": "/api/resourcelink"
+                }
+            },
+            "name": "svm1",
+            "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7"
+        },
+    }
+]
+
+PORT_REST_INFO = [
+    {
+        "name": "e0a",
+        "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7",
+        "node": {
+            "_links": {
+                "self": {
+                    "href": "/api/resourcelink"
+                }
+            },
+            "name": "node1",
+            "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7"
+        },
+    }
+]
+
+FC_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+ETH_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]

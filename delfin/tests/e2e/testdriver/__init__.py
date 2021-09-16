@@ -225,8 +225,8 @@ class TestDriver(driver.StorageDriver):
         return array_metrics
 
     @staticmethod
-    def get_capabilities(context):
-        """Get capability of supported driver"""
+    def get_capabilities(context, filters=None):
+        """Get capability of supported driver."""
         return {
             'is_historic': False,
             'resource_metrics': {

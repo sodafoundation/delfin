@@ -42,6 +42,22 @@ class VolumeGroupController(wsgi.Controller):
 
         volume_groups = db.volume_groups_get_all(
             ctxt, marker, limit, sort_keys, sort_dirs, query_params, offset)
+
+        # Get Volume Group to Volume relation from DB
+        for volume_group in volume_groups:
+            params = {
+                "native_volume_group_id":
+                volume_group['native_volume_group_id']
+            }
+            volumes = db.vol_grp_vol_rels_get_all(
+                ctxt, filters=params)
+
+            native_volume_id_list = []
+            for volume in volumes:
+                native_volume_id_list.append(volume['native_volume_id'])
+
+            volume_group['volumes'] = native_volume_id_list
+
         return volume_group_view.build_volume_groups(volume_groups)
 
 

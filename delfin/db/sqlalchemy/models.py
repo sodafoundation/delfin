@@ -23,7 +23,8 @@ SQLAlchemy models for Delfin  data.
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_db.sqlalchemy.types import JsonEncodedDict
-from sqlalchemy import Column, Integer, String, Boolean, BigInteger, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, BigInteger, \
+    DateTime, BIGINT
 from sqlalchemy.ext.declarative import declarative_base
 
 from delfin.common import constants
@@ -268,6 +269,7 @@ class Task(BASE, DelfinBase):
     args = Column(JsonEncodedDict)
     last_run_time = Column(Integer)
     job_id = Column(String(36))
+    executor = Column(String(255))
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, default=False)
 
@@ -279,12 +281,13 @@ class FailedTask(BASE, DelfinBase):
     storage_id = Column(String(36))
     task_id = Column(Integer)
     interval = Column(Integer)
-    start_time = Column(Integer)
-    end_time = Column(Integer)
+    start_time = Column(BIGINT)
+    end_time = Column(BIGINT)
     retry_count = Column(Integer)
     method = Column(String(255))
     result = Column(String(255))
     job_id = Column(String(36))
+    executor = Column(String(255))
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, default=False)
 

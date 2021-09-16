@@ -27,6 +27,7 @@ class TestStorageController(test.TestCase):
     def setUp(self):
         super(TestStorageController, self).setUp()
         self.task_rpcapi = mock.Mock()
+        self.metrics_task_rpcapi = mock.Mock()
         self.driver_api = mock.Mock()
         self.controller = StorageController()
         self.mock_object(self.controller, 'task_rpcapi', self.task_rpcapi)
@@ -34,15 +35,15 @@ class TestStorageController(test.TestCase):
 
     @mock.patch.object(db, 'storage_get',
                        mock.Mock(return_value={'id': 'fake_id'}))
-    def test_delete(self):
+    @mock.patch('delfin.task_manager.perf_job_controller.delete_perf_job')
+    def test_delete(self, perf_job_controller):
         req = fakes.HTTPRequest.blank('/storages/fake_id')
         self.controller.delete(req, 'fake_id')
         ctxt = req.environ['delfin.context']
         db.storage_get.assert_called_once_with(ctxt, 'fake_id')
         self.task_rpcapi.remove_storage_resource.assert_called_with(
             ctxt, 'fake_id', mock.ANY)
-        self.task_rpcapi.remove_telemetry_instances.assert_called_once_with(
-            ctxt, 'fake_id', mock.ANY)
+        self.assertEqual(perf_job_controller.call_count, 1)
         self.task_rpcapi.remove_storage_in_cache.assert_called_once_with(
             ctxt, 'fake_id')
 
