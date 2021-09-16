@@ -475,7 +475,6 @@ class UnityStorDriver(driver.StorageDriver):
                     file_name = ''
                     if filesystems:
                         file_entries = filesystems.get('entries')
-
                         for file in file_entries:
                             file_content = file.get('content')
                             if not file_content:
