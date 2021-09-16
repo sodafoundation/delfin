@@ -445,6 +445,8 @@ class UnityStorDriver(driver.StorageDriver):
 
     def get_share_qtree(self, path, qtree_list):
         qtree_id = None
+        if not qtree_list:
+            return qtree_id
         qts_entries = qtree_list.get('entries')
         for qtree in qts_entries:
             content = qtree.get('content')
@@ -470,16 +472,18 @@ class UnityStorDriver(driver.StorageDriver):
                     content = share.get('content')
                     if not content:
                         continue
-                    file_entries = filesystems.get('entries')
                     file_name = ''
-                    for file in file_entries:
-                        file_content = file.get('content')
-                        if not file_content:
-                            continue
-                        if file_content.get('id') == content.get(
-                                'filesystem', {}).get('id'):
-                            file_name = file_content.get('name')
-                            break
+                    if filesystems:
+                        file_entries = filesystems.get('entries')
+
+                        for file in file_entries:
+                            file_content = file.get('content')
+                            if not file_content:
+                                continue
+                            if file_content.get('id') == content.get(
+                                    'filesystem', {}).get('id'):
+                                file_name = file_content.get('name')
+                                break
                     path = '/%s%s' % (file_name, content.get('path')) if \
                         file_name != '' else content.get('path')
                     fs = {
