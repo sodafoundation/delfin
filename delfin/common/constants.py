@@ -405,6 +405,7 @@ class TelemetryCollection(object):
     MAX_FAILED_JOB_RETRY_COUNT = 5
     """Default performance collection interval"""
     DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
+    DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 300
 
 
 class TelemetryTaskStatus(object):

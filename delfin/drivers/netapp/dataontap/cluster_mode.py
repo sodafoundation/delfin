@@ -86,5 +86,6 @@ class NetAppCmodeDriver(driver.StorageDriver):
         return self.netapp_handler.collect_perf_metrics(
             storage_id, resource_metrics, start_time, end_time)
 
-    def get_capabilities(self, context):
+    @staticmethod
+    def get_capabilities(context, filters=None):
         return constant.PERF_CAPABILITIES

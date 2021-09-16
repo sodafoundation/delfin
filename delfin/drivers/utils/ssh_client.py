@@ -220,10 +220,15 @@ class SSHPool(pools.Pool):
                     return conn
                 else:
                     conn.close()
-            return self.create()
+                    self.current_size -= 1
         if self.current_size < self.max_size:
-            created = self.create()
-            self.current_size += 1
+            try:
+                self.current_size += 1
+                created = self.create()
+            except Exception as e:
+                self.current_size -= 1
+                raise e
+
             return created
         return self.channel.get()
 

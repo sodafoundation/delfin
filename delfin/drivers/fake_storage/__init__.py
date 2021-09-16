@@ -558,7 +558,8 @@ class FakeStorageDriver(driver.StorageDriver):
             merged_metrics += m
         return merged_metrics
 
-    def get_capabilities(self, context):
+    @staticmethod
+    def get_capabilities(context, filters=None):
         """Get capability of supported driver"""
         return {
             'is_historic': False,

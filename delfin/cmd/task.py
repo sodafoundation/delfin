@@ -20,6 +20,7 @@
 """Starter script for delfin task service."""
 
 import eventlet
+
 eventlet.monkey_patch()
 
 import sys
@@ -45,9 +46,18 @@ def main():
     task_server = service.TaskService.create(binary='delfin-task',
                                              coordination=True)
     leader_election = service.LeaderElectionService.create()
+    metrics_task_server = service. \
+        TaskService.create(binary='delfin-task',
+                           topic=CONF.host,
+                           manager='delfin.'
+                                   'task_manager.'
+                                   'metrics_manager.'
+                                   'MetricsTaskManager',
+                           coordination=True)
 
     service.serve(task_server)
     service.serve(leader_election)
+    service.serve(metrics_task_server)
 
     service.wait()
 
