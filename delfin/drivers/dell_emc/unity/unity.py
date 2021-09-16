@@ -374,6 +374,8 @@ class UnityStorDriver(driver.StorageDriver):
     def list_filesystems(self, context):
         try:
             files = self.rest_handler.get_all_filesystems()
+            if not files:
+                files = self.rest_handler.get_all_filesystems_without_flr()
             fs_list = []
             if files is not None:
                 fs_entries = files.get('entries')
@@ -508,6 +510,9 @@ class UnityStorDriver(driver.StorageDriver):
             share_list = []
             qtrees = self.rest_handler.get_all_qtrees()
             filesystems = self.rest_handler.get_all_filesystems()
+            if not filesystems:
+                filesystems = \
+                    self.rest_handler.get_all_filesystems_without_flr()
             share_list.extend(self.get_share('cifs', qtrees, filesystems))
             share_list.extend(self.get_share('nfs', qtrees, filesystems))
             return share_list

@@ -180,16 +180,15 @@ class RestHandler(RestClient):
     def get_all_controllers(self):
         url = '%s?%s' % (RestHandler.REST_CONTROLLER_URL,
                          'fields=id,name,health,model,slotNumber,'
-                         'emcPartNumber,emcSerialNumber,manufacturer,'
-                         'memorySize')
+                         'manufacturer,memorySize')
         result_json = self.get_rest_info(url)
         return result_json
 
     def get_all_disks(self):
         url = '%s?%s' % (RestHandler.REST_DISK_URL,
                          'fields=id,name,health,model,slotNumber,'
-                         'manufacturer,version,emcSerialNumber,wwn'
-                         'emcPartNumber,rpm,size,diskGroup')
+                         'manufacturer,version,emcSerialNumber,wwn,'
+                         'rpm,size,diskGroup')
         result_json = self.get_rest_info(url)
         return result_json
 
@@ -203,7 +202,7 @@ class RestHandler(RestClient):
     def get_all_ethports(self):
         url = '%s?%s' % (RestHandler.REST_ETHPORT_URL,
                          'fields=id,name,health,portNumber,storageProcessor,'
-                         'speed,isLinkUp,macAddress,maxMtu')
+                         'speed,isLinkUp,macAddress')
         result_json = self.get_rest_info(url)
         return result_json
 
@@ -218,6 +217,13 @@ class RestHandler(RestClient):
         url = '%s?%s' % (RestHandler.REST_FILESYSTEM_URL,
                          'fields=id,name,health,sizeAllocated,accessPolicy,'
                          'sizeTotal,sizeUsed,isThinEnabled,pool,flrVersion')
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_all_filesystems_without_flr(self):
+        url = '%s?%s' % (RestHandler.REST_FILESYSTEM_URL,
+                         'fields=id,name,health,sizeAllocated,accessPolicy,'
+                         'sizeTotal,sizeUsed,isThinEnabled,pool')
         result_json = self.get_rest_info(url)
         return result_json
 
@@ -249,7 +255,6 @@ class RestHandler(RestClient):
 
     def get_quota_configs(self):
         url = '%s?%s' % (RestHandler.REST_QUOTACONFIG_URL,
-                         'fields=id,filesystem,treeQuota,quotaPolicy,'
-                         'isUserQuotaEnabled,isAccessDenyEnabled')
+                         'fields=id,filesystem,treeQuota,quotaPolicy')
         result_json = self.get_rest_info(url)
         return result_json
