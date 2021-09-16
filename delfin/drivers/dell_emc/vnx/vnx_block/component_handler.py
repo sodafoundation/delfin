@@ -17,6 +17,7 @@ import six
 from oslo_log import log
 from oslo_utils import units
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
 
@@ -34,18 +35,23 @@ class ComponentHandler(object):
         status = constants.StorageStatus.NORMAL
         raw_cap = self.handle_disk_capacity()
         pool_capacity = self.handle_pool_capacity()
-        result = {
-            'name': domain[0].get('node'),
-            'vendor': consts.EMCVNX_VENDOR,
-            'model': agent.get('model'),
-            'status': status,
-            'serial_number': agent.get('serial_no'),
-            'firmware_version': agent.get('revision'),
-            'total_capacity': pool_capacity.get('total_capacity'),
-            'raw_capacity': int(raw_cap),
-            'used_capacity': pool_capacity.get('used_capacity'),
-            'free_capacity': pool_capacity.get('free_capacity')
-        }
+        if domain and agent:
+            result = {
+                'name': domain[0].get('node'),
+                'vendor': consts.EMCVNX_VENDOR,
+                'model': agent.get('model'),
+                'status': status,
+                'serial_number': agent.get('serial_no'),
+                'firmware_version': agent.get('revision'),
+                'total_capacity': pool_capacity.get('total_capacity'),
+                'raw_capacity': int(raw_cap),
+                'used_capacity': pool_capacity.get('used_capacity'),
+                'free_capacity': pool_capacity.get('free_capacity')
+            }
+        else:
+            err_msg = "domain or agent error: %s, %s" %\
+                      (six.text_type(domain), six.text_type(agent))
+            raise exception.StorageBackendException(err_msg)
         return result
 
     def list_storage_pools(self, storage_id):
