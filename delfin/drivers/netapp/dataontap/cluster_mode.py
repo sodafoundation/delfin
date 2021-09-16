@@ -14,7 +14,6 @@
 
 from delfin.drivers import driver
 from delfin.drivers.netapp.dataontap import netapp_handler
-from delfin.drivers.netapp.dataontap import constants as constant
 from delfin.drivers.netapp.dataontap.netapp_handler import NetAppHandler
 
 
@@ -88,4 +87,4 @@ class NetAppCmodeDriver(driver.StorageDriver):
 
     @staticmethod
     def get_capabilities(context, filters=None):
-        return constant.PERF_CAPABILITIES
+        return NetAppHandler.get_capabilities(filters)
