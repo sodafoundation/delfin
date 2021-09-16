@@ -132,6 +132,7 @@ class SSHClient(object):
 
 class SSHPool(pools.Pool):
     SOCKET_TIMEOUT = 10
+    MAX_POOL_SIZE = 3
 
     def __init__(self, **kwargs):
         ssh_access = kwargs.get('ssh')
@@ -147,7 +148,8 @@ class SSHPool(pools.Pool):
         self.conn_timeout = self.SOCKET_TIMEOUT
         if self.ssh_conn_timeout is None:
             self.ssh_conn_timeout = SSHPool.SOCKET_TIMEOUT
-        super(SSHPool, self).__init__(min_size=0, max_size=3)
+        ssh_max_size = kwargs.get('ssh_max_size', self.MAX_POOL_SIZE)
+        super(SSHPool, self).__init__(min_size=0, max_size=ssh_max_size)
 
     def set_host_key(self, host_key, ssh):
         """
