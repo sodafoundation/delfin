@@ -114,6 +114,11 @@ telemetry_opts = [
                default=constants.TelemetryCollection
                .DEF_PERFORMANCE_COLLECTION_INTERVAL,
                help='default interval (in sec) for performance collection'),
+    cfg.IntOpt('performance_history_on_reschedule',
+               default=constants.TelemetryCollection
+               .DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE,
+               help='default history(in sec) to be collected on a job '
+                    'reschedule'),
 ]
 
 CONF.register_opts(telemetry_opts, "telemetry")

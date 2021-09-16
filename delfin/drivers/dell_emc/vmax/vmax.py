@@ -145,7 +145,8 @@ class VMAXStorageDriver(driver.StorageDriver):
 
         return metrics
 
-    def get_capabilities(self, context):
+    @staticmethod
+    def get_capabilities(context, filters=None):
         """Get capability of supported driver"""
         return {
             'is_historic': True,
