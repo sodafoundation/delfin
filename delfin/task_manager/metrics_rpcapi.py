@@ -49,29 +49,59 @@ class TaskAPI(object):
     def assign_job(self, context, task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
+                                          fanout=False)
         return call_context.cast(context, 'assign_job',
+                                 task_id=task_id, executor=executor)
+
+    def assign_job_local(self, context, task_id, executor):
+        rpc_client = self.get_client(str(executor))
+        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
+                                          fanout=False)
+        return call_context.cast(context, 'assign_job_local',
                                  task_id=task_id)
 
     def remove_job(self, context, task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
+                                          fanout=False)
         return call_context.cast(context, 'remove_job',
+                                 task_id=task_id, executor=executor)
+
+    def remove_job_local(self, context, task_id, executor):
+        rpc_client = self.get_client(str(executor))
+        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
+                                          fanout=False)
+        return call_context.cast(context, 'remove_job_local',
                                  task_id=task_id)
 
     def assign_failed_job(self, context, failed_task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
+                                          fanout=False)
         return call_context.cast(context, 'assign_failed_job',
+                                 failed_task_id=failed_task_id,
+                                 executor=executor)
+
+    def assign_failed_job_local(self, context, failed_task_id, executor):
+        rpc_client = self.get_client(str(executor))
+        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
+                                          fanout=False)
+        return call_context.cast(context, 'assign_failed_job_local',
                                  failed_task_id=failed_task_id)
 
     def remove_failed_job(self, context, failed_task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
+                                          fanout=False)
         return call_context.cast(context, 'remove_failed_job',
+                                 failed_task_id=failed_task_id,
+                                 executor=executor)
+
+    def remove_failed_job_local(self, context, failed_task_id, executor):
+        rpc_client = self.get_client(str(executor))
+        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
+                                          fanout=False)
+        return call_context.cast(context, 'remove_failed_job_local',
                                  failed_task_id=failed_task_id)
 
     def create_perf_job(self, context, task_id):

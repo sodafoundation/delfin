@@ -350,3 +350,58 @@ class ConsistentHashing(Coordinator):
 
     def watch_group_change(self):
         self.coordinator.run_watchers()
+
+
+class GroupMembership(Coordinator):
+
+    def __init__(self, agent_id):
+        super(GroupMembership, self). \
+            __init__(agent_id=agent_id, prefix="")
+
+    def create_group(self, group):
+        # Create the group
+        try:
+            self.coordinator.create_group(group.encode()).get()
+        except tooz.coordination.GroupAlreadyExist:
+            LOG.info("GROUP {0} already exist".format(group))
+
+    def delete_group(self, group):
+        # Create the group
+        try:
+            self.coordinator.delete_group(group.encode()).get()
+        except tooz.coordination.GroupNotCreated:
+            LOG.info("GROUP {0} Group not created".format(group))
+        except tooz.coordination.GroupNotEmpty:
+            LOG.info("GROUP {0} Group not Empty".format(group))
+        except tooz.coordination.ToozError:
+            LOG.info("GROUP {0} Internal Error while delete".format(group))
+
+    def join_group(self, group):
+        try:
+            # Join the group
+            self.coordinator.join_group(group.encode()).get()
+        except tooz.coordination.MemberAlreadyExist:
+            LOG.info('Member %s already in group' % group)
+
+    def leave_group(self, group):
+        try:
+            # Join the group
+            self.coordinator.leave_group(group.encode()).get()
+        except tooz.coordination.GroupNotCreated:
+            LOG.info('Group %s not created' % group)
+
+    def get_members(self, group):
+        try:
+            # Join the group
+            return self.coordinator.get_members(group.encode()).get()
+        except tooz.coordination.GroupNotCreated:
+            LOG.info('Group %s not created' % group)
+
+        return None
+
+    def register_watcher_func(self, group, on_process_join, on_process_leave):
+        self.coordinator.watch_join_group(group.encode(), on_process_join)
+        self.coordinator.watch_leave_group(group.encode(), on_process_leave)
+
+    def watch_group_change(self):
+        self.coordinator.run_watchers()
