@@ -1222,6 +1222,7 @@ class NetAppHandler(object):
             for ver_info in version_List:
                 if float(ver_info) >= 9.0:
                     version = float(ver_info)
+                    break
             NetAppHandler.get_cap_by_version(version, capabilities)
             return capabilities
         cap_map = {}
