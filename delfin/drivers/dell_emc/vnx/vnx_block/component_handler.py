@@ -51,6 +51,7 @@ class ComponentHandler(object):
         else:
             err_msg = "domain or agent error: %s, %s" %\
                       (six.text_type(domain), six.text_type(agent))
+            LOG.error(err_msg)
             raise exception.StorageBackendException(err_msg)
         return result
 
