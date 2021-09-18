@@ -1219,9 +1219,9 @@ class NetAppHandler(object):
                 re.findall(
                     constant.FLOAT_PATTERN, filters.get('firmware_version'))
             version = 9.0
-            for version in version_List:
-                if float(version) >= 9.0:
-                    version = float(version)
+            for ver_info in version_List:
+                if float(ver_info) >= 9.0:
+                    version = float(ver_info)
             NetAppHandler.get_cap_by_version(version, capabilities)
             return capabilities
         cap_map = {}
