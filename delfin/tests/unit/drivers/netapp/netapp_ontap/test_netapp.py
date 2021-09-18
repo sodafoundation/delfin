@@ -197,6 +197,6 @@ class TestNetAppCmodeDriver(TestCase):
     def test_get_capabilities(self):
         data = self.netapp_client.\
             get_capabilities(context,
-                             {'firmware_version': 'NetApp Release 9.8'})
+                             {'firmware_version': 'NetApp Release 9.8R15'})
         self.assertEqual(data['resource_metrics']['storage']
                          ['throughput']['unit'], 'MB/s')
