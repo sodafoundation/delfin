@@ -106,8 +106,9 @@ class StorageController(wsgi.Controller):
 
         try:
             # Trigger Performance monitoring
+            filters = {'firmware_version': storage.get('firmware_version')}
             capabilities = self.driver_api.get_capabilities(
-                context=ctxt, storage_id=storage['id'])
+                context=ctxt, storage_id=storage['id'], filters=filters)
             validation.validate_capabilities(capabilities)
             perf_job_controller.create_perf_job(ctxt, storage['id'],
                                                 capabilities)
@@ -225,8 +226,9 @@ class StorageController(wsgi.Controller):
         storage_info = db.storage_get(ctx, id)
 
         # Fetch supported driver's capability
+        filters = {'firmware_version': storage_info.get('firmware_version')}
         capabilities = self.driver_api. \
-            get_capabilities(ctx, storage_info['id'])
+            get_capabilities(ctx, storage_info['id'], filters=filters)
 
         # validate capabilities
         validation.validate_capabilities(capabilities)

@@ -464,7 +464,7 @@ def fake_getcmd_success(auth_data, transport_target, *var_names, **kwargs):
     return None, None, None, None
 
 
-def fake_get_capabilities(context, storage_id):
+def fake_get_capabilities(context, storage_id, filters=None):
     return {'is_historic': False,
             'resource_metrics': {
                 "storage": {
@@ -758,7 +758,7 @@ def fake_get_capabilities(context, storage_id):
 
 
 def custom_fake_get_capabilities(capabilities):
-    def get_capability(context, storage_id):
+    def get_capability(context, storage_id, filters=None):
         return capabilities
 
     return get_capability
