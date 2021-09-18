@@ -23,7 +23,7 @@ import eventlet
 from oslo_log import log as logging
 from oslo_utils import units
 
-from delfin import cryptor
+# from delfin import cryptor
 from delfin.drivers.netapp.dataontap import constants as constant
 from delfin import exception, utils
 from delfin.common import constants
@@ -51,7 +51,7 @@ class NetAppHandler(object):
         self.rest_client.init_http_head()
         self.rest_client.session.auth = requests.auth.HTTPBasicAuth(
             self.rest_client.rest_username,
-            cryptor.decode(self.rest_client.rest_password))
+            self.rest_client.rest_password)
 
     @staticmethod
     def get_table_data(values):
@@ -1222,6 +1222,7 @@ class NetAppHandler(object):
             for ver_info in version_List:
                 if float(ver_info) >= 9.0:
                     version = float(ver_info)
+                    break
             NetAppHandler.get_cap_by_version(version, capabilities)
             return capabilities
         cap_map = {}
