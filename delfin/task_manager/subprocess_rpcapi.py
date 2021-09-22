@@ -24,7 +24,7 @@ from delfin import rpc
 CONF = cfg.CONF
 
 
-class TaskAPI(object):
+class SubprocessAPI(object):
     """Client side of the metrics task rpc API.
 
     API version history:
@@ -35,7 +35,7 @@ class TaskAPI(object):
     RPC_API_VERSION = '1.0'
 
     def __init__(self):
-        super(TaskAPI, self).__init__()
+        super(SubprocessAPI, self).__init__()
         self.target = messaging.Target(topic=CONF.host,
                                        version=self.RPC_API_VERSION)
         self.client = rpc.get_client(self.target,
@@ -46,38 +46,30 @@ class TaskAPI(object):
                                   version=self.RPC_API_VERSION)
         return rpc.get_client(target, version_cap=self.RPC_API_VERSION)
 
-    def assign_job(self, context, task_id, executor):
+    def assign_job_local(self, context, task_id, executor):
         rpc_client = self.get_client(str(executor))
         call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
-        return call_context.cast(context, 'assign_job',
-                                 task_id=task_id, executor=executor)
-
-    def remove_job(self, context, task_id, executor):
-        rpc_client = self.get_client(str(executor))
-        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
-        return call_context.cast(context, 'remove_job',
-                                 task_id=task_id, executor=executor)
-
-    def assign_failed_job(self, context, failed_task_id, executor):
-        rpc_client = self.get_client(str(executor))
-        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
-        return call_context.cast(context, 'assign_failed_job',
-                                 failed_task_id=failed_task_id,
-                                 executor=executor)
-
-    def remove_failed_job(self, context, failed_task_id, executor):
-        rpc_client = self.get_client(str(executor))
-        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
-                                          fanout=True)
-        return call_context.cast(context, 'remove_failed_job',
-                                 failed_task_id=failed_task_id,
-                                 executor=executor)
-
-    def create_perf_job(self, context, task_id):
-        rpc_client = self.get_client('JobGenerator')
-        call_context = rpc_client.prepare(topic='JobGenerator', version='1.0')
-        return call_context.cast(context, 'add_new_job',
+                                          fanout=False)
+        return call_context.cast(context, 'assign_job_local',
                                  task_id=task_id)
+
+    def remove_job_local(self, context, task_id, executor):
+        rpc_client = self.get_client(str(executor))
+        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
+                                          fanout=False)
+        return call_context.cast(context, 'remove_job_local',
+                                 task_id=task_id)
+
+    def assign_failed_job_local(self, context, failed_task_id, executor):
+        rpc_client = self.get_client(str(executor))
+        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
+                                          fanout=False)
+        return call_context.cast(context, 'assign_failed_job_local',
+                                 failed_task_id=failed_task_id)
+
+    def remove_failed_job_local(self, context, failed_task_id, executor):
+        rpc_client = self.get_client(str(executor))
+        call_context = rpc_client.prepare(topic=str(executor), version='1.0',
+                                          fanout=False)
+        return call_context.cast(context, 'remove_failed_job_local',
+                                 failed_task_id=failed_task_id)

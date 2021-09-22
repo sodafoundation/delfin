@@ -119,6 +119,24 @@ telemetry_opts = [
                .DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE,
                help='default history(in sec) to be collected on a job '
                     'reschedule'),
+    cfg.BoolOpt('enable_dynamic_subprocess',
+                default=False,
+                help='Enable dynamic subprocess metrics collection'),
+    cfg.IntOpt('process_cleanup_interval',
+               default=60,
+               help='Background process cleanup call interval in sec'),
+    cfg.IntOpt('task_cleanup_delay',
+               default=10,
+               help='Delay for task cleanup before killing child in sec'),
+    cfg.IntOpt('group_change_detect_interval',
+               default=30,
+               help='Tooz group change detect interval in sec'),
+    cfg.IntOpt('max_storages_in_child',
+               default=5,
+               help='Max storages handled by one child process'),
+    cfg.IntOpt('max_childs_in_node',
+               default=100000,
+               help='Max processes that can be spawned before forcing fail'),
 ]
 
 CONF.register_opts(telemetry_opts, "telemetry")
