@@ -158,10 +158,10 @@ class API(object):
                                            resource_metrics, start_time,
                                            end_time)
 
-    def get_capabilities(self, context, storage_id,):
+    def get_capabilities(self, context, storage_id, filters=None):
         """Get capabilities from supported driver"""
         driver = self.driver_manager.get_driver(context, storage_id=storage_id)
-        return driver.get_capabilities(context)
+        return driver.get_capabilities(context, filters)
 
     def list_storage_host_initiators(self, context, storage_id):
         """List all storage initiators from storage system."""
