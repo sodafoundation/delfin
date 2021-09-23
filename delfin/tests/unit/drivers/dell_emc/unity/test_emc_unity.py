@@ -748,7 +748,7 @@ port_result = [
         'storage_id': '12345',
         'native_port_id': 'spa_fc0',
         'location': None,
-        'connection_status': 'normal',
+        'connection_status': 'connected',
         'health_status': 'normal',
         'type': 'fc',
         'logical_type': '',
