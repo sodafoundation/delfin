@@ -303,8 +303,7 @@ class ComponentHandler(object):
             controller_model = {
                 'name': controller.get('sp_name'),
                 'storage_id': storage_id,
-                'native_controller_id': controller.get(
-                    'signature_for_the_sp'),
+                'native_controller_id': controller.get('signature_for_the_sp'),
                 'status': constants.ControllerStatus.NORMAL,
                 'location': None,
                 'soft_version': controller.get(
