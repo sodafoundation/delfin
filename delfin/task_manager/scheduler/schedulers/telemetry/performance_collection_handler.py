@@ -99,7 +99,7 @@ class PerformanceCollectionHandler(object):
         failed_task = {FailedTask.storage_id.name: self.storage_id,
                        FailedTask.task_id.name: self.task_id,
                        FailedTask.interval.name:
-                           TelemetryCollection.PERIODIC_JOB_INTERVAL,
+                           TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL,
                        FailedTask.end_time.name: end_time,
                        FailedTask.start_time.name: start_time,
                        FailedTask.method.name:
