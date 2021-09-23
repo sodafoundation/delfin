@@ -309,7 +309,7 @@ class UnityStorDriver(driver.StorageDriver):
                     status = constants.PortHealthStatus.NORMAL
                 else:
                     status = constants.PortHealthStatus.ABNORMAL
-                conn_status = status
+                conn_status = constants.PortConnectionStatus.CONNECTED
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
