@@ -296,6 +296,10 @@ class ComponentHandler(object):
         for controller in (controllers or []):
             memory_size = int(controller.get('memory_size_for_the_sp',
                                              '0')) * units.Mi
+            cpu_info = ''
+            if cpus:
+                cpu_info = cpus.get(
+                    controller.get('serial_number_for_the_sp', ''), '')
             controller_model = {
                 'name': controller.get('sp_name'),
                 'storage_id': storage_id,
@@ -305,9 +309,7 @@ class ComponentHandler(object):
                 'location': None,
                 'soft_version': controller.get(
                     'revision_number_for_the_sp'),
-                'cpu_info': cpus.get(
-                    controller.get('serial_number_for_the_sp', ''),
-                    ''),
+                'cpu_info': cpu_info,
                 'memory_size': str(memory_size)
             }
             controller_list.append(controller_model)
@@ -338,6 +340,7 @@ class ComponentHandler(object):
                 mac_address = None
             module_key = '%s_%s' % (
                 sp_name, port.get('i/o_module_slot'))
+            type = ''
             if io_configs:
                 type = io_configs.get(module_key, '')
 
@@ -396,6 +399,7 @@ class ComponentHandler(object):
                     native_port_id = native_port_id.replace(',', '')
                     module_key = '%s_%s' % (
                         sp_name, bus_port.get('i/o_module_slot'))
+                    type = ''
                     if io_configs:
                         type = io_configs.get(module_key, '')
                     if bus_port_state_map:
