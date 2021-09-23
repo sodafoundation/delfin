@@ -402,6 +402,7 @@ class ComponentHandler(object):
                     type = ''
                     if io_configs:
                         type = io_configs.get(module_key, '')
+                    state = ''
                     if bus_port_state_map:
                         port_state_key = '%s_%s' % (
                             sp_name, bus_port.get('physical_port_id'))
