@@ -80,11 +80,13 @@ class UnityStorDriver(driver.StorageDriver):
                 used = content.get('sizeUsed')
                 subs = content.get('sizeSubscribed')
                 break
-            soft_version = version_info.get('entries')
-            for soft_info in soft_version:
-                content = soft_info.get('content', {})
-                version = content.get('id')
-                break
+            if version_info:
+                soft_version = version_info.get('entries')
+                for soft_info in soft_version:
+                    content = soft_info.get('content', {})
+                    if content:
+                        version = content.get('id')
+                        break
             system_result = {
                 'name': name,
                 'vendor': 'DELL EMC',
@@ -164,6 +166,8 @@ class UnityStorDriver(driver.StorageDriver):
         volume_list = []
         while True:
             luns = self.rest_handler.get_all_luns(page_number)
+            if luns is None:
+                break
             if 'entries' not in luns:
                 break
             if len(luns['entries']) < 1:
@@ -178,6 +182,8 @@ class UnityStorDriver(driver.StorageDriver):
         alert_model_list = []
         while True:
             alert_list = self.rest_handler.get_all_alerts(page_number)
+            if alert_list is None:
+                break
             if 'entries' not in alert_list:
                 break
             if len(alert_list['entries']) < 1:
@@ -232,7 +238,7 @@ class UnityStorDriver(driver.StorageDriver):
         port_list = []
         ports = self.rest_handler.get_all_ethports()
         ip_interfaces = self.rest_handler.get_port_interface()
-        if ports is not None:
+        if ports:
             port_entries = ports.get('entries')
             for port in port_entries:
                 content = port.get('content')
@@ -250,22 +256,23 @@ class UnityStorDriver(driver.StorageDriver):
                 ipv4_mask = None
                 ipv6 = None
                 ipv6_mask = None
-                for ip_info in ip_interfaces.get('entries'):
-                    ip_content = ip_info.get('content')
-                    if not ip_content:
-                        continue
-                    if content.get('id') == ip_content.get(
-                            'ipPort').get('id'):
-                        if ip_content.get('ipProtocolVersion') == 4:
-                            ipv4 = UnityStorDriver.handle_port_ip(
-                                ipv4, ip_content.get('ipAddress'))
-                            ipv4_mask = UnityStorDriver.handle_port_ip(
-                                ipv4_mask, ip_content.get('netmask'))
-                        else:
-                            ipv6 = UnityStorDriver.handle_port_ip(
-                                ipv6, ip_content.get('ipAddress'))
-                            ipv6_mask = UnityStorDriver.handle_port_ip(
-                                ipv6_mask, ip_content.get('netmask'))
+                if ip_interfaces:
+                    for ip_info in ip_interfaces.get('entries'):
+                        ip_content = ip_info.get('content')
+                        if not ip_content:
+                            continue
+                        if content.get('id') == ip_content.get(
+                                'ipPort').get('id'):
+                            if ip_content.get('ipProtocolVersion') == 4:
+                                ipv4 = UnityStorDriver.handle_port_ip(
+                                    ipv4, ip_content.get('ipAddress'))
+                                ipv4_mask = UnityStorDriver.handle_port_ip(
+                                    ipv4_mask, ip_content.get('netmask'))
+                            else:
+                                ipv6 = UnityStorDriver.handle_port_ip(
+                                    ipv6, ip_content.get('ipAddress'))
+                                ipv6_mask = UnityStorDriver.handle_port_ip(
+                                    ipv6_mask, ip_content.get('netmask'))
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
@@ -291,7 +298,7 @@ class UnityStorDriver(driver.StorageDriver):
     def get_fc_ports(self):
         port_list = []
         ports = self.rest_handler.get_all_fcports()
-        if ports is not None:
+        if ports:
             port_entries = ports.get('entries')
             for port in port_entries:
                 content = port.get('content')
@@ -312,7 +319,8 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.FC,
                     'logical_type': '',
-                    'max_speed': int(content.get('currentSpeed')) * units.Gi,
+                    'max_speed': int(
+                        content.get('currentSpeed', 0)) * units.Gi,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': content.get('wwn')
