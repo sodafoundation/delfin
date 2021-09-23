@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-periodical task manager for metric collection tasks**
+Subprocess metrics manager for metric collection tasks**
 """
 
 from oslo_log import log
@@ -32,7 +32,7 @@ LOG = log.getLogger(__name__)
 
 
 class SubprocessManager(manager.Manager):
-    """manage periodical tasks"""
+    """manage periodical collection tasks in subprocesses"""
 
     RPC_API_VERSION = '1.0'
 

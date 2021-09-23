@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Client side of the metrics task manager RPC API.
+Client side of the subprocess metrics collection manager RPC API.
 """
 
 import oslo_messaging as messaging
@@ -25,7 +25,7 @@ CONF = cfg.CONF
 
 
 class SubprocessAPI(object):
-    """Client side of the metrics task rpc API.
+    """Client side of the subprocess metrics manager collection rpc API.
 
     API version history:
 
