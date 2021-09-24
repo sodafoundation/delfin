@@ -305,16 +305,23 @@ class UnityStorDriver(driver.StorageDriver):
                 if not content:
                     continue
                 health_value = content.get('health', {}).get('value')
+                connect_value = \
+                    content.get('health', {}).get('descriptionIds', [])
+                if 'ALRT_PORT_LINK_DOWN_NOT_IN_USE' in connect_value:
+                    conn_status = constants.PortConnectionStatus.DISCONNECTED
+                elif 'ALRT_PORT_LINK_UP' in connect_value:
+                    conn_status = constants.PortConnectionStatus.CONNECTED
+                else:
+                    conn_status = constants.PortConnectionStatus.UNKNOWN
                 if health_value in UnityStorDriver.HEALTH_OK:
                     status = constants.PortHealthStatus.NORMAL
                 else:
                     status = constants.PortHealthStatus.ABNORMAL
-                conn_status = constants.PortConnectionStatus.CONNECTED
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
                     'native_port_id': content.get('id'),
-                    'location': content.get('slotNumber'),
+                    'location': content.get('name'),
                     'connection_status': conn_status,
                     'health_status': status,
                     'type': constants.PortType.FC,
