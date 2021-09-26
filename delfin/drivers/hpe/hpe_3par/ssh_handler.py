@@ -58,10 +58,8 @@ class SSHHandler(object):
         version = ''
         try:
             re = self.exec_command(SSHHandler.HPE3PAR_COMMAND_SHOWWSAPI)
-            wsapi_infos = re.split('\n')
-            if len(wsapi_infos) > 1:
-                version = self.get_version(wsapi_infos)
-
+            if re:
+                version = self.get_version(re)
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
@@ -71,9 +69,10 @@ class SSHHandler(object):
         """get wsapi version """
         version = ''
         try:
-            str_line = ' '.join(wsapi_infos[1].split())
-            wsapi_values = str_line.split(' ')
-            version = wsapi_values[6]
+            version_list = self.parse_datas_to_list(wsapi_infos,
+                                                    consts.VERSION_PATTERN)
+            if version_list and version_list[0]:
+                version = version_list[0].get('version')
         except Exception as e:
             LOG.error("Get version error: %s, wsapi info: %s" % (
                 six.text_type(e), wsapi_infos))
@@ -287,7 +286,8 @@ class SSHHandler(object):
                             obj_list = self.parse_node_table(cols_size,
                                                              titles_size,
                                                              str_info,
-                                                             obj_list)
+                                                             obj_list,
+                                                             titles)
                         else:
                             if cols_size == titles_size:
                                 obj_model = {}
@@ -340,7 +340,7 @@ class SSHHandler(object):
 
     def parse_disk_table(self, cols_size, titles_size, str_info,
                          obj_list, titles):
-        if cols_size == titles_size:
+        if cols_size >= titles_size:
             fw_rev_index = self.get_index_of_key(titles, 'FW_Rev')
             if fw_rev_index:
                 inventory_map = {
@@ -353,20 +353,21 @@ class SSHHandler(object):
                 obj_list.append(inventory_map)
         return obj_list
 
-    def parse_node_table(self, cols_size, titles_size, str_info, obj_list):
+    def parse_node_table(self, cols_size, titles_size, str_info, obj_list,
+                         titles):
         if cols_size >= titles_size:
-            # Only node_ The name attribute may contain spaces,
-            # so there will be several more columns
-            # after splitting
-            # You need to start with the last few columns
-            obj_model = {
-                'node_id': str_info[0],
-                'node_name': ' '.join(str_info[1:cols_size - 8]),
-                'node_state': str_info[cols_size - 8],
-                'node_control_mem': str_info[cols_size - 3],
-                'node_data_mem': str_info[cols_size - 2]
-            }
-            obj_list.append(obj_model)
+            obj_model = {}
+            num_prefix = 1
+            for i in range(0, cols_size):
+                key_prefix = ''
+                key = titles[i].lower().replace('-', '')
+                if key == 'mem(mb)':
+                    key_prefix = consts.SSH_NODE_MEM_TYPE.get(num_prefix)
+                    num_prefix += 1
+                key = '%s%s' % (key_prefix, key)
+                obj_model[key] = str_info[i]
+            if obj_model:
+                obj_list.append(obj_model)
         return obj_list
 
     def parse_node_cpu(self, cols_size, titles_size, str_info, obj_map):
