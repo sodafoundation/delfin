@@ -397,15 +397,13 @@ class TelemetryCollection(object):
     PERFORMANCE_TASK_METHOD = "delfin.task_manager.scheduler.schedulers." \
                               "telemetry.performance_collection_handler." \
                               "PerformanceCollectionHandler"
-    """Performance monitoring job interval"""
-    PERIODIC_JOB_INTERVAL = 180
     """Failed Performance monitoring job interval"""
-    FAILED_JOB_SCHEDULE_INTERVAL = 240
+    FAILED_JOB_SCHEDULE_INTERVAL = 900
     """Failed Performance monitoring retry count"""
     MAX_FAILED_JOB_RETRY_COUNT = 5
     """Default performance collection interval"""
     DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
-    DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 300
+    DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 1800
 
 
 class TelemetryTaskStatus(object):
