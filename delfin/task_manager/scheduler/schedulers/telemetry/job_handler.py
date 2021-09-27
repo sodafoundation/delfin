@@ -115,10 +115,15 @@ class JobHandler(object):
                 # miss any Data points due to reschedule
                 LOG.debug('Triggering one historic collection for job %s',
                           job['id'])
+                # Maximum supported history duration on restart
                 history_on_reschedule = CONF.telemetry. \
                     performance_history_on_reschedule
+                # Adjust start_time and end_time based on last_run_time
                 end_time = current_time * 1000
-                start_time = end_time - (history_on_reschedule * 1000)
+                start_time = job['last_run_time'] * 1000 \
+                    if current_time - job['last_run_time'] < \
+                    history_on_reschedule \
+                    else (end_time - history_on_reschedule * 1000)
                 telemetry = PerformanceCollectionTask()
                 telemetry.collect(self.ctx, self.storage_id,
                                   self.args,
