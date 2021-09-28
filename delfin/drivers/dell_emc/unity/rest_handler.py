@@ -170,6 +170,15 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(url)
         return result_json
 
+    def get_all_alerts_without_state(self, page_number):
+        url = '%s?%s&page=%s' % (RestHandler.REST_ALERTS_URL,
+                                 'fields=id,timestamp,severity,component,'
+                                 'messageId,message,description,'
+                                 'descriptionId',
+                                 page_number)
+        result_json = self.get_rest_info(url)
+        return result_json
+
     def remove_alert(self, alert_id):
         data = {"state": RestHandler.STATE_SOLVED}
         url = '%s%s/action/modify' % (RestHandler.REST_DEL_ALERTS_URL,

@@ -182,6 +182,9 @@ class UnityStorDriver(driver.StorageDriver):
         alert_model_list = []
         while True:
             alert_list = self.rest_handler.get_all_alerts(page_number)
+            if not alert_list:
+                alert_list = self.rest_handler.get_all_alerts_without_state(
+                    page_number)
             if alert_list is None:
                 break
             if 'entries' not in alert_list:
@@ -282,7 +285,8 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.ETH,
                     'logical_type': '',
-                    'max_speed': int(content.get('speed')) * units.Mi,
+                    'speed': int(content.get('speed')) * units.M,
+                    'max_speed': int(content.get('speed')) * units.M,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': '',
@@ -326,8 +330,10 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.FC,
                     'logical_type': '',
+                    'speed': int(
+                        content.get('currentSpeed', 0)) * units.G,
                     'max_speed': int(
-                        content.get('currentSpeed', 0)) * units.Gi,
+                        content.get('currentSpeed', 0)) * units.G,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': content.get('wwn')
@@ -376,7 +382,7 @@ class UnityStorDriver(driver.StorageDriver):
                         'logical_type': '',
                         'native_disk_group_id':
                             content.get('diskGroup', {}).get('id'),
-                        'location': content.get('slotNumber')
+                        'location': content.get('name')
                     }
                     disk_list.append(disk_result)
             return disk_list
