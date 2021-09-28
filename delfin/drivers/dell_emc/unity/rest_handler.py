@@ -64,7 +64,8 @@ class RestHandler(RestClient):
                 self.session.auth = requests.auth.HTTPBasicAuth(
                     self.rest_username, cryptor.decode(self.rest_password))
                 res = self.call_with_token(
-                    RestHandler.REST_AUTH_URL, data, 'GET')
+                    RestHandler.REST_AUTH_URL, data, 'GET',
+                    consts.DEFAULT_TIMEOUT)
                 if res.status_code == 200:
                     self.session.headers[RestHandler.AUTH_KEY] = \
                         cryptor.encode(res.headers[RestHandler.AUTH_KEY])
@@ -97,7 +98,9 @@ class RestHandler(RestClient):
     def logout(self):
         try:
             if self.san_address:
-                self.call(RestHandler.REST_LOGOUT_URL, method='POST')
+                self.call(RestHandler.REST_LOGOUT_URL,
+                          consts.DEFAULT_TIMEOUT,
+                          data={}, method='POST')
             if self.session:
                 self.session.close()
         except Exception as e:
