@@ -289,3 +289,11 @@ class StorageDriver(object):
 
     def get_alert_sources(self, context):
         return []
+
+    def get_timestamp_offset(self, context):
+        """Get timestamp offset(millisecond) between delfin and storage.
+        If delfin timestamp is faster than storage, offset should be a
+        negative number, if the timestamp on both sides is the same, offset
+        should be 0, otherwise it should be a positive number."""
+        raise NotImplementedError(
+            "Driver API timestamp_offset() is not implemented.")

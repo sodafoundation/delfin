@@ -21,6 +21,7 @@ from oslo_utils import uuidutils, importutils
 
 from delfin import db, context
 from delfin.common.constants import TelemetryCollection, TelemetryJobStatus
+from delfin.drivers import api as driver_api
 from delfin.exception import TaskNotFound
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
@@ -39,6 +40,7 @@ class JobHandler(object):
         self.args = args
         self.interval = interval
         self.task_rpcapi = task_rpcapi.TaskAPI()
+        self.driver_api = driver_api.API()
         self.scheduler = schedule_manager.SchedulerManager().get_scheduler()
         self.stopped = False
         self.job_ids = set()
@@ -124,6 +126,14 @@ class JobHandler(object):
                     if current_time - job['last_run_time'] < \
                     history_on_reschedule \
                     else (end_time - history_on_reschedule * 1000)
+                try:
+                    timestamp_offset = self.driver_api.get_timestamp_offset(
+                        self.ctx, self.storage_id)
+                except NotImplementedError as e:
+                    LOG.warning(six.text_type(e))
+                    timestamp_offset = 0
+                end_time += timestamp_offset
+                start_time += timestamp_offset
                 telemetry = PerformanceCollectionTask()
                 telemetry.collect(self.ctx, self.storage_id,
                                   self.args,

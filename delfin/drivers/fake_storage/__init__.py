@@ -1018,3 +1018,6 @@ class FakeStorageDriver(driver.StorageDriver):
             }
             masking_view_list.append(f)
         return masking_view_list
+
+    def get_timestamp_offset(self, ctx):
+        return 0

@@ -24,6 +24,7 @@ from delfin import db
 from delfin import exception
 from delfin.common.constants import TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
+from delfin.drivers import api as driver_api
 from delfin.task_manager import metrics_rpcapi as metrics_task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
@@ -39,6 +40,7 @@ class PerformanceCollectionHandler(object):
         self.args = args
         self.interval = interval
         self.metric_task_rpcapi = metrics_task_rpcapi.TaskAPI()
+        self.driver_api = driver_api.API()
         self.executor = executor
         self.scheduler = schedule_manager.SchedulerManager().get_scheduler()
 
@@ -76,6 +78,14 @@ class PerformanceCollectionHandler(object):
             # Times are epoch time in milliseconds
             end_time = current_time * 1000
             start_time = end_time - (self.interval * 1000)
+            try:
+                timestamp_offset = self.driver_api.get_timestamp_offset(
+                    self.ctx, self.storage_id)
+            except NotImplementedError as e:
+                LOG.warning(six.text_type(e))
+                timestamp_offset = 0
+            end_time += timestamp_offset
+            start_time += timestamp_offset
             telemetry = PerformanceCollectionTask()
             status = telemetry.collect(self.ctx, self.storage_id, self.args,
                                        start_time, end_time)

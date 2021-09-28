@@ -266,3 +266,6 @@ class TestDriver(driver.StorageDriver):
                 }
             }
         }
+
+    def get_timestamp_offset(self, ctx):
+        return 0

@@ -199,3 +199,7 @@ class API(object):
                                                 cache_on_load=False,
                                                 **access_info)
         return driver.get_alert_sources(context)
+
+    def get_timestamp_offset(self, context, storage_id):
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        return driver.get_timestamp_offset(context)
