@@ -19,7 +19,7 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils, importutils
 
-from delfin import db, context
+from delfin import db
 from delfin.common.constants import TelemetryCollection, TelemetryJobStatus
 from delfin.drivers import api as driver_api
 from delfin.exception import TaskNotFound
@@ -50,38 +50,6 @@ class JobHandler(object):
         task = db.task_get(ctx, task_id)
         return JobHandler(ctx, task_id, task['storage_id'],
                           task['args'], task['interval'])
-
-    @staticmethod
-    def schedule_boot_jobs():
-        """Schedule periodic collection if any task is currently assigned to
-        this executor """
-        try:
-
-            filters = {'executor': CONF.host,
-                       'deleted': False}
-            ctxt = context.get_admin_context()
-            tasks = db.task_get_all(ctxt, filters=filters)
-            failed_tasks = db.failed_task_get_all(ctxt, filters=filters)
-            LOG.info("Scheduling boot time jobs for this executor: total "
-                     "jobs to be handled :%s" % len(tasks))
-            for task in tasks:
-                instance = JobHandler.get_instance(ctxt, task['id'])
-                instance.schedule_job(task['id'])
-                LOG.debug('Periodic collection job assigned for id: '
-                          '%s ' % task['id'])
-            for failed_task in failed_tasks:
-                instance = FailedJobHandler.get_instance(ctxt,
-                                                         failed_task['id'])
-                instance.schedule_failed_job(failed_task['id'])
-                LOG.debug('Failed job assigned for id: '
-                          '%s ' % failed_task['id'])
-
-        except Exception as e:
-            LOG.error("Failed to schedule boot jobs for this executor "
-                      "reason: %s.",
-                      six.text_type(e))
-        else:
-            LOG.debug("Boot job scheduling completed.")
 
     def schedule_job(self, task_id):
 
