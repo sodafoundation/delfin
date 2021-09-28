@@ -2720,7 +2720,7 @@ paths:
                   - storage_host_groups
                 additionalProperties: true
                 properties:
-                  storage_hosts:
+                  storage_host_groups:
                     type: array
                     title: the storage host group schema
                     items:
@@ -2834,10 +2834,10 @@ paths:
               schema:
                 type: object
                 required:
-                  - storage_hosts
+                  - port_groups
                 additionalProperties: true
                 properties:
-                  storage_hosts:
+                  port_groups:
                     type: array
                     title: the port groups schema
                     items:
@@ -2951,10 +2951,10 @@ paths:
               schema:
                 type: object
                 required:
-                  - storage_hosts
+                  - volume_groups
                 additionalProperties: true
                 properties:
-                  storage_hosts:
+                  volume_groups:
                     type: array
                     title: the volume groups schema
                     items:
