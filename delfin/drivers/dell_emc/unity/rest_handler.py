@@ -19,6 +19,7 @@ from oslo_log import log as logging
 
 from delfin import cryptor
 from delfin import exception
+from delfin.drivers.dell_emc.unity import consts
 from delfin.drivers.utils.rest_client import RestClient
 
 LOG = logging.getLogger(__name__)
@@ -81,14 +82,14 @@ class RestHandler(RestClient):
             LOG.error("Login error: %s", six.text_type(e))
             raise e
 
-    def call_with_token(self, url, data, method):
+    def call_with_token(self, url, data, method, calltimeout):
         auth_key = None
         if self.session:
             auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
             if auth_key:
                 self.session.headers[RestHandler.AUTH_KEY] \
                     = cryptor.decode(auth_key)
-        res = self.do_call(url, data, method)
+        res = self.do_call(url, data, method, calltimeout)
         if auth_key:
             self.session.headers[RestHandler.AUTH_KEY] = auth_key
         return res
@@ -104,21 +105,22 @@ class RestHandler(RestClient):
             LOG.error(err_msg)
             raise e
 
-    def get_rest_info(self, url, data=None, method='GET'):
+    def get_rest_info(self, url, data=None, method='GET',
+                      calltimeout=consts.DEFAULT_TIMEOUT):
         result_json = None
-        res = self.call(url, data, method)
+        res = self.call(url, calltimeout, data, method)
         if res.status_code == 200:
             result_json = res.json()
         return result_json
 
-    def call(self, url, data=None, method=None):
+    def call(self, url, calltimeout, data=None, method=None):
         try:
-            res = self.call_with_token(url, data, method)
+            res = self.call_with_token(url, data, method, calltimeout)
             if res.status_code == 401:
                 LOG.error("Failed to get token, status_code:%s,error_mesg:%s" %
                           (res.status_code, res.text))
                 self.login()
-                res = self.call_with_token(url, data, method)
+                res = self.call_with_token(url, data, method, calltimeout)
             elif res.status_code == 503:
                 raise exception.InvalidResults(res.text)
             return res
@@ -167,7 +169,7 @@ class RestHandler(RestClient):
                                  'messageId,message,description,'
                                  'descriptionId,state',
                                  page_number)
-        result_json = self.get_rest_info(url)
+        result_json = self.get_rest_info(url, consts.ALERT_TIMEOUT)
         return result_json
 
     def get_all_alerts_without_state(self, page_number):
@@ -176,7 +178,7 @@ class RestHandler(RestClient):
                                  'messageId,message,description,'
                                  'descriptionId',
                                  page_number)
-        result_json = self.get_rest_info(url)
+        result_json = self.get_rest_info(url, consts.ALERT_TIMEOUT)
         return result_json
 
     def remove_alert(self, alert_id):
