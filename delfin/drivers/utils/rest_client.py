@@ -22,7 +22,6 @@ from oslo_log import log as logging
 
 from delfin import exception
 from delfin import ssl_utils
-from delfin.drivers.hpe.hpe_3par import consts
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
