@@ -1400,7 +1400,7 @@ class TestUNITYStorDriver(TestCase):
         self.assertIn('Exception from Storage Backend', str(exc.exception))
         RestHandler.login = mock.Mock(return_value=None)
         mock_token.return_value = mock.MagicMock(status_code=401)
-        UnityStorDriver(**ACCESS_INFO).rest_handler.call('', 20)
+        UnityStorDriver(**ACCESS_INFO).rest_handler.call('')
 
     @mock.patch.object(RestHandler, 'call')
     def test_get_rest_info(self, mock_rest):
