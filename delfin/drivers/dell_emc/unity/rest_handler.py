@@ -57,15 +57,12 @@ class RestHandler(RestClient):
         """Login dell_emc unity storage array."""
         try:
             with self.session_lock:
-                data = {}
                 if self.session is None:
                     self.init_http_head()
                 self.session.headers.update({"X-EMC-REST-CLIENT": "true"})
                 self.session.auth = requests.auth.HTTPBasicAuth(
                     self.rest_username, cryptor.decode(self.rest_password))
-                res = self.call_with_token(
-                    RestHandler.REST_AUTH_URL, data, 'GET',
-                    consts.DEFAULT_TIMEOUT)
+                res = self.call_with_token(RestHandler.REST_AUTH_URL)
                 if res.status_code == 200:
                     self.session.headers[RestHandler.AUTH_KEY] = \
                         cryptor.encode(res.headers[RestHandler.AUTH_KEY])
@@ -83,7 +80,8 @@ class RestHandler(RestClient):
             LOG.error("Login error: %s", six.text_type(e))
             raise e
 
-    def call_with_token(self, url, data, method, calltimeout):
+    def call_with_token(self, url, data=None, method='GET',
+                        calltimeout=consts.DEFAULT_TIMEOUT):
         auth_key = None
         if self.session:
             auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
@@ -98,9 +96,7 @@ class RestHandler(RestClient):
     def logout(self):
         try:
             if self.san_address:
-                self.call(RestHandler.REST_LOGOUT_URL,
-                          consts.DEFAULT_TIMEOUT,
-                          data={}, method='POST')
+                self.call(RestHandler.REST_LOGOUT_URL, None, 'POST')
             if self.session:
                 self.session.close()
         except Exception as e:
@@ -111,12 +107,13 @@ class RestHandler(RestClient):
     def get_rest_info(self, url, data=None, method='GET',
                       calltimeout=consts.DEFAULT_TIMEOUT):
         result_json = None
-        res = self.call(url, calltimeout, data, method)
+        res = self.call(url, data, method, calltimeout)
         if res.status_code == 200:
             result_json = res.json()
         return result_json
 
-    def call(self, url, calltimeout, data=None, method=None):
+    def call(self, url, data=None, method='GET',
+             calltimeout=consts.DEFAULT_TIMEOUT):
         try:
             res = self.call_with_token(url, data, method, calltimeout)
             if res.status_code == 401:
@@ -172,7 +169,8 @@ class RestHandler(RestClient):
                                  'messageId,message,description,'
                                  'descriptionId,state',
                                  page_number)
-        result_json = self.get_rest_info(url, consts.ALERT_TIMEOUT)
+        result_json = self.get_rest_info(
+            url, None, 'GET', consts.ALERT_TIMEOUT)
         return result_json
 
     def get_all_alerts_without_state(self, page_number):
@@ -181,7 +179,8 @@ class RestHandler(RestClient):
                                  'messageId,message,description,'
                                  'descriptionId',
                                  page_number)
-        result_json = self.get_rest_info(url, consts.ALERT_TIMEOUT)
+        result_json = self.get_rest_info(
+            url, None, 'GET', consts.ALERT_TIMEOUT)
         return result_json
 
     def remove_alert(self, alert_id):
