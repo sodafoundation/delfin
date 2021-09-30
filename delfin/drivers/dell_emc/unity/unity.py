@@ -45,7 +45,8 @@ class UnityStorDriver(driver.StorageDriver):
                      6: constants.DiskPhysicalType.FLASH,
                      7: constants.DiskPhysicalType.FLASH,
                      8: constants.DiskPhysicalType.FLASH,
-                     9: constants.DiskPhysicalType.FLASH
+                     9: constants.DiskPhysicalType.FLASH,
+                     99: constants.DiskPhysicalType.VMDISK
                      }
 
     def __init__(self, **kwargs):
