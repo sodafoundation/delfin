@@ -201,7 +201,7 @@ class RestHandler(RestClient):
         url = '%s?%s' % (RestHandler.REST_DISK_URL,
                          'fields=id,name,health,model,slotNumber,'
                          'manufacturer,version,emcSerialNumber,wwn,'
-                         'rpm,size,diskGroup')
+                         'rpm,size,diskGroup,diskTechnology')
         result_json = self.get_rest_info(url)
         return result_json
 
