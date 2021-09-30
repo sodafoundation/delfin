@@ -365,6 +365,7 @@ GET_ALL_DISKS = {
                 "sasExpanderVersion": "",
                 "rpm": 12288,
                 "size": 12121212,
+                "diskTechnology": 1,
                 "diskGroup": {
                     "id": "dp1"
                 }

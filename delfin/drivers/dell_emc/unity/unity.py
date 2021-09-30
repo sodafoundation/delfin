@@ -40,6 +40,14 @@ class UnityStorDriver(driver.StorageDriver):
                              7: constants.ControllerStatus.NORMAL,
                              10: constants.ControllerStatus.DEGRADED
                              }
+    DISK_TYPE_MAP = {1: constants.DiskPhysicalType.SAS,
+                     2: constants.DiskPhysicalType.NL_SAS,
+                     6: constants.DiskPhysicalType.FLASH,
+                     7: constants.DiskPhysicalType.FLASH,
+                     8: constants.DiskPhysicalType.FLASH,
+                     9: constants.DiskPhysicalType.FLASH,
+                     99: constants.DiskPhysicalType.VMDISK
+                     }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -371,6 +379,9 @@ class UnityStorDriver(driver.StorageDriver):
                         status = constants.DiskStatus.NORMAL
                     else:
                         status = constants.DiskStatus.ABNORMAL
+                    physical_type = UnityStorDriver.DISK_TYPE_MAP.get(
+                        content.get('diskTechnology'),
+                        constants.DiskPhysicalType.UNKNOWN)
                     disk_result = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
@@ -382,7 +393,7 @@ class UnityStorDriver(driver.StorageDriver):
                         'speed': int(content.get('rpm')),
                         'capacity': int(content.get('size')),
                         'status': status,
-                        'physical_type': constants.DiskPhysicalType.SAS,
+                        'physical_type': physical_type,
                         'logical_type': '',
                         'native_disk_group_id':
                             content.get('diskGroup', {}).get('id'),
