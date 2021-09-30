@@ -363,6 +363,10 @@ class UnityStorDriver(driver.StorageDriver):
                     if not content:
                         continue
                     health_value = content.get('health', {}).get('value')
+                    slot_info = \
+                        content.get('health', {}).get('descriptionIds', [])
+                    if 'ALRT_DISK_SLOT_EMPTY' in slot_info:
+                        continue
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.DiskStatus.NORMAL
                     else:
