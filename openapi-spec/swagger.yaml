@@ -427,37 +427,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/access-infos':
-    get:
-      tags:
-        - Storages
-      description: Get access info of all registered storages
-      operationId: GetAllStorageAccessInfos
-      responses:
-        '200':
-          description: Storage Access-info  available
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StorageAccessInfosResponse'
-        '401':
-          description: NotAuthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
-        '500':
-          description: An unexpected error occured.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorSpec'
   /v1/storage-pools:
     get:
       tags:
