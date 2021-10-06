@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest import mock
-
 from delfin import db
 from delfin import test
 from delfin.api.v1.masking_views import MaskingViewController
