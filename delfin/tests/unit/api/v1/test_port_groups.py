@@ -32,8 +32,6 @@ class TestPortGroupController(test.TestCase):
 
         res_dict = self.controller.show(req, "aaaaa")
 
-        print(res_dict)
-
         expctd_dict = {
             "port_groups": [
                 {
