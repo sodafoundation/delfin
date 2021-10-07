@@ -412,6 +412,52 @@ def fake_volume_show(context, volume_id):
     }
 
 
+def fake_share_get_all(context, marker=None,
+                       limit=None, sort_keys=None, sort_dirs=None,
+                       filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "Nam",
+            "native_share_id": "5f5c806d-2e65-473c-b612-345ef43f062",
+            "path": "P",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "native_filesystem_id": "nfi",
+            "native_qtree_id": "nqi",
+            "protocol": "pro",
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "Nam",
+            "native_share_id": "5f5c806d-2e65-473c-b612-345ef43f062",
+            "path": "P2",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "native_filesystem_id": "nfi2",
+            "native_qtree_id": "nqi2",
+            "protocol": "pro2",
+        }
+    ]
+
+
+def fake_share_show(context, share_id):
+    return {
+        "created_at": "2020-06-10T07:17:31.157079",
+        "updated_at": "2020-06-10T07:17:31.157079",
+        "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+        "name": "Nam",
+        "native_share_id": "5f5c806d-2e65-473c-b612-345ef43f062",
+        "path": "P",
+        "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+        "native_filesystem_id": "nfi",
+        "native_qtree_id": "nqi",
+        "protocol": "pro",
+    }
+
+
 def fake_storage_pool_get_all(context, marker=None,
                               limit=None, sort_keys=None,
                               sort_dirs=None, filters=None, offset=None):
