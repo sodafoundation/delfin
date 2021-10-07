@@ -412,6 +412,31 @@ def fake_volume_show(context, volume_id):
     }
 
 
+def fake_storage_host_groups_get_all(context, marker=None, limit=None,
+                                     sort_keys=None, sort_dirs=None,
+                                     filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "description": 'fake storage host group',
+            "native_storage_host_group_id": "SHG_1",
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "description": 'fake storage host group',
+            "native_storage_host_group_id": "SHG_2",
+        }
+    ]
+
+
 def fake_storage_pool_get_all(context, marker=None,
                               limit=None, sort_keys=None,
                               sort_dirs=None, filters=None, offset=None):
