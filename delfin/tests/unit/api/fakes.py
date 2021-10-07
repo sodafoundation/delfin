@@ -348,8 +348,7 @@ def fake_update_access_info(self, context, access_info):
     return access_info
 
 
-def fake_volume_get_all(context, marker=None,
-                        limit=None, sort_keys=None,
+def fake_volume_get_all(context, marker=None, limit=None, sort_keys=None,
                         sort_dirs=None, filters=None, offset=None):
     return [
         {
@@ -387,6 +386,31 @@ def fake_volume_get_all(context, marker=None,
             "free_capacity": 1075838976,
             "compressed": True,
             "deduplicated": False
+        }
+    ]
+
+
+def fake_port_groups_get_all(context, marker=None, limit=None, sort_keys=None,
+                             sort_dirs=None, filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "description": 'fake port group',
+            "native_port_group_id": "PG_1",
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "native_storage_host_group_id": 'hg1',
+            "description": 'fake port group',
+            "native_port_group_id": "PG_2",
         }
     ]
 
