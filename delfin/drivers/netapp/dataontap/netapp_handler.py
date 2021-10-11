@@ -303,7 +303,7 @@ class NetAppHandler(object):
                         'status': status,
                         'native_volume_id': volume_map['SerialNumber'],
                         'native_storage_pool_id': pool_id,
-                        'wwn': None,
+                        'wwn': volume_map['SerialNumber(Hex)'],
                         'compressed': None,
                         'deduplicated': None,
                         'type': type,
