@@ -78,6 +78,19 @@ class JobHandler(object):
 
         if not (existing_job_id and scheduler_job):
             LOG.info('JobHandler scheduling a new job')
+            self.scheduler.add_job(
+                instance, 'interval', seconds=job['interval'],
+                next_run_time=next_collection_time, id=job_id,
+                misfire_grace_time=int(
+                    CONF.telemetry.performance_collection_interval / 2))
+
+            update_task_dict = {'job_id': job_id
+                                }
+            db.task_update(self.ctx, self.task_id, update_task_dict)
+            self.job_ids.add(job_id)
+            LOG.info('Periodic collection tasks scheduled for for job id: '
+                     '%s ' % self.task_id)
+
             if job['last_run_time']:
                 # Trigger one historic collection to make sure we do not
                 # miss any Data points due to reschedule
@@ -99,19 +112,6 @@ class JobHandler(object):
 
                 db.task_update(self.ctx, self.task_id,
                                {'last_run_time': last_run_time})
-
-            self.scheduler.add_job(
-                instance, 'interval', seconds=job['interval'],
-                next_run_time=next_collection_time, id=job_id,
-                misfire_grace_time=int(
-                    CONF.telemetry.performance_collection_interval / 2))
-
-            update_task_dict = {'job_id': job_id
-                                }
-            db.task_update(self.ctx, self.task_id, update_task_dict)
-            self.job_ids.add(job_id)
-            LOG.info('Periodic collection tasks scheduled for for job id: '
-                     '%s ' % self.task_id)
         else:
             LOG.info('Job already exists with this scheduler')
 
