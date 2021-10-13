@@ -15,6 +15,8 @@
 from datetime import datetime
 
 import six
+from oslo_config import cfg
+
 from delfin.task_manager.scheduler.schedulers.telemetry. \
     failed_performance_collection_handler import \
     FailedPerformanceCollectionHandler
@@ -28,6 +30,7 @@ from delfin.task_manager import metrics_rpcapi as metrics_task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
 
+CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 
 
@@ -74,8 +77,10 @@ class PerformanceCollectionHandler(object):
             current_time = int(datetime.now().timestamp())
 
             # Times are epoch time in milliseconds
+            overlap = CONF.telemetry. \
+                performance_timestamp_overlap
             end_time = current_time * 1000
-            start_time = end_time - (self.interval * 1000)
+            start_time = end_time - (self.interval * 1000) - (overlap * 1000)
             telemetry = PerformanceCollectionTask()
             status = telemetry.collect(self.ctx, self.storage_id, self.args,
                                        start_time, end_time)
