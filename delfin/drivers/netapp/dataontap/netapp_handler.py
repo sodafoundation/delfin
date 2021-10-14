@@ -41,7 +41,7 @@ class NetAppHandler(object):
     OID_TRAP_DATA = '1.3.6.1.4.1.789.1.1.12.0'
     NODE_NAME = 'controller_name'
     SECONDS_TO_MS = 1000
-    NETAPP_WWN = '60a98000'
+    NETAPP_NAA = 'NAA.60a98000'
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -305,7 +305,7 @@ class NetAppHandler(object):
                         'native_volume_id': volume_map['SerialNumber'],
                         'native_storage_pool_id': pool_id,
                         'wwn':
-                            NetAppHandler.NETAPP_WWN +
+                            NetAppHandler.NETAPP_NAA +
                             volume_map['SerialNumber(Hex)'],
                         'compressed': None,
                         'deduplicated': None,
