@@ -1,4 +1,5 @@
 import hashlib
+import json
 
 from oslo_log import log
 from oslo_utils import units
@@ -64,7 +65,8 @@ class StorageDriver(driver.StorageDriver):
         result_storage = self.rest_handler.get_storage()
         storage_object['model'] = result_storage[0].get('hostname')
         storage_object['vendor'] = 'PURE'
-        total_capacity = int(int(result_storage[0].get('provisioned')) / units.Ki)
+        total_capacity = int(int(result_storage[0].get('provisioned'))
+                             / units.Ki)
         storage_object['total_capacity'] = total_capacity
         # 写死raw_capacity
         storage_object['raw_capacity'] = total_capacity
@@ -122,7 +124,8 @@ class StorageDriver(driver.StorageDriver):
                 alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
                 alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
                 alerts_model['alert_name'] = alerts.get('id')
-                alerts_model['match_key'] = hashlib.md5(str(alerts.get('id')).encode()).hexdigest()
+                alerts_model['match_key'] = hashlib.md5(str(alerts.get('id')).
+                                                        encode()).hexdigest()
                 alerts_list.append(alerts_model)
         return alerts_list
 
@@ -131,22 +134,24 @@ class StorageDriver(driver.StorageDriver):
         return_controllers = self.rest_handler.get_all_controllers()
         if return_controllers:
             for controllers in return_controllers:
-                controllers_Object = dict()
+                controllers_object = dict()
                 name = controllers.get('name')
-                controllers_Object['name'] = name
+                controllers_object['name'] = name
                 status = controllers.get('status')
                 if status == 'ready':
-                    controllers_Object['status'] = constants.ControllerStatus.NORMAL
+                    controllers_object['status'] = constants.ControllerStatus.\
+                        NORMAL
                 else:
-                    controllers_Object['status'] = constants.ControllerStatus.OFFLINE
-                controllers_Object['soft_version'] = controllers.get('version')
-                controllers_Object['storage_id'] = self.storage_id
-                controllers_Object['id'] = name
-                controllers_Object['native_controller_id'] = name
-                controllers_Object['location'] = ""
-                controllers_Object['cpu_info'] = ""
-                controllers_Object['memory_size'] = ""
-                list_controllers.append(controllers_Object)
+                    controllers_object['status'] = constants.ControllerStatus.\
+                        OFFLINE
+                controllers_object['soft_version'] = controllers.get('version')
+                controllers_object['storage_id'] = self.storage_id
+                controllers_object['id'] = name
+                controllers_object['native_controller_id'] = name
+                controllers_object['location'] = ""
+                controllers_object['cpu_info'] = ""
+                controllers_object['memory_size'] = ""
+                list_controllers.append(controllers_object)
         return list_controllers
 
     def list_disks(self, context):
@@ -213,11 +218,12 @@ class StorageDriver(driver.StorageDriver):
                 disk['firmware'] = ""
                 disk['health_score'] = ""
                 list_disk.append(disk)
+        LOG.info("list_disk：%s" % (json.dumps(list_disk, ensure_ascii=False)))
         return list_disk
 
     def list_ports(self, context):
-        networksObject = dict()
-        self.network_Object(networksObject)
+        networks_object = dict()
+        self.network_object(networks_object)
         list_port = []
         return_ports = self.rest_handler.get_all_port()
         if return_ports:
@@ -241,7 +247,7 @@ class StorageDriver(driver.StorageDriver):
                 port['native_port_id'] = name
                 port['location'] = name
                 port['storage_id'] = self.storage_id
-                network = networksObject.get(name.lower())
+                network = networks_object.get(name.lower())
                 if network:
                     port['logical_type'] = network.get('logical_type')
                     port['speed'] = network.get('speed')
@@ -253,7 +259,8 @@ class StorageDriver(driver.StorageDriver):
                     port['mac_address'] = ''
                     port['ipv4_mask'] = ''
                 # 写死
-                port['connection_status '] = constants.PortConnectionStatus.CONNECTED
+                port['connection_status '] = constants.PortConnectionStatus.\
+                    CONNECTED
                 port['health_status'] = constants.PortHealthStatus.NORMAL
                 port['max_speed'] = ''
                 port['native_parent_id'] = ""
@@ -263,26 +270,26 @@ class StorageDriver(driver.StorageDriver):
                 list_port.append(port)
         return list_port
 
-    def network_Object(self, networksObject):
+    def network_object(self, networks_object):
         return_network = self.rest_handler.get_all_network()
         if return_network:
             for network in return_network:
-                network_Object = dict()
-                network_Object['address'] = network.get('address')
+                network_object = dict()
+                network_object['address'] = network.get('address')
                 services = network.get('services')[0]
                 if services in constants.PortLogicalType.ALL:
-                    network_Object['logical_type'] = services
+                    network_object['logical_type'] = services
                 else:
-                    # network_Object['logical_type'] = constants.PortLogicalType.SERVICE
-                    network_Object['logical_type'] = ""
+                    network_object['logical_type'] = ""
                 if services in constants.PortType.ALL:
-                    network_Object['type'] = services
+                    network_object['type'] = services
                 else:
-                    network_Object['type'] = constants.PortType.ISCSI
-                network_Object['speed'] = int(int(network.get('speed')) / units.Ki)
-                network_Object['ipv4_mask'] = network.get('netmask')
+                    network_object['type'] = constants.PortType.ISCSI
+                network_object['speed'] = int(int(network.get('speed')) /
+                                              units.Ki)
+                network_object['ipv4_mask'] = network.get('netmask')
                 name = network.get('name')
-                networksObject[name] = network_Object
+                networks_object[name] = network_object
 
     def list_storage_pools(self, context):
         pool_list = []

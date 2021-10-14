@@ -10,7 +10,8 @@ LOG = logging.getLogger(__name__)
 class RestHandler(RestClient):
     REST_STORAGE_URL = '/api/1.17/array?space=true'
     REST_STORAGE_ID_URL = '/api/1.17/array'
-    REST_VOLUME_URL = '/api/1.17/volume?space=true&limit=20&token=aWQgPSA5ODA1Mg=='
+    REST_VOLUME_URL = '/api/1.17/volume?space=true&limit=20&token=aWQgPSA5OD' \
+                      'A1Mg=='
     REST_VOLUME_TOKEN_URL = '/api/1.17/volume?space=true&limit=20&token='
     REST_VOLUME_ID_URL = '/api/1.17/volume/'
     REST_POOLS_URL = '/api/1.17/vgroup'
@@ -37,12 +38,15 @@ class RestHandler(RestClient):
 
     def login(self):
         try:
-            data = {'username': self.username, 'password': cryptor.decode(self.password)}
-            token = self.get_rest_login(RestHandler.REST_AUTH_URL, data, method='POST')
+            data = {'username': self.username, 'password': cryptor.decode(
+                self.password)}
+            token = self.get_rest_login(RestHandler.REST_AUTH_URL, data,
+                                        method='POST')
             api_token = token.get('api_token')
             if api_token is None and api_token == '':
                 raise exception.InvalidInput('api_token fail to get')
-            user = self.get_rest_login(RestHandler.REST_SESSION_URL, token, method='POST')
+            user = self.get_rest_login(RestHandler.REST_SESSION_URL, token,
+                                       method='POST')
             username = user.get('username')
             if username is None and username == '':
                 raise exception.InvalidInput('session fail to get')
@@ -51,18 +55,22 @@ class RestHandler(RestClient):
             raise exception.InvalidInput('login failure')
 
     def logout(self):
-        user = self.get_rest_login(RestHandler.REST_SESSION_URL, method='DELETE')
+        user = self.get_rest_login(RestHandler.REST_SESSION_URL,
+                                   method='DELETE')
         username = user.get('username')
         if username is None and username == '':
             raise exception.InvalidInput('delete fail to get')
 
     def get_all_rest_volumes(self):
-        url = '%s%s:%s%s' % (RestHandler.HTTPS, self.host, self.port, RestHandler.REST_VOLUME_URL)
+        url = '%s%s:%s%s' % (
+            RestHandler.HTTPS, self.host, self.port,
+            RestHandler.REST_VOLUME_URL)
         result_json = self.get_rest_volumes_info(url)
         return result_json
 
     def get_all_rest_volumes_id(self, name):
-        result_json = self.get_rest_info('{}{}'.format(RestHandler.REST_VOLUME_ID_URL, name))
+        result_json = self.get_rest_info(
+            '{}{}'.format(RestHandler.REST_VOLUME_ID_URL, name))
         return result_json
 
     def get_storage(self):
@@ -136,8 +144,9 @@ class RestHandler(RestClient):
             if next_token:
                 token = next_token[1]
                 if token:
-                    url = '%s%s:%s%s%s' % (RestHandler.HTTPS, self.host, self.port,
-                                           RestHandler.REST_VOLUME_TOKEN_URL, token)
+                    url = '%s%s:%s%s%s' % (
+                        RestHandler.HTTPS, self.host, self.port,
+                        RestHandler.REST_VOLUME_TOKEN_URL, token)
                     self.get_rest_volumes_info(url, data, volume_list)
         elif res.status_code == 401:
             self.login()

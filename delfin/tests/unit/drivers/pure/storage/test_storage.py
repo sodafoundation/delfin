@@ -257,33 +257,39 @@ class test_StorageDriver(TestCase):
 
     def test_list_volumes(self):
         RestHandler.get_rest_info = mock.Mock(
-            side_effect=[volumes_info, pool_info, volume_info, volume_info_two])
+            side_effect=[volumes_info, pool_info, volume_info,
+                         volume_info_two])
         volume = self.driver.list_volumes(context)
-        self.assertEqual(volume[0]['native_volume_id'], volume_info.get('serial'))
+        self.assertEqual(volume[0]['native_volume_id'],
+                         volume_info.get('serial'))
 
     def test_get_storage(self):
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[storage_info, storage_id_info])
         storage_object = self.driver.get_storage(context)
-        self.assertEqual(storage_object.get('name'), storage_id_info.get('array_name'))
+        self.assertEqual(storage_object.get('name'),
+                         storage_id_info.get('array_name'))
 
     def test_list_alerts(self):
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[alerts_info])
         list_alerts = self.driver.list_alerts(context)
-        self.assertEqual(list_alerts[0].get('alert_id'), alerts_info[0].get('id'))
+        self.assertEqual(list_alerts[0].get('alert_id'),
+                         alerts_info[0].get('id'))
 
     def test_list_controllers(self):
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[controllers_info])
         list_controllers = self.driver.list_controllers(context)
-        self.assertEqual(list_controllers[0].get('name'), controllers_info[0].get('name'))
+        self.assertEqual(list_controllers[0].get('name'),
+                         controllers_info[0].get('name'))
 
     def test_list_disks(self):
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[hardware_info, drive_info])
         list_disks = self.driver.list_disks(context)
-        self.assertEqual(list_disks[0].get('name'), hardware_info[0].get('name'))
+        self.assertEqual(list_disks[0].get('name'),
+                         hardware_info[0].get('name'))
 
     def test_list_ports(self):
         RestHandler.get_rest_info = mock.Mock(
@@ -295,10 +301,10 @@ class test_StorageDriver(TestCase):
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[pools_info])
         list_storage_pools = self.driver.list_storage_pools(context)
-        self.assertEqual(list_storage_pools[0].get('native_storage_pool_id'), pools_info[0].get('name'))
+        self.assertEqual(list_storage_pools[0].get('native_storage_pool_id'),
+                         pools_info[0].get('name'))
 
     def test_reset_connection(self):
         RestHandler.get_rest_info = mock.Mock(
             side_effect=[reset_connection_info])
-        reset_connection = self.driver.reset_connection(context)
-
+        self.driver.reset_connection(context)
