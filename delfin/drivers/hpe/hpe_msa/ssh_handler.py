@@ -11,7 +11,6 @@ try:
 except ImportError:
     import xml.etree.cElementTree as ET
 
-
 LOG = logging.getLogger(__name__)
 
 

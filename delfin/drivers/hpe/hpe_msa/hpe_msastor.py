@@ -21,7 +21,8 @@ class HpeMsaStorDriver(driver.StorageDriver):
         return self.ssh_hanlder.list_storage_volume(self.storage_id)
 
     def list_controllers(self, context):
-        return self.ssh_hanlder.list_storage_controller(self.storage_id)
+        return self.ssh_hanlder.\
+            list_storage_controller(self.storage_id)
 
     def list_ports(self, context):
         return self.ssh_hanlder.list_storage_ports(self.storage_id)
