@@ -17,6 +17,7 @@ import six
 from oslo_log import log
 from oslo_utils import units
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
 
@@ -34,18 +35,24 @@ class ComponentHandler(object):
         status = constants.StorageStatus.NORMAL
         raw_cap = self.handle_disk_capacity()
         pool_capacity = self.handle_pool_capacity()
-        result = {
-            'name': domain[0].get('node'),
-            'vendor': consts.EMCVNX_VENDOR,
-            'model': agent.get('model'),
-            'status': status,
-            'serial_number': agent.get('serial_no'),
-            'firmware_version': agent.get('revision'),
-            'total_capacity': pool_capacity.get('total_capacity'),
-            'raw_capacity': int(raw_cap),
-            'used_capacity': pool_capacity.get('used_capacity'),
-            'free_capacity': pool_capacity.get('free_capacity')
-        }
+        if domain and agent:
+            result = {
+                'name': domain[0].get('node'),
+                'vendor': consts.EMCVNX_VENDOR,
+                'model': agent.get('model'),
+                'status': status,
+                'serial_number': agent.get('serial_no'),
+                'firmware_version': agent.get('revision'),
+                'total_capacity': pool_capacity.get('total_capacity'),
+                'raw_capacity': int(raw_cap),
+                'used_capacity': pool_capacity.get('used_capacity'),
+                'free_capacity': pool_capacity.get('free_capacity')
+            }
+        else:
+            err_msg = "domain or agent error: %s, %s" %\
+                      (six.text_type(domain), six.text_type(agent))
+            LOG.error(err_msg)
+            raise exception.StorageBackendException(err_msg)
         return result
 
     def list_storage_pools(self, storage_id):
@@ -289,18 +296,19 @@ class ComponentHandler(object):
         for controller in (controllers or []):
             memory_size = int(controller.get('memory_size_for_the_sp',
                                              '0')) * units.Mi
+            cpu_info = ''
+            if cpus:
+                cpu_info = cpus.get(
+                    controller.get('serial_number_for_the_sp', ''), '')
             controller_model = {
                 'name': controller.get('sp_name'),
                 'storage_id': storage_id,
-                'native_controller_id': controller.get(
-                    'signature_for_the_sp'),
+                'native_controller_id': controller.get('signature_for_the_sp'),
                 'status': constants.ControllerStatus.NORMAL,
                 'location': None,
                 'soft_version': controller.get(
                     'revision_number_for_the_sp'),
-                'cpu_info': cpus.get(
-                    controller.get('serial_number_for_the_sp', ''),
-                    ''),
+                'cpu_info': cpu_info,
                 'memory_size': str(memory_size)
             }
             controller_list.append(controller_model)
@@ -331,6 +339,7 @@ class ComponentHandler(object):
                 mac_address = None
             module_key = '%s_%s' % (
                 sp_name, port.get('i/o_module_slot'))
+            type = ''
             if io_configs:
                 type = io_configs.get(module_key, '')
 
@@ -389,8 +398,10 @@ class ComponentHandler(object):
                     native_port_id = native_port_id.replace(',', '')
                     module_key = '%s_%s' % (
                         sp_name, bus_port.get('i/o_module_slot'))
+                    type = ''
                     if io_configs:
                         type = io_configs.get(module_key, '')
+                    state = ''
                     if bus_port_state_map:
                         port_state_key = '%s_%s' % (
                             sp_name, bus_port.get('physical_port_id'))

@@ -152,12 +152,11 @@ class TestNetAppCmodeDriver(TestCase):
                          test_constans.CONTROLLER_INFO,
                          test_constans.CONTROLLER_IP_INFO])
         data = self.netapp_client.get_alert_sources(context)
-        self.assertEqual(data[0]['host'], '4082368-50-7')
+        self.assertEqual(data[0]['host'], '8.44.162.245')
 
     def test_get_storage_performance(self):
         SSHPool.do_exec = mock.Mock(
             side_effect=[
-                test_constans.VERSION,
                 # storage
                 test_constans.SYSTEM_INFO,
                 # pool
@@ -190,7 +189,14 @@ class TestNetAppCmodeDriver(TestCase):
             end_time=str(1495315500000))
         self.assertEqual(data[0][2][1485343200000], 1000)
 
+    def test_get_capabilities_is_None(self):
+        data = self.netapp_client.get_capabilities(context, None)
+        self.assertEqual(data[9.8]['resource_metrics']['storage']
+                         ['throughput']['unit'], 'MB/s')
+
     def test_get_capabilities(self):
-        data = self.netapp_client.get_capabilities(context)
+        data = self.netapp_client.\
+            get_capabilities(context,
+                             {'firmware_version': 'NetApp Release 9.8R15'})
         self.assertEqual(data['resource_metrics']['storage']
                          ['throughput']['unit'], 'MB/s')

@@ -556,6 +556,7 @@ class TestVMAXStorageDriver(TestCase):
         ret = driver.list_ports(context)
         self.assertDictEqual(ret[0], expected[0])
 
+        mock_dirs.side_effect = exception.StorageBackendException
         with self.assertRaises(Exception) as exc:
             driver.list_ports(context)
 

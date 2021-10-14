@@ -18,7 +18,6 @@ from oslo_config import cfg
 from oslo_log import log
 
 from delfin import db
-from delfin.common.constants import TelemetryCollection
 from delfin.coordination import ConsistentHashing
 from delfin.task_manager import metrics_rpcapi as task_rpcapi
 
@@ -56,7 +55,3 @@ class TaskDistributor(object):
             LOG.error('Failed to distribute failed job, reason: %s',
                       six.text_type(e))
             raise e
-
-    @classmethod
-    def job_interval(cls):
-        return TelemetryCollection.PERIODIC_JOB_INTERVAL
