@@ -1200,7 +1200,6 @@ class NetAppHandler(object):
             constant.VERSION_SHOW_COMMAND)
         version_array = version_info.split("\r\n")
         storage_version = []
-        
         for version in version_array:
             if 'NetApp' in version:
                 storage_version = version.split(":")
