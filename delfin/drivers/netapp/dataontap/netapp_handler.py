@@ -141,6 +141,10 @@ class NetAppHandler(object):
             if 'is not a recognized command' in result \
                     or 'command not found' in result:
                 raise exception.InvalidIpOrPort()
+            version = self.get_storage_version()
+            if version >= 9.6:
+                self.rest_client.do_call(
+                    constant.CLUSTER_PERF_URL, None, 'GET')
         except Exception as e:
             LOG.error("Failed to login netapp %s" %
                       (six.text_type(e)))
@@ -1190,6 +1194,21 @@ class NetAppHandler(object):
                         json_info, port_id,
                         eth['name'], constants.ResourceType.PORT))
         return port_metrics
+
+    def get_storage_version(self):
+        version_info = self.ssh_do_exec(
+            constant.VERSION_SHOW_COMMAND)
+        version_array = version_info.split("\r\n")
+        storage_version = []
+        for version in version_array:
+            if 'NetApp' in version:
+                storage_version = version.split(":")
+                break
+        version_List = re.findall(constant.FLOAT_PATTERN, storage_version[0])
+        for version in version_List:
+            if float(version) >= 9.0:
+                return float(version)
+        return 9.0
 
     @staticmethod
     def get_cap_by_version(version, capabilities):
