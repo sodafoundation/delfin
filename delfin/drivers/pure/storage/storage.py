@@ -1,5 +1,4 @@
 import hashlib
-import json
 
 from oslo_log import log
 from oslo_utils import units
@@ -19,10 +18,8 @@ class StorageDriver(driver.StorageDriver):
         self.rest_handler.login()
 
     def list_volumes(self, context):
-        LOG.info("进入list_volumes")
         volume = []
         volumes_return = self.rest_handler.get_all_rest_volumes()
-        LOG.info("list_volumes--volumes_return：%s" % (json.dumps(volumes_return, ensure_ascii=False)))
         if volumes_return:
             volume = self.volume_handler(volumes_return)
         return volume
@@ -54,7 +51,6 @@ class StorageDriver(driver.StorageDriver):
                         volume_dict['native_storage_pool_id'] = j.get('name')
                         break
             volume.append(volume_dict)
-        LOG.info("卷：%s" % (json.dumps(volume, ensure_ascii=False)))
         return volume
 
     def add_trap_config(self, context, trap_config):
@@ -64,7 +60,6 @@ class StorageDriver(driver.StorageDriver):
         pass
 
     def get_storage(self, context):
-        LOG.info("进入get_storage")
         storage_object = dict()
         result_storage = self.rest_handler.get_storage()
         storage_object['model'] = result_storage[0].get('hostname')
@@ -85,11 +80,9 @@ class StorageDriver(driver.StorageDriver):
         # status无法获取，不写死没法部署
         storage_object['status'] = constants.StorageStatus.NORMAL
         storage_object['location'] = ""
-        LOG.info("系统：%s" % (json.dumps(storage_object, ensure_ascii=False)))
         return storage_object
 
     def list_alerts(self, context, query_para=None):
-        LOG.info("进入list_alerts")
         return_alerts = self.rest_handler.get_all_alerts()
         alerts_list = []
         if return_alerts:
@@ -131,11 +124,9 @@ class StorageDriver(driver.StorageDriver):
                 alerts_model['alert_name'] = alerts.get('id')
                 alerts_model['match_key'] = hashlib.md5(str(alerts.get('id')).encode()).hexdigest()
                 alerts_list.append(alerts_model)
-        LOG.info("list_alerts：%s" % (json.dumps(alerts_list, ensure_ascii=False)))
         return alerts_list
 
     def list_controllers(self, context):
-        LOG.info("进入list_controllers")
         list_controllers = []
         return_controllers = self.rest_handler.get_all_controllers()
         if return_controllers:
@@ -156,11 +147,9 @@ class StorageDriver(driver.StorageDriver):
                 controllers_Object['cpu_info'] = ""
                 controllers_Object['memory_size'] = ""
                 list_controllers.append(controllers_Object)
-        LOG.info("list_controllers：%s" % (json.dumps(list_controllers, ensure_ascii=False)))
         return list_controllers
 
     def list_disks(self, context):
-        LOG.info("进入list_disks")
         names = dict()
         return_hardware = self.rest_handler.get_all_hardware()
         if return_hardware:
@@ -224,11 +213,9 @@ class StorageDriver(driver.StorageDriver):
                 disk['firmware'] = ""
                 disk['health_score'] = ""
                 list_disk.append(disk)
-        LOG.info("list_disk：%s" % (json.dumps(list_disk, ensure_ascii=False)))
         return list_disk
 
     def list_ports(self, context):
-        LOG.info("进入list_ports")
         networksObject = dict()
         self.network_Object(networksObject)
         list_port = []
@@ -274,7 +261,6 @@ class StorageDriver(driver.StorageDriver):
                 port['ipv6'] = ""
                 port['ipv6_mask'] = ""
                 list_port.append(port)
-        LOG.info("list_ports：%s" % (json.dumps(list_port, ensure_ascii=False)))
         return list_port
 
     def network_Object(self, networksObject):
@@ -299,10 +285,8 @@ class StorageDriver(driver.StorageDriver):
                 networksObject[name] = network_Object
 
     def list_storage_pools(self, context):
-        LOG.info("进入list_storage_pools")
         pool_list = []
         return_pools = self.rest_handler.get_capacity_pools()
-        LOG.info("list_storage_pools-return_pools：%s" % (json.dumps(return_pools, ensure_ascii=False)))
         if return_pools:
             for pools in return_pools:
                 pool_object = dict()
@@ -321,7 +305,6 @@ class StorageDriver(driver.StorageDriver):
                 pool_object['status'] = constants.StoragePoolStatus.NORMAL
                 pool_object['storage_type'] = constants.StorageType.BLOCK
                 pool_list.append(pool_object)
-        LOG.info("list_storage_pools：%s" % (json.dumps(pool_list, ensure_ascii=False)))
         return pool_list
 
     def remove_trap_config(self, context, trap_config):
