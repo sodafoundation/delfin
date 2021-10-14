@@ -1199,15 +1199,13 @@ class NetAppHandler(object):
         version_info = self.ssh_do_exec(
             constant.VERSION_SHOW_COMMAND)
         version_array = version_info.split("\r\n")
-        storage_version = []
         for version in version_array:
             if 'NetApp' in version:
                 storage_version = version.split(":")
-                break
-        version_list = re.findall(constant.FLOAT_PATTERN, storage_version[0])
-        for version in version_list:
-            if float(version) >= 9.0:
-                return float(version)
+                version_List = re.findall(constant.FLOAT_PATTERN, storage_version[0])
+                for ver_info in version_List:
+                    if float(ver_info) >= 9.0:
+                        return float(ver_info)
         return 9.0
 
     @staticmethod
