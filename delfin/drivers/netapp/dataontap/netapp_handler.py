@@ -1202,7 +1202,8 @@ class NetAppHandler(object):
         for version in version_array:
             if 'NetApp' in version:
                 storage_version = version.split(":")
-                version_List = re.findall(constant.FLOAT_PATTERN, storage_version[0])
+                version_List = \
+                    re.findall(constant.FLOAT_PATTERN, storage_version[0])
                 for ver_info in version_List:
                     if float(ver_info) >= 9.0:
                         return float(ver_info)
