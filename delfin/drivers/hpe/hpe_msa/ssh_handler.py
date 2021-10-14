@@ -94,7 +94,7 @@ class SSHHandler():
                     physical_type = SSHHandler.DISK_PHYSICAL_TYPE.\
                         get(data.get('description'),
                             constants.DiskPhysicalType.UNKNOWN)
-                    dataMap = {
+                    data_map = {
                        'native_disk_id': data['location'],
                        'name': data['location'],
                        'physical_type': physical_type,
@@ -108,7 +108,7 @@ class SSHHandler():
                        'capacity': int(size),
                        'health_score': status
                     }
-                    list_disks.append(dataMap)
+                    list_disks.append(data_map)
             return list_disks
         except Exception as e:
             err_msg = "Failed to get storage disk: %s" % (six.text_type(e))
@@ -187,8 +187,9 @@ class SSHHandler():
                     if health == 'OK':
                         status = constants.StoragePoolStatus.NORMAL
                     cpu_info = str(data['sc-cpu-type'])
+                    memory_size = data['system-memory-size']
                     system_memory_size = self.parse_string(
-                        data['system-memory-size']+"MB")
+                       memory_size+"MB")
                     dataMap = {
                         'native_controller_id': data['controller-id'],
                         'name': data['durable-id'],
@@ -367,5 +368,3 @@ class SSHHandler():
                 exist_questions.add(question)
                 result.append(item)
         return result
-
-
