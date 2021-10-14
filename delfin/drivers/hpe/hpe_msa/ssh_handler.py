@@ -95,18 +95,18 @@ class SSHHandler():
                         get(data.get('description'),
                             constants.DiskPhysicalType.UNKNOWN)
                     data_map = {
-                       'native_disk_id': data['location'],
-                       'name': data['location'],
-                       'physical_type': physical_type,
-                       'status': status,
-                       'storage_id': storage_id,
-                       'native_disk_group_id': data['disk-group'],
-                       'serial_number': data['serial-number'],
-                       'manufacturer': data['vendor'],
-                       'model': data['model'],
-                       'speed': data['rpm'],
-                       'capacity': int(size),
-                       'health_score': status
+                        'native_disk_id': data['location'],
+                        'name': data['location'],
+                        'physical_type': physical_type,
+                        'status': status,
+                        'storage_id': storage_id,
+                        'native_disk_group_id': data['disk-group'],
+                        'serial_number': data['serial-number'],
+                        'manufacturer': data['vendor'],
+                        'model': data['model'],
+                        'speed': data['rpm'],
+                        'capacity': int(size),
+                        'health_score': status
                     }
                     list_disks.append(data_map)
             return list_disks
@@ -131,9 +131,9 @@ class SSHHandler():
                         msg[child.get('name')] = child.text
                     list_port_detail.append(msg)
             list_all_ports = []
-            for i in range(0, len(list_port_detail)-1, 2):
+            for i in range(0, len(list_port_detail) - 1, 2):
                 aa = list_port_detail[i].copy()
-                aa.update(list_port_detail[i+1])
+                aa.update(list_port_detail[i + 1])
                 list_all_ports.append(aa)
             list_ports = []
             if list_all_ports:
@@ -187,10 +187,10 @@ class SSHHandler():
                     if health == 'OK':
                         status = constants.StoragePoolStatus.NORMAL
                     cpu_info = str(data['sc-cpu-type'])
-                    memory_size = data['system-memory-size']
+                    memory_size = data['system-memory-size'] + "MB"
                     system_memory_size = self.parse_string(
-                       memory_size+"MB")
-                    dataMap = {
+                        memory_size)
+                    data_map = {
                         'native_controller_id': data['controller-id'],
                         'name': data['durable-id'],
                         'storage_id': storage_id,
@@ -200,7 +200,7 @@ class SSHHandler():
                         'cpu_info': cpu_info,
                         'memory_size': int(system_memory_size)
                     }
-                    list_controllers.append(dataMap)
+                    list_controllers.append(data_map)
             return list_controllers
         except Exception as e:
             err_msg = "Failed to get storage controllers: %s"\
@@ -328,8 +328,8 @@ class SSHHandler():
             list = self.analysisDataToList(result, 'events')
             if list:
                 for alert_map in list:
-                    occur_time = int(alert_map.get('time-stamp-numeric')) * \
-                                 self.SECONDS_TO_MS
+                    time_stamp = alert_map.get('time-stamp-numeric')
+                    occur_time = int(time_stamp) * self.SECONDS_TO_MS
                     if not alert_util.is_alert_in_time_range(query_para,
                                                              occur_time):
                         continue
