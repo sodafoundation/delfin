@@ -34,7 +34,7 @@ class PerformanceHandler(object):
             unit = constant.CAP_MAP[key]['unit']
             return PerformanceHandler.get_unit_size(value, unit)
         elif key == 'responseTime':
-            return round(int(value) / 1000)
+            return round(int(value) / 1000, 3)
         else:
             return value
 
@@ -48,7 +48,7 @@ class PerformanceHandler(object):
         capacity = Tools.change_capacity_to_bytes(unit_array[0])
         if capacity == 1:
             return value
-        return round(int(value) / capacity, 2)
+        return round(int(value) / capacity, 3)
 
     @staticmethod
     def get_perf_value(metrics, storage_id, start_time, end_time,

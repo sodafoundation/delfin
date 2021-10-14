@@ -175,9 +175,8 @@ class NetAppHandler(object):
             Tools.split_value_map_list(
                 system_info, storage_map_list, split=':')
             if len(storage_map_list) > 0:
-                storage_map = storage_map_list[len(storage_map_list) - 1]
-                controller_map = \
-                    controller_map_list[len(controller_map_list) - 1]
+                storage_map = storage_map_list[-1]
+                controller_map = controller_map_list[1]
                 for disk in disk_list:
                     raw_capacity += disk['capacity']
                 for pool in pool_list:
@@ -541,7 +540,6 @@ class NetAppHandler(object):
                                 if constant.IP_PATTERN.search(ip):
                                     value = ip
                                 ip_map[key] = value
-                                continue
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
@@ -986,13 +984,10 @@ class NetAppHandler(object):
         try:
             ip_list = []
             mgt_ip = self.ssh_pool.do_exec(constant.MGT_IP_COMMAND)
-            node_ip = self.ssh_pool.do_exec(constant.NODE_IP_COMMAND)
+            controller_list = self.list_controllers(None)
+            for controller in controller_list:
+                ip_list.append({'host': controller['mgmt_ip']})
             mgt_ip_array = self.get_table_data(mgt_ip)
-            node_ip_array = self.get_table_data(node_ip)
-            for node in node_ip_array:
-                ip_array = node.split()
-                if len(ip_array) == 3:
-                    ip_list.append({'host': ip_array[2]})
             ip_list.append({'host': mgt_ip_array[0].split()[2]})
             return ip_list
         except exception.DelfinException as e:
@@ -1043,45 +1038,39 @@ class NetAppHandler(object):
     def collect_perf_metrics(self, storage_id,
                              resource_metrics, start_time, end_time):
         try:
-            version = self.get_version()
             metrics = []
             if start_time and end_time:
                 metrics_keys = resource_metrics.keys()
                 # storage metrics
                 if constants.ResourceType.STORAGE in metrics_keys:
-                    if version >= 9.6:
-                        metrics.extend(
-                            self.get_storage_perf(
-                                resource_metrics,
-                                storage_id, start_time, end_time))
+                    metrics.extend(
+                        self.get_storage_perf(
+                            resource_metrics,
+                            storage_id, start_time, end_time))
                 # pool metrics
                 if constants.ResourceType.STORAGE_POOL in metrics_keys:
-                    if version >= 9.7:
-                        metrics.extend(
-                            self.get_pool_perf(
-                                resource_metrics,
-                                storage_id, start_time, end_time))
+                    metrics.extend(
+                        self.get_pool_perf(
+                            resource_metrics,
+                            storage_id, start_time, end_time))
                 # volume metrics
                 if constants.ResourceType.VOLUME in metrics_keys:
-                    if version >= 9.7:
-                        metrics.extend(
-                            self.get_volume_perf(
-                                resource_metrics,
-                                storage_id, start_time, end_time))
+                    metrics.extend(
+                        self.get_volume_perf(
+                            resource_metrics,
+                            storage_id, start_time, end_time))
                 # port metrics
                 if constants.ResourceType.PORT in metrics_keys:
-                    if version >= 9.8:
-                        metrics.extend(
-                            self.get_port_perf(
-                                resource_metrics,
-                                storage_id, start_time, end_time))
+                    metrics.extend(
+                        self.get_port_perf(
+                            resource_metrics,
+                            storage_id, start_time, end_time))
                 # filesystem metrics
                 if constants.ResourceType.FILESYSTEM in metrics_keys:
-                    if version >= 9.7:
-                        metrics.extend(
-                            self.get_fs_perf(
-                                resource_metrics,
-                                storage_id, start_time, end_time))
+                    metrics.extend(
+                        self.get_fs_perf(
+                            resource_metrics,
+                            storage_id, start_time, end_time))
             return metrics
         except exception.DelfinException as e:
             err_msg = "Failed to get storage performance from " \
@@ -1205,17 +1194,47 @@ class NetAppHandler(object):
                         eth['name'], constants.ResourceType.PORT))
         return port_metrics
 
-    def get_version(self):
-        version_info = self.ssh_do_exec(
-            constant.VERSION_SHOW_COMMAND)
-        version_array = version_info.split("\r\n")
-        storage_version = []
-        for version in version_array:
-            if 'NetApp' in version:
-                storage_version = version.split(":")
-                break
-        version_List = re.findall(constant.FLOAT_PATTERN, storage_version[0])
-        for version in version_List:
-            if float(version) >= 9.0:
-                return float(version)
-        return 9.0
+    @staticmethod
+    def get_cap_by_version(version, capabilities):
+        if version >= 9.6:
+            capabilities['resource_metrics']['storage'] = \
+                constant.STORAGE_CAPABILITIES
+            if version >= 9.7:
+                capabilities['resource_metrics']['storagePool'] = \
+                    constant.POOL_CAPABILITIES
+                capabilities['resource_metrics']['port'] = \
+                    constant.PORT_CAPABILITIES
+                capabilities['resource_metrics']['filesystem'] = \
+                    constant.FS_CAPABILITIES
+            if version >= 9.8:
+                capabilities['resource_metrics']['volume'] = \
+                    constant.VOLUME_CAPABILITIES
+        return capabilities
+
+    @staticmethod
+    def get_capabilities(filters):
+        if filters:
+            capabilities = {
+                'is_historic': True,
+                'resource_metrics': {}
+            }
+            version_List = \
+                re.findall(
+                    constant.FLOAT_PATTERN, filters.get('firmware_version'))
+            version = 9.0
+            for ver_info in version_List:
+                if float(ver_info) >= 9.0:
+                    version = float(ver_info)
+                    break
+            NetAppHandler.get_cap_by_version(version, capabilities)
+            return capabilities
+        cap_map = {}
+        for i in range(0, 10):
+            capabilities = {
+                'is_historic': True,
+                'resource_metrics': {}
+            }
+            version = float('9.' + str(i))
+            NetAppHandler.get_cap_by_version(version, capabilities)
+            cap_map[version] = capabilities
+        return cap_map

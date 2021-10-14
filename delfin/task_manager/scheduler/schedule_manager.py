@@ -87,9 +87,10 @@ class SchedulerManager(object):
             if new_executor != origin_executor:
                 LOG.info('Re-distribute failed_job %s from %s to %s' %
                          (failed_task['id'], origin_executor, new_executor))
-                self.task_rpcapi.remove_job(self.ctx, task['id'],
-                                            task['executor'])
-            distributor.distribute_failed_job(failed_task['id'])
+                self.task_rpcapi.remove_failed_job(
+                    self.ctx, failed_task['id'], failed_task['executor'])
+            distributor.distribute_failed_job(failed_task['id'],
+                                              task['executor'])
         partitioner.stop()
 
     def on_node_leave(self, event):
