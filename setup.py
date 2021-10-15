@@ -47,6 +47,7 @@ setup(
             'huawei oceanstor = delfin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver',
             'ibm storwize_svc = delfin.drivers.ibm.storwize_svc.storwize_svc:StorwizeSVCDriver',
             'netapp cmode = delfin.drivers.netapp.dataontap.cluster_mode:NetAppCmodeDriver'
+            'pure pure = delfin.drivers.pure.pure.pure_storage:StorageDriver'
         ]
     },
 )
