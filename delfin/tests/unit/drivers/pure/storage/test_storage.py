@@ -3,8 +3,8 @@ from unittest import TestCase, mock
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
-from delfin.drivers.pure.storage.rest_handler import RestHandler
-from delfin.drivers.pure.storage.storage import StorageDriver
+from delfin.drivers.pure.pure.rest_handler import RestHandler
+from delfin.drivers.pure.pure.pure_storage import StorageDriver
 
 ACCESS_INFO = {
     "rest": {
@@ -149,7 +149,7 @@ hardware_info = [
         "index": 0,
         "name": "CH0.BAY1",
         "slot": "",
-        "speed": "",
+        "speed": 0,
         "status": "ok",
         "temperature": ""
     },
@@ -206,12 +206,36 @@ port_info = [
         "nqn": ""
     },
     {
-        "name": "CTO.ETH14",
+        "name": "CTO.ETH15",
         "failover": "",
         "iqn": "iqn.2016-11-01.com.pure",
         "portal": "100.12.253.23:4563",
         "wwn": "43ddff45gdcvrty",
         "nqn": ""
+    }
+]
+port_network_info = [
+    {
+        "name": "CTO.ETH14",
+        "address": "45233662jksndj",
+        "speed": 12000,
+        "netmask": "100.12.253.23:4563",
+        "wwn": "43ddff45ggg4rty",
+        "nqn": "",
+        "services": [
+            "management"
+        ]
+    },
+    {
+        "name": "CTO.ETH15",
+        "address": "45233662jksndj",
+        "speed": 13000,
+        "netmask": "100.12.253.23:4563",
+        "wwn": "43ddff45ggg4rty",
+        "nqn": "",
+        "services": [
+            "management"
+        ]
     }
 ]
 pools_info = [
@@ -256,12 +280,13 @@ class test_StorageDriver(TestCase):
         StorageDriver(**ACCESS_INFO)
 
     def test_list_volumes(self):
+        RestHandler.get_rest_volumes_info = mock.Mock(
+            side_effect=[volumes_info])
         RestHandler.get_rest_info = mock.Mock(
-            side_effect=[volumes_info, pool_info, volume_info,
-                         volume_info_two])
+            side_effect=[pool_info])
         volume = self.driver.list_volumes(context)
         self.assertEqual(volume[0]['native_volume_id'],
-                         volume_info.get('serial'))
+                         pool_info[0].get('volumes')[0])
 
     def test_get_storage(self):
         RestHandler.get_rest_info = mock.Mock(
@@ -293,7 +318,7 @@ class test_StorageDriver(TestCase):
 
     def test_list_ports(self):
         RestHandler.get_rest_info = mock.Mock(
-            side_effect=[port_info])
+            side_effect=[port_network_info, port_info])
         list_ports = self.driver.list_ports(context)
         self.assertEqual(list_ports[0].get('wwn'), port_info[0].get('wwn'))
 
@@ -305,6 +330,6 @@ class test_StorageDriver(TestCase):
                          pools_info[0].get('name'))
 
     def test_reset_connection(self):
-        RestHandler.get_rest_info = mock.Mock(
+        RestHandler.get_rest_login = mock.Mock(
             side_effect=[reset_connection_info])
         self.driver.reset_connection(context)

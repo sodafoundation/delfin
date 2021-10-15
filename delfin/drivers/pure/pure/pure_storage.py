@@ -6,7 +6,7 @@ from oslo_utils import units
 
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.pure.storage import rest_handler
+from delfin.drivers.pure.pure import rest_handler
 
 LOG = log.getLogger(__name__)
 
@@ -41,7 +41,6 @@ class StorageDriver(driver.StorageDriver):
             volume_dict['free_capacity'] = total_capacity - used_capacity
             volume_dict['storage_id'] = self.storage_id
             volume_dict['description'] = ""
-            # status type无法获取，不写死页面显示错误
             volume_dict['status'] = constants.StorageStatus.NORMAL
             volume_dict['type'] = constants.VolumeType.THICK
             volume_dict['native_storage_pool_id'] = ""
@@ -63,23 +62,23 @@ class StorageDriver(driver.StorageDriver):
     def get_storage(self, context):
         storage_object = dict()
         result_storage = self.rest_handler.get_storage()
-        storage_object['model'] = result_storage[0].get('hostname')
-        storage_object['vendor'] = 'PURE'
-        total_capacity = int(int(result_storage[0].get('provisioned'))
-                             / units.Ki)
-        storage_object['total_capacity'] = total_capacity
-        # 写死raw_capacity
-        storage_object['raw_capacity'] = total_capacity
-        used_capacity = int(int(result_storage[0].get('volumes')) / units.Ki)
-        storage_object['used_capacity'] = used_capacity
-        storage_object['free_capacity'] = total_capacity - used_capacity
+        if result_storage:
+            storage_object['model'] = result_storage[0].get('hostname', "")
+            total_capacity = int(int(result_storage[0].get('provisioned',
+                                                           0)) / units.Ki)
+            storage_object['total_capacity'] = total_capacity
+            storage_object['raw_capacity'] = total_capacity
+            used_capacity = int(int(result_storage[0].get('volumes', 0)) /
+                                units.Ki)
+            storage_object['used_capacity'] = used_capacity
+            storage_object['free_capacity'] = total_capacity - used_capacity
 
         return_storage_id = self.rest_handler.get_storage_ID()
+        storage_object['vendor'] = 'PURE'
         storage_object['name'] = return_storage_id.get('array_name')
         storage_object['serial_number'] = return_storage_id.get('id')
         storage_object['firmware_version'] = return_storage_id.get('version')
         storage_object['description'] = ""
-        # status无法获取，不写死没法部署
         storage_object['status'] = constants.StorageStatus.NORMAL
         storage_object['location'] = ""
         return storage_object
@@ -120,7 +119,6 @@ class StorageDriver(driver.StorageDriver):
                 alerts_model['occur_time'] = alerts.get('opened')
                 alerts_model['description'] = alerts.get('event')
                 alerts_model['location'] = alerts.get('component_name')
-                # 写死
                 alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
                 alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
                 alerts_model['alert_name'] = alerts.get('id')
@@ -213,7 +211,6 @@ class StorageDriver(driver.StorageDriver):
                 disk['location'] = drive_name
                 disk['logical_type'] = ''
                 disk['native_disk_group_id'] = ""
-                # 写死的
                 disk['manufacturer'] = "pure"
                 disk['firmware'] = ""
                 disk['health_score'] = ""
@@ -258,7 +255,6 @@ class StorageDriver(driver.StorageDriver):
                     port['speed'] = ''
                     port['mac_address'] = ''
                     port['ipv4_mask'] = ''
-                # 写死
                 port['connection_status '] = constants.PortConnectionStatus.\
                     CONNECTED
                 port['health_status'] = constants.PortHealthStatus.NORMAL
@@ -276,16 +272,14 @@ class StorageDriver(driver.StorageDriver):
             for network in return_network:
                 network_object = dict()
                 network_object['address'] = network.get('address')
-                services = network.get('services')[0]
-                if services in constants.PortLogicalType.ALL:
-                    network_object['logical_type'] = services
-                else:
-                    network_object['logical_type'] = ""
-                if services in constants.PortType.ALL:
-                    network_object['type'] = services
-                else:
-                    network_object['type'] = constants.PortType.ISCSI
-                network_object['speed'] = int(int(network.get('speed')) /
+                services_list = network.get('services')
+                if services_list:
+                    services = services_list[0]
+                    if services in constants.PortLogicalType.ALL:
+                        network_object['logical_type'] = services
+                    else:
+                        network_object['logical_type'] = ""
+                network_object['speed'] = int(int(network.get('speed', 0)) /
                                               units.Ki)
                 network_object['ipv4_mask'] = network.get('netmask')
                 name = network.get('name')
@@ -308,7 +302,6 @@ class StorageDriver(driver.StorageDriver):
                 pool_object['native_storage_pool_id'] = pools.get('name')
                 pool_object['storage_id'] = self.storage_id
                 pool_object['description'] = ""
-                # status storage_type 获取不到写死
                 pool_object['status'] = constants.StoragePoolStatus.NORMAL
                 pool_object['storage_type'] = constants.StorageType.BLOCK
                 pool_list.append(pool_object)
