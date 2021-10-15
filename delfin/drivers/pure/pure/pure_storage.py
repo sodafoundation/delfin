@@ -185,23 +185,17 @@ class StorageDriver(driver.StorageDriver):
                     disk['status'] = constants.DiskStatus.OFFLINE
                 disk['storage_id'] = self.storage_id
                 disk['capacity'] = int(int(drive.get('capacity')) / units.Ki)
-                hardware_Object = names.get(drive_name)
-                if hardware_Object is not None and hardware_Object != "":
-                    speed = hardware_Object.get('speed')
+                hardware_object = names.get(drive_name)
+                if hardware_object is not None and hardware_object != "":
+                    speed = hardware_object.get('speed')
                     if speed is None:
                         disk['speed'] = ''
                     else:
                         disk['speed'] = int(speed)
-                    model = hardware_Object.get('model')
-                    if model is None:
-                        disk['model'] = ''
-                    else:
-                        disk['model'] = model
-                    serial_number = hardware_Object.get('serial_number')
-                    if serial_number is None:
-                        disk['serial_number'] = ''
-                    else:
-                        disk['serial_number'] = serial_number
+                    model = hardware_object.get('model')
+                    disk['model'] = model
+                    serial_number = hardware_object.get('serial_number')
+                    disk['serial_number'] = serial_number
                 else:
                     disk['speed'] = 0
                     disk['model'] = ''
@@ -236,8 +230,6 @@ class StorageDriver(driver.StorageDriver):
                 else:
                     port['type'] = constants.PortType.ETH
                     iqn = ports.get('iqn')
-                    if iqn is None:
-                        LOG.info("数据来源有误")
                     port['name'] = iqn
                     port['id'] = iqn
                     port['wwn'] = ''

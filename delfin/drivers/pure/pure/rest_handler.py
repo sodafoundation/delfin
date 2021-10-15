@@ -113,10 +113,8 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(RestHandler.REST_ALERTS_URL)
         return result_json
 
-    # 请求远程方法
     def get_rest_info(self, url, data=None, method='GET'):
         result_json = None
-        # 请求远程接口
         res = self.do_call(url, data, method)
         if res.status_code == 200:
             result_json = res.json()
@@ -127,7 +125,6 @@ class RestHandler(RestClient):
 
     def get_rest_login(self, url, data=None, method='GET'):
         self.init_http_head()
-        # 请求远程接口
         res = self.do_call(url, data, method)
         result_json = res.json()
         return result_json
@@ -135,7 +132,6 @@ class RestHandler(RestClient):
     def get_rest_volumes_info(self, url, data=None, volume_list=None):
         if volume_list is None:
             volume_list = []
-        # 请求远程接口
         res = self.do_call(url, data, 'GET')
         if res.status_code == 200:
             result_json = res.json()
