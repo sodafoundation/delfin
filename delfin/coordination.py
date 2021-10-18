@@ -326,6 +326,7 @@ def _get_redis_backend_url():
 
 class ConsistentHashing(Coordinator):
     GROUP_NAME = 'partitioner_group'
+    PARTITIONS = 2**5
 
     def __init__(self):
         super(ConsistentHashing, self). \
@@ -333,7 +334,10 @@ class ConsistentHashing(Coordinator):
 
     def join_group(self):
         try:
-            self.coordinator.join_partitioned_group(self.GROUP_NAME)
+            weight = CONF.telemetry.node_weight
+            self.coordinator.join_partitioned_group(self.GROUP_NAME,
+                                                    weight=weight,
+                                                    partitions=self.PARTITIONS)
         except coordination.MemberAlreadyExist:
             LOG.info('Member %s already in partitioner_group' % CONF.host)
 
