@@ -18,7 +18,6 @@ import time
 import requests
 import six
 import hashlib
-import eventlet
 
 from oslo_log import log as logging
 from oslo_utils import units
@@ -75,8 +74,7 @@ class NetAppHandler(object):
 
     def ssh_do_exec(self, command):
         res = ''
-        with eventlet.Timeout(10, False):
-            res = self.ssh_pool.do_exec(command)
+        res = self.ssh_pool.do_exec(command)
         return res
 
     @staticmethod
