@@ -73,7 +73,6 @@ class NetAppHandler(object):
         return qt_id
 
     def ssh_do_exec(self, command):
-        res = ''
         res = self.ssh_pool.do_exec(command)
         return res
 
