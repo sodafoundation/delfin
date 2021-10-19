@@ -404,6 +404,8 @@ class TelemetryCollection(object):
     """Default performance collection interval"""
     DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
     DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 1800
+    """Maximum failed task retry window in seconds"""
+    MAX_FAILED_TASK_RETRY_WINDOW = 7200
 
 
 class TelemetryTaskStatus(object):

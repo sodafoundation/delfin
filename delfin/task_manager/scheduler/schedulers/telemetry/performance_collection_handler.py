@@ -15,20 +15,23 @@
 from datetime import datetime
 
 import six
-from delfin.task_manager.scheduler.schedulers.telemetry. \
-    failed_performance_collection_handler import \
-    FailedPerformanceCollectionHandler
+from oslo_config import cfg
 from oslo_log import log
 
 from delfin import db
 from delfin import exception
 from delfin.common.constants import TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
+from delfin.drivers import api as driverapi
 from delfin.task_manager import metrics_rpcapi as metrics_task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
+from delfin.task_manager.scheduler.schedulers.telemetry. \
+    failed_performance_collection_handler import \
+    FailedPerformanceCollectionHandler
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
 
 LOG = log.getLogger(__name__)
+CONF = cfg.CONF
 
 
 class PerformanceCollectionHandler(object):
@@ -39,6 +42,7 @@ class PerformanceCollectionHandler(object):
         self.args = args
         self.interval = interval
         self.metric_task_rpcapi = metrics_task_rpcapi.TaskAPI()
+        self.driver_api = driverapi.API()
         self.executor = executor
         self.scheduler = schedule_manager.SchedulerManager().get_scheduler()
 
@@ -96,10 +100,32 @@ class PerformanceCollectionHandler(object):
                       .format(self.storage_id, self.task_id, self.interval))
 
     def _handle_task_failure(self, start_time, end_time):
+        failed_task_interval = TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL
+
+        try:
+            # Fetch driver's capability for performance metric retention window
+            # If driver supports it and if it is within collection  range,
+            # consider it for failed task scheduling
+            capabilities = self.driver_api.get_capabilities(self.ctx,
+                                                            self.storage_id)
+            performance_metric_retention_window \
+                = capabilities.get('performance_metric_retention_window')
+
+            if performance_metric_retention_window:
+                collection_window = performance_metric_retention_window \
+                    if performance_metric_retention_window <= CONF.telemetry \
+                    .max_failed_task_retry_window \
+                    else CONF.telemetry.max_failed_task_retry_window
+                failed_task_interval = collection_window / TelemetryCollection\
+                    .MAX_FAILED_JOB_RETRY_COUNT
+        except Exception as e:
+            LOG.error("Failed to get driver capabilities during failed task "
+                      "scheduling for storage id :{0}, reason:{1}"
+                      .format(self.storage_id, six.text_type(e)))
+
         failed_task = {FailedTask.storage_id.name: self.storage_id,
                        FailedTask.task_id.name: self.task_id,
-                       FailedTask.interval.name:
-                           TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL,
+                       FailedTask.interval.name: failed_task_interval,
                        FailedTask.end_time.name: end_time,
                        FailedTask.start_time.name: start_time,
                        FailedTask.method.name:

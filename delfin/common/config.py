@@ -119,6 +119,11 @@ telemetry_opts = [
                .DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE,
                help='default history(in sec) to be collected on a job '
                     'reschedule'),
+    cfg.IntOpt('max_failed_task_retry_window',
+               default=constants.TelemetryCollection
+               .MAX_FAILED_TASK_RETRY_WINDOW,
+               help='Maximum time window (in sec) until which delfin supports '
+                    'collection for failed tasks'),
     cfg.BoolOpt('enable_dynamic_subprocess',
                 default=False,
                 help='Enable dynamic subprocess metrics collection'),
