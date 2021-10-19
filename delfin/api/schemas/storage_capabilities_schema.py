@@ -16,6 +16,7 @@ STORAGE_CAPABILITIES_SCHEMA = {
     'type': 'object',
     'properties': {
         'is_historic': {'type': 'boolean'},
+        'performance_metric_retention_window': {'type': 'integer'},
         'resource_metrics': {
             'type': 'object',
             'properties': {
