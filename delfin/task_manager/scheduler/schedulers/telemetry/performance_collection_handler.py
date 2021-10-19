@@ -17,9 +17,6 @@ from datetime import datetime
 import six
 from oslo_config import cfg
 
-from delfin.task_manager.scheduler.schedulers.telemetry. \
-    failed_performance_collection_handler import \
-    FailedPerformanceCollectionHandler
 
 from oslo_log import log
 
