@@ -57,8 +57,10 @@ class JobHandler(object):
                   self.task_id)
         try:
             telemetry = PerformanceCollectionTask()
-            telemetry.collect(self.ctx, self.storage_id, self.args,
-                              start_time, end_time)
+            ret = telemetry.collect(self.ctx, self.storage_id, self.args,
+                                    start_time, end_time)
+            LOG.debug('Historic collection performed for task %s with '
+                      'result %s' % (self.task_id, ret))
             db.task_update(self.ctx, self.task_id,
                            {'last_run_time': last_run_time})
         except Exception as e:
@@ -129,7 +131,7 @@ class JobHandler(object):
                                                 last_run_time)
             elif existing_job_id:
                 interval_in_sec = job['interval']
-                start_time = (end_time - interval_in_sec * 1000)\
+                start_time = (end_time - interval_in_sec * 1000) \
                     if interval_in_sec < history_on_reschedule \
                     else (end_time - history_on_reschedule * 1000)
                 self.perform_history_collection(start_time, end_time,
