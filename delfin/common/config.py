@@ -119,6 +119,11 @@ telemetry_opts = [
                .DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE,
                help='default history(in sec) to be collected on a job '
                     'reschedule'),
+    cfg.IntOpt('performance_timestamp_overlap',
+               default=constants.TelemetryCollection
+               .DEF_PERFORMANCE_TIMESTAMP_OVERLAP,
+               help='default overlap to be added on start_time in sec  '
+               ),
     cfg.IntOpt('max_failed_task_retry_window',
                default=constants.TelemetryCollection
                .MAX_FAILED_TASK_RETRY_WINDOW,
