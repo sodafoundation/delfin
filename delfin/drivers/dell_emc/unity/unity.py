@@ -293,8 +293,8 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.ETH,
                     'logical_type': '',
-                    'speed': int(content.get('speed')) * units.M,
-                    'max_speed': int(content.get('speed')) * units.M,
+                    'speed': int(content.get('speed', 0)) * units.M,
+                    'max_speed': int(content.get('speed', 0)) * units.M,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': '',
