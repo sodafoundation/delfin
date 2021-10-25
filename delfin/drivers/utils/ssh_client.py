@@ -13,6 +13,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import time
+
 import paramiko
 import six
 from eventlet import pools
@@ -277,4 +279,45 @@ class SSHPool(pools.Pool):
         if 'invalid command name' in result or 'login failed' in result or\
                 'is not a recognized command' in result:
             raise exception.StorageBackendException(result)
+        return result
+
+    def do_exec_command(self, command_list):
+        result = ''
+        try:
+            with self.item() as ssh:
+                if command_list is not None and len(command_list) > 0 \
+                        and ssh is not None:
+                    channel = ssh.invoke_shell()
+                    for command in command_list:
+                        utils.check_ssh_injection(command)
+                        channel.send(command + '\n')
+                        time.sleep(0.5)
+                    channel.send("exit" + "\n")
+                    channel.close()
+                    while True:
+                        resp = channel.recv(9999).decode('utf8')
+                        if not resp:
+                            break
+                        result += resp
+        except paramiko.AuthenticationException as ae:
+            LOG.error('doexec Authentication error:{}'.format(ae))
+            raise exception.InvalidUsernameOrPassword()
+        except Exception as e:
+            err = six.text_type(e)
+            LOG.error(err)
+            if 'timed out' in err \
+                    or 'SSH connect timeout' in err:
+                raise exception.SSHConnectTimeout()
+            elif 'No authentication methods available' in err \
+                    or 'Authentication failed' in err \
+                    or 'Invalid username or password' in err:
+                raise exception.InvalidUsernameOrPassword()
+            elif 'not a valid RSA private key file' in err \
+                    or 'not a valid RSA private key' in err:
+                raise exception.InvalidPrivateKey()
+            elif 'Unable to connect to port' in err \
+                    or 'Invalid ip or port' in err:
+                raise exception.InvalidIpOrPort()
+            else:
+                raise exception.SSHException(err)
         return result
