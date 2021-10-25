@@ -365,6 +365,7 @@ GET_ALL_DISKS = {
                 "sasExpanderVersion": "",
                 "rpm": 12288,
                 "size": 12121212,
+                "diskTechnology": 1,
                 "diskGroup": {
                     "id": "dp1"
                 }
@@ -387,7 +388,7 @@ disk_result = [
         'physical_type': 'sas',
         'logical_type': '',
         'native_disk_group_id': 'dp1',
-        'location': 12
+        'location': 'disk1'
     }
 ]
 GET_ALL_ETHPORTS = {
@@ -667,7 +668,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E1:50',
@@ -684,7 +686,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E8:4B',
@@ -701,7 +704,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:11:EF',
@@ -718,7 +722,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:DB:5D',
@@ -735,7 +740,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E5:05',
@@ -747,12 +753,13 @@ port_result = [
         'name': 'SP A FC Port 0',
         'storage_id': '12345',
         'native_port_id': 'spa_fc0',
-        'location': None,
-        'connection_status': 'normal',
+        'location': 'SP A FC Port 0',
+        'connection_status': 'connected',
         'health_status': 'normal',
         'type': 'fc',
         'logical_type': '',
-        'max_speed': 10737418240,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': 'fffffffffff'
     }
