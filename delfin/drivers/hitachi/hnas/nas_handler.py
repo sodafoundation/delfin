@@ -338,7 +338,9 @@ class NasHandler(object):
                 if len(value_array) > 4 \
                         and '******' not in value_array[0] \
                         and value_array[1] in constant.SEVERITY_MAP:
-                    occur_time = value_array[2] + ' ' + value_array[3]
+                    occur_time = \
+                        value_array[2] + ' ' + \
+                        value_array[3].split("+")[0]
                     occur_time = \
                         int(time.mktime(time.strptime(
                             occur_time, constant.TIME_TYPE))) * 1000

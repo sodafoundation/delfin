@@ -18,7 +18,7 @@ from delfin.common import constants
 
 PATTERN = re.compile('[-]{3,}')
 STORAGE_VENDOR = 'HITACHI'
-TIME_TYPE = '%Y-%m-%d %H:%M:%S%z'
+TIME_TYPE = '%Y-%m-%d %H:%M:%S'
 
 OID_TRAP_DATA = '1.3.6.1.4.1.11096.6.1.1'
 
