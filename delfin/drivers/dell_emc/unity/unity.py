@@ -284,9 +284,6 @@ class UnityStorDriver(driver.StorageDriver):
                                     ipv6, ip_content.get('ipAddress'))
                                 ipv6_mask = UnityStorDriver.handle_port_ip(
                                     ipv6_mask, ip_content.get('netmask'))
-                speed = None
-                if content.get('speed'):
-                    speed = content.get('speed') * units.M
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
@@ -296,8 +293,10 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.ETH,
                     'logical_type': '',
-                    'speed': speed,
-                    'max_speed': speed,
+                    'speed': int(content.get('speed')) * units.M
+                    if content.get('speed') is not None else None,
+                    'max_speed': int(content.get('speed')) * units.M
+                    if content.get('speed') is not None else None,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': '',
@@ -332,9 +331,6 @@ class UnityStorDriver(driver.StorageDriver):
                     status = constants.PortHealthStatus.NORMAL
                 else:
                     status = constants.PortHealthStatus.ABNORMAL
-                speed = None
-                if content.get('currentSpeed'):
-                    speed = content.get('currentSpeed') * units.G
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
@@ -344,8 +340,10 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.FC,
                     'logical_type': '',
-                    'speed': speed,
-                    'max_speed': speed,
+                    'speed': int(content.get('currentSpeed')) * units.G
+                    if content.get('currentSpeed') is not None else None,
+                    'max_speed': int(content.get('currentSpeed')) * units.G
+                    if content.get('currentSpeed') is not None else None,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': content.get('wwn')
