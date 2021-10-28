@@ -12,6 +12,29 @@ LOG = log.getLogger(__name__)
 
 
 class StorageDriver(driver.StorageDriver):
+    SEVERITY_MAP = {'fatal': constants.Severity.FATAL,
+                    'critical': constants.Severity.CRITICAL,
+                    'major': constants.Severity.MAJOR,
+                    'minor': constants.Severity.MINOR,
+                    'warning': constants.Severity.WARNING,
+                    'informational': constants.Severity.INFORMATIONAL,
+                    'NotSpecified': constants.Severity.NOT_SPECIFIED}
+    CATEGORY_MAP = {'fault': constants.Category.FAULT,
+                    'event': constants.Category.EVENT,
+                    'recovery': constants.Category.RECOVERY,
+                    'notSpecified': constants.Category.NOT_SPECIFIED}
+    CONTROLLER_STATUS_MAP = {'normal': constants.ControllerStatus.NORMAL,
+                             'ready': constants.ControllerStatus.NORMAL,
+                             'offline': constants.ControllerStatus.OFFLINE,
+                             'fault': constants.ControllerStatus.FAULT,
+                             'degraded': constants.ControllerStatus.DEGRADED,
+                             'unknown': constants.ControllerStatus.UNKNOWN,
+                             'unready': constants.ControllerStatus.UNKNOWN}
+    DISK_STATUS_MAP = {'normal': constants.DiskStatus.NORMAL,
+                       'healthy': constants.DiskStatus.NORMAL,
+                       'abnormal': constants.DiskStatus.ABNORMAL,
+                       'unhealthy': constants.DiskStatus.ABNORMAL,
+                       'offline': constants.DiskStatus.OFFLINE}
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -91,30 +114,12 @@ class StorageDriver(driver.StorageDriver):
                 alerts_model = dict()
                 alerts_model['alert_id'] = alerts.get('id')
                 severity = alerts.get('current_severity')
-                if severity == 'fatal':
-                    alerts_model['severity'] = constants.Severity.FATAL
-                elif severity == 'critical':
-                    alerts_model['severity'] = constants.Severity.CRITICAL
-                elif severity == 'major':
-                    alerts_model['severity'] = constants.Severity.MAJOR
-                elif severity == 'minor':
-                    alerts_model['severity'] = constants.Severity.MINOR
-                elif severity == 'warning':
-                    alerts_model['severity'] = constants.Severity.WARNING
-                elif severity == 'informational':
-                    alerts_model['severity'] = constants.Severity.INFORMATIONAL
-                else:
-                    alerts_model['severity'] = constants.Severity.NOT_SPECIFIED
+                alerts_model['severity'] = StorageDriver.SEVERITY_MAP.get(
+                    severity, constants.Severity.NOT_SPECIFIED)
 
                 category = alerts.get('category')
-                if category == 'fault':
-                    alerts_model['category'] = constants.Category.FAULT
-                elif category == 'event':
-                    alerts_model['category'] = constants.Category.EVENT
-                elif category == 'recovery':
-                    alerts_model['category'] = constants.Category.RECOVERY
-                else:
-                    alerts_model['category'] = constants.Category.NOT_SPECIFIED
+                alerts_model['category'] = StorageDriver.CATEGORY_MAP.get(
+                    category, constants.Category.NOT_SPECIFIED)
 
                 alerts_model['occur_time'] = alerts.get('opened')
                 alerts_model['description'] = alerts.get('event')
@@ -136,12 +141,9 @@ class StorageDriver(driver.StorageDriver):
                 name = controllers.get('name')
                 controllers_object['name'] = name
                 status = controllers.get('status')
-                if status == 'ready':
-                    controllers_object['status'] = constants.ControllerStatus.\
-                        NORMAL
-                else:
-                    controllers_object['status'] = constants.ControllerStatus.\
-                        OFFLINE
+                controllers_object['status'] = StorageDriver. \
+                    CONTROLLER_STATUS_MAP.get(status, constants.
+                                              ControllerStatus.UNKNOWN)
                 controllers_object['soft_version'] = controllers.get('version')
                 controllers_object['storage_id'] = self.storage_id
                 controllers_object['id'] = name
@@ -177,29 +179,20 @@ class StorageDriver(driver.StorageDriver):
                 else:
                     disk['physical_type'] = constants.DiskPhysicalType.UNKNOWN
                 status = drive.get('status')
-                if status == 'healthy':
-                    disk['status'] = constants.DiskStatus.NORMAL
-                elif status == 'unhealthy':
-                    disk['status'] = constants.DiskStatus.ABNORMAL
-                else:
-                    disk['status'] = constants.DiskStatus.OFFLINE
+                disk['status'] = StorageDriver.DISK_STATUS_MAP.\
+                    get(status, constants.DiskStatus.OFFLINE)
                 disk['storage_id'] = self.storage_id
                 disk['capacity'] = int(int(drive.get('capacity')) / units.Ki)
-                hardware_object = names.get(drive_name)
-                if hardware_object is not None and hardware_object != "":
-                    speed = hardware_object.get('speed')
-                    if speed is None:
-                        disk['speed'] = ''
-                    else:
-                        disk['speed'] = int(speed)
-                    model = hardware_object.get('model')
-                    disk['model'] = model
-                    serial_number = hardware_object.get('serial_number')
-                    disk['serial_number'] = serial_number
+                hardware_object = names.get(drive_name, {})
+
+                speed = hardware_object.get('speed')
+                if speed is None:
+                    disk['speed'] = ''
                 else:
-                    disk['speed'] = 0
-                    disk['model'] = ''
-                    disk['serial_number'] = ''
+                    disk['speed'] = int(speed)
+                disk['model'] = hardware_object.get('model')
+                disk['serial_number'] = hardware_object.get('serial_number')
+
                 disk['native_disk_id'] = drive_name
                 disk['id'] = drive_name
                 disk['location'] = drive_name
@@ -236,18 +229,12 @@ class StorageDriver(driver.StorageDriver):
                 port['native_port_id'] = name
                 port['location'] = name
                 port['storage_id'] = self.storage_id
-                network = networks_object.get(name.lower())
-                if network:
-                    port['logical_type'] = network.get('logical_type')
-                    port['speed'] = network.get('speed')
-                    port['mac_address'] = network.get('address')
-                    port['ipv4_mask'] = network.get('ipv4_mask')
-                else:
-                    port['logical_type'] = ''
-                    port['speed'] = ''
-                    port['mac_address'] = ''
-                    port['ipv4_mask'] = ''
-                port['connection_status '] = constants.PortConnectionStatus.\
+                network = networks_object.get(name.lower(), {})
+                port['logical_type'] = network.get('logical_type')
+                port['speed'] = network.get('speed')
+                port['mac_address'] = network.get('address')
+                port['ipv4_mask'] = network.get('ipv4_mask')
+                port['connection_status '] = constants.PortConnectionStatus. \
                     CONNECTED
                 port['health_status'] = constants.PortHealthStatus.NORMAL
                 port['max_speed'] = ''
