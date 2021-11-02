@@ -19,7 +19,6 @@ import paramiko
 
 from delfin.tests.unit.drivers.hitachi.hnas import test_constans
 from delfin import context
-from delfin.drivers.hitachi.hnas.nas_handler import NasHandler
 from delfin.drivers.hitachi.hnas.hds_nas import HitachiHNasDriver
 from delfin.drivers.utils.ssh_client import SSHPool
 
@@ -34,12 +33,16 @@ class TestHitachiHNasDriver(TestCase):
     SSHPool.get = mock.Mock(
         return_value={paramiko.SSHClient()})
 
-    NasHandler.login = mock.Mock()
+    SSHPool.do_exec_command = mock.Mock(
+        side_effect=[test_constans.NODE_INFO])
     hnas_client = HitachiHNasDriver(**test_constans.ACCESS_INFO)
 
     def test_reset_connection(self):
+        SSHPool.do_exec_command = mock.Mock(
+            side_effect=[test_constans.NODE_INFO,
+                         test_constans.NODE_INFO])
         kwargs = test_constans.ACCESS_INFO
-        NasHandler.login = mock.Mock()
+
         hnas_client = HitachiHNasDriver(**kwargs)
         hnas_client.reset_connection(context, **kwargs)
         self.assertEqual(hnas_client.nas_handler.ssh_pool.ssh_host,
