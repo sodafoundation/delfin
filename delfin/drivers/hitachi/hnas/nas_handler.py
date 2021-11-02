@@ -106,6 +106,54 @@ class NasHandler(object):
                 header_index = i
         return table[(header_index + 1):]
 
+    def format_storage_info(self, storage_map_list,
+                            model_map_list, version_map_list,
+                            location_map_list, serial_map_list):
+        if len(storage_map_list) > 0:
+            model_map = {}
+            version_map = {}
+            location_map = {}
+            serial_map = {}
+            if len(model_map_list) > 0:
+                model_map = model_map_list[-1]
+            if len(version_map_list) > 0:
+                version_map = version_map_list[-1]
+            if len(location_map_list) > 0:
+                location_map = location_map_list[-1]
+            if len(serial_map_list) > 0:
+                serial_map = serial_map_list[-1]
+            version = version_map.get("Software").split('(')
+            serial_number = serial_map.get("Hardware").split('(')[-1]
+            storage_map = storage_map_list[-1]
+            disk_list = self.get_disk(None)
+            total_capacity = \
+                raw_capacity = \
+                used_capacity = \
+                free_capacity = 0
+            for disk in disk_list:
+                raw_capacity += disk['capacity']
+            status = \
+                constant.CLUSTER_STATUS.get(storage_map['ClusterHealth'])
+            pool_list = self.get_pool(None)
+            for pool in pool_list:
+                total_capacity += pool['total_capacity']
+                used_capacity += pool['used_capacity']
+                free_capacity += pool['free_capacity']
+            storage_model = {
+                "name": storage_map['ClusterName'],
+                "vendor": constant.STORAGE_VENDOR,
+                "model": model_map.get('Model'),
+                "status": status,
+                "serial_number": serial_number.replace(')', ''),
+                "firmware_version": version[0],
+                "location": location_map['Location'],
+                "total_capacity": total_capacity,
+                "raw_capacity": raw_capacity,
+                "used_capacity": used_capacity,
+                "free_capacity": free_capacity
+            }
+            return storage_model
+
     def get_storage(self):
         try:
             storage_info = self.ssh_do_exec([constant.STORAGE_INFO_COMMAND])
@@ -126,50 +174,11 @@ class NasHandler(object):
                 location_info, location_map_list, 'Location', split=':')
             self.split_value_map_list(
                 model_info, serial_map_list, 'Hardware', split=':')
-            if len(storage_map_list) > 0:
-                model_map = {}
-                version_map = {}
-                location_map = {}
-                serial_map = {}
-                if len(model_map_list) > 0:
-                    model_map = model_map_list[-1]
-                if len(version_map_list) > 0:
-                    version_map = version_map_list[-1]
-                if len(location_map_list) > 0:
-                    location_map = location_map_list[-1]
-                if len(serial_map_list) > 0:
-                    serial_map = serial_map_list[-1]
-                version = version_map.get("Software").split('(')
-                serial_number = serial_map.get("Hardware").split('(')[-1]
-                storage_map = storage_map_list[-1]
-                disk_list = self.get_disk(None)
-                total_capacity = \
-                    raw_capacity = \
-                    used_capacity = \
-                    free_capacity = 0
-                for disk in disk_list:
-                    raw_capacity += disk['capacity']
-                status = \
-                    constant.CLUSTER_STATUS.get(storage_map['ClusterHealth'])
-                pool_list = self.get_pool(None)
-                for pool in pool_list:
-                    total_capacity += pool['total_capacity']
-                    used_capacity += pool['used_capacity']
-                    free_capacity += pool['free_capacity']
-                storage_model = {
-                    "name": storage_map['ClusterName'],
-                    "vendor": constant.STORAGE_VENDOR,
-                    "model": model_map.get('Model'),
-                    "status": status,
-                    "serial_number": serial_number.replace(')', ''),
-                    "firmware_version": version[0],
-                    "location": location_map['Location'],
-                    "total_capacity": total_capacity,
-                    "raw_capacity": raw_capacity,
-                    "used_capacity": used_capacity,
-                    "free_capacity": free_capacity
-                }
-                return storage_model
+            storage_model = \
+                self.format_storage_info(
+                    storage_map_list, model_map_list, version_map_list,
+                    location_map_list, serial_map_list)
+            return storage_model
         except exception.DelfinException as e:
             err_msg = "Failed to get storage from " \
                       "hitachi nas: %s" % (six.text_type(e.msg))
