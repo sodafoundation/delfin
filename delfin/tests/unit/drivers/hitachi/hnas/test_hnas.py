@@ -19,7 +19,6 @@ import paramiko
 
 from delfin.tests.unit.drivers.hitachi.hnas import test_constans
 from delfin import context
-from delfin.drivers.hitachi.hnas.nas_handler import NasHandler
 from delfin.drivers.hitachi.hnas.hds_nas import HitachiHNasDriver
 from delfin.drivers.utils.ssh_client import SSHPool
 
