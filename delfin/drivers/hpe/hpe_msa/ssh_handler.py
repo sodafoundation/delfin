@@ -257,12 +257,14 @@ class SSHHandler():
                         status = constants.StoragePoolStatus.NORMAL
                     total_size = self.parse_string(data.get('total-size'))
                     total_avail = self.parse_string(data.get('allocated-size'))
-                    native_storage_pool_id = ''
-                    for pools in pool_detail:
-                        if data.get("virtual-disk-name") == pools.\
-                                get("name"):
-                            native_storage_pool_id = pools.\
-                                get("serial-number")
+                    if pool_detail:
+                        native_storage_pool_id = pool_detail[0]. \
+                            get("serial-number")
+                        for pools in pool_detail:
+                            if data.get("virtual-disk-name") == pools.\
+                                    get("name"):
+                                native_storage_pool_id = pools.\
+                                    get("serial-number")
                     data_map = {
                         'name': data.get('volume-name', ''),
                         'storage_id': storage_id,
