@@ -1,5 +1,6 @@
 from delfin.drivers import driver
 from delfin.drivers.hpe.hpe_msa import ssh_handler
+from delfin.drivers.hpe.hpe_msa.ssh_handler import SSHHandler
 
 
 class HpeMsaStorDriver(driver.StorageDriver):
@@ -38,6 +39,10 @@ class HpeMsaStorDriver(driver.StorageDriver):
 
     def remove_trap_config(self, context, trap_config):
         pass
+
+    @staticmethod
+    def parse_alert(context, alert):
+        return SSHHandler.parse_alert(alert)
 
     def clear_alert(self):
         pass
