@@ -70,19 +70,22 @@ class SSHHandler():
             system_data = self.handle_detail(system_info, 'system')
             version_info = self.ssh_pool.do_exec('show version')
             version_arr = self.handle_detail(version_info, 'versions')
+            if version_arr:
+                version_id = version_arr[0]\
+                    .get('bundle-version')
             if system_data:
                 pool_arr = self.list_storage_pools(storage_id)
                 total_capacity = 0
                 for pool in pool_arr:
-                    total_capacity += int(pool['total_capacity'])
+                    total_capacity += int(pool.get('total_capacity'))
                 disk_arr = self.list_storage_disks(storage_id)
                 disk_all = 0
                 for disk in disk_arr:
-                    disk_all += int(disk['capacity'])
+                    disk_all += int(disk.get('capacity'))
                 volume_arr = self.list_storage_volume(storage_id)
                 volume_all = 0
                 for volume in volume_arr:
-                    volume_all += int(volume['total_capacity'])
+                    volume_all += int(volume.get('total_capacity'))
                 for storage_info in system_data:
                     health = storage_info.get('health', '')
                     status = constants.StoragePoolStatus.OFFLINE
@@ -95,7 +98,7 @@ class SSHHandler():
                         'model': storage_info.get('product-id', ''),
                         'status': status,
                         'serial_number': ser_num,
-                        'firmware_version': version_arr[0]['bundle-version'],
+                        'firmware_version': version_id,
                         'location': storage_info.get('system-location', ''),
                         'raw_capacity': int(disk_all),
                         'total_capacity': int(total_capacity),
@@ -119,7 +122,7 @@ class SSHHandler():
                     status = constants.StoragePoolStatus.OFFLINE
                     if health == 'OK':
                         status = constants.StoragePoolStatus.NORMAL
-                    size = self.parse_string(data['size'])
+                    size = self.parse_string(data.get('size'))
                     physical_type = SSHHandler.DISK_PHYSICAL_TYPE.\
                         get(data.get('description'),
                             constants.DiskPhysicalType.UNKNOWN)
@@ -254,8 +257,7 @@ class SSHHandler():
                         status = constants.StoragePoolStatus.NORMAL
                     total_size = self.parse_string(data.get('total-size'))
                     total_avail = self.parse_string(data.get('allocated-size'))
-                    native_storage_pool_id = pool_detail[0]\
-                        .get("serial-number")
+                    native_storage_pool_id = ''
                     for pools in pool_detail:
                         if data.get("virtual-disk-name") == pools.\
                                 get("name"):
