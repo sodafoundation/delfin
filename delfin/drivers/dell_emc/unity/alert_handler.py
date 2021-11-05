@@ -131,9 +131,11 @@ class AlertHandler(object):
                 alert_model['description'] = content.get('description')
                 alert_model['resource_type'] = resource_type
                 alert_model['location'] = location
-                alert_model_list.append(alert_model)
                 alert_model['match_key'] = hashlib.md5(
                     content.get('message').encode()).hexdigest()
+                if alert_model['severity'] == 'Informational':
+                    continue
+                alert_model_list.append(alert_model)
             except Exception as e:
                 LOG.error(e)
                 err_msg = "Failed to build alert model as some attributes " \

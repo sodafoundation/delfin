@@ -15,7 +15,7 @@
 import inspect
 
 import decorator
-import tooz
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
@@ -326,6 +326,7 @@ def _get_redis_backend_url():
 
 class ConsistentHashing(Coordinator):
     GROUP_NAME = 'partitioner_group'
+    PARTITIONS = 2**5
 
     def __init__(self):
         super(ConsistentHashing, self). \
@@ -333,8 +334,11 @@ class ConsistentHashing(Coordinator):
 
     def join_group(self):
         try:
-            self.coordinator.join_partitioned_group(self.GROUP_NAME)
-        except tooz.coordination.MemberAlreadyExist:
+            weight = CONF.telemetry.node_weight
+            self.coordinator.join_partitioned_group(self.GROUP_NAME,
+                                                    weight=weight,
+                                                    partitions=self.PARTITIONS)
+        except coordination.MemberAlreadyExist:
             LOG.info('Member %s already in partitioner_group' % CONF.host)
 
     def get_task_executor(self, task_id):
@@ -347,6 +351,56 @@ class ConsistentHashing(Coordinator):
     def register_watcher_func(self, on_node_join, on_node_leave):
         self.coordinator.watch_join_group(self.GROUP_NAME, on_node_join)
         self.coordinator.watch_leave_group(self.GROUP_NAME, on_node_leave)
+
+    def watch_group_change(self):
+        self.coordinator.run_watchers()
+
+
+class GroupMembership(Coordinator):
+
+    def __init__(self, agent_id):
+        super(GroupMembership, self). \
+            __init__(agent_id=agent_id, prefix="")
+
+    def create_group(self, group):
+        try:
+            self.coordinator.create_group(group.encode()).get()
+        except coordination.GroupAlreadyExist:
+            LOG.info("Group {0} already exist".format(group))
+
+    def delete_group(self, group):
+        try:
+            self.coordinator.delete_group(group.encode()).get()
+        except coordination.GroupNotCreated:
+            LOG.info("Group {0} not created".format(group))
+        except coordination.GroupNotEmpty:
+            LOG.info("Group {0} not empty".format(group))
+        except coordination.ToozError:
+            LOG.info("Group {0} internal error while delete".format(group))
+
+    def join_group(self, group):
+        try:
+            self.coordinator.join_group(group.encode()).get()
+        except coordination.MemberAlreadyExist:
+            LOG.info('Member %s already in group' % group)
+
+    def leave_group(self, group):
+        try:
+            self.coordinator.leave_group(group.encode()).get()
+        except coordination.GroupNotCreated:
+            LOG.info('Group %s not created' % group)
+
+    def get_members(self, group):
+        try:
+            return self.coordinator.get_members(group.encode()).get()
+        except coordination.GroupNotCreated:
+            LOG.info('Group %s not created' % group)
+
+        return None
+
+    def register_watcher_func(self, group, on_process_join, on_process_leave):
+        self.coordinator.watch_join_group(group.encode(), on_process_join)
+        self.coordinator.watch_leave_group(group.encode(), on_process_leave)
 
     def watch_group_change(self):
         self.coordinator.run_watchers()

@@ -22,10 +22,11 @@ from oslo_log import log as logging
 
 from delfin import exception
 from delfin import ssl_utils
-from delfin.drivers.hpe.hpe_3par import consts
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
+
+SOCKET_TIMEOUT = 10
 
 
 class RestClient(object):
@@ -65,7 +66,7 @@ class RestClient(object):
                            ssl_utils.get_host_name_ignore_adapter())
 
     def do_call(self, url, data, method,
-                calltimeout=consts.SOCKET_TIMEOUT):
+                calltimeout=SOCKET_TIMEOUT):
         if 'http' not in url:
             if self.san_address:
                 url = '%s%s' % (self.san_address, url)

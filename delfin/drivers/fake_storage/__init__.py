@@ -83,6 +83,7 @@ MIN_VOLUME_GROUPS, MAX_VOLUME_GROUPS = 1, 5
 MIN_PORT_GROUPS, MAX_PORT_GROUPS = 1, 5
 MAX_GROUP_RESOURCES_SIZE = 5
 MIN_MASKING_VIEWS, MAX_MASKING_VIEWS = 1, 5
+NON_GROUP_BASED_MASKING, GROUP_BASED_MASKING = 0, 1
 
 
 def get_range_val(range_str, t):
@@ -563,6 +564,7 @@ class FakeStorageDriver(driver.StorageDriver):
         """Get capability of supported driver"""
         return {
             'is_historic': False,
+            'performance_metric_retention_window': 4500,
             'resource_metrics': {
                 "storage": {
                     "throughput": {
@@ -1006,15 +1008,37 @@ class FakeStorageDriver(driver.StorageDriver):
         LOG.info("##########fake_masking_views for %s: %d"
                  % (self.storage_id, rd_masking_views_count))
         masking_view_list = []
+
         for idx in range(rd_masking_views_count):
+            is_group_based = random.randint(NON_GROUP_BASED_MASKING,
+                                            GROUP_BASED_MASKING)
+            if is_group_based:
+                native_storage_host_group_id = "storage_host_group_" + str(idx)
+                native_volume_group_id = "volume_group_" + str(idx)
+                native_port_group_id = "port_group_" + str(idx)
+                native_storage_host_id = ""
+                native_volume_id = ""
+                native_port_id = ""
+
+            else:
+                native_storage_host_group_id = ""
+                native_volume_group_id = ""
+                native_port_group_id = ""
+                native_storage_host_id = "storage_host_" + str(idx)
+                native_volume_id = "volume_" + str(idx)
+                native_port_id = "port_" + str(idx)
+
             f = {
                 "name": "masking_view_" + str(idx),
                 "description": "masking_view_" + str(idx),
                 "storage_id": self.storage_id,
                 "native_masking_view_id": "masking_view_" + str(idx),
-                "native_storage_host_id": "storage_host_" + str(idx),
-                "native_volume_id": "volume_" + str(idx),
-                "native_port_id": "port_" + str(idx)
+                "native_storage_host_group_id": native_storage_host_group_id,
+                "native_volume_group_id": native_volume_group_id,
+                "native_port_group_id": native_port_group_id,
+                "native_storage_host_id": native_storage_host_id,
+                "native_volume_id": native_volume_id,
+                "native_port_id": native_port_id
             }
             masking_view_list.append(f)
         return masking_view_list
