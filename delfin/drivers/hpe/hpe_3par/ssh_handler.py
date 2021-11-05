@@ -358,7 +358,7 @@ class SSHHandler(object):
         if cols_size >= titles_size:
             obj_model = {}
             num_prefix = 1
-            for i in range(0, cols_size):
+            for i in range(cols_size):
                 key_prefix = ''
                 key = titles[i].lower().replace('-', '')
                 if key == 'mem(mb)':
