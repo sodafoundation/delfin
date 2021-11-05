@@ -19,9 +19,10 @@ from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils, importutils
 
-from delfin import db, context
+from delfin import db
 from delfin.common.constants import TelemetryCollection, TelemetryJobStatus
 from delfin.exception import TaskNotFound
+from delfin.i18n import _
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
@@ -49,37 +50,24 @@ class JobHandler(object):
         return JobHandler(ctx, task_id, task['storage_id'],
                           task['args'], task['interval'])
 
-    @staticmethod
-    def schedule_boot_jobs():
-        """Schedule periodic collection if any task is currently assigned to
-        this executor """
+    def perform_history_collection(self, start_time, end_time, last_run_time):
+        # Trigger one historic collection to make sure we do not
+        # miss any Data points due to reschedule
+        LOG.debug('Triggering one historic collection for task %s',
+                  self.task_id)
         try:
-
-            filters = {'executor': CONF.host,
-                       'deleted': False}
-            ctxt = context.get_admin_context()
-            tasks = db.task_get_all(ctxt, filters=filters)
-            failed_tasks = db.failed_task_get_all(ctxt, filters=filters)
-            LOG.info("Scheduling boot time jobs for this executor: total "
-                     "jobs to be handled :%s" % len(tasks))
-            for task in tasks:
-                instance = JobHandler.get_instance(ctxt, task['id'])
-                instance.schedule_job(task['id'])
-                LOG.debug('Periodic collection job assigned for id: '
-                          '%s ' % task['id'])
-            for failed_task in failed_tasks:
-                instance = FailedJobHandler.get_instance(ctxt,
-                                                         failed_task['id'])
-                instance.schedule_failed_job(failed_task['id'])
-                LOG.debug('Failed job assigned for id: '
-                          '%s ' % failed_task['id'])
-
+            telemetry = PerformanceCollectionTask()
+            ret = telemetry.collect(self.ctx, self.storage_id, self.args,
+                                    start_time, end_time)
+            LOG.debug('Historic collection performed for task %s with '
+                      'result %s' % (self.task_id, ret))
+            db.task_update(self.ctx, self.task_id,
+                           {'last_run_time': last_run_time})
         except Exception as e:
-            LOG.error("Failed to schedule boot jobs for this executor "
-                      "reason: %s.",
-                      six.text_type(e))
-        else:
-            LOG.debug("Boot job scheduling completed.")
+            msg = _("Failed to collect performance metrics during history "
+                    "collection for storage id:{0}, reason:{1}"
+                    .format(self.storage_id, six.text_type(e)))
+            LOG.error(msg)
 
     def schedule_job(self, task_id):
 
@@ -110,28 +98,6 @@ class JobHandler(object):
 
         if not (existing_job_id and scheduler_job):
             LOG.info('JobHandler scheduling a new job')
-            if job['last_run_time']:
-                # Trigger one historic collection to make sure we do not
-                # miss any Data points due to reschedule
-                LOG.debug('Triggering one historic collection for job %s',
-                          job['id'])
-                # Maximum supported history duration on restart
-                history_on_reschedule = CONF.telemetry. \
-                    performance_history_on_reschedule
-                # Adjust start_time and end_time based on last_run_time
-                end_time = current_time * 1000
-                start_time = job['last_run_time'] * 1000 \
-                    if current_time - job['last_run_time'] < \
-                    history_on_reschedule \
-                    else (end_time - history_on_reschedule * 1000)
-                telemetry = PerformanceCollectionTask()
-                telemetry.collect(self.ctx, self.storage_id,
-                                  self.args,
-                                  start_time, end_time)
-
-                db.task_update(self.ctx, self.task_id,
-                               {'last_run_time': last_run_time})
-
             self.scheduler.add_job(
                 instance, 'interval', seconds=job['interval'],
                 next_run_time=next_collection_time, id=job_id,
@@ -144,6 +110,32 @@ class JobHandler(object):
             self.job_ids.add(job_id)
             LOG.info('Periodic collection tasks scheduled for for job id: '
                      '%s ' % self.task_id)
+
+            # Check if historic collection is needed for this task.
+            # If the last run time is already set, adjust start_time based on
+            # last run time or history_on_reschedule which is smaller
+            # If jod id is created but last run time is not yet set, then
+            # adjust start_time based on interval or history_on_reschedule
+            # whichever is smaller
+
+            end_time = current_time * 1000
+            # Maximum supported history duration on restart
+            history_on_reschedule = CONF.telemetry. \
+                performance_history_on_reschedule
+            if job['last_run_time']:
+                start_time = job['last_run_time'] * 1000 \
+                    if current_time - job['last_run_time'] < \
+                    history_on_reschedule \
+                    else (end_time - history_on_reschedule * 1000)
+                self.perform_history_collection(start_time, end_time,
+                                                last_run_time)
+            elif existing_job_id:
+                interval_in_sec = job['interval']
+                start_time = (end_time - interval_in_sec * 1000) \
+                    if interval_in_sec < history_on_reschedule \
+                    else (end_time - history_on_reschedule * 1000)
+                self.perform_history_collection(start_time, end_time,
+                                                last_run_time)
         else:
             LOG.info('Job already exists with this scheduler')
 

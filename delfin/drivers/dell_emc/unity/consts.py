@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+DEFAULT_TIMEOUT = 10
+ALERT_TIMEOUT = 20
 TRAP_DESC = {
     "1:127486a": ["WARNING", "ALRT_LCC_FW_UPGRADE_FAILED",
                   "The link control card (LCC) will continue to function with "

@@ -82,10 +82,14 @@ class TestPerformanceCollectionHandler(test.TestCase):
     @mock.patch('delfin.db.failed_task_create')
     @mock.patch('delfin.task_manager.tasks.telemetry'
                 '.PerformanceCollectionTask.collect')
-    def test_performance_collection_failure(self, mock_collect_telemetry,
+    @mock.patch('delfin.drivers.api.API.get_capabilities')
+    def test_performance_collection_failure(self, mock_get_capabilities,
+                                            mock_collect_telemetry,
                                             mock_failed_task_create,
                                             mock_assign_failed_job,
                                             mock_task_update):
+
+        mock_get_capabilities.return_value = {}
         mock_collect_telemetry.return_value = TelemetryTaskStatus. \
             TASK_EXEC_STATUS_FAILURE
         ctx = context.get_admin_context()

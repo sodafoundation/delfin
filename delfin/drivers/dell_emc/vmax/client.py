@@ -84,6 +84,24 @@ class VMAXClient(object):
                     msg = "Invalid array_id. Expected id: {}". \
                         format(array['symmetrixId'])
                     raise exception.InvalidInput(msg)
+            else:
+                # Get first local array id
+                array_ids = array.get('symmetrixId', list())
+                for array_id in array_ids:
+                    array_info = self.rest.get_array_detail(
+                        version=self.uni_version, array=array_id)
+                    if array_info.get('local'):
+                        LOG.info("Adding local VMAX array {}".
+                                 format(array_id))
+                        if not self.array_id:
+                            self.array_id = array_id
+                        break
+                    else:
+                        LOG.info("Skipping remote VMAX array {}".
+                                 format(array_id))
+            if not self.array_id:
+                msg = "Failed to get VMAX array id from Unisphere"
+                raise exception.InvalidInput(msg)
         except Exception:
             LOG.error("Failed to init_connection to VMAX")
             raise
@@ -307,13 +325,18 @@ class VMAXClient(object):
             # Get list of Directors
             directors = self.rest.get_director_list(self.array_id,
                                                     self.uni_version)
-            switcher = {
-                'A': constants.PortLogicalType.MANAGEMENT,
-                'B': constants.PortLogicalType.SERVICE,
-                'C': constants.PortLogicalType.BACKEND,
-            }
-            port_list = []
-            for director in directors:
+        except Exception:
+            LOG.error("Failed to get director list,"
+                      " while getting port metrics from VMAX")
+            raise
+        switcher = {
+            'A': constants.PortLogicalType.MANAGEMENT,
+            'B': constants.PortLogicalType.SERVICE,
+            'C': constants.PortLogicalType.BACKEND,
+        }
+        port_list = []
+        for director in directors:
+            try:
                 port_keys = self.rest.get_port_list(
                     self.array_id, self.uni_version, director)
                 for port_key in port_keys:
@@ -371,11 +394,12 @@ class VMAXClient(object):
                         'ipv6_mask': None,
                     }
                     port_list.append(port_dict)
-            return port_list
 
-        except Exception:
-            LOG.error("Failed to get port metrics from VMAX")
-            raise
+            except Exception:
+                LOG.error("Failed to get port list for director: {}"
+                          .format(director))
+
+            return port_list
 
     def list_alerts(self, query_para):
         """Get all alerts from an array."""

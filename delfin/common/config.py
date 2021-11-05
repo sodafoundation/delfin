@@ -119,6 +119,37 @@ telemetry_opts = [
                .DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE,
                help='default history(in sec) to be collected on a job '
                     'reschedule'),
+    cfg.IntOpt('performance_timestamp_overlap',
+               default=constants.TelemetryCollection
+               .DEF_PERFORMANCE_TIMESTAMP_OVERLAP,
+               help='default overlap to be added on start_time in sec  '
+               ),
+    cfg.IntOpt('max_failed_task_retry_window',
+               default=constants.TelemetryCollection
+               .MAX_FAILED_TASK_RETRY_WINDOW,
+               help='Maximum time window (in sec) until which delfin supports '
+                    'collection for failed tasks'),
+    cfg.BoolOpt('enable_dynamic_subprocess',
+                default=False,
+                help='Enable dynamic subprocess metrics collection'),
+    cfg.IntOpt('process_cleanup_interval',
+               default=60,
+               help='Background process cleanup call interval in sec'),
+    cfg.IntOpt('task_cleanup_delay',
+               default=10,
+               help='Delay for task cleanup before killing child in sec'),
+    cfg.IntOpt('group_change_detect_interval',
+               default=30,
+               help='Local executor group change detect interval in sec'),
+    cfg.IntOpt('max_storages_in_child',
+               default=5,
+               help='Max storages handled by one local executor process'),
+    cfg.IntOpt('max_childs_in_node',
+               default=100000,
+               help='Max processes that can be spawned before forcing fail'),
+    cfg.IntOpt('node_weight',
+               default=100,
+               help='Weight for the node in the Hash Ring'),
 ]
 
 CONF.register_opts(telemetry_opts, "telemetry")
