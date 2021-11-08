@@ -1,5 +1,7 @@
 import sys
 from unittest import TestCase, mock
+
+import six
 from oslo_log import log
 
 sys.modules['delfin.cryptor'] = mock.Mock()
@@ -338,5 +340,6 @@ class test_StorageDriver(TestCase):
         try:
             self.driver.reset_connection(context)
         except Exception as e:
+            LOG.error("test_reset_connection error: %s", six.text_type(e))
             username = reset_connection_info.get('username')
         self.assertEqual(username, None)
