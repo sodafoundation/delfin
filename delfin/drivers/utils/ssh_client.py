@@ -281,12 +281,11 @@ class SSHPool(pools.Pool):
             raise exception.StorageBackendException(result)
         return result
 
-    def do_exec_command(self, command_list):
+    def do_exec_shell(self, command_list):
         result = ''
         try:
             with self.item() as ssh:
-                if command_list is not None and len(command_list) > 0 \
-                        and ssh is not None:
+                if command_list and ssh:
                     channel = ssh.invoke_shell()
                     for command in command_list:
                         utils.check_ssh_injection(command)
