@@ -3,6 +3,7 @@ from oslo_log import log as logging
 
 from delfin import exception, cryptor
 from delfin.drivers.utils.rest_client import RestClient
+from delfin.drivers.pure.pure.constants import c
 
 LOG = logging.getLogger(__name__)
 
@@ -40,48 +41,43 @@ class RestHandler(RestClient):
         try:
             data = {'username': self.username, 'password': cryptor.decode(
                 self.password)}
-            token = self.get_rest_login(RestHandler.REST_AUTH_URL, data,
+            token = self.get_rest_token(RestHandler.REST_AUTH_URL, data,
                                         method='POST')
             api_token = token.get('api_token')
             if api_token is None and api_token == '':
                 raise exception.InvalidInput('api_token fail to get')
-            user = self.get_rest_login(RestHandler.REST_SESSION_URL, token,
+            user = self.get_rest_token(RestHandler.REST_SESSION_URL, token,
                                        method='POST')
             username = user.get('username')
-            if username is None and username == '':
+            if username is None or username == '':
                 raise exception.InvalidInput('session fail to get')
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise exception.InvalidInput('login failure')
 
     def logout(self):
-        user = self.get_rest_login(RestHandler.REST_SESSION_URL,
+        user = self.get_rest_token(RestHandler.REST_SESSION_URL,
                                    method='DELETE')
         username = user.get('username')
-        if username is None and username == '':
+        if username is None or username == '':
             raise exception.InvalidInput('delete fail to get')
 
-    def get_all_rest_volumes(self):
+    def get_volumes(self):
         url = '%s%s:%s%s' % (
             RestHandler.HTTPS, self.host, self.port,
             RestHandler.REST_VOLUME_URL)
         result_json = self.get_rest_volumes_info(url)
         return result_json
 
-    def get_all_rest_volumes_id(self, name):
-        result_json = self.get_rest_info(
-            '{}{}'.format(RestHandler.REST_VOLUME_ID_URL, name))
-        return result_json
-
     def get_storage(self):
         result_json = self.get_rest_info(RestHandler.REST_STORAGE_URL)
         return result_json
 
-    def get_storage_ID(self):
+    def get_storage_id(self):
         result_json = self.get_rest_info(RestHandler.REST_STORAGE_ID_URL)
         return result_json
 
-    def get_all_pools(self):
+    def get_pools(self):
         result_json = self.get_rest_info(RestHandler.REST_POOLS_URL)
         return result_json
 
@@ -89,27 +85,27 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(RestHandler.REST_POOLS_CAPACITY_URL)
         return result_json
 
-    def get_all_port(self):
+    def get_ports(self):
         result_json = self.get_rest_info(RestHandler.REST_PORT_URL)
         return result_json
 
-    def get_all_network(self):
+    def get_networks(self):
         result_json = self.get_rest_info(RestHandler.REST_NETWORK_URL)
         return result_json
 
-    def get_all_disk(self):
+    def get_disks(self):
         result_json = self.get_rest_info(RestHandler.REST_DISK_URL)
         return result_json
 
-    def get_all_hardware(self):
+    def get_hardware(self):
         result_json = self.get_rest_info(RestHandler.REST_HARDWARE_URL)
         return result_json
 
-    def get_all_controllers(self):
+    def get_controllers(self):
         result_json = self.get_rest_info(RestHandler.REST_CONTROLLERS_URL)
         return result_json
 
-    def get_all_alerts(self):
+    def get_alerts(self):
         result_json = self.get_rest_info(RestHandler.REST_ALERTS_URL)
         return result_json
 
@@ -123,20 +119,20 @@ class RestHandler(RestClient):
             self.get_rest_info(url, data, method)
         return result_json
 
-    def get_rest_login(self, url, data=None, method='GET'):
+    def get_rest_token(self, url, data=None, method='GET'):
         self.init_http_head()
         res = self.do_call(url, data, method)
         result_json = res.json()
         return result_json
 
-    def get_rest_volumes_info(self, url, data=None, volume_list=None):
+    def get_rest_volumes_info(self, url, data=None, volume_list=None, count=0):
         if volume_list is None:
             volume_list = []
         res = self.do_call(url, data, 'GET')
         if res.status_code == 200:
             result_json = res.json()
             volume_list.extend(result_json)
-            next_token = res.headers._store.get('x-next-token')
+            next_token = res.headers.get('x-next-token')
             if next_token:
                 token = next_token[1]
                 if token:
@@ -146,5 +142,7 @@ class RestHandler(RestClient):
                     self.get_rest_volumes_info(url, data, volume_list)
         elif res.status_code == 401:
             self.login()
-            self.get_rest_volumes_info(url, data, volume_list)
+            if count < 3:
+                count = count + 1
+                self.get_rest_volumes_info(url, data, volume_list, count)
         return volume_list

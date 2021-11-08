@@ -1,10 +1,14 @@
 import sys
 from unittest import TestCase, mock
+from oslo_log import log
+
+import six
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.pure.pure.rest_handler import RestHandler
-from delfin.drivers.pure.pure.pure_storage import StorageDriver
+from delfin.drivers.pure.pure.pure_storage import PureStorageDriver
+LOG = log.getLogger(__name__)
 
 ACCESS_INFO = {
     "rest": {
@@ -261,14 +265,14 @@ pools_info = [
     }
 ]
 reset_connection_info = {
-    "username": "oksd"
+    "username": "username"
 }
 
 
 def create_driver():
     RestHandler.login = mock.Mock(
-        return_value={""})
-    return StorageDriver(**ACCESS_INFO)
+        return_value={None})
+    return PureStorageDriver(**ACCESS_INFO)
 
 
 class test_StorageDriver(TestCase):
@@ -277,7 +281,7 @@ class test_StorageDriver(TestCase):
     def test_init(self):
         RestHandler.login = mock.Mock(
             return_value={""})
-        StorageDriver(**ACCESS_INFO)
+        PureStorageDriver(**ACCESS_INFO)
 
     def test_list_volumes(self):
         RestHandler.get_rest_volumes_info = mock.Mock(
@@ -330,6 +334,13 @@ class test_StorageDriver(TestCase):
                          pools_info[0].get('name'))
 
     def test_reset_connection(self):
-        RestHandler.get_rest_login = mock.Mock(
+        RestHandler.get_rest_token = mock.Mock(
             side_effect=[reset_connection_info])
-        self.driver.reset_connection(context)
+        name = None
+        try:
+            self.driver.reset_connection(context)
+        except Exception as e:
+            LOG.error("test_reset_connection error: %s", six.text_type(e))
+            name = 'username'
+        self.assertNotEqual(reset_connection_info.get('username'),
+                            name)
