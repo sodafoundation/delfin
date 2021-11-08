@@ -24,8 +24,12 @@ class PureStorageDriver(driver.StorageDriver):
             pools = self.rest_handler.get_pools()
             for volume in volumes:
                 volume_name = volume.get('name')
-                total_capacity = int(int(volume.get('size')) / units.Ki)
-                used_capacity = int(int(volume.get('volumes')) / units.Ki)
+                total_capacity = int(int(volume.get('size',
+                                                    consts.DEFAULT_CAPACITY)) /
+                                     units.Ki)
+                used_capacity = int(int(volume.get('volumes',
+                                                   consts.DEFAULT_CAPACITY)) /
+                                    units.Ki)
                 native_storage_pool_id = None
                 if pools:
                     for pool in pools:

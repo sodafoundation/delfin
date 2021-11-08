@@ -264,7 +264,7 @@ pools_info = [
 ]
 reset_connection_info = {
     "username": "username",
-    "status_code": 200
+    "status": 200
 }
 
 
@@ -313,21 +313,30 @@ class test_StorageDriver(TestCase):
                          controllers_info[0].get('name'))
 
     def test_list_disks(self):
-        RestHandler.get_info = mock.Mock(
-            side_effect=[hardware_info, drive_info])
+        RestHandler.get_info = mock.Mock(side_effect=
+                                         [hardware_info, drive_info])
         list_disks = self.driver.list_disks(context)
         self.assertEqual(list_disks[0].get('name'),
                          hardware_info[0].get('name'))
 
     def test_list_ports(self):
-        RestHandler.get_info = mock.Mock(
-            side_effect=[port_network_info, port_info])
+        RestHandler.get_info = mock.Mock(side_effect=
+                                         [port_network_info, port_info])
         list_ports = self.driver.list_ports(context)
         self.assertEqual(list_ports[0].get('wwn'), port_info[0].get('wwn'))
 
     def test_list_storage_pools(self):
-        RestHandler.get_info = mock.Mock(
-            side_effect=[pools_info])
+        RestHandler.get_info = mock.Mock(side_effect=[pools_info])
         list_storage_pools = self.driver.list_storage_pools(context)
         self.assertEqual(list_storage_pools[0].get('native_storage_pool_id'),
                          pools_info[0].get('name'))
+
+    def test_reset_connection(self):
+        RestHandler.logout = mock.Mock(side_effect=None)
+        RestHandler.login = mock.Mock(side_effect=None)
+        username = None
+        try:
+            self.driver.reset_connection(context)
+        except Exception as e:
+            username = reset_connection_info.get('username')
+        self.assertEqual(username, None)
