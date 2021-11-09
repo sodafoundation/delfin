@@ -17,7 +17,7 @@ except ImportError:
 LOG = logging.getLogger(__name__)
 
 
-class SSHHandler:
+class SSHHandler(object):
 
     OID_ERR_ID = '1.3.6.1.3.94.1.11.1.1'
     OID_EVENT_TYPE = '1.3.6.1.3.94.1.11.1.7'

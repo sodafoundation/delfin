@@ -32,7 +32,7 @@ class HpeMsaStorDriver(driver.StorageDriver):
         return self.ssh_hanlder.list_storage_disks(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
-        return self.ssh_hanlder.list_storage_error(query_para)
+        return self.ssh_hanlder.list_alerts(query_para)
 
     def add_trap_config(self, context, trap_config):
         pass
