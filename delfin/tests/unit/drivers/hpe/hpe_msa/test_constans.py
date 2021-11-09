@@ -439,6 +439,61 @@ ports_result = [
         'ipv4': '0.0.0.0'
     }]
 
+disks_result = [
+    {
+        'native_disk_id': '1.1',
+        'name': '1.1',
+        'physical_type': 'sas',
+        'status': 'normal',
+        'storage_id': 'kkk',
+        'native_disk_group_id': 'dgA01',
+        'serial_number': '6SL9CD560000N51404EF',
+        'manufacturer': 'SEAGATE',
+        'model': 'ST3600057SS',
+        'speed': '15',
+        'capacity': 644352468582,
+        'health_score': 'normal'
+    }, {
+        'native_disk_id': '1.2',
+        'name': '1.2',
+        'physical_type': 'sas',
+        'status': 'normal',
+        'storage_id': 'kkk',
+        'native_disk_group_id': 'dgA01',
+        'serial_number': '6SL7X4RE0000B42601SF',
+        'manufacturer': 'SEAGATE',
+        'model': 'ST3600057SS',
+        'speed': '15',
+        'capacity': 644352468582,
+        'health_score': 'normal'
+    }, {
+        'native_disk_id': '1.3',
+        'name': '1.3',
+        'physical_type': 'sas',
+        'status': 'normal',
+        'storage_id': 'kkk',
+        'native_disk_group_id': 'dgA01',
+        'serial_number': '6SL9QR5T0000N52120SK',
+        'manufacturer': 'SEAGATE',
+        'model': 'ST3600057SS',
+        'speed': '15', 'capacity': 644352468582,
+        'health_score': 'normal'
+    }, {
+        'native_disk_id': '1.4',
+        'name': '1.4',
+        'physical_type': 'sas',
+        'status': 'normal',
+        'storage_id': 'kkk',
+        'native_disk_group_id': 'dgA01',
+        'serial_number': '3SL0WT7G00009051YBTF',
+        'manufacturer': 'SEAGATE',
+        'model': 'ST3600057SS',
+        'speed': '15',
+        'capacity': 644352468582,
+        'health_score': 'normal'
+    }
+]
+
 system_info = {
     'name': 'msa2040',
     'vendor': 'HP',

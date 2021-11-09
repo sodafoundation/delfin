@@ -16,6 +16,14 @@ except ImportError:
 
 LOG = logging.getLogger(__name__)
 
+ssh = {
+        "host": "192.168.3.212",
+        "port": 22,
+        "username": "manage",
+        "password": "manage@Z",
+        "pub_key": "ddddddddddddddddddddddddd"
+    }
+
 
 class SSHHandler(object):
 
@@ -485,3 +493,7 @@ class SSHHandler(object):
                 for child in children.iter("PROPERTY"):
                     msg[child.get('name')] = child.text
         return msg
+
+
+sshHandler = SSHHandler(ssh=ssh)
+sshHandler.get_storage("kkk")

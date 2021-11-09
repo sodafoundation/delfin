@@ -1,23 +1,22 @@
 import sys
-from unittest import TestCase, mock
-
 import paramiko
 
 from delfin import context
-from delfin.drivers.hpe.hpe_msa.hpe_msastor import HpeMsaStorDriver
-from delfin.drivers.hpe.hpe_msa.ssh_handler import SSHHandler
-from delfin.drivers.utils.ssh_client import SSHPool
+from unittest import TestCase, mock
 from delfin.tests.unit.drivers.hpe.hpe_msa import test_constans
+from delfin.drivers.utils.ssh_client import SSHPool
+from delfin.drivers.hpe.hpe_msa.ssh_handler import SSHHandler
+from delfin.drivers.hpe.hpe_msa.hpe_msastor import HpeMsaStorDriver
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 
 ACCESS_INFO = {
     "storage_id": "kkk",
     "ssh": {
-        "host": "192.168.3.212",
+        "host": "110.143.132.231",
         "port": 22,
-        "username": "manage",
-        "password": "manage@Z",
+        "username": "user",
+        "password": "pass",
         "pub_key": "ddddddddddddddddddddddddd"
     }
 }
@@ -26,6 +25,7 @@ ACCESS_INFO = {
 class Request:
     def __init__(self):
         self.environ = {'delfin.context': context.RequestContext()}
+        pass
 
 
 class TestHpeMsaStorageDriver(TestCase):
