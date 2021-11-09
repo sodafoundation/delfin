@@ -43,15 +43,6 @@ class TaskManager(manager.Manager):
         device_obj = cls(context, storage_id)
         device_obj.sync()
 
-    def collect_telemetry(self, context, storage_id, telemetry_task,
-                          args, start_time, end_time):
-        LOG.debug("Collecting resource metrics: {0} request for storage"
-                  " id:{1}".format(args, storage_id))
-        cls = importutils.import_class(telemetry_task)
-        device_obj = cls()
-        return device_obj.collect(context, storage_id, args, start_time,
-                                  end_time)
-
     def remove_storage_resource(self, context, storage_id, resource_task):
         cls = importutils.import_class(resource_task)
         device_obj = cls(context, storage_id)
@@ -62,14 +53,6 @@ class TaskManager(manager.Manager):
                  .format(storage_id))
         drivers = driver_manager.DriverManager()
         drivers.remove_driver(storage_id)
-
-    def remove_telemetry_instances(self, context, storage_id, telemetry_task):
-        LOG.info('Remove telemetry instances for storage id:{0}')
-        cls = importutils.import_class(telemetry_task)
-        device_obj = cls()
-        return device_obj.remove_telemetry(context,
-                                           storage_id,
-                                           )
 
     def sync_storage_alerts(self, context, storage_id, query_para):
         LOG.info('Alert sync called for storage id:{0}'

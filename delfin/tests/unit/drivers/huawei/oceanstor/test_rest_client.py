@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from unittest import TestCase, mock
+from unittest.mock import call
+
 from requests.sessions import Session
 
 from delfin import exception
@@ -146,6 +148,93 @@ class TestOceanStorRestClient(TestCase):
 
     @mock.patch.object(RestClient, 'paginated_call')
     @mock.patch.object(RestClient, 'login')
+    def test_get_all_hosts(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_hosts()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/host", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_host_groups(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_host_groups()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/hostgroup", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_port_groups(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_port_groups()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/portgroup", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_volume_groups(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_volume_groups()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/lungroup", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_volumes(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_volumes()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/lun", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_initiators(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.side_effects = ["", "", ""]
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        rest_client.get_all_initiators()
+        call1 = call("/fc_initiator", None, 'GET', log_filter_flag=True)
+        call2 = call("/iscsi_initiator", None, 'GET', log_filter_flag=True)
+        call3 = call("/ib_initiator", None, 'GET', log_filter_flag=True)
+
+        calls = [call1, call2, call3]
+        mock_call.assert_has_calls(calls)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_all_mapping_views(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.get_all_mapping_views()
+        self.assertEqual(data['data']['data'], 'dummy')
+        mock_call.assert_called_with("/mappingview", None,
+                                     'GET', log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
     def test_get_volumes(self, mock_login, mock_call):
         mock_login.return_value = None
         mock_call.return_value = RESP
@@ -155,3 +244,215 @@ class TestOceanStorRestClient(TestCase):
         self.assertEqual(data['data']['data'], 'dummy')
         mock_call.assert_called_with("/lun", None, 'GET',
                                      log_filter_flag=True)
+
+    @mock.patch.object(RestClient, 'call')
+    @mock.patch.object(RestClient, 'login')
+    def test_enable_metrics_collection(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.enable_metrics_collection()
+        self.assertEqual(data['data'], 'dummy')
+        mock_call.assert_called_with("/performance_statistic_switch",
+                                     {'CMO_PERFORMANCE_SWITCH': '1'},
+                                     log_filter_flag=True, method='PUT')
+
+    @mock.patch.object(RestClient, 'call')
+    @mock.patch.object(RestClient, 'login')
+    def test_disable_metrics_collection(self, mock_login, mock_call):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        data = rest_client.disable_metrics_collection()
+        self.assertEqual(data['data'], 'dummy')
+        mock_call.assert_called_with("/performance_statistic_switch",
+                                     {'CMO_PERFORMANCE_SWITCH': '0'},
+                                     log_filter_flag=True, method='PUT')
+
+    @mock.patch.object(RestClient, 'disable_metrics_collection')
+    @mock.patch.object(RestClient, 'enable_metrics_collection')
+    @mock.patch.object(RestClient, 'call')
+    @mock.patch.object(RestClient, 'login')
+    def test_configure_metrics_collection(self, mock_login, mock_call,
+                                          mock_en, mock_di):
+        mock_login.return_value = None
+        mock_call.return_value = RESP
+        mock_en.return_value = None
+        mock_di.return_value = None
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        rest_client.configure_metrics_collection()
+        data = {
+            "CMO_STATISTIC_ARCHIVE_SWITCH": 1,
+            "CMO_STATISTIC_ARCHIVE_TIME": 300,
+            "CMO_STATISTIC_AUTO_STOP": 0,
+            "CMO_STATISTIC_INTERVAL": 60,
+            "CMO_STATISTIC_MAX_TIME": 0
+        }
+        mock_call.assert_called_with("/performance_statistic_strategy",
+                                     data,
+                                     log_filter_flag=True, method='PUT')
+
+    @mock.patch.object(RestClient, 'get_all_pools')
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_pool_metrics(self, mock_login, mock_call,
+                              mock_pools):
+        mock_login.return_value = None
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
+        mock_pools.return_value = [
+            {'ID': '123', 'TYPE': '100', 'NAME': 'pool'}
+        ]
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        metrics = rest_client.get_pool_metrics('', {'iops': {'unit': 'IOPS'}})
+        mock_call.assert_called_with(
+            "/performace_statistic/cur_statistic_data",
+            None, 'GET', log_filter_flag=True,
+            params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
+        )
+        expected_label = {
+            'storage_id': '',
+            'resource_type': 'pool',
+            'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
+            'resource_name': 'pool'
+        }
+        self.assertEqual(metrics[0].name, 'iops')
+        self.assertDictEqual(metrics[0].labels, expected_label)
+        self.assertListEqual(list(metrics[0].values.values()), [12])
+
+    @mock.patch.object(RestClient, 'get_all_volumes')
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_volume_metrics(self, mock_login, mock_call,
+                                mock_volumes):
+        mock_login.return_value = None
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
+        mock_volumes.return_value = [
+            {'ID': '123', 'TYPE': '100', 'NAME': 'volume'}
+        ]
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        metrics = rest_client.get_volume_metrics(
+            '', {'iops': {'unit': 'IOPS'}})
+        mock_call.assert_called_with(
+            "/performace_statistic/cur_statistic_data",
+            None, 'GET', log_filter_flag=True,
+            params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
+        )
+        expected_label = {
+            'storage_id': '',
+            'resource_type': 'volume',
+            'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
+            'resource_name': 'volume'
+        }
+        self.assertEqual(metrics[0].name, 'iops')
+        self.assertDictEqual(metrics[0].labels, expected_label)
+        self.assertListEqual(list(metrics[0].values.values()), [12])
+
+    @mock.patch.object(RestClient, 'get_all_controllers')
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_controller_metrics(self, mock_login, mock_call,
+                                    mock_controllers):
+        mock_login.return_value = None
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
+        mock_controllers.return_value = [
+            {'ID': '123', 'TYPE': '100', 'NAME': 'controller'}
+        ]
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        metrics = rest_client.get_controller_metrics(
+            '', {'iops': {'unit': 'IOPS'}})
+        mock_call.assert_called_with(
+            "/performace_statistic/cur_statistic_data",
+            None, 'GET', log_filter_flag=True,
+            params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
+        )
+        expected_label = {
+            'storage_id': '',
+            'resource_type': 'controller',
+            'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
+            'resource_name': 'controller'
+        }
+        self.assertEqual(metrics[0].name, 'iops')
+        self.assertDictEqual(metrics[0].labels, expected_label)
+        self.assertListEqual(list(metrics[0].values.values()), [12])
+
+    @mock.patch.object(RestClient, 'get_all_ports')
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_port_metrics(self, mock_login, mock_call,
+                              mock_ports):
+        mock_login.return_value = None
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
+        mock_ports.return_value = [
+            {'ID': '123', 'TYPE': '100', 'NAME': 'port'}
+        ]
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        metrics = rest_client.get_port_metrics('', {'iops': {'unit': 'IOPS'}})
+        mock_call.assert_called_with(
+            "/performace_statistic/cur_statistic_data",
+            None, 'GET', log_filter_flag=True,
+            params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
+        )
+        expected_label = {
+            'storage_id': '',
+            'resource_type': 'port',
+            'resource_id': '123',
+            'type': 'RAW',
+            'unit': 'IOPS',
+            'resource_name': 'port'
+        }
+        self.assertEqual(metrics[0].name, 'iops')
+        self.assertDictEqual(metrics[0].labels, expected_label)
+        self.assertListEqual(list(metrics[0].values.values()), [12])
+
+    @mock.patch.object(RestClient, 'get_all_disks')
+    @mock.patch.object(RestClient, 'paginated_call')
+    @mock.patch.object(RestClient, 'login')
+    def test_get_disk_metrics(self, mock_login, mock_call,
+                              mock_disks):
+        mock_login.return_value = None
+        mock_call.return_value = [{'CMO_STATISTIC_DATA_LIST': '12,25',
+                                   'CMO_STATISTIC_TIMESTAMP': 0}]
+        mock_disks.return_value = [
+            {'ID': '123', 'TYPE': '100', 'MODEL': 'disk', 'SERIALNUMBER': '0'}
+        ]
+        kwargs = ACCESS_INFO
+        rest_client = RestClient(**kwargs)
+        metrics = rest_client.get_disk_metrics('', {'iops': {'unit': 'IOPS'}})
+        mock_call.assert_called_with(
+            "/performace_statistic/cur_statistic_data",
+            None, 'GET', log_filter_flag=True,
+            params='CMO_STATISTIC_UUID=100:123&CMO_STATISTIC_DATA_ID_LIST=22&'
+                   'timeConversion=0&'
+        )
+        expected_label = {
+            'storage_id': '',
+            'resource_type': 'disk',
+            'resource_id': '123',
+            'resource_name': 'disk:0',
+            'type': 'RAW',
+            'unit': 'IOPS',
+        }
+        self.assertEqual(metrics[0].name, 'iops')
+        self.assertDictEqual(metrics[0].labels, expected_label)
+        self.assertListEqual(list(metrics[0].values.values()), [12])

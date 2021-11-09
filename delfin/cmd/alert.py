@@ -43,7 +43,8 @@ def main():
     utils.monkey_patch()
 
     # Launch alert manager service
-    alert_manager = service.AlertService.create(binary='delfin-alert')
+    alert_manager = service.AlertService.create(binary='delfin-alert',
+                                                coordination=True)
     service.serve(alert_manager)
     service.wait()
 

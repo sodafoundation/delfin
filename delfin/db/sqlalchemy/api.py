@@ -1851,6 +1851,1004 @@ def _process_failed_tasks_info_filters(query, filters):
     return query
 
 
+def _storage_host_initiators_get_query(context, session=None):
+    return model_query(context, models.StorageHostInitiator, session=session)
+
+
+def _storage_host_initiators_get(context, storage_host_initiator_id,
+                                 session=None):
+    result = (_storage_host_initiators_get_query(context, session=session)
+              .filter_by(id=storage_host_initiator_id)
+              .first())
+
+    if not result:
+        raise exception.StorageHostInitiatorNotFound(storage_host_initiator_id)
+
+    return result
+
+
+def storage_host_initiators_create(context, storage_host_initiators):
+    """Create multiple storage initiators."""
+    session = get_session()
+    initiator_refs = []
+    with session.begin():
+
+        for initiator in storage_host_initiators:
+            LOG.debug('Adding new storage host initiator for '
+                      'native_storage_host_initiator_id {0}:'
+                      .format(initiator
+                              .get('native_storage_host_initiator_id')))
+            if not initiator.get('id'):
+                initiator['id'] = uuidutils.generate_uuid()
+
+            initiator_ref = models.StorageHostInitiator()
+            initiator_ref.update(initiator)
+            initiator_refs.append(initiator_ref)
+
+        session.add_all(initiator_refs)
+
+    return initiator_refs
+
+
+def storage_host_initiators_delete(context, storage_host_initiators_id_list):
+    """Delete multiple storage initiators."""
+    session = get_session()
+    with session.begin():
+        for initiator_id in storage_host_initiators_id_list:
+            LOG.debug('Deleting storage host initiator{0}:'
+                      .format(initiator_id))
+            query = _storage_host_initiators_get_query(context, session)
+            result = query.filter_by(id=initiator_id).delete()
+
+            if not result:
+                LOG.error(exception.StorageHostInitiatorNotFound(initiator_id))
+    return
+
+
+def storage_host_initiators_update(context, storage_host_initiators):
+    """Update multiple storage initiators."""
+    session = get_session()
+    with session.begin():
+        for initiator in storage_host_initiators:
+            LOG.debug('Updating storage host initiator{0}:'
+                      .format(initiator.get('id')))
+            query = _storage_host_initiators_get_query(context, session)
+            result = query.filter_by(id=initiator.get('id')
+                                     ).update(initiator)
+
+            if not result:
+                LOG.error(exception.StorageHostInitiatorNotFound(initiator
+                                                                 .get('id')))
+
+
+def storage_host_initiators_get(context, storage_host_initiator_id):
+    """Get a storage host initiator or raise an exception if it does not
+    exist.
+    """
+    return _storage_host_initiators_get(context, storage_host_initiator_id)
+
+
+def storage_host_initiators_get_all(context, marker=None, limit=None,
+                                    sort_keys=None, sort_dirs=None,
+                                    filters=None,
+                                    offset=None):
+    """Retrieves all storage initiators"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session,
+                                         models.StorageHostInitiator, marker,
+                                         limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No storage host initiator would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.StorageHostInitiator)
+def _process_storage_host_initiators_info_filters(query, filters):
+    """Common filter processing for storage initiators queries."""
+    if filters:
+        if not is_valid_model_filters(models.StorageHostInitiator, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def storage_host_initiators_delete_by_storage(context, storage_id):
+    """Delete all the storage initiators of a device"""
+    _storage_host_initiators_get_query(context)\
+        .filter_by(storage_id=storage_id).delete()
+
+
+def _storage_hosts_get_query(context, session=None):
+    return model_query(context, models.StorageHost, session=session)
+
+
+def _storage_hosts_get(context, storage_host_id, session=None):
+    result = (_storage_hosts_get_query(context, session=session)
+              .filter_by(id=storage_host_id)
+              .first())
+
+    if not result:
+        raise exception.StorageHostNotFound(storage_host_id)
+
+    return result
+
+
+def storage_hosts_create(context, storage_hosts):
+    """Create multiple storage hosts."""
+    session = get_session()
+    host_refs = []
+    with session.begin():
+
+        for host in storage_hosts:
+            LOG.debug('Adding new storage host for '
+                      'native_host_id {0}:'
+                      .format(host.get('native_host_id')))
+            if not host.get('id'):
+                host['id'] = uuidutils.generate_uuid()
+
+            host_ref = models.StorageHost()
+            host_ref.update(host)
+            host_refs.append(host_ref)
+
+        session.add_all(host_refs)
+
+    return host_refs
+
+
+def storage_hosts_delete(context, storage_hosts_id_list):
+    """Delete multiple storage hosts."""
+    session = get_session()
+    with session.begin():
+        for host_id in storage_hosts_id_list:
+            LOG.debug('Deleting volume {0}:'.format(host_id))
+            query = _storage_hosts_get_query(context, session)
+            result = query.filter_by(id=host_id).delete()
+
+            if not result:
+                LOG.error(exception.StorageHostNotFound(host_id))
+    return
+
+
+def storage_hosts_update(context, storage_hosts):
+    """Update multiple storage hosts."""
+    session = get_session()
+    with session.begin():
+        for host in storage_hosts:
+            LOG.debug('Updating storage hosts {0}:'.format(host.get('id')))
+            query = _storage_hosts_get_query(context, session)
+            result = query.filter_by(id=host.get('id')
+                                     ).update(host)
+
+            if not result:
+                LOG.error(exception.StorageHostNotFound(host
+                                                        .get('id')))
+
+
+def storage_hosts_get(context, storage_host_id):
+    """Get a storage host or raise an exception if it does not exist."""
+    return _storage_hosts_get(context, storage_host_id)
+
+
+def storage_hosts_get_all(context, marker=None, limit=None, sort_keys=None,
+                          sort_dirs=None, filters=None, offset=None):
+    """Retrieves all storage hosts"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session,
+                                         models.StorageHost, marker, limit,
+                                         sort_keys, sort_dirs, filters, offset)
+        # No storage host would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.StorageHost)
+def _process_storage_hosts_info_filters(query, filters):
+    """Common filter processing for storage hosts queries."""
+    if filters:
+        if not is_valid_model_filters(models.StorageHost, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def storage_hosts_delete_by_storage(context, storage_id):
+    """Delete all the storage hosts of a device"""
+    _storage_hosts_get_query(context).filter_by(storage_id=storage_id) \
+        .delete()
+
+
+def _storage_host_groups_get_query(context, session=None):
+    return model_query(context, models.StorageHostGroup, session=session)
+
+
+def _storage_host_groups_get(context, storage_host_grp_id, session=None):
+    result = (_storage_host_groups_get_query(context, session=session)
+              .filter_by(id=storage_host_grp_id)
+              .first())
+
+    if not result:
+        raise exception.StorageHostGroupNotFound(storage_host_grp_id)
+
+    return result
+
+
+def storage_host_groups_create(context, storage_host_groups):
+    """Create multiple storage host groups."""
+    session = get_session()
+    host_groups_refs = []
+    with session.begin():
+
+        for host_group in storage_host_groups:
+            LOG.debug('Adding new storage host group for '
+                      'native_storage_host_group_id {0}:'
+                      .format(host_group.get('native_storage_host_group_id')))
+            if not host_group.get('id'):
+                host_group['id'] = uuidutils.generate_uuid()
+
+            host_group_ref = models.StorageHostGroup()
+            host_group_ref.update(host_group)
+            host_groups_refs.append(host_group_ref)
+
+        session.add_all(host_groups_refs)
+
+    return host_groups_refs
+
+
+def storage_host_groups_delete(context, storage_host_groups_id_list):
+    """Delete multiple storage host groups."""
+    session = get_session()
+    with session.begin():
+        for host_group_id in storage_host_groups_id_list:
+            LOG.debug('Deleting storage host group {0}:'.format(host_group_id))
+            query = _storage_host_groups_get_query(context, session)
+            result = query.filter_by(id=host_group_id).delete()
+
+            if not result:
+                LOG.error(exception.StorageHostGroupNotFound(host_group_id))
+    return
+
+
+def storage_host_groups_update(context, storage_host_groups):
+    """Update multiple storage host groups."""
+    session = get_session()
+    with session.begin():
+        for host_group in storage_host_groups:
+            LOG.debug('Updating storage host groups {0}:'
+                      .format(host_group.get('id')))
+            query = _storage_host_groups_get_query(context, session)
+            result = query.filter_by(id=host_group.get('id')
+                                     ).update(host_group)
+
+            if not result:
+                LOG.error(exception.StorageHostGroupNotFound(host_group
+                                                             .get('id')))
+
+
+def storage_host_groups_get(context, storage_host_group_id):
+    """Get a storage host group or raise an exception if it does not exist."""
+    return _storage_host_groups_get(context, storage_host_group_id)
+
+
+def storage_host_groups_get_all(context, marker=None, limit=None,
+                                sort_keys=None, sort_dirs=None,
+                                filters=None, offset=None):
+    """Retrieves all storage host groups"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session,
+                                         models.StorageHostGroup, marker,
+                                         limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No storage host group would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.StorageHostGroup)
+def _process_storage_host_groups_info_filters(query, filters):
+    """Common filter processing for storage host groups queries."""
+    if filters:
+        if not is_valid_model_filters(models.StorageHostGroup, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def storage_host_groups_delete_by_storage(context, storage_id):
+    """Delete all the storage host groups of a device"""
+    _storage_host_groups_get_query(context).filter_by(storage_id=storage_id)\
+        .delete()
+
+
+def _port_groups_get_query(context, session=None):
+    return model_query(context, models.PortGroup, session=session)
+
+
+def _port_groups_get(context, port_grp_id, session=None):
+    result = (_port_groups_get_query(context, session=session)
+              .filter_by(id=port_grp_id)
+              .first())
+
+    if not result:
+        raise exception.PortGroupNotFound(port_grp_id)
+
+    return result
+
+
+def port_groups_create(context, port_groups):
+    """Create multiple port groups."""
+    session = get_session()
+    port_groups_refs = []
+    with session.begin():
+
+        for port_group in port_groups:
+            LOG.debug('Adding new port group for '
+                      'native_port_group_id {0}:'
+                      .format(port_group.get('native_port_group_id')))
+            if not port_group.get('id'):
+                port_group['id'] = uuidutils.generate_uuid()
+
+            port_group_ref = models.PortGroup()
+            port_group_ref.update(port_group)
+            port_groups_refs.append(port_group_ref)
+
+        session.add_all(port_groups_refs)
+
+    return port_groups_refs
+
+
+def port_groups_delete(context, port_groups_id_list):
+    """Delete multiple port groups."""
+    session = get_session()
+    with session.begin():
+        for port_group_id in port_groups_id_list:
+            LOG.debug('Deleting port group {0}:'.format(port_group_id))
+            query = _port_groups_get_query(context, session)
+            result = query.filter_by(id=port_group_id).delete()
+
+            if not result:
+                LOG.error(exception.PortGroupNotFound(port_group_id))
+    return
+
+
+def port_groups_update(context, port_groups):
+    """Update multiple port groups."""
+    session = get_session()
+    with session.begin():
+        for port_group in port_groups:
+            LOG.debug('Updating port groups {0}:'
+                      .format(port_group.get('id')))
+            query = _port_groups_get_query(context, session)
+            result = query.filter_by(id=port_group.get('id')
+                                     ).update(port_group)
+
+            if not result:
+                LOG.error(exception.PortGroupNotFound(port_group
+                                                      .get('id')))
+
+
+def port_groups_get(context, port_group_id):
+    """Get a port group or raise an exception if it does not exist."""
+    return _port_groups_get(context, port_group_id)
+
+
+def port_groups_get_all(context, marker=None, limit=None,
+                        sort_keys=None, sort_dirs=None,
+                        filters=None, offset=None):
+    """Retrieves all port groups"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session,
+                                         models.PortGroup, marker,
+                                         limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No port group would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.PortGroup)
+def _process_port_groups_info_filters(query, filters):
+    """Common filter processing for port groups queries."""
+    if filters:
+        if not is_valid_model_filters(models.PortGroup, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def port_groups_delete_by_storage(context, storage_id):
+    """Delete all the port groups of a device"""
+    _port_groups_get_query(context).filter_by(storage_id=storage_id).delete()
+
+
+def _volume_groups_get_query(context, session=None):
+    return model_query(context, models.VolumeGroup, session=session)
+
+
+def _volume_groups_get(context, volume_grp_id, session=None):
+    result = (_volume_groups_get_query(context, session=session)
+              .filter_by(id=volume_grp_id)
+              .first())
+
+    if not result:
+        raise exception.VolumeGroupNotFound(volume_grp_id)
+
+    return result
+
+
+def volume_groups_create(context, volume_groups):
+    """Create multiple volume groups."""
+    session = get_session()
+    volume_groups_refs = []
+    with session.begin():
+
+        for volume_group in volume_groups:
+            LOG.debug('Adding new volume group for '
+                      'native_volume_group_id {0}:'
+                      .format(volume_group.get('native_volume_group_id')))
+            if not volume_group.get('id'):
+                volume_group['id'] = uuidutils.generate_uuid()
+
+            volume_group_ref = models.VolumeGroup()
+            volume_group_ref.update(volume_group)
+            volume_groups_refs.append(volume_group_ref)
+
+        session.add_all(volume_groups_refs)
+
+    return volume_groups_refs
+
+
+def volume_groups_delete(context, volume_groups_id_list):
+    """Delete multiple volume groups."""
+    session = get_session()
+    with session.begin():
+        for volume_group_id in volume_groups_id_list:
+            LOG.debug('Deleting volume group {0}:'.format(volume_group_id))
+            query = _volume_groups_get_query(context, session)
+            result = query.filter_by(id=volume_group_id).delete()
+
+            if not result:
+                LOG.error(exception.VolumeGroupNotFound(volume_group_id))
+    return
+
+
+def volume_groups_update(context, volume_groups):
+    """Update multiple volume groups."""
+    session = get_session()
+    with session.begin():
+        for volume_group in volume_groups:
+            LOG.debug('Updating volume groups {0}:'
+                      .format(volume_group.get('id')))
+            query = _volume_groups_get_query(context, session)
+            result = query.filter_by(id=volume_group.get('id')
+                                     ).update(volume_group)
+
+            if not result:
+                LOG.error(exception.VolumeGroupNotFound(volume_group
+                                                        .get('id')))
+
+
+def volume_groups_get(context, volume_group_id):
+    """Get a volume group or raise an exception if it does not exist."""
+    return _volume_groups_get(context, volume_group_id)
+
+
+def volume_groups_get_all(context, marker=None, limit=None,
+                          sort_keys=None, sort_dirs=None,
+                          filters=None, offset=None):
+    """Retrieves all volume groups"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session,
+                                         models.VolumeGroup, marker,
+                                         limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No volume group would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.VolumeGroup)
+def _process_volume_groups_info_filters(query, filters):
+    """Common filter processing for volume groups queries."""
+    if filters:
+        if not is_valid_model_filters(models.VolumeGroup, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def volume_groups_delete_by_storage(context, storage_id):
+    """Delete all the volume groups of a device"""
+    _volume_groups_get_query(context).filter_by(storage_id=storage_id) \
+        .delete()
+
+
+def _masking_views_get_query(context, session=None):
+    return model_query(context, models.MaskingView, session=session)
+
+
+def _masking_views_get(context, masking_view_id, session=None):
+    result = (_masking_views_get_query(context, session=session)
+              .filter_by(id=masking_view_id)
+              .first())
+
+    if not result:
+        raise exception.MaskingViewNotFound(masking_view_id)
+
+    return result
+
+
+def masking_views_create(context, masking_views):
+    """Create multiple masking views."""
+    session = get_session()
+    masking_views_refs = []
+    with session.begin():
+
+        for masking_view in masking_views:
+            LOG.debug('Adding new masking view for '
+                      'native_masking_view_id {0}:'
+                      .format(masking_view.get('native_masking_view_id')))
+            if not masking_view.get('id'):
+                masking_view['id'] = uuidutils.generate_uuid()
+
+            masking_view_ref = models.MaskingView()
+            masking_view_ref.update(masking_view)
+            masking_views_refs.append(masking_view_ref)
+
+        session.add_all(masking_views_refs)
+
+    return masking_views_refs
+
+
+def masking_views_delete(context, masking_views_id_list):
+    """Delete multiple masking views."""
+    session = get_session()
+    with session.begin():
+        for masking_view_id in masking_views_id_list:
+            LOG.debug('Deleting masking view {0}:'.format(masking_view_id))
+            query = _masking_views_get_query(context, session)
+            result = query.filter_by(id=masking_view_id).delete()
+
+            if not result:
+                LOG.error(exception.MaskingViewNotFound(masking_view_id))
+    return
+
+
+def masking_views_update(context, masking_views):
+    """Update multiple masking views."""
+    session = get_session()
+    with session.begin():
+        for masking_view in masking_views:
+            LOG.debug('Updating masking views {0}:'
+                      .format(masking_view.get('id')))
+            query = _masking_views_get_query(context, session)
+            result = query.filter_by(id=masking_view.get('id')
+                                     ).update(masking_view)
+
+            if not result:
+                LOG.error(exception.MaskingViewNotFound(masking_view
+                                                        .get('id')))
+
+
+def masking_views_get(context, masking_view_id):
+    """Get a masking view or raise an exception if it does not exist."""
+    return _masking_views_get(context, masking_view_id)
+
+
+def masking_views_get_all(context, marker=None, limit=None,
+                          sort_keys=None, sort_dirs=None,
+                          filters=None, offset=None):
+    """Retrieves all masking views"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session,
+                                         models.MaskingView, marker,
+                                         limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No masking view would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.MaskingView)
+def _process_masking_views_info_filters(query, filters):
+    """Common filter processing for masking views queries."""
+    if filters:
+        if not is_valid_model_filters(models.MaskingView, filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def masking_views_delete_by_storage(context, storage_id):
+    """Delete all the masking views of a device"""
+    _masking_views_get_query(context).filter_by(storage_id=storage_id)\
+        .delete()
+
+
+def _storage_host_grp_host_rels_get_query(context, session=None):
+    return model_query(context, models.StorageHostGrpHostRel,
+                       session=session)
+
+
+def _storage_host_grp_host_rels_get(context, host_grp_host_relation_id,
+                                    session=None):
+    result = (
+        _storage_host_grp_host_rels_get_query(context, session=session)
+        .filter_by(id=host_grp_host_relation_id).first())
+
+    if not result:
+        raise exception.StorageHostGrpHostRelNotFound(
+            host_grp_host_relation_id)
+
+    return result
+
+
+def storage_host_grp_host_rels_create(context,
+                                      host_grp_host_relations):
+    """Create multiple storage host grp host relations."""
+    session = get_session()
+    host_grp_host_relation_refs = []
+    with session.begin():
+
+        for host_grp_host_relation in host_grp_host_relations:
+            LOG.debug('Adding new storage host group host relation for '
+                      'native storage host group id {0}:'
+                      .format(host_grp_host_relation
+                              .get('native_storage_host_group_id')))
+            if not host_grp_host_relation.get('id'):
+                host_grp_host_relation['id'] = uuidutils.generate_uuid()
+
+            host_grp_host_relation_ref \
+                = models.StorageHostGrpHostRel()
+            host_grp_host_relation_ref.update(host_grp_host_relation)
+            host_grp_host_relation_refs.append(host_grp_host_relation_ref)
+
+        session.add_all(host_grp_host_relation_refs)
+
+    return host_grp_host_relation_refs
+
+
+def storage_host_grp_host_rels_delete(context,
+                                      host_grp_host_relations_list):
+    """Delete multiple storage host grp host relations."""
+    session = get_session()
+    with session.begin():
+        for host_grp_host_relation_id in host_grp_host_relations_list:
+            LOG.debug('deleting storage host grp host relation {0}:'.format(
+                host_grp_host_relation_id))
+            query = _storage_host_grp_host_rels_get_query(context,
+                                                          session)
+            result = query.filter_by(id=host_grp_host_relation_id).delete()
+
+            if not result:
+                LOG.error(exception.StorageHostGrpHostRelNotFound(
+                    host_grp_host_relation_id))
+    return
+
+
+def storage_host_grp_host_rels_update(context,
+                                      host_grp_host_relations_list):
+    """Update multiple storage host grp host relations."""
+    session = get_session()
+    with session.begin():
+        for host_grp_host_relation in host_grp_host_relations_list:
+            LOG.debug('Updating storage host grp host relations {0}:'
+                      .format(host_grp_host_relation.get('id')))
+            query = _storage_host_grp_host_rels_get_query(context,
+                                                          session)
+            result = query.filter_by(id=host_grp_host_relation.get('id')
+                                     ).update(host_grp_host_relation)
+
+            if not result:
+                LOG.error(exception.StorageHostGrpHostRelNotFound(
+                    host_grp_host_relation.get('id')))
+
+
+def storage_host_grp_host_rels_get(context, host_grp_host_relation_id):
+    """Get a storage host grp host relation or raise an exception if it does
+    not exist.
+    """
+    return _storage_host_grp_host_rels_get(context,
+                                           host_grp_host_relation_id)
+
+
+def storage_host_grp_host_rels_get_all(context, marker=None, limit=None,
+                                       sort_keys=None, sort_dirs=None,
+                                       filters=None, offset=None):
+    """Retrieves all storage host grp host relations"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models
+                                         .StorageHostGrpHostRel,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No storage host grp host relation would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.StorageHostGrpHostRel)
+def _process_storage_host_grp_host_rels_info_filters(query, filters):
+    """Common filter processing for storage host grp host relations queries."""
+    if filters:
+        if not is_valid_model_filters(models.StorageHostGrpHostRel,
+                                      filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def storage_host_grp_host_rels_delete_by_storage(context, storage_id):
+    """Delete all the storage host grp host relations of a device"""
+    _storage_host_grp_host_rels_get_query(context) \
+        .filter_by(storage_id=storage_id).delete()
+
+
+def _port_grp_port_rels_get_query(context, session=None):
+    return model_query(context, models.PortGrpPortRel,
+                       session=session)
+
+
+def _port_grp_port_rels_get(context, port_grp_port_relation_id,
+                            session=None):
+    result = (_port_grp_port_rels_get_query(context, session=session)
+              .filter_by(id=port_grp_port_relation_id).first())
+
+    if not result:
+        raise exception.PortGrpPortRelNotFound(port_grp_port_relation_id)
+
+    return result
+
+
+def port_grp_port_rels_create(context, port_grp_port_rels):
+    """Create multiple port grp port relations."""
+    session = get_session()
+    port_grp_port_relation_refs = []
+    with session.begin():
+
+        for port_grp_port_relation in port_grp_port_rels:
+            LOG.debug('adding new port group port relation for '
+                      'native port group id {0}:'
+                      .format(port_grp_port_relation
+                              .get('native_port_group_id')))
+            if not port_grp_port_relation.get('id'):
+                port_grp_port_relation['id'] = uuidutils.generate_uuid()
+
+            port_grp_port_relation_ref \
+                = models.PortGrpPortRel()
+            port_grp_port_relation_ref.update(port_grp_port_relation)
+            port_grp_port_relation_refs.append(port_grp_port_relation_ref)
+
+        session.add_all(port_grp_port_relation_refs)
+
+    return port_grp_port_relation_refs
+
+
+def port_grp_port_rels_delete(context,
+                              port_grp_port_rels_list):
+    """Delete multiple port grp port relations."""
+    session = get_session()
+    with session.begin():
+        for port_grp_port_relation_id in port_grp_port_rels_list:
+            LOG.debug('deleting port grp port relation {0}:'.format(
+                port_grp_port_relation_id))
+            query = _port_grp_port_rels_get_query(context, session)
+            result = query.filter_by(id=port_grp_port_relation_id).delete()
+
+            if not result:
+                LOG.error(exception.PortGrpPortRelNotFound(
+                    port_grp_port_relation_id))
+    return
+
+
+def port_grp_port_rels_update(context,
+                              port_grp_port_rels_list):
+    """Update multiple port grp port relations."""
+    session = get_session()
+    with session.begin():
+        for port_grp_port_relation in port_grp_port_rels_list:
+            LOG.debug('Updating port grp port relations {0}:'
+                      .format(port_grp_port_relation.get('id')))
+            query = _port_grp_port_rels_get_query(context,
+                                                  session)
+            result = query.filter_by(id=port_grp_port_relation.get('id')
+                                     ).update(port_grp_port_relation)
+
+            if not result:
+                LOG.error(exception.PortGrpPortRelNotFound(
+                    port_grp_port_relation.get('id')))
+
+
+def port_grp_port_rels_get(context, port_grp_port_relation_id):
+    """Get a port grp port relation or raise an exception if it does
+    not exist.
+    """
+    return _port_grp_port_rels_get(context,
+                                   port_grp_port_relation_id)
+
+
+def port_grp_port_rels_get_all(context, marker=None, limit=None,
+                               sort_keys=None, sort_dirs=None,
+                               filters=None, offset=None):
+    """Retrieves all port grp port relations"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.
+                                         PortGrpPortRel,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No port grp port relation would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.PortGrpPortRel)
+def _process_port_grp_port_rels_info_filters(query, filters):
+    """Common filter processing for port grp port relations queries."""
+    if filters:
+        if not is_valid_model_filters(models.PortGrpPortRel,
+                                      filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def port_grp_port_rels_delete_by_storage(context, storage_id):
+    """Delete all the port grp port relations of a device"""
+    _port_grp_port_rels_get_query(context) \
+        .filter_by(storage_id=storage_id).delete()
+
+
+def _vol_grp_vol_rels_get_query(context, session=None):
+    return model_query(context, models.VolGrpVolRel,
+                       session=session)
+
+
+def _vol_grp_vol_rels_get(context, volume_grp_volume_relation_id,
+                          session=None):
+    result = (_vol_grp_vol_rels_get_query(context, session=session)
+              .filter_by(id=volume_grp_volume_relation_id).first())
+
+    if not result:
+        raise exception.VolGrpVolRelNotFound(
+            volume_grp_volume_relation_id)
+
+    return result
+
+
+def vol_grp_vol_rels_create(context, vol_grp_vol_rels):
+    """Create multiple volume grp volume relations."""
+    session = get_session()
+    volume_grp_volume_relation_refs = []
+    with session.begin():
+
+        for volume_grp_volume_relation in vol_grp_vol_rels:
+            LOG.debug('adding new volume group volume relation for '
+                      'native volume group  id {0}:'
+                      .format(volume_grp_volume_relation
+                              .get('native_volume_group_id')))
+            if not volume_grp_volume_relation.get('id'):
+                volume_grp_volume_relation['id'] = uuidutils.generate_uuid()
+
+            volume_grp_volume_relation_ref \
+                = models.VolGrpVolRel()
+            volume_grp_volume_relation_ref.update(volume_grp_volume_relation)
+            volume_grp_volume_relation_refs.append(
+                volume_grp_volume_relation_ref)
+
+        session.add_all(volume_grp_volume_relation_refs)
+
+    return volume_grp_volume_relation_refs
+
+
+def vol_grp_vol_rels_delete(context,
+                            vol_grp_vol_rels_list):
+    """Delete multiple volume grp volume relations."""
+    session = get_session()
+    with session.begin():
+        for volume_grp_volume_relation_id in vol_grp_vol_rels_list:
+            LOG.debug('deleting volume grp volume relation {0}:'.format(
+                volume_grp_volume_relation_id))
+            query = _vol_grp_vol_rels_get_query(context, session)
+            result = query.filter_by(id=volume_grp_volume_relation_id).delete()
+
+            if not result:
+                LOG.error(exception.VolGrpVolRelationNotFound(
+                    volume_grp_volume_relation_id))
+    return
+
+
+def vol_grp_vol_rels_update(context,
+                            vol_grp_vol_rels_list):
+    """Update multiple volume grp volume relations."""
+    session = get_session()
+    with session.begin():
+        for volume_grp_volume_relation in vol_grp_vol_rels_list:
+            LOG.debug('Updating volume grp volume relations {0}:'
+                      .format(volume_grp_volume_relation.get('id')))
+            query = _vol_grp_vol_rels_get_query(context,
+                                                session)
+            result = query.filter_by(id=volume_grp_volume_relation.get('id')
+                                     ).update(volume_grp_volume_relation)
+
+            if not result:
+                LOG.error(exception.VolGrpVolRelationNotFound(
+                    volume_grp_volume_relation.get('id')))
+
+
+def vol_grp_vol_rels_get(context, volume_grp_volume_relation_id):
+    """Get a volume grp volume relation or raise an exception if it does
+    not exist.
+    """
+    return _vol_grp_vol_rels_get(context,
+                                 volume_grp_volume_relation_id)
+
+
+def vol_grp_vol_rels_get_all(context, marker=None, limit=None,
+                             sort_keys=None, sort_dirs=None,
+                             filters=None, offset=None):
+    """Retrieves all volume grp volume relations"""
+    session = get_session()
+    with session.begin():
+        # Generate the query
+        query = _generate_paginate_query(context, session, models.
+                                         VolGrpVolRel,
+                                         marker, limit, sort_keys, sort_dirs,
+                                         filters, offset)
+        # No volume grp volume relation would match, return empty list
+        if query is None:
+            return []
+        return query.all()
+
+
+@apply_like_filters(model=models.VolGrpVolRel)
+def _process_vol_grp_vol_rels_info_filters(query, filters):
+    """Common filter processing for volume grp volume relations queries."""
+    if filters:
+        if not is_valid_model_filters(models.VolGrpVolRel,
+                                      filters):
+            return
+        query = query.filter_by(**filters)
+
+    return query
+
+
+def vol_grp_vol_rels_delete_by_storage(context, storage_id):
+    """Delete all the volume grp volume relations of a device"""
+    _vol_grp_vol_rels_get_query(context) \
+        .filter_by(storage_id=storage_id).delete()
+
+
 PAGINATION_HELPERS = {
     models.AccessInfo: (_access_info_get_query, _process_access_info_filters,
                         _access_info_get),
@@ -1884,6 +2882,38 @@ PAGINATION_HELPERS = {
     models.FailedTask: (_failed_tasks_get_query,
                         _process_failed_tasks_info_filters,
                         _failed_tasks_get),
+    models.StorageHostInitiator: (
+        _storage_host_initiators_get_query,
+        _process_storage_host_initiators_info_filters,
+        _storage_host_initiators_get),
+    models.StorageHost: (_storage_hosts_get_query,
+                         _process_storage_hosts_info_filters,
+                         _storage_hosts_get),
+    models.StorageHostGroup: (_storage_host_groups_get_query,
+                              _process_storage_host_groups_info_filters,
+                              _storage_host_groups_get),
+    models.PortGroup: (_port_groups_get_query,
+                       _process_port_groups_info_filters,
+                       _port_groups_get),
+    models.VolumeGroup: (_volume_groups_get_query,
+                         _process_volume_groups_info_filters,
+                         _volume_groups_get),
+    models.MaskingView: (_masking_views_get_query,
+                         _process_masking_views_info_filters,
+                         _masking_views_get),
+    models.StorageHostGrpHostRel: (
+        _storage_host_grp_host_rels_get_query,
+        _process_storage_host_grp_host_rels_info_filters,
+        _storage_host_grp_host_rels_get),
+
+    models.PortGrpPortRel: (_port_grp_port_rels_get_query,
+                            _process_port_grp_port_rels_info_filters,
+                            _port_grp_port_rels_get),
+    models.VolGrpVolRel: (
+        _vol_grp_vol_rels_get_query,
+        _process_vol_grp_vol_rels_info_filters,
+        _vol_grp_vol_rels_get),
+
 }
 
 

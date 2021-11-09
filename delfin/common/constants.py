@@ -51,9 +51,11 @@ class VolumeStatus(object):
 class ControllerStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
+    FAULT = 'fault'
+    DEGRADED = 'degraded'
     UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, UNKNOWN)
+    ALL = (NORMAL, OFFLINE, FAULT, DEGRADED, UNKNOWN)
 
 
 class StorageType(object):
@@ -106,10 +108,11 @@ class PortType(object):
     COMBO = 'combo'
     CNA = 'cna'
     RCIP = 'rcip'
+    NFS_CIFS = 'nfs-cifs'
     OTHER = 'other'
 
     ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, LOGIC,
-           CIFS, NFS, FCACHE, COMBO, CNA, RCIP, OTHER)
+           CIFS, NFS, FCACHE, COMBO, CNA, RCIP, NFS_CIFS, OTHER)
 
 
 class PortLogicalType(object):
@@ -235,6 +238,39 @@ class ShareProtocol(object):
     ALL = (CIFS, NFS, FTP, HDFS)
 
 
+class HostStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    ABNORMAL = 'abnormal'
+
+    ALL = (NORMAL, OFFLINE, ABNORMAL)
+
+
+class HostOSTypes(object):
+    LINUX = 'Linux'
+    WINDOWS = 'Windows'
+    SOLARIS = 'Solaris'
+    HP_UX = 'HP-UX'
+    AIX = 'AIX'
+    XEN_SERVER = 'XenServer'
+    VMWARE_ESX = 'VMware ESX'
+    LINUX_VIS = 'LINUX_VIS'
+    WINDOWS_SERVER_2012 = 'Windows Server 2012'
+    ORACLE_VM = 'Oracle VM'
+    OPEN_VMS = 'Open VMS'
+
+    ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
+           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS)
+
+
+class InitiatorStatus(object):
+    ONLINE = 'online'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (ONLINE, OFFLINE, UNKNOWN)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'
@@ -321,6 +357,21 @@ class SecurityLevel(object):
 # Metric model
 metric_struct = namedtuple("Metric", "name labels values")
 
+
+class ResourceType(object):
+    STORAGE = 'storage'
+    STORAGE_POOL = 'storagePool'
+    VOLUME = 'volume'
+    CONTROLLER = 'controller'
+    PORT = 'port'
+    DISK = 'disk'
+    FILESYSTEM = 'filesystem'
+    SHARE = 'share'
+
+    ALL = (STORAGE, STORAGE_POOL, VOLUME, CONTROLLER,
+           PORT, DISK, FILESYSTEM, SHARE)
+
+
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [
     "responseTime",
@@ -346,14 +397,16 @@ class TelemetryCollection(object):
     PERFORMANCE_TASK_METHOD = "delfin.task_manager.scheduler.schedulers." \
                               "telemetry.performance_collection_handler." \
                               "PerformanceCollectionHandler"
-    """Performance monitoring job interval"""
-    PERIODIC_JOB_INTERVAL = 180
     """Failed Performance monitoring job interval"""
-    FAILED_JOB_SCHEDULE_INTERVAL = 240
+    FAILED_JOB_SCHEDULE_INTERVAL = 900
     """Failed Performance monitoring retry count"""
     MAX_FAILED_JOB_RETRY_COUNT = 5
     """Default performance collection interval"""
     DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
+    DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 1800
+    DEF_PERFORMANCE_TIMESTAMP_OVERLAP = 60
+    """Maximum failed task retry window in seconds"""
+    MAX_FAILED_TASK_RETRY_WINDOW = 7200
 
 
 class TelemetryTaskStatus(object):

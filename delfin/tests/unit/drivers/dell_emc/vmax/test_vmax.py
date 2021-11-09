@@ -19,8 +19,7 @@ from requests.sessions import Session
 
 from delfin import context
 from delfin import exception
-from delfin.common import config  # noqa
-from delfin.common import constants
+from delfin.common import constants, config  # noqa
 from delfin.drivers.dell_emc.vmax.rest import VMaxRest
 from delfin.drivers.dell_emc.vmax.vmax import VMAXStorageDriver
 
@@ -145,7 +144,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.get_storage(context)
 
-        self.assertIn('Failed to get array details from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_array_details.side_effect = [{
@@ -157,7 +156,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.get_storage(context)
 
-        self.assertIn('Failed to get capacity from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_srp_by_name')
@@ -205,14 +204,14 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_storage_pools(context)
 
-        self.assertIn('Failed to get pool metrics from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_srp.side_effect = [exception.StorageBackendException, pool_info]
         with self.assertRaises(Exception) as exc:
             driver.list_storage_pools(context)
 
-        self.assertIn('Failed to get pool metrics from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
     @mock.patch.object(VMaxRest, 'get_system_capacity')
@@ -319,7 +318,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_vols.side_effect = [['volume_1']]
@@ -328,7 +327,7 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
         mock_vols.side_effect = [exception.StorageBackendException]
@@ -337,272 +336,237 @@ class TestVMAXStorageDriver(TestCase):
         with self.assertRaises(Exception) as exc:
             driver.list_volumes(context)
 
-        self.assertIn('Failed to get list volumes from VMAX',
+        self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
 
-    @mock.patch.object(VMaxRest, 'post_request')
-    @mock.patch.object(VMaxRest, 'get_vmax_array_details')
+    @mock.patch.object(VMaxRest, 'get_resource')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')
     @mock.patch.object(VMaxRest, 'get_unisphere_version')
-    def test_get_storage_performance(self, mock_unisphere_version,
-                                     mock_version, mock_array,
-                                     mock_array_details,
-                                     mock_performnace):
-        vmax_array_perf_resp_historic = {
-            "expirationTime": 1600172441701,
-            "count": 4321,
-            "maxPageSize": 1000,
-            "id": "d495891f-1607-42b7-ba8d-44d0786bd335_0",
-            "resultList": {
-                "result": [
-                    {
-                        "HostIOs": 296.1,
-                        "HostMBWritten": 0.31862956,
-                        "ReadResponseTime": 4.4177675,
-                        "HostMBReads": 0.05016927,
-                        "HostReads": 14.056666,
-                        "HostWrites": 25.78,
-                        "WriteResponseTime": 4.7228317,
-                        "timestamp": 1598875800000
-                    },
-                    {
-                        "HostIOs": 350.22998,
-                        "HostMBWritten": 0.40306965,
-                        "ReadResponseTime": 4.396796,
-                        "HostMBReads": 0.043291014,
-                        "HostReads": 13.213333,
-                        "HostWrites": 45.97333,
-                        "WriteResponseTime": 4.7806735,
-                        "timestamp": 1598876100000
-                    },
-                    {
-                        "HostIOs": 297.63333,
-                        "HostMBWritten": 0.25046548,
-                        "ReadResponseTime": 4.3915706,
-                        "HostMBReads": 0.042753905,
-                        "HostReads": 13.176666,
-                        "HostWrites": 28.643333,
-                        "WriteResponseTime": 4.8760557,
-                        "timestamp": 1598876400000
-                    }
-                ]
+    def test_list_controllers(self, mock_unisphere_version,
+                              mock_version,
+                              mock_array, mock_res):
+        expected = [
+            {
+                'name': 'DF-1C',
+                'storage_id': '12345',
+                'native_controller_id': 'DF-1C',
+                'status': 'offline',
+                'location': 'slot_10',
+                'soft_version': None,
+                'cpu_info': 'Cores-64',
+                'memory_size': None
             }
-        }
-        vmax_array_perf_resp_real_time = {
-            "expirationTime": 1600172441701,
-            "count": 4321,
-            "maxPageSize": 1000,
-            "id": "d495891f-1607-42b7-ba8d-44d0786bd335_0",
-            "resultList": {
-                "result": [
-                    {
-                        "HostIOs": 296.1,
-                        "HostMBWritten": 0.31862956,
-                        "ReadResponseTime": 4.4177675,
-                        "HostMBReads": 0.05016927,
-                        "HostReads": 14.056666,
-                        "HostWrites": 25.78,
-                        "WriteResponseTime": 4.7228317,
-                        "timestamp": 1598875800000
-                    }
-                ]
-            }
-        }
-
-        expected_historic = [
-            constants.metric_struct(name='responseTime',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            9.1405992,
-                                        1598876400000:
-                                            9.2676263,
-                                        1598876100000:
-                                            9.1774695}
-                                    ),
-            constants.metric_struct(name='throughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            0.36879882999999997,
-                                        1598876400000:
-                                            0.293219385,
-                                        1598876100000:
-                                            0.446360664}
-                                    ),
-            constants.metric_struct(name='readThroughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            0.05016927,
-                                        1598876100000:
-                                            0.043291014,
-                                        1598876400000:
-                                            0.042753905}
-                                    ),
-            constants.metric_struct(name='writeThroughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            0.31862956,
-                                        1598876100000:
-                                            0.40306965,
-                                        1598876400000:
-                                            0.25046548}
-                                    ),
-            constants.metric_struct(name='requests',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000: 296.1,
-                                        1598876100000:
-                                            350.22998,
-                                        1598876400000:
-                                            297.63333}
-                                    ),
-            constants.metric_struct(name='readRequests',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            14.056666,
-                                        1598876100000:
-                                            13.213333,
-                                        1598876400000:
-                                            13.176666}
-                                    ),
-            constants.metric_struct(name='writeRequests',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000: 25.78,
-                                        1598876100000:
-                                            45.97333,
-                                        1598876400000:
-                                            28.643333}
-                                    )
         ]
-
-        expected_realtime = [
-            constants.metric_struct(name='responseTime',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            9.1405992
-                                    }
-                                    ),
-            constants.metric_struct(name='throughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            0.36879882999999997
-                                    }
-                                    ),
-            constants.metric_struct(name='readThroughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            0.05016927
-                                    }
-                                    ),
-            constants.metric_struct(name='writeThroughput',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type': 'array'
-                                    },
-                                    values={
-                                        1598875800000: 0.31862956
-
-                                    }
-                                    ),
-            constants.metric_struct(name='requests',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000: 296.1
-                                    }
-                                    ),
-            constants.metric_struct(name='readRequests',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000:
-                                            14.056666
-                                    }
-                                    ),
-            constants.metric_struct(name='writeRequests',
-                                    labels={
-                                        'storage_id': '12345',
-                                        'resource_type':
-                                            'array'},
-                                    values={
-                                        1598875800000: 25.78
-                                    }
-                                    )
-        ]
-
         kwargs = VMAX_STORAGE_CONF
         mock_version.return_value = ['V9.0.2.7', '90']
         mock_unisphere_version.return_value = ['V9.0.2.7', '90']
         mock_array.return_value = {'symmetrixId': ['00112233']}
-        mock_array_details.return_value = {
-            'model': 'VMAX250F',
-            'ucode': '5978.221.221',
-            'display_name': 'VMAX250F-00112233'}
-        mock_performnace.return_value = 200, vmax_array_perf_resp_historic
+        mock_res.side_effect = [
+            {'directorId': ['DF-1C', 'DF-2C']},
+            {
+                'availability': 'ON',
+                'directorId': 'DF-1C',
+                'director_number': 1,
+                'director_slot_number': 10,
+                'num_of_cores': 64,
+                'num_of_ports': 2,
+                'srdf_groups': [
+                    {
+                        'label': 'label_1',
+                        'rdf_group_number': 1
+                    }
+                ]
+            },
+            {
+                'availability': 'ON',
+                'directorId': 'DF-2C',
+                'director_number': 2,
+                'director_slot_number': 10,
+                'num_of_cores': 64,
+                'num_of_ports': 2,
+                'srdf_groups': [
+                    {
+                        'label': 'label_1',
+                        'rdf_group_number': 1
+                    }
+                ]
+            },
+            {'directorId': ['DF-1C', 'DF-2C']},
+            exception.StorageBackendException,
+            exception.StorageBackendException
+        ]
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
         self.assertEqual(driver.client.array_id, "00112233")
 
-        ret = driver.collect_perf_metrics(context, '12345', "", 10000000,
-                                          10900000)
-        self.assertEqual(ret, expected_historic)
+        ret = driver.list_controllers(context)
+        self.assertDictEqual(ret[0], expected[0])
 
-        mock_performnace.return_value = 200, vmax_array_perf_resp_real_time
-        ret = driver.collect_perf_metrics(context, '12345', "", 10900000,
-                                          10900000)
-        self.assertEqual(ret, expected_realtime)
-
-        mock_performnace.side_effect = \
-            exception.StoragePerformanceCollectionFailed
         with self.assertRaises(Exception) as exc:
-            ret = driver.collect_perf_metrics(context, '12345', "", 10000000,
-                                              10900000)
+            driver.list_controllers(context)
 
-        self.assertIn('Failed to collect performance metrics. Reason',
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        with self.assertRaises(Exception) as exc:
+            driver.list_controllers(context)
+
+        self.assertIn('Exception from Storage Backend:',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_resource_kwargs')
+    @mock.patch.object(VMaxRest, 'get_director_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_ports(self, mock_unisphere_version,
+                        mock_version,
+                        mock_array, mock_dirs, mock_res):
+        expected = [{
+            'name': 'DF-1D:30',
+            'storage_id': '12345',
+            'native_port_id': '30',
+            'location': 'director_DF-1D',
+            'connection_status': 'connected',
+            'health_status': 'normal',
+            'type': 'other',
+            'logical_type': 'backend',
+            'speed': 0,
+            'max_speed': 10737418240,
+            'native_parent_id': 'DF-1D',
+            'wwn': None,
+            'mac_address': None,
+            'ipv4': None,
+            'ipv4_mask': None,
+            'ipv6': None,
+            'ipv6_mask': None
+        }]
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_dirs.return_value = ['DF-1C']
+        mock_res.side_effect = [
+            {
+                'symmetrixPortKey': [
+                    {
+                        'directorId': 'DF-1D',
+                        'portId': '30'
+                    },
+                    {
+                        'directorId': 'DF-2C',
+                        'portId': '0'
+                    }
+                ]
+            },
+            {
+                'symmetrixPort': {
+                    'aclx': False,
+                    'avoid_reset_broadcast': False,
+                    'common_serial_number': True,
+                    'director_status': 'Offline',
+                    'disable_q_reset_on_ua': False,
+                    'enable_auto_negotiate': False,
+                    'environ_set': False,
+                    'hp_3000_mode': False,
+                    'ip_addresses': [
+                        '192.168.0.51'
+                    ],
+                    'iscsi_target': False,
+                    'max_speed': '10',
+                    'negotiate_reset': False,
+                    'num_of_cores': 6,
+                    'num_of_mapped_vols': 0,
+                    'num_of_masking_views': 0,
+                    'num_of_port_groups': 0,
+                    'port_status': 'PendOn',
+                    'scsi_3': False,
+                    'scsi_support1': False,
+                    'siemens': False,
+                    'soft_reset': False,
+                    'spc2_protocol_version': False,
+                    'sunapee': False,
+                    'symmetrixPortKey': {
+                        'directorId': 'DF-1C',
+                        'portId': '30'
+                    },
+                    'type': 'GigE',
+                    'vnx_attached': False,
+                    'volume_set_addressing': False
+                }
+            },
+            {
+                'symmetrixPort': {
+                    'aclx': False,
+                    'avoid_reset_broadcast': False,
+                    'common_serial_number': True,
+                    'director_status': 'Offline',
+                    'disable_q_reset_on_ua': False,
+                    'enable_auto_negotiate': False,
+                    'environ_set': False,
+                    'hp_3000_mode': False,
+                    'ip_addresses': [
+                        '192.168.0.51'
+                    ],
+                    'iscsi_target': False,
+                    'max_speed': '10',
+                    'negotiate_reset': False,
+                    'num_of_cores': 6,
+                    'num_of_mapped_vols': 0,
+                    'num_of_masking_views': 0,
+                    'num_of_port_groups': 0,
+                    'port_status': 'PendOn',
+                    'scsi_3': False,
+                    'scsi_support1': False,
+                    'siemens': False,
+                    'soft_reset': False,
+                    'spc2_protocol_version': False,
+                    'sunapee': False,
+                    'symmetrixPortKey': {
+                        'directorId': 'DF-2C',
+                        'portId': '0'
+                    },
+                    'type': 'GigE',
+                    'vnx_attached': False,
+                    'volume_set_addressing': False
+                }
+            },
+            {
+                'symmetrixPortKey': [
+                    {
+                        'directorId': 'DF-1C',
+                        'portId': '30'
+                    },
+                    {
+                        'directorId': 'DF-2C',
+                        'portId': '0'
+                    }
+                ]
+            },
+            exception.StorageBackendException,
+            exception.StorageBackendException
+        ]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+
+        ret = driver.list_ports(context)
+        self.assertDictEqual(ret[0], expected[0])
+
+        mock_dirs.side_effect = exception.StorageBackendException
+        with self.assertRaises(Exception) as exc:
+            driver.list_ports(context)
+
+        self.assertIn('Exception from Storage Backend:',
+                      str(exc.exception))
+
+        with self.assertRaises(Exception) as exc:
+            driver.list_ports(context)
+
+        self.assertIn('Exception from Storage Backend:',
                       str(exc.exception))
 
     @mock.patch.object(Session, 'request')
@@ -650,5 +614,266 @@ class TestVMAXStorageDriver(TestCase):
         self.assertIsInstance(capabilities, dict)
         self.assertEqual(capabilities['is_historic'], True)
         self.assertIsInstance(capabilities['resource_metrics'], dict)
-        # Only support storage metrics
-        self.assertEqual(len(capabilities['resource_metrics']), 1)
+        # Support storage, storage_pool, controller and port metrics
+        self.assertEqual(len(capabilities['resource_metrics']), 4)
+
+    @mock.patch.object(VMaxRest, 'get_resource_metrics')
+    @mock.patch.object(VMaxRest, 'get_resource_keys')
+    @mock.patch.object(VMaxRest, 'get_array_keys')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_collect_perf_metrics(self, mock_unisphere_version,
+                                  mock_version,
+                                  mock_array, mock_array_keys,
+                                  mock_r_keys, mock_r_metrics):
+        expected = [
+            constants.metric_struct(name='iops',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type': 'storage',
+                                        'resource_id': '00112233',
+                                        'resource_name': 'VMAX00112233',
+                                        'type': 'RAW',
+                                        'unit': 'IOPS'},
+                                    values={1566550500000: 417.42667}
+                                    ),
+            constants.metric_struct(name='iops',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type': 'storagePool',
+                                        'resource_id': 'SRP_1',
+                                        'resource_name': 'SRP_1',
+                                        'type': 'RAW',
+                                        'unit': 'IOPS'},
+                                    values={1566550800000: 304.8}
+                                    ),
+            constants.metric_struct(name='iops',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type': 'controller',
+                                        'resource_id': 'DF-1C',
+                                        'resource_name': 'BEDirector_DF-1C',
+                                        'type': 'RAW',
+                                        'unit': 'IOPS'
+                                    },
+                                    values={1566987000000: 248.40666}
+                                    ),
+            constants.metric_struct(name='iops',
+                                    labels={
+                                        'storage_id': '12345',
+                                        'resource_type': 'port',
+                                        'resource_id': '12',
+                                        'resource_name': 'BEPort_DF-1C_12',
+                                        'type': 'RAW',
+                                        'unit': 'IOPS'
+                                    },
+                                    values={1566987000000: 6.693333}
+                                    ),
+        ]
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.0.2.7', '90']
+        mock_unisphere_version.return_value = ['V9.0.2.7', '90']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret_array_key = {
+            "arrayInfo": [{
+                "symmetrixId": "00112233",
+                "firstAvailableDate": "1566146400000",
+                "lastAvailableDate": "1566550800000",
+            }]
+        }
+        ret_pool_key = {
+            "srpInfo": [
+                {
+                    "srpId": "SRP_1",
+                    "firstAvailableDate": 1567065600000,
+                    "lastAvailableDate": 1568130900000
+                },
+            ]
+        }
+        ret_be_dir_key = {
+            "beDirectorInfo": [
+                {
+                    "directorId": "DF-1C",
+                    "firstAvailableDate": 1566557100000,
+                    "lastAvailableDate": 1566987300000
+                },
+            ]
+        }
+        ret_fe_dir_key = {
+            "feDirectorInfo": [
+                {
+                    "directorId": "FA-1D",
+                    "firstAvailableDate": 1567065600000,
+                    "lastAvailableDate": 1567093200000
+                },
+            ]
+        }
+        ret_rdf_dir_key = {
+            "rdfDirectorInfo": [
+                {
+                    "directorId": "RF-1F",
+                    "firstAvailableDate": 1567065600000,
+                    "lastAvailableDate": 1567437900000
+                },
+            ]
+        }
+        ret_be_port_key = {
+            "bePortInfo": [
+                {
+                    "portId": "12",
+                    "firstAvailableDate": 1566557100000,
+                    "lastAvailableDate": 1566988500000
+                },
+            ]
+        }
+        ret_fe_port_key = {
+            "fePortInfo": [
+                {
+                    "firstAvailableDate": 1567065600000,
+                    "lastAvailableDate": 1567162500000,
+                    "portId": "4"
+                },
+            ]
+        }
+        ret_rdf_port_key = {
+            "rdfPortInfo": [
+                {
+                    "portId": "7",
+                    "firstAvailableDate": 1567065600000,
+                    "lastAvailableDate": 1567439100000
+                }
+            ]
+        }
+        mock_array_keys.return_value = ret_array_key
+        mock_r_keys.side_effect = [
+            ret_pool_key,
+            ret_be_dir_key, ret_fe_dir_key, ret_rdf_dir_key,
+            ret_be_dir_key, ret_be_port_key,
+            ret_fe_dir_key, ret_fe_port_key,
+            ret_rdf_dir_key, ret_rdf_port_key,
+        ]
+        ret_array_metric = {
+            "HostIOs": 417.42667,
+            "HostMBs": 0.0018131511,
+            "FEReqs": 23.55,
+            "BEIOs": 25.216667,
+            "BEReqs": 5.55,
+            "PercentCacheWP": 0.031244868,
+            "timestamp": 1566550500000
+        }
+        ret_pool_metric = {
+            "HostIOs": 304.8,
+            "HostMBs": 0.005192057,
+            "FEReqs": 23.04,
+            "BEIOs": 22.566668,
+            "BEReqs": 4.7733335,
+            "PercentCacheWP": 0.018810686,
+            "timestamp": 1566550800000
+        }
+        ret_be_dir_metric = {
+            "PercentBusy": 0.025403459,
+            "IOs": 248.40666,
+            "Reqs": 3.91,
+            "MBRead": 1.7852213,
+            "MBWritten": 0.37213543,
+            "PercentNonIOBusy": 0.0,
+            "timestamp": 1566987000000
+        }
+        ret_fe_dir_metric = {
+            "PercentBusy": 2.54652,
+            "HostIOs": 3436.9368,
+            "HostMBs": 51.7072,
+            "Reqs": 3330.5947,
+            "ReadResponseTime": 0.12916493,
+            "WriteResponseTime": 0.3310084,
+            "timestamp": 1567078200000
+        }
+        ret_rdf_dir_metric = {
+            "PercentBusy": 4.8083158,
+            "IOs": 1474.2234,
+            "WriteReqs": 1189.76,
+            "MBWritten": 54.89597,
+            "MBRead": 0.4565983,
+            "MBSentAndReceived": 55.35257,
+            "AvgIOServiceTime": 0.89211756,
+            "CopyIOs": 0.0,
+            "CopyMBs": 0.0,
+            "timestamp": 1567161600000
+        }
+        ret_be_port_metric = {
+            "Reads": 4.7,
+            "Writes": 1.9933333,
+            "IOs": 6.693333,
+            "MBRead": 0.43401042,
+            "MBWritten": 0.10486979,
+            "MBs": 0.5388802,
+            "AvgIOSize": 82.44224,
+            "PercentBusy": 0.013356605,
+            "timestamp": 1566987000000
+        }
+        ret_fe_port_metric = {
+            "ResponseTime": 0.1263021,
+            "ReadResponseTime": 0.1263021,
+            "WriteResponseTime": 0.0,
+            "Reads": 0.32,
+            "Writes": 0.0,
+            "IOs": 0.32,
+            "MBRead": 4.296875E-4,
+            "MBWritten": 0.0,
+            "MBs": 4.296875E-4,
+            "AvgIOSize": 1.375,
+            "SpeedGBs": 16.0,
+            "PercentBusy": 2.6226044E-5,
+            "timestamp": 1567161600000
+        }
+        ret_rdf_port_metric = {
+            "Reads": 0.0,
+            "Writes": 1216.7633,
+            "IOs": 1216.7633,
+            "MBRead": 0.0,
+            "MBWritten": 57.559597,
+            "MBs": 57.559597,
+            "AvgIOSize": 48.440834,
+            "SpeedGBs": 16.0,
+            "PercentBusy": 3.5131588,
+            "timestamp": 1567161600000
+        }
+        mock_r_metrics.side_effect = [
+            [ret_array_metric],
+            [ret_pool_metric],
+            [ret_be_dir_metric],
+            [ret_fe_dir_metric],
+            [ret_rdf_dir_metric],
+            [ret_be_port_metric],
+            [ret_fe_port_metric],
+            [ret_rdf_port_metric],
+        ]
+        resource_metrics = {
+            'storage': {'iops': {'unit': 'IOPS'}},
+            'storagePool': {'iops': {'unit': 'IOPS'}},
+            'controller': {'iops': {'unit': 'IOPS'}},
+            'port': {'iops': {'unit': 'IOPS'}},
+        }
+        ret = driver.collect_perf_metrics(context,
+                                          driver.storage_id,
+                                          resource_metrics,
+                                          1000, 2000)
+
+        self.assertEqual(ret[0], expected[0])
+        self.assertEqual(ret[2], expected[1])
+        self.assertEqual(ret[4], expected[2])
+        self.assertEqual(ret[13], expected[3])
+
+        with self.assertRaises(Exception) as exc:
+            driver.collect_perf_metrics(context,
+                                        driver.storage_id,
+                                        resource_metrics,
+                                        1000, 2000
+                                        )
+
+        self.assertIn('', str(exc.exception))

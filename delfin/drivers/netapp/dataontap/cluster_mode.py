@@ -37,28 +37,28 @@ class NetAppCmodeDriver(driver.StorageDriver):
         return self.netapp_handler.list_volumes(self.storage_id)
 
     def list_controllers(self, context):
-        pass
+        return self.netapp_handler.list_controllers(self.storage_id)
 
     def list_ports(self, context):
-        pass
+        return self.netapp_handler.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        pass
+        return self.netapp_handler.list_disks(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
         return self.netapp_handler.list_alerts(query_para)
 
     def list_qtrees(self, context):
-        pass
+        return self.netapp_handler.list_qtrees(self.storage_id)
 
     def list_quotas(self, context):
-        pass
+        return self.netapp_handler.list_quotas(self.storage_id)
 
     def list_filesystems(self, context):
-        pass
+        return self.netapp_handler.list_filesystems(self.storage_id)
 
     def list_shares(self, context):
-        pass
+        return self.netapp_handler.list_shares(self.storage_id)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -76,3 +76,15 @@ class NetAppCmodeDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def get_alert_sources(self, context):
+        return self.netapp_handler.get_alert_sources()
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time, end_time):
+        return self.netapp_handler.collect_perf_metrics(
+            storage_id, resource_metrics, start_time, end_time)
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        return NetAppHandler.get_capabilities(filters)

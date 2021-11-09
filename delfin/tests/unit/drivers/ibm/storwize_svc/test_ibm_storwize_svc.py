@@ -423,6 +423,549 @@ trap_alert_result = {
     'location': 'Cluster_192.168.70.125',
     'category': 'Fault'
 }
+get_all_controllers = """id controller_name
+16 controller13
+"""
+get_single_controller = """id 16
+controller_name controller13
+WWNN 2100340006260912
+mdisk_link_count 5
+max_mdisk_link_count 10
+degraded no
+vendor_id HUAWEI
+product_id_low XSG1
+product_id_high
+product_revision 4301
+ctrl_s/n
+allow_quorum yes
+fabric_type fc
+site_id
+site_name
+"""
+controller_result = [
+    {
+        'name': 'controller13',
+        'storage_id': '12345',
+        'native_controller_id': '16',
+        'status': 'normal',
+        'soft_version': 'HUAWEI XSG1',
+        'location': 'controller13'
+    }
+]
+get_all_disks = """id name
+4 mdisk4
+"""
+get_single_disk = """id 4
+name mdisk4
+status offline
+mode managed
+mdisk_grp_id 1
+mdisk_grp_name Pool0_NBE
+capacity 2.0TB
+quorum_index
+block_size 512
+controller_name NBEPOC_target_Dorado5000V6
+ctrl_type 4
+ctrl_WWNN 210030E98EE1914C
+controller_id 41
+path_count 0
+max_path_count 0
+ctrl_LUN_# 0000000000000001
+UID 630e98e100e1914c1aa793ae0000001900000000000000000000000000000000
+preferred_WWPN
+active_WWPN
+fast_write_state empty
+raid_status
+raid_level
+redundancy
+strip_size
+spare_goal
+spare_protection_min
+balanced
+tier tier0_flash
+slow_write_priority
+fabric_type fc
+site_id
+site_name
+easy_tier_load medium
+encrypt no
+distributed no
+drive_class_id
+drive_count 0
+stripe_width 0
+rebuild_areas_total
+rebuild_areas_available
+rebuild_areas_goal
+dedupe no
+preferred_iscsi_port_id
+active_iscsi_port_id
+replacement_date
+"""
+disk_result = [
+    {
+        'name': 'mdisk4',
+        'storage_id': '12345',
+        'native_disk_id': '4',
+        'capacity': 2199023255552,
+        'status': 'offline',
+        'physical_type': 'fc',
+        'native_disk_group_id': 'Pool0_NBE',
+        'location': 'NBEPOC_target_Dorado5000V6_mdisk4'
+    }
+]
+get_all_fcports = """id fc_io_port_id
+0 1
+"""
+get_single_fcport = """id 0
+fc_io_port_id 1
+port_id 1
+type fc
+port_speed 8Gb
+node_id 1
+node_name node1
+WWPN 500507680140EF3E
+nportid 850600
+status active
+switch_WWPN 200650EB1A8A59B8
+fpma N/A
+vlanid N/A
+fcf_MAC N/A
+attachment switch
+cluster_use local_partner
+adapter_location 1
+adapter_port_id 1
+fabric_WWN 100050EB1A8A59B8
+ """
+get_iscsiport_1 = """id 1
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 1
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 1
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 1
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+ """
+get_iscsiport_2 = """id 2
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 2
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 2
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 2
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+ """
+port_result = [
+    {
+        'name': '0',
+        'storage_id': '12345',
+        'native_port_id': '0',
+        'location': 'node1_0',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'fc',
+        'max_speed': 8589934592,
+        'native_parent_id': 'node1',
+        'wwn': '500507680140EF3E'
+    }, {
+        'name': 'node1_1',
+        'storage_id': '12345',
+        'native_port_id': 'node1_1',
+        'location': 'node1_1',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'max_speed': 1073741824,
+        'native_parent_id': 'node1',
+        'mac_address': '34:40:b5:d7:5a:94',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }, {
+        'name': 'node_165084_1',
+        'storage_id': '12345',
+        'native_port_id': 'node_165084_1',
+        'location': 'node_165084_1',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'max_speed': 1073741824,
+        'native_parent_id': 'node_165084',
+        'mac_address': '34:40:b5:d4:0c:f0',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }, {
+        'name': 'node1_2',
+        'storage_id': '12345',
+        'native_port_id': 'node1_2',
+        'location': 'node1_2',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'max_speed': 1073741824,
+        'native_parent_id': 'node1',
+        'mac_address': '34:40:b5:d7:5a:94',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }, {
+        'name': 'node_165084_2',
+        'storage_id': '12345',
+        'native_port_id': 'node_165084_2',
+        'location': 'node_165084_2',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'max_speed': 1073741824,
+        'native_parent_id': 'node_165084',
+        'mac_address': '34:40:b5:d4:0c:f0',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }
+]
 
 
 def create_driver():
@@ -498,3 +1041,28 @@ class TestStorwizeSvcStorageDriver(TestCase):
             self.driver.clear_alert(context, alert_id)
         self.assertIn('The results are invalid. can not find alert',
                       str(exc.exception))
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_controllers(self, mock_ssh_get, mock_control):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_control.side_effect = [get_all_controllers, get_single_controller]
+        controller = self.driver.list_controllers(context)
+        self.assertEqual(controller, controller_result)
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_disks(self, mock_ssh_get, mock_disk):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_disk.side_effect = [get_all_disks, get_single_disk]
+        disk = self.driver.list_disks(context)
+        self.assertEqual(disk, disk_result)
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_ports(self, mock_ssh_get, mock_port):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_port.side_effect = [get_all_fcports, get_single_fcport,
+                                 get_iscsiport_1, get_iscsiport_2]
+        port = self.driver.list_ports(context)
+        self.assertEqual(port, port_result)

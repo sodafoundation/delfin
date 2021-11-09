@@ -11,18 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import copy
 import random
-import datetime
 import decorator
+
 import math
-import six
 import time
+
+import six
+from eventlet import greenthread
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
 
-from delfin import exception
+from delfin import exception, db
 from delfin.common import constants
 from delfin.drivers import driver
 
@@ -55,11 +57,33 @@ MIN_VOLUME, MAX_VOLUME = 1, 2000
 MIN_CONTROLLERS, MAX_CONTROLLERS = 1, 5
 PAGE_LIMIT = 500
 MIN_STORAGE, MAX_STORAGE = 1, 10
-MIN_PERF_VALUES, MAX_PERF_VALUES = 1, 4
 MIN_QUOTA, MAX_QUOTA = 1, 100
 MIN_FS, MAX_FS = 1, 10
 MIN_QTREE, MAX_QTREE = 1, 100
 MIN_SHARE, MAX_SHARE = 1, 100
+# Minimum sampling interval
+MINIMUM_SAMPLE_DURATION_IN_MS = 60 * 1000
+# count of instances for each resource type
+RESOURCE_COUNT_DICT = {
+    "storage": 1,
+    "storagePool": MAX_POOL,
+    "volume": MAX_VOLUME,
+    "port": MAX_PORTS,
+    "controller": MAX_CONTROLLERS,
+    "disk": MAX_DISK,
+    "filesystem": MAX_FS,
+}
+
+# Min and max are currently set to 1 to make sure at least one relation can be
+# built in fake driver for host mapping elements
+MIN_STORAGE_HOST_INITIATORS, MAX_STORAGE_HOST_INITIATORS = 1, 3
+MIN_STORAGE_HOSTS, MAX_STORAGE_HOSTS = 1, 5
+MIN_STORAGE_HOST_GROUPS, MAX_STORAGE_HOST_GROUPS = 1, 5
+MIN_VOLUME_GROUPS, MAX_VOLUME_GROUPS = 1, 5
+MIN_PORT_GROUPS, MAX_PORT_GROUPS = 1, 5
+MAX_GROUP_RESOURCES_SIZE = 5
+MIN_MASKING_VIEWS, MAX_MASKING_VIEWS = 1, 5
+NON_GROUP_BASED_MASKING, GROUP_BASED_MASKING = 0, 1
 
 
 def get_range_val(range_str, t):
@@ -80,7 +104,7 @@ def wait_random(low, high):
     def _wait(f, *a, **k):
         rd = random.randint(0, 100)
         secs = low + (high - low) * rd / 100
-        time.sleep(secs)
+        greenthread.sleep(secs)
         return f(*a, **k)
 
     return _wait
@@ -102,6 +126,10 @@ class FakeStorageDriver(driver.StorageDriver):
         MIN_VOLUME, MAX_VOLUME = get_range_val(
             CONF.fake_driver.fake_volume_range, int)
         PAGE_LIMIT = int(CONF.fake_driver.fake_page_query_limit)
+        self.rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
+        self.rd_ports_count = random.randint(MIN_PORTS, MAX_PORTS)
+        self.rd_storage_hosts_count = random.randint(MIN_STORAGE_HOSTS,
+                                                     MAX_STORAGE_HOSTS)
 
     def _get_random_capacity(self):
         total = random.randint(1000, 2000)
@@ -115,7 +143,17 @@ class FakeStorageDriver(driver.StorageDriver):
     @wait_random(MIN_WAIT, MAX_WAIT)
     def get_storage(self, context):
         # Do something here
+
         sn = six.text_type(uuidutils.generate_uuid())
+        try:
+            # use existing sn if already registered storage
+            storage = db.storage_get(context, self.storage_id)
+            if storage:
+                sn = storage['serial_number']
+        except exception.StorageNotFound:
+            LOG.debug('Registering new storage')
+        except Exception:
+            LOG.info('Error while retrieving storage from DB')
         total, used, free = self._get_random_capacity()
         raw = random.randint(2000, 3000)
         subscribed = random.randint(3000, 4000)
@@ -144,9 +182,9 @@ class FakeStorageDriver(driver.StorageDriver):
         for idx in range(rd_pools_count):
             total, used, free = self._get_random_capacity()
             p = {
-                "name": "fake_pool_" + str(idx),
+                "name": "storagePool_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_storage_pool_id": "fake_original_id_" + str(idx),
+                "native_storage_pool_id": "storagePool_" + str(idx),
                 "description": "Fake Pool",
                 "status": "normal",
                 "total_capacity": total,
@@ -158,7 +196,7 @@ class FakeStorageDriver(driver.StorageDriver):
 
     def list_volumes(self, ctx):
         # Get a random number as the volume count.
-        rd_volumes_count = random.randint(MIN_VOLUME, MAX_VOLUME)
+        rd_volumes_count = self.rd_volumes_count
         LOG.info("###########fake_volumes number for %s: %d" % (
             self.storage_id, rd_volumes_count))
         loops = math.ceil(rd_volumes_count / PAGE_LIMIT)
@@ -183,9 +221,9 @@ class FakeStorageDriver(driver.StorageDriver):
             sts = list(constants.ControllerStatus.ALL)
             sts_len = len(constants.ControllerStatus.ALL) - 1
             c = {
-                "name": "fake_ctrl_" + str(idx),
+                "name": "controller_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_controller_id": "fake_original_id_" + str(idx),
+                "native_controller_id": "controller_" + str(idx),
                 "location": "loc_" + str(random.randint(0, 99)),
                 "status": sts[random.randint(0, sts_len)],
                 "memory_size": total,
@@ -196,7 +234,7 @@ class FakeStorageDriver(driver.StorageDriver):
         return ctrl_list
 
     def list_ports(self, ctx):
-        rd_ports_count = random.randint(MIN_PORTS, MAX_PORTS)
+        rd_ports_count = self.rd_ports_count
         LOG.info("###########fake_ports for %s: %d" % (self.storage_id,
                                                        rd_ports_count))
         port_list = []
@@ -211,9 +249,9 @@ class FakeStorageDriver(driver.StorageDriver):
             logic_type = list(constants.PortLogicalType.ALL)
             logic_type_len = len(constants.PortLogicalType.ALL) - 1
             c = {
-                "name": "fake_port_" + str(idx),
+                "name": "port_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_port_id": "fake_original_id_" + str(idx),
+                "native_port_id": "port_" + str(idx),
                 "location": "location_" + str(random.randint(0, 99)),
                 "connection_status": conn_sts[
                     random.randint(0, conn_sts_len)],
@@ -251,9 +289,9 @@ class FakeStorageDriver(driver.StorageDriver):
             logic_type = list(constants.DiskLogicalType.ALL)
             logic_type_len = len(constants.DiskLogicalType.ALL) - 1
             c = {
-                "name": "fake_disk_" + str(idx),
+                "name": "disk_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_disk_id": "fake_original_id_" + str(idx),
+                "native_disk_id": "disk_" + str(idx),
                 "serial_number": "serial_" + str(random.randint(0, 9999)),
                 "manufacturer": manufacturer[random.randint(0, 4)],
                 "model": "model_" + str(random.randint(0, 9999)),
@@ -286,12 +324,12 @@ class FakeStorageDriver(driver.StorageDriver):
             hlimit = random.randint(max_cap * 8000, max_cap * 9000)
             user_group = ['usr_', 'grp_']
             q = {
-                "native_quota_id": "fake_original_id_" + str(idx),
+                "native_quota_id": "quota_" + str(idx),
                 "type": qtype[random.randint(0, qtype_len)],
                 "storage_id": self.storage_id,
-                "native_filesystem_id": "fake_original_id_"
+                "native_filesystem_id": "quota_"
                                         + str(random.randint(0, 99)),
-                "native_qtree_id": "fake_original_id_"
+                "native_qtree_id": "qtree_"
                                    + str(random.randint(0, 99)),
                 "capacity_hard_limit": hlimit,
                 "capacity_soft_limit": slimit,
@@ -322,10 +360,10 @@ class FakeStorageDriver(driver.StorageDriver):
             security = list(constants.NASSecurityMode.ALL)
             security_len = len(constants.NASSecurityMode.ALL) - 1
             f = {
-                "name": "fake_filesystem_" + str(idx),
+                "name": "filesystem_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_filesystem_id": "fake_original_id_" + str(idx),
-                "native_pool_id": "fake_pool_id_" + str(idx),
+                "native_filesystem_id": "filesystem_" + str(idx),
+                "native_pool_id": "storagePool_" + str(idx),
                 "status": sts[random.randint(0, sts_len)],
                 "type": alloc_type[random.randint(0, alloc_type_len)],
                 "security_mode": security[random.randint(0, security_len)],
@@ -349,10 +387,10 @@ class FakeStorageDriver(driver.StorageDriver):
             security_len = len(constants.NASSecurityMode.ALL) - 1
 
             t = {
-                "name": "fake_qtree_" + str(idx),
+                "name": "qtree_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_qtree_id": "fake_original_id_" + str(idx),
-                "native_filesystem_id": "fake_filesystem_id_"
+                "native_qtree_id": "qtree_" + str(idx),
+                "native_filesystem_id": "filesystem_"
                                         + str(random.randint(0, 99)),
                 "security_mode": security[random.randint(0, security_len)],
                 "path": "/path/qtree_" + str(random.randint(0, 99)),
@@ -370,12 +408,12 @@ class FakeStorageDriver(driver.StorageDriver):
             pro = list(constants.ShareProtocol.ALL)
             pro_len = len(constants.ShareProtocol.ALL) - 1
             c = {
-                "name": "fake_share_" + str(idx),
+                "name": "share_" + str(idx),
                 "storage_id": self.storage_id,
-                "native_share_id": "fake_original_id_" + str(idx),
-                "native_filesystem_id": "fake_filesystem_id_"
+                "native_share_id": "share_" + str(idx),
+                "native_filesystem_id": "filesystem_"
                                         + str(random.randint(0, 99)),
-                "native_qtree_id": "fake_qtree_id_"
+                "native_qtree_id": "qtree_"
                                    + str(random.randint(0, 99)),
                 "protocol": pro[random.randint(0, pro_len)],
                 "path": "/path/share_" + str(random.randint(0, 99)),
@@ -455,11 +493,11 @@ class FakeStorageDriver(driver.StorageDriver):
         for i in range(start, end):
             total, used, free = self._get_random_capacity()
             v = {
-                "name": "fake_vol_" + str(i),
+                "name": "volume_" + str(i),
                 "storage_id": self.storage_id,
                 "description": "Fake Volume",
                 "status": "normal",
-                "native_volume_id": "fake_original_id_" + str(i),
+                "native_volume_id": "volume_" + str(i),
                 "wwn": "fake_wwn_" + str(i),
                 "total_capacity": total,
                 "used_capacity": used,
@@ -468,47 +506,65 @@ class FakeStorageDriver(driver.StorageDriver):
             volume_list.append(v)
         return volume_list
 
-    def _get_random_performance(self):
+    def _get_random_performance(self, metric_list, start_time, end_time):
         def get_random_timestamp_value():
             rtv = {}
-            for i in range(MIN_PERF_VALUES, MAX_PERF_VALUES):
-                timestamp = int(float(datetime.datetime.now().timestamp()
-                                      ) * 1000)
+            timestamp = start_time
+            while timestamp < end_time:
                 rtv[timestamp] = random.uniform(1, 100)
+                timestamp += MINIMUM_SAMPLE_DURATION_IN_MS
+
             return rtv
 
         # The sample performance_params after filling looks like,
         # performance_params = {timestamp1: value1, timestamp2: value2}
         performance_params = {}
-        for key in constants.DELFIN_ARRAY_METRICS:
+        for key in metric_list.keys():
             performance_params[key] = get_random_timestamp_value()
         return performance_params
+
+    @wait_random(MIN_WAIT, MAX_WAIT)
+    def get_resource_perf_metrics(self, storage_id, start_time, end_time,
+                                  resource_type, metric_list):
+        LOG.info("###########collecting metrics for resource %s: from"
+                 " storage  %s" % (resource_type, self.storage_id))
+        resource_metrics = []
+        resource_count = RESOURCE_COUNT_DICT[resource_type]
+
+        for i in range(resource_count):
+            labels = {'storage_id': storage_id,
+                      'resource_type': resource_type,
+                      'resource_id': resource_type + '_' + str(i),
+                      'type': 'RAW'}
+            fake_metrics = self._get_random_performance(metric_list,
+                                                        start_time, end_time)
+            for key in metric_list.keys():
+                labels['unit'] = metric_list[key]['unit']
+                m = constants.metric_struct(name=key, labels=labels,
+                                            values=fake_metrics[key])
+                resource_metrics.append(copy.deepcopy(m))
+        return resource_metrics
 
     @wait_random(MIN_WAIT, MAX_WAIT)
     def collect_perf_metrics(self, context, storage_id,
                              resource_metrics, start_time,
                              end_time):
         """Collects performance metric for the given interval"""
-        rd_array_count = random.randint(MIN_STORAGE, MAX_STORAGE)
-        LOG.debug("Fake_perf_metrics number for %s: %d" % (
-            storage_id, rd_array_count))
-        array_metrics = []
-        labels = {'storage_id': storage_id, 'resource_type': 'array'}
-        fake_metrics = self._get_random_performance()
-
-        for _ in range(rd_array_count):
-            for key in constants.DELFIN_ARRAY_METRICS:
-                m = constants.metric_struct(name=key, labels=labels,
-                                            values=fake_metrics[key])
-                array_metrics.append(m)
-
-        return array_metrics
+        merged_metrics = []
+        for key in resource_metrics.keys():
+            m = self.get_resource_perf_metrics(storage_id,
+                                               start_time,
+                                               end_time, key,
+                                               resource_metrics[key])
+            merged_metrics += m
+        return merged_metrics
 
     @staticmethod
-    def get_capabilities(context):
+    def get_capabilities(context, filters=None):
         """Get capability of supported driver"""
         return {
             'is_historic': False,
+            'performance_metric_retention_window': 4500,
             'resource_metrics': {
                 "storage": {
                     "throughput": {
@@ -521,7 +577,7 @@ class FakeStorageDriver(driver.StorageDriver):
                         "description": "Average time taken for an IO "
                                        "operation in ms"
                     },
-                    "requests": {
+                    "iops": {
                         "unit": "IOPS",
                         "description": "Input/output operations per second"
                     },
@@ -535,14 +591,454 @@ class FakeStorageDriver(driver.StorageDriver):
                         "description": "Represents how much data write is "
                                        "successfully transferred in MB/s"
                     },
-                    "readRequests": {
+                    "readIops": {
                         "unit": "IOPS",
                         "description": "Read requests per second"
                     },
-                    "writeRequests": {
+                    "writeIops": {
                         "unit": "IOPS",
                         "description": "Write requests per second"
                     },
-                }
+                },
+                "storagePool": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write operations per second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per"
+                                       " second"
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "volume": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+                    "cacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of io that are cache "
+                                       "hits"
+                    },
+                    "readCacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of read ops that are cache"
+                                       " hits"
+                    },
+                    "writeCacheHitRatio": {
+                        "unit": "%",
+                        "description": "Percentage of write ops that are cache"
+                                       " hits"
+                    },
+                    "ioSize": {
+                        "unit": "KB",
+                        "description": "The average size of IO requests in KB"
+                    },
+                    "readIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests "
+                                       "in KB."
+                    },
+                    "writeIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests"
+                                       " in KB."
+                    },
+                },
+                "controller": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per "
+                                       "second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per "
+                                       "second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "port": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per "
+                                       "second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per "
+                                       "second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "disk": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "responseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per"
+                                       " second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+
+                },
+                "filesystem": {
+                    "throughput": {
+                        "unit": "MB/s",
+                        "description": "Total data transferred per second "
+                    },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for a read"
+                                       "operation"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Average time taken for a write "
+                                       "operation"
+                    },
+                    "iops": {
+                        "unit": "IOPS",
+                        "description": "Read and write  operations per"
+                                       " second"
+                    },
+                    "readThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total read data transferred per "
+                                       "second "
+                    },
+                    "writeThroughput": {
+                        "unit": "MB/s",
+                        "description": "Total write data transferred per"
+                                       " second "
+                    },
+                    "readIops": {
+                        "unit": "IOPS",
+                        "description": "Read operations per second"
+                    },
+                    "writeIops": {
+                        "unit": "IOPS",
+                        "description": "Write operations per second"
+                    },
+                    "readIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests "
+                                       "in KB."
+                    },
+                    "writeIoSize": {
+                        "unit": "KB",
+                        "description": "The average size of read IO requests"
+                                       " in KB."
+                    },
+                },
+
             }
+
         }
+
+    def list_storage_host_initiators(self, ctx):
+        rd_storage_host_initiators_count = random.randint(
+            MIN_STORAGE_HOST_INITIATORS, MAX_STORAGE_HOST_INITIATORS)
+        LOG.info("###########fake_storage_host_initiators for %s: %d"
+                 % (self.storage_id, rd_storage_host_initiators_count))
+        storage_host_initiators_list = []
+        for idx in range(rd_storage_host_initiators_count):
+            f = {
+                "name": "storage_host_initiator_" + str(idx),
+                "description": "storage_host_initiator_" + str(idx),
+                "alias": "storage_host_initiator_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_storage_host_initiator_id":
+                    "storage_host_initiator_" + str(idx),
+                "wwn": "wwn_" + str(idx),
+                "status": "Normal",
+                "native_storage_host_id": "storage_host_" + str(idx),
+            }
+            storage_host_initiators_list.append(f)
+        return storage_host_initiators_list
+
+    def list_storage_hosts(self, ctx):
+        rd_storage_hosts_count = self.rd_storage_hosts_count
+        LOG.info("###########fake_storage_hosts for %s: %d"
+                 % (self.storage_id, rd_storage_hosts_count))
+        storage_host_list = []
+        for idx in range(rd_storage_hosts_count):
+            f = {
+                "name": "storage_host_" + str(idx),
+                "description": "storage_host_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_storage_host_id": "storage_host_" + str(idx),
+                "os_type": "linux",
+                "status": "Normal",
+                "ip_address": "1.2.3." + str(idx)
+            }
+            storage_host_list.append(f)
+        return storage_host_list
+
+    def list_storage_host_groups(self, ctx):
+        rd_storage_host_groups_count = random.randint(
+            MIN_STORAGE_HOST_GROUPS, MAX_STORAGE_HOST_GROUPS)
+        LOG.info("###########fake_storage_host_groups for %s: %d"
+                 % (self.storage_id, rd_storage_host_groups_count))
+        storage_host_grp_list = []
+        for idx in range(rd_storage_host_groups_count):
+            # Create hosts in hosts group
+            host_name_list = []
+            storage_hosts_count = self.rd_storage_hosts_count - 1
+            if storage_hosts_count > 0:
+                for i in range(MAX_GROUP_RESOURCES_SIZE):
+                    host_name = "storage_host_" + str(
+                        random.randint(0, storage_hosts_count))
+                    if host_name not in host_name_list:
+                        host_name_list.append(host_name)
+
+            # Create comma separated list
+            storage_hosts = None
+            for host in host_name_list:
+                if storage_hosts:
+                    storage_hosts = storage_hosts + "," + host
+                else:
+                    storage_hosts = host
+
+            f = {
+                "name": "storage_host_group_" + str(idx),
+                "description": "storage_host_group_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_storage_host_group_id": "storage_host_group_"
+                                                + str(idx),
+                "storage_hosts": storage_hosts
+            }
+            storage_host_grp_list.append(f)
+        return storage_host_grp_list
+
+    def list_port_groups(self, ctx):
+        rd_port_groups_count = random.randint(MIN_PORT_GROUPS,
+                                              MAX_PORT_GROUPS)
+        LOG.info("###########fake_port_groups for %s: %d"
+                 % (self.storage_id, rd_port_groups_count))
+        port_grp_list = []
+        for idx in range(rd_port_groups_count):
+            # Create ports in ports group
+            port_name_list = []
+            ports_count = self.rd_ports_count - 1
+            if ports_count > 0:
+                for i in range(MAX_GROUP_RESOURCES_SIZE):
+                    port_name = "port_" + str(
+                        random.randint(0, ports_count))
+                    if port_name not in port_name_list:
+                        port_name_list.append(port_name)
+
+            # Create comma separated list
+            ports = None
+            for port in port_name_list:
+                if ports:
+                    ports = ports + "," + port
+                else:
+                    ports = port
+
+            f = {
+                "name": "port_group_" + str(idx),
+                "description": "port_group_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_port_group_id": "port_group_" + str(idx),
+                "ports": ports
+            }
+
+            port_grp_list.append(f)
+        return port_grp_list
+
+    def list_volume_groups(self, ctx):
+        rd_volume_groups_count = random.randint(MIN_VOLUME_GROUPS,
+                                                MAX_VOLUME_GROUPS)
+        LOG.info("###########fake_volume_groups for %s: %d"
+                 % (self.storage_id, rd_volume_groups_count))
+        volume_grp_list = []
+        for idx in range(rd_volume_groups_count):
+            # Create volumes in volumes group
+            volume_name_list = []
+            volumes_count = self.rd_volumes_count - 1
+            if volumes_count > 0:
+                for i in range(MAX_GROUP_RESOURCES_SIZE):
+                    volume_name = "volume_" + str(
+                        random.randint(0, volumes_count))
+                    if volume_name not in volume_name_list:
+                        volume_name_list.append(volume_name)
+
+            # Create comma separated list
+            volumes = None
+            for volume in volume_name_list:
+                if volumes:
+                    volumes = volumes + "," + volume
+                else:
+                    volumes = volume
+
+            f = {
+                "name": "volume_group_" + str(idx),
+                "description": "volume_group_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_volume_group_id": "volume_group_" + str(idx),
+                "volumes": volumes
+            }
+            volume_grp_list.append(f)
+        return volume_grp_list
+
+    def list_masking_views(self, ctx):
+        rd_masking_views_count = random.randint(MIN_MASKING_VIEWS,
+                                                MAX_MASKING_VIEWS)
+        LOG.info("##########fake_masking_views for %s: %d"
+                 % (self.storage_id, rd_masking_views_count))
+        masking_view_list = []
+
+        for idx in range(rd_masking_views_count):
+            is_group_based = random.randint(NON_GROUP_BASED_MASKING,
+                                            GROUP_BASED_MASKING)
+            if is_group_based:
+                native_storage_host_group_id = "storage_host_group_" + str(idx)
+                native_volume_group_id = "volume_group_" + str(idx)
+                native_port_group_id = "port_group_" + str(idx)
+                native_storage_host_id = ""
+                native_volume_id = ""
+                native_port_id = ""
+
+            else:
+                native_storage_host_group_id = ""
+                native_volume_group_id = ""
+                native_port_group_id = ""
+                native_storage_host_id = "storage_host_" + str(idx)
+                native_volume_id = "volume_" + str(idx)
+                native_port_id = "port_" + str(idx)
+
+            f = {
+                "name": "masking_view_" + str(idx),
+                "description": "masking_view_" + str(idx),
+                "storage_id": self.storage_id,
+                "native_masking_view_id": "masking_view_" + str(idx),
+                "native_storage_host_group_id": native_storage_host_group_id,
+                "native_volume_group_id": native_volume_group_id,
+                "native_port_group_id": native_port_group_id,
+                "native_storage_host_id": native_storage_host_id,
+                "native_volume_id": native_volume_id,
+                "native_port_id": native_port_id
+            }
+            masking_view_list.append(f)
+        return masking_view_list

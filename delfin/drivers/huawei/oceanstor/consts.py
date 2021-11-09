@@ -52,7 +52,6 @@ PORT_RUNNINGSTS_LINKUP = '10'
 PORT_RUNNINGSTS_LINKDOWN = '11'
 PORT_RUNNINGSTS_TOBERECOVERED = '33'
 
-PORT_LOGICTYPE_HOST = '0'
 PORT_LOGICTYPE_EXPANSION = '1'
 PORT_LOGICTYPE_MANAGEMENT = '2'
 PORT_LOGICTYPE_INTERNAL = '3'
@@ -160,3 +159,169 @@ QUERY_PAGE_SIZE = 100
 
 THICK_LUNTYPE = '0'
 THIN_LUNTYPE = '1'
+
+HOST_OS = [
+    constants.HostOSTypes.LINUX,
+    constants.HostOSTypes.WINDOWS,
+    constants.HostOSTypes.SOLARIS,
+    constants.HostOSTypes.HP_UX,
+    constants.HostOSTypes.AIX,
+    constants.HostOSTypes.XEN_SERVER,
+    constants.HostOSTypes.VMWARE_ESX,
+    constants.HostOSTypes.LINUX_VIS,
+    constants.HostOSTypes.WINDOWS_SERVER_2012,
+    constants.HostOSTypes.ORACLE_VM,
+    constants.HostOSTypes.OPEN_VMS,
+]
+
+HOST_RUNNINGSTATUS_NORMAL = '1'
+INITIATOR_RUNNINGSTATUS_UNKNOWN = '0'
+INITIATOR_RUNNINGSTATUS_ONLINE = '27'
+INITIATOR_RUNNINGSTATUS_OFFLINE = '28'
+ISCSI_INITIATOR_TYPE = 222
+FC_INITIATOR_TYPE = 223
+IB_INITIATOR_TYPE = 16499
+ISCSI_INITIATOR_DESCRIPTION = 'iSCSI Initiator'
+FC_INITIATOR_DESCRIPTION = 'FC Initiator'
+IB_INITIATOR_DESCRIPTION = 'IB Initiator'
+UNKNOWN_INITIATOR_DESCRIPTION = 'Unknown Initiator'
+
+OCEANSTOR_METRICS = {
+    'iops': '22',
+    'readIops': '25',
+    'writeIops': '28',
+    'throughput': '21',
+    'readThroughput': '23',
+    'writeThroughput': '26',
+    'responseTime': '370',
+    'ioSize': '228',
+    'readIoSize': '24',
+    'writeIoSize': '27',
+    'cacheHitRatio': '303',
+    'readCacheHitRatio': '93',
+    'writeCacheHitRatio': '95',
+}
+
+CONVERT_TO_MILLI_SECOND_LIST = [
+    'responseTime'
+]
+
+IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read input/output operations per second"
+}
+WRITE_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write input/output operations per second"
+}
+THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data is "
+                   "successfully transferred in MB/s"
+}
+READ_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data read is "
+                   "successfully transferred in MB/s"
+}
+WRITE_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data write is "
+                   "successfully transferred in MB/s"
+}
+RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for an IO "
+                   "operation in ms"
+}
+CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of io that are cache hits"
+}
+READ_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of read ops that are cache hits"
+}
+WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of write ops that are cache hits"
+}
+IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of IO requests in KB"
+}
+READ_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of read IO requests in KB"
+}
+WRITE_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of write IO requests in KB"
+}
+CPU_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of CPU usage"
+}
+MEMORY_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of DISK memory usage in percentage"
+}
+SERVICE_TIME = {
+    "unit": 'ms',
+    "description": "Service time of the resource in ms"
+}
+POOL_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}
+VOLUME_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
+    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
+    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
+    "ioSize": IO_SIZE_DESCRIPTION,
+    "readIoSize": READ_IO_SIZE_DESCRIPTION,
+    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION,
+}
+CONTROLLER_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}
+PORT_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}
+DISK_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}

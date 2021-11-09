@@ -12,25 +12,76 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import re
+
 from delfin.common import constants
 
+SOCKET_TIMEOUT = 15
+AUTH_KEY = 'Authorization'
+
+RETURN_SUCCESS_CODE = 200
+CREATED_SUCCESS_CODE = 201
+ACCEPTED_RETURN_CODE = 202
+BAD_REQUEST_RETURN_CODE = 400
+UNAUTHORIZED_RETURN_CODE = 401
+FORBIDDEN_RETURN_CODE = 403
+NOT_FOUND_RETURN_CODE = 404
+METHOD_NOT_ALLOWED_CODE = 405
+CONFLICT_RETURN_CODE = 409
+INTERNAL_ERROR_CODE = 500
+
+HOUR_STAMP = '1h'
+DAY_STAMP = '1d'
+MONTH_STAMP = '1m'
+WEEK_STAMP = '1w'
+YEAR_STAMP = '1y'
+
+CLUSTER_PERF_URL = '/api/cluster/metrics?interval=1h&fields=iops,' \
+                   'throughput,latency'
+
+POOL_PERF_URL = '/api/storage/aggregates/%s/metrics?interval=1h&'\
+                'fields=iops,throughput,latency'
+VOLUME_PERF_URL = '/api/storage/luns/%s/metrics?interval=1h&fields=iops,'\
+                  'throughput,latency'
+FS_PERF_URL = '/api/storage/volumes/%s/metrics?interval=1h&fields=iops,'\
+              'throughput,latency'
+FC_PERF_URL = '/api/network/fc/ports/%s/metrics?interval=1h&fields=iops,'\
+              'throughput,latency'
+ETH_PERF_URL = '/api/network/ethernet/ports/%s/metrics?interval=1h&'\
+               'fields=throughput'
+
+FS_INFO_URL = '/api/storage/volumes?fields=svm'
+FC_INFO_URL = '/api/network/fc/ports'
+ETH_INFO_URL = '/api/network/ethernet/ports?fields=node'
+PERF_MAP = {
+    'iops': ['iops', 'total'],
+    'readIops': ['iops', 'read'],
+    'writeIops': ['iops', 'write'],
+    'throughput': ['throughput', 'total'],
+    'readThroughput': ['throughput', 'read'],
+    'writeThroughput': ['throughput', 'write'],
+    'responseTime': ['latency', 'total']
+}
+
+PATTERN = re.compile('^[-]{3,}')
+FLOAT_PATTERN = r"\d\.\d"
+IP_PATTERN = re.compile(r'(([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])\.){3}'
+                        r'([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])$')
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
 STORAGE_STATUS_COMMAND = "system health status show"
 
 POOLS_SHOW_DETAIL_COMMAND = "storage pool show -instance"
 AGGREGATE_SHOW_DETAIL_COMMAND = "storage aggregate show -instance"
-POOLS_SPLIT_STR = "   Storage Pool N"
-AGGREGATE_SPLIT_STR = "                                       Aggregat"
 
 FS_SHOW_DETAIL_COMMAND = "vol show -instance"
-FS_SPLIT_STR = "                                   Vserver"
+
 THIN_FS_SHOW_COMMAND = "vol show -space-guarantee none"
 
 ALTER_SHOW_DETAIL_COMMAND = "system health alert show -instance"
 EVENT_SHOW_DETAIL_COMMAND = "event show -instance -severity EMERGENCY"
-ALTER_SPLIT_STR = " Node"
 EVENT_TIME_TYPE = '%m/%d/%Y %H:%M:%S'
+
 ALTER_TIME_TYPE = '%a %b %d %H:%M:%S %Y'
 
 CLEAR_ALERT_COMMAND = \
@@ -38,22 +89,47 @@ CLEAR_ALERT_COMMAND = \
 
 DISK_SHOW_DETAIL_COMMAND = "disk show -instance"
 DISK_SHOW_PHYSICAL_COMMAND = "disk show -physical"
-DISK_SPLIT_STR = "     Dis"
+DISK_ERROR_COMMAND = "disk error show"
 
 LUN_SHOW_DETAIL_COMMAND = "lun show -instance"
-LUN_SPLIT_STR = "  Vserver"
-
-STORAGE_VENDOR = "netapp"
-STORAGE_MODEL = "cmodel"
 
 CONTROLLER_SHOW_DETAIL_COMMAND = "node show -instance"
-CONTROLLER_SPLIT_STR = "  Nod"
+
+PORT_SHOW_DETAIL_COMMAND = "network port show -instance"
+INTERFACE_SHOW_DETAIL_COMMAND = "network interface show -instance"
+FC_PORT_SHOW_DETAIL_COMMAND = "fcp adapter show -instance"
+
+QTREE_SHOW_DETAIL_COMMAND = "qtree show -instance"
+
+CIFS_SHARE_SHOW_DETAIL_COMMAND = "vserver cifs share show -instance" \
+                                 " -vserver %(vserver_name)s"
+SHARE_AGREEMENT_SHOW_COMMAND = "vserver show -fields Allowed-protocols"
+VSERVER_SHOW_COMMAND = "vserver show -type data"
+NFS_SHARE_SHOW_COMMAND = "volume show -junction-active true -instance"
+
+STORAGE_VENDOR = "NetApp"
+STORAGE_MODEL = "cmodel"
+
+QUOTA_SHOW_DETAIL_COMMAND = "volume quota policy rule show -instance"
+
+MGT_IP_COMMAND = "network interface show -fields address -role cluster-mgmt"
+NODE_IP_COMMAND = "network interface show -fields address -role node-mgmt"
+
+CONTROLLER_IP_COMMAND = "network interface show -fields " \
+                        "curr-node,address -role node-mgmt"
+
+SECURITY_STYLE = {
+    'mixed': constants.NASSecurityMode.MIXED,
+    'ntfs': constants.NASSecurityMode.NTFS,
+    'unix': constants.NASSecurityMode.UNIX
+}
 
 STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
     'ok-with-suppressed': constants.StorageStatus.NORMAL,
     'degraded': constants.StorageStatus.ABNORMAL,
-    'unreachable': constants.StorageStatus.ABNORMAL
+    'unreachable': constants.StorageStatus.ABNORMAL,
+    'unknown': constants.StorageStatus.ABNORMAL
 }
 
 AGGREGATE_STATUS = {
@@ -102,7 +178,7 @@ DISK_TYPE = {
     'BSAS': constants.DiskPhysicalType.SATA,
     'FCAL': constants.DiskPhysicalType.FC,
     'FSAS': constants.DiskPhysicalType.NL_SAS,
-    'LUN ': constants.DiskPhysicalType.LUN,
+    'LUN': constants.DiskPhysicalType.LUN,
     'SAS': constants.DiskPhysicalType.SAS,
     'MSATA': constants.DiskPhysicalType.SATA,
     'SSD': constants.DiskPhysicalType.SSD,
@@ -132,6 +208,48 @@ FS_STATUS = {
     'offline': constants.FilesystemStatus.NORMAL,
     'force-online': constants.FilesystemStatus.FAULTY,
     'force-offline': constants.FilesystemStatus.FAULTY,
+}
+
+NETWORK_LOGICAL_TYPE = {
+    'data': constants.PortLogicalType.DATA,
+    'cluster': constants.PortLogicalType.CLUSTER,
+    'node-mgmt': constants.PortLogicalType.NODE_MGMT,
+    'cluster-mgmt': constants.PortLogicalType.CLUSTER_MGMT,
+    'intercluster': constants.PortLogicalType.INTERCLUSTER,
+}
+
+ETH_LOGICAL_TYPE = {
+    'physical': constants.PortLogicalType.PHYSICAL,
+    'if-group': constants.PortLogicalType.IF_GROUP,
+    'vlan': constants.PortLogicalType.VLAN,
+    'undef': constants.PortLogicalType.OTHER
+}
+
+FC_TYPE = {
+    'fibre-channel': constants.PortType.FC,
+    'ethernet': constants.PortType.FCOE
+}
+
+WORM_TYPE = {
+    'non-snaplock': constants.WORMType.NON_WORM,
+    'compliance': constants.WORMType.COMPLIANCE,
+    'enterprise': constants.WORMType.ENTERPRISE,
+    '-': constants.WORMType.NON_WORM
+}
+
+QUOTA_TYPE = {
+    'user': constants.QuotaType.USER,
+    'tree': constants.QuotaType.TREE,
+    'group': constants.QuotaType.GROUP
+}
+
+NETWORK_PORT_TYPE = {
+    'nfs': constants.PortType.NFS,
+    'cifs': constants.PortType.CIFS,
+    'iscsi': constants.PortType.ISCSI,
+    'fcp': constants.PortType.FC,
+    'fcache': constants.PortType.FCACHE,
+    'none': constants.PortType.OTHER,
 }
 
 SEVERITY_MAP = {
@@ -388,3 +506,137 @@ SEVERITY_MAP = {
     'wafl.takeover.vol.fail': 'EMERGENCY',
     'wafl.vol.nvfail.offline': 'EMERGENCY',
     'wafl.vol.walloc.rsv.failmount': 'EMERGENCY'}
+
+IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read input/output operations per second"
+}
+WRITE_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write input/output operations per second"
+}
+THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data is "
+                   "successfully transferred in MB/s"
+}
+READ_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data read is "
+                   "successfully transferred in MB/s"
+}
+WRITE_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data write is "
+                   "successfully transferred in MB/s"
+}
+RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for an IO "
+                   "operation in ms"
+}
+CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of io that are cache hits"
+}
+READ_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of read ops that are cache hits"
+}
+WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of write ops that are cache hits"
+}
+IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of IO requests in KB"
+}
+READ_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of read IO requests in KB"
+}
+WRITE_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of write IO requests in KB"
+}
+CPU_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of CPU usage"
+}
+MEMORY_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of DISK memory usage in percentage"
+}
+SERVICE_TIME = {
+    "unit": 'ms',
+    "description": "Service time of the resource in ms"
+}
+
+CAP_MAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
+    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
+    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
+    "ioSize": IO_SIZE_DESCRIPTION,
+    "readIoSize": READ_IO_SIZE_DESCRIPTION,
+    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION,
+}
+
+STORAGE_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+POOL_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+VOLUME_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+PORT_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+FS_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}

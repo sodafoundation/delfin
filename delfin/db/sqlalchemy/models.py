@@ -23,7 +23,8 @@ SQLAlchemy models for Delfin  data.
 from oslo_config import cfg
 from oslo_db.sqlalchemy import models
 from oslo_db.sqlalchemy.types import JsonEncodedDict
-from sqlalchemy import Column, Integer, String, Boolean, BigInteger, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, BigInteger, \
+    DateTime, BIGINT
 from sqlalchemy.ext.declarative import declarative_base
 
 from delfin.common import constants
@@ -150,6 +151,7 @@ class Controller(BASE, DelfinBase):
     cpu_info = Column(String(255))
     memory_size = Column(BigInteger)
     storage_id = Column(String(36))
+    mgmt_ip = Column(String(255))
 
 
 class Port(BASE, DelfinBase):
@@ -267,6 +269,7 @@ class Task(BASE, DelfinBase):
     args = Column(JsonEncodedDict)
     last_run_time = Column(Integer)
     job_id = Column(String(36))
+    executor = Column(String(255))
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, default=False)
 
@@ -278,11 +281,120 @@ class FailedTask(BASE, DelfinBase):
     storage_id = Column(String(36))
     task_id = Column(Integer)
     interval = Column(Integer)
-    start_time = Column(Integer)
-    end_time = Column(Integer)
+    start_time = Column(BIGINT)
+    end_time = Column(BIGINT)
     retry_count = Column(Integer)
     method = Column(String(255))
     result = Column(String(255))
     job_id = Column(String(36))
+    executor = Column(String(255))
     deleted_at = Column(DateTime)
     deleted = Column(Boolean, default=False)
+
+
+class StorageHostInitiator(BASE, DelfinBase):
+    """Represents the storage host initiator attributes."""
+    __tablename__ = 'storage_host_initiators'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    alias = Column(String(255))
+    wwn = Column(String(255))
+    status = Column(String(255))
+    native_storage_host_id = Column(String(255))
+    native_storage_host_initiator_id = Column(String(255))
+
+
+class StorageHost(BASE, DelfinBase):
+    """Represents the storage host attributes."""
+    __tablename__ = 'storage_hosts'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    os_type = Column(String(255))
+    ip_address = Column(String(255))
+    status = Column(String(255))
+    native_storage_host_id = Column(String(255))
+
+
+class StorageHostGroup(BASE, DelfinBase):
+    """Represents the storage host group attributes."""
+    __tablename__ = 'storage_host_groups'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    native_storage_host_group_id = Column(String(255))
+
+
+class PortGroup(BASE, DelfinBase):
+    """Represents the port group attributes."""
+    __tablename__ = 'port_groups'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    native_port_group_id = Column(String(255))
+
+
+class VolumeGroup(BASE, DelfinBase):
+    """Represents the volume group attributes."""
+    __tablename__ = 'volume_groups'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    native_volume_group_id = Column(String(255))
+
+
+class MaskingView(BASE, DelfinBase):
+    """Represents the masking view attributes."""
+    __tablename__ = 'masking_views'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    native_storage_host_group_id = Column(String(255))
+    native_volume_group_id = Column(String(255))
+    native_port_group_id = Column(String(255))
+    native_storage_host_id = Column(String(255))
+    native_volume_id = Column(String(255))
+    native_port_id = Column(String(255))
+    native_masking_view_id = Column(String(255))
+
+
+class StorageHostGrpHostRel(BASE, DelfinBase):
+    """Represents the storage host group and storage host relation
+    attributes.
+    """
+    __tablename__ = 'storage_host_grp_host_rels'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    native_storage_host_group_id = Column(String(255))
+    native_storage_host_id = Column(String(255))
+
+
+class PortGrpPortRel(BASE, DelfinBase):
+    """Represents port group and port relation attributes."""
+    __tablename__ = 'port_grp_port_rels'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    native_port_group_id = Column(String(255))
+    native_port_id = Column(String(255))
+
+
+class VolGrpVolRel(BASE, DelfinBase):
+    """Represents the volume group and volume relation attributes."""
+    __tablename__ = 'vol_grp_vol_rels'
+    id = Column(String(36), primary_key=True)
+    storage_id = Column(String(36))
+    name = Column(String(255))
+    description = Column(String(255))
+    native_volume_group_id = Column(String(255))
+    native_volume_id = Column(String(255))

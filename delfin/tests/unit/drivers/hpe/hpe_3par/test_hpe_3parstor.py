@@ -151,7 +151,7 @@ CONTROLLER_RESULT = [
         'name': '1307327-0',
         'storage_id': '12345',
         'native_controller_id': '0',
-        'status': 'offline',
+        'status': 'degraded',
         'location': None,
         'soft_version': '3.2.2.204',
         'cpu_info': '4 * 2327 MHz',

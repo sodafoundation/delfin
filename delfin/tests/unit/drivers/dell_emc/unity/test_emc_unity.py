@@ -365,6 +365,7 @@ GET_ALL_DISKS = {
                 "sasExpanderVersion": "",
                 "rpm": 12288,
                 "size": 12121212,
+                "diskTechnology": 1,
                 "diskGroup": {
                     "id": "dp1"
                 }
@@ -387,7 +388,7 @@ disk_result = [
         'physical_type': 'sas',
         'logical_type': '',
         'native_disk_group_id': 'dp1',
-        'location': 12
+        'location': 'disk1'
     }
 ]
 GET_ALL_ETHPORTS = {
@@ -667,7 +668,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E1:50',
@@ -684,7 +686,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E8:4B',
@@ -701,7 +704,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:11:EF',
@@ -718,7 +722,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:DB:5D',
@@ -735,7 +740,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E5:05',
@@ -747,12 +753,13 @@ port_result = [
         'name': 'SP A FC Port 0',
         'storage_id': '12345',
         'native_port_id': 'spa_fc0',
-        'location': None,
-        'connection_status': 'normal',
+        'location': 'SP A FC Port 0',
+        'connection_status': 'connected',
         'health_status': 'normal',
         'type': 'fc',
         'logical_type': '',
-        'max_speed': 10737418240,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': 'fffffffffff'
     }
@@ -763,7 +770,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_1",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 1,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -804,7 +811,7 @@ GET_ALL_FILESYSTEMS = {
             "content": {
                 "id": "fs_3",
                 "type": 1,
-                "flrVersion": 0,
+                "flrVersion": 2,
                 "supportedProtocols": 2,
                 "health": {
                     "value": 5,
@@ -991,9 +998,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'enterprise',
+        'security_mode': 'native'
     }, {
         'name': 'ddd',
         'storage_id': '12345',
@@ -1002,9 +1010,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
-        'worm': 'non_worm'
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
+        'worm': 'compliance',
+        'security_mode': 'native'
     }, {
         'name': 'fs_home',
         'storage_id': '12345',
@@ -1013,9 +1022,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 10737418240,
-        'used_capacity': 283156480,
-        'free_capacity': 10454261760,
-        'worm': 'non_worm'
+        'used_capacity': 1622458368,
+        'free_capacity': 9114959872,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs_boga',
         'storage_id': '12345',
@@ -1024,9 +1034,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'fs2',
         'storage_id': '12345',
@@ -1035,9 +1046,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 5368709120,
-        'used_capacity': 283148288,
-        'free_capacity': 5085560832,
-        'worm': 'non_worm'
+        'used_capacity': 1622450176,
+        'free_capacity': 3746258944,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }, {
         'name': 'FS_MULTI1',
         'storage_id': '12345',
@@ -1046,9 +1058,10 @@ filesystem_result = [
         'status': 'normal',
         'type': 'thin',
         'total_capacity': 107374182400,
-        'used_capacity': 283140096,
-        'free_capacity': 107091042304,
-        'worm': 'non_worm'
+        'used_capacity': 1620303872,
+        'free_capacity': 105753878528,
+        'worm': 'non_worm',
+        'security_mode': 'native'
     }
 ]
 GET_ALL_QTREE = {
@@ -1072,11 +1085,11 @@ GET_ALL_QTREE = {
 }
 qtree_result = [
     {
-        'name': 'qtree_1',
+        'name': '/',
         'storage_id': '12345',
         'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'filesystem_1',
-        'path': '/filesystem_1/'
+        'path': '/'
     }
 ]
 GET_ALL_CIFSSHARE = {
@@ -1173,6 +1186,7 @@ share_result = [
         'name': 'fs1',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_2',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
         'path': '/fs1/',
         'protocol': 'cifs'
@@ -1180,6 +1194,7 @@ share_result = [
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_14',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
         'path': '/fs_boga/',
         'protocol': 'cifs'
@@ -1187,6 +1202,7 @@ share_result = [
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'SMBShare_18',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
         'path': '/fs2/',
         'protocol': 'cifs'
@@ -1194,6 +1210,7 @@ share_result = [
         'name': 'fs1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_2',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_1',
         'path': '/fs1/',
         'protocol': 'nfs'
@@ -1201,6 +1218,7 @@ share_result = [
         'name': 'boga',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_14',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_16',
         'path': '/fs_boga/',
         'protocol': 'nfs'
@@ -1208,6 +1226,7 @@ share_result = [
         'name': 'fs2',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_18',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_20',
         'path': '/fs2/',
         'protocol': 'nfs'
@@ -1215,6 +1234,7 @@ share_result = [
         'name': 'FS_MULTI1',
         'storage_id': '12345',
         'native_share_id': 'NFSShare_19',
+        'native_qtree_id': 'qtree_1',
         'native_filesystem_id': 'fs_22',
         'path': '/FS_MULTI1/',
         'protocol': 'nfs'
@@ -1247,6 +1267,7 @@ GET_ALL_USERQUOTA = {
                 "softLimit": 1110,
                 "sizeUsed": 20000000,
                 "path": "/",
+                "uid": 1111,
                 "filesystem": {
                     "id": "filesystem_1"
                 },
@@ -1262,10 +1283,10 @@ GET_ALL_USERQUOTA = {
                 "softLimit": 1110,
                 "sizeUsed": 20000000,
                 "path": "/",
+                "uid": 22222,
                 "filesystem": {
                     "id": "filesystem_1"
-                },
-                "treeQuota": None
+                }
             }
         }
     ]
@@ -1277,33 +1298,29 @@ quota_result = [
         'storage_id': '12345',
         'native_filesystem_id': 'filesystem_1',
         'native_qtree_id': 'qtree_1',
-        'capacity_hard_limit': 0,
-        'capacity_soft_limit': 0,
-        'file_hard_limit': 1000,
-        'file_soft_limit': 1110,
+        'capacity_hard_limit': 1000,
+        'capacity_soft_limit': 1110,
         'used_capacity': 20000000
     }, {
         'native_quota_id': 'user_1',
         'type': 'user',
         'storage_id': '12345',
         'native_filesystem_id': 'filesystem_1',
-        'native_qtree_id': 'user_1',
-        'capacity_hard_limit': 0,
-        'capacity_soft_limit': 0,
-        'file_hard_limit': 1000,
-        'file_soft_limit': 1110,
-        'used_capacity': 20000000
+        'native_qtree_id': 'qtree_1',
+        'capacity_hard_limit': 1000,
+        'capacity_soft_limit': 1110,
+        'used_capacity': 20000000,
+        'user_group_name': '1111'
     }, {
         'native_quota_id': 'user_2',
         'type': 'user',
         'storage_id': '12345',
         'native_filesystem_id': 'filesystem_1',
-        'native_qtree_id': 'user_2',
+        'native_qtree_id': None,
         'capacity_hard_limit': 1000,
         'capacity_soft_limit': 1110,
-        'file_hard_limit': 0,
-        'file_soft_limit': 0,
-        'used_capacity': 20000000
+        'used_capacity': 20000000,
+        'user_group_name': '22222'
     }
 ]
 
@@ -1434,11 +1451,12 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_nfsshares')
     @mock.patch.object(RestHandler, 'get_all_cifsshares')
+    @mock.patch.object(RestHandler, 'get_all_qtrees')
     @mock.patch.object(RestHandler, 'get_all_filesystems')
-    def test_list_shares(self, mock_file, mock_cifs, mock_nfs):
+    def test_list_shares(self, mock_file, mock_qtree, mock_cifs, mock_nfs):
         RestHandler.login = mock.Mock(return_value=None)
         mock_cifs.return_value = GET_ALL_CIFSSHARE
-        mock_file.return_value = GET_ALL_FILESYSTEMS
+        mock_qtree.return_value = GET_ALL_QTREE
         mock_nfs.return_value = GET_ALL_NFSSHARE
         mock_file.return_value = GET_ALL_FILESYSTEMS
         share = UnityStorDriver(**ACCESS_INFO).list_shares(context)
@@ -1446,10 +1464,8 @@ class TestUNITYStorDriver(TestCase):
 
     @mock.patch.object(RestHandler, 'get_all_qtrees')
     @mock.patch.object(RestHandler, 'get_all_userquotas')
-    @mock.patch.object(RestHandler, 'get_quota_configs')
-    def test_list_quotas(self, mock_config, mock_user, mock_qtree):
+    def test_list_quotas(self, mock_user, mock_qtree):
         RestHandler.login = mock.Mock(return_value=None)
-        mock_config.return_value = GET_ALL_QUOTACONFIG
         mock_user.return_value = GET_ALL_USERQUOTA
         mock_qtree.return_value = GET_ALL_QTREE
         quota = UnityStorDriver(**ACCESS_INFO).list_quotas(context)

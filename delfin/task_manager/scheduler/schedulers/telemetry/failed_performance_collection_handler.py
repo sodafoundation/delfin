@@ -22,9 +22,9 @@ from delfin.common.constants import TelemetryJobStatus, TelemetryCollection
 from delfin.db.sqlalchemy.models import FailedTask
 from delfin.db.sqlalchemy.models import Task
 from delfin.i18n import _
-from delfin.task_manager import rpcapi as task_rpcapi
-from delfin.task_manager.scheduler import scheduler
+from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
+from delfin.task_manager import metrics_rpcapi as metrics_task_rpcapi
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
@@ -32,7 +32,7 @@ CONF = cfg.CONF
 
 class FailedPerformanceCollectionHandler(object):
     def __init__(self, ctx, failed_task_id, storage_id, args, job_id,
-                 retry_count, start_time, end_time):
+                 retry_count, start_time, end_time, executor):
         self.ctx = ctx
         self.failed_task_id = failed_task_id
         self.retry_count = retry_count
@@ -41,9 +41,11 @@ class FailedPerformanceCollectionHandler(object):
         self.args = args
         self.start_time = start_time
         self.end_time = end_time
-        self.task_rpcapi = task_rpcapi.TaskAPI()
-        self.scheduler_instance = scheduler.Scheduler.get_instance()
+        self.metrics_task_rpcapi = metrics_task_rpcapi.TaskAPI()
+        self.scheduler_instance = \
+            schedule_manager.SchedulerManager().get_scheduler()
         self.result = TelemetryJobStatus.FAILED_JOB_STATUS_INIT
+        self.executor = executor
 
     @staticmethod
     def get_instance(ctx, failed_task_id):
@@ -58,6 +60,7 @@ class FailedPerformanceCollectionHandler(object):
             failed_task[FailedTask.retry_count.name],
             failed_task[FailedTask.start_time.name],
             failed_task[FailedTask.end_time.name],
+            failed_task[FailedTask.executor.name],
         )
 
     def __call__(self):
@@ -76,14 +79,11 @@ class FailedPerformanceCollectionHandler(object):
                       % (self.storage_id, self.failed_task_id))
             return
 
-        # Pull performance collection info
         self.retry_count = self.retry_count + 1
         try:
-            status = self.task_rpcapi.collect_telemetry(
-                self.ctx, self.storage_id,
-                PerformanceCollectionTask.__module__ + '.' +
-                PerformanceCollectionTask.__name__,
-                self.args, self.start_time, self.end_time)
+            telemetry = PerformanceCollectionTask()
+            status = telemetry.collect(self.ctx, self.storage_id, self.args,
+                                       self.start_time, self.end_time)
 
             if not status:
                 raise exception.TelemetryTaskExecError()
@@ -120,4 +120,6 @@ class FailedPerformanceCollectionHandler(object):
         db.failed_task_update(self.ctx, self.failed_task_id,
                               {FailedTask.retry_count.name: self.retry_count,
                                FailedTask.result.name: self.result})
-        self.scheduler_instance.pause_job(self.job_id)
+        self.metrics_task_rpcapi.remove_failed_job(self.ctx,
+                                                   self.failed_task_id,
+                                                   self.executor)

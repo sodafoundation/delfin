@@ -17,27 +17,34 @@ ACCESS_INFO = {
     "storage_id": "12345",
     "vendor": "hpe",
     "model": "3par",
-    "rest": {
-        "host": "10.0.0.1",
-        "port": 8443,
-        "username": "user",
-        "password": "pass"
-    },
     "ssh": {
         "host": "192.168.159.130",
         "port": 22,
         "username": "admin",
         "password": "aq114477",
-    }
+    },
+    "rest": {
+        "host": "192.168.159.130",
+        "port": 22,
+        "username": "admin",
+        "password": "cGFzc3dvcmQ=",
+    },
+
 }
 
-SYSTEM_INFO = """Cluster UUID: 47096983-8018-11eb-bd5b-000c293284bd\r
+SYSTEM_INFO = """
+----cluster----\r
+last login time : 12 456 789\r
+\r
+Cluster UUID: 47096983-8018-11eb-bd5b-000c293284bd\r
           Cluster Name: cl\r
  Cluster Serial Number: -\r
       Cluster Location:\r
        Cluster Contact: \r"""
 
-AGGREGATE_INFO = """\r
+AGGREGATE_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 Aggregate     Size Available Used% State   #Vols  Nodes   RAID Status\r
 --------- -------- --------- ----- ------- ------ --------------------\r
 aggr0        855MB   42.14MB   95% online       1 cl-01   raid_dp,\r
@@ -47,13 +54,22 @@ aggr1       8.79GB    3.98GB   55% online       3 cl-01   raid_dp,\r
 aggr2       8.79GB    4.98GB   43% online       3 cl-01   raid_dp,\r
                                 normal\r"""
 
-VERSION = """NetApp Release 9.0: Fri Aug 19 06:39:33 UTC 2016"""
+VERSION = """----cluster----\r
+last login time : 12 456 789\r
+\r
+NetApp Release 9.8: Fri Aug 19 06:39:33 UTC 2016\r
+"""
 
-SYSTEM_STATUS = """Status\r
+SYSTEM_STATUS = """----cluster----\r
+last login time : 12 456 789\r
+\r
+Status\r
 ---------------\r
 ok"""
 
-DISK_INFO = """
+DISK_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                      Usable           Disk    Container   Container\r
 Disk                   Size Shelf Bay Type    Type        Name      Owner\r
 ---------------- ---------- ----- --- ------- ----------- --------- -----\r
@@ -87,7 +103,8 @@ NET-1.27             1020MB     -  29 FCAL    aggregate   aggr2     cl-01\r
 NET-1.28             1020MB     -  32 FCAL    spare       Pool0     cl-01\r
 28 entries were displayed."""
 
-POOLS_INFO = """
+POOLS_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                         Storage Pool Name: Pool1\r
                      UUID of Storage Pool: 60f2f1b9-e60f-11e3\r
@@ -115,7 +132,8 @@ Job ID of the Currently Running Operation: - \r
   Reason for storage pool being unhealthy: -\r
 Job ID of the Currently Running Operation: - \r"""
 
-AGGREGATE_DETAIL_INFO = """\r
+AGGREGATE_DETAIL_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                                          Aggregate: aggr0\r
                                       Storage Type: hdd\r
@@ -137,7 +155,7 @@ AGGREGATE_DETAIL_INFO = """\r
                                    RAID Lost Write: on\r
                              Enable Thorough Scrub: off\r
                                     Hybrid Enabled: false\r
-                                    Available Size: 30.34MB\r
+                                    Available Size: 0B\r
                                   Checksum Enabled: true\r
                                    Checksum Status: active\r
                                            Cluster: cl\r
@@ -169,7 +187,7 @@ AGGREGATE_DETAIL_INFO = """\r
                                               Size: 855MB\r
                                              State: online\r
                         Maximum Write Alloc Blocks: 0\r
-                                         Used Size: 824.7MB\r
+                                         Used Size: 0\r
                                  Uses Shared Disks: false\r
                                        UUID String: a71b1e4e-d151-abebf8\r
                                  Number Of Volumes: 1
@@ -350,7 +368,10 @@ Threshold When Aggregate Is Considered Balanced (%): 40\r
 3 entries were displayed.\r
 """
 
-LUN_INFO = """              Vserver Name: svm5\r
+LUN_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+              Vserver Name: svm5\r
                   LUN Path: /vol/lun_0_vol/lun_0\r
                Volume Name: lun_0_vol\r
                 Qtree Name: ""\r
@@ -384,7 +405,9 @@ Space Reservations Honored: true\r
        Inconsistent Import: false\r
        """
 
-FS_INFO = """\r
+FS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                    Vserver Name: cl-01\r
                                     Volume Name: vol0\r
                                  Aggregate Name: aggr0\r
@@ -410,7 +433,7 @@ FS_INFO = """\r
                                  Available Size: 135.4MB\r
                                 Filesystem Size: 807.3MB\r
                         Total User-Visible Size: 766.9MB\r
-                                      Used Size: 631.5MB\r
+                                      Used Size: -\r
                                 Used Percentage: 83%\r
            Volume Nearly Full Threshold Percent: 95%\r
                   Volume Full Threshold Percent: 98%\r
@@ -477,6 +500,7 @@ VBN_BAD may be present in the active filesystem: false\r
                           Is Volume a FlexGroup: false\r
                                   SnapLock Type: non-snaplock\r
                           Vserver DR Protection: -\r
+ UUID of the Efficiency Policy: b0f36cd7-e7bc-11e2-9994-123478563412\r
 \r
                                    Vserver Name: svm1\r
                                     Volume Name: svm1_root\r
@@ -570,6 +594,7 @@ VBN_BAD may be present in the active filesystem: false\r
                           Is Volume a FlexGroup: false\r
                                   SnapLock Type: non-snaplock\r
                           Vserver DR Protection: -\r
+ UUID of the Efficiency Policy: b0f36cd7-e7bc-11e2-9994-123478563412\r
 \r
                                    Vserver Name: svm1\r
                                     Volume Name: vol_svm1_1\r
@@ -663,30 +688,12 @@ VBN_BAD may be present in the active filesystem: false\r
                           Is Volume a FlexGroup: false\r
                                   SnapLock Type: non-snaplock\r
                           Vserver DR Protection: -\r
+ UUID of the Efficiency Policy: b0f36cd7-e7bc-11e2-9994-123478563412\r
 7 entries were displayed."""
 
-EVENT_INFO = """\r
-                  Node: cl-01\r
-             Sequence#: 9102\r
-                  Time: 3/10/2021 18:19:14\r
-              Severity: ERROR\r
-                Source: mgwd\r
-          Message Name: mgmtgwd.configbr.noSNCBackup\r
-                 Event: mgmtgwd.confiigured.\r
-     Corrective Action: Configutination <destin man pagestion.\r
-           Description: This message occurURL is configured.\r
+ALERT_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
-                  Node: cl-01\r
-             Sequence#: 7855\r
-                  Time: 3/10/2021 10:18:36\r
-              Severity: ERROR\r
-                Source: mgwd\r
-          Message Name: mgmtgwd.configbr.noSNCBackup\r
-                 Event: mgmtgwd.configbr.noSNCBackup: \r
-     Corrective Action: Configure an o modify -desinformation.\r
-           Description: This mes."""
-
-ALERT_INFO = """\r
                   Node: node1\r
                Monitor: node-connect\r
               Alert ID: DualPathToDiskShelf_Alert\r
@@ -695,7 +702,8 @@ ALERT_INFO = """\r
        Indication Time: Mon Mar 10 10:26:38 2021\r
     Perceived Severity: Major\r
         Probable Cause: Connection_establishment_error\r
-           Description: Disk shelf 2 does not \r
+           Description: Disk shelf 2 does not disk\r
+           disk 12312\r
     Corrective Actions: 1. Halt controller node1 and \r
                         2. Connect disk shelf 2 t\r
                         3. Reboot the halted controllers.\r
@@ -716,7 +724,9 @@ Additional Information: Shelf uuid: 50:05:0c:c1:02:00:0f:02\r
 Alerting Resource Name: Shelf ID 2\r
  Additional Alert Tags: quality-of-service, nondisruptive-upgrade\r"""
 
-CONTROLLER_INFO = """\r
+CONTROLLER_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                               Node: cl-01\r
                                              Owner: \r
                                           Location: \r
@@ -733,7 +743,9 @@ CONTROLLER_INFO = """\r
                                All-Flash Optimized: false\r
                                """
 
-PORTS_INFO = """\r
+PORTS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                                         Node: cl-01\r
                                         Port: e0a\r
                                         Link: up\r
@@ -792,65 +804,8 @@ PORTS_INFO = """\r
                    Ignore Port Health Status: false\r
                 Port Health Degraded Reasons: -\r"""
 
-INTERFACE_INFO = """\r
-                    Vserver Name: cl\r
-          Logical Interface Name: cl-01_mgmt1\r
-                            Role: node-mgmt\r
-                   Data Protocol: none\r
-                       Home Node: cl-01\r
-                       Home Port: e0c\r
-                    Current Node: cl-01\r
-                    Current Port: e0c\r
-              Operational Status: up\r
-                 Extended Status: -\r
-                         Is Home: true\r
-                 Network Address: 192.168.159.130\r
-                         Netmask: 255.255.255.0\r
-             Bits in the Netmask: 24\r
-                     Subnet Name: -\r
-           Administrative Status: up\r
-                 Failover Policy: local-only\r
-                 Firewall Policy: mgmt\r
-                     Auto Revert: true\r
-   Fully Qualified DNS Zone Name: none\r
-         DNS Query Listen Enable: false\r
-             Failover Group Name: Default\r
-                        FCP WWPN: -\r
-                  Address family: ipv4\r
-                         Comment: -\r
-                  IPspace of LIF: Default\r
-  Is Dynamic DNS Update Enabled?: -\r
-\r
-                    Vserver Name: cl\r
-          Logical Interface Name: cluster_mgmt\r
-                            Role: cluster-mgmt\r
-                   Data Protocol: none\r
-                       Home Node: cl-01\r
-                       Home Port: e0d\r
-                    Current Node: cl-01\r
-                    Current Port: e0a\r
-              Operational Status: up\r
-                 Extended Status: -\r
-                         Is Home: false\r
-                 Network Address: 192.168.159.131\r
-                         Netmask: 255.255.255.0\r
-             Bits in the Netmask: 24\r
-                     Subnet Name: -\r
-           Administrative Status: up\r
-                 Failover Policy: broadcast-domain-wide\r
-                 Firewall Policy: mgmt\r
-                     Auto Revert: false\r
-   Fully Qualified DNS Zone Name: none\r
-         DNS Query Listen Enable: false\r
-             Failover Group Name: Default\r
-                        FCP WWPN: -\r
-                  Address family: ipv6\r
-                         Comment: -\r
-                  IPspace of LIF: Default\r
-  Is Dynamic DNS Update Enabled?: -\r
-2 entries were displayed.\r"""
-
-FC_PORT_INFO = """
+FC_PORT_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                           Node: cl-01\r
                        Adapter: 0a\r
@@ -1038,7 +993,9 @@ FC Capabilities Of Transceiver: 10 (Gbit/sec)\r
         Is Xmit Power In Range: true\r
 5 entries were displayed.\r"""
 
-DISKS_INFO = """\r
+DISKS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
                   Disk: NET-1.1\r
         Container Type: aggregate\r
             Owner/Home: cl-01 / cl-01\r
@@ -1093,7 +1050,9 @@ Errors:\r
 -\r
 """
 
-PHYSICAL_INFO = """
+PHYSICAL_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 Disk             Type    Vendor   Model                Revision     RPM  BPS\r
 ---------------- ------- -------- -------------------- -------- ------- ----\r
 NET-1.1          FCAL    NETAPP   VD-1000MB-FZ-520     0042       15000  520\r
@@ -1154,7 +1113,15 @@ NET-1.28         FCAL    NETAPP   VD-1000MB-FZ-520     0042       15000  520\r
                  SerialNumber: 07294313\r
 28 entries were displayed.\r"""
 
-QTREES_INFO = """
+ERROR_DISK_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+Disk             Error Type        Error Text\r
+---------------- ----------------- ----------------------------------\r
+NET-1.25         diskfail          ."""
+
+QTREES_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                       Vserver Name: svm1\r
                        Volume Name: svm1_root\r
@@ -1204,7 +1171,16 @@ QTREES_INFO = """
                      Export Policy: default\r
         Is Export Policy Inherited: true"""
 
-SHARES_INFO = """
+SHARE_VSERVER_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+                               Admin      Operational Root\r
+Vserver     Type    Subtype    State      State       Volume     Aggregate\r
+----------- ------- ---------- ---------- ----------- ---------- ----------\r
+svm4.example.com      data    default    running    running  SVC_FC_ NETAPP"""
+
+SHARES_INFO = """----cluster----\r
+last login time : 12 456 789\r
 \r
                                       Vserver: svm4.example.com\r
                                         Share: admin$\r
@@ -1298,105 +1274,534 @@ SHARES_INFO = """
                                 Offline Files: manual\r
                 Vscan File-Operations Profile: standard\r
             Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: admin$\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /\r
-                             Share Properties: browsable\r
-                           Symlink Properties: -\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: -\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_root\r
-                                Offline Files: -\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: c$\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /\r
-                             Share Properties: oplocks\r
-                                               browsable\r
-                                               changenotify\r
-                                               show-previous-versions\r
-                           Symlink Properties: symlinks\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: BUILTIN\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_root\r
-                                Offline Files: -\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: ipc$\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /\r
-                             Share Properties: browsable\r
-                           Symlink Properties: -\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: -\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_root\r
-                                Offline Files: -\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-\r
-                                      Vserver: svm5\r
-                                        Share: svm5_vol1\r
-                     CIFS Server NetBIOS Name: NETAPP-NODE02\r
-                                         Path: /svm5_vol1\r
-                             Share Properties: browsable\r
-                                               changenotify\r
-                                               oplocks\r
-                                               show-previous-versions\r
-                           Symlink Properties: enable\r
-                      File Mode Creation Mask: -\r
-                 Directory Mode Creation Mask: -\r
-                                Share Comment: -\r
-                                    Share ACL: Everyone / Full Control\r
-                File Attribute Cache Lifetime: -\r
-                                  Volume Name: svm5_vol1\r
-                                Offline Files: manual\r
-                Vscan File-Operations Profile: standard\r
-            Maximum Tree Connections on Share: 4294967295\r
-                   UNIX Group for File Create: -\r
-9 entries were displayed.\r"""
+                   UNIX Group for File Create: -"""
 
-SHARES_AGREEMENT_INFO = """
+SHARES_AGREEMENT_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 vserver allowed-protocols\r
 ------- -----------------\r
-cl      -\r
-cl-01   -\r
-svm1    ndmp\r
-svm2    ndmp\r
-svm3    cifs\r
-svm4.example.com\r
-        nfs,cifs,fcp,iscsi\r
-svm5    nfs,cifs,fcp,iscsi\r
+svm4.example.com
+nfs,cifs,fcp,iscsi\r
 7 entries were displayed.\r
 """
 
-THIN_FS_INFO = """
+THIN_FS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
 Vserver Volume Aggregate State Type Size Available Used%\r
 --------- ------------ ------------ ---------- ---- -\r
 svm1 vol_svm1_2 aggr1 online RW 2GB 2.00GB 0%\r"""
 
 TRAP_MAP = {
     '1.3.6.1.4.1.789.1.1.12.0':
-        'LUN.inconsistent.filesystem:The on-disk structure of the LUN at path '
-        'test in volume 0 (DSID 0) is inconsistent in the WAFL file system.',
+        'A Health Monitor has clear an alert. '
+        '[Alert Id = DisabledInuseSASPort_Alert , Alerting Resource = 0a].',
+    'controller_name': 'cl-01',
     '1.3.6.1.4.1.789.1.1.9.0': '1-80-000008'
 }
+
+
+QUOTAS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: tree\r
+                  Target: qtree_21052021_110317_94\r
+              Qtree Name: ""\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: user\r
+                  Target: ""\r
+              Qtree Name: ""\r
+            User Mapping: off\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: group\r
+                  Target: ""\r
+              Qtree Name: ""\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: group\r
+                  Target: ""\r
+              Qtree Name: qtree_08052021_152034_44\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 100\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 100\r
+\r
+                 Vserver: svm5\r
+             Policy Name: default\r
+             Volume Name: svm5_vol1\r
+                    Type: group\r
+                  Target: pcuser\r
+              Qtree Name: ""\r
+            User Mapping: -\r
+              Disk Limit: 4.88MB\r
+             Files Limit: 1000\r
+Threshold for Disk Limit: 4.88MB\r
+         Soft Disk Limit: 4.88MB\r
+        Soft Files Limit: 1000\r
+5 entries were displayed."""
+
+NFS_SHARE_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+                                   Vserver Name: svm4.example.com\r
+                                    Volume Name: svm4examplecom_root\r
+                                 Aggregate Name: aggr1\r
+  List of Aggregates for FlexGroup Constituents: -\r
+                                    Volume Size: 20MB\r
+                             Volume Data Set ID: 1036\r
+                      Volume Master Data Set ID: 2155388532\r
+                                   Volume State: online\r
+                                   Volume Style: flex\r
+                          Extended Volume Style: flexvol\r
+                         Is Cluster-Mode Volume: true\r
+                          Is Constituent Volume: false\r
+                                  Export Policy: default\r
+                                        User ID: -\r
+                                       Group ID: -\r
+                                 Security Style: ntfs\r
+                               UNIX Permissions: ------------\r
+                                  Junction Path: /\r
+                           Junction Path Source: -\r
+                                Junction Active: true\r
+                         Junction Parent Volume: -\r
+                                        Comment:\r
+                                 Available Size: 18.79MB\r
+                                Filesystem Size: 20MB\r
+                        Total User-Visible Size: 19MB\r
+                                      Used Size: 220KB\r
+                                Used Percentage: 6%\r
+           Volume Nearly Full Threshold Percent: 95%\r
+                  Volume Full Threshold Percent: 98%\r
+           Maximum Autosize (for flexvols only): 24MB\r
+                               Minimum Autosize: 20MB\r
+             Autosize Grow Threshold Percentage: 85%\r
+           Autosize Shrink Threshold Percentage: 50%\r
+                                  Autosize Mode: off\r
+            Total Files (for user-visible data): 566\r
+             Files Used (for user-visible data): 104\r
+                      Space Guarantee in Effect: true\r
+                            Space SLO in Effect: true\r
+                                      Space SLO: none\r
+                          Space Guarantee Style: volume\r
+                             Fractional Reserve: 100%\r
+                                    Volume Type: RW\r
+              Snapshot Directory Access Enabled: true\r
+             Space Reserved for Snapshot Copies: 5%\r
+                          Snapshot Reserve Used: 100%\r
+                                Snapshot Policy: default\r
+                                  Creation Time: Sat Mar 13 20:15:43 20\r
+                                       Language: C.UTF-8\r
+                                   Clone Volume: false\r
+                                      Node name: cl-01\r
+                      Clone Parent Vserver Name: -\r
+                        FlexClone Parent Volume: -\r
+                                  NVFAIL Option: off\r
+                          Volume's NVFAIL State: false\r
+        Force NVFAIL on MetroCluster Switchover: off\r
+                      Is File System Size Fixed: false\r
+                     (DEPRECATED)-Extent Option: off\r
+                  Reserved Space for Overwrites: 0B\r
+              Primary Space Management Strategy: volume_grow\r
+                       Read Reallocation Option: off\r
+    Naming Scheme for Automatic Snapshot Copies: create_time\r
+               Inconsistency in the File System: false\r
+                   Is Volume Quiesced (On-Disk): false\r
+                 Is Volume Quiesced (In-Memory): false\r
+      Volume Contains Shared or Compressed Data: false\r
+              Space Saved by Storage Efficiency: 0B\r
+         Percentage Saved by Storage Efficiency: 0%\r
+                   Space Saved by Deduplication: 0B\r
+              Percentage Saved by Deduplication: 0%\r
+                  Space Shared by Deduplication: 0B\r
+                     Space Saved by Compression: 0B\r
+          Percentage Space Saved by Compression: 0%\r
+            Volume Size Used by Snapshot Copies: 1.00MB\r
+                                     Block Type: 64-bit\r
+                               Is Volume Moving: false\r
+                 Flash Pool Caching Eligibility: read-write\r
+  Flash Pool Write Caching Ineligibility Reason: -\r
+                     Managed By Storage Service: -\r
+Create Namespace Mirror Constituents For SnapDiff Use: -\r
+                        Constituent Volume Role: -\r
+                          QoS Policy Group Name: -\r
+                            Caching Policy Name: -\r
+                Is Volume Move in Cutover Phase: false\r
+        Number of Snapshot Copies in the Volume: 8\r
+VBN_BAD may be present in the active filesystem: false\r
+                Is Volume on a hybrid aggregate: false\r
+                       Total Physical Used Size: 1.21MB\r
+                       Physical Used Percentage: 6%\r
+                                  List of Nodes: -\r
+                          Is Volume a FlexGroup: false\r
+                                  SnapLock Type: non-snaplock\r
+                          Vserver DR Protection: -\r
+\r
+                                   Vserver Name: svm4.example.com\r
+                                    Volume Name: vol_svm4_1\r
+                                 Aggregate Name: aggr1\r
+  List of Aggregates for FlexGroup Constituents: -\r
+                                    Volume Size: 1GB\r
+                             Volume Data Set ID: 1037\r
+                      Volume Master Data Set ID: 2155388533\r
+                                   Volume State: online\r
+                                   Volume Style: flex\r
+                          Extended Volume Style: flexvol\r
+                         Is Cluster-Mode Volume: true\r
+                          Is Constituent Volume: false\r
+                                  Export Policy: default\r
+                                        User ID: 0\r
+                                       Group ID: 0\r
+                                 Security Style: mixed\r
+                               UNIX Permissions: ---rwxrwxrwx\r
+                                  Junction Path: /vol_svm4_1\r
+                           Junction Path Source: RW_volume\r
+                                Junction Active: true\r
+                         Junction Parent Volume: svm4examplecom_root\r
+                                        Comment:\r
+                                 Available Size: 972.5MB\r
+                                Filesystem Size: 1GB\r
+                        Total User-Visible Size: 972.8MB\r
+                                      Used Size: 340KB\r
+                                Used Percentage: 5%\r
+           Volume Nearly Full Threshold Percent: 95%\r
+                  Volume Full Threshold Percent: 98%\r
+           Maximum Autosize (for flexvols only): 1.20GB\r
+                               Minimum Autosize: 1GB\r
+             Autosize Grow Threshold Percentage: 85%\r
+           Autosize Shrink Threshold Percentage: 50%\r
+                                  Autosize Mode: off\r
+            Total Files (for user-visible data): 31122\r
+             Files Used (for user-visible data): 97\r
+                      Space Guarantee in Effect: true\r
+                            Space SLO in Effect: true\r
+                                      Space SLO: none\r
+                          Space Guarantee Style: volume\r
+                             Fractional Reserve: 100%\r
+                                    Volume Type: RW\r
+              Snapshot Directory Access Enabled: true\r
+             Space Reserved for Snapshot Copies: 5%\r
+                          Snapshot Reserve Used: 3%\r
+                                Snapshot Policy: default\r
+                                  Creation Time: Sat Mar 13 20:35:56 20\r
+                                       Language: C.UTF-8\r
+                                   Clone Volume: false\r
+                                      Node name: cl-01\r
+                      Clone Parent Vserver Name: -\r
+                        FlexClone Parent Volume: -\r
+                                  NVFAIL Option: off\r
+                          Volume's NVFAIL State: false\r
+        Force NVFAIL on MetroCluster Switchover: off\r
+                      Is File System Size Fixed: false\r
+                     (DEPRECATED)-Extent Option: off\r
+                  Reserved Space for Overwrites: 0B\r
+              Primary Space Management Strategy: volume_grow\r
+                       Read Reallocation Option: off\r
+    Naming Scheme for Automatic Snapshot Copies: create_time\r
+               Inconsistency in the File System: false\r
+                   Is Volume Quiesced (On-Disk): false\r
+                 Is Volume Quiesced (In-Memory): false\r
+      Volume Contains Shared or Compressed Data: false\r
+              Space Saved by Storage Efficiency: 0B\r
+         Percentage Saved by Storage Efficiency: 0%\r
+                   Space Saved by Deduplication: 0B\r
+              Percentage Saved by Deduplication: 0%\r
+                  Space Shared by Deduplication: 0B\r
+                     Space Saved by Compression: 0B\r
+          Percentage Space Saved by Compression: 0%\r
+            Volume Size Used by Snapshot Copies: 1.45MB\r
+                                     Block Type: 64-bit\r
+                               Is Volume Moving: false\r
+                 Flash Pool Caching Eligibility: read-write\r
+  Flash Pool Write Caching Ineligibility Reason: -\r
+                     Managed By Storage Service: -\r
+Create Namespace Mirror Constituents For SnapDiff Use: -\r
+                        Constituent Volume Role: -\r
+                          QoS Policy Group Name: -\r
+                            Caching Policy Name: -\r
+                Is Volume Move in Cutover Phase: false\r
+        Number of Snapshot Copies in the Volume: 8\r
+VBN_BAD may be present in the active filesystem: false\r
+                Is Volume on a hybrid aggregate: false\r
+                       Total Physical Used Size: 1.78MB\r
+                       Physical Used Percentage: 0%\r
+                                  List of Nodes: -\r
+                          Is Volume a FlexGroup: false\r
+                                  SnapLock Type: non-snaplock\r
+                          Vserver DR Protection: -\r
+8 entries were displayed.\r"""
+
+NODE_IPS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+vserver lif         address\r
+------- ----------- ---------------\r
+cl      cl-01_mgmt1 192.168.159.130"""
+
+CLUSTER_IPS_INFO = """----cluster----\r
+last login time : 12 456 789\r
+\r
+vserver lif         address\r
+------- ------------ ---------------\r
+cl      cluster_mgmt 192.168.159.131"""
+
+CONTROLLER_IP_INFO = """vserver   lif     curr-node address\r
+--------- --------------- --------- ------------\r
+NetappFSA Netapp-01_mgmt1 cl-01 8.44.162.245"""
+
+RESOURCE_METRICS = {
+    'storage':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'storagePool':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'volume':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime',
+         'cacheHitRatio', 'readCacheHitRatio', 'writeCacheHitRatio',
+         'ioSize', 'readIoSize', 'writeIoSize'],
+    'controller':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'port':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'disk':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput', 'responseTime'],
+    'filesystem':
+        ['iops', 'readIops', 'writeIops', 'throughput',
+         'readThroughput', 'writeThroughput',
+         'ioSize', 'readIoSize', 'writeIoSize'],
+}
+
+CLUSTER_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+POOL_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+LUN_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+FS_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+FS_REST_INFO = [
+    {
+        "name": "vol1",
+        "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7",
+        "svm": {
+            "_links": {
+                "self": {
+                    "href": "/api/resourcelink"
+                }
+            },
+            "name": "svm1",
+            "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7"
+        },
+    }
+]
+
+PORT_REST_INFO = [
+    {
+        "name": "e0a",
+        "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7",
+        "node": {
+            "_links": {
+                "self": {
+                    "href": "/api/resourcelink"
+                }
+            },
+            "name": "node1",
+            "uuid": "02c9e252-41be-11e9-81d5-00a0986138f7"
+        },
+    }
+]
+
+FC_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "latency": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "iops": {
+            "other": 0,
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]
+
+ETH_PER_INFO = [
+    {
+        "timestamp": "2017-01-25T11:20:00Z",
+        "status": "ok",
+        "_links": {
+            "self": {
+                "href": "/api/resourcelink"
+            }
+        },
+        "throughput": {
+            "read": "200",
+            "total": "1000",
+            "write": "100"
+        },
+        "duration": "PT15S"
+    }
+]

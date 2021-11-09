@@ -24,7 +24,6 @@ PROJECT_NAME='delfin'
 PROJECT_DIR=$(dirname "$0")
 log=delfin::log
 
-
 check_python(){
     py_ver=$(python3 -V)
     if [ $? == 0 ]; then
@@ -142,7 +141,11 @@ check_install_p3_venv(){
         delfin::log "python3-venv is installed"
     fi
 
-    venv_dir=$(python3 -m venv ${BASEDIR}/${PROJECT_NAME})
+    if [[ $(lsb_release -rs) == "18.04" ]]; then
+        virtualenv -p python3 ${BASEDIR}/${PROJECT_NAME}
+    else
+        venv_dir=$(python3 -m venv ${BASEDIR}/${PROJECT_NAME})
+    fi
     source ${BASEDIR}/${PROJECT_NAME}/bin/activate
 }
 

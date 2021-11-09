@@ -427,6 +427,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/access-infos':
+    get:
+      tags:
+        - Storages
+      description: Get access info of all registered storages
+      operationId: GetAllStorageAccessInfos
+      responses:
+        '200':
+          description: Storage Access-info  available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageAccessInfosResponse'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
   /v1/storage-pools:
     get:
       tags:
@@ -1948,10 +1979,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorSpec'
-  '/v1/storages/{storage_id}/alert-source':
+  '/v1/storages/{storage_id}/snmp-config':
     get:
       tags:
-        - AlertSource
+        - SnmpConfig
       description: >-
         Get details snmp alert source information configured on behalf of
         backend devices
@@ -1970,7 +2001,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AlertSourceRespSpec'
+                $ref: '#/components/schemas/SnmpConfigRespSpec'
         '400':
           description: BadRequest
           content:
@@ -2003,11 +2034,11 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
     put:
       tags:
-        - AlertSource
+        - SnmpConfig
       description: >-
         Modify snmp alert source information configured on behalf of backend
         devices
-      operationId: putAlertSourceInfo
+      operationId: putSnmpConfigInfo
       parameters:
         - name: storage_id
           in: path
@@ -2018,14 +2049,14 @@ paths:
           schema:
             type: string
       requestBody:
-        $ref: '#/components/requestBodies/AlertSourceUpdateSpec'
+        $ref: '#/components/requestBodies/SnmpConfigUpdateSpec'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AlertSourceRespSpec'
+                $ref: '#/components/schemas/SnmpConfigRespSpec'
         '400':
           description: BadRequest
           content:
@@ -2058,7 +2089,7 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
     delete:
       tags:
-        - AlertSource
+        - SnmpConfig
       description: >-
         Removes snmp alert source information configured on behalf of backend
         devices
@@ -2247,6 +2278,867 @@ paths:
                 $ref: '#/components/schemas/ErrorSpec'
         '505':
           description: Capability feature not supported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/snmp-configs':
+    get:
+      tags:
+        - Storages
+      description: >-
+        Get all details snmp alert source information configured on behalf of
+        backend devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnmpConfigsRespSpec'
+        '400':
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/{storage_id}/storage-host-initiators':
+    get:
+      tags:
+        - Masking views
+      description: List all storage host initiators.
+      parameters:
+        - name: storage_id
+          in: path
+          description: Database ID created for a storage backend.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            Requests a page size of items. Returns a number of items up to a
+            limit value. Use the limit parameter to make an initial limited
+            request and use the ID of the last-seen item from the response as
+            the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: >-
+            Used in conjunction with limit to return a slice of items.
+            offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The storage host initiator name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a storage host initiator.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: The storage host initiator description
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: alias
+          in: query
+          description: The storage host initiator alias name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: wwn
+          in: query
+          description: The storage host initiator worrld wide name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_storage_host_initiator_id
+          in: query
+          description: >-
+            Actual ID of the storage host initiator in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_storage_host_id
+          in: query
+          description: >-
+            Actual ID of the associated storage host in the storage backend
+            if any.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: The storage host initiator status
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - normal
+              - offline
+              - abnormal
+              - unknown
+      responses:
+        '200':
+          description: List storage host initiators query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - storage_host_initiators
+                additionalProperties: true
+                properties:
+                  storage_host_initiators:
+                    type: array
+                    title: the storage host initiators schema
+                    items:
+                      $ref: '#/components/schemas/StorageHostInitiatorRespSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/{storage_id}/storage-hosts':
+    get:
+      tags:
+        - Masking views
+      description: List all storage hosts.
+      parameters:
+        - name: storage_id
+          in: path
+          description: Database ID created for a storage backend.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            Requests a page size of items. Returns a number of items up to a
+            limit value. Use the limit parameter to make an initial limited
+            request and use the ID of the last-seen item from the response as
+            the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: >-
+            Used in conjunction with limit to return a slice of items.
+            offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The storage host name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a storage host.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: The storage host description
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_storage_host_id
+          in: query
+          description: Actual ID of the storage host in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: The storage host status
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - normal
+              - offline
+              - abnormal
+              - unknown
+        - name: ip_address
+          in: query
+          description: Ip address of the storage host.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: os_type
+          in: query
+          description: Operating system of the storage host
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+              - windows
+              - linux
+      responses:
+        '200':
+          description: List storage hosts query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - storage_hosts
+                additionalProperties: true
+                properties:
+                  storage_hosts:
+                    type: array
+                    title: the storage hosts schema
+                    items:
+                      $ref: '#/components/schemas/StorageHostRespSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/{storage_id}/storage-host-groups':
+    get:
+      tags:
+        - Masking views
+      description: List all storage host groups.
+      parameters:
+        - name: storage_id
+          in: path
+          description: Database ID created for a storage backend.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            Requests a page size of items. Returns a number of items up to a
+            limit value. Use the limit parameter to make an initial limited
+            request and use the ID of the last-seen item from the response as
+            the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: >-
+            Used in conjunction with limit to return a slice of items.
+            offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The storage host group name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a storage host group.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: The storage host group description
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_storage_host_group_id
+          in: query
+          description: Actual ID of the storage host group in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List storage host groups query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - storage_host_groups
+                additionalProperties: true
+                properties:
+                  storage_host_groups:
+                    type: array
+                    title: the storage host group schema
+                    items:
+                      $ref: '#/components/schemas/StorageHostGroupRespSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/{storage_id}/port-groups':
+    get:
+      tags:
+        - Masking views
+      description: List all port groups.
+      parameters:
+        - name: storage_id
+          in: path
+          description: Database ID created for a storage backend.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            Requests a page size of items. Returns a number of items up to a
+            limit value. Use the limit parameter to make an initial limited
+            request and use the ID of the last-seen item from the response as
+            the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: >-
+            Used in conjunction with limit to return a slice of items.
+            offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The port group name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a port group.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: The port group description
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_port_group_id
+          in: query
+          description: Actual ID of the port group in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List port groups query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - port_groups
+                additionalProperties: true
+                properties:
+                  port_groups:
+                    type: array
+                    title: the port groups schema
+                    items:
+                      $ref: '#/components/schemas/PortGroupRespSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/{storage_id}/volume-groups':
+    get:
+      tags:
+        - Masking views
+      description: List all volume groups.
+      parameters:
+        - name: storage_id
+          in: path
+          description: Database ID created for a storage backend.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            Requests a page size of items. Returns a number of items up to a
+            limit value. Use the limit parameter to make an initial limited
+            request and use the ID of the last-seen item from the response as
+            the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: >-
+            Used in conjunction with limit to return a slice of items.
+            offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The volume group name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a volume group.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: The volume group description
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_volume_group_id
+          in: query
+          description: Actual ID of the volume group in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List volume groups query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - volume_groups
+                additionalProperties: true
+                properties:
+                  volume_groups:
+                    type: array
+                    title: the volume groups schema
+                    items:
+                      $ref: '#/components/schemas/VolumeGroupRespSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+  '/v1/storages/{storage_id}/masking-views':
+    get:
+      tags:
+        - Masking views
+      description: List all masking views.
+      parameters:
+        - name: storage_id
+          in: path
+          description: Database ID created for a storage backend.
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: >-
+            Requests a page size of items. Returns a number of items up to a
+            limit value. Use the limit parameter to make an initial limited
+            request and use the ID of the last-seen item from the response as
+            the marker parameter value in a subsequent limited request.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 1
+            type: integer
+            format: int32
+        - name: offset
+          in: query
+          description: >-
+            Used in conjunction with limit to return a slice of items.
+            offset is where to start in the list.
+          required: false
+          style: form
+          explode: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: sort
+          in: query
+          description: >-
+            Comma-separated list of sort keys and optional sort directions in
+            the form of key:val
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 'sort=name:desc,id:asc'
+        - name: name
+          in: query
+          description: The masking view name
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: Database ID created for a masking view.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: The masking view description
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_masking_view_id
+          in: query
+          description: Actual ID of the masking view in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_storage_host_group_id
+          in: query
+          description: >-
+            Actual ID of the storage host group in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_volume_group_id
+          in: query
+          description: Actual ID of the volume group in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_port_group_id
+          in: query
+          description: Actual ID of the port group in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_storage_host_id
+          in: query
+          description: Actual ID of the storage host in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_volume_id
+          in: query
+          description: Actual ID of the volume in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+        - name: native_port_id
+          in: query
+          description: Actual ID of the port in the storage backend.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List masking views query was success
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - masking_views
+                additionalProperties: true
+                properties:
+                  masking_views:
+                    type: array
+                    title: the masking views schema
+                    items:
+                      $ref: '#/components/schemas/MaskingViewRespSpec'
+        '401':
+          description: NotAuthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSpec'
+        '500':
+          description: An unexpected error occured.
           content:
             application/json:
               schema:
@@ -2643,6 +3535,15 @@ components:
             type: string
           example:
             array_id: string
+    StorageAccessInfosResponse:
+      description: Response for all access infos configuration.
+      type: object
+      properties:
+        snmp_configs:
+          type: array
+          description: the list of access info
+          items:
+            $ref: '#/components/schemas/StorageAccessInfoResponse'
 
 
     StoragePoolSpec:
@@ -3133,7 +4034,7 @@ components:
               type: string
             native_storage_pool_id:
               type: string
-    AlertSourceUpdateSpec:
+    SnmpConfigUpdateSpec:
       required:
         - host
         - version
@@ -3220,7 +4121,7 @@ components:
             By default, set to 161
           example: 20162
       description: SNMP alert source configuration attributes.
-    AlertSourceRespSpec:
+    SnmpConfigRespSpec:
       description: Response for snmp alert source configuration.
       allOf:
         - $ref: '#/components/schemas/BaseModel'
@@ -3281,7 +4182,8 @@ components:
                 authPriv is set as security_level
             host:
               type: string
-              example: 10.0.0.1
+              description: All alert source ips of the device
+              example: 10.0.0.1,127.0.0.1
             context_name:
               type: string
               description: Context name of the alert source
@@ -3304,6 +4206,240 @@ components:
                 Port for connecting to alert source
                 By default, set to 161
               example: 20162
+    SnmpConfigsRespSpec:
+      description: Response for all snmp alert source configuration.
+      type: object
+      properties:
+        snmp_configs:
+          type: array
+          description: the list of snmp configs
+          items:
+            $ref: '#/components/schemas/SnmpConfigRespSpec'
+    StorageHostInitiatorRespSpec:
+      description: >-
+        Storage host initiator allows a host to gain access to the storage
+        array, It may or may not have been attached to storage host.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              readOnly: true
+              example: "storage host initiator"
+            alias:
+              type: string
+              readOnly: true
+              example: "storage host initiator"
+            wwn:
+              type: string
+              readOnly: true
+              example: "storage host initiator1"
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_storage_host_initiator_id:
+              type: string
+              readOnly: true
+              description: >-
+                Actual ID of the storage host initiator in the storage backend.
+              example: storage_host_initiator_0
+            native_storage_host_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the storage host in the storage backend.
+              example: storage_host_0
+            status:
+              type: string
+              readOnly: true
+              enum:
+                - normal
+                - offline
+                - abnormal
+                - unknown
+    StorageHostRespSpec:
+      description: >-
+        Storage host is a consumer of volume from storage.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              readOnly: true
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_storage_host_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the storage host in the storage backend.
+              example: storage_host_0
+            status:
+              type: string
+              readOnly: true
+              enum:
+                - normal
+                - offline
+                - abnormal
+                - unknown
+            ip_address:
+              type: string
+              readOnly: true
+              description: Ip address of the storage host.
+              example: "192.168.1.4"
+            os_type:
+              type: string
+              readOnly: true
+              description: Operating system of the storage host.
+              enum:
+                - windows
+                - linux
+            storage_host_initiators:
+              type: array
+              items:
+                type: string
+              readOnly: true
+              description: List of storage host initiator native ids.
+    StorageHostGroupRespSpec:
+      description: >-
+        Storage host group is a consumer of volume from storage.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              readOnly: true
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_storage_host_group_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the storage host group in the storage backend.
+              example: storage_host_group0
+            storage_hosts:
+              type: array
+              items:
+                type: string
+              readOnly: true
+              description: List of storage host native ids.
+    PortGroupRespSpec:
+      description: >-
+        Port group is collection of ports from storage.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              readOnly: true
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_port_group_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the port group in the storage backend.
+              example: port_group_0
+            ports:
+              type: array
+              items:
+                type: string
+              readOnly: true
+              description: List of ports native ids.
+    VolumeGroupRespSpec:
+      description: >-
+        Volume group is collection of volumes from storage.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              readOnly: true
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_volume_group_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the volume group in the storage backend.
+              example: volume_group_0
+            volumes:
+              type: array
+              items:
+                type: string
+              readOnly: true
+              description: List of volumes native ids.
+    MaskingViewRespSpec:
+      description: >-
+        Masking view is and object which shows the path from host and lun.
+      allOf:
+        - $ref: '#/components/schemas/BaseModel'
+        - type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              readOnly: true
+            storage_id:
+              type: string
+              readOnly: true
+              example: 084bf71e-a102-11e7-88a8-e31fe6d52248
+            native_masking_view_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the masking view in the storage backend.
+              example: masking_view_0
+            native_storage_host_group_id:
+              type: string
+              readOnly: true
+              description: >-
+                Actual ID of the storage host group in the storage backend.
+              example: storage_host_group_0
+            native_volume_group_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the volume group in the storage backend.
+              example: volume_group_0
+            native_port_group_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the port group in the storage backend.
+              example: port_group_0
+            native_storage_host_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the storage host in the storage backend.
+              example: storage_host_0
+            native_volume_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the volume in the storage backend.
+              example: volume_0
+            native_port_id:
+              type: string
+              readOnly: true
+              description: Actual ID of the port in the storage backend.
+              example: port_0
     StorageBackendAlertSync:
       type: object
       properties:
@@ -3491,11 +4627,11 @@ components:
       schema:
         type: string
   requestBodies:
-    AlertSourceUpdateSpec:
+    SnmpConfigUpdateSpec:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/AlertSourceUpdateSpec'
+            $ref: '#/components/schemas/SnmpConfigUpdateSpec'
     StorageBackendAlertSync:
       content:
         application/json:

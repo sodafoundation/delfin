@@ -22,10 +22,11 @@ from oslo_log import log as logging
 
 from delfin import exception
 from delfin import ssl_utils
-from delfin.drivers.hpe.hpe_3par import consts
 from delfin.i18n import _
 
 LOG = logging.getLogger(__name__)
+
+SOCKET_TIMEOUT = 10
 
 
 class RestClient(object):
@@ -65,7 +66,7 @@ class RestClient(object):
                            ssl_utils.get_host_name_ignore_adapter())
 
     def do_call(self, url, data, method,
-                calltimeout=consts.SOCKET_TIMEOUT):
+                calltimeout=SOCKET_TIMEOUT):
         if 'http' not in url:
             if self.san_address:
                 url = '%s%s' % (self.san_address, url)
@@ -86,6 +87,9 @@ class RestClient(object):
         except requests.exceptions.ConnectTimeout as ct:
             LOG.error('Connect Timeout err: {}'.format(ct))
             raise exception.InvalidIpOrPort()
+        except requests.exceptions.ReadTimeout as rt:
+            LOG.error('Read timed out err: {}'.format(rt))
+            raise exception.StorageBackendException(six.text_type(rt))
         except requests.exceptions.SSLError as e:
             LOG.error('SSLError for %s %s' % (method, url))
             err_str = six.text_type(e)
@@ -101,6 +105,8 @@ class RestClient(object):
             elif 'Failed to establish a new connection' in str(err):
                 LOG.error('Failed to establish: {}'.format(err))
                 raise exception.InvalidIpOrPort()
+            elif 'Read timed out' in str(err):
+                raise exception.StorageBackendException(six.text_type(err))
             else:
                 raise exception.BadResponse()
 

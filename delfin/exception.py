@@ -170,12 +170,56 @@ class VolumeNotFound(NotFound):
     msg_fmt = _("Volume {0} could not be found.")
 
 
+class StorageHostInitiatorNotFound(NotFound):
+    msg_fmt = _("Storage host initiator {0} could not be found.")
+
+
+class StorageHostNotFound(NotFound):
+    msg_fmt = _("Storage host {0} could not be found.")
+
+
+class StorageHostGroupNotFound(NotFound):
+    msg_fmt = _("Storage host group {0} could not be found.")
+
+
+class PortGroupNotFound(NotFound):
+    msg_fmt = _("Port group {0} could not be found.")
+
+
+class VolumeGroupNotFound(NotFound):
+    msg_fmt = _("Volume group {0} could not be found.")
+
+
+class MaskingViewNotFound(NotFound):
+    msg_fmt = _("Masking View {0} could not be found.")
+
+
+class StorageHostGrpHostRelNotFound(NotFound):
+    msg_fmt = _("Storage Host Group Host Relation {0} could not be found.")
+
+
+class PortGrpPortRelNotFound(NotFound):
+    msg_fmt = _("Port Group Port Relation {0} could not be found.")
+
+
+class VolGrpVolRelationNotFound(NotFound):
+    msg_fmt = _("Volume Group Volume Relation {0} could not be found.")
+
+
 class ControllerNotFound(NotFound):
     msg_fmt = _("Controller {0} could not be found.")
 
 
+class ControllerListNotFound(NotFound):
+    msg_fmt = _("Controller List for {0} could not be found.")
+
+
 class PortNotFound(NotFound):
     msg_fmt = _("Port {0} could not be found.")
+
+
+class PortListNotFound(NotFound):
+    msg_fmt = _("Port List for {0} could not be found.")
 
 
 class DiskNotFound(NotFound):
@@ -336,3 +380,8 @@ class TelemetryTaskExecError(DelfinException):
 
 class ComponentNotFound(NotFound):
     msg_fmt = _("Component {0} could not be found.")
+
+
+class IncompleteTrapInformation(DelfinException):
+    msg_fmt = _("Incomplete trap information."
+                "Storage {0} alert information needs to be synchronized.")
