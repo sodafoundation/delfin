@@ -419,11 +419,11 @@ class SSHHandler(object):
     def parse_alert(alert):
         try:
             alert_model = dict()
-            alert_id = ''
-            description = ''
+            alert_id = None
+            description = None
             severity = SSHHandler.TRAP_SEVERITY_MAP.get('8')
-            sequence_number = ''
-            event_type = ''
+            sequence_number = None
+            event_type = None
             for alert_key, alert_value in alert.items():
                 if SSHHandler.OID_ERR_ID in alert_key:
                     alert_id = str(alert_value)
