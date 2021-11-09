@@ -37,8 +37,9 @@ class DS8KDriver(driver.StorageDriver):
         self.rest_handler.logout()
 
     def get_storage(self, context):
+        result = None
         system_info = self.rest_handler.get_storage()
-        if system_info is not None:
+        if system_info:
             system_data = system_info.get('data', {}).get('systems')
             for system in system_data:
                 name = system.get('name')
@@ -118,13 +119,12 @@ class DS8KDriver(driver.StorageDriver):
                     for volume in vol_entries:
                         total = volume.get('cap')
                         used = volume.get('capalloc')
-                        vol_type = constants.VolumeType.THIN
-                        if volume.get('stgtype') == 'fb':
-                            vol_type = constants.VolumeType.THICK
-                        if volume.get('state') == 'normal':
-                            status = constants.StorageStatus.NORMAL
-                        else:
-                            status = constants.StorageStatus.ABNORMAL
+                        vol_type = constants.VolumeType.THICK if \
+                            volume.get('stgtype') == 'fb' else \
+                            constants.VolumeType.THIN
+                        status = constants.StorageStatus.NORMAL if \
+                            volume.get('state') == 'normal' else\
+                            constants.StorageStatus.ABNORMAL
                         vol_name = '%s_%s' % (volume.get('name'),
                                               volume.get('id'))
                         vol = {
