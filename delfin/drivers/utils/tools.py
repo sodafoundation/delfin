@@ -58,7 +58,7 @@ class Tools(object):
     @staticmethod
     def get_capacity_size(value):
         capacity = 0
-        if value and value != '' and value != '-' != '0B':
+        if value and value != '' and value != '-' and value != '0B':
             if value.isdigit():
                 capacity = float(value)
             else:

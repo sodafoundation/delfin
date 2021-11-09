@@ -16,7 +16,7 @@ import re
 
 from delfin.common import constants
 
-PATTERN = re.compile('[-]{3,}')
+DATA_HEAD_PATTERN = re.compile('[-]{3,}')
 STORAGE_VENDOR = 'HITACHI'
 TIME_TYPE = '%Y-%m-%d %H:%M:%S'
 
@@ -86,4 +86,57 @@ FS_STATUS_MAP = {
     'Formt': constants.FilesystemStatus.NORMAL,
     'Failg': constants.FilesystemStatus.FAULTY,
     None: constants.FilesystemStatus.NORMAL,
+}
+
+FS_INDEX = {
+    'status_len': 6,
+    'id_index': 1,
+    'pool_index': 2,
+    'status_index': 3,
+    'detail_len': 8,
+    'total_index': 3,
+    'used_index': 4,
+    'free_index': 7,
+    'type_index': 8,
+}
+
+ETH_INDEX = {
+    'name_len': 1,
+    'name_index': 0,
+    'status_len': 2,
+    'status_index': 0,
+    'ip_len': 2,
+    'ip_index': 1,
+    'mask_index': 3
+}
+
+ALERT_INDEX = {
+    'alert_len': 4,
+    'table_head': 0,
+    'severity_index': 1,
+    'year_index': 2,
+    'time_index': 3,
+    'id_index': 0
+}
+
+NODE_INDEX = {
+    'node_len': 2,
+    'status_index': 2,
+    'name_index': 1,
+    'id_index': 0
+}
+
+POOL_INDEX = {
+    'pool_len': 6,
+    'total_index': 3,
+    'free_index': 0,
+    'status_index': 1,
+    'name_index': 0,
+}
+
+DISK_INDEX = {
+    'type_len': 2,
+    'model_index': 1,
+    'vendor_index': 0,
+    'version_index': 2
 }

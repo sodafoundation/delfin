@@ -18,6 +18,7 @@ import six
 
 from oslo_log import log as logging
 
+from oslo_utils import units
 from delfin import exception, utils
 from delfin.common import constants
 from delfin.drivers.utils import ssh_client
@@ -34,18 +35,14 @@ class NasHandler(object):
         self.evs_list = []
 
     def ssh_do_exec(self, command_list):
-        res = self.ssh_pool.do_exec_command(command_list)
+        res = self.ssh_pool.do_exec_shell(command_list)
         while 'Failed to establish SSC connection' in res:
-            res = self.ssh_pool.do_exec_command(command_list)
+            res = self.ssh_pool.do_exec_shell(command_list)
         return res
 
     def login(self):
         try:
-            result = self.ssh_do_exec(['cluster-show -y'])
-            if 'is not a recognized command' in result \
-                    or 'Unknown command' in result \
-                    or 'EVS' not in result:
-                raise exception.InvalidIpOrPort()
+            self.ssh_do_exec(['cluster-show -y'])
         except Exception as e:
             LOG.error("Failed to login netapp %s" %
                       (six.text_type(e)))
@@ -93,7 +90,7 @@ class NasHandler(object):
         header_index = 0
         table = values.split('\r\n')
         for i in range(len(table)):
-            if constant.PATTERN.search(table[i]):
+            if constant.DATA_HEAD_PATTERN.search(table[i]):
                 header_index = i
         return table[(header_index + 1):]
 
@@ -186,11 +183,17 @@ class NasHandler(object):
                     disk_type = disk_map['Type']
                     type_array = disk_type.split(';')
                     model = vendor = version = None
-                    if len(type_array) > 2:
-                        model = type_array[1].replace('Model', '')
-                        vendor = type_array[0].replace('Make', '')
-                        version = type_array[2].replace('Revision', '')
-                    pool_id = disk_map.get('Usedinspan', None)
+                    if len(type_array) > constant.DISK_INDEX['type_len']:
+                        model = \
+                            type_array[constant.DISK_INDEX[
+                                'model_index']].replace('Model', '')
+                        vendor = \
+                            type_array[constant.DISK_INDEX[
+                                'vendor_index']].replace('Make', '')
+                        version = \
+                            type_array[constant.DISK_INDEX[
+                                'version_index']].replace('Revision', '')
+                    pool_id = disk_map.get('Usedinspan')
                     serial_number = disk_map['Luid'].split(']')[-1]
                     if pool_id:
                         pool_id = pool_id.split('(')[0]
@@ -244,18 +247,24 @@ class NasHandler(object):
             size_map = self.get_pool_size()
             for pool in pool_array:
                 value_array = pool.split()
-                if len(value_array) == 6:
+                if len(value_array) == constant.POOL_INDEX['pool_len']:
                     total_capacity = \
-                        Tools.get_capacity_size(value_array[3] + 'GB')
+                        Tools.get_capacity_size(
+                            value_array[constant.POOL_INDEX['total_index']] +
+                            'GB')
                     free_capacity = \
-                        size_map.get(value_array[0], total_capacity)
+                        size_map.get(
+                            value_array[constant.POOL_INDEX['free_index']],
+                            total_capacity)
                     status = constants.StoragePoolStatus.NORMAL \
-                        if value_array[1] == 'Yes' \
+                        if value_array[
+                            constant.POOL_INDEX['status_index']] == 'Yes' \
                         else constants.StoragePoolStatus.ABNORMAL
                     pool_model = {
-                        'name': value_array[0],
+                        'name': value_array[constant.POOL_INDEX['name_index']],
                         'storage_id': storage_id,
-                        'native_storage_pool_id': value_array[0],
+                        'native_storage_pool_id': value_array[
+                            constant.POOL_INDEX['name_index']],
                         'status': status,
                         'storage_type': constants.StorageType.FILE,
                         'total_capacity': total_capacity,
@@ -282,14 +291,17 @@ class NasHandler(object):
             nodes_array = self.get_table_data(node_info)
             for nodes in nodes_array:
                 node = nodes.split()
-                if len(node) > 2:
+                if len(node) > constant.NODE_INDEX['node_len']:
                     status = constants.ControllerStatus.NORMAL \
-                        if node[2] == 'ONLINE' \
+                        if node[
+                            constant.NODE_INDEX[
+                                'status_index']] == 'ONLINE' \
                         else constants.ControllerStatus.OFFLINE
                     controller_model = {
-                        'name': node[1],
+                        'name': node[constant.NODE_INDEX['name_index']],
                         'storage_id': storage_id,
-                        'native_controller_id': node[0],
+                        'native_controller_id': node[
+                            constant.NODE_INDEX['id_index']],
                         'status': status
                     }
                     controller_list.append(controller_model)
@@ -312,12 +324,17 @@ class NasHandler(object):
             alert_list = []
             for alert in alert_array:
                 value_array = alert.split()
-                if len(value_array) > 4 \
-                        and '******' not in value_array[0] \
-                        and value_array[1] in constant.SEVERITY_MAP:
+                if len(value_array) > constant.ALERT_INDEX['alert_len'] \
+                        and '******' not in \
+                        value_array[constant.ALERT_INDEX['table_head']] \
+                        and value_array[
+                    constant.ALERT_INDEX['severity_index']] in\
+                        constant.SEVERITY_MAP:
                     occur_time = \
-                        value_array[2] + ' ' + \
-                        value_array[3].split("+")[0]
+                        value_array[constant.ALERT_INDEX[
+                            'year_index']] + ' ' + \
+                        value_array[constant.ALERT_INDEX[
+                            'time_index']].split("+")[0]
                     occur_time = \
                         int(time.mktime(time.strptime(
                             occur_time, constant.TIME_TYPE))) * 1000
@@ -330,16 +347,21 @@ class NasHandler(object):
                             description += value_array[i] + ' '
                         severity = constant.SEVERITY_MAP.get(value_array[1])
                         alert_model = {
-                            'alert_id': value_array[0],
-                            'alert_name': value_array[0],
+                            'alert_id': value_array[
+                                constant.ALERT_INDEX['id_index']],
+                            'alert_name': value_array[
+                                constant.ALERT_INDEX['id_index']],
                             'severity': severity,
                             'category': constants.Category.FAULT,
                             'type': constants.EventType.EQUIPMENT_ALARM,
                             'occur_time': occur_time,
                             'description': description,
-                            'match_key': hashlib.md5(
-                                (value_array[0] + severity +
-                                 description).encode()).hexdigest(),
+                            'match_key':
+                                hashlib.md5(
+                                    (value_array[
+                                        constant.ALERT_INDEX['id_index']] +
+                                     severity +
+                                     description).encode()).hexdigest(),
                             'resource_type': constants.DEFAULT_RESOURCE_TYPE,
                             'location': ''
                         }
@@ -422,7 +444,7 @@ class NasHandler(object):
             speed_map = speed_map_list[-1]
             for value_map in fc_map_list:
                 if 'Portname' in value_map:
-                    status = value_map.get('Status', None)
+                    status = value_map.get('Status')
                     health = constants.PortHealthStatus.ABNORMAL
                     if status == 'Good':
                         health = constants.PortHealthStatus.NORMAL
@@ -445,8 +467,8 @@ class NasHandler(object):
                         'connection_status': connection_status,
                         'health_status': health,
                         'type': constants.PortType.FC,
-                        'speed': speed * oslo_utils.units.G,
-                        'max_speed': 8 * oslo_utils.units.G,
+                        'speed': speed * units.G,
+                        'max_speed': 8 * units.G,
                         'wwn': value_map.get('Portname'),
                     }
                     fc_list.append(fc_model)
@@ -472,16 +494,20 @@ class NasHandler(object):
                 if value:
                     if 'Link encap' in value:
                         value_info = value.split()
-                        if len(value_info) > 1:
-                            eth_model['name'] = value_info[0]
+                        if len(value_info) > constant.ETH_INDEX['name_len']:
+                            eth_model['name'] = value_info[
+                                constant.ETH_INDEX['name_index']]
                     if 'MTU' in value:
                         value_info = value.split()
-                        if len(value_info) > 2:
+                        if len(value_info) > constant.ETH_INDEX['status_len']:
                             eth_model['connection_status'] = \
                                 constants.PortConnectionStatus.DISCONNECTED
                             eth_model['health_status'] = \
                                 constants.PortHealthStatus.UNKNOWN
-                            if value_info[0].split(':')[1] == 'UP':
+                            status = \
+                                value_info[constant.ETH_INDEX[
+                                    'status_index']].split(':')[1]
+                            if status == 'UP':
                                 eth_model['connection_status'] = \
                                     constants.PortConnectionStatus.CONNECTED
                                 eth_model['health_status'] = \
@@ -492,10 +518,13 @@ class NasHandler(object):
                                 'ETH' + '-' + eth_model['name']
                     if 'inet addr' in value:
                         value_info = value.split()
-                        if len(value_info) > 2:
-                            eth_model['ipv4'] = value_info[1].split(':')[1]
+                        if len(value_info) > constant.ETH_INDEX['ip_len']:
+                            eth_model['ipv4'] = \
+                                value_info[constant.ETH_INDEX[
+                                    'ip_index']].split(':')[1]
                             eth_model['ipv4_mask'] = \
-                                value_info[3].split(':')[1]
+                                value_info[constant.ETH_INDEX[
+                                    'mask_index']].split(':')[1]
                 else:
                     if 'name' in eth_model:
                         eth_list.append(eth_model)
@@ -522,27 +551,32 @@ class NasHandler(object):
             status_map = {}
             for status in status_array:
                 status_info = status.split()
-                if len(status_info) > 6:
-                    status_map[status_info[1]] = \
-                        [status_info[2], status_info[3]]
+                if len(status_info) > constant.FS_INDEX['status_len']:
+                    status_map[status_info[constant.FS_INDEX['id_index']]] = \
+                        [status_info[constant.FS_INDEX['pool_index']],
+                         status_info[constant.FS_INDEX['status_index']]]
             for fs in fs_array:
                 fs_info = list(filter(None, fs.split('  ')))
-                if len(fs_info) > 8:
-                    total_capacity = fs_info[3].replace(' ', '')
-                    used_capacity = fs_info[4].replace(' ', '').split('(')[0]
-                    free_capacity = fs_info[7].replace(' ', '').split('(')[0]
+                if len(fs_info) > constant.FS_INDEX['detail_len']:
+                    total_capacity = \
+                        fs_info[constant.FS_INDEX['total_index']].replace(
+                            ' ', '')
+                    used_capacity = \
+                        fs_info[constant.FS_INDEX['used_index']].replace(
+                            ' ', '').split('(')[0]
+                    free_capacity = \
+                        fs_info[constant.FS_INDEX['free_index']].replace(
+                            ' ', '').split('(')[0]
                     total_capacity = Tools.get_capacity_size(total_capacity)
                     used_capacity = Tools.get_capacity_size(used_capacity)
                     free_capacity = Tools.get_capacity_size(free_capacity)
                     volume_type = constants.VolumeType.THICK \
-                        if fs_info[8] == 'No' \
+                        if fs_info[constant.FS_INDEX['type_index']] == 'No' \
                         else constants.VolumeType.THIN
-                    pool_id = None \
-                        if len(status_map.get(fs_info[0])) < 1 \
-                        else status_map.get(fs_info[0])[0]
-                    status = None \
-                        if len(status_map.get(fs_info[0])) < 1 \
-                        else status_map.get(fs_info[0])[1]
+                    pool_id = status_map.get(fs_info[0])[0] \
+                        if status_map.get(fs_info[0]) else None
+                    status = status_map.get(fs_info[0])[1] \
+                        if status_map.get(fs_info[0]) else None
                     fs_model = {
                         'name': fs_info[1],
                         'storage_id': storage_id,
@@ -588,30 +622,32 @@ class NasHandler(object):
                 quota_map_list = \
                     self.format_data_to_map(quota_info, 'Usage')
                 for quota_map in quota_map_list:
-                    type = None
+                    quota_type = None
                     user_group_name = None
                     qtree_id = None
-                    if 'Group' in quota_map.get('Target'):
-                        type = constants.QuotaType.GROUP
-                        user_group_name = \
-                            quota_map.get('Target').replace('Group', '')
-                    elif 'User' in quota_map.get('Target'):
-                        type = constants.QuotaType.USER
-                        user_group_name = \
-                            quota_map.get('Target').replace('User', '')
-                    elif 'ViVol' in quota_map.get('Target'):
-                        type = constants.QuotaType.TREE
-                        user_group_name = \
-                            quota_map.get('Target').replace('ViVol', '')
-                        qtree_id = evs[0] + '-' + user_group_name
-                    quota_id = evs[0] + '-' + type + '-' + user_group_name
+                    if 'Target' in quota_map:
+                        if 'Group' in quota_map.get('Target'):
+                            quota_type = constants.QuotaType.GROUP
+                            user_group_name = \
+                                quota_map.get('Target').replace('Group', '')
+                        elif 'User' in quota_map.get('Target'):
+                            quota_type = constants.QuotaType.USER
+                            user_group_name = \
+                                quota_map.get('Target').replace('User', '')
+                        elif 'ViVol' in quota_map.get('Target'):
+                            quota_type = constants.QuotaType.TREE
+                            user_group_name = \
+                                quota_map.get('Target').replace('ViVol', '')
+                            qtree_id = evs[0] + '-' + user_group_name
+                    quota_id = \
+                        evs[0] + '-' + quota_type + '-' + user_group_name
                     capacity_soft_limit = \
                         quota_map.get('Limit').replace('(Soft)', '')
                     file_soft_limit = \
                         quota_map.get('Limit1').replace('(Soft)', '')
                     quota = {
                         'native_quota_id': quota_id,
-                        'type': type,
+                        'type': quota_type,
                         'storage_id': storage_id,
                         'native_filesystem_id': evs[0],
                         'native_qtree_id': qtree_id,
