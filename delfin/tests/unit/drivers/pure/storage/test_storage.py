@@ -315,15 +315,15 @@ class test_StorageDriver(TestCase):
                          controllers_info[0].get('name'))
 
     def test_list_disks(self):
-        RestHandler.get_info = mock.Mock(side_effect=
-                                         [hardware_info, drive_info])
+        RestHandler.get_info = mock.Mock(
+            side_effect=[hardware_info, drive_info])
         list_disks = self.driver.list_disks(context)
         self.assertEqual(list_disks[0].get('name'),
                          hardware_info[0].get('name'))
 
     def test_list_ports(self):
-        RestHandler.get_info = mock.Mock(side_effect=
-                                         [port_network_info, port_info])
+        RestHandler.get_info = mock.Mock(
+            side_effect=[port_network_info, port_info])
         list_ports = self.driver.list_ports(context)
         self.assertEqual(list_ports[0].get('wwn'), port_info[0].get('wwn'))
 
