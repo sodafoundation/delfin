@@ -333,7 +333,6 @@ pools_result = [
         'name': 'A',
         'storage_id': 'kkk',
         'native_storage_pool_id': '00c0ff26c4ea0000d980546101000000',
-        'description': '',
         'status': 'normal',
         'storage_type': 'block',
         'total_capacity': 1285054214963,
