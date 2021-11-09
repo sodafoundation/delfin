@@ -299,8 +299,7 @@ class SSHPool(pools.Pool):
                             break
                         result += resp
             if 'is not a recognized command' in result \
-                    or 'Unknown command' in result \
-                    or 'EVS' not in result:
+                    or 'Unknown command' in result:
                 raise exception.InvalidIpOrPort()
         except paramiko.AuthenticationException as ae:
             LOG.error('doexec Authentication error:{}'.format(ae))

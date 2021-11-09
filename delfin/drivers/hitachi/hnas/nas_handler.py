@@ -42,7 +42,9 @@ class NasHandler(object):
 
     def login(self):
         try:
-            self.ssh_do_exec(['cluster-show -y'])
+            result = self.ssh_do_exec(['cluster-show -y'])
+            if 'EVS' not in result:
+                raise exception.InvalidIpOrPort()
         except Exception as e:
             LOG.error("Failed to login netapp %s" %
                       (six.text_type(e)))
