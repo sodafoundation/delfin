@@ -7,7 +7,7 @@ class HpeMsaStorDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.ssh_hanlder = ssh_handler.SSHHandler(**kwargs)
+        self.ssh_handler = ssh_handler.SSHHandler(**kwargs)
 
     def reset_connection(self, context, **kwargs):
         self.ssh_hanlder.login()
@@ -44,5 +44,5 @@ class HpeMsaStorDriver(driver.StorageDriver):
     def parse_alert(context, alert):
         return SSHHandler.parse_alert(alert)
 
-    def clear_alert(self):
+    def clear_alert(self, context, alert):
         pass
