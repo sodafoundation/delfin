@@ -281,12 +281,11 @@ class SSHPool(pools.Pool):
             raise exception.StorageBackendException(result)
         return result
 
-    def do_exec_command(self, command_list):
+    def do_exec_shell(self, command_list):
         result = ''
         try:
             with self.item() as ssh:
-                if command_list is not None and len(command_list) > 0 \
-                        and ssh is not None:
+                if command_list and ssh:
                     channel = ssh.invoke_shell()
                     for command in command_list:
                         utils.check_ssh_injection(command)
@@ -299,6 +298,10 @@ class SSHPool(pools.Pool):
                         if not resp:
                             break
                         result += resp
+            if 'is not a recognized command' in result \
+                    or 'Unknown command' in result \
+                    or 'EVS' not in result:
+                raise exception.InvalidIpOrPort()
         except paramiko.AuthenticationException as ae:
             LOG.error('doexec Authentication error:{}'.format(ae))
             raise exception.InvalidUsernameOrPassword()

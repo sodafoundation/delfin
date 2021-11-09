@@ -75,11 +75,3 @@ class HitachiHNasDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
-
-    def collect_perf_metrics(self, context, storage_id,
-                             resource_metrics, start_time, end_time):
-        pass
-
-    @staticmethod
-    def get_capabilities(context):
-        pass
