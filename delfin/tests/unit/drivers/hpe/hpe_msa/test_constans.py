@@ -344,19 +344,18 @@ pools_result = [
 ]
 
 ports_result = [
-    {'native_port_id': 'hostport_A1',
-     'name': 'A1',
-     'type': 'fc',
-     'connection_status': 'disconnected',
-     'health_status': 'abnormal',
-     'location': 'A1_FC',
-     'storage_id': 'kkk',
-     'speed': 8589934592.0,
-     'max_speed': 8589934592.0,
-     'wwn': '',
-     'mac_address': '',
-     'ipv4': ''
-     }, {
+    {
+        'native_port_id': 'hostport_A1',
+        'name': 'A1', 'type': 'fc',
+        'connection_status': 'disconnected',
+        'health_status': 'abnormal',
+        'location': 'A1_FC',
+        'storage_id': 'kkk',
+        'speed': 8589934592.0,
+        'max_speed': 8589934592.0,
+        'mac_address': None,
+        'ipv4': None
+    }, {
         'native_port_id': 'hostport_A2',
         'name': 'A2',
         'type': 'fc',
@@ -366,33 +365,30 @@ ports_result = [
         'storage_id': 'kkk',
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
-        'wwn': '',
-        'mac_address': '',
-        'ipv4': ''
+        'mac_address': None,
+        'ipv4': None
     }, {
         'native_port_id': 'hostport_A3',
         'name': 'A3',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'A3_ISCSI',
         'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BD:64',
         'ipv4': '0.0.0.0'
     }, {
         'native_port_id': 'hostport_A4',
         'name': 'A4',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'A4_ISCSI',
         'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BD:65',
         'ipv4': '0.0.0.0'
     }, {
@@ -405,9 +401,8 @@ ports_result = [
         'storage_id': 'kkk',
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
-        'wwn': '',
-        'mac_address': '',
-        'ipv4': ''
+        'mac_address': None,
+        'ipv4': None
     }, {
         'native_port_id': 'hostport_B2',
         'name': 'B2',
@@ -418,92 +413,32 @@ ports_result = [
         'storage_id': 'kkk',
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
-        'wwn': '',
-        'mac_address': '',
-        'ipv4': ''
+        'mac_address': None,
+        'ipv4': None
     }, {
         'native_port_id': 'hostport_B3',
         'name': 'B3',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
-        'location': 'B3_ISCSI',
-        'storage_id': 'kkk',
+        'location': 'B3_ISCSI', 'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BA:BC',
         'ipv4': '0.0.0.0'
     }, {
         'native_port_id': 'hostport_B4',
         'name': 'B4',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'B4_ISCSI',
         'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BA:BD',
         'ipv4': '0.0.0.0'
-    }
-]
-
-disks_result = [
-    {
-        'native_disk_id': '1.1',
-        'name': '1.1',
-        'physical_type': 'sas',
-        'status': 'normal',
-        'storage_id': 'kkk',
-        'native_disk_group_id': 'dgA01',
-        'serial_number': '6SL9CD560000N51404EF',
-        'manufacturer': 'SEAGATE',
-        'model': 'ST3600057SS',
-        'speed': '15',
-        'capacity': 644352468582,
-        'health_score': 'normal'
-    }, {
-        'native_disk_id': '1.2',
-        'name': '1.2',
-        'physical_type': 'sas',
-        'status': 'normal',
-        'storage_id': 'kkk',
-        'native_disk_group_id': 'dgA01',
-        'serial_number': '6SL7X4RE0000B42601SF',
-        'manufacturer': 'SEAGATE',
-        'model': 'ST3600057SS',
-        'speed': '15',
-        'capacity': 644352468582,
-        'health_score': 'normal'
-    }, {
-        'native_disk_id': '1.3',
-        'name': '1.3',
-        'physical_type': 'sas',
-        'status': 'normal',
-        'storage_id': 'kkk',
-        'native_disk_group_id': 'dgA01',
-        'serial_number': '6SL9QR5T0000N52120SK',
-        'manufacturer': 'SEAGATE',
-        'model': 'ST3600057SS',
-        'speed': '15', 'capacity': 644352468582,
-        'health_score': 'normal'
-    }, {
-        'native_disk_id': '1.4',
-        'name': '1.4',
-        'physical_type': 'sas',
-        'status': 'normal',
-        'storage_id': 'kkk',
-        'native_disk_group_id': 'dgA01',
-        'serial_number': '3SL0WT7G00009051YBTF',
-        'manufacturer': 'SEAGATE',
-        'model': 'ST3600057SS',
-        'speed': '15',
-        'capacity': 644352468582,
-        'health_score': 'normal'
-    }
-]
+    }]
 
 system_info = {
     'name': 'msa2040',

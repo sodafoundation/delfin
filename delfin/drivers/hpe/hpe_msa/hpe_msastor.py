@@ -10,29 +10,29 @@ class HpeMsaStorDriver(driver.StorageDriver):
         self.ssh_handler = ssh_handler.SSHHandler(**kwargs)
 
     def reset_connection(self, context, **kwargs):
-        self.ssh_hanlder.login()
+        self.ssh_handler.login()
 
     def get_storage(self, context):
-        return self.ssh_hanlder.get_storage(self.storage_id)
+        return self.ssh_handler.get_storage(self.storage_id)
 
     def list_storage_pools(self, context):
-        return self.ssh_hanlder.list_storage_pools(self.storage_id)
+        return self.ssh_handler.list_storage_pools(self.storage_id)
 
     def list_volumes(self, context):
         return self.ssh_hanlder.list_storage_volume(self.storage_id)
 
     def list_controllers(self, context):
-        return self.ssh_hanlder.\
+        return self.ssh_handler.\
             list_storage_controller(self.storage_id)
 
     def list_ports(self, context):
         return self.ssh_hanlder.list_storage_ports(self.storage_id)
 
     def list_disks(self, context):
-        return self.ssh_hanlder.list_storage_disks(self.storage_id)
+        return self.ssh_handler.list_storage_disks(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
-        return self.ssh_hanlder.list_alerts(query_para)
+        return self.ssh_handler.list_alerts(query_para)
 
     def add_trap_config(self, context, trap_config):
         pass
