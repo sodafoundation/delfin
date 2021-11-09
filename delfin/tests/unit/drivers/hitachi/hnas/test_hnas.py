@@ -30,14 +30,15 @@ class TestHitachiHNasDriver(TestCase):
         side_effect=[constants.NODE_INFO])
     hnas_client = HitachiHNasDriver(**constants.ACCESS_INFO)
 
-    def test_reset_connection(self):
+    @mock.patch.object(HitachiHNasDriver, 'reset_connection')
+    def test_reset_connection(self, reset_connection):
         SSHPool.do_exec_shell = mock.Mock(
             side_effect=[constants.NODE_INFO,
                          constants.NODE_INFO])
         kwargs = constants.ACCESS_INFO
-
         hnas_client = HitachiHNasDriver(**kwargs)
         hnas_client.reset_connection(context, **kwargs)
+        self.assertEqual(reset_connection.call_count, 1)
         self.assertEqual(hnas_client.nas_handler.ssh_pool.ssh_host,
                          "192.168.3.211")
         self.assertEqual(hnas_client.nas_handler.ssh_pool.ssh_port, 22)
