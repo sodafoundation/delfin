@@ -68,10 +68,14 @@ class RestHandler(RestClient):
 
     def login(self):
         try:
-            data = {"username": self.rest_username,
-                    "password": cryptor.decode(self.rest_password)
+            data = {
+                'request': {
+                    'params': {
+                        "username": self.rest_username,
+                        "password": cryptor.decode(self.rest_password)
                     }
-            data = {'request': {'params': data}}
+                }
+            }
             with self.session_lock:
                 if self.session is None:
                     self.init_http_head()
@@ -92,6 +96,8 @@ class RestHandler(RestClient):
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
+        finally:
+            data = None
 
     def logout(self):
         try:

@@ -109,5 +109,8 @@ class RestClient(object):
                 raise exception.StorageBackendException(six.text_type(err))
             else:
                 raise exception.BadResponse()
+        finally:
+            data = None
+            kwargs = None
 
         return res

@@ -21,12 +21,6 @@ from delfin.drivers.ibm.ds8k.rest_handler import RestHandler
 from delfin.drivers.ibm.ds8k.ds8k import DS8KDriver
 
 
-class Request:
-    def __init__(self):
-        self.environ = {'delfin.context': context.RequestContext()}
-        pass
-
-
 ACCESS_INFO = {
     "storage_id": "12345",
     "rest": {
@@ -244,14 +238,12 @@ alert_result = [
         'alert_id': 'HostPortStateChanged',
         'alert_name': 'Host port 10000090FA383E80 state logged in.',
         'severity': 'Critical',
-        'description': ['10000090FA383E80', 'Logged Off', 'Logged In',
-                        'NISCSIHostPortID: IBM.2107-75BXG71/12'],
+        'description': 'Host port 10000090FA383E80 state logged in.',
         'category': 'Fault',
         'type': 'EquipmentAlarm',
         'sequence_number': 'SEfe',
         'occur_time': 1397970023000,
-        'resource_type': 'Storage',
-        'location': ''
+        'resource_type': 'Storage'
     }
 ]
 
