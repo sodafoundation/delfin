@@ -276,7 +276,7 @@ def create_driver():
     return PureStorageDriver(**ACCESS_INFO)
 
 
-class test_StorageDriver(TestCase):
+class test_PureStorageDriver(TestCase):
     driver = create_driver()
 
     def test_init(self):
