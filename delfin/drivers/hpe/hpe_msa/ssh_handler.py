@@ -156,7 +156,7 @@ class SSHHandler(object):
             xml_element = Et.fromstring(ports_xml_data)
             ports_json = []
             for element_data in xml_element.iter("OBJECT"):
-                property_name = element_data.get('basetype')
+                property_name = element_data.get("basetype")
                 if property_name != 'status':
                     msg = {}
                     for child in element_data.iter("PROPERTY"):
