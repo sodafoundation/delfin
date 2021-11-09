@@ -83,27 +83,27 @@ class SSHHandler(object):
                     for disk in disks_list:
                         raw_capacity += int(disk.get('capacity'))
                 volumes_list = self.list_storage_volume(storage_id)
-                volume_all = 0
+                volume_all_size = 0
                 if volumes_list:
                     for volume in volumes_list:
-                        volume_all += int(volume.get('total_capacity'))
+                        volume_all_size += int(volume.get('total_capacity'))
                 health = system_data.get('health')
                 status = constants.StoragePoolStatus.OFFLINE
                 if health == 'OK':
                     status = constants.StoragePoolStatus.NORMAL
-                ser_num = system_data.get('midplane-serial-number')
+                serial_num = system_data.get('midplane-serial-number')
                 storage_map = {
                     'name': system_data.get('system-name'),
                     'vendor': system_data.get('vendor-name'),
                     'model': system_data.get('product-id'),
                     'status': status,
-                    'serial_number': ser_num,
+                    'serial_number': serial_num,
                     'firmware_version': version_id,
                     'location': system_data.get('system-location'),
                     'raw_capacity': int(raw_capacity),
                     'total_capacity': int(total_capacity),
-                    'used_capacity': int(volume_all),
-                    'free_capacity': int(total_capacity - volume_all)
+                    'used_capacity': int(volume_all_size),
+                    'free_capacity': int(total_capacity - volume_all_size)
                 }
                 return storage_map
         except Exception as e:
@@ -215,7 +215,7 @@ class SSHHandler(object):
                 controller_info, 'controllers')
             controller_arr = []
             for data in controller_detail:
-                health = data.get('health', '')
+                health = data.get('health')
                 status = constants.StoragePoolStatus.OFFLINE
                 if health == 'OK':
                     status = constants.StoragePoolStatus.NORMAL
@@ -297,14 +297,14 @@ class SSHHandler(object):
         try:
             pool_infos = self.ssh_pool.do_exec('show pools')
             pool_detail = self.handle_xml_to_json(pool_infos, 'pools')
-            volume_arr = self.list_storage_volume(storage_id)
+            volume_list = self.list_storage_volume(storage_id)
             pools_list = []
             if pool_detail:
                 for data in pool_detail:
                     volume_size = 0
                     blocks = 0
-                    if volume_arr:
-                        for volume in volume_arr:
+                    if volume_list:
+                        for volume in volume_list:
                             if volume.get("native_storage_pool_id") == data.\
                                     get("serial-number"):
                                 volume_size += volume.get("total_capacity")
@@ -398,14 +398,14 @@ class SSHHandler(object):
                     'location': location
                 }
                 alert_list.append(alert_model)
-            return self.unrepeated_error_info(alert_list)
+            return self.unrepeated_alert_info(alert_list)
         except Exception as e:
-            err_msg = "Failed to get storage error: %s" % (six.text_type(e))
+            err_msg = "Failed to get storage alert: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
 
     @staticmethod
-    def unrepeated_error_info(error_info):
+    def unrepeated_alert_info(error_info):
         exist_questions = set()
         error_list = []
         for item in error_info:
@@ -422,7 +422,7 @@ class SSHHandler(object):
             alert_id = ''
             description = ''
             severity = SSHHandler.TRAP_SEVERITY_MAP.get('8')
-            seq_num = ''
+            sequence_number = ''
             event_type = ''
             for alert_key, alert_value in alert.items():
                 if SSHHandler.OID_ERR_ID in alert_key:
@@ -436,7 +436,7 @@ class SSHHandler(object):
                         .get(alert.get(SSHHandler.OID_SEVERITY),
                              constants.Severity.INFORMATIONAL)
                 elif SSHHandler.OID_EVENT_ID in alert_key:
-                    seq_num = alert_value
+                    sequence_number = alert_value
             if description:
                 desc_arr = description.split(",")
                 if desc_arr:
@@ -449,7 +449,7 @@ class SSHHandler(object):
             alert_model['severity'] = severity
             alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            alert_model['sequence_number'] = seq_num
+            alert_model['sequence_number'] = sequence_number
             now = time.time()
             alert_model['occur_time'] = int(round(now * SSHHandler.
                                             SECONDS_TO_MS))
