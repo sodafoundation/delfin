@@ -25,22 +25,14 @@ class RestHandler(RestClient):
     REST_ALERTS_URL = '/api/1.17/message?flagged=true'
     REST_AUTH_URL = '/api/1.17/auth/apitoken'
     REST_SESSION_URL = '/api/1.17/auth/session'
-    HTTPS = 'https://'
 
     def __init__(self, **kwargs):
         super(RestHandler, self).__init__(**kwargs)
-        rest_access = kwargs.get('rest')
-        if rest_access is None:
-            raise exception.InvalidInput('Input pure_rest_access is missing')
-        self.host = rest_access.get('host')
-        self.port = rest_access.get('port')
-        self.username = rest_access.get('username')
-        self.password = rest_access.get('password')
 
     def login(self):
         try:
-            data = {'username': self.username, 'password': cryptor.decode(
-                self.password)}
+            data = {'username': self.rest_username, 'password': cryptor.decode(
+                self.rest_password)}
             token_res = self.get_token(RestHandler.REST_AUTH_URL, data,
                                        method='POST')
             if token_res.status_code != consts.SUCCESS_STATUS_CODE:
@@ -86,10 +78,7 @@ class RestHandler(RestClient):
             raise exception.StorageBackendException(res.text)
 
     def get_volumes(self):
-        url = '%s%s:%s%s' % (
-            RestHandler.HTTPS, self.host, self.port,
-            RestHandler.REST_VOLUME_URL)
-        result_json = self.get_volumes_info(url)
+        result_json = self.get_volumes_info(RestHandler.REST_VOLUME_URL)
         return result_json
 
     def get_storages(self):
@@ -159,9 +148,7 @@ class RestHandler(RestClient):
             if next_token:
                 token = next_token[consts.DEFAULT_LIST_GET_VOLUMES_INFO]
                 if token:
-                    url = '%s%s:%s%s%s' % (
-                        RestHandler.HTTPS, self.host, self.port,
-                        RestHandler.REST_VOLUME_TOKEN_URL, token)
+                    url = '%s%s' % (RestHandler.REST_VOLUME_TOKEN_URL, token)
                     self.get_volumes_info(url, data, volume_list)
         elif res.status_code == consts.PERMISSION_DENIED_STATUS_CODE:
             self.login()

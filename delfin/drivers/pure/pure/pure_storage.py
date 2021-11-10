@@ -158,7 +158,7 @@ class PureStorageDriver(driver.StorageDriver):
                 disk_dict = dict()
                 drive_name = disk.get('name')
                 disk_dict['name'] = drive_name
-                physical_type = disk.get('type').lower()
+                physical_type = disk.get('type', "").lower()
                 disk_dict['physical_type'] = physical_type \
                     if physical_type in constants.DiskPhysicalType.ALL else \
                     constants.DiskPhysicalType.UNKNOWN
@@ -178,7 +178,7 @@ class PureStorageDriver(driver.StorageDriver):
                 disk_dict['native_disk_id'] = drive_name
                 disk_dict['id'] = drive_name
                 disk_dict['location'] = drive_name
-                disk_dict['manufacturer'] = "pure"
+                disk_dict['manufacturer'] = "PURE"
                 disk_dict['firmware'] = ""
                 list_disks.append(disk_dict)
         return list_disks
