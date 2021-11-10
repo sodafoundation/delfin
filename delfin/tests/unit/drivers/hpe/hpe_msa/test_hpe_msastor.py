@@ -22,12 +22,6 @@ ACCESS_INFO = {
 }
 
 
-class Request:
-    def __init__(self):
-        self.environ = {'delfin.context': context.RequestContext()}
-        pass
-
-
 class TestHpeMsaStorageDriver(TestCase):
 
     @mock.patch.object(SSHPool, 'do_exec')

@@ -333,7 +333,6 @@ pools_result = [
         'name': 'A',
         'storage_id': 'kkk',
         'native_storage_pool_id': '00c0ff26c4ea0000d980546101000000',
-        'description': '',
         'status': 'normal',
         'storage_type': 'block',
         'total_capacity': 1285054214963,
@@ -344,19 +343,18 @@ pools_result = [
 ]
 
 ports_result = [
-    {'native_port_id': 'hostport_A1',
-     'name': 'A1',
-     'type': 'fc',
-     'connection_status': 'disconnected',
-     'health_status': 'abnormal',
-     'location': 'A1_FC',
-     'storage_id': 'kkk',
-     'speed': 8589934592.0,
-     'max_speed': 8589934592.0,
-     'wwn': '',
-     'mac_address': '',
-     'ipv4': ''
-     }, {
+    {
+        'native_port_id': 'hostport_A1',
+        'name': 'A1', 'type': 'fc',
+        'connection_status': 'disconnected',
+        'health_status': 'abnormal',
+        'location': 'A1_FC',
+        'storage_id': 'kkk',
+        'speed': 8589934592.0,
+        'max_speed': 8589934592.0,
+        'mac_address': None,
+        'ipv4': None
+    }, {
         'native_port_id': 'hostport_A2',
         'name': 'A2',
         'type': 'fc',
@@ -366,33 +364,30 @@ ports_result = [
         'storage_id': 'kkk',
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
-        'wwn': '',
-        'mac_address': '',
-        'ipv4': ''
+        'mac_address': None,
+        'ipv4': None
     }, {
         'native_port_id': 'hostport_A3',
         'name': 'A3',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'A3_ISCSI',
         'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BD:64',
         'ipv4': '0.0.0.0'
     }, {
         'native_port_id': 'hostport_A4',
         'name': 'A4',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'A4_ISCSI',
         'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BD:65',
         'ipv4': '0.0.0.0'
     }, {
@@ -405,9 +400,8 @@ ports_result = [
         'storage_id': 'kkk',
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
-        'wwn': '',
-        'mac_address': '',
-        'ipv4': ''
+        'mac_address': None,
+        'ipv4': None
     }, {
         'native_port_id': 'hostport_B2',
         'name': 'B2',
@@ -418,37 +412,32 @@ ports_result = [
         'storage_id': 'kkk',
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
-        'wwn': '',
-        'mac_address': '',
-        'ipv4': ''
+        'mac_address': None,
+        'ipv4': None
     }, {
         'native_port_id': 'hostport_B3',
         'name': 'B3',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
-        'location': 'B3_ISCSI',
-        'storage_id': 'kkk',
+        'location': 'B3_ISCSI', 'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BA:BC',
         'ipv4': '0.0.0.0'
     }, {
         'native_port_id': 'hostport_B4',
         'name': 'B4',
-        'type': 'eth',
+        'type': 'fc',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'B4_ISCSI',
         'storage_id': 'kkk',
         'speed': 0,
         'max_speed': 0,
-        'wwn': '',
         'mac_address': '00:C0:FF:35:BA:BD',
         'ipv4': '0.0.0.0'
-    }
-]
+    }]
 
 disks_result = [
     {
