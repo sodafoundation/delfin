@@ -21,7 +21,8 @@ class PureStorageDriver(driver.StorageDriver):
         list_volumes = []
         volumes = self.rest_handler.get_volumes()
         if volumes:
-            pools = self.rest_handler.get_pools()
+            pools = self.rest_handler.rest_call(
+                self.rest_handler.REST_POOLS_URL)
             for volume in volumes:
                 volume_name = volume.get('name')
                 total_capacity = int(int(volume.get('size',
@@ -58,7 +59,8 @@ class PureStorageDriver(driver.StorageDriver):
         pass
 
     def get_storage(self, context):
-        storages = self.rest_handler.get_storages()
+        storages = self.rest_handler.rest_call(
+            self.rest_handler.REST_STORAGE_URL)
         model = None
         total_capacity = None
         used_capacity = None
@@ -73,7 +75,7 @@ class PureStorageDriver(driver.StorageDriver):
                                     / units.Ki)
                 break
 
-        arrays = self.rest_handler.get_arrays()
+        arrays = self.rest_handler.rest_call(self.rest_handler.REST_ARRAY_URL)
         storage_name = None
         serial_number = None
         version = None
@@ -97,7 +99,7 @@ class PureStorageDriver(driver.StorageDriver):
         return storage_result
 
     def list_alerts(self, context, query_para=None):
-        alerts = self.rest_handler.get_alerts()
+        alerts = self.rest_handler.rest_call(self.rest_handler.REST_ALERTS_URL)
         alerts_list = []
         if alerts:
             for alert in alerts:
@@ -122,7 +124,8 @@ class PureStorageDriver(driver.StorageDriver):
 
     def list_controllers(self, context):
         list_controllers = []
-        controllers = self.rest_handler.get_controllers()
+        controllers = self.rest_handler.rest_call(
+            self.rest_handler.REST_CONTROLLERS_URL)
         if controllers:
             for controller in controllers:
                 controllers_dict = dict()
@@ -141,7 +144,8 @@ class PureStorageDriver(driver.StorageDriver):
 
     def list_disks(self, context):
         hardware_dict = dict()
-        hardware = self.rest_handler.get_hardware()
+        hardware = self.rest_handler.rest_call(
+            self.rest_handler.REST_HARDWARE_URL)
         if hardware:
             for hardware_value in hardware:
                 hardware_name = dict()
@@ -152,7 +156,7 @@ class PureStorageDriver(driver.StorageDriver):
                 hardware_dict[hardware_value_name] = hardware_name
 
         list_disks = []
-        disks = self.rest_handler.get_disks()
+        disks = self.rest_handler.rest_call(self.rest_handler.REST_DISK_URL)
         if disks:
             for disk in disks:
                 disk_dict = dict()
@@ -185,7 +189,7 @@ class PureStorageDriver(driver.StorageDriver):
     def list_ports(self, context):
         networks = self.get_network()
         list_ports = []
-        ports = self.rest_handler.get_ports()
+        ports = self.rest_handler.rest_call(self.rest_handler.REST_PORT_URL)
         if ports:
             for port in ports:
                 port_result = dict()
@@ -215,7 +219,8 @@ class PureStorageDriver(driver.StorageDriver):
 
     def get_network(self):
         networks_object = dict()
-        networks = self.rest_handler.get_networks()
+        networks = self.rest_handler.rest_call(
+            self.rest_handler.REST_NETWORK_URL)
         if networks:
             for network in networks:
                 network_dict = dict()
@@ -236,7 +241,8 @@ class PureStorageDriver(driver.StorageDriver):
 
     def list_storage_pools(self, context):
         pool_list = []
-        pools = self.rest_handler.get_capacity_pools()
+        pools = self.rest_handler.rest_call(
+            self.rest_handler.REST_POOLS_CAPACITY_URL)
         if pools:
             for pool in pools:
                 pool_result = dict()
