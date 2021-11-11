@@ -33,6 +33,7 @@ class RestHandler(RestClient):
         try:
             data = {'username': self.rest_username, 'password': cryptor.decode(
                 self.rest_password)}
+            self.init_http_head()
             token_res = self.get_token(RestHandler.REST_AUTH_URL, data,
                                        method='POST')
             if token_res.status_code != consts.SUCCESS_STATUS_CODE:
@@ -128,7 +129,6 @@ class RestHandler(RestClient):
         return result_json
 
     def get_token(self, url, data=None, method='GET'):
-        self.init_http_head()
         res = self.do_call(url, data, method)
         return res
 

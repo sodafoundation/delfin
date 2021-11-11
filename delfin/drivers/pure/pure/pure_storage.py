@@ -162,9 +162,8 @@ class PureStorageDriver(driver.StorageDriver):
                 disk_dict['physical_type'] = physical_type \
                     if physical_type in constants.DiskPhysicalType.ALL else \
                     constants.DiskPhysicalType.UNKNOWN
-                status = disk.get('status')
                 disk_dict['status'] = consts.DISK_STATUS_MAP. \
-                    get(status, constants.DiskStatus.OFFLINE)
+                    get(disk.get('status'), constants.DiskStatus.OFFLINE)
                 disk_dict['storage_id'] = self.storage_id
                 disk_dict['capacity'] = int(int(disk.get('capacity')) /
                                             units.Ki)
