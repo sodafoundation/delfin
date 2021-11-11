@@ -78,44 +78,44 @@ class RestHandler(RestClient):
             raise exception.StorageBackendException(res.text)
 
     def get_storages(self):
-        result_json = self.rest_call(RestHandler.REST_STORAGE_URL)
-        return result_json
+        storages = self.rest_call(RestHandler.REST_STORAGE_URL)
+        return storages
 
     def get_arrays(self):
-        result_json = self.rest_call(RestHandler.REST_ARRAY_URL)
-        return result_json
+        arrays = self.rest_call(RestHandler.REST_ARRAY_URL)
+        return arrays
 
     def get_pools(self):
-        result_json = self.rest_call(RestHandler.REST_POOLS_URL)
-        return result_json
+        pools = self.rest_call(RestHandler.REST_POOLS_URL)
+        return pools
 
     def get_capacity_pools(self):
-        result_json = self.rest_call(RestHandler.REST_POOLS_CAPACITY_URL)
-        return result_json
+        capacity_pools = self.rest_call(RestHandler.REST_POOLS_CAPACITY_URL)
+        return capacity_pools
 
     def get_ports(self):
-        result_json = self.rest_call(RestHandler.REST_PORT_URL)
-        return result_json
+        ports = self.rest_call(RestHandler.REST_PORT_URL)
+        return ports
 
     def get_networks(self):
-        result_json = self.rest_call(RestHandler.REST_NETWORK_URL)
-        return result_json
+        networks = self.rest_call(RestHandler.REST_NETWORK_URL)
+        return networks
 
     def get_disks(self):
-        result_json = self.rest_call(RestHandler.REST_DISK_URL)
-        return result_json
+        disks = self.rest_call(RestHandler.REST_DISK_URL)
+        return disks
 
     def get_hardware(self):
-        result_json = self.rest_call(RestHandler.REST_HARDWARE_URL)
-        return result_json
+        hardware = self.rest_call(RestHandler.REST_HARDWARE_URL)
+        return hardware
 
     def get_controllers(self):
-        result_json = self.rest_call(RestHandler.REST_CONTROLLERS_URL)
-        return result_json
+        controllers = self.rest_call(RestHandler.REST_CONTROLLERS_URL)
+        return controllers
 
     def get_alerts(self):
-        result_json = self.rest_call(RestHandler.REST_ALERTS_URL)
-        return result_json
+        alerts = self.rest_call(RestHandler.REST_ALERTS_URL)
+        return alerts
 
     def rest_call(self, url, data=None, method='GET'):
         result_json = None
