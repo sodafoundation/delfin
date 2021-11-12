@@ -79,8 +79,8 @@ class RestHandler(RestClient):
                 raise exception.InvalidResults('The returned username'
                                                ' is empty')
         else:
-            LOG.error("Logout error.URL: %s, Reason: %s.",
-                      RestHandler.REST_SESSION_URL, res.text)
+            LOG.error("Logout error.status_code:%s, URL: %s, Reason: %s.",
+                      res.status_code, RestHandler.REST_SESSION_URL, res.text)
             raise exception.StorageBackendException(res.text)
 
     def rest_call(self, url, data=None, method='GET'):
