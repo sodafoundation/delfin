@@ -37,32 +37,36 @@ class RestHandler(RestClient):
             token_res = self.get_token(RestHandler.REST_AUTH_URL, data,
                                        method='POST')
             if token_res.status_code != consts.SUCCESS_STATUS_CODE:
-                LOG.error("Login error.URL: %s, Reason: %s.",
-                          RestHandler.REST_AUTH_URL, token_res.status_code)
-                raise exception.StorageBackendException(token_res.status_code)
+                LOG.error("Login error. status_code:%s, URL: %s, Reason: %s.",
+                          token_res.status_code, RestHandler.REST_AUTH_URL,
+                          token_res.text)
+                raise exception.StorageBackendException(token_res.text)
             else:
                 api_token = token_res.json().get('api_token')
                 if not api_token:
-                    LOG.error("Login error. URL: %s, Reason: %s",
+                    LOG.error("Login error. status_code:%s, URL: %s, Reason: "
+                              "%s", token_res.status_code,
                               RestHandler.REST_AUTH_URL,
                               'The API token does not exist')
                     raise exception.InvalidResults('The API token does not '
                                                    'exist')
                 session_res = self.get_token(RestHandler.REST_SESSION_URL,
-                                             api_token, method='POST')
+                                             token_res.json(), method='POST')
                 if session_res.status_code == consts.SUCCESS_STATUS_CODE:
                     username = session_res.json().get('username')
                     if not username:
-                        LOG.error("Login error. URL: %s, Reason: %s",
+                        LOG.error("Login error. status_code:%s, URL: %s, "
+                                  "Reason: %s", session_res.status_code,
                                   RestHandler.REST_SESSION_URL,
                                   'The API session does not exist')
                         raise exception.InvalidResults('The API session does '
                                                        'not exist')
                 else:
-                    LOG.error("Login error.URL: %s, Reason: %s.",
-                              RestHandler.REST_AUTH_URL, token_res.status_code)
+                    LOG.error("Login error. status_code:%s,"
+                              " URL: %s, Reason: %s.", session_res.status_code,
+                              RestHandler.REST_AUTH_URL, session_res.text)
                     raise exception.StorageBackendException(
-                        token_res.status_code)
+                        token_res.text)
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
