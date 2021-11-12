@@ -78,46 +78,6 @@ class RestHandler(RestClient):
                       RestHandler.REST_SESSION_URL, res.text)
             raise exception.StorageBackendException(res.text)
 
-    def get_storages(self):
-        storages = self.rest_call(RestHandler.REST_STORAGE_URL)
-        return storages
-
-    def get_arrays(self):
-        arrays = self.rest_call(RestHandler.REST_ARRAY_URL)
-        return arrays
-
-    def get_pools(self):
-        pools = self.rest_call(RestHandler.REST_POOLS_URL)
-        return pools
-
-    def get_capacity_pools(self):
-        capacity_pools = self.rest_call(RestHandler.REST_POOLS_CAPACITY_URL)
-        return capacity_pools
-
-    def get_ports(self):
-        ports = self.rest_call(RestHandler.REST_PORT_URL)
-        return ports
-
-    def get_networks(self):
-        networks = self.rest_call(RestHandler.REST_NETWORK_URL)
-        return networks
-
-    def get_disks(self):
-        disks = self.rest_call(RestHandler.REST_DISK_URL)
-        return disks
-
-    def get_hardware(self):
-        hardware = self.rest_call(RestHandler.REST_HARDWARE_URL)
-        return hardware
-
-    def get_controllers(self):
-        controllers = self.rest_call(RestHandler.REST_CONTROLLERS_URL)
-        return controllers
-
-    def get_alerts(self):
-        alerts = self.rest_call(RestHandler.REST_ALERTS_URL)
-        return alerts
-
     def rest_call(self, url, data=None, method='GET'):
         result_json = None
         res = self.do_call(url, data, method)
