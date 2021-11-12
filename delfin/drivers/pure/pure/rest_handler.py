@@ -38,8 +38,8 @@ class RestHandler(RestClient):
                                        method='POST')
             if token_res.status_code != consts.SUCCESS_STATUS_CODE:
                 LOG.error("Login error.URL: %s, Reason: %s.",
-                          RestHandler.REST_AUTH_URL, token_res.text)
-                raise exception.StorageBackendException(token_res.text)
+                          RestHandler.REST_AUTH_URL, token_res.status_code)
+                raise exception.StorageBackendException(token_res.status_code)
             else:
                 api_token = token_res.json().get('api_token')
                 if not api_token:
@@ -60,8 +60,9 @@ class RestHandler(RestClient):
                                                        'not exist')
                 else:
                     LOG.error("Login error.URL: %s, Reason: %s.",
-                              RestHandler.REST_AUTH_URL, token_res.text)
-                    raise exception.StorageBackendException(token_res.text)
+                              RestHandler.REST_AUTH_URL, token_res.status_code)
+                    raise exception.StorageBackendException(
+                        token_res.status_code)
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
