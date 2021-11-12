@@ -109,21 +109,3 @@ class RestHandler(RestClient):
             err_msg = "Logout error: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
-
-    def get_storage(self):
-        result_json = self.get_rest_info('/api/v1/systems')
-        return result_json
-
-    def get_all_pools(self):
-        result_json = self.get_rest_info('/api/v1/pools')
-        return result_json
-
-    def get_pool_volumes(self, pool_id):
-        url = '/api/v1/pools/%s/volumes' % pool_id
-        result_json = self.get_rest_info(url)
-        return result_json
-
-    def get_all_alerts(self):
-        result_json = \
-            self.get_rest_info('/api/v1/events?severity=warning,error')
-        return result_json

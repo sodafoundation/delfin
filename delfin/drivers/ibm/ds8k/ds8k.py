@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import six
 from oslo_log import log
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.ibm.ds8k import rest_handler, alert_handler
@@ -37,51 +38,56 @@ class DS8KDriver(driver.StorageDriver):
         self.rest_handler.logout()
 
     def get_storage(self, context):
-        result = None
-        system_info = self.rest_handler.get_storage()
-        if system_info:
-            system_data = system_info.get('data', {}).get('systems')
-            for system in system_data:
-                name = system.get('name')
-                model = system.get('MTM')
-                serial_number = system.get('sn')
-                version = system.get('release')
-                status = constants.StorageStatus.NORMAL
-                if system.get('state') != 'online':
-                    status = constants.StorageStatus.ABNORMAL
-                total = 0
-                free = 0
-                used = 0
-                raw = 0
-                if system.get('cap') != '' and system.get('cap') is not None:
-                    total = int(system.get('cap'))
-                if system.get('capraw') != '' and \
-                        system.get('capraw') is not None:
-                    raw = int(system.get('capraw'))
-                if system.get('capalloc') != '' and \
-                        system.get('capalloc') is not None:
-                    used = int(system.get('capalloc'))
-                if system.get('capavail') != '' and \
-                        system.get('capavail') is not None:
-                    free = int(system.get('capavail'))
-                result = {
-                    'name': name,
-                    'vendor': 'IBM',
-                    'model': model,
-                    'status': status,
-                    'serial_number': serial_number,
-                    'firmware_version': version,
-                    'location': '',
-                    'total_capacity': total,
-                    'raw_capacity': raw,
-                    'used_capacity': used,
-                    'free_capacity': free
-                }
-                break
-        return result
+        try:
+            system_info = self.rest_handler.get_rest_info('/api/v1/systems')
+            if system_info:
+                system_data = system_info.get('data', {}).get('systems')
+                for system in system_data:
+                    name = system.get('name')
+                    model = system.get('MTM')
+                    serial_number = system.get('sn')
+                    version = system.get('release')
+                    status = constants.StorageStatus.NORMAL
+                    if system.get('state') != 'online':
+                        status = constants.StorageStatus.ABNORMAL
+                    total = 0
+                    free = 0
+                    used = 0
+                    raw = 0
+                    if system.get('cap') != '' and \
+                            system.get('cap') is not None:
+                        total = int(system.get('cap'))
+                    if system.get('capraw') != '' and \
+                            system.get('capraw') is not None:
+                        raw = int(system.get('capraw'))
+                    if system.get('capalloc') != '' and \
+                            system.get('capalloc') is not None:
+                        used = int(system.get('capalloc'))
+                    if system.get('capavail') != '' and \
+                            system.get('capavail') is not None:
+                        free = int(system.get('capavail'))
+                    result = {
+                        'name': name,
+                        'vendor': 'IBM',
+                        'model': model,
+                        'status': status,
+                        'serial_number': serial_number,
+                        'firmware_version': version,
+                        'location': '',
+                        'total_capacity': total,
+                        'raw_capacity': raw,
+                        'used_capacity': used,
+                        'free_capacity': free
+                    }
+                    break
+            return result
+        except Exception as err:
+            err_msg = "Failed to get storage attributes from ds8k: %s" % \
+                      (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
 
     def list_storage_pools(self, context):
-        pool_info = self.rest_handler.get_all_pools()
+        pool_info = self.rest_handler.get_rest_info('/api/v1/pools')
         pool_list = []
         status = constants.StoragePoolStatus.NORMAL
         if pool_info is not None:
@@ -109,11 +115,12 @@ class DS8KDriver(driver.StorageDriver):
 
     def list_volumes(self, context):
         volume_list = []
-        pool_list = self.rest_handler.get_all_pools()
+        pool_list = self.rest_handler.get_rest_info('/api/v1/pools')
         if pool_list is not None:
             pool_data = pool_list.get('data', {}).get('pools')
             for pool in pool_data:
-                volumes = self.rest_handler.get_pool_volumes(pool.get('id'))
+                url = '/api/v1/pools/%s/volumes' % pool.get('id')
+                volumes = self.rest_handler.get_rest_info(url)
                 if volumes is not None:
                     vol_entries = volumes.get('data', {}).get('volumes')
                     for volume in vol_entries:
@@ -146,7 +153,8 @@ class DS8KDriver(driver.StorageDriver):
 
     def list_alerts(self, context, query_para=None):
         alert_model_list = []
-        alert_list = self.rest_handler.get_all_alerts()
+        alert_list = self.rest_handler.get_rest_info(
+            '/api/v1/events?severity=warning,error')
         alert_handler.AlertHandler() \
             .parse_queried_alerts(alert_model_list, alert_list, query_para)
         return alert_model_list

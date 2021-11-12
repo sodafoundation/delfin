@@ -262,30 +262,28 @@ trap_result = {
 
 class TestDS8KDriver(TestCase):
 
-    @mock.patch.object(RestHandler, 'get_storage')
+    @mock.patch.object(RestHandler, 'get_rest_info')
     def test_get_storage(self, mock_storage):
         RestHandler.login = mock.Mock(return_value=None)
         mock_storage.return_value = GET_STORAGE
         storage = DS8KDriver(**ACCESS_INFO).get_storage(context)
         self.assertDictEqual(storage, storage_result)
 
-    @mock.patch.object(RestHandler, 'get_all_pools')
+    @mock.patch.object(RestHandler, 'get_rest_info')
     def test_list_storage_pools(self, mock_pool):
         RestHandler.login = mock.Mock(return_value=None)
         mock_pool.return_value = GET_ALL_POOLS
         pool = DS8KDriver(**ACCESS_INFO).list_storage_pools(context)
         self.assertEqual(pool, pool_result)
 
-    @mock.patch.object(RestHandler, 'get_pool_volumes')
-    @mock.patch.object(RestHandler, 'get_all_pools')
-    def test_list_volumes(self, mock_pool, mock_vol):
+    def test_list_volumes(self):
         RestHandler.login = mock.Mock(return_value=None)
-        mock_pool.return_value = GET_ALL_POOLS
-        mock_vol.return_value = GET_ALL_LUNS
+        RestHandler.get_rest_info = mock.Mock(
+            side_effect=[GET_ALL_POOLS, GET_ALL_LUNS])
         vol = DS8KDriver(**ACCESS_INFO).list_volumes(context)
         self.assertEqual(vol, volume_result)
 
-    @mock.patch.object(RestHandler, 'get_all_alerts')
+    @mock.patch.object(RestHandler, 'get_rest_info')
     def test_list_alerts(self, mock_alert):
         RestHandler.login = mock.Mock(return_value=None)
         mock_alert.return_value = GET_ALL_ALERTS
