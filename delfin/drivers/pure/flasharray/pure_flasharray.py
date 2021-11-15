@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 
 from oslo_log import log
@@ -117,8 +118,11 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     constants.Severity.NOT_SPECIFIED)
                 alerts_model['category'] = consts.CATEGORY_MAP.get(
                     alert.get('category'), constants.Category.NOT_SPECIFIED)
-
-                alerts_model['occur_time'] = alert.get('opened')
+                time = alert.get('opened')
+                alerts_model['occur_time'] = datetime.datetime.strptime(
+                    time, '%Y-%m-%dT%H:%M:%SZ').timestamp() * \
+                    consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION\
+                    if time is not None else None
                 alerts_model['description'] = alert.get('event')
                 alerts_model['location'] = alert.get('component_name')
                 alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
@@ -176,8 +180,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 disk_dict['status'] = consts.DISK_STATUS_MAP. \
                     get(disk.get('status'), constants.DiskStatus.OFFLINE)
                 disk_dict['storage_id'] = self.storage_id
-                disk_dict['capacity'] = int(int(disk.get('capacity')) /
-                                            units.Ki)
+                disk_dict['capacity'] = int(int(disk.get('capacity')))
                 hardware_object = hardware_dict.get(drive_name, {})
                 speed = hardware_object.get('speed')
                 disk_dict['speed'] = int(speed) if speed is not None else None

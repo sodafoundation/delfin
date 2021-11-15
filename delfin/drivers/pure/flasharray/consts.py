@@ -19,8 +19,8 @@ DEFAULT_CAPACITY = 0
 # The default speed
 DEFAULT_SPEED = 0
 
-# The default sequence for the get_volumes_info function
-DEFAULT_LIST_GET_VOLUMES_INFO = 1
+# The default list_alerts time conversion
+DEFAULT_LIST_ALERTS_TIME_CONVERSION = 1000
 
 # The default count for the get_volumes_info function
 DEFAULT_COUNT_GET_VOLUMES_INFO = 0
