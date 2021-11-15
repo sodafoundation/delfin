@@ -66,7 +66,7 @@ class RestHandler(RestClient):
                               " URL: %s, Reason: %s.", session_res.status_code,
                               RestHandler.REST_AUTH_URL, session_res.text)
                     raise exception.StorageBackendException(
-                        token_res.text)
+                        session_res.text)
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
