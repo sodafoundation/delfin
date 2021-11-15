@@ -119,9 +119,9 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 alerts_model['category'] = consts.CATEGORY_MAP.get(
                     alert.get('category'), constants.Category.NOT_SPECIFIED)
                 time = alert.get('opened')
-                alerts_model['occur_time'] = datetime.datetime.strptime(
-                    time, '%Y-%m-%dT%H:%M:%SZ').timestamp() * \
-                    consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION\
+                alerts_model['occur_time'] = int(datetime.datetime.strptime(
+                    time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+                    * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
                     if time is not None else None
                 alerts_model['description'] = alert.get('event')
                 alerts_model['location'] = alert.get('component_name')
