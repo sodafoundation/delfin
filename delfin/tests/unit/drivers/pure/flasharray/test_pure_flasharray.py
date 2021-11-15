@@ -7,7 +7,7 @@ from oslo_log import log
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.pure.flasharray.rest_handler import RestHandler
-from delfin.drivers.pure.flasharray.pure_storage import PureStorageDriver
+from delfin.drivers.pure.flasharray.pure_flasharray import PureFlashArrayDriver
 LOG = log.getLogger(__name__)
 
 ACCESS_INFO = {
@@ -273,16 +273,16 @@ reset_connection_info = {
 def create_driver():
     RestHandler.login = mock.Mock(
         return_value={None})
-    return PureStorageDriver(**ACCESS_INFO)
+    return PureFlashArrayDriver(**ACCESS_INFO)
 
 
-class test_PureStorageDriver(TestCase):
+class test_PureFlashArrayDriver(TestCase):
     driver = create_driver()
 
     def test_init(self):
         RestHandler.login = mock.Mock(
             return_value={""})
-        PureStorageDriver(**ACCESS_INFO)
+        PureFlashArrayDriver(**ACCESS_INFO)
 
     def test_list_volumes(self):
         RestHandler.get_volumes = mock.Mock(

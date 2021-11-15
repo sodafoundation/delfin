@@ -10,7 +10,7 @@ from delfin.drivers.pure.flasharray import rest_handler, consts
 LOG = log.getLogger(__name__)
 
 
-class PureStorageDriver(driver.StorageDriver):
+class PureFlashArrayDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
