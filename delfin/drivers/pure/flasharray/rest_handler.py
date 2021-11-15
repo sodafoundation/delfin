@@ -37,38 +37,37 @@ class RestHandler(RestClient):
             token_res = self.get_token(RestHandler.REST_AUTH_URL, data,
                                        method='POST')
             if token_res.status_code != consts.SUCCESS_STATUS_CODE:
-                LOG.error("Login error. status_code:%s, URL: %s, Reason: %s.",
-                          token_res.status_code, RestHandler.REST_AUTH_URL,
-                          'Obtaining the token is abnormal')
+                LOG.error("Login error, Obtaining the token is abnormal. "
+                          "status_code:%s, URL: %s",
+                          token_res.status_code, RestHandler.REST_AUTH_URL)
                 raise exception.StorageBackendException(
                     'Obtaining the token is abnormal')
             else:
                 api_token = token_res.json().get('api_token')
                 if not api_token:
-                    LOG.error("Login error. status_code:%s, URL: %s, Reason: "
-                              "%s", token_res.status_code,
-                              RestHandler.REST_AUTH_URL,
-                              'The API token does not exist')
-                    raise exception.InvalidResults('The API token does not '
+                    LOG.error("Login error, the api token does not exist. "
+                              "status_code:%s, URL: %s", token_res.status_code,
+                              RestHandler.REST_AUTH_URL)
+                    raise exception.InvalidResults('the api token does not '
                                                    'exist')
                 session_res = self.get_token(RestHandler.REST_SESSION_URL,
                                              token_res.json(), method='POST')
                 if session_res.status_code == consts.SUCCESS_STATUS_CODE:
                     username = session_res.json().get('username')
                     if not username:
-                        LOG.error("Login error. status_code:%s, URL: %s, "
-                                  "Reason: %s", session_res.status_code,
-                                  RestHandler.REST_SESSION_URL,
-                                  'The API session does not exist')
-                        raise exception.InvalidResults('The API session does '
+                        LOG.error("Login error, the api session does not exist"
+                                  ". status_code:%s, URL: %s",
+                                  session_res.status_code,
+                                  RestHandler.REST_SESSION_URL)
+                        raise exception.InvalidResults('the api session does '
                                                        'not exist')
                 else:
-                    LOG.error("Login error. status_code:%s,"
-                              " URL: %s, Reason: %s.", session_res.status_code,
-                              RestHandler.REST_AUTH_URL,
-                              'Obtaining the session is abnormal')
+                    LOG.error("Login error, obtaining the session is abnormal."
+                              " status_code:%s, URL: %s",
+                              session_res.status_code,
+                              RestHandler.REST_AUTH_URL)
                     raise exception.StorageBackendException(
-                        'Obtaining the session is abnormal')
+                        'obtaining the session is abnormal')
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
@@ -81,8 +80,9 @@ class RestHandler(RestClient):
                 raise exception.InvalidResults('The returned username'
                                                ' is empty')
         else:
-            LOG.error("Logout error.status_code:%s, URL: %s, Reason: %s.",
-                      res.status_code, RestHandler.REST_SESSION_URL, res.text)
+            LOG.error("Logout error, Deleting a Token Exception."
+                      "status_code:%s, URL: %s",
+                      res.status_code, RestHandler.REST_SESSION_URL)
             raise exception.StorageBackendException(res.text)
 
     def rest_call(self, url, data=None, method='GET'):
