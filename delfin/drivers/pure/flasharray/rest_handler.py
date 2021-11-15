@@ -109,10 +109,8 @@ class RestHandler(RestClient):
             volume_list.extend(result_json)
             next_token = res.headers.get(consts.CUSTOM_TOKEN)
             if next_token:
-                token = next_token[consts.DEFAULT_LIST_GET_VOLUMES_INFO]
-                if token:
-                    url = '%s%s' % (RestHandler.REST_VOLUME_TOKEN_URL, token)
-                    self.get_volumes(url, data, volume_list)
+                url = '%s%s' % (RestHandler.REST_VOLUME_TOKEN_URL, next_token)
+                self.get_volumes(url, data, volume_list)
         elif res.status_code == consts.PERMISSION_DENIED_STATUS_CODE:
             self.login()
             if count < consts.RE_LOGIN_TIMES:
