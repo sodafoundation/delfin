@@ -61,12 +61,10 @@ class PureFlashArrayDriver(driver.StorageDriver):
     def get_storage(self, context):
         storages = self.rest_handler.rest_call(
             self.rest_handler.REST_STORAGE_URL)
-        model = None
         total_capacity = None
         used_capacity = None
         if storages:
             for storage in storages:
-                model = storage.get('hostname')
                 total_capacity = int(int(storage.get('provisioned',
                                                      consts.DEFAULT_CAPACITY))
                                      / units.Ki)
@@ -83,6 +81,15 @@ class PureFlashArrayDriver(driver.StorageDriver):
             storage_name = arrays.get('array_name')
             serial_number = arrays.get('id')
             version = arrays.get('version')
+
+        model = None
+        controllers = self.rest_handler.rest_call(
+            self.rest_handler.REST_CONTROLLERS_URL)
+        if controllers:
+            for controller in controllers:
+                model = controller.get('mode')
+                break
+
         storage_result = {
             'model': model,
             'total_capacity': total_capacity,

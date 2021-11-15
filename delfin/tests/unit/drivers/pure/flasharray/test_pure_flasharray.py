@@ -295,7 +295,7 @@ class test_PureFlashArrayDriver(TestCase):
 
     def test_get_storage(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[storage_info, storage_id_info])
+            side_effect=[storage_info, storage_id_info, controllers_info])
         storage_object = self.driver.get_storage(context)
         self.assertEqual(storage_object.get('name'),
                          storage_id_info.get('array_name'))
