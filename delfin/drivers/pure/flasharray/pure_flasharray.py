@@ -87,7 +87,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_CONTROLLERS_URL)
         if controllers:
             for controller in controllers:
-                model = controller.get('mode')
+                model = controller.get('model')
                 break
 
         storage_result = {
