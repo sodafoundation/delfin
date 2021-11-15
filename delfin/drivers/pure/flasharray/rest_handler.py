@@ -39,9 +39,9 @@ class RestHandler(RestClient):
             if token_res.status_code != consts.SUCCESS_STATUS_CODE:
                 LOG.error("Login error. status_code:%s, URL: %s, Reason: %s.",
                           token_res.status_code, RestHandler.REST_AUTH_URL,
-                          'Obtaining the token is abnormal. Procedure')
+                          'Obtaining the token is abnormal')
                 raise exception.StorageBackendException(
-                    'Obtaining the token is abnormal. Procedure')
+                    'Obtaining the token is abnormal')
             else:
                 api_token = token_res.json().get('api_token')
                 if not api_token:
@@ -66,9 +66,9 @@ class RestHandler(RestClient):
                     LOG.error("Login error. status_code:%s,"
                               " URL: %s, Reason: %s.", session_res.status_code,
                               RestHandler.REST_AUTH_URL,
-                              'Obtaining the session is abnormal. Procedure')
+                              'Obtaining the session is abnormal')
                     raise exception.StorageBackendException(
-                        'Obtaining the session is abnormal. Procedure')
+                        'Obtaining the session is abnormal')
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
