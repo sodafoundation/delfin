@@ -2,7 +2,7 @@ import six
 from oslo_log import log as logging
 
 from delfin import exception, cryptor
-from delfin.drivers.pure.pure import consts
+from delfin.drivers.pure.flasharray import consts
 from delfin.drivers.utils.rest_client import RestClient
 
 LOG = logging.getLogger(__name__)

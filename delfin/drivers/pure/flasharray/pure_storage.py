@@ -5,7 +5,7 @@ from oslo_utils import units
 
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.pure.pure import rest_handler, consts
+from delfin.drivers.pure.flasharray import rest_handler, consts
 
 LOG = log.getLogger(__name__)
 

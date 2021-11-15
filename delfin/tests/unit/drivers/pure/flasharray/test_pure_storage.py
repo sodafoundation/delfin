@@ -6,8 +6,8 @@ from oslo_log import log
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
-from delfin.drivers.pure.pure.rest_handler import RestHandler
-from delfin.drivers.pure.pure.pure_storage import PureStorageDriver
+from delfin.drivers.pure.flasharray.rest_handler import RestHandler
+from delfin.drivers.pure.flasharray.pure_storage import PureStorageDriver
 LOG = log.getLogger(__name__)
 
 ACCESS_INFO = {
