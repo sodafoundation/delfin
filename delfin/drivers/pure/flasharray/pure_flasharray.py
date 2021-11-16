@@ -46,7 +46,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     'storage_id': self.storage_id,
                     'status': constants.StorageStatus.NORMAL,
                     'type': constants.VolumeType.THIN if
-                    volume.get('thin_provisioning')
+                    volume.get('thin_provisioning') is not None
                     else constants.VolumeType.THICK,
                     'native_storage_pool_id': native_storage_pool_id
                 }
@@ -181,12 +181,11 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_HARDWARE_URL)
         if hardware:
             for hardware_value in hardware:
-                hardware_name = dict()
-                hardware_name['speed'] = hardware_value.get('speed')
-                hardware_name['serial_number'] = hardware_value.get('serial')
-                hardware_name['model'] = hardware_value.get('model')
-                hardware_value_name = hardware_value.get('name')
-                hardware_dict[hardware_value_name] = hardware_name
+                hardware_Map = dict()
+                hardware_Map['speed'] = hardware_value.get('speed')
+                hardware_Map['serial_number'] = hardware_value.get('serial')
+                hardware_Map['model'] = hardware_value.get('model')
+                hardware_dict[hardware_value.get('name')] = hardware_Map
         return hardware_dict
 
     def list_ports(self, context):
@@ -200,8 +199,13 @@ class PureFlashArrayDriver(driver.StorageDriver):
         for hardware in hardware_dict:
             hardware_result = dict()
             hardware_name = hardware.get('name')
-            if 'FC' not in hardware_name and 'ETH' not in hardware_name and\
-                    'SAS' not in hardware_name:
+            if 'FC' in hardware_name:
+                hardware_result['type'] = constants.PortType.FC
+            elif 'ETH' in hardware_name:
+                hardware_result['type'] = constants.PortType.ETH
+            elif 'SAS' in hardware_name:
+                hardware_result['type'] = constants.PortType.SAS
+            else:
                 continue
             hardware_result['name'] = hardware_name
             hardware_result['native_port_id'] = hardware_name
@@ -228,10 +232,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
             port = ports.get(hardware_name)
             if port:
-                hardware_result['type'] = port.get('type')
                 hardware_result['wwn'] = port.get('wwn')
-            else:
-                hardware_result['type'] = constants.PortType.SAS
 
             network = networks.get(hardware_name)
             if network:
@@ -250,11 +251,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 port_name = port.get('name')
                 wwn = port.get('wwn')
                 if wwn:
-                    port_dict['type'] = constants.PortType.FC
                     wwn_splice = self.get_splice_wwn(wwn)
                     port_dict['wwn'] = wwn_splice
-                else:
-                    port_dict['type'] = constants.PortType.ETH
                 ports_dict[port_name] = port_dict
         return ports_dict
 

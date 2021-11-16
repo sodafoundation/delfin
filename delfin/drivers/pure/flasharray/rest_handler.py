@@ -48,8 +48,8 @@ class RestHandler(RestClient):
                     LOG.error("Login error, the api token does not exist. "
                               "status_code:%s, URL: %s", token_res.status_code,
                               RestHandler.REST_AUTH_URL)
-                    raise exception.InvalidResults('the api token does not '
-                                                   'exist')
+                    raise exception.StorageBackendException('the api token '
+                                                            'does not exist')
                 session_res = self.do_call(RestHandler.REST_SESSION_URL,
                                            token_res.json(), method='POST')
                 if session_res.status_code == consts.SUCCESS_STATUS_CODE:
@@ -59,8 +59,8 @@ class RestHandler(RestClient):
                                   ". status_code:%s, URL: %s",
                                   session_res.status_code,
                                   RestHandler.REST_SESSION_URL)
-                        raise exception.InvalidResults('the api session does '
-                                                       'not exist')
+                        raise exception.StorageBackendException(
+                            'the api session does not exist')
                 else:
                     LOG.error("Login error, obtaining the session is abnormal."
                               " status_code:%s, URL: %s",
