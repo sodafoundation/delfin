@@ -26,12 +26,10 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 self.rest_handler.REST_POOLS_URL)
             for volume in volumes:
                 volume_name = volume.get('name')
-                total_capacity = int(int(volume.get('size',
-                                                    consts.DEFAULT_CAPACITY)) /
-                                     units.Ki)
-                used_capacity = int(int(volume.get('volumes',
-                                                   consts.DEFAULT_CAPACITY)) /
-                                    units.Ki)
+                total_capacity = int(volume.get('size',
+                                                consts.DEFAULT_CAPACITY))
+                used_capacity = int(volume.get('volumes',
+                                               consts.DEFAULT_CAPACITY))
                 native_storage_pool_id = None
                 if pools:
                     for pool in pools:
@@ -66,12 +64,10 @@ class PureFlashArrayDriver(driver.StorageDriver):
         used_capacity = None
         if storages:
             for storage in storages:
-                total_capacity = int(int(storage.get('provisioned',
-                                                     consts.DEFAULT_CAPACITY))
-                                     / units.Ki)
-                used_capacity = int(int(storage.get('volumes',
-                                                    consts.DEFAULT_CAPACITY))
-                                    / units.Ki)
+                total_capacity = int(storage.get('provisioned',
+                                                 consts.DEFAULT_CAPACITY))
+                used_capacity = int(storage.get('volumes',
+                                                consts.DEFAULT_CAPACITY))
                 break
 
         arrays = self.rest_handler.rest_call(self.rest_handler.REST_ARRAY_URL)
@@ -88,8 +84,9 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_CONTROLLERS_URL)
         if controllers:
             for controller in controllers:
-                model = controller.get('model')
-                break
+                if controller.get('mode') == consts.CONTROLLER_PRIMARY:
+                    model = controller.get('model')
+                    break
 
         storage_result = {
             'model': model,
@@ -101,8 +98,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             'name': storage_name,
             'serial_number': serial_number,
             'firmware_version': version,
-            'status': constants.StorageStatus.NORMAL,
-            'location': storage_name
+            'status': constants.StorageStatus.NORMAL
         }
         return storage_result
 
@@ -154,18 +150,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
         return list_controllers
 
     def list_disks(self, context):
-        hardware_dict = dict()
-        hardware = self.rest_handler.rest_call(
-            self.rest_handler.REST_HARDWARE_URL)
-        if hardware:
-            for hardware_value in hardware:
-                hardware_name = dict()
-                hardware_name['speed'] = hardware_value.get('speed')
-                hardware_name['serial_number'] = hardware_value.get('serial')
-                hardware_name['model'] = hardware_value.get('model')
-                hardware_value_name = hardware_value.get('name')
-                hardware_dict[hardware_value_name] = hardware_name
-
+        hardware_dict = self.get_hardware()
         list_disks = []
         disks = self.rest_handler.rest_call(self.rest_handler.REST_DISK_URL)
         if disks:
@@ -180,7 +165,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 disk_dict['status'] = consts.DISK_STATUS_MAP. \
                     get(disk.get('status'), constants.DiskStatus.OFFLINE)
                 disk_dict['storage_id'] = self.storage_id
-                disk_dict['capacity'] = int(int(disk.get('capacity')))
+                disk_dict['capacity'] = int(disk.get('capacity',
+                                                     consts.DEFAULT_CAPACITY))
                 hardware_object = hardware_dict.get(drive_name, {})
                 speed = hardware_object.get('speed')
                 disk_dict['speed'] = int(speed) if speed is not None else None
@@ -196,8 +182,23 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 list_disks.append(disk_dict)
         return list_disks
 
+    def get_hardware(self):
+        hardware_dict = dict()
+        hardware = self.rest_handler.rest_call(
+            self.rest_handler.REST_HARDWARE_URL)
+        if hardware:
+            for hardware_value in hardware:
+                hardware_name = dict()
+                hardware_name['speed'] = hardware_value.get('speed')
+                hardware_name['serial_number'] = hardware_value.get('serial')
+                hardware_name['model'] = hardware_value.get('model')
+                hardware_value_name = hardware_value.get('name')
+                hardware_dict[hardware_value_name] = hardware_name
+        return hardware_dict
+
     def list_ports(self, context):
         networks = self.get_network()
+        hardware_dict = self.get_hardware()
         list_ports = []
         ports = self.rest_handler.rest_call(self.rest_handler.REST_PORT_URL)
         if ports:
@@ -209,23 +210,37 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     port_result['type'] = constants.PortType.FC
                 else:
                     port_result['type'] = constants.PortType.ETH
-                port_result['id'] = port_name
                 port_result['name'] = port_name
                 port_result['native_port_id'] = port_name
                 port_result['location'] = port_name
                 port_result['storage_id'] = self.storage_id
-                network = networks.get(port_name.lower(), {})
+                network = networks.get(port_name, {})
                 port_result['logical_type'] = network.get('logical_type')
-                port_result['speed'] = network.get('speed')
                 port_result['mac_address'] = network.get('address')
                 port_result['ipv4_mask'] = network.get('ipv4_mask')
-                port_result['wwn'] = wwn
+
+                hardware = hardware_dict.get(port_name, {})
+                speed = hardware.get('speed')
+                port_result['speed'] = int(speed)\
+                    if speed is not None else None
+                wwn_splice = self.get_splice_wwn(wwn)
+                port_result['wwn'] = wwn_splice
                 port_result['connection_status '] = constants. \
                     PortConnectionStatus.CONNECTED
                 port_result['health_status'] = constants.PortHealthStatus. \
                     NORMAL
                 list_ports.append(port_result)
         return list_ports
+
+    @staticmethod
+    def get_splice_wwn(wwn):
+        wwn_list = list(wwn)
+        wwn_splice = wwn_list[0]
+        for serial in range(1, len(wwn_list)):
+            if serial % consts.SPLICE_WWN_SERIAL == consts.CONSTANT_ZERO:
+                wwn_splice = '{}{}'.format(wwn_splice, consts.SPLICE_WWN_COLON)
+            wwn_splice = '{}{}'.format(wwn_splice, wwn_list[serial])
+        return wwn_splice
 
     def get_network(self):
         networks_object = dict()
@@ -241,11 +256,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
                         network_dict['logical_type'] = services if \
                             services in constants.PortLogicalType.ALL else None
                         break
-                network_dict['speed'] = int(int(network.get('speed',
-                                                            consts.
-                                            DEFAULT_SPEED)) / units.Ki)
                 network_dict['ipv4_mask'] = network.get('netmask')
-                network_name = network.get('name')
+                network_name = network.get('name').upper()
                 networks_object[network_name] = network_dict
         return networks_object
 
@@ -257,6 +269,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
             for pool in pools:
                 pool_result = dict()
                 total_capacity = int(pool.get('size', consts.DEFAULT_CAPACITY))
+                if total_capacity == consts.DEFAULT_CAPACITY:
+                    continue
                 pool_result['total_capacity'] = total_capacity
                 used_capacity = int(pool.get('total_reduction',
                                              consts.DEFAULT_CAPACITY))

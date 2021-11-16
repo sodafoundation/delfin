@@ -34,8 +34,8 @@ class RestHandler(RestClient):
             data = {'username': self.rest_username, 'password': cryptor.decode(
                 self.rest_password)}
             self.init_http_head()
-            token_res = self.get_token(RestHandler.REST_AUTH_URL, data,
-                                       method='POST')
+            token_res = self.do_call(RestHandler.REST_AUTH_URL, data,
+                                     method='POST')
             if token_res.status_code != consts.SUCCESS_STATUS_CODE:
                 LOG.error("Login error, Obtaining the token is abnormal. "
                           "status_code:%s, URL: %s",
@@ -50,8 +50,8 @@ class RestHandler(RestClient):
                               RestHandler.REST_AUTH_URL)
                     raise exception.InvalidResults('the api token does not '
                                                    'exist')
-                session_res = self.get_token(RestHandler.REST_SESSION_URL,
-                                             token_res.json(), method='POST')
+                session_res = self.do_call(RestHandler.REST_SESSION_URL,
+                                           token_res.json(), method='POST')
                 if session_res.status_code == consts.SUCCESS_STATUS_CODE:
                     username = session_res.json().get('username')
                     if not username:
@@ -71,9 +71,12 @@ class RestHandler(RestClient):
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
+        finally:
+            data = None
+            token_res = None
 
     def logout(self):
-        res = self.get_token(RestHandler.REST_SESSION_URL, method='DELETE')
+        res = self.do_call(RestHandler.REST_SESSION_URL, method='DELETE')
         if res.status_code == consts.SUCCESS_STATUS_CODE:
             username = res.json().get('username')
             if not username:
@@ -94,10 +97,6 @@ class RestHandler(RestClient):
             self.login()
             self.rest_call(url, data, method)
         return result_json
-
-    def get_token(self, url, data=None, method='GET'):
-        res = self.do_call(url, data, method)
-        return res
 
     def get_volumes(self, url=REST_VOLUME_URL, data=None, volume_list=None,
                     count=consts.DEFAULT_COUNT_GET_VOLUMES_INFO):

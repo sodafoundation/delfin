@@ -30,6 +30,8 @@ RE_LOGIN_TIMES = 3
 
 # Constant one
 CONSTANT_ONE = 1
+# Constant zero
+CONSTANT_ZERO = 0
 
 # Success status code
 SUCCESS_STATUS_CODE = 200
@@ -39,6 +41,13 @@ PERMISSION_DENIED_STATUS_CODE = 401
 
 # Custom token of Pure
 CUSTOM_TOKEN = 'x-next-token'
+
+# The mode value of the controller
+CONTROLLER_PRIMARY = 'primary'
+
+# list_port: Add ":" to the WWN every 2 sequences.
+SPLICE_WWN_SERIAL = 2
+SPLICE_WWN_COLON = ':'
 
 SEVERITY_MAP = {'fatal': constants.Severity.FATAL,
                 'critical': constants.Severity.CRITICAL,
