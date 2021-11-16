@@ -42,8 +42,8 @@ PERMISSION_DENIED_STATUS_CODE = 401
 # Custom token of Pure
 CUSTOM_TOKEN = 'x-next-token'
 
-# The mode value of the controller
-CONTROLLER_PRIMARY = 'primary'
+# The default get_storage model
+DEFAULT_GET_STORAGE_MODEL = 'FlashArray'
 
 # list_port: Add ":" to the WWN every 2 sequences.
 SPLICE_WWN_SERIAL = 2

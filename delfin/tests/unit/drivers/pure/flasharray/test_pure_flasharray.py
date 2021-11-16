@@ -151,7 +151,7 @@ hardware_info = [
         "details": "",
         "identify": "off",
         "index": 0,
-        "name": "CH0.BAY1",
+        "name": "CTO.FC1",
         "slot": "",
         "speed": 0,
         "status": "ok",
@@ -161,7 +161,7 @@ hardware_info = [
         "details": "",
         "identify": "",
         "index": 0,
-        "name": "CH0.BAY2",
+        "name": "CTO.ETH15",
         "slot": 0,
         "speed": 1000000,
         "status": "ok",
@@ -202,7 +202,7 @@ drive_info = [
 ]
 port_info = [
     {
-        "name": "CTO.ETH14",
+        "name": "CTO.FC1",
         "failover": "",
         "iqn": "iqn.2016-11-01.com.pure",
         "portal": "100.12.253.23:4563",
@@ -214,13 +214,13 @@ port_info = [
         "failover": "",
         "iqn": "iqn.2016-11-01.com.pure",
         "portal": "100.12.253.23:4563",
-        "wwn": "43ddff45gdcvrty",
+        "wwn": "",
         "nqn": ""
     }
 ]
 port_network_info = [
     {
-        "name": "CTO.ETH14",
+        "name": "CTO.FC1",
         "address": "45233662jksndj",
         "speed": 12000,
         "netmask": "100.12.253.23:4563",
@@ -235,7 +235,7 @@ port_network_info = [
         "address": "45233662jksndj",
         "speed": 13000,
         "netmask": "100.12.253.23:4563",
-        "wwn": "43ddff45ggg4rty",
+        "wwn": "",
         "nqn": "",
         "services": [
             "management"
@@ -323,9 +323,9 @@ class test_PureFlashArrayDriver(TestCase):
 
     def test_list_ports(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[port_network_info, port_info])
+            side_effect=[port_network_info, port_info, hardware_info])
         list_ports = self.driver.list_ports(context)
-        self.assertEqual(list_ports[0].get('wwn'), port_info[0].get('wwn'))
+        self.assertEqual(list_ports[0].get('name'), port_info[0].get('name'))
 
     def test_list_storage_pools(self):
         RestHandler.rest_call = mock.Mock(side_effect=[pools_info])

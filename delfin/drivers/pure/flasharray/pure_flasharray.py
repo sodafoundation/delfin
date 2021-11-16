@@ -45,7 +45,9 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     'free_capacity': total_capacity - used_capacity,
                     'storage_id': self.storage_id,
                     'status': constants.StorageStatus.NORMAL,
-                    'type': constants.VolumeType.THICK,
+                    'type': constants.VolumeType.THIN if
+                    volume.get('thin_provisioning')
+                    else constants.VolumeType.THICK,
                     'native_storage_pool_id': native_storage_pool_id
                 }
                 list_volumes.append(volume_dict)
@@ -79,17 +81,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
             serial_number = arrays.get('id')
             version = arrays.get('version')
 
-        model = None
-        controllers = self.rest_handler.rest_call(
-            self.rest_handler.REST_CONTROLLERS_URL)
-        if controllers:
-            for controller in controllers:
-                if controller.get('mode') == consts.CONTROLLER_PRIMARY:
-                    model = controller.get('model')
-                    break
-
         storage_result = {
-            'model': model,
+            'model': consts.DEFAULT_GET_STORAGE_MODEL,
             'total_capacity': total_capacity,
             'raw_capacity': total_capacity,
             'used_capacity': used_capacity,
@@ -197,40 +190,73 @@ class PureFlashArrayDriver(driver.StorageDriver):
         return hardware_dict
 
     def list_ports(self, context):
-        networks = self.get_network()
-        hardware_dict = self.get_hardware()
         list_ports = []
+        networks = self.get_network()
+        ports = self.get_ports()
+        hardware_dict = self.rest_handler.rest_call(
+            self.rest_handler.REST_HARDWARE_URL)
+        if not hardware_dict:
+            return list_ports
+        for hardware in hardware_dict:
+            hardware_result = dict()
+            hardware_name = hardware.get('name')
+            if 'FC' not in hardware_name and 'ETH' not in hardware_name and\
+                    'SAS' not in hardware_name:
+                continue
+            hardware_result['name'] = hardware_name
+            hardware_result['native_port_id'] = hardware_name
+            hardware_result['storage_id'] = self.storage_id
+            hardware_result['location'] = hardware_name
+            speed = hardware.get('speed')
+            if speed is None:
+                hardware_result['connection_status'] = \
+                    constants.PortConnectionStatus.UNKNOWN
+                hardware_result['health_status'] = constants.PortHealthStatus.\
+                    UNKNOWN
+            elif speed == consts.CONSTANT_ZERO:
+                hardware_result['connection_status'] = \
+                    constants.PortConnectionStatus.DISCONNECTED
+                hardware_result['health_status'] = constants.PortHealthStatus.\
+                    ABNORMAL
+                hardware_result['speed'] = speed
+            else:
+                hardware_result['connection_status'] = \
+                    constants.PortConnectionStatus.CONNECTED
+                hardware_result['health_status'] = constants.PortHealthStatus.\
+                    NORMAL
+                hardware_result['speed'] = int(speed)
+
+            port = ports.get(hardware_name)
+            if port:
+                hardware_result['type'] = port.get('type')
+                hardware_result['wwn'] = port.get('wwn')
+            else:
+                hardware_result['type'] = constants.PortType.SAS
+
+            network = networks.get(hardware_name)
+            if network:
+                hardware_result['address'] = network.get('address')
+                hardware_result['logical_type'] = network.get('logical_type')
+                hardware_result['ipv4_mask'] = network.get('ipv4_mask')
+            list_ports.append(hardware_result)
+        return list_ports
+
+    def get_ports(self):
+        ports_dict = dict()
         ports = self.rest_handler.rest_call(self.rest_handler.REST_PORT_URL)
         if ports:
             for port in ports:
-                port_result = dict()
+                port_dict = dict()
                 port_name = port.get('name')
                 wwn = port.get('wwn')
                 if wwn:
-                    port_result['type'] = constants.PortType.FC
+                    port_dict['type'] = constants.PortType.FC
+                    wwn_splice = self.get_splice_wwn(wwn)
+                    port_dict['wwn'] = wwn_splice
                 else:
-                    port_result['type'] = constants.PortType.ETH
-                port_result['name'] = port_name
-                port_result['native_port_id'] = port_name
-                port_result['location'] = port_name
-                port_result['storage_id'] = self.storage_id
-                network = networks.get(port_name, {})
-                port_result['logical_type'] = network.get('logical_type')
-                port_result['mac_address'] = network.get('address')
-                port_result['ipv4_mask'] = network.get('ipv4_mask')
-
-                hardware = hardware_dict.get(port_name, {})
-                speed = hardware.get('speed')
-                port_result['speed'] = int(speed)\
-                    if speed is not None else None
-                wwn_splice = self.get_splice_wwn(wwn)
-                port_result['wwn'] = wwn_splice
-                port_result['connection_status '] = constants. \
-                    PortConnectionStatus.CONNECTED
-                port_result['health_status'] = constants.PortHealthStatus. \
-                    NORMAL
-                list_ports.append(port_result)
-        return list_ports
+                    port_dict['type'] = constants.PortType.ETH
+                ports_dict[port_name] = port_dict
+        return ports_dict
 
     @staticmethod
     def get_splice_wwn(wwn):
