@@ -21,21 +21,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
         list_volumes = []
         volumes = self.rest_handler.get_volumes()
         if volumes:
-            pools = self.rest_handler.rest_call(
-                self.rest_handler.REST_POOLS_URL)
             for volume in volumes:
                 volume_name = volume.get('name')
                 total_capacity = int(volume.get('size',
                                                 consts.DEFAULT_CAPACITY))
                 used_capacity = int(volume.get('volumes',
                                                consts.DEFAULT_CAPACITY))
-                native_storage_pool_id = None
-                if pools:
-                    for pool in pools:
-                        pool_volumes = pool.get('volumes')
-                        if volume_name in pool_volumes:
-                            native_storage_pool_id = pool.get('name')
-                            break
                 volume_dict = {
                     'native_volume_id': volume_name,
                     'name': volume_name,
@@ -47,7 +38,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     'type': constants.VolumeType.THIN if
                     volume.get('thin_provisioning') is not None
                     else constants.VolumeType.THICK,
-                    'native_storage_pool_id': native_storage_pool_id
+                    'native_storage_pool_id': ''
                 }
                 list_volumes.append(volume_dict)
         return list_volumes
@@ -80,8 +71,18 @@ class PureFlashArrayDriver(driver.StorageDriver):
             serial_number = arrays.get('id')
             version = arrays.get('version')
 
+        model = None
+        status = constants.StorageStatus.NORMAL
+        controllers = self.rest_handler.rest_call(
+            self.rest_handler.REST_CONTROLLERS_URL)
+        if controllers:
+            for controller in controllers:
+                if controller.get('mode') == consts.CONTROLLER_PRIMARY:
+                    model = controller.get('model')
+                if controller.get('status') != consts.NORMAL_CONTROLLER_STATUS:
+                    status = constants.StorageStatus.ABNORMAL
         storage_result = {
-            'model': consts.DEFAULT_GET_STORAGE_MODEL,
+            'model': model,
             'total_capacity': total_capacity,
             'raw_capacity': total_capacity,
             'used_capacity': used_capacity,
@@ -90,7 +91,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             'name': storage_name,
             'serial_number': serial_number,
             'firmware_version': version,
-            'status': constants.StorageStatus.NORMAL
+            'status': status
         }
         return storage_result
 
@@ -284,27 +285,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
         return networks_object
 
     def list_storage_pools(self, context):
-        pool_list = []
-        pools = self.rest_handler.rest_call(
-            self.rest_handler.REST_POOLS_CAPACITY_URL)
-        if pools:
-            for pool in pools:
-                pool_result = dict()
-                total_capacity = int(pool.get('size', consts.DEFAULT_CAPACITY))
-                if total_capacity == consts.DEFAULT_CAPACITY:
-                    continue
-                pool_result['total_capacity'] = total_capacity
-                used_capacity = int(pool.get('total_reduction',
-                                             consts.DEFAULT_CAPACITY))
-                pool_result['used_capacity'] = used_capacity
-                pool_result['free_capacity'] = total_capacity - used_capacity
-                pool_result['name'] = pool.get('name')
-                pool_result['native_storage_pool_id'] = pool.get('name')
-                pool_result['storage_id'] = self.storage_id
-                pool_result['status'] = constants.StoragePoolStatus.NORMAL
-                pool_result['storage_type'] = constants.StorageType.BLOCK
-                pool_list.append(pool_result)
-        return pool_list
+        return []
 
     def remove_trap_config(self, context, trap_config):
         pass

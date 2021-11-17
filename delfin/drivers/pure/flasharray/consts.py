@@ -43,7 +43,10 @@ PERMISSION_DENIED_STATUS_CODE = 401
 CUSTOM_TOKEN = 'x-next-token'
 
 # The default get_storage model
-DEFAULT_GET_STORAGE_MODEL = 'FlashArray'
+CONTROLLER_PRIMARY = 'primary'
+
+# Normal value of the controller status
+NORMAL_CONTROLLER_STATUS = 'ready'
 
 # list_port: Add ":" to the WWN every 2 sequences.
 SPLICE_WWN_SERIAL = 2

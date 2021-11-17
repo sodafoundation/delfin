@@ -14,9 +14,6 @@ class RestHandler(RestClient):
     REST_VOLUME_URL = '/api/1.17/volume?space=true&limit=20&token=aWQgPSA5OD' \
                       'A1Mg=='
     REST_VOLUME_TOKEN_URL = '/api/1.17/volume?space=true&limit=20&token='
-    REST_VOLUME_ID_URL = '/api/1.17/volume/'
-    REST_POOLS_URL = '/api/1.17/vgroup'
-    REST_POOLS_CAPACITY_URL = '/api/1.17/vgroup?space=true'
     REST_PORT_URL = '/api/1.17/port'
     REST_NETWORK_URL = '/api/1.17/network'
     REST_DISK_URL = '/api/1.17/drive'
@@ -61,7 +58,7 @@ class RestHandler(RestClient):
             token_res = None
 
     def logout(self):
-        res = self.do_call(RestHandler.REST_SESSION_URL, method='DELETE')
+        res = self.do_call(RestHandler.REST_SESSION_URL, None, method='DELETE')
         if res.status_code != consts.SUCCESS_STATUS_CODE\
                 or not res.json().get('username'):
             LOG.error("Logout error, Deleting a Token Exception."
