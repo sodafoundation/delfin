@@ -45,7 +45,6 @@ class RestHandler(RestClient):
                     'Obtaining the token is abnormal')
             session_res = self.do_call(RestHandler.REST_SESSION_URL,
                                        token_res.json(), method='POST')
-
             if session_res.status_code != consts.SUCCESS_STATUS_CODE or not \
                     session_res.json().get('username'):
                 LOG.error("Login error, Obtaining the session is abnormal."

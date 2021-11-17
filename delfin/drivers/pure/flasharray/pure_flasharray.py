@@ -2,7 +2,6 @@ import datetime
 import hashlib
 
 from oslo_log import log
-from oslo_utils import units
 
 from delfin.common import constants
 from delfin.drivers import driver
