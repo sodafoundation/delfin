@@ -181,11 +181,11 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_HARDWARE_URL)
         if hardware:
             for hardware_value in hardware:
-                hardware_Map = dict()
-                hardware_Map['speed'] = hardware_value.get('speed')
-                hardware_Map['serial_number'] = hardware_value.get('serial')
-                hardware_Map['model'] = hardware_value.get('model')
-                hardware_dict[hardware_value.get('name')] = hardware_Map
+                hardware_map = dict()
+                hardware_map['speed'] = hardware_value.get('speed')
+                hardware_map['serial_number'] = hardware_value.get('serial')
+                hardware_map['model'] = hardware_value.get('model')
+                hardware_dict[hardware_value.get('name')] = hardware_map
         return hardware_dict
 
     def list_ports(self, context):

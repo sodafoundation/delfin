@@ -36,38 +36,24 @@ class RestHandler(RestClient):
             self.init_http_head()
             token_res = self.do_call(RestHandler.REST_AUTH_URL, data,
                                      method='POST')
-            if token_res.status_code != consts.SUCCESS_STATUS_CODE:
+            if token_res.status_code != consts.SUCCESS_STATUS_CODE or not \
+                    token_res.json().get('api_token'):
                 LOG.error("Login error, Obtaining the token is abnormal. "
                           "status_code:%s, URL: %s",
                           token_res.status_code, RestHandler.REST_AUTH_URL)
                 raise exception.StorageBackendException(
                     'Obtaining the token is abnormal')
-            else:
-                api_token = token_res.json().get('api_token')
-                if not api_token:
-                    LOG.error("Login error, the api token does not exist. "
-                              "status_code:%s, URL: %s", token_res.status_code,
-                              RestHandler.REST_AUTH_URL)
-                    raise exception.StorageBackendException('the api token '
-                                                            'does not exist')
-                session_res = self.do_call(RestHandler.REST_SESSION_URL,
-                                           token_res.json(), method='POST')
-                if session_res.status_code == consts.SUCCESS_STATUS_CODE:
-                    username = session_res.json().get('username')
-                    if not username:
-                        LOG.error("Login error, the api session does not exist"
-                                  ". status_code:%s, URL: %s",
-                                  session_res.status_code,
-                                  RestHandler.REST_SESSION_URL)
-                        raise exception.StorageBackendException(
-                            'the api session does not exist')
-                else:
-                    LOG.error("Login error, obtaining the session is abnormal."
-                              " status_code:%s, URL: %s",
-                              session_res.status_code,
-                              RestHandler.REST_AUTH_URL)
-                    raise exception.StorageBackendException(
-                        'obtaining the session is abnormal')
+            session_res = self.do_call(RestHandler.REST_SESSION_URL,
+                                       token_res.json(), method='POST')
+
+            if session_res.status_code != consts.SUCCESS_STATUS_CODE or not \
+                    session_res.json().get('username'):
+                LOG.error("Login error, Obtaining the session is abnormal."
+                          "status_code:%s, URL: %s",
+                          session_res.status_code,
+                          RestHandler.REST_SESSION_URL)
+                raise exception.StorageBackendException(
+                    'Obtaining the session is abnormal.')
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
@@ -77,12 +63,8 @@ class RestHandler(RestClient):
 
     def logout(self):
         res = self.do_call(RestHandler.REST_SESSION_URL, method='DELETE')
-        if res.status_code == consts.SUCCESS_STATUS_CODE:
-            username = res.json().get('username')
-            if not username:
-                raise exception.InvalidResults('The returned username'
-                                               ' is empty')
-        else:
+        if res.status_code != consts.SUCCESS_STATUS_CODE\
+                or not res.json().get('username'):
             LOG.error("Logout error, Deleting a Token Exception."
                       "status_code:%s, URL: %s",
                       res.status_code, RestHandler.REST_SESSION_URL)
