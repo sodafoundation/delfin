@@ -214,8 +214,8 @@ port_info = [
         "failover": "",
         "iqn": "iqn.2016-11-01.com.pure",
         "portal": "100.12.253.23:4563",
-        "wwn": "",
-        "nqn": ""
+        "wwn": None,
+        "nqn": None
     }
 ]
 port_network_info = [
@@ -225,7 +225,7 @@ port_network_info = [
         "speed": 12000,
         "netmask": "100.12.253.23:4563",
         "wwn": "43ddff45ggg4rty",
-        "nqn": "",
+        "nqn": None,
         "services": [
             "management"
         ]
@@ -235,8 +235,8 @@ port_network_info = [
         "address": "45233662jksndj",
         "speed": 13000,
         "netmask": "100.12.253.23:4563",
-        "wwn": "",
-        "nqn": "",
+        "wwn": None,
+        "nqn": None,
         "services": [
             "management"
         ]
@@ -317,13 +317,13 @@ class test_PureFlashArrayDriver(TestCase):
             side_effect=[hardware_info, drive_info])
         list_disks = self.driver.list_disks(context)
         self.assertEqual(list_disks[0].get('name'),
-                         hardware_info[0].get('name'))
+                         drive_info[0].get('name'))
 
     def test_list_ports(self):
         RestHandler.rest_call = mock.Mock(
             side_effect=[port_network_info, port_info, hardware_info])
         list_ports = self.driver.list_ports(context)
-        self.assertEqual(list_ports[0].get('name'), port_info[0].get('name'))
+        self.assertEqual(list_ports[0].get('name'), hardware_info[0].get('name'))
 
     def test_list_storage_pools(self):
         list_storage_pools = self.driver.list_storage_pools(context)
