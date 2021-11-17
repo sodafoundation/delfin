@@ -108,22 +108,26 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 alerts_model['severity'] = consts.SEVERITY_MAP.get(
                     alert.get('current_severity'),
                     constants.Severity.NOT_SPECIFIED)
-                alerts_model['category'] = consts.CATEGORY_MAP.get(
-                    alert.get('category'), constants.Category.NOT_SPECIFIED)
+                alerts_model['category'] = constants.Category.FAULT
                 time = alert.get('opened')
                 alerts_model['occur_time'] = int(datetime.datetime.strptime(
                     time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
                     * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
                     if time is not None else None
-                alerts_model['description'] = alert.get('event')
+                alerts_model['description'] = alert.get('details')
                 alerts_model['location'] = alert.get('component_name')
                 alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
                 alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-                alerts_model['alert_name'] = alert.get('id')
+                alerts_model['alert_name'] = alert.get('event')
+                alerts_model['sequence_number'] = alert.get('id')
                 alerts_model['match_key'] = hashlib.md5(str(alert.get('id')).
                                                         encode()).hexdigest()
                 alerts_list.append(alerts_model)
         return alerts_list
+
+    @staticmethod
+    def parse_alert(context, alert):
+        return {}
 
     def list_controllers(self, context):
         list_controllers = []
@@ -298,3 +302,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
     def reset_connection(self, context, **kwargs):
         self.rest_handler.logout()
         self.rest_handler.login()
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'
