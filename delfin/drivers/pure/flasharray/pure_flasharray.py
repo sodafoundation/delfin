@@ -3,6 +3,7 @@ import hashlib
 
 from oslo_log import log
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.pure.flasharray import rest_handler, consts
@@ -80,6 +81,9 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     model = controller.get('model')
                 if controller.get('status') != consts.NORMAL_CONTROLLER_STATUS:
                     status = constants.StorageStatus.ABNORMAL
+        if storages is None and arrays is None and controllers is None:
+            LOG.error('get_storage error, Unable to obtain data.')
+            raise exception.StorageBackendException('Unable to obtain data')
         storage_result = {
             'model': model,
             'total_capacity': total_capacity,

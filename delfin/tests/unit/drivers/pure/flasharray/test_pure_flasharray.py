@@ -287,8 +287,6 @@ class test_PureFlashArrayDriver(TestCase):
     def test_list_volumes(self):
         RestHandler.get_volumes = mock.Mock(
             side_effect=[volumes_info])
-        RestHandler.rest_call = mock.Mock(
-            side_effect=[pool_info])
         volume = self.driver.list_volumes(context)
         self.assertEqual(volume[0]['native_volume_id'],
                          pool_info[0].get('volumes')[0])
@@ -328,10 +326,8 @@ class test_PureFlashArrayDriver(TestCase):
         self.assertEqual(list_ports[0].get('name'), port_info[0].get('name'))
 
     def test_list_storage_pools(self):
-        RestHandler.rest_call = mock.Mock(side_effect=[pools_info])
         list_storage_pools = self.driver.list_storage_pools(context)
-        self.assertEqual(list_storage_pools[0].get('native_storage_pool_id'),
-                         pools_info[0].get('name'))
+        self.assertEqual(list_storage_pools, [])
 
     def test_reset_connection(self):
         RestHandler.logout = mock.Mock(side_effect=None)

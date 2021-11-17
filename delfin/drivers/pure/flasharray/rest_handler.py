@@ -73,7 +73,7 @@ class RestHandler(RestClient):
             result_json = res.json()
         elif res.status_code == consts.PERMISSION_DENIED_STATUS_CODE:
             self.login()
-            self.rest_call(url, data, method)
+            self.do_call(url, data, method)
         return result_json
 
     def get_volumes(self, url=REST_VOLUME_URL, data=None, volume_list=None,
