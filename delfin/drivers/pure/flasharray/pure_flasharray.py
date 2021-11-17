@@ -250,9 +250,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 port_dict = dict()
                 port_name = port.get('name')
                 wwn = port.get('wwn')
-                if wwn:
-                    wwn_splice = self.get_splice_wwn(wwn)
-                    port_dict['wwn'] = wwn_splice
+                port_dict['wwn'] = self.get_splice_wwn(wwn)\
+                    if wwn is not None else port.get('iqn')
                 ports_dict[port_name] = port_dict
         return ports_dict
 
