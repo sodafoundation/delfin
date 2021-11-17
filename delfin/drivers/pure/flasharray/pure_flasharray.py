@@ -242,6 +242,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 hardware_result['mac_address'] = network.get('mac_address')
                 hardware_result['logical_type'] = network.get('logical_type')
                 hardware_result['ipv4_mask'] = network.get('ipv4_mask')
+                hardware_result['ipv4'] = network.get('ipv4')
             list_ports.append(hardware_result)
         return list_ports
 
@@ -275,7 +276,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
         if networks:
             for network in networks:
                 network_dict = dict()
-                network_dict['mac_address'] = network.get('address')
+                network_dict['mac_address'] = network.get('hwaddr')
                 services_list = network.get('services')
                 if services_list:
                     for services in services_list:
@@ -283,6 +284,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                             services in constants.PortLogicalType.ALL else None
                         break
                 network_dict['ipv4_mask'] = network.get('netmask')
+                network_dict['ipv4'] = network.get('address')
                 network_name = network.get('name').upper()
                 networks_object[network_name] = network_dict
         return networks_object
