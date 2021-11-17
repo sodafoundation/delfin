@@ -37,8 +37,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     'status': constants.StorageStatus.NORMAL,
                     'type': constants.VolumeType.THIN if
                     volume.get('thin_provisioning') is not None
-                    else constants.VolumeType.THICK,
-                    'native_storage_pool_id': ''
+                    else constants.VolumeType.THICK
                 }
                 list_volumes.append(volume_dict)
         return list_volumes
