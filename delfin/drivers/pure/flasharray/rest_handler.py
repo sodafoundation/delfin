@@ -11,8 +11,8 @@ LOG = logging.getLogger(__name__)
 class RestHandler(RestClient):
     REST_STORAGE_URL = '/api/1.17/array?space=true'
     REST_ARRAY_URL = '/api/1.17/array'
-    REST_VOLUME_URL = '/api/1.17/volume?space=true&limit=20&token=aWQgPSA5OD' \
-                      'A1Mg=='
+    REST_VOLUME_URL = '/api/1.17/volume?space=true&limit=500&token=' \
+                      'aWQgPSA5ODA1Mg=='
     REST_VOLUME_TOKEN_URL = '/api/1.17/volume?space=true&limit=20&token='
     REST_PORT_URL = '/api/1.17/port'
     REST_NETWORK_URL = '/api/1.17/network'
@@ -73,7 +73,9 @@ class RestHandler(RestClient):
             result_json = res.json()
         elif res.status_code == consts.PERMISSION_DENIED_STATUS_CODE:
             self.login()
-            self.do_call(url, data, method)
+            the_second_time_res = self.do_call(url, data, method)
+            if the_second_time_res.status_code == consts.SUCCESS_STATUS_CODE:
+                result_json = the_second_time_res.json()
         return result_json
 
     def get_volumes(self, url=REST_VOLUME_URL, data=None, volume_list=None,

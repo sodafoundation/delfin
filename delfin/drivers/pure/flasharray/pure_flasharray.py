@@ -81,7 +81,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     model = controller.get('model')
                 if controller.get('status') != consts.NORMAL_CONTROLLER_STATUS:
                     status = constants.StorageStatus.ABNORMAL
-        if storages is None and arrays is None and controllers is None:
+        if not all((storages, arrays, controllers)):
             LOG.error('get_storage error, Unable to obtain data.')
             raise exception.StorageBackendException('Unable to obtain data')
         storage_result = {
