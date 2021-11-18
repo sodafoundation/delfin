@@ -172,6 +172,39 @@ GET_ALL_ALERTS = {
         ]
     }
 }
+GET_ALL_PORTS = {
+    "data": {
+        "ioports":
+        [
+            {
+                "id": "I0000",
+                "link": {
+                    "rel": "self",
+                    "href": "https:/192.168.1.170:8452/api/v1/ioports/I0000"
+                },
+                "state": "online",
+                "protocol": "FC-AL",
+                "wwpn": "50050763040017EF",
+                "type": "Fibre Channel-SW",
+                "speed": "8 Gb/s",
+                "loc": "U1400.1B1.RJ55380-P1-C1-T0"
+            },
+            {
+                "id": "I0005",
+                "link": {
+                    "rel": "self",
+                    "href": "https:/192.168.1.170:8452/api/v1/ioports/I0005"
+                },
+                "state": "online",
+                "protocol": "SCSI-FCP",
+                "wwpn": "50050763044057EF",
+                "type": "Fibre Channel-SW",
+                "speed": "8 Gb/s",
+                "loc": "U1400.1B1.RJ55380-P1-C1-T5"
+            }
+        ]
+    }
+}
 TOKEN_RESULT = {
     "server": {
         "status": "ok",
@@ -246,6 +279,34 @@ alert_result = [
         'resource_type': 'Storage'
     }
 ]
+port_result = [
+    {
+        'name': 'U1400.1B1.RJ55380-P1-C1-T0',
+        'storage_id': '12345',
+        'native_port_id': 'I0000',
+        'location': 'U1400.1B1.RJ55380-P1-C1-T0',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'fc',
+        'logical_type': '',
+        'speed': 8000000000,
+        'max_speed': 8000000000,
+        'wwn': '50050763040017EF'
+    }, {
+        'name': 'U1400.1B1.RJ55380-P1-C1-T5',
+        'storage_id': '12345',
+        'native_port_id': 'I0005',
+        'location': 'U1400.1B1.RJ55380-P1-C1-T5',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'other',
+        'logical_type': '',
+        'speed': 8000000000,
+        'max_speed': 8000000000,
+        'wwn': '50050763044057EF'
+    }
+]
+
 
 trap_result = {
     'alert_id': 'ddddddd',
@@ -301,3 +362,10 @@ class TestDS8KDriver(TestCase):
         RestHandler.login = mock.Mock(return_value=None)
         mock_token.return_value = mock.MagicMock(status_code=401)
         DS8KDriver(**ACCESS_INFO).rest_handler.call('')
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_list_ports(self, mock_port):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_port.return_value = GET_ALL_PORTS
+        port = DS8KDriver(**ACCESS_INFO).list_ports(context)
+        self.assertEqual(port, port_result)
