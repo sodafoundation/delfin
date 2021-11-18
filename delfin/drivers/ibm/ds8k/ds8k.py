@@ -44,6 +44,7 @@ class DS8KDriver(driver.StorageDriver):
 
     def get_storage(self, context):
         try:
+            result = None
             system_info = self.rest_handler.get_rest_info('/api/v1/systems')
             if system_info:
                 system_data = system_info.get('data', {}).get('systems')
@@ -85,6 +86,9 @@ class DS8KDriver(driver.StorageDriver):
                         'free_capacity': free
                     }
                     break
+            else:
+                raise exception.StorageBackendException(
+                    "ds8k storage system info is None")
             return result
         except Exception as err:
             err_msg = "Failed to get storage attributes from ds8k: %s" % \
@@ -164,9 +168,6 @@ class DS8KDriver(driver.StorageDriver):
             .parse_queried_alerts(alert_model_list, alert_list, query_para)
         return alert_model_list
 
-    def list_controllers(self, context):
-        pass
-
     def list_ports(self, context):
         port_list = []
         port_info = self.rest_handler.get_rest_info('/api/v1/ioports')
@@ -176,6 +177,7 @@ class DS8KDriver(driver.StorageDriver):
                 status = constants.PortHealthStatus.NORMAL if \
                     port.get('state') == 'online' else\
                     constants.PortHealthStatus.ABNORMAL
+                speed = None
                 if port.get('speed'):
                     speed = int(port.get('speed').split(' ')[0]) * units.G
                 port_result = {
@@ -196,9 +198,6 @@ class DS8KDriver(driver.StorageDriver):
                 port_list.append(port_result)
         return port_list
 
-    def list_disks(self, context):
-        pass
-
     def add_trap_config(self, context, trap_config):
         pass
 
@@ -211,3 +210,7 @@ class DS8KDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'
