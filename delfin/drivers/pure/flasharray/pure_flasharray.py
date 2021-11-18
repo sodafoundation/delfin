@@ -8,6 +8,7 @@ from delfin import exception, utils
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.pure.flasharray import rest_handler, consts
+from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -113,7 +114,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 time = alert.get('opened')
                 alerts_model['occur_time'] = int(datetime.datetime.strptime(
                     time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
-                    * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
+                                                 * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
                     if time is not None else None
                 alerts_model['description'] = alert.get('details')
                 alerts_model['location'] = alert.get('component_name')
@@ -128,23 +129,33 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_alert(context, alert):
-        LOG.info("parse_alert：%s" % (json.dumps(alert, ensure_ascii=False)))
-        alert_model = dict()
-        alert_model['alert_id'] = alert.get(consts.PARSE_ALERT_ALERT_ID)
-        alert_model['severity'] = consts.PARSE_ALERT_SEVERITY_MAP.get(
-            alert.get(consts.PARSE_ALERT_SEVERITY),
-            constants.Severity.NOT_SPECIFIED)
-        alert_model['category'] = constants.Category.FAULT
-        alert_model['occur_time'] = utils.utcnow_ms()
-        alert_model['description'] = alert.get(consts.PARSE_ALERT_DESCRIPTION)
-        alert_model['location'] = alert.get(consts.PARSE_ALERT_CONTROLLER_NAME)
-        alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-        alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-        alert_model['alert_name'] = alert.get(consts.PARSE_ALERT_ALERT_NAME)
-        alert_model['sequence_number'] = alert.get(consts.PARSE_ALERT_ALERT_ID)
-        alert_model['match_key'] = hashlib.md5(str(alert.get(
-            consts.PARSE_ALERT_ALERT_ID)).encode()).hexdigest()
-        return alert_model
+        try:
+            LOG.info(
+                "parse_alert：%s" % (json.dumps(alert, ensure_ascii=False)))
+            alert_model = dict()
+            alert_model['alert_id'] = alert.get(consts.PARSE_ALERT_ALERT_ID)
+            alert_model['severity'] = consts.PARSE_ALERT_SEVERITY_MAP.get(
+                alert.get(consts.PARSE_ALERT_SEVERITY),
+                constants.Severity.NOT_SPECIFIED)
+            alert_model['category'] = constants.Category.FAULT
+            alert_model['occur_time'] = utils.utcnow_ms()
+            alert_model['description'] = alert.get(
+                consts.PARSE_ALERT_DESCRIPTION)
+            alert_model['location'] = alert.get(
+                consts.PARSE_ALERT_CONTROLLER_NAME)
+            alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
+            alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
+            alert_model['alert_name'] = alert.get(
+                consts.PARSE_ALERT_ALERT_NAME)
+            alert_model['sequence_number'] = alert.get(
+                consts.PARSE_ALERT_ALERT_ID)
+            alert_model['match_key'] = hashlib.md5(str(alert.get(
+                consts.PARSE_ALERT_ALERT_ID)).encode()).hexdigest()
+            return alert_model
+        except Exception as e:
+            LOG.error(e)
+            msg = (_("Failed to build alert model as some attributes missing"))
+            raise exception.InvalidResults(msg)
 
     def list_controllers(self, context):
         list_controllers = []
@@ -323,4 +334,3 @@ class PureFlashArrayDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
-
