@@ -128,7 +128,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_alert(context, alert):
-        LOG.info("list_disk：%s" % (json.dumps(alert, ensure_ascii=False)))
+        LOG.info("parse_alert：%s" % (json.dumps(alert, ensure_ascii=False)))
         alert_model = dict()
         alert_model['alert_id'] = alert.get('id')
         alert_model['severity'] = consts.SEVERITY_MAP.get(
@@ -328,11 +328,3 @@ class PureFlashArrayDriver(driver.StorageDriver):
     def get_access_url():
         return 'https://{ip}'
 
-    def list_quotas(self, context):
-        return []
-
-    def list_shares(self, context):
-        return []
-
-    def list_filesystems(self, context):
-        return []
