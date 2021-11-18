@@ -13,6 +13,7 @@
 # limitations under the License.
 import six
 from oslo_log import log
+from oslo_utils import units
 
 from delfin import exception
 from delfin.common import constants
@@ -23,6 +24,10 @@ LOG = log.getLogger(__name__)
 
 
 class DS8KDriver(driver.StorageDriver):
+
+    PORT_TYPE_MAP = {'FC-AL': constants.PortType.FC,
+                     'FICON': constants.PortType.FICON
+                     }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -163,7 +168,39 @@ class DS8KDriver(driver.StorageDriver):
         pass
 
     def list_ports(self, context):
-        pass
+        port_list = []
+        port_info = self.rest_handler.get_rest_info('/api/v1/ioports')
+        if port_info:
+            port_data = port_info.get('data', {}).get('ioports')
+            for port in port_data:
+                status = constants.PortHealthStatus.NORMAL if \
+                    port.get('state') == 'online' else\
+                    constants.PortHealthStatus.ABNORMAL
+                if port.get('speed'):
+                    speed = int(port.get('speed').split(' ')[0]) * units.G
+                port_result = {
+                    'name': port.get('loc'),
+                    'storage_id': self.storage_id,
+                    'native_port_id': port.get('id'),
+                    'location': port.get('loc'),
+                    'connection_status':
+                        constants.PortConnectionStatus.CONNECTED,
+                    'health_status': status,
+                    'type': DS8KDriver.PORT_TYPE_MAP.get(
+                        port.get('protocol'), constants.PortType.OTHER),
+                    'logical_type': '',
+                    'speed': speed,
+                    'max_speed': speed,
+                    'wwn': port.get('wwpn')
+                }
+                port_list.append(port_result)
+        return port_list
+
+    def handle_port_bps(self, value):
+        speed = value.split(' ')
+        if speed:
+            speed = int(speed) * units.G
+        return speed
 
     def list_disks(self, context):
         pass
