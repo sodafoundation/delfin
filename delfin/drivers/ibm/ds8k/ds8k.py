@@ -196,12 +196,6 @@ class DS8KDriver(driver.StorageDriver):
                 port_list.append(port_result)
         return port_list
 
-    def handle_port_bps(self, value):
-        speed = value.split(' ')
-        if speed:
-            speed = int(speed) * units.G
-        return speed
-
     def list_disks(self, context):
         pass
 
