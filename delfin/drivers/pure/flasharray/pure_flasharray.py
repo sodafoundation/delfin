@@ -327,3 +327,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def list_quotas(self, context):
+        return []
+
+    def list_shares(self, context):
+        return []
+
+    def list_filesystems(self, context):
+        return []
