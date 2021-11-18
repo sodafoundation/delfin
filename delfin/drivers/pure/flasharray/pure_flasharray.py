@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import json
 
 from oslo_log import log
 
@@ -127,7 +128,27 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_alert(context, alert):
-        return {}
+        LOG.info("list_disk：%s" % (json.dumps(alert, ensure_ascii=False)))
+        alert_model = dict()
+        alert_model['alert_id'] = alert.get('id')
+        alert_model['severity'] = consts.SEVERITY_MAP.get(
+            alert.get('current_severity'),
+            constants.Severity.NOT_SPECIFIED)
+        alert_model['category'] = constants.Category.FAULT
+        time = alert.get('opened')
+        alert_model['occur_time'] = int(datetime.datetime.strptime(
+            time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+            * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
+            if time is not None else None
+        alert_model['description'] = alert.get('details')
+        alert_model['location'] = alert.get('component_name')
+        alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
+        alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
+        alert_model['alert_name'] = alert.get('event')
+        alert_model['sequence_number'] = alert.get('id')
+        alert_model['match_key'] = hashlib.md5(str(alert.get('id')).
+                                               encode()).hexdigest()
+        return alert_model
 
     def list_controllers(self, context):
         list_controllers = []
@@ -222,18 +243,18 @@ class PureFlashArrayDriver(driver.StorageDriver):
             if speed is None:
                 hardware_result['connection_status'] = \
                     constants.PortConnectionStatus.UNKNOWN
-                hardware_result['health_status'] = constants.PortHealthStatus.\
+                hardware_result['health_status'] = constants.PortHealthStatus. \
                     UNKNOWN
             elif speed == consts.CONSTANT_ZERO:
                 hardware_result['connection_status'] = \
                     constants.PortConnectionStatus.DISCONNECTED
-                hardware_result['health_status'] = constants.PortHealthStatus.\
+                hardware_result['health_status'] = constants.PortHealthStatus. \
                     ABNORMAL
                 hardware_result['speed'] = speed
             else:
                 hardware_result['connection_status'] = \
                     constants.PortConnectionStatus.CONNECTED
-                hardware_result['health_status'] = constants.PortHealthStatus.\
+                hardware_result['health_status'] = constants.PortHealthStatus. \
                     NORMAL
                 hardware_result['speed'] = int(speed)
 
@@ -258,7 +279,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 port_dict = dict()
                 port_name = port.get('name')
                 wwn = port.get('wwn')
-                port_dict['wwn'] = self.get_splice_wwn(wwn)\
+                port_dict['wwn'] = self.get_splice_wwn(wwn) \
                     if wwn is not None else port.get('iqn')
                 ports_dict[port_name] = port_dict
         return ports_dict
