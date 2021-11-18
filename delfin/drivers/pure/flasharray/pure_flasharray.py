@@ -4,7 +4,7 @@ import json
 
 from oslo_log import log
 
-from delfin import exception
+from delfin import exception, utils
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.pure.flasharray import rest_handler, consts
@@ -130,24 +130,20 @@ class PureFlashArrayDriver(driver.StorageDriver):
     def parse_alert(context, alert):
         LOG.info("parse_alert：%s" % (json.dumps(alert, ensure_ascii=False)))
         alert_model = dict()
-        alert_model['alert_id'] = alert.get('id')
-        alert_model['severity'] = consts.SEVERITY_MAP.get(
-            alert.get('current_severity'),
+        alert_model['alert_id'] = alert.get(consts.PARSE_ALERT_ALERT_ID)
+        alert_model['severity'] = consts.PARSE_ALERT_SEVERITY_MAP.get(
+            alert.get(consts.PARSE_ALERT_SEVERITY),
             constants.Severity.NOT_SPECIFIED)
         alert_model['category'] = constants.Category.FAULT
-        time = alert.get('opened')
-        alert_model['occur_time'] = int(datetime.datetime.strptime(
-            time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
-            * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
-            if time is not None else None
-        alert_model['description'] = alert.get('details')
-        alert_model['location'] = alert.get('component_name')
+        alert_model['occur_time'] = utils.utcnow_ms()
+        alert_model['description'] = alert.get(consts.PARSE_ALERT_DESCRIPTION)
+        alert_model['location'] = alert.get(consts.PARSE_ALERT_CONTROLLER_NAME)
         alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
         alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-        alert_model['alert_name'] = alert.get('event')
-        alert_model['sequence_number'] = alert.get('id')
-        alert_model['match_key'] = hashlib.md5(str(alert.get('id')).
-                                               encode()).hexdigest()
+        alert_model['alert_name'] = alert.get(consts.PARSE_ALERT_ALERT_NAME)
+        alert_model['sequence_number'] = alert.get(consts.PARSE_ALERT_ALERT_ID)
+        alert_model['match_key'] = hashlib.md5(str(alert.get(
+            consts.PARSE_ALERT_ALERT_ID)).encode()).hexdigest()
         return alert_model
 
     def list_controllers(self, context):

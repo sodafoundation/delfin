@@ -75,3 +75,19 @@ DISK_STATUS_MAP = {'normal': constants.DiskStatus.NORMAL,
                    'abnormal': constants.DiskStatus.ABNORMAL,
                    'unhealthy': constants.DiskStatus.ABNORMAL,
                    'offline': constants.DiskStatus.OFFLINE}
+
+
+PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
+PARSE_ALERT_STORAGE_NAME = '1.3.6.1.4.1.40482.3.1'
+PARSE_ALERT_CONTROLLER_NAME = '1.3.6.1.4.1.40482.3.3'
+PARSE_ALERT_ALERT_NAME = '1.3.6.1.4.1.40482.3.5'
+PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.40482.3.6'
+PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.40482.3.7'
+
+PARSE_ALERT_SEVERITY_MAP = {'0': constants.Severity.FATAL,
+                            '1': constants.Severity.CRITICAL,
+                            '2': constants.Severity.MAJOR,
+                            '3': constants.Severity.MINOR,
+                            '4': constants.Severity.WARNING,
+                            '5': constants.Severity.INFORMATIONAL,
+                            '6': constants.Severity.NOT_SPECIFIED}
