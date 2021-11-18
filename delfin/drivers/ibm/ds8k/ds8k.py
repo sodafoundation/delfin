@@ -47,7 +47,7 @@ class DS8KDriver(driver.StorageDriver):
             result = None
             system_info = self.rest_handler.get_rest_info('/api/v1/systems')
             if system_info:
-                system_data = system_info.get('data', {}).get('systems')
+                system_data = system_info.get('data', {}).get('systems', [])
                 for system in system_data:
                     name = system.get('name')
                     model = system.get('MTM')
@@ -100,7 +100,7 @@ class DS8KDriver(driver.StorageDriver):
         pool_list = []
         status = constants.StoragePoolStatus.NORMAL
         if pool_info is not None:
-            pool_data = pool_info.get('data', {}).get('pools')
+            pool_data = pool_info.get('data', {}).get('pools', [])
             for pool in pool_data:
                 if pool.get('stgtype') == 'fb':
                     pool_type = constants.StorageType.BLOCK
@@ -126,12 +126,12 @@ class DS8KDriver(driver.StorageDriver):
         volume_list = []
         pool_list = self.rest_handler.get_rest_info('/api/v1/pools')
         if pool_list is not None:
-            pool_data = pool_list.get('data', {}).get('pools')
+            pool_data = pool_list.get('data', {}).get('pools', [])
             for pool in pool_data:
                 url = '/api/v1/pools/%s/volumes' % pool.get('id')
                 volumes = self.rest_handler.get_rest_info(url)
                 if volumes is not None:
-                    vol_entries = volumes.get('data', {}).get('volumes')
+                    vol_entries = volumes.get('data', {}).get('volumes', [])
                     for volume in vol_entries:
                         total = volume.get('cap')
                         used = volume.get('capalloc')
@@ -172,7 +172,7 @@ class DS8KDriver(driver.StorageDriver):
         port_list = []
         port_info = self.rest_handler.get_rest_info('/api/v1/ioports')
         if port_info:
-            port_data = port_info.get('data', {}).get('ioports')
+            port_data = port_info.get('data', {}).get('ioports', [])
             for port in port_data:
                 status = constants.PortHealthStatus.NORMAL if \
                     port.get('state') == 'online' else\
