@@ -48,44 +48,48 @@ class DS8KDriver(driver.StorageDriver):
             system_info = self.rest_handler.get_rest_info('/api/v1/systems')
             if system_info:
                 system_data = system_info.get('data', {}).get('systems', [])
-                for system in system_data:
-                    name = system.get('name')
-                    model = system.get('MTM')
-                    serial_number = system.get('sn')
-                    version = system.get('release')
-                    status = constants.StorageStatus.NORMAL
-                    if system.get('state') != 'online':
-                        status = constants.StorageStatus.ABNORMAL
-                    total = 0
-                    free = 0
-                    used = 0
-                    raw = 0
-                    if system.get('cap') != '' and \
-                            system.get('cap') is not None:
-                        total = int(system.get('cap'))
-                    if system.get('capraw') != '' and \
-                            system.get('capraw') is not None:
-                        raw = int(system.get('capraw'))
-                    if system.get('capalloc') != '' and \
-                            system.get('capalloc') is not None:
-                        used = int(system.get('capalloc'))
-                    if system.get('capavail') != '' and \
-                            system.get('capavail') is not None:
-                        free = int(system.get('capavail'))
-                    result = {
-                        'name': name,
-                        'vendor': 'IBM',
-                        'model': model,
-                        'status': status,
-                        'serial_number': serial_number,
-                        'firmware_version': version,
-                        'location': '',
-                        'total_capacity': total,
-                        'raw_capacity': raw,
-                        'used_capacity': used,
-                        'free_capacity': free
-                    }
-                    break
+                if system_data:
+                    for system in system_data:
+                        name = system.get('name')
+                        model = system.get('MTM')
+                        serial_number = system.get('sn')
+                        version = system.get('release')
+                        status = constants.StorageStatus.NORMAL
+                        if system.get('state') != 'online':
+                            status = constants.StorageStatus.ABNORMAL
+                        total = 0
+                        free = 0
+                        used = 0
+                        raw = 0
+                        if system.get('cap') != '' and \
+                                system.get('cap') is not None:
+                            total = int(system.get('cap'))
+                        if system.get('capraw') != '' and \
+                                system.get('capraw') is not None:
+                            raw = int(system.get('capraw'))
+                        if system.get('capalloc') != '' and \
+                                system.get('capalloc') is not None:
+                            used = int(system.get('capalloc'))
+                        if system.get('capavail') != '' and \
+                                system.get('capavail') is not None:
+                            free = int(system.get('capavail'))
+                        result = {
+                            'name': name,
+                            'vendor': 'IBM',
+                            'model': model,
+                            'status': status,
+                            'serial_number': serial_number,
+                            'firmware_version': version,
+                            'location': '',
+                            'total_capacity': total,
+                            'raw_capacity': raw,
+                            'used_capacity': used,
+                            'free_capacity': free
+                        }
+                        break
+                else:
+                    raise exception.StorageBackendException(
+                        "ds8k storage system info is None")
             else:
                 raise exception.StorageBackendException(
                     "ds8k storage system info is None")
