@@ -19,8 +19,8 @@ DEFAULT_CAPACITY = 0
 # The default speed
 DEFAULT_SPEED = 0
 
-# The default sequence for the get_volumes_info function
-DEFAULT_LIST_GET_VOLUMES_INFO = 1
+# The default list_alerts time conversion
+DEFAULT_LIST_ALERTS_TIME_CONVERSION = 1000
 
 # The default count for the get_volumes_info function
 DEFAULT_COUNT_GET_VOLUMES_INFO = 0
@@ -30,6 +30,8 @@ RE_LOGIN_TIMES = 3
 
 # Constant one
 CONSTANT_ONE = 1
+# Constant zero
+CONSTANT_ZERO = 0
 
 # Success status code
 SUCCESS_STATUS_CODE = 200
@@ -39,6 +41,16 @@ PERMISSION_DENIED_STATUS_CODE = 401
 
 # Custom token of Pure
 CUSTOM_TOKEN = 'x-next-token'
+
+# The default get_storage model
+CONTROLLER_PRIMARY = 'primary'
+
+# Normal value of the controller status
+NORMAL_CONTROLLER_STATUS = 'ready'
+
+# list_port: Add ":" to the WWN every 2 sequences.
+SPLICE_WWN_SERIAL = 2
+SPLICE_WWN_COLON = ':'
 
 SEVERITY_MAP = {'fatal': constants.Severity.FATAL,
                 'critical': constants.Severity.CRITICAL,
@@ -63,3 +75,19 @@ DISK_STATUS_MAP = {'normal': constants.DiskStatus.NORMAL,
                    'abnormal': constants.DiskStatus.ABNORMAL,
                    'unhealthy': constants.DiskStatus.ABNORMAL,
                    'offline': constants.DiskStatus.OFFLINE}
+
+
+PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
+PARSE_ALERT_STORAGE_NAME = '1.3.6.1.4.1.40482.3.1'
+PARSE_ALERT_CONTROLLER_NAME = '1.3.6.1.4.1.40482.3.3'
+PARSE_ALERT_ALERT_NAME = '1.3.6.1.4.1.40482.3.5'
+PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.40482.3.6'
+PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.40482.3.7'
+
+PARSE_ALERT_SEVERITY_MAP = {'0': constants.Severity.FATAL,
+                            '1': constants.Severity.CRITICAL,
+                            '2': constants.Severity.MAJOR,
+                            '3': constants.Severity.MINOR,
+                            '4': constants.Severity.WARNING,
+                            '5': constants.Severity.INFORMATIONAL,
+                            '6': constants.Severity.NOT_SPECIFIED}

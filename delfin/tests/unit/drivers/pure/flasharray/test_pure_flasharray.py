@@ -6,8 +6,8 @@ from oslo_log import log
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
-from delfin.drivers.pure.pure.rest_handler import RestHandler
-from delfin.drivers.pure.pure.pure_storage import PureStorageDriver
+from delfin.drivers.pure.flasharray.rest_handler import RestHandler
+from delfin.drivers.pure.flasharray.pure_flasharray import PureFlashArrayDriver
 LOG = log.getLogger(__name__)
 
 ACCESS_INFO = {
@@ -128,6 +128,13 @@ alerts_info = [
         "component_name": "ct1.ntpd"
     }
 ]
+parse_alert_info = {
+    '1.3.6.1.2.1.1.3.0': '30007589',
+    '1.3.6.1.4.1.40482.3.7': '2',
+    '1.3.6.1.4.1.40482.3.6': 'server error',
+    '1.3.6.1.4.1.40482.3.3': 'cto',
+    '1.3.6.1.4.1.40482.3.5': 'cto.server error'
+}
 controllers_info = [
     {
         "status": "ready",
@@ -151,7 +158,7 @@ hardware_info = [
         "details": "",
         "identify": "off",
         "index": 0,
-        "name": "CH0.BAY1",
+        "name": "CTO.FC1",
         "slot": "",
         "speed": 0,
         "status": "ok",
@@ -161,7 +168,7 @@ hardware_info = [
         "details": "",
         "identify": "",
         "index": 0,
-        "name": "CH0.BAY2",
+        "name": "CTO.ETH15",
         "slot": 0,
         "speed": 1000000,
         "status": "ok",
@@ -202,7 +209,7 @@ drive_info = [
 ]
 port_info = [
     {
-        "name": "CTO.ETH14",
+        "name": "CTO.FC1",
         "failover": "",
         "iqn": "iqn.2016-11-01.com.pure",
         "portal": "100.12.253.23:4563",
@@ -214,18 +221,18 @@ port_info = [
         "failover": "",
         "iqn": "iqn.2016-11-01.com.pure",
         "portal": "100.12.253.23:4563",
-        "wwn": "43ddff45gdcvrty",
-        "nqn": ""
+        "wwn": None,
+        "nqn": None
     }
 ]
 port_network_info = [
     {
-        "name": "CTO.ETH14",
+        "name": "CTO.FC1",
         "address": "45233662jksndj",
         "speed": 12000,
         "netmask": "100.12.253.23:4563",
         "wwn": "43ddff45ggg4rty",
-        "nqn": "",
+        "nqn": None,
         "services": [
             "management"
         ]
@@ -235,8 +242,8 @@ port_network_info = [
         "address": "45233662jksndj",
         "speed": 13000,
         "netmask": "100.12.253.23:4563",
-        "wwn": "43ddff45ggg4rty",
-        "nqn": "",
+        "wwn": None,
+        "nqn": None,
         "services": [
             "management"
         ]
@@ -273,29 +280,27 @@ reset_connection_info = {
 def create_driver():
     RestHandler.login = mock.Mock(
         return_value={None})
-    return PureStorageDriver(**ACCESS_INFO)
+    return PureFlashArrayDriver(**ACCESS_INFO)
 
 
-class test_PureStorageDriver(TestCase):
+class test_PureFlashArrayDriver(TestCase):
     driver = create_driver()
 
     def test_init(self):
         RestHandler.login = mock.Mock(
             return_value={""})
-        PureStorageDriver(**ACCESS_INFO)
+        PureFlashArrayDriver(**ACCESS_INFO)
 
     def test_list_volumes(self):
         RestHandler.get_volumes = mock.Mock(
             side_effect=[volumes_info])
-        RestHandler.rest_call = mock.Mock(
-            side_effect=[pool_info])
         volume = self.driver.list_volumes(context)
         self.assertEqual(volume[0]['native_volume_id'],
                          pool_info[0].get('volumes')[0])
 
     def test_get_storage(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[storage_info, storage_id_info])
+            side_effect=[storage_info, storage_id_info, controllers_info])
         storage_object = self.driver.get_storage(context)
         self.assertEqual(storage_object.get('name'),
                          storage_id_info.get('array_name'))
@@ -306,6 +311,11 @@ class test_PureStorageDriver(TestCase):
         list_alerts = self.driver.list_alerts(context)
         self.assertEqual(list_alerts[0].get('alert_id'),
                          alerts_info[0].get('id'))
+
+    def test_parse_alert(self):
+        parse_alert = self.driver.parse_alert(context, parse_alert_info)
+        self.assertEqual(parse_alert.get('alert_id'),
+                         parse_alert_info.get('1.3.6.1.2.1.1.3.0'))
 
     def test_list_controllers(self):
         RestHandler.rest_call = mock.Mock(
@@ -319,19 +329,18 @@ class test_PureStorageDriver(TestCase):
             side_effect=[hardware_info, drive_info])
         list_disks = self.driver.list_disks(context)
         self.assertEqual(list_disks[0].get('name'),
-                         hardware_info[0].get('name'))
+                         drive_info[0].get('name'))
 
     def test_list_ports(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[port_network_info, port_info])
+            side_effect=[port_network_info, port_info, hardware_info])
         list_ports = self.driver.list_ports(context)
-        self.assertEqual(list_ports[0].get('wwn'), port_info[0].get('wwn'))
+        self.assertEqual(list_ports[0].get('name'),
+                         hardware_info[0].get('name'))
 
     def test_list_storage_pools(self):
-        RestHandler.rest_call = mock.Mock(side_effect=[pools_info])
         list_storage_pools = self.driver.list_storage_pools(context)
-        self.assertEqual(list_storage_pools[0].get('native_storage_pool_id'),
-                         pools_info[0].get('name'))
+        self.assertEqual(list_storage_pools, [])
 
     def test_reset_connection(self):
         RestHandler.logout = mock.Mock(side_effect=None)
