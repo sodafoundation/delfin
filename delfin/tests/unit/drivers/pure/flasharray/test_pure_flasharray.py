@@ -128,6 +128,13 @@ alerts_info = [
         "component_name": "ct1.ntpd"
     }
 ]
+parse_alert_info = {
+    '1.3.6.1.2.1.1.3.0': '30007589',
+    '1.3.6.1.4.1.40482.3.7': '2',
+    '1.3.6.1.4.1.40482.3.6': 'server error',
+    '1.3.6.1.4.1.40482.3.3': 'cto',
+    '1.3.6.1.4.1.40482.3.5': 'cto.server error'
+}
 controllers_info = [
     {
         "status": "ready",
@@ -305,6 +312,11 @@ class test_PureFlashArrayDriver(TestCase):
         self.assertEqual(list_alerts[0].get('alert_id'),
                          alerts_info[0].get('id'))
 
+    def test_parse_alert(self):
+        parse_alert = self.driver.parse_alert(context, parse_alert_info)
+        self.assertEqual(parse_alert.get('alert_id'),
+                         parse_alert_info.get('1.3.6.1.2.1.1.3.0'))
+
     def test_list_controllers(self):
         RestHandler.rest_call = mock.Mock(
             side_effect=[controllers_info])
@@ -323,7 +335,8 @@ class test_PureFlashArrayDriver(TestCase):
         RestHandler.rest_call = mock.Mock(
             side_effect=[port_network_info, port_info, hardware_info])
         list_ports = self.driver.list_ports(context)
-        self.assertEqual(list_ports[0].get('name'), hardware_info[0].get('name'))
+        self.assertEqual(list_ports[0].get('name'),
+                         hardware_info[0].get('name'))
 
     def test_list_storage_pools(self):
         list_storage_pools = self.driver.list_storage_pools(context)

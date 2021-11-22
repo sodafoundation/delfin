@@ -1,6 +1,5 @@
 import datetime
 import hashlib
-import json
 
 from oslo_log import log
 
@@ -114,7 +113,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 time = alert.get('opened')
                 alerts_model['occur_time'] = int(datetime.datetime.strptime(
                     time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
-                                                 * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
+                    * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
                     if time is not None else None
                 alerts_model['description'] = alert.get('details')
                 alerts_model['location'] = alert.get('component_name')
@@ -130,8 +129,6 @@ class PureFlashArrayDriver(driver.StorageDriver):
     @staticmethod
     def parse_alert(context, alert):
         try:
-            LOG.info(
-                "parse_alert：%s" % (json.dumps(alert, ensure_ascii=False)))
             alert_model = dict()
             alert_model['alert_id'] = alert.get(consts.PARSE_ALERT_ALERT_ID)
             alert_model['severity'] = consts.PARSE_ALERT_SEVERITY_MAP.get(
@@ -250,18 +247,18 @@ class PureFlashArrayDriver(driver.StorageDriver):
             if speed is None:
                 hardware_result['connection_status'] = \
                     constants.PortConnectionStatus.UNKNOWN
-                hardware_result['health_status'] = constants.PortHealthStatus. \
+                hardware_result['health_status'] = constants.PortHealthStatus.\
                     UNKNOWN
             elif speed == consts.CONSTANT_ZERO:
                 hardware_result['connection_status'] = \
                     constants.PortConnectionStatus.DISCONNECTED
-                hardware_result['health_status'] = constants.PortHealthStatus. \
+                hardware_result['health_status'] = constants.PortHealthStatus.\
                     ABNORMAL
                 hardware_result['speed'] = speed
             else:
                 hardware_result['connection_status'] = \
                     constants.PortConnectionStatus.CONNECTED
-                hardware_result['health_status'] = constants.PortHealthStatus. \
+                hardware_result['health_status'] = constants.PortHealthStatus.\
                     NORMAL
                 hardware_result['speed'] = int(speed)
 
