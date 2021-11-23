@@ -64,7 +64,11 @@ class PureFlashArrayDriver(driver.StorageDriver):
                                                consts.DEFAULT_CAPACITY))
                 shared_space = int(storage.get('shared_space',
                                                consts.DEFAULT_CAPACITY))
-                total_capacity = raw_capacity - shared_space
+                system = int(storage.get('system', consts.DEFAULT_CAPACITY))
+                snapshots = int(storage.get('snapshots',
+                                            consts.DEFAULT_CAPACITY))
+                total_capacity = raw_capacity - shared_space - system - \
+                                 snapshots
                 break
 
         arrays = self.rest_handler.rest_call(self.rest_handler.REST_ARRAY_URL)
