@@ -119,6 +119,16 @@ telemetry_opts = [
                .DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE,
                help='default history(in sec) to be collected on a job '
                     'reschedule'),
+    cfg.IntOpt('performance_timestamp_overlap',
+               default=constants.TelemetryCollection
+               .DEF_PERFORMANCE_TIMESTAMP_OVERLAP,
+               help='default overlap to be added on start_time in sec  '
+               ),
+    cfg.IntOpt('max_failed_task_retry_window',
+               default=constants.TelemetryCollection
+               .MAX_FAILED_TASK_RETRY_WINDOW,
+               help='Maximum time window (in sec) until which delfin supports '
+                    'collection for failed tasks'),
     cfg.BoolOpt('enable_dynamic_subprocess',
                 default=False,
                 help='Enable dynamic subprocess metrics collection'),
@@ -137,6 +147,9 @@ telemetry_opts = [
     cfg.IntOpt('max_childs_in_node',
                default=100000,
                help='Max processes that can be spawned before forcing fail'),
+    cfg.IntOpt('node_weight',
+               default=100,
+               help='Weight for the node in the Hash Ring'),
 ]
 
 CONF.register_opts(telemetry_opts, "telemetry")
