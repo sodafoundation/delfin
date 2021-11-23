@@ -33,7 +33,7 @@ class HitachiHNasDriver(driver.StorageDriver):
         return self.nas_handler.get_pool(self.storage_id)
 
     def list_volumes(self, context):
-        pass
+        return []
 
     def list_controllers(self, context):
         return self.nas_handler.list_controllers(self.storage_id)
