@@ -368,9 +368,11 @@ class ResourceType(object):
     DISK = 'disk'
     FILESYSTEM = 'filesystem'
     SHARE = 'share'
+    QUOTA = 'quota'
+    QTREE = 'qtree'
 
     ALL = (STORAGE, STORAGE_POOL, VOLUME, CONTROLLER,
-           PORT, DISK, FILESYSTEM, SHARE)
+           PORT, DISK, FILESYSTEM, SHARE, QUOTA, QTREE)
 
 
 # Unified Array metrics model
