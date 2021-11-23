@@ -55,12 +55,16 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_STORAGE_URL)
         total_capacity = None
         used_capacity = None
+        raw_capacity = None
         if storages:
             for storage in storages:
-                total_capacity = int(storage.get('provisioned',
-                                                 consts.DEFAULT_CAPACITY))
                 used_capacity = int(storage.get('volumes',
                                                 consts.DEFAULT_CAPACITY))
+                raw_capacity = int(storage.get('capacity',
+                                               consts.DEFAULT_CAPACITY))
+                shared_space = int(storage.get('shared_space',
+                                               consts.DEFAULT_CAPACITY))
+                total_capacity = raw_capacity - shared_space
                 break
 
         arrays = self.rest_handler.rest_call(self.rest_handler.REST_ARRAY_URL)
@@ -88,7 +92,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
         storage_result = {
             'model': model,
             'total_capacity': total_capacity,
-            'raw_capacity': total_capacity,
+            'raw_capacity': raw_capacity,
             'used_capacity': used_capacity,
             'free_capacity': total_capacity - used_capacity,
             'vendor': 'PURE',
