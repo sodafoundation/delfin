@@ -293,8 +293,10 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.ETH,
                     'logical_type': '',
-                    'speed': int(content.get('speed')) * units.M,
-                    'max_speed': int(content.get('speed')) * units.M,
+                    'speed': int(content.get('speed')) * units.M
+                    if content.get('speed') is not None else None,
+                    'max_speed': int(content.get('speed')) * units.M
+                    if content.get('speed') is not None else None,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': '',
@@ -338,10 +340,10 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.FC,
                     'logical_type': '',
-                    'speed': int(
-                        content.get('currentSpeed', 0)) * units.G,
-                    'max_speed': int(
-                        content.get('currentSpeed', 0)) * units.G,
+                    'speed': int(content.get('currentSpeed')) * units.G
+                    if content.get('currentSpeed') is not None else None,
+                    'max_speed': int(content.get('currentSpeed')) * units.G
+                    if content.get('currentSpeed') is not None else None,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': content.get('wwn')
