@@ -103,6 +103,8 @@ class NasHandler(object):
             raise exception.StorageBackendException(
                 'Failed to get HNAS storage')
         model_map = model_map_list[-1] if model_map_list else {}
+        model = model_map.get('Model')
+        model = model.replace('HNAS', 'HNAS ')
         version_map = version_map_list[-1] if version_map_list else {}
         location_map = location_map_list[-1] if location_map_list else {}
         serial_map = serial_map_list[-1] if serial_map_list else {}
@@ -126,7 +128,7 @@ class NasHandler(object):
         storage_model = {
             "name": storage_map['ClusterName'],
             "vendor": constant.STORAGE_VENDOR,
-            "model": model_map.get('Model'),
+            "model": model,
             "status": status,
             "serial_number": serial_number.replace(')', ''),
             "firmware_version": version[0],
