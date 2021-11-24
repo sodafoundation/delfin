@@ -132,7 +132,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 alerts_model['sequence_number'] = alert.get('id')
                 alerts_model['match_key'] = hashlib.md5(str(alert.get('id')).
                                                         encode()).hexdigest()
-                alerts_model['description'] = '：(<{}>:<{}>): <{}>'.\
+                alerts_model['description'] = '({}:{}): {}'.\
                     format(alert.get('component_type'), component_name, event)
                 alerts_list.append(alerts_model)
         return alerts_list
@@ -147,7 +147,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 constants.Severity.NOT_SPECIFIED)
             alert_model['category'] = constants.Category.FAULT
             alert_model['occur_time'] = utils.utcnow_ms()
-            alert_model['description'] = '(<{}>:<{}>):<{}>'.format(alert.get(
+            alert_model['description'] = '({}:{}):{}'.format(alert.get(
                 consts.PARSE_ALERT_STORAGE_NAME),
                 alert.get(consts.PARSE_ALERT_CONTROLLER_NAME),
                 alert.get(consts.PARSE_ALERT_DESCRIPTION))
