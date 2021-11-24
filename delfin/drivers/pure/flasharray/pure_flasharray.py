@@ -123,14 +123,17 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
                     * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
                     if time is not None else None
-                alerts_model['description'] = alert.get('details')
-                alerts_model['location'] = alert.get('component_name')
+                component_name = alert.get('component_name')
+                alerts_model['location'] = component_name
                 alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
                 alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-                alerts_model['alert_name'] = alert.get('event')
+                event = alert.get('event')
+                alerts_model['alert_name'] = event
                 alerts_model['sequence_number'] = alert.get('id')
                 alerts_model['match_key'] = hashlib.md5(str(alert.get('id')).
                                                         encode()).hexdigest()
+                alerts_model['description'] = '：(<{}>:<{}>): <{}>'.\
+                    format(alert.get('component_type'), component_name, event)
                 alerts_list.append(alerts_model)
         return alerts_list
 
@@ -144,8 +147,10 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 constants.Severity.NOT_SPECIFIED)
             alert_model['category'] = constants.Category.FAULT
             alert_model['occur_time'] = utils.utcnow_ms()
-            alert_model['description'] = alert.get(
-                consts.PARSE_ALERT_DESCRIPTION)
+            alert_model['description'] = '(<{}>:<{}>):<{}>'.format(alert.get(
+                consts.PARSE_ALERT_STORAGE_NAME),
+                alert.get(consts.PARSE_ALERT_CONTROLLER_NAME),
+                alert.get(consts.PARSE_ALERT_DESCRIPTION))
             alert_model['location'] = alert.get(
                 consts.PARSE_ALERT_CONTROLLER_NAME)
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
