@@ -305,8 +305,8 @@ volume_result = [
         'wwn': '600C0FF00026C4EAFA80546101000000',
         'type': 'base',
         'total_capacity': 107266808217,
-        'free_capacit': 0,
-        'used_capacity': 107266808217,
+        'free_capacit': 107266808217,
+        'used_capacity': 0,
         'blocks': 195305472,
         'compressed': True,
         'deduplicated': True
@@ -320,8 +320,8 @@ volume_result = [
         'wwn': '600C0FF00026C4EA0A81546101000000',
         'type': 'base',
         'total_capacity': 107266808217,
-        'free_capacit': 0,
-        'used_capacity': 107266808217,
+        'free_capacit': 107266808217,
+        'used_capacity': 0,
         'blocks': 195305472,
         'compressed': True,
         'deduplicated': True
