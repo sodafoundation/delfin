@@ -91,6 +91,8 @@ class SSHHandler(object):
                 status = constants.StoragePoolStatus.OFFLINE
                 if health == 'OK':
                     status = constants.StoragePoolStatus.NORMAL
+                elif health == 'Degraded':
+                    status = constants.StoragePoolStatus.Degraded
                 serial_num = system_data.get('midplane-serial-number')
                 storage_map = {
                     'name': system_data.get('system-name'),
@@ -280,8 +282,8 @@ class SSHHandler(object):
                     'wwn': str(data.get('wwn')),
                     'type': data.get('volume-type'),
                     'total_capacity': int(total_size),
-                    'free_capacit': int(total_avail),
-                    'used_capacity': int(total_size - total_avail),
+                    'free_capacit': int(total_size - total_avail),
+                    'used_capacity': int(total_avail),
                     'blocks': int(blocks),
                     'compressed': True,
                     'deduplicated': True
