@@ -498,7 +498,7 @@ system_info = {
     'name': 'msa2040',
     'vendor': 'HP',
     'model': 'MSA 2040 SAN',
-    'status': 'degraded',
+    'status': 'normal',
     'serial_number': '00C0FF26DCB0',
     'firmware_version': 'GL210R004',
     'location': 'Uninitialized Location',
