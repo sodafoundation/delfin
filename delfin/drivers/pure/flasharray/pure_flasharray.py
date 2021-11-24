@@ -147,7 +147,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 constants.Severity.NOT_SPECIFIED)
             alert_model['category'] = constants.Category.FAULT
             alert_model['occur_time'] = utils.utcnow_ms()
-            alert_model['description'] = '({}:{}):{}'.format(alert.get(
+            alert_model['description'] = '({}:{}): {}'.format(alert.get(
                 consts.PARSE_ALERT_STORAGE_NAME),
                 alert.get(consts.PARSE_ALERT_CONTROLLER_NAME),
                 alert.get(consts.PARSE_ALERT_DESCRIPTION))
