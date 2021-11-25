@@ -88,15 +88,18 @@ class SSHHandler(object):
                     for volume in volumes_list:
                         volume_all_size += int(volume.get('total_capacity'))
                 health = system_data.get('health')
-                status = constants.StoragePoolStatus.OFFLINE
+                status = constants.StorageStatus.OFFLINE
                 if health == 'OK':
-                    status = constants.StoragePoolStatus.NORMAL
+                    status = constants.StorageStatus.NORMAL
                 elif health == 'Degraded':
-                    status = constants.StoragePoolStatus.Degraded
+                    status = constants.StorageStatus.DEGRADED
                 serial_num = system_data.get('midplane-serial-number')
+                vendor = system_data.get('vendor-name')
+                if vendor == "HP":
+                    vendor = "HPE"
                 storage_map = {
                     'name': system_data.get('system-name'),
-                    'vendor': system_data.get('vendor-name'),
+                    'vendor': vendor,
                     'model': system_data.get('product-id'),
                     'status': status,
                     'serial_number': serial_num,
@@ -181,7 +184,7 @@ class SSHHandler(object):
                 location_port_type = data.get('port-type')
                 if location_port_type:
                     location_port_type = location_port_type.upper()
-                if location_port_type == 'iSCSI':
+                if location_port_type == 'ISCSI':
                     port_type = constants.PortType.ETH
                 location = '%s_%s' % (data.get('port'),
                                       location_port_type)

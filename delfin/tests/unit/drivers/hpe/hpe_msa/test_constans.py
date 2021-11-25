@@ -369,7 +369,7 @@ ports_result = [
     }, {
         'native_port_id': 'hostport_A3',
         'name': 'A3',
-        'type': 'fc',
+        'type': 'eth',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'A3_ISCSI',
@@ -381,7 +381,7 @@ ports_result = [
     }, {
         'native_port_id': 'hostport_A4',
         'name': 'A4',
-        'type': 'fc',
+        'type': 'eth',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'A4_ISCSI',
@@ -417,7 +417,7 @@ ports_result = [
     }, {
         'native_port_id': 'hostport_B3',
         'name': 'B3',
-        'type': 'fc',
+        'type': 'eth',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'B3_ISCSI', 'storage_id': 'kkk',
@@ -428,7 +428,7 @@ ports_result = [
     }, {
         'native_port_id': 'hostport_B4',
         'name': 'B4',
-        'type': 'fc',
+        'type': 'eth',
         'connection_status': 'disconnected',
         'health_status': 'abnormal',
         'location': 'B4_ISCSI',
@@ -496,7 +496,7 @@ disks_result = [
 
 system_info = {
     'name': 'msa2040',
-    'vendor': 'HP',
+    'vendor': 'HPE',
     'model': 'MSA 2040 SAN',
     'status': 'normal',
     'serial_number': '00C0FF26DCB0',
