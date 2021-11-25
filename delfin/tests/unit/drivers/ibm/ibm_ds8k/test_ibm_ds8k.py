@@ -241,7 +241,7 @@ storage_result = {
 }
 pool_result = [
     {
-        'name': 'test_pool',
+        'name': 'test_pool_0',
         'storage_id': '12345',
         'native_storage_pool_id': 'P0',
         'status': 'abnormal',
@@ -291,7 +291,7 @@ port_result = [
         'logical_type': '',
         'speed': 8000000000,
         'max_speed': 8000000000,
-        'wwn': '50050763040017EF'
+        'wwn': '50:05:07:63:04:00:17:EF'
     }, {
         'name': 'U1400.1B1.RJ55380-P1-C1-T5',
         'storage_id': '12345',
@@ -299,11 +299,11 @@ port_result = [
         'location': 'U1400.1B1.RJ55380-P1-C1-T5',
         'connection_status': 'connected',
         'health_status': 'normal',
-        'type': 'other',
+        'type': 'fc',
         'logical_type': '',
         'speed': 8000000000,
         'max_speed': 8000000000,
-        'wwn': '50050763044057EF'
+        'wwn': '50:05:07:63:04:40:57:EF'
     }
 ]
 

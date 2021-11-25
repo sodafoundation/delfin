@@ -26,6 +26,7 @@ LOG = log.getLogger(__name__)
 class DS8KDriver(driver.StorageDriver):
 
     PORT_TYPE_MAP = {'FC-AL': constants.PortType.FC,
+                     'SCSI-FCP': constants.PortType.FC,
                      'FICON': constants.PortType.FICON
                      }
 
@@ -113,8 +114,9 @@ class DS8KDriver(driver.StorageDriver):
                 if (int(pool.get('capalloc')) / int(pool.get('cap'))) * 100 > \
                         int(pool.get('threshold')):
                     status = constants.StoragePoolStatus.ABNORMAL
+                pool_name = '%s_%s' % (pool.get('name'), pool.get('node'))
                 pool_result = {
-                    'name': pool.get('name'),
+                    'name': pool_name,
                     'storage_id': self.storage_id,
                     'native_storage_pool_id': str(pool.get('id')),
                     'status': status,
@@ -172,6 +174,20 @@ class DS8KDriver(driver.StorageDriver):
             .parse_queried_alerts(alert_model_list, alert_list, query_para)
         return alert_model_list
 
+    @staticmethod
+    def division_port_wwn(original_wwn):
+        result_wwn = None
+        if not original_wwn:
+            return result_wwn
+        is_first = True
+        for i in range(0, len(original_wwn), 2):
+            if is_first is True:
+                result_wwn = '%s' % (original_wwn[i:i + 2])
+                is_first = False
+            else:
+                result_wwn = '%s:%s' % (result_wwn, original_wwn[i:i + 2])
+        return result_wwn
+
     def list_ports(self, context):
         port_list = []
         port_info = self.rest_handler.get_rest_info('/api/v1/ioports')
@@ -197,7 +213,7 @@ class DS8KDriver(driver.StorageDriver):
                     'logical_type': '',
                     'speed': speed,
                     'max_speed': speed,
-                    'wwn': port.get('wwpn')
+                    'wwn': DS8KDriver.division_port_wwn(port.get('wwpn'))
                 }
                 port_list.append(port_result)
         return port_list
