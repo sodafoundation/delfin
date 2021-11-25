@@ -92,7 +92,7 @@ class SSHHandler(object):
                 if health == 'OK':
                     status = constants.StorageStatus.NORMAL
                 elif health == 'Degraded':
-                    status = constants.StorageStatus.Degraded
+                    status = constants.StorageStatus.DEGRADED
                 serial_num = system_data.get('midplane-serial-number')
                 vendor = system_data.get('vendor-name')
                 if vendor == "HP":
