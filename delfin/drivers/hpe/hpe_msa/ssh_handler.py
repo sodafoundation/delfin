@@ -26,6 +26,8 @@ class SSHHandler(object):
     OID_EVENT_ID = '1.3.6.1.3.94.1.11.1.3'
     OID_SEVERITY = '1.3.6.1.3.94.1.11.1.6'
 
+    HPE_MSA_VENDOR = "HPE"
+
     TRAP_SEVERITY_MAP = {
         '1': 'unknown',
         '2': 'emergency',
@@ -94,12 +96,9 @@ class SSHHandler(object):
                 elif health == 'Degraded':
                     status = constants.StorageStatus.DEGRADED
                 serial_num = system_data.get('midplane-serial-number')
-                vendor = system_data.get('vendor-name')
-                if vendor == "HP":
-                    vendor = "HPE"
                 storage_map = {
                     'name': system_data.get('system-name'),
-                    'vendor': vendor,
+                    'vendor': SSHHandler.HPE_MSA_VENDOR,
                     'model': system_data.get('product-id'),
                     'status': status,
                     'serial_number': serial_num,
@@ -383,11 +382,14 @@ class SSHHandler(object):
                     if not alert_util.is_alert_in_time_range(query_para,
                                                              occur_time):
                         continue
-                alert_name = alert_map.get('message')
+                alert_name = alert_map.get('event-code')
                 event_id = alert_map.get('event-id')
-                location = alert_map.get('serial-number')
+                location = alert_map.get('message')
                 resource_type = alert_map.get('event-code')
                 severity = alert_map.get('severity')
+                additional_info = alert_map.get("additional-information")
+                recommended_action = alert_map.get("recommended-action")
+                description = additional_info + recommended_action
                 if severity == 'Informational' or severity is None:
                     continue
                 alert_model = {
@@ -398,7 +400,7 @@ class SSHHandler(object):
                     'type': 'EquipmentAlarm',
                     'sequence_number': alert_map.get('event-code'),
                     'occur_time': occur_time,
-                    'description': alert_name,
+                    'description': description,
                     'resource_type': resource_type,
                     'location': location
                 }
