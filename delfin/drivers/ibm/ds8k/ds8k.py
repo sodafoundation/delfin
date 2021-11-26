@@ -233,4 +233,4 @@ class DS8KDriver(driver.StorageDriver):
 
     @staticmethod
     def get_access_url():
-        return 'https://{ip}'
+        return 'https://{ip}:{port}'

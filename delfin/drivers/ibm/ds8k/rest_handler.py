@@ -101,8 +101,6 @@ class RestHandler(RestClient):
 
     def logout(self):
         try:
-            if self.san_address:
-                self.call(RestHandler.REST_TOKEN_URL, method='DELETE')
             if self.session:
                 self.session.close()
         except Exception as e:
