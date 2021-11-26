@@ -387,8 +387,8 @@ class SSHHandler(object):
                 location = alert_map.get('message')
                 resource_type = alert_map.get('event-code')
                 severity = alert_map.get('severity')
-                additional_info = alert_map.get("additional-information")
-                recommended_action = alert_map.get("recommended-action")
+                additional_info = str(alert_map.get("additional-information"))
+                recommended_action = str(alert_map.get("recommended-action"))
                 description = additional_info + recommended_action
                 if severity == 'Informational' or severity is None:
                     continue
