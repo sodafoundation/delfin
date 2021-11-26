@@ -65,7 +65,7 @@ class SSHHandler(object):
                 serial_num = system_data.get('midplane-serial-number')
                 storage_map = {
                     'name': system_data.get('system-name'),
-                    'vendor': consts.HPE_MSA_VENDOR,
+                    'vendor': consts.StorageVendor.HPE_MSA_VENDOR,
                     'model': system_data.get('product-id'),
                     'status': status,
                     'serial_number': serial_num,
@@ -94,9 +94,10 @@ class SSHHandler(object):
                     if health == 'OK':
                         status = constants.StoragePoolStatus.NORMAL
                     size = self.parse_string_to_bytes(data.get('size'))
-                    physical_type = consts.DISK_PHYSICAL_TYPE.\
-                        get(data.get('description'),
-                            constants.DiskPhysicalType.UNKNOWN)
+                    physical_type = consts.DiskPhysicalType.\
+                        DISK_PHYSICAL_TYPE.get(data.get('description'),
+                                               constants.DiskPhysicalType.
+                                               UNKNOWN)
                     data_map = {
                         'native_disk_id': data.get('location'),
                         'name': data.get('location'),
@@ -342,10 +343,12 @@ class SSHHandler(object):
             alert_json = self.handle_xml_to_json(alert_infos, 'events')
             for alert_map in alert_json:
                 now = time.time()
-                occur_time = int(round(now * consts.SECONDS_TO_MS))
+                occur_time = int(round(now * consts.SecondsNumber
+                                       .SECONDS_TO_MS))
                 time_stamp = alert_map.get('time-stamp-numeric')
                 if time_stamp is not None:
-                    occur_time = int(time_stamp) * consts.SECONDS_TO_MS
+                    occur_time = int(time_stamp) * consts.SecondsNumber\
+                        .SECONDS_TO_MS
                     if not alert_util.is_alert_in_time_range(query_para,
                                                              occur_time):
                         continue
@@ -399,21 +402,21 @@ class SSHHandler(object):
             alert_model = dict()
             alert_id = None
             description = None
-            severity = consts.TRAP_SEVERITY_MAP.get('8')
+            severity = consts.TrapSeverity.TRAP_SEVERITY_MAP.get('8')
             sequence_number = None
             event_type = None
             for alert_key, alert_value in alert.items():
-                if consts.OID_ERR_ID in alert_key:
+                if consts.AlertOIDNumber.OID_ERR_ID in alert_key:
                     alert_id = str(alert_value)
-                elif consts.OID_EVENT_TYPE in alert_key:
+                elif consts.AlertOIDNumber.OID_EVENT_TYPE in alert_key:
                     event_type = alert_value
-                elif consts.OID_EVENT_DESC in alert_key:
+                elif consts.AlertOIDNumber.OID_EVENT_DESC in alert_key:
                     description = alert_value
-                elif consts.OID_SEVERITY in alert_key:
-                    severity = consts.TRAP_SEVERITY_MAP\
-                        .get(alert.get(consts.OID_SEVERITY),
+                elif consts.AlertOIDNumber.OID_SEVERITY in alert_key:
+                    severity = consts.TrapSeverity.TRAP_SEVERITY_MAP\
+                        .get(alert.get(consts.AlertOIDNumber.OID_SEVERITY),
                              constants.Severity.INFORMATIONAL)
-                elif consts.OID_EVENT_ID in alert_key:
+                elif consts.AlertOIDNumber.OID_EVENT_ID in alert_key:
                     sequence_number = alert_value
             if description:
                 desc_arr = description.split(",")
@@ -429,7 +432,8 @@ class SSHHandler(object):
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['sequence_number'] = sequence_number
             now = time.time()
-            alert_model['occur_time'] = int(round(now * consts.SECONDS_TO_MS))
+            alert_model['occur_time'] = int(round(now * consts.
+                                                  SecondsNumber.SECONDS_TO_MS))
             alert_model['description'] = description
             alert_model['location'] = description
             return alert_model
