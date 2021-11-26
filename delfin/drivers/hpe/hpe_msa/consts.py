@@ -9,6 +9,7 @@ class AlertOIDNumber:
     OID_EVENT_ID = '1.3.6.1.3.94.1.11.1.3'
     OID_SEVERITY = '1.3.6.1.3.94.1.11.1.6'
 
+
 class StorageVendor:
     HPE_MSA_VENDOR = "HPE"
 
@@ -42,4 +43,3 @@ class DiskPhysicalType:
         'fc': constants.DiskPhysicalType.FC,
         'SAS': constants.DiskPhysicalType.SAS
     }
-
