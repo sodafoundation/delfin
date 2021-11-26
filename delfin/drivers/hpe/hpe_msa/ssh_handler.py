@@ -159,11 +159,11 @@ class SSHHandler(object):
             ports_xml_data = ''.join(ports_array)
             xml_element = Et.fromstring(ports_xml_data)
             ports_json = []
-            for element_data in xml_element.iter("OBJECT"):
-                property_name = element_data.get("basetype")
+            for element_data in xml_element.iter('OBJECT'):
+                property_name = element_data.get('basetype')
                 if property_name != 'status':
                     msg = {}
-                    for child in element_data.iter("PROPERTY"):
+                    for child in element_data.iter('PROPERTY'):
                         msg[child.get('name')] = child.text
                     ports_json.append(msg)
             ports_elements_info = []
@@ -265,13 +265,13 @@ class SSHHandler(object):
                 native_storage_pool_id = ''
                 if pool_detail:
                     native_storage_pool_id = pool_detail[0]. \
-                        get("serial-number")
+                        get('serial-number')
                     for pools in pool_detail:
-                        if data.get("virtual-disk-name") == pools.\
-                                get("name"):
+                        if data.get('virtual-disk-name') == pools.\
+                                get('name'):
                             native_storage_pool_id = pools.\
-                                get("serial-number")
-                blocks = data.get("blocks")
+                                get('serial-number')
+                blocks = data.get('blocks')
                 if blocks is not None:
                     blocks = int(blocks)
                 volume_map = {
@@ -309,10 +309,10 @@ class SSHHandler(object):
                     blocks = 0
                     if volume_list:
                         for volume in volume_list:
-                            if volume.get("native_storage_pool_id") == data.\
-                                    get("serial-number"):
-                                volume_size += volume.get("total_capacity")
-                                blocks += volume.get("blocks")
+                            if volume.get('native_storage_pool_id') == data.\
+                                    get('serial-number'):
+                                volume_size += volume.get('total_capacity')
+                                blocks += volume.get('blocks')
                     health = data.get('health')
                     status = constants.StoragePoolStatus.OFFLINE
                     if health == 'OK':
@@ -359,11 +359,11 @@ class SSHHandler(object):
         detail = detail_data[1:len(detail_data) - 1]
         detail_xml = ''.join(detail)
         xml_element = Et.fromstring(detail_xml)
-        for children in xml_element.iter("OBJECT"):
+        for children in xml_element.iter('OBJECT'):
             property_name = children.get('basetype')
             if element == property_name:
                 msg = {}
-                for child in children.iter("PROPERTY"):
+                for child in children.iter('PROPERTY'):
                     msg[child.get('name')] = child.text
                 detail_arr.append(msg)
         return detail_arr
@@ -387,8 +387,8 @@ class SSHHandler(object):
                 location = alert_map.get('message')
                 resource_type = alert_map.get('event-code')
                 severity = alert_map.get('severity')
-                additional_info = str(alert_map.get("additional-information"))
-                recommended_action = str(alert_map.get("recommended-action"))
+                additional_info = str(alert_map.get('additional-information'))
+                recommended_action = str(alert_map.get('recommended-action'))
                 description = None
                 if additional_info:
                     description = additional_info
@@ -490,9 +490,9 @@ class SSHHandler(object):
         xml_data = xml_split[1:len(xml_split) - 1]
         detail_xml = ''.join(xml_data)
         xml_element = Et.fromstring(detail_xml)
-        for children in xml_element.iter("OBJECT"):
+        for children in xml_element.iter('OBJECT'):
             property_name = children.get('basetype')
             if element == property_name:
-                for child in children.iter("PROPERTY"):
+                for child in children.iter('PROPERTY'):
                     msg[child.get('name')] = child.text
         return msg
