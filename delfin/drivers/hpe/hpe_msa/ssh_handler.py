@@ -389,7 +389,11 @@ class SSHHandler(object):
                 severity = alert_map.get('severity')
                 additional_info = str(alert_map.get("additional-information"))
                 recommended_action = str(alert_map.get("recommended-action"))
-                description = additional_info + recommended_action
+                description = None
+                if additional_info:
+                    description = additional_info
+                if recommended_action:
+                    description = description + recommended_action
                 if severity == 'Informational' or severity is None:
                     continue
                 alert_model = {
