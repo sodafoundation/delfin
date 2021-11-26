@@ -7,6 +7,7 @@ from delfin import exception
 from delfin.common import constants, alert_util
 from delfin.drivers.utils.ssh_client import SSHPool
 from delfin.drivers.utils.tools import Tools
+from delfin.drivers.hpe.hpe_msa import consts
 
 try:
     import xml.etree.cElementTree as Et
@@ -18,40 +19,6 @@ LOG = logging.getLogger(__name__)
 
 
 class SSHHandler(object):
-
-    OID_ERR_ID = '1.3.6.1.3.94.1.11.1.1'
-    OID_EVENT_TYPE = '1.3.6.1.3.94.1.11.1.7'
-    OID_LAST_TIME = '1.3.6.1.3.94.1.11.1.4'
-    OID_EVENT_DESC = '1.3.6.1.3.94.1.11.1.9'
-    OID_EVENT_ID = '1.3.6.1.3.94.1.11.1.3'
-    OID_SEVERITY = '1.3.6.1.3.94.1.11.1.6'
-
-    HPE_MSA_VENDOR = "HPE"
-
-    TRAP_SEVERITY_MAP = {
-        '1': 'unknown',
-        '2': 'emergency',
-        '3': 'alert',
-        '4': constants.Severity.CRITICAL,
-        '5': 'error',
-        '6': constants.Severity.WARNING,
-        '7': 'notify',
-        '8': constants.Severity.INFORMATIONAL,
-        '9': 'debug',
-        '10': 'mark'
-    }
-
-    SEVERITY_MAP = {"warning": "Warning",
-                    "informational": "Informational",
-                    "error": "Major"
-                    }
-
-    SECONDS_TO_MS = 1000
-
-    DISK_PHYSICAL_TYPE = {
-        'fc': constants.DiskPhysicalType.FC,
-        'SAS': constants.DiskPhysicalType.SAS
-    }
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -98,7 +65,7 @@ class SSHHandler(object):
                 serial_num = system_data.get('midplane-serial-number')
                 storage_map = {
                     'name': system_data.get('system-name'),
-                    'vendor': SSHHandler.HPE_MSA_VENDOR,
+                    'vendor': consts.HPE_MSA_VENDOR,
                     'model': system_data.get('product-id'),
                     'status': status,
                     'serial_number': serial_num,
@@ -127,7 +94,7 @@ class SSHHandler(object):
                     if health == 'OK':
                         status = constants.StoragePoolStatus.NORMAL
                     size = self.parse_string_to_bytes(data.get('size'))
-                    physical_type = SSHHandler.DISK_PHYSICAL_TYPE.\
+                    physical_type = consts.DISK_PHYSICAL_TYPE.\
                         get(data.get('description'),
                             constants.DiskPhysicalType.UNKNOWN)
                     data_map = {
@@ -375,10 +342,10 @@ class SSHHandler(object):
             alert_json = self.handle_xml_to_json(alert_infos, 'events')
             for alert_map in alert_json:
                 now = time.time()
-                occur_time = int(round(now * self.SECONDS_TO_MS))
+                occur_time = int(round(now * consts.SECONDS_TO_MS))
                 time_stamp = alert_map.get('time-stamp-numeric')
                 if time_stamp is not None:
-                    occur_time = int(time_stamp) * self.SECONDS_TO_MS
+                    occur_time = int(time_stamp) * consts.SECONDS_TO_MS
                     if not alert_util.is_alert_in_time_range(query_para,
                                                              occur_time):
                         continue
@@ -432,21 +399,21 @@ class SSHHandler(object):
             alert_model = dict()
             alert_id = None
             description = None
-            severity = SSHHandler.TRAP_SEVERITY_MAP.get('8')
+            severity = consts.TRAP_SEVERITY_MAP.get('8')
             sequence_number = None
             event_type = None
             for alert_key, alert_value in alert.items():
-                if SSHHandler.OID_ERR_ID in alert_key:
+                if consts.OID_ERR_ID in alert_key:
                     alert_id = str(alert_value)
-                elif SSHHandler.OID_EVENT_TYPE in alert_key:
+                elif consts.OID_EVENT_TYPE in alert_key:
                     event_type = alert_value
-                elif SSHHandler.OID_EVENT_DESC in alert_key:
+                elif consts.OID_EVENT_DESC in alert_key:
                     description = alert_value
-                elif SSHHandler.OID_SEVERITY in alert_key:
-                    severity = SSHHandler.TRAP_SEVERITY_MAP\
-                        .get(alert.get(SSHHandler.OID_SEVERITY),
+                elif consts.OID_SEVERITY in alert_key:
+                    severity = consts.TRAP_SEVERITY_MAP\
+                        .get(alert.get(consts.OID_SEVERITY),
                              constants.Severity.INFORMATIONAL)
-                elif SSHHandler.OID_EVENT_ID in alert_key:
+                elif consts.OID_EVENT_ID in alert_key:
                     sequence_number = alert_value
             if description:
                 desc_arr = description.split(",")
@@ -462,8 +429,7 @@ class SSHHandler(object):
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['sequence_number'] = sequence_number
             now = time.time()
-            alert_model['occur_time'] = int(round(now * SSHHandler.
-                                            SECONDS_TO_MS))
+            alert_model['occur_time'] = int(round(now * consts.SECONDS_TO_MS))
             alert_model['description'] = description
             alert_model['location'] = description
             return alert_model
