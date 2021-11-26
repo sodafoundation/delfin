@@ -267,32 +267,38 @@ LIST_ERROR = """
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <RESPONSE VERSION="L100" REQUEST="show events error">
 <COMP G="0" P="13"/>
-<OBJECT basetype="events" name="event" oid="13" format="packed">
-    <PROPERTY name="time-stamp-numeric">1630305906</PROPERTY>
+ <OBJECT basetype="events" name="event" oid="1" format="packed">
+    <PROPERTY name="time-stamp">2021-11-12 08:16:20</PROPERTY>
+    <PROPERTY name="time-stamp-numeric" >1636704980</PROPERTY>
     <PROPERTY name="event-code">557</PROPERTY>
-    <PROPERTY name="event-id">A35</PROPERTY>
+    <PROPERTY name="event-id" >A891</PROPERTY>
+    <PROPERTY name="model">MSA 2040 SAN</PROPERTY>
     <PROPERTY name="serial-number">00C0FF26C236</PROPERTY>
-    <PROPERTY name="severity" >ERROR</PROPERTY>
-    <PROPERTY name="message"  >ERROE_INFOMATION</PROPERTY>
+    <PROPERTY name="controller" >A</PROPERTY>
+    <PROPERTY name="controller-numeric">1</PROPERTY>
+    <PROPERTY name="severity">ERROR</PROPERTY>
+    <PROPERTY name="severity-numeric">2</PROPERTY>
+    <PROPERTY name="message" >An Enclosure Management Processor(EMP)</PROPERTY>
+     <PROPERTY name="additional-information">Management</PROPERTY>
+     <PROPERTY name="recommended-action">Management</PROPERTY>
   </OBJECT>
 </RESPONSE>
 """
 
 error_result = [
     {
-        'alert_id': 'A35',
-        'alert_name': 'ERROE_INFOMATION',
+        'alert_id': 'A891',
+        'alert_name': '557',
         'severity': 'ERROR',
         'category': 'Fault',
         'type': 'EquipmentAlarm',
         'sequence_number': '557',
-        'occur_time': 1630305906000,
-        'description': 'ERROE_INFOMATION',
+        'occur_time': 1636704980000,
+        'description': 'ManagementManagement',
         'resource_type': '557',
-        'location': '00C0FF26C236'
+        'location': 'An Enclosure Management Processor(EMP)'
     }
 ]
-
 
 volume_result = [
     {

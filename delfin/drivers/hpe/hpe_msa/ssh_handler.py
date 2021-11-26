@@ -7,6 +7,7 @@ from delfin import exception
 from delfin.common import constants, alert_util
 from delfin.drivers.utils.ssh_client import SSHPool
 from delfin.drivers.utils.tools import Tools
+from delfin.drivers.hpe.hpe_msa import consts
 
 try:
     import xml.etree.cElementTree as Et
@@ -18,38 +19,6 @@ LOG = logging.getLogger(__name__)
 
 
 class SSHHandler(object):
-
-    OID_ERR_ID = '1.3.6.1.3.94.1.11.1.1'
-    OID_EVENT_TYPE = '1.3.6.1.3.94.1.11.1.7'
-    OID_LAST_TIME = '1.3.6.1.3.94.1.11.1.4'
-    OID_EVENT_DESC = '1.3.6.1.3.94.1.11.1.9'
-    OID_EVENT_ID = '1.3.6.1.3.94.1.11.1.3'
-    OID_SEVERITY = '1.3.6.1.3.94.1.11.1.6'
-
-    TRAP_SEVERITY_MAP = {
-        '1': 'unknown',
-        '2': 'emergency',
-        '3': 'alert',
-        '4': constants.Severity.CRITICAL,
-        '5': 'error',
-        '6': constants.Severity.WARNING,
-        '7': 'notify',
-        '8': constants.Severity.INFORMATIONAL,
-        '9': 'debug',
-        '10': 'mark'
-    }
-
-    SEVERITY_MAP = {"warning": "Warning",
-                    "informational": "Informational",
-                    "error": "Major"
-                    }
-
-    SECONDS_TO_MS = 1000
-
-    DISK_PHYSICAL_TYPE = {
-        'fc': constants.DiskPhysicalType.FC,
-        'SAS': constants.DiskPhysicalType.SAS
-    }
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -94,12 +63,9 @@ class SSHHandler(object):
                 elif health == 'Degraded':
                     status = constants.StorageStatus.DEGRADED
                 serial_num = system_data.get('midplane-serial-number')
-                vendor = system_data.get('vendor-name')
-                if vendor == "HP":
-                    vendor = "HPE"
                 storage_map = {
                     'name': system_data.get('system-name'),
-                    'vendor': vendor,
+                    'vendor': consts.StorageVendor.HPE_MSA_VENDOR,
                     'model': system_data.get('product-id'),
                     'status': status,
                     'serial_number': serial_num,
@@ -128,9 +94,10 @@ class SSHHandler(object):
                     if health == 'OK':
                         status = constants.StoragePoolStatus.NORMAL
                     size = self.parse_string_to_bytes(data.get('size'))
-                    physical_type = SSHHandler.DISK_PHYSICAL_TYPE.\
-                        get(data.get('description'),
-                            constants.DiskPhysicalType.UNKNOWN)
+                    physical_type = consts.DiskPhysicalType.\
+                        DISK_PHYSICAL_TYPE.get(data.get('description'),
+                                               constants.DiskPhysicalType.
+                                               UNKNOWN)
                     data_map = {
                         'native_disk_id': data.get('location'),
                         'name': data.get('location'),
@@ -160,11 +127,11 @@ class SSHHandler(object):
             ports_xml_data = ''.join(ports_array)
             xml_element = Et.fromstring(ports_xml_data)
             ports_json = []
-            for element_data in xml_element.iter("OBJECT"):
-                property_name = element_data.get("basetype")
+            for element_data in xml_element.iter('OBJECT'):
+                property_name = element_data.get('basetype')
                 if property_name != 'status':
                     msg = {}
-                    for child in element_data.iter("PROPERTY"):
+                    for child in element_data.iter('PROPERTY'):
                         msg[child.get('name')] = child.text
                     ports_json.append(msg)
             ports_elements_info = []
@@ -266,13 +233,13 @@ class SSHHandler(object):
                 native_storage_pool_id = ''
                 if pool_detail:
                     native_storage_pool_id = pool_detail[0]. \
-                        get("serial-number")
+                        get('serial-number')
                     for pools in pool_detail:
-                        if data.get("virtual-disk-name") == pools.\
-                                get("name"):
+                        if data.get('virtual-disk-name') == pools.\
+                                get('name'):
                             native_storage_pool_id = pools.\
-                                get("serial-number")
-                blocks = data.get("blocks")
+                                get('serial-number')
+                blocks = data.get('blocks')
                 if blocks is not None:
                     blocks = int(blocks)
                 volume_map = {
@@ -310,10 +277,10 @@ class SSHHandler(object):
                     blocks = 0
                     if volume_list:
                         for volume in volume_list:
-                            if volume.get("native_storage_pool_id") == data.\
-                                    get("serial-number"):
-                                volume_size += volume.get("total_capacity")
-                                blocks += volume.get("blocks")
+                            if volume.get('native_storage_pool_id') == data.\
+                                    get('serial-number'):
+                                volume_size += volume.get('total_capacity')
+                                blocks += volume.get('blocks')
                     health = data.get('health')
                     status = constants.StoragePoolStatus.OFFLINE
                     if health == 'OK':
@@ -360,11 +327,11 @@ class SSHHandler(object):
         detail = detail_data[1:len(detail_data) - 1]
         detail_xml = ''.join(detail)
         xml_element = Et.fromstring(detail_xml)
-        for children in xml_element.iter("OBJECT"):
+        for children in xml_element.iter('OBJECT'):
             property_name = children.get('basetype')
             if element == property_name:
                 msg = {}
-                for child in children.iter("PROPERTY"):
+                for child in children.iter('PROPERTY'):
                     msg[child.get('name')] = child.text
                 detail_arr.append(msg)
         return detail_arr
@@ -376,18 +343,27 @@ class SSHHandler(object):
             alert_json = self.handle_xml_to_json(alert_infos, 'events')
             for alert_map in alert_json:
                 now = time.time()
-                occur_time = int(round(now * self.SECONDS_TO_MS))
+                occur_time = int(round(now * consts.SecondsNumber
+                                       .SECONDS_TO_MS))
                 time_stamp = alert_map.get('time-stamp-numeric')
                 if time_stamp is not None:
-                    occur_time = int(time_stamp) * self.SECONDS_TO_MS
+                    occur_time = int(time_stamp) * consts.SecondsNumber\
+                        .SECONDS_TO_MS
                     if not alert_util.is_alert_in_time_range(query_para,
                                                              occur_time):
                         continue
-                alert_name = alert_map.get('message')
+                alert_name = alert_map.get('event-code')
                 event_id = alert_map.get('event-id')
-                location = alert_map.get('serial-number')
+                location = alert_map.get('message')
                 resource_type = alert_map.get('event-code')
                 severity = alert_map.get('severity')
+                additional_info = str(alert_map.get('additional-information'))
+                recommended_action = str(alert_map.get('recommended-action'))
+                description = None
+                if additional_info:
+                    description = additional_info
+                if recommended_action:
+                    description = description + recommended_action
                 if severity == 'Informational' or severity is None:
                     continue
                 alert_model = {
@@ -398,7 +374,7 @@ class SSHHandler(object):
                     'type': 'EquipmentAlarm',
                     'sequence_number': alert_map.get('event-code'),
                     'occur_time': occur_time,
-                    'description': alert_name,
+                    'description': description,
                     'resource_type': resource_type,
                     'location': location
                 }
@@ -426,21 +402,21 @@ class SSHHandler(object):
             alert_model = dict()
             alert_id = None
             description = None
-            severity = SSHHandler.TRAP_SEVERITY_MAP.get('8')
+            severity = consts.TrapSeverity.TRAP_SEVERITY_MAP.get('8')
             sequence_number = None
             event_type = None
             for alert_key, alert_value in alert.items():
-                if SSHHandler.OID_ERR_ID in alert_key:
+                if consts.AlertOIDNumber.OID_ERR_ID in alert_key:
                     alert_id = str(alert_value)
-                elif SSHHandler.OID_EVENT_TYPE in alert_key:
+                elif consts.AlertOIDNumber.OID_EVENT_TYPE in alert_key:
                     event_type = alert_value
-                elif SSHHandler.OID_EVENT_DESC in alert_key:
+                elif consts.AlertOIDNumber.OID_EVENT_DESC in alert_key:
                     description = alert_value
-                elif SSHHandler.OID_SEVERITY in alert_key:
-                    severity = SSHHandler.TRAP_SEVERITY_MAP\
-                        .get(alert.get(SSHHandler.OID_SEVERITY),
+                elif consts.AlertOIDNumber.OID_SEVERITY in alert_key:
+                    severity = consts.TrapSeverity.TRAP_SEVERITY_MAP\
+                        .get(alert.get(consts.AlertOIDNumber.OID_SEVERITY),
                              constants.Severity.INFORMATIONAL)
-                elif SSHHandler.OID_EVENT_ID in alert_key:
+                elif consts.AlertOIDNumber.OID_EVENT_ID in alert_key:
                     sequence_number = alert_value
             if description:
                 desc_arr = description.split(",")
@@ -456,8 +432,8 @@ class SSHHandler(object):
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['sequence_number'] = sequence_number
             now = time.time()
-            alert_model['occur_time'] = int(round(now * SSHHandler.
-                                            SECONDS_TO_MS))
+            alert_model['occur_time'] = int(round(now * consts.
+                                                  SecondsNumber.SECONDS_TO_MS))
             alert_model['description'] = description
             alert_model['location'] = description
             return alert_model
@@ -484,9 +460,9 @@ class SSHHandler(object):
         xml_data = xml_split[1:len(xml_split) - 1]
         detail_xml = ''.join(xml_data)
         xml_element = Et.fromstring(detail_xml)
-        for children in xml_element.iter("OBJECT"):
+        for children in xml_element.iter('OBJECT'):
             property_name = children.get('basetype')
             if element == property_name:
-                for child in children.iter("PROPERTY"):
+                for child in children.iter('PROPERTY'):
                     msg[child.get('name')] = child.text
         return msg
