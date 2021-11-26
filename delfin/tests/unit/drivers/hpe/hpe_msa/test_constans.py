@@ -296,8 +296,10 @@ error_result = [
         'occur_time': 1636704980000,
         'description': 'ManagementManagement',
         'resource_type': '557',
-        'location': 'An Enclosure Management Processor(EMP)'}
-    ]
+        'location': 'An Enclosure Management Processor(EMP)'
+    }
+]
+
 volume_result = [
     {
         'name': 'Vol0001',
