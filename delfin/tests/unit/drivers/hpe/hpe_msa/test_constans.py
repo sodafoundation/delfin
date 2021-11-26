@@ -267,13 +267,20 @@ LIST_ERROR = """
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <RESPONSE VERSION="L100" REQUEST="show events error">
 <COMP G="0" P="13"/>
-<OBJECT basetype="events" name="event" oid="13" format="packed">
-    <PROPERTY name="time-stamp-numeric">1630305906</PROPERTY>
+ <OBJECT basetype="events" name="event" oid="1" format="packed">
+    <PROPERTY name="time-stamp">2021-11-12 08:16:20</PROPERTY>
+    <PROPERTY name="time-stamp-numeric" >1636704980</PROPERTY>
     <PROPERTY name="event-code">557</PROPERTY>
-    <PROPERTY name="event-id">A35</PROPERTY>
+    <PROPERTY name="event-id" >A891</PROPERTY>
+    <PROPERTY name="model">MSA 2040 SAN</PROPERTY>
     <PROPERTY name="serial-number">00C0FF26C236</PROPERTY>
-    <PROPERTY name="severity" >ERROR</PROPERTY>
-    <PROPERTY name="message"  >ERROE_INFOMATION</PROPERTY>
+    <PROPERTY name="controller" >A</PROPERTY>
+    <PROPERTY name="controller-numeric">1</PROPERTY>
+    <PROPERTY name="severity">ERROR</PROPERTY>
+    <PROPERTY name="severity-numeric">2</PROPERTY>
+    <PROPERTY name="message" >An Enclosure Management Processor(EMP)</PROPERTY>
+     <PROPERTY name="additional-information">Management</PROPERTY>
+     <PROPERTY name="recommended-action">Management</PROPERTY>
   </OBJECT>
 </RESPONSE>
 """
@@ -287,25 +294,10 @@ error_result = [
         'type': 'EquipmentAlarm',
         'sequence_number': '557',
         'occur_time': 1636704980000,
-        'description': 'A hardware failure has been detected in a '
-                       'current sensor in the indicated enclosure.- Check that'
-                       ' all modules in the enclosure are fully seated in their'
-                       ' slots and that their latches are locked.  '
-                       '- If this does not resolve the issue, '
-                       'the indicated FRU has probably failed and should be '
-                       'replaced. The failed FRU will probably have an amber'
-                       ' LED lit.    When the problem is resolved,'
-                       ' an event with the same code will be logged with '
-                       'Resolved severity.',
+        'description': 'ManagementManagement',
         'resource_type': '557',
-        'location': 'An Enclosure Management Processor (EMP) reported an  '
-                    'alert condition on a current sensor. Type: fault. '
-                    '(enclosure: 1, WWN: 500C0FF026DCB03C) current sensor for '
-                    'Current 5V Loc: left-PSU, '
-                    'sensor status: N/A, current: 1.67 A'
-    }
-]
-
+        'location': 'An Enclosure Management Processor(EMP)'}
+    ]
 volume_result = [
     {
         'name': 'Vol0001',
