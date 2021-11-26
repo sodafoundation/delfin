@@ -280,19 +280,31 @@ LIST_ERROR = """
 
 error_result = [
     {
-        'alert_id': 'A35',
-        'alert_name': 'ERROE_INFOMATION',
+        'alert_id': 'A891',
+        'alert_name': '557',
         'severity': 'ERROR',
         'category': 'Fault',
         'type': 'EquipmentAlarm',
         'sequence_number': '557',
-        'occur_time': 1630305906000,
-        'description': 'ERROE_INFOMATION',
+        'occur_time': 1636704980000,
+        'description': 'A hardware failure has been detected in a '
+                       'current sensor in the indicated enclosure.- Check that'
+                       ' all modules in the enclosure are fully seated in their'
+                       ' slots and that their latches are locked.  '
+                       '- If this does not resolve the issue, '
+                       'the indicated FRU has probably failed and should be '
+                       'replaced. The failed FRU will probably have an amber'
+                       ' LED lit.    When the problem is resolved,'
+                       ' an event with the same code will be logged with '
+                       'Resolved severity.',
         'resource_type': '557',
-        'location': '00C0FF26C236'
+        'location': 'An Enclosure Management Processor (EMP) reported an  '
+                    'alert condition on a current sensor. Type: fault. '
+                    '(enclosure: 1, WWN: 500C0FF026DCB03C) current sensor for '
+                    'Current 5V Loc: left-PSU, '
+                    'sensor status: N/A, current: 1.67 A'
     }
 ]
-
 
 volume_result = [
     {
