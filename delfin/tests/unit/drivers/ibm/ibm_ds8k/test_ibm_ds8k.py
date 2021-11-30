@@ -205,6 +205,19 @@ GET_ALL_PORTS = {
         ]
     }
 }
+GET_ALL_CONTROLLERS = {
+    'data': {
+        'nodes': [
+            {
+                'id': '00',
+                'state': 'online'
+            }, {
+                'id': '01',
+                'state': 'online'
+            }
+        ]
+    }
+}
 TOKEN_RESULT = {
     "server": {
         "status": "ok",
@@ -306,7 +319,19 @@ port_result = [
         'wwn': '50:05:07:63:04:40:57:EF'
     }
 ]
-
+contrl_result = [
+    {
+        'name': '00',
+        'storage_id': '12345',
+        'native_controller_id': '00',
+        'status': 'normal'
+    }, {
+        'name': '01',
+        'storage_id': '12345',
+        'native_controller_id': '01',
+        'status': 'normal'
+    }
+]
 
 trap_result = {
     'alert_id': 'ddddddd',
@@ -369,3 +394,10 @@ class TestDS8KDriver(TestCase):
         mock_port.return_value = GET_ALL_PORTS
         port = DS8KDriver(**ACCESS_INFO).list_ports(context)
         self.assertEqual(port, port_result)
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_list_list_controllers(self, mock_contrl):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_contrl.return_value = GET_ALL_CONTROLLERS
+        controller = DS8KDriver(**ACCESS_INFO).list_controllers(context)
+        self.assertEqual(controller, contrl_result)
