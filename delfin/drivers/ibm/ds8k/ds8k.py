@@ -218,6 +218,24 @@ class DS8KDriver(driver.StorageDriver):
                 port_list.append(port_result)
         return port_list
 
+    def list_controllers(self, context):
+        controller_list = []
+        controller_info = self.rest_handler.get_rest_info('/api/v1/nodes')
+        if controller_info:
+            contrl_data = controller_info.get('data', {}).get('nodes', [])
+            for contrl in contrl_data:
+                status = constants.ControllerStatus.NORMAL if \
+                    contrl.get('state') == 'online' else \
+                    constants.ControllerStatus.DEGRADED
+                controller_result = {
+                    'name': contrl.get('id'),
+                    'storage_id': self.storage_id,
+                    'native_controller_id': contrl.get('id'),
+                    'status': status
+                }
+                controller_list.append(controller_result)
+        return controller_list
+
     def add_trap_config(self, context, trap_config):
         pass
 
