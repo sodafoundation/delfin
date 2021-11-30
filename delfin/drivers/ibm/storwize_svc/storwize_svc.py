@@ -60,3 +60,13 @@ class StorwizeSVCDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         return self.ssh_hanlder.fix_alert(alert)
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time,
+                             end_time):
+        return self.ssh_hanlder.collect_perf_metrics(
+            storage_id, resource_metrics, start_time, end_time)

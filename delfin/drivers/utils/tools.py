@@ -13,6 +13,15 @@
 # limitations under the License.
 import time
 
+import six
+
+from delfin import exception
+
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
 from oslo_log import log as logging
 from oslo_utils import units
 
@@ -95,3 +104,15 @@ class Tools(object):
         if value_map != {}:
             map_list.append(value_map)
         return map_list
+
+    @staticmethod
+    def get_remote_file_to_string(ssh, file):
+        try:
+            sftp_client = ssh.open_sftp()
+            with sftp_client.open(file) as remote_file:
+                root_node = ET.fromstring(remote_file.read())
+                return root_node
+        except Exception as e:
+            err_msg = "Failed to open file with ssh: %s" % \
+                      (six.text_type(e))
+            raise exception.SSHException(err_msg)
