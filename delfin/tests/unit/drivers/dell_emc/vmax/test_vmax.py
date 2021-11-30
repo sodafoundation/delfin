@@ -569,6 +569,81 @@ class TestVMAXStorageDriver(TestCase):
         self.assertIn('Exception from Storage Backend:',
                       str(exc.exception))
 
+    @mock.patch.object(VMaxRest, 'get_disk')
+    @mock.patch.object(VMaxRest, 'get_disk_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_disks(self, mock_unisphere_version,
+                        mock_version, mock_array,
+                        mock_disks, mock_disk):
+        expected = \
+            [
+                {
+                    'name': 'disk_1',
+                    'storage_id': '12345',
+                    'native_disk_id': '1',
+                    'manufacturer': 'HGST',
+                    'capacity': 1073741824000
+                },
+                {
+                    'name': 'disk_2',
+                    'storage_id': '12345',
+                    'native_disk_id': '2',
+                    'manufacturer': 'WD',
+                    'capacity': 2147483648000
+                }
+            ]
+        disks = {
+            'spindle_id': '1000',
+            'type': 'HGOMAHA_1',
+            'vendor': 'HGST',
+            'capacity': 1000.0
+        }
+        disk1 = {
+            'spindle_id': '1001',
+            'type': 'HGOMAHA_2',
+            'vendor': 'WD',
+            'capacity': 2000.0
+        }
+        disk2 = {
+            'spindle_id': '1002',
+            'type': 'HGOMAHA_3',
+            'vendor': 'SUN',
+            'capacity': 3000.0
+        }
+
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.2.2.7', '92']
+        mock_unisphere_version.return_value = ['V9.2.2.7', '92']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_disks.side_effect = [['1', '2', '3']]
+        mock_disk.side_effect = [disks, disk1, disk2]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_disks(context)
+        print("return", ret)
+        self.assertDictEqual(ret[0], expected[0])
+        self.assertDictEqual(ret[1], expected[1])
+
+        mock_disks.side_effect = [['disk_1']]
+        mock_disk.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_disks(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        mock_disks.side_effect = [exception.StorageBackendException]
+        mock_disk.side_effect = [disks]
+        with self.assertRaises(Exception) as exc:
+            driver.list_disks(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
     @mock.patch.object(Session, 'request')
     @mock.patch.object(VMaxRest, 'get_array_detail')
     @mock.patch.object(VMaxRest, 'get_uni_version')

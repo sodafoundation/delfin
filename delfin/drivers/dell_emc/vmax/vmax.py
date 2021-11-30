@@ -81,7 +81,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         return self.client.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        raise NotImplementedError
+        return self.client.list_disks(self.storage_id)
 
     def add_trap_config(self, context, trap_config):
         pass

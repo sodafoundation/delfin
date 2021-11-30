@@ -401,6 +401,32 @@ class VMAXClient(object):
 
             return port_list
 
+    def list_disks(self, storage_id):
+        if int(self.uni_version) < 91:
+            return []
+        try:
+            # Get list of Disks
+            disks = self.rest.get_disk_list(self.array_id,
+                                            self.uni_version)
+            disk_list = []
+            for disk in disks:
+                disk_info = self.rest.get_disk(
+                    self.array_id, self.uni_version, disk)
+
+                disk_item = {
+                    'name': 'disk_' + disk,
+                    'storage_id': storage_id,
+                    'native_disk_id': disk,
+                    'manufacturer': disk_info['vendor'],
+                    'capacity': int(disk_info['capacity']) * units.Gi,
+                }
+                disk_list.append(disk_item)
+            return disk_list
+
+        except Exception:
+            LOG.error("Failed to get disk details from VMAX")
+            raise
+
     def list_alerts(self, query_para):
         """Get all alerts from an array."""
         return self.rest.get_alerts(query_para, version=self.uni_version,
