@@ -1092,7 +1092,7 @@ class VMaxRest(object):
                 if metrics_res:
                     label = {
                         'resource_id': key_dict.get('portId'),
-                        'resource_name': 'BEPort_' +
+                        'resource_name': 'RDFPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
                         'resource_type': delfin_const.ResourceType.PORT,
@@ -1118,6 +1118,42 @@ class VMaxRest(object):
         rdf_metrics = self.get_rdfport_metrics(
             array, metrics, start_time, end_time)
         return be_metrics, fe_metrics, rdf_metrics
+
+    def get_disk_metrics(self, array, metrics, start_time, end_time):
+        """Get a disk performance metrics from VMAX unipshere REST API.
+        :param array: the array serial number
+        :param metrics: required metrics
+        :param start_time: start time for collection
+        :param end_time: end time for collection
+        :returns: message -- response from unipshere REST API
+         """
+        disk_metrics = []
+        for k in metrics.keys():
+            vmax_key = constants.DISK_METRICS.get(k)
+            if vmax_key:
+                disk_metrics.append(vmax_key)
+
+        keys = self.get_resource_keys(array, 'Disk')
+        keys_dict = None
+        if keys:
+            keys_dict = keys.get('diskInfo', None)
+
+        metrics_list = []
+        for key_dict in keys_dict:
+            payload = {'diskId': key_dict.get('diskId')}
+            metrics_res = self.get_resource_metrics(
+                array, start_time, end_time, 'Disk',
+                disk_metrics, payload=payload)
+            if metrics_res:
+                label = {
+                    'resource_id': key_dict.get('diskId'),
+                    'resource_name': 'Disk_' + key_dict.get('diskId'),
+                    'resource_type': delfin_const.ResourceType.DISK,
+                    'metrics': metrics_res
+                }
+                metrics_list.append(label)
+
+        return metrics_list
 
     def list_pagination(self, list_info):
         """Process lists under or over the maxPageSize
