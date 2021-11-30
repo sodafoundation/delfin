@@ -351,7 +351,7 @@ class TestVMAXStorageDriver(TestCase):
                 'name': 'DF-1C',
                 'storage_id': '12345',
                 'native_controller_id': 'DF-1C',
-                'status': 'offline',
+                'status': 'normal',
                 'location': 'slot_10',
                 'soft_version': None,
                 'cpu_info': 'Cores-64',
@@ -614,8 +614,8 @@ class TestVMAXStorageDriver(TestCase):
         self.assertIsInstance(capabilities, dict)
         self.assertEqual(capabilities['is_historic'], True)
         self.assertIsInstance(capabilities['resource_metrics'], dict)
-        # Support storage, storage_pool, controller and port metrics
-        self.assertEqual(len(capabilities['resource_metrics']), 4)
+        # Support storage, storage_pool, controller, port & disk metrics
+        self.assertEqual(len(capabilities['resource_metrics']), 5)
 
     @mock.patch.object(VMaxRest, 'get_resource_metrics')
     @mock.patch.object(VMaxRest, 'get_resource_keys')

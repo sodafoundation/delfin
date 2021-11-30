@@ -976,7 +976,7 @@ class VMaxRest(object):
          """
         feport_metrics = []
         for k in metrics.keys():
-            vmax_key = constants.RDFDIRECTOR_METRICS.get(k)
+            vmax_key = constants.FEPORT_METRICS.get(k)
             if vmax_key:
                 feport_metrics.append(vmax_key)
 

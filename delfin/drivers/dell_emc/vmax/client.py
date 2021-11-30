@@ -296,7 +296,7 @@ class VMAXClient(object):
                     self.array_id, self.uni_version, director)
 
                 status = constants.ControllerStatus.NORMAL
-                if "OFF" in director_info.get('availability', '').upper() != 'ONLINE':
+                if "OFF" in director_info.get('availability', '').upper():
                     status = constants.ControllerStatus.OFFLINE
 
                 controller = {
@@ -496,7 +496,10 @@ class VMAXClient(object):
             raise
 
     def get_disk_metrics(self, storage_id, metrics, start_time, end_time):
-        """Get performance metrics."""
+        """Get disk performance metrics."""
+        if int(self.uni_version) < 91:
+            return []
+
         try:
             perf_list = self.rest.get_disk_metrics(
                 self.array_id, metrics, start_time, end_time)
