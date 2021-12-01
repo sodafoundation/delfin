@@ -55,22 +55,19 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_STORAGE_URL)
         total_capacity = None
         used_capacity = None
-        raw_capacity = None
         if storages:
             for storage in storages:
                 used_capacity = int(storage.get('total',
                                                 consts.DEFAULT_CAPACITY))
-                raw_capacity = int(storage.get('capacity',
-                                               consts.DEFAULT_CAPACITY))
-                shared_space = int(storage.get('shared_space',
-                                               consts.DEFAULT_CAPACITY))
-                system = int(storage.get('system', consts.DEFAULT_CAPACITY))
-                snapshots = int(storage.get('snapshots',
-                                            consts.DEFAULT_CAPACITY))
-                total_capacity =\
-                    raw_capacity - shared_space - system - snapshots
+                total_capacity = int(storage.get('capacity',
+                                                 consts.DEFAULT_CAPACITY))
                 break
-
+        raw_capacity = consts.DEFAULT_CAPACITY
+        disks = self.rest_handler.rest_call(self.rest_handler.REST_DISK_URL)
+        if disks:
+            for disk in disks:
+                raw_capacity = raw_capacity + int(disk.get(
+                    'capacity', consts.DEFAULT_CAPACITY))
         arrays = self.rest_handler.rest_call(self.rest_handler.REST_ARRAY_URL)
         storage_name = None
         serial_number = None
@@ -79,7 +76,6 @@ class PureFlashArrayDriver(driver.StorageDriver):
             storage_name = arrays.get('array_name')
             serial_number = arrays.get('id')
             version = arrays.get('version')
-
         model = None
         status = constants.StorageStatus.NORMAL
         controllers = self.rest_handler.rest_call(

@@ -51,6 +51,9 @@ NORMAL_CONTROLLER_STATUS = 'ready'
 # disk type
 DISK_TYPE_NVRAM = 'NVRAM'
 
+# The account password is incorrect during login.
+LOGIN_PASSWORD_ERR = 'invalid credentials'
+
 # list_port: Add ":" to the WWN every 2 sequences.
 SPLICE_WWN_SERIAL = 2
 SPLICE_WWN_COLON = ':'
