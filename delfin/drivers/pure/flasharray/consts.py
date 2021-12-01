@@ -48,6 +48,9 @@ CONTROLLER_PRIMARY = 'primary'
 # Normal value of the controller status
 NORMAL_CONTROLLER_STATUS = 'ready'
 
+# disk type
+DISK_TYPE_NVRAM = 'NVRAM'
+
 # list_port: Add ":" to the WWN every 2 sequences.
 SPLICE_WWN_SERIAL = 2
 SPLICE_WWN_COLON = ':'

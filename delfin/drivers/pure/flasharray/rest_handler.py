@@ -38,7 +38,7 @@ class RestHandler(RestClient):
                 LOG.error("Login error, Obtaining the token is abnormal. "
                           "status_code:%s, URL: %s",
                           token_res.status_code, RestHandler.REST_AUTH_URL)
-                raise exception.StorageBackendException(
+                raise exception.InvalidUsernameOrPassword(
                     'Obtaining the token is abnormal')
             session_res = self.do_call(RestHandler.REST_SESSION_URL,
                                        token_res.json(), method='POST')
