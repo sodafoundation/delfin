@@ -122,8 +122,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
                         LOG.error(e)
                         msg = (_("Time conversion error"))
                         raise exception.InvalidResults(msg)
-                    if timestamp < start_time or timestamp > end_time or \
-                            timestamp is None:
+                    if timestamp is None or timestamp < start_time or \
+                            timestamp > end_time:
                         continue
                 alerts_model['occur_time'] = timestamp
                 alerts_model['alert_id'] = alert.get('id')
