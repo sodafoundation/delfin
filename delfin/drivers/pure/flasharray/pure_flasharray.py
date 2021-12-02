@@ -116,15 +116,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     if time is not None else None
                 if query_para is not None:
                     try:
-                        start_time = int(query_para.get('start_time'))
-                        end_time = int(query_para.get('end_time'))
+                        if timestamp is None or timestamp\
+                                < int(query_para.get('begin_time')) or\
+                                timestamp > int(query_para.get('end_time')):
+                            continue
                     except Exception as e:
                         LOG.error(e)
-                        msg = (_("Time conversion error"))
-                        raise exception.InvalidResults(msg)
-                    if timestamp is None or timestamp < start_time or \
-                            timestamp > end_time:
-                        continue
                 alerts_model['occur_time'] = timestamp
                 alerts_model['alert_id'] = alert.get('id')
                 alerts_model['severity'] = consts.SEVERITY_MAP.get(
@@ -246,26 +243,60 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
     def list_ports(self, context):
         list_ports = []
-        hardware_dist = self.get_port_hardware()
+        networks = self.get_network()
         ports = self.get_ports()
+        hardware_dict = self.rest_handler.rest_call(
+            self.rest_handler.REST_HARDWARE_URL)
+        if not hardware_dict:
+            return list_ports
+        for hardware in hardware_dict:
+            hardware_result = dict()
+            hardware_name = hardware.get('name')
+            if 'FC' in hardware_name:
+                hardware_result['type'] = constants.PortType.FC
+            elif 'ETH' in hardware_name:
+                hardware_result['type'] = constants.PortType.ETH
+            elif 'SAS' in hardware_name:
+                hardware_result['type'] = constants.PortType.SAS
+            else:
+                continue
+            hardware_result['name'] = hardware_name
+            hardware_result['native_port_id'] = hardware_name
+            hardware_result['storage_id'] = self.storage_id
+            hardware_result['location'] = hardware_name
+            speed = hardware.get('speed')
+            if speed is None:
+                hardware_result['connection_status'] = \
+                    constants.PortConnectionStatus.UNKNOWN
+            elif speed == consts.CONSTANT_ZERO:
+                hardware_result['connection_status'] = \
+                    constants.PortConnectionStatus.DISCONNECTED
+                hardware_result['speed'] = speed
+            else:
+                hardware_result['connection_status'] = \
+                    constants.PortConnectionStatus.CONNECTED
+                hardware_result['speed'] = int(speed)
+            hardware_result['health_status'] = consts.PORT_STATUS_MAP.get(
+                hardware.get('status'), constants.PortHealthStatus.UNKNOWN)
+            port = ports.get(hardware_name)
+            if port:
+                hardware_result['wwn'] = port.get('wwn')
+            network = networks.get(hardware_name)
+            if network:
+                hardware_result['mac_address'] = network.get('mac_address')
+                hardware_result['logical_type'] = network.get('logical_type')
+                hardware_result['ipv4_mask'] = network.get('ipv4_mask')
+                hardware_result['ipv4'] = network.get('ipv4')
+            list_ports.append(hardware_result)
+        return list_ports
+
+    def get_network(self):
+        networks_object = dict()
         networks = self.rest_handler.rest_call(
             self.rest_handler.REST_NETWORK_URL)
         if networks:
             for network in networks:
                 network_dict = dict()
-                network_name = network.get('name').upper()
-                if 'FC' in network_name:
-                    network_dict['type'] = constants.PortType.FC
-                elif 'ETH' in network_name:
-                    network_dict['type'] = constants.PortType.ETH
-                elif 'SAS' in network_name:
-                    network_dict['type'] = constants.PortType.SAS
-                else:
-                    continue
-                network_dict['storage_id'] = self.storage_id
-                network_dict['name'] = network_name
-                network_dict['native_port_id'] = network_name
-                network_dict['location'] = network_name
                 network_dict['mac_address'] = network.get('hwaddr')
                 services_list = network.get('services')
                 if services_list:
@@ -275,48 +306,9 @@ class PureFlashArrayDriver(driver.StorageDriver):
                         break
                 network_dict['ipv4_mask'] = network.get('netmask')
                 network_dict['ipv4'] = network.get('address')
-                port = ports.get(network_name)
-                if port:
-                    network_dict['wwn'] = port.get('wwn')
-                hardware = hardware_dist.get(network_name)
-                if hardware:
-                    network_dict['connection_status'] = hardware.get(
-                        'connection_status')
-                    network_dict['health_status'] = hardware.get(
-                        'health_status')
-                    network_dict['speed'] = hardware.get('speed')
-                list_ports.append(network_dict)
-        return list_ports
-
-    def get_port_hardware(self):
-        hardware_name_dict = dict()
-        hardware_dict = self.rest_handler.rest_call(
-            self.rest_handler.REST_HARDWARE_URL)
-        if hardware_dict:
-            for hardware in hardware_dict:
-                hardware_result = dict()
-                hardware_name = hardware.get('name')
-                hardware_result['name'] = hardware_name
-                speed = hardware.get('speed')
-                if speed is None:
-                    hardware_result['connection_status'] = \
-                        constants.PortConnectionStatus.UNKNOWN
-                    hardware_result['health_status'] = constants.\
-                        PortHealthStatus.UNKNOWN
-                elif speed == consts.CONSTANT_ZERO:
-                    hardware_result['connection_status'] = \
-                        constants.PortConnectionStatus.DISCONNECTED
-                    hardware_result['health_status'] = constants.\
-                        PortHealthStatus.ABNORMAL
-                    hardware_result['speed'] = speed
-                else:
-                    hardware_result['connection_status'] = \
-                        constants.PortConnectionStatus.CONNECTED
-                    hardware_result['health_status'] = constants.\
-                        PortHealthStatus.NORMAL
-                    hardware_result['speed'] = int(speed)
-                hardware_name_dict[hardware_name] = hardware_result
-        return hardware_name_dict
+                network_name = network.get('name').upper()
+                networks_object[network_name] = network_dict
+        return networks_object
 
     def get_ports(self):
         ports_dict = dict()

@@ -33,13 +33,18 @@ class RestHandler(RestClient):
             self.init_http_head()
             token_res = self.do_call(RestHandler.REST_AUTH_URL, data,
                                      method='POST')
-            if token_res.status_code != consts.SUCCESS_STATUS_CODE or not \
-                    token_res.json().get('api_token') or \
-                    token_res.json().get('msg') == consts.LOGIN_PASSWORD_ERR:
+            if token_res.json().get('msg') == consts.LOGIN_PASSWORD_ERR:
                 LOG.error("Login error, Obtaining the token is abnormal. "
                           "status_code:%s, URL: %s",
                           token_res.status_code, RestHandler.REST_AUTH_URL)
                 raise exception.InvalidUsernameOrPassword(
+                    'Obtaining the token is abnormal')
+            if token_res.status_code != consts.SUCCESS_STATUS_CODE or not \
+                    token_res.json().get('api_token'):
+                LOG.error("Login error, Obtaining the token is abnormal. "
+                          "status_code:%s, URL: %s",
+                          token_res.status_code, RestHandler.REST_AUTH_URL)
+                raise exception.StorageBackendException(
                     'Obtaining the token is abnormal')
             session_res = self.do_call(RestHandler.REST_SESSION_URL,
                                        token_res.json(), method='POST')

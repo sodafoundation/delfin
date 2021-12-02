@@ -81,7 +81,9 @@ DISK_STATUS_MAP = {'normal': constants.DiskStatus.NORMAL,
                    'abnormal': constants.DiskStatus.ABNORMAL,
                    'unhealthy': constants.DiskStatus.ABNORMAL,
                    'offline': constants.DiskStatus.OFFLINE}
-
+PORT_STATUS_MAP = {'ok': constants.PortHealthStatus.NORMAL,
+                   'not_installed': constants.PortHealthStatus.ABNORMAL
+                   }
 
 PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
 PARSE_ALERT_STORAGE_NAME = '1.3.6.1.4.1.40482.3.1'
