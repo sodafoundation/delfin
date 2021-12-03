@@ -18,13 +18,6 @@ except ImportError:
 
 LOG = logging.getLogger(__name__)
 
-ssh = {
-        "host": "192.168.3.212",
-        "port": 22,
-        "username": "manage",
-        "password": "manage@Z",
-        "pub_key": "ddddddddddddddddddddddddd"
-    }
 
 class SSHHandler(object):
 
@@ -449,8 +442,6 @@ class SSHHandler(object):
                 if desc_arr:
                     alert_id = SSHHandler.split_by_char_and_number(
                         desc_arr[0], ":", 1)
-                    if len(desc_arr) > 2:
-                        description = desc_arr[1]
             alert_model['alert_id'] = str(alert_id)
             alert_model['alert_name'] = event_type
             alert_model['severity'] = severity
