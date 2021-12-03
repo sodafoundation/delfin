@@ -70,11 +70,11 @@ CATEGORY_MAP = {'fault': constants.Category.FAULT,
                 'recovery': constants.Category.RECOVERY,
                 'notSpecified': constants.Category.NOT_SPECIFIED}
 CONTROLLER_STATUS_MAP = {'normal': constants.ControllerStatus.NORMAL,
-                         'ready': constants.ControllerStatus.NORMAL,
+                         'ok': constants.ControllerStatus.NORMAL,
                          'offline': constants.ControllerStatus.OFFLINE,
+                         'not_installed': constants.ControllerStatus.OFFLINE,
                          'fault': constants.ControllerStatus.FAULT,
                          'degraded': constants.ControllerStatus.DEGRADED,
-                         'unknown': constants.ControllerStatus.UNKNOWN,
                          'unready': constants.ControllerStatus.UNKNOWN}
 DISK_STATUS_MAP = {'normal': constants.DiskStatus.NORMAL,
                    'healthy': constants.DiskStatus.NORMAL,

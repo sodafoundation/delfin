@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import time
 
 from oslo_log import log
 
@@ -63,11 +64,10 @@ class PureFlashArrayDriver(driver.StorageDriver):
                                                  consts.DEFAULT_CAPACITY))
                 break
         raw_capacity = consts.DEFAULT_CAPACITY
-        disks = self.rest_handler.rest_call(self.rest_handler.REST_DISK_URL)
+        disks = self.list_disks(context)
         if disks:
             for disk in disks:
-                raw_capacity = raw_capacity + int(disk.get(
-                    'capacity', consts.DEFAULT_CAPACITY))
+                raw_capacity = raw_capacity + disk.get('capacity')
         arrays = self.rest_handler.rest_call(self.rest_handler.REST_ARRAY_URL)
         storage_name = None
         serial_number = None
@@ -84,8 +84,9 @@ class PureFlashArrayDriver(driver.StorageDriver):
             for controller in controllers:
                 if controller.get('mode') == consts.CONTROLLER_PRIMARY:
                     model = controller.get('model')
-                if controller.get('status') != consts.NORMAL_CONTROLLER_STATUS:
-                    status = constants.StorageStatus.ABNORMAL
+                    if controller.get('status') != \
+                            consts.NORMAL_CONTROLLER_STATUS:
+                        status = constants.StorageStatus.ABNORMAL
         if not all((storages, arrays, controllers)):
             LOG.error('get_storage error, Unable to obtain data.')
             raise exception.StorageBackendException('Unable to obtain data')
@@ -109,15 +110,18 @@ class PureFlashArrayDriver(driver.StorageDriver):
         if alerts:
             for alert in alerts:
                 alerts_model = dict()
-                time = alert.get('opened')
-                timestamp = int(datetime.datetime.strptime(
-                    time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
-                    * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION)\
-                    if time is not None else None
+                opened = alert.get('opened')
+                time_difference = time.mktime(
+                    time.localtime()) - time.mktime(time.gmtime())
+                timestamp = (int(datetime.datetime.strptime(
+                    opened, '%Y-%m-%dT%H:%M:%SZ').timestamp() +
+                                time_difference)
+                                * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
+                    if opened is not None else None
                 if query_para is not None:
                     try:
-                        if timestamp is None or timestamp\
-                                < int(query_para.get('begin_time')) or\
+                        if timestamp is None or timestamp \
+                                < int(query_para.get('begin_time')) or \
                                 timestamp > int(query_para.get('end_time')):
                             continue
                     except Exception as e:
@@ -136,7 +140,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 alerts_model['alert_name'] = event
                 alerts_model['match_key'] = hashlib.md5(str(alert.get('id')).
                                                         encode()).hexdigest()
-                alerts_model['description'] = '({}:{}): {}'.\
+                alerts_model['description'] = '({}:{}): {}'. \
                     format(alert.get('component_type'), component_name, event)
                 alerts_list.append(alerts_model)
         return alerts_list
@@ -175,14 +179,17 @@ class PureFlashArrayDriver(driver.StorageDriver):
         list_controllers = []
         controllers = self.rest_handler.rest_call(
             self.rest_handler.REST_CONTROLLERS_URL)
+        hardware = self.get_hardware()
         if controllers:
             for controller in controllers:
                 controllers_dict = dict()
                 controller_name = controller.get('name')
                 controllers_dict['name'] = controller_name
-                controllers_dict['status'] = consts.CONTROLLER_STATUS_MAP. \
-                    get(controller.get('status'),
-                        constants.ControllerStatus.UNKNOWN)
+                controllers_dict['status'] = hardware.get(
+                    controller_name, {}).get('status')
+                controllers_dict['status'] = consts.CONTROLLER_STATUS_MAP.get(
+                    hardware.get(controller_name, {}).get('status'),
+                    constants.ControllerStatus.UNKNOWN)
                 controllers_dict['soft_version'] = controller.get('version')
                 controllers_dict['storage_id'] = self.storage_id
                 controllers_dict['id'] = controller_name
@@ -198,7 +205,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
         if disks:
             for disk in disks:
                 disk_type = disk.get('type')
-                if disk_type == consts.DISK_TYPE_NVRAM:
+                if disk_type == consts.DISK_TYPE_NVRAM or disk_type is None:
                     continue
                 disk_dict = dict()
                 drive_name = disk.get('name')
@@ -237,6 +244,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 hardware_map['speed'] = hardware_value.get('speed')
                 hardware_map['serial_number'] = hardware_value.get('serial')
                 hardware_map['model'] = hardware_value.get('model')
+                hardware_map['status'] = hardware_value.get('status')
                 hardware_dict[hardware_value.get('name')] = hardware_map
         return hardware_dict
 
