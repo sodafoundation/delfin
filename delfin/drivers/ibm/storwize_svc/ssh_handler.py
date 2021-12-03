@@ -12,7 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import re
 import time
+from itertools import islice
 
 import paramiko
 import six
@@ -21,7 +23,9 @@ from oslo_utils import units
 
 from delfin import exception, utils
 from delfin.common import constants, alert_util
+from delfin.drivers.ibm.storwize_svc import consts
 from delfin.drivers.utils.ssh_client import SSHPool
+from delfin.drivers.utils.tools import Tools
 
 LOG = logging.getLogger(__name__)
 
@@ -49,9 +53,49 @@ class SSHHandler(object):
         'fc': constants.DiskPhysicalType.FC,
         'sas_direct': constants.DiskPhysicalType.SAS
     }
-
+    VOLUME_PERF_METRICS = {
+        'readIops': 'ro',
+        'writeIops': 'wo',
+        'readThroughput': 'rb',
+        'writeThroughput': 'wb',
+        'readIoSize': 'rb',
+        'writeIoSize': 'wb',
+        'responseTime': 'res_time',
+        'throughput': 'tb',
+        'iops': 'to',
+        'ioSize': 'tb'
+    }
+    DISK_PERF_METRICS = {
+        'readIops': 'ro',
+        'writeIops': 'wo',
+        'readThroughput': 'rb',
+        'writeThroughput': 'wb',
+        'responseTime': 'res_time',
+        'throughput': 'tb',
+        'iops': 'to'
+    }
+    PORT_PERF_METRICS = {
+        'readIops': 'ro',
+        'writeIops': 'wo',
+        'readThroughput': 'rb',
+        'writeThroughput': 'wb',
+        'throughput': 'tb',
+        'iops': 'to'
+    }
+    TARGET_RESOURCE_RELATION = {
+        constants.ResourceType.DISK: 'mdsk',
+        constants.ResourceType.VOLUME: 'vdsk',
+        constants.ResourceType.PORT: 'port'
+    }
+    RESOURCE_PERF_MAP = {
+        constants.ResourceType.DISK: DISK_PERF_METRICS,
+        constants.ResourceType.VOLUME: VOLUME_PERF_METRICS,
+        constants.ResourceType.PORT: PORT_PERF_METRICS
+    }
     SECONDS_TO_MS = 1000
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
+    BLOCK_SIZE = 512
+    BYTES_TO_BIT = 8
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -110,7 +154,7 @@ class SSHHandler(object):
     def login(self):
         try:
             with self.ssh_pool.item() as ssh:
-                result = SSHHandler.do_exec('lssystem', ssh)
+                result = SSHHandler.do_exec('ls', ssh)
                 if 'is not a recognized command' in result:
                     raise exception.InvalidIpOrPort()
         except Exception as e:
@@ -502,7 +546,8 @@ class SSHHandler(object):
                                   port_map.get('id'))
             speed = None
             if port_map.get('port_speed')[:-2].isdigit():
-                speed = int(self.parse_string(port_map.get('port_speed')))
+                speed = int(self.handle_port_bps(
+                    port_map.get('port_speed'), 'fc'))
             port_result = {
                 'name': port_map.get('id'),
                 'storage_id': storage_id,
@@ -511,7 +556,7 @@ class SSHHandler(object):
                 'connection_status': conn_status,
                 'health_status': status,
                 'type': port_type,
-                'max_speed': speed,
+                'speed': speed,
                 'native_parent_id': port_map.get('node_name'),
                 'wwn': port_map.get('WWPN')
             }
@@ -559,7 +604,8 @@ class SSHHandler(object):
                     'connection_status': conn_status,
                     'health_status': status,
                     'type': port_type,
-                    'max_speed': int(self.handle_port_bps(port.get('speed'))),
+                    'speed': int(self.handle_port_bps(
+                        port.get('speed'), 'eth')),
                     'native_parent_id': port.get('node_name'),
                     'mac_address': port.get('MAC'),
                     'ipv4': port.get('IP_address'),
@@ -569,15 +615,35 @@ class SSHHandler(object):
                 port_list.append(port_result)
         return port_list
 
-    def handle_port_bps(self, value):
+    @staticmethod
+    def change_speed_to_bytes(unit):
+        unit = unit.upper()
+        if unit == 'TB':
+            result = units.T
+        elif unit == 'GB':
+            result = units.G
+        elif unit == 'MB':
+            result = units.M
+        elif unit == 'KB':
+            result = units.k
+        else:
+            result = 1
+        return int(result)
+
+    def handle_port_bps(self, value, port_type):
         speed = 0
         if value:
             if value.isdigit():
                 speed = float(value)
             else:
-                unit = value[-4:-2]
-                speed = float(value[:-4]) * int(
-                    self.change_capacity_to_bytes(unit))
+                if port_type == 'fc':
+                    unit = value[-2:]
+                    speed = float(value[:-2]) * int(
+                        self.change_speed_to_bytes(unit))
+                else:
+                    unit = value[-4:-2]
+                    speed = float(value[:-4]) * int(
+                        self.change_speed_to_bytes(unit))
         return speed
 
     def list_ports(self, storage_id):
@@ -590,3 +656,236 @@ class SSHHandler(object):
             err_msg = "Failed to get ports attributes from Storwize: %s" % \
                       (six.text_type(err))
             raise exception.InvalidResults(err_msg)
+
+    @staticmethod
+    def handle_stats_filename(file_name, file_map, start_time, end_time):
+        name_arr = file_name.split('_')
+        file_type = '%s_%s_%s' % (name_arr[0], name_arr[1], name_arr[2])
+        file_time = '20%s%s' % (name_arr[3], name_arr[4])
+        time_pattern = '%Y%m%d%H%M%S'
+        tools = Tools()
+        occur_time = tools.time_str_to_timestamp(file_time, time_pattern)
+        if occur_time > end_time or occur_time < start_time:
+            return
+        if file_map.get(file_type):
+            file_map[file_type][occur_time] = file_name
+        else:
+            file_map[file_type] = {occur_time: file_name}
+
+    def get_stats_filelist(self, start_time, end_time, file_map):
+        stats_file_command = 'lsdumps -prefix /dumps/iostats'
+        file_list = self.exec_ssh_command(stats_file_command)
+        file_line = file_list.split('\n')
+        for file in islice(file_line, 1, None):
+            if file:
+                file_arr = ' '.join(file.split()).split(' ')
+                if len(file_arr) > 1:
+                    file_name = file_arr[1]
+                    SSHHandler.handle_stats_filename(
+                        file_name, file_map, start_time, end_time)
+        for file_stats in file_map:
+            file_map[file_stats] = sorted(file_map.get(file_stats).items(),
+                                          key=lambda x: x[0], reverse=False)
+
+    def packege_data(self, storage_id, resource_type, metrics, metric_map):
+        resource_id = None
+        resource_name = None
+        unit = None
+        for resource_info in metric_map:
+            if resource_type == constants.ResourceType.PORT:
+                port_info = self.get_fc_port(storage_id)
+                if port_info:
+                    for fc_port in port_info:
+                        if resource_info == fc_port.get('wwn'):
+                            resource_id = fc_port.get('native_port_id')
+                            resource_name = fc_port.get('name')
+                            break
+            else:
+                resource_arr = resource_info.split('_')
+                resource_id = resource_arr[0]
+                resource_name = resource_arr[1]
+            for target in metric_map.get(resource_info):
+                if resource_type == constants.ResourceType.PORT:
+                    unit = consts.PORT_CAP[target]['unit']
+                elif resource_type == constants.ResourceType.VOLUME:
+                    unit = consts.VOLUME_CAP[target]['unit']
+                elif resource_type == constants.ResourceType.DISK:
+                    unit = consts.DISK_CAP[target]['unit']
+                labels = {
+                    'storage_id': storage_id,
+                    'resource_type': resource_type,
+                    'resource_id': resource_id,
+                    'resource_name': resource_name,
+                    'type': 'RAW',
+                    'unit': unit
+                }
+                metric_value = constants.metric_struct(name=target,
+                                                       labels=labels,
+                                                       values=metric_map.get(
+                                                           resource_info).get(
+                                                           target))
+                metrics.append(metric_value)
+
+    @staticmethod
+    def count_metric_data(last_data, now_data, interval, target, metric_type,
+                          metric_map, res_id):
+        if not target:
+            return
+        if last_data.get(target) > now_data.get(target):
+            value = now_data.get(target)
+        else:
+            value = now_data.get(target) - last_data.get(target)
+        if 'THROUGHPUT' in metric_type.upper():
+            value = value / interval / units.M
+        elif 'IOSIZE' in metric_type.upper():
+            value = value / units.k
+        elif 'IOPS' in metric_type.upper():
+            value = value / interval
+        value = round(value, 2)
+        if metric_map.get(res_id):
+            if metric_map.get(res_id).get(metric_type):
+                metric_map[res_id][metric_type][now_data.get('time')] = value
+            else:
+                metric_map[res_id][metric_type] = {now_data.get('time'): value}
+        else:
+            metric_map[res_id] = {metric_type: {now_data.get('time'): value}}
+
+    def get_stats_from_file(self, file_list, metric_map, target_list,
+                            resource_type):
+        if not file_list:
+            return
+        last_data = {}
+        for file in file_list:
+            with self.ssh_pool.item() as ssh:
+                file_xml = Tools.get_remote_file_to_xml(
+                    ssh, file[1], consts.LOCAL_FILE_PATH,
+                    consts.REMOTE_FILE_PATH)
+                for data in file_xml:
+                    if re.sub(u"\\{.*?}", "", data.tag) == \
+                            SSHHandler.TARGET_RESOURCE_RELATION.get(
+                                resource_type):
+                        if resource_type == constants.ResourceType.PORT:
+                            resource_info = data.attrib.get('fc_wwpn')
+                        else:
+                            resource_info = '%s_%s' % (data.attrib.get('idx'),
+                                                       data.attrib.get('id'))
+                        now_data = SSHHandler.package_xml_data(data.attrib,
+                                                               file[0],
+                                                               resource_type)
+                        if last_data.get(resource_info):
+                            interval = (int(file[0]) - last_data.get(
+                                resource_info).get('time')) / units.k
+                            if interval <= 0:
+                                break
+                            for target in target_list:
+                                device_target = SSHHandler.\
+                                    RESOURCE_PERF_MAP.get(resource_type)
+                                SSHHandler.count_metric_data(
+                                    last_data.get(resource_info),
+                                    now_data, interval,
+                                    device_target.get(target),
+                                    target, metric_map, resource_info)
+                            last_data[resource_info] = now_data
+                        else:
+                            last_data[resource_info] = now_data
+
+    @staticmethod
+    def package_xml_data(file_data, file_time, resource_type):
+        now_data = {}
+        if resource_type == constants.ResourceType.PORT:
+            rb = int(file_data.get('cbr')) + int(file_data.get('hbr')) + int(
+                file_data.get('lnbr')) + int(
+                file_data.get('rmbr')) * SSHHandler.BYTES_TO_BIT
+            wb = int(file_data.get('cbt')) + int(file_data.get('hbt')) + int(
+                file_data.get('lnbt')) + int(
+                file_data.get('rmbt')) * SSHHandler.BYTES_TO_BIT
+            ro = int(file_data.get('cer')) + int(file_data.get('her')) + int(
+                file_data.get('lner')) + int(file_data.get('rmer'))
+            wo = int(file_data.get('cet')) + int(file_data.get('het')) + int(
+                file_data.get('lnet')) + int(file_data.get('rmet'))
+            now_data = {
+                'rb': rb,
+                'wb': wb,
+                'ro': ro,
+                'wo': wo,
+                'tb': rb + wb,
+                'to': ro + wo,
+                'time': int(file_time)
+            }
+        elif resource_type == constants.ResourceType.VOLUME:
+            now_data = {
+                'rb': int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE,
+                'wb': int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE,
+                'ro': int(file_data.get('ro')),
+                'wo': int(file_data.get('wo')),
+                'tb': int(file_data.get('rb')) + int(file_data.get('wb')),
+                'to': int(file_data.get('ro')) + int(file_data.get('wo')),
+                'res_time': int(file_data.get('xl')),
+                'time': int(file_time)
+            }
+        elif resource_type == constants.ResourceType.DISK:
+            now_data = {
+                'rb': int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE,
+                'wb': int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE,
+                'ro': int(file_data.get('ro')),
+                'wo': int(file_data.get('wo')),
+                'tb': int(file_data.get('rb')) + int(file_data.get('wb')),
+                'to': int(file_data.get('ro')) + int(file_data.get('wo')),
+                'res_time':
+                    int(file_data.get('re')) + int(file_data.get('we')),
+                'time': int(file_time)
+            }
+        return now_data
+
+    def get_stats_file_data(self, file_map, res_type, metrics, storage_id,
+                            target_list):
+        for file_tye in file_map:
+            metric_map = {}
+            file_list = file_map.get(file_tye)
+            if 'Nv' in file_tye and res_type == constants.ResourceType.VOLUME:
+                self.get_stats_from_file(file_list, metric_map, target_list,
+                                         constants.ResourceType.VOLUME)
+                self.packege_data(storage_id, res_type, metrics, metric_map)
+            elif 'Nm' in file_tye and res_type == constants.ResourceType.DISK:
+                self.get_stats_from_file(file_list, metric_map, target_list,
+                                         constants.ResourceType.DISK)
+                self.packege_data(storage_id, res_type, metrics, metric_map)
+            elif 'Nn' in file_tye and res_type == constants.ResourceType.PORT:
+                self.get_stats_from_file(file_list, metric_map, target_list,
+                                         constants.ResourceType.PORT)
+                self.packege_data(storage_id, res_type, metrics, metric_map)
+
+    def collect_perf_metrics(self, storage_id, resource_metrics,
+                             start_time, end_time):
+        metrics = []
+        file_map = {}
+        try:
+            self.get_stats_filelist(start_time, end_time, file_map)
+            if resource_metrics.get(constants.ResourceType.VOLUME):
+                self.get_stats_file_data(
+                    file_map,
+                    constants.ResourceType.VOLUME,
+                    metrics,
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.VOLUME))
+            if resource_metrics.get(constants.ResourceType.DISK):
+                self.get_stats_file_data(
+                    file_map,
+                    constants.ResourceType.DISK,
+                    metrics,
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.DISK))
+            if resource_metrics.get(constants.ResourceType.PORT):
+                self.get_stats_file_data(
+                    file_map,
+                    constants.ResourceType.PORT,
+                    metrics,
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.PORT))
+        except Exception as err:
+            err_msg = "Failed to collect metrics from svc: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+        return metrics

@@ -11,7 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import time
+
+import six
+
+from delfin import exception
+
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
+from scp import SCPClient
 
 from oslo_log import log as logging
 from oslo_utils import units
@@ -95,3 +107,23 @@ class Tools(object):
         if value_map != {}:
             map_list.append(value_map)
         return map_list
+
+    @staticmethod
+    def get_remote_file_to_xml(ssh, file, local_path, remote_path):
+        local_file = '%s%s' % (local_path, file)
+        try:
+            scp_client = SCPClient(ssh.get_transport(),
+                                   socket_timeout=15.0)
+            remote_file = '%s%s' % (remote_path, file)
+            scp_client.get(remote_file, local_path)
+            root_node = open(local_file).read()
+            print(root_node)
+            root_node = ET.fromstring(root_node)
+            return root_node
+        except Exception as e:
+            err_msg = "Failed to copy statics file: %s" % \
+                      (six.text_type(e))
+            raise exception.SSHException(err_msg)
+        finally:
+            if os.path.exists(local_file):
+                os.remove(local_file)
