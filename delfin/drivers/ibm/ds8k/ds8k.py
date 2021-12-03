@@ -203,6 +203,9 @@ class DS8KDriver(driver.StorageDriver):
                 status = DS8KDriver.PORT_STATUS_MAP.get(
                     port.get('state'), constants.PortHealthStatus.UNKNOWN)
                 speed = None
+                connection_status = constants.PortConnectionStatus.CONNECTED\
+                    if status == constants.PortHealthStatus.NORMAL \
+                    else constants.PortConnectionStatus.DISCONNECTED
                 if port.get('speed'):
                     speed = int(port.get('speed').split(' ')[0]) * units.G
                 port_result = {
@@ -210,8 +213,7 @@ class DS8KDriver(driver.StorageDriver):
                     'storage_id': self.storage_id,
                     'native_port_id': port.get('id'),
                     'location': port.get('loc'),
-                    'connection_status':
-                        constants.PortConnectionStatus.CONNECTED,
+                    'connection_status': connection_status,
                     'health_status': status,
                     'type': DS8KDriver.PORT_TYPE_MAP.get(
                         port.get('protocol'), constants.PortType.OTHER),
