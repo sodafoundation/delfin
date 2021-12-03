@@ -1422,4 +1422,4 @@ class TestStorwizeSvcStorageDriver(TestCase):
         metrics = self.driver.collect_perf_metrics(context, storage_id,
                                                    resource_metrics,
                                                    start_time, end_time)
-        self.assertEqual(metrics[0][2][1638346330000], 0.0)
+        self.assertEqual(metrics[0][1]['resource_name'], 'powerha')
