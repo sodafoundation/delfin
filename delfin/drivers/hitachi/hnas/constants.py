@@ -17,7 +17,8 @@ import re
 from delfin.common import constants
 
 DATA_HEAD_PATTERN = re.compile('[-]{3,}')
-STORAGE_VENDOR = 'HITACHI'
+ALERT_HEAD_PATTERN = re.compile('[*]{3,}')
+STORAGE_VENDOR = 'Hitachi'
 TIME_TYPE = '%Y-%m-%d %H:%M:%S'
 
 OID_TRAP_DATA = '1.3.6.1.4.1.11096.6.1.1'
@@ -33,7 +34,9 @@ POOL_SIZE_COMMAND = "span-space-distribution"
 
 CONTROLLER_INFO_COMMAND = "cluster-show -y"
 
-ALERT_INFO_COMMAND = "event-log-show -w -s"
+ALERT_INFO_COMMAND = "event-log-show -w -s -x"
+ALERT_TIME = " --from '%s'"
+ALERT_FORMAT_TIME = "%Y-%m-%d %H:%M:%S"
 
 FC_PORT_COMMAND = "fc-hports"
 FC_SPEED_COMMAND = "fc-link-speed"

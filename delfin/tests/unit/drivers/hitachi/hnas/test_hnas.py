@@ -52,7 +52,7 @@ class TestHitachiHNasDriver(TestCase):
                          constants.POOL_INFO,
                          constants.POOL_DETAIL_INFO])
         data = self.hnas_client.get_storage(context)
-        self.assertEqual(data['vendor'], 'HITACHI')
+        self.assertEqual(data['vendor'], 'Hitachi')
 
     def test_list_storage_pools(self):
         SSHPool.do_exec_shell = mock.Mock(
@@ -66,7 +66,7 @@ class TestHitachiHNasDriver(TestCase):
             side_effect=[constants.ALERT_INFO])
         data = self.hnas_client.list_alerts(context)
         self.assertEqual(data[0]['alert_name'],
-                         '8462')
+                         '8208')
 
     def test_parse_alert(self):
         data = self.hnas_client.parse_alert(context, constants.TRAP_INFO)
