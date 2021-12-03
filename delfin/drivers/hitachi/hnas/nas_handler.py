@@ -387,7 +387,9 @@ class NasHandler(object):
             alert_info = self.ssh_do_exec([command])
             alert_array = self.get_table_data(alert_info, True)
             alert_list = self.format_alert_list(alert_array, query_para)
-            alert_list = sorted(alert_list, key=lambda x: x['occur_time'], reverse=True)
+            alert_list = \
+                sorted(alert_list, 
+                       key=lambda x: x['occur_time'], reverse=True)
             return alert_list
         except exception.DelfinException as e:
             err_msg = "Failed to get alerts from " \
