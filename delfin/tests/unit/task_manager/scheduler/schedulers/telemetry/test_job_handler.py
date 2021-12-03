@@ -139,18 +139,6 @@ class TestTelemetryJob(test.TestCase):
         telemetry_job.remove_job(fake_telemetry_job['id'])
         self.assertEqual(mock_log_error.call_count, 0)
 
-    @mock.patch.object(db, 'task_get_all',
-                       mock.Mock(return_value=fake_telemetry_jobs))
-    @mock.patch.object(db, 'task_update',
-                       mock.Mock(return_value=fake_telemetry_job))
-    @mock.patch.object(db, 'task_get',
-                       mock.Mock(return_value=fake_telemetry_job))
-    @mock.patch(
-        'apscheduler.schedulers.background.BackgroundScheduler.add_job')
-    def test_schedule_boot_jobs(self, mock_add_job):
-        JobHandler.schedule_boot_jobs()
-        self.assertEqual(mock_add_job.call_count, 1)
-
 
 class TestFailedTelemetryJob(test.TestCase):
 

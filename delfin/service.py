@@ -278,6 +278,29 @@ class TaskService(Service):
         super(TaskService, self).start()
 
 
+class MetricsService(Service):
+    """Service object for triggering metrics manager functionalities.
+        """
+
+    @classmethod
+    def create(cls, host=None, binary=None, topic=None,
+               manager=None, periodic_interval=None,
+               periodic_fuzzy_delay=None, service_name=None,
+               coordination=False, *args, **kwargs):
+        service_obj = super(MetricsService, cls).create(
+            host=host, binary=binary, topic=topic, manager=manager,
+            periodic_interval=periodic_interval,
+            periodic_fuzzy_delay=periodic_fuzzy_delay,
+            service_name=service_name,
+            coordination=coordination, *args, **kwargs)
+
+        return service_obj
+
+    def start(self):
+        super(MetricsService, self).start()
+        self.manager.init_scheduler(self.topic, self.host)
+
+
 class LeaderElectionService(service.Service):
     """Leader election service for distributed system
 
