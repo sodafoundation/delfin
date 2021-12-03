@@ -429,47 +429,55 @@ MAC ID : B7-6F-30-98-A6-57\r
 \r
 pba-hnas-1-1:$ event-log-show -w -s\r
 ****** Current time : 2021-10-25 11:12:35+08:00 ******\r
-8462 Warning     2021-10-25 08:00:10+08:00 [ pba-hnas-1 ] The
-SMU does not have an email alert profile relating to a managed server.\r
-8462 Warning     2021-10-24 08:00:10+08:00 [ pba-hnas-1 ] The
-SMU does not have an email alert profile relating to a managed server.\r
-8462 Warning     2021-10-23 08:00:10+08:00 [ pba-hnas-1 ] The
-SMU does not have an email alert profile relating to a managed server.\r
-8462 Warning     2021-10-22 14:29:02+08:00 [ pba-hnas-1 ] The
-SMU does not have an email alert profile relating to a managed server.\r
-8462 Warning     2021-10-22 14:00:10+08:00 [ pba-hnas-1 ] The
-SMU does not have an email alert profile relating to a managed server.\r
-8462 Warning     2021-10-21 14:00:10+08:00 [ pba-hnas-1 ] The
-SMU does not have an email alert profile relating to a managed server.\r
-9997 Severe      2021-10-21 12:33:53+08:00 testSNMP.\r
-9996 Warning     2021-10-21 12:32:20+08:00 123123123123.\r
-9997 Severe      2021-10-21 12:26:04+08:00 Test Message5456.\r
-9997 Severe      2021-10-21 11:53:54+08:00 Test Message.\r
-9996 Warning     2021-10-21 11:36:37+08:00 Test Message.\r
-9997 Severe      2021-10-21 11:33:05+08:00 Test Message.\r
-9997 Severe      2021-10-21 11:23:08+08:00 Test Message.\r
-9997 Severe      2021-10-21 11:13:30+08:00 Test Message.\r
-9997 Severe      2021-10-21 11:12:30+08:00 12312312312.\r
-9996 Warning     2021-10-21 10:43:44+08:00 Test Message123.\r
-9997 Severe      2021-10-21 10:40:35+08:00 snmp.\r
-9997 Severe      2021-10-21 10:35:47+08:00 Test Message.\r
-9997 Severe      2021-10-21 10:33:01+08:00 Test SNMP.\r
-9997 Severe      2021-10-21 10:28:43+08:00 Test Message.\r
-9997 Severe      2021-10-21 10:14:48+08:00 Test Message.\r
-9996 Warning     2021-10-21 10:10:42+08:00 Test Message.\r
-8462 Warning     2021-10-20 14:00:10+08:00 [ pba-hnas-1 ] The\r
-SMU does not have an email alert profile relating to a managed server.\r
-9996 Warning     2021-10-19 17:45:02+08:00 Test Message.\r
-9996 Warning     2021-10-19 17:36:19+08:00 Test Message123.\r
-9997 Severe      2021-10-19 17:34:55+08:00 Test Message.\r
-9997 Severe      2021-10-19 16:40:05+08:00 Test Messagesdfsfdsfdsf.\r
-9997 Severe      2021-10-19 16:39:58+08:00 Test Messagesdfsdfsdfsfsdfsdfsfs.\r
-8462 Warning     2021-10-19 14:00:10+08:00 [ pba-hnas-1 ] The SMU\r
+8208 Information 2021-11-02 08:26:01+08:00 Chassis device 'md0'
+is running background media scan.\r
+    CAUSE:      Chassis drive volume is running a media check.\r
+    RESOLUTION: No Action required.\r
+\r
+8462 Warning     2021-11-02 08:00:10+08:00 [ pba-hnas-1 ] The
+SMU does not have an email
+alert profile relating to a managed server.\r
+    CAUSE:      An email alert profile relating to a managed
+    server must be applied to the SMU so that alert and diagnostic
+    emails can be sent to the required recipients.\r
+    RESOLUTION: Go to an SMTP Email Profile page and apply a
+    profile to the SMU.\r
+\r
+8208 Information 2021-11-02 04:04:01+08:00 Chassis device 'md2'
+is running background media scan.\r
+    CAUSE:      Chassis drive volume is running a media check.\r
+    RESOLUTION: No Action required.\r
+\r
+8209 Information 2021-11-02 04:04:00+08:00 Chassis device 'md3'
+has completed background media scan.\r
+    CAUSE:      Chassis drive volume media check has completed.\r
+    RESOLUTION: No Action required.\r
+\r
+9995 Information 2021-11-01 20:50:36+08:00 wq test snmp.\r
+    CAUSE:      A test event was requested.\r
+    RESOLUTION: No action required.\r
+\r\
+3303 Information 2021-11-01 19:27:22+08:00 Exceeded socket backlog:
+dropping additional connection request from 127.0.0.1:34008->127.0.0.1:206:
+this event, Id 3303, happened once in the last 6.25 d on the MMB1.\r
+    CAUSE:      Socket backlogged: could not allow a new connection.\r
+    RESOLUTION: This is expected behavior on receiving a flurry of
+    connection requests.  If it happens in other circumstances,
+    run the Performance Info Report, then report this and send the
+    PIR results to your support provider.\r
+\r
+8208 Information 2021-11-01 16:44:01+08:00 Chassis device 'md3' is
+running background media scan.\r
+    CAUSE:      Chassis drive volume is running a media check.\r
+    RESOLUTION: No Action required.\r
+\r
+8462 Warning     2021-11-01 08:00:10+08:00 [ pba-hnas-1 ] The SMU
 does not have an email alert profile relating to a managed server.\r
-9996 Warning     2021-10-19 11:20:40+08:00 Test Message zzp 告警信息 .\r
-9997 Severe      2021-10-19 11:20:32+08:00 Test Message zzp 严重信息 .\r
-9997 Severe      2021-10-19 11:11:30+08:00 Test Message zzp 严重信息 .\r
-9996 Warning     2021-10-19 11:11:10+08:00 Test Message zzp 告警信息 .\r
+    CAUSE:      An email alert profile relating to a managed server
+    must be applied to the SMU so that alert and diagnostic emails
+    can be sent to the required recipients.\r
+    RESOLUTION: Go to an SMTP Email Profile page and apply a profile
+    to the SMU.\r
 ****** Current time : 2021-10-25 11:12:35+08:00 ******\r
 pba-hnas-1-1:$ """
 

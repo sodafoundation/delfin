@@ -46,7 +46,7 @@ class NasHandler(object):
             if 'EVS' not in result:
                 raise exception.InvalidIpOrPort()
         except Exception as e:
-            LOG.error("Failed to login netapp %s" %
+            LOG.error("Failed to login hnas %s" %
                       (six.text_type(e)))
             raise e
 
@@ -88,12 +88,15 @@ class NasHandler(object):
         return map_list
 
     @staticmethod
-    def get_table_data(values):
+    def get_table_data(values, is_alert=False):
         header_index = 0
         table = values.split('\r\n')
         for i in range(len(table)):
             if constant.DATA_HEAD_PATTERN.search(table[i]):
                 header_index = i
+            if is_alert and constant.ALERT_HEAD_PATTERN.search(table[i]):
+                header_index = i
+                return table[(header_index + 1):]
         return table[(header_index + 1):]
 
     def format_storage_info(self, storage_map_list,
@@ -211,8 +214,7 @@ class NasHandler(object):
                         'firmware': version,
                         'capacity': int(Tools.get_capacity_size(size)),
                         'status': status,
-                        'native_disk_group_id': pool_id,
-                        'location': disk_map['Serialnumber'],
+                        'native_disk_group_id': pool_id
                     }
                     disks_list.append(disk_model)
             return disks_list
@@ -321,23 +323,20 @@ class NasHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def list_alerts(self, query_para):
-        try:
-            alert_info = self.ssh_do_exec([constant.ALERT_INFO_COMMAND])
-            alert_array = self.get_table_data(alert_info)
-            alert_list = []
-            for alert in alert_array:
-                value_array = alert.split()
-                if len(value_array) > constant.ALERT_INDEX['alert_len'] \
-                        and '******' not in \
-                        value_array[constant.ALERT_INDEX['table_head']] \
-                        and value_array[
-                    constant.ALERT_INDEX['severity_index']] in\
-                        constant.SEVERITY_MAP:
+    @staticmethod
+    def format_alert_list(alert_array, query_para):
+        alert_list = []
+        alert_model = {}
+        for alert in alert_array:
+            if alert and 'CAUSE' not in alert:
+                alert_data = alert.split()
+                if len(alert_data) > constant.ALERT_INDEX['alert_len'] \
+                        and alert_data[
+                    constant.ALERT_INDEX['severity_index']] \
+                        in constant.SEVERITY_MAP:
                     occur_time = \
-                        value_array[constant.ALERT_INDEX[
-                            'year_index']] + ' ' + \
-                        value_array[constant.ALERT_INDEX[
+                        alert_data[constant.ALERT_INDEX['year_index']] + \
+                        ' ' + alert_data[constant.ALERT_INDEX[
                             'time_index']].split("+")[0]
                     occur_time = \
                         int(time.mktime(time.strptime(
@@ -347,29 +346,47 @@ class NasHandler(object):
                              <= occur_time
                              <= int(query_para['end_time'])):
                         description = ''
-                        for i in range(4, len(value_array)):
-                            description += value_array[i] + ' '
-                        severity = constant.SEVERITY_MAP.get(value_array[1])
-                        alert_model = {
-                            'alert_id': value_array[
-                                constant.ALERT_INDEX['id_index']],
-                            'alert_name': value_array[
-                                constant.ALERT_INDEX['id_index']],
-                            'severity': severity,
-                            'category': constants.Category.FAULT,
-                            'type': constants.EventType.EQUIPMENT_ALARM,
-                            'occur_time': occur_time,
-                            'description': description,
-                            'match_key':
-                                hashlib.md5(
-                                    (value_array[
-                                        constant.ALERT_INDEX['id_index']] +
-                                     severity +
-                                     description).encode()).hexdigest(),
-                            'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                            'location': ''
-                        }
-                        alert_list.append(alert_model)
+                        for i in range(4, len(alert_data)):
+                            description += alert_data[i] + ' '
+                        severity = \
+                            constant.SEVERITY_MAP.get(
+                                alert_data[constant.ALERT_INDEX[
+                                    'severity_index']])
+                        alert_model['alert_id'] = \
+                            alert_data[constant.ALERT_INDEX['id_index']]
+                        alert_model['alert_name'] = \
+                            alert_data[constant.ALERT_INDEX['id_index']]
+                        alert_model['severity'] = severity
+                        alert_model['category'] = constants.Category.FAULT
+                        alert_model['type'] = \
+                            constants.EventType.EQUIPMENT_ALARM
+                        alert_model['occur_time'] = occur_time
+                        alert_model['description'] = description
+                        alert_model['match_key'] = \
+                            hashlib.md5(
+                                (alert_data[constant.ALERT_INDEX['id_index']]
+                                    + severity
+                                    + description).encode()).hexdigest()
+                        alert_model['resource_type'] = \
+                            constants.DEFAULT_RESOURCE_TYPE
+            if alert and alert_model and 'CAUSE' in alert:
+                alert_data = alert.split(':')
+                alert_model['location'] = alert_data[-1]
+            if not alert:
+                alert_list.append(alert_model)
+                alert_model = {}
+        return alert_list
+
+    def list_alerts(self, query_para):
+        try:
+            command = constant.ALERT_INFO_COMMAND
+            if query_para and 'begin_time' in query_para:
+                timeArray = time.gmtime(int(query_para['begin_time']) / 1000)
+                begin_time = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
+                command += constant.ALERT_TIME % begin_time
+            alert_info = self.ssh_do_exec([command])
+            alert_array = self.get_table_data(alert_info, True)
+            alert_list = self.format_alert_list(alert_array, query_para)
             return alert_list
         except exception.DelfinException as e:
             err_msg = "Failed to get alerts from " \
@@ -393,6 +410,8 @@ class NasHandler(object):
                 if len(alert) > 1:
                     alert_id = alert[0]
                     severity = constant.SEVERITY_MAP.get(alert[1])
+                    if severity == constant.SEVERITY_MAP.get('Information'):
+                        return
                     alert_model = {
                         'alert_id': alert_id,
                         'alert_name': alert_id,
@@ -421,9 +440,7 @@ class NasHandler(object):
 
     def list_ports(self, storage_id):
         try:
-            ports_list = []
-            ports_list.extend(self.get_fc_port(storage_id))
-            ports_list.extend(self.get_eth_port(storage_id))
+            ports_list = self.get_fc_port(storage_id)
             return ports_list
         except exception.DelfinException as e:
             err_msg = "Failed to get ports from " \
@@ -484,63 +501,6 @@ class NasHandler(object):
             raise e
         except Exception as err:
             err_msg = "Failed to get fc ports from " \
-                      "hitachi nas: %s" % (six.text_type(err))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
-
-    def get_eth_port(self, storage_id):
-        try:
-            eth_info = self.ssh_do_exec([constant.ETH_PORT_COMMAND])
-            eth_list = []
-            value_array = eth_info.split('\r\n')
-            eth_model = {}
-            for value in value_array:
-                if value:
-                    if 'Link encap' in value:
-                        value_info = value.split()
-                        if len(value_info) > constant.ETH_INDEX['name_len']:
-                            eth_model['name'] = value_info[
-                                constant.ETH_INDEX['name_index']]
-                    if 'MTU' in value:
-                        value_info = value.split()
-                        if len(value_info) > constant.ETH_INDEX['status_len']:
-                            eth_model['connection_status'] = \
-                                constants.PortConnectionStatus.DISCONNECTED
-                            eth_model['health_status'] = \
-                                constants.PortHealthStatus.UNKNOWN
-                            status = \
-                                value_info[constant.ETH_INDEX[
-                                    'status_index']].split(':')[1]
-                            if status == 'UP':
-                                eth_model['connection_status'] = \
-                                    constants.PortConnectionStatus.CONNECTED
-                                eth_model['health_status'] = \
-                                    constants.PortHealthStatus.NORMAL
-                            eth_model['type'] = constants.PortType.ETH
-                            eth_model['storage_id'] = storage_id
-                            eth_model['native_port_id'] =\
-                                'ETH' + '-' + eth_model['name']
-                    if 'inet addr' in value:
-                        value_info = value.split()
-                        if len(value_info) > constant.ETH_INDEX['ip_len']:
-                            eth_model['ipv4'] = \
-                                value_info[constant.ETH_INDEX[
-                                    'ip_index']].split(':')[1]
-                            eth_model['ipv4_mask'] = \
-                                value_info[constant.ETH_INDEX[
-                                    'mask_index']].split(':')[1]
-                else:
-                    if 'name' in eth_model:
-                        eth_list.append(eth_model)
-                        eth_model = {}
-            return eth_list
-        except exception.DelfinException as e:
-            err_msg = "Failed to get eth ports from " \
-                      "hitachi nas: %s" % (six.text_type(e.msg))
-            LOG.error(err_msg)
-            raise e
-        except Exception as err:
-            err_msg = "Failed to get eth ports from " \
                       "hitachi nas: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
@@ -645,18 +605,30 @@ class NasHandler(object):
                             qtree_id = evs[0] + '-' + user_group_name
                     quota_id = \
                         evs[0] + '-' + quota_type + '-' + user_group_name
-                    capacity_soft_limit = \
-                        quota_map.get('Limit').replace('(Soft)', '')
-                    file_soft_limit = \
-                        quota_map.get('Limit1').replace('(Soft)', '')
+                    capacity_hard_limit, capacity_soft_limit = None, None
+                    file_soft_limit, file_hard_limit = None, None
+                    if 'Soft' in quota_map.get('Limit'):
+                        capacity_soft_limit = \
+                            quota_map.get('Limit').replace('(Soft)', '')
+                    elif 'Hard' in quota_map.get('Limit'):
+                        capacity_hard_limit = capacity_soft_limit = \
+                            quota_map.get('Limit').replace('(Hard)', '')
+                    if 'Soft' in quota_map.get('Limit1'):
+                        file_soft_limit = \
+                            quota_map.get('Limit1').replace('(Soft)', '')
+                    elif 'Hard' in quota_map.get('Limit1'):
+                        file_soft_limit = file_hard_limit = \
+                            quota_map.get('Limit1').replace('(Hard)', '')
                     quota = {
                         'native_quota_id': quota_id,
                         'type': quota_type,
                         'storage_id': storage_id,
                         'native_filesystem_id': evs[0],
                         'native_qtree_id': qtree_id,
+                        "capacity_hard_limit": capacity_hard_limit,
                         'capacity_soft_limit':
                             Tools.get_capacity_size(capacity_soft_limit),
+                        "file_hard_limit": file_hard_limit,
                         'file_soft_limit': file_soft_limit,
                         'file_count': quota_map.get('FileCount'),
                         'used_capacity':
