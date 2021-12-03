@@ -46,7 +46,3 @@ class HpeMsaStorDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
-
-    @staticmethod
-    def get_access_url():
-        return 'https://{ip}'
