@@ -23,7 +23,7 @@ from oslo_utils import units
 
 from delfin import exception, utils
 from delfin.common import constants, alert_util
-from delfin.drivers.utils import consts
+from delfin.drivers.ibm.storwize_svc import consts
 from delfin.drivers.utils.ssh_client import SSHPool
 from delfin.drivers.utils.tools import Tools
 
@@ -96,8 +96,6 @@ class SSHHandler(object):
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
     BLOCK_SIZE = 512
     BYTES_TO_BIT = 8
-    LOCAL_FILE_PATH = 'F:\\soda\\perf_test\\'
-    REMOTE_FILE_PATH = '/root/test/statsicsfile/'
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -760,8 +758,8 @@ class SSHHandler(object):
         for file in file_list:
             with self.ssh_pool.item() as ssh:
                 file_xml = Tools.get_remote_file_to_xml(
-                    ssh, file[1], SSHHandler.LOCAL_FILE_PATH,
-                    SSHHandler.REMOTE_FILE_PATH)
+                    ssh, file[1], consts.LOCAL_FILE_PATH,
+                    consts.REMOTE_FILE_PATH)
                 for data in file_xml:
                     if re.sub(u"\\{.*?}", "", data.tag) == \
                             SSHHandler.TARGET_RESOURCE_RELATION.get(

@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.ibm.storwize_svc import ssh_handler
+from delfin.drivers.ibm.storwize_svc import ssh_handler, consts
 from delfin.drivers.ibm.storwize_svc.ssh_handler import SSHHandler
 
 
@@ -70,3 +70,15 @@ class StorwizeSVCDriver(driver.StorageDriver):
                              end_time):
         return self.ssh_hanlder.collect_perf_metrics(
             storage_id, resource_metrics, start_time, end_time)
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP,
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP
+            }
+        }
