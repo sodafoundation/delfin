@@ -1,8 +1,10 @@
+import hashlib
 import time
-
+import json
 import six
 from oslo_log import log as logging
-
+from operator import itemgetter
+from itertools import groupby
 from delfin import exception
 from delfin.common import constants, alert_util
 from delfin.drivers.utils.ssh_client import SSHPool
@@ -14,9 +16,15 @@ try:
 except ImportError:
     import xml.etree.ElementTree as Et
 
-
 LOG = logging.getLogger(__name__)
 
+ssh = {
+        "host": "192.168.3.212",
+        "port": 22,
+        "username": "manage",
+        "password": "manage@Z",
+        "pub_key": "ddddddddddddddddddddddddd"
+    }
 
 class SSHHandler(object):
 
@@ -98,6 +106,9 @@ class SSHHandler(object):
                         DISK_PHYSICAL_TYPE.get(data.get('description'),
                                                constants.DiskPhysicalType.
                                                UNKNOWN)
+                    rpm = data.get('rpm')
+                    if rpm:
+                        rpm = int(rpm) * consts.RpmSpeed.RPM_SPEED
                     data_map = {
                         'native_disk_id': data.get('location'),
                         'name': data.get('location'),
@@ -108,7 +119,7 @@ class SSHHandler(object):
                         'serial_number': data.get('serial-number'),
                         'manufacturer': data.get('vendor'),
                         'model': data.get('model'),
-                        'speed': data.get('rpm'),
+                        'speed': rpm,
                         'capacity': int(size),
                         'health_score': status
                     }
@@ -122,6 +133,7 @@ class SSHHandler(object):
     def list_storage_ports(self, storage_id):
         try:
             ports_info = self.ssh_pool.do_exec('show ports')
+            print(ports_info)
             ports_split = ports_info.split('\n')
             ports_array = ports_split[1:len(ports_split) - 1]
             ports_xml_data = ''.join(ports_array)
@@ -147,12 +159,17 @@ class SSHHandler(object):
                     status = constants.PortHealthStatus.ABNORMAL
                     conn_status = constants.PortConnectionStatus.\
                         DISCONNECTED
+                wwn = None
                 port_type = constants.PortType.FC
                 location_port_type = data.get('port-type')
                 if location_port_type:
                     location_port_type = location_port_type.upper()
                 if location_port_type == 'ISCSI':
                     port_type = constants.PortType.ETH
+                else:
+                    target_id = data.get('target-id')
+                    if target_id:
+                        wwn = target_id
                 location = '%s_%s' % (data.get('port'),
                                       location_port_type)
                 speed = data.get('configured-speed', None)
@@ -170,9 +187,11 @@ class SSHHandler(object):
                     'speed': max_speed,
                     'max_speed': max_speed,
                     'mac_address': data.get('mac-address'),
-                    'ipv4': data.get('ip-address')
+                    'ipv4': data.get('ip-address'),
+                    'wwn': wwn
                 }
                 list_ports.append(data_map)
+            print(list_ports)
             return list_ports
         except Exception as e:
             err_msg = "Failed to get storage ports: %s" % (six.text_type(e))
@@ -347,57 +366,70 @@ class SSHHandler(object):
                                        .SECONDS_TO_MS))
                 time_stamp = alert_map.get('time-stamp-numeric')
                 if time_stamp is not None:
-                    occur_time = int(time_stamp) * consts.SecondsNumber\
-                        .SECONDS_TO_MS
+                    occur_time = int(time_stamp)
                     if not alert_util.is_alert_in_time_range(query_para,
                                                              occur_time):
                         continue
-                alert_name = alert_map.get('event-code')
+                event_code = alert_map.get('event-code')
                 event_id = alert_map.get('event-id')
                 location = alert_map.get('message')
                 resource_type = alert_map.get('event-code')
                 severity = alert_map.get('severity')
                 additional_info = str(alert_map.get('additional-information'))
-                recommended_action = str(alert_map.get('recommended-action'))
+                match_key = None
+                if event_code:
+                    match_key = event_code
+                if severity:
+                    match_key += severity
+                if location:
+                    match_key += location
                 description = None
                 if additional_info:
                     description = additional_info
-                if recommended_action:
-                    description = description + recommended_action
-                if severity == 'Informational' or severity is None:
+                if severity == 'Informational' or severity == 'RESOLVED':
                     continue
                 alert_model = {
                     'alert_id': event_id,
-                    'alert_name': alert_name,
+                    'alert_name': event_code,
                     'severity': severity,
                     'category': constants.Category.FAULT,
                     'type': 'EquipmentAlarm',
-                    'sequence_number': alert_map.get('event-code'),
+                    'sequence_number': event_id,
                     'occur_time': occur_time,
                     'description': description,
                     'resource_type': resource_type,
-                    'location': location
+                    'location': location,
+                    'time': alert_map.get('time-stamp'),
+                    'match_key': hashlib.md5(match_key.encode()).hexdigest()
                 }
                 alert_list.append(alert_model)
-            return self.unrepeated_alert_info(alert_list)
+            alert_list_data = SSHHandler.get_last_alert_data(alert_list)
+            print(json.dumps(alert_list_data))
+            return alert_list_data
         except Exception as e:
             err_msg = "Failed to get storage alert: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
 
     @staticmethod
-    def unrepeated_alert_info(error_info):
-        exist_questions = set()
-        error_list = []
-        for item in error_info:
-            question = item['resource_type']
-            if question not in exist_questions:
-                exist_questions.add(question)
-                error_list.append(item)
-        return error_list
+    def get_last_alert_data(alert_json):
+        alert_list = []
+        alert_json.sort(key=itemgetter('alert_name', 'location', 'severity'))
+        for key, item in groupby(alert_json, key=itemgetter(
+                'alert_name', 'location', 'severity')):
+            i = 0
+            for alert_info in item:
+                print(alert_info)
+                if i == 0:
+                    alert_list.append(alert_info)
+                    break
+                i = i + 1
+        return alert_list
 
     @staticmethod
     def parse_alert(alert):
+        LOG.info(alert)
+        print(alert)
         try:
             alert_model = dict()
             alert_id = None
@@ -466,3 +498,6 @@ class SSHHandler(object):
                 for child in children.iter('PROPERTY'):
                     msg[child.get('name')] = child.text
         return msg
+
+sshH = SSHHandler(ssh=ssh)
+sshH.list_storage_ports("kkk")

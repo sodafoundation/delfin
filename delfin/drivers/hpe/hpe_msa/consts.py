@@ -38,8 +38,22 @@ class SecondsNumber:
     SECONDS_TO_MS = 1000
 
 
+class RpmSpeed:
+    RPM_SPEED = 1000
+
+
 class DiskPhysicalType:
     DISK_PHYSICAL_TYPE = {
         'fc': constants.DiskPhysicalType.FC,
         'SAS': constants.DiskPhysicalType.SAS
     }
+
+
+class InitiatorType:
+    ISCSI_INITIATOR_TYPE = "9"
+    FC_INITIATOR_TYPE = "6"
+    SAS_INITIATOR_TYPE = "8"
+    ISCSI_INITIATOR_DESCRIPTION = 'iSCSI Initiator'
+    FC_INITIATOR_DESCRIPTION = 'FC Initiator'
+    IB_INITIATOR_DESCRIPTION = 'IB Initiator'
+    UNKNOWN_INITIATOR_DESCRIPTION = 'Unknown Initiator'

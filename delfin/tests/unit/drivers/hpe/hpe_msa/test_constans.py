@@ -63,6 +63,7 @@ LIST_PORTS = """
     <PROPERTY name="port">A1</PROPERTY>
      <PROPERTY name="configured-speed">8Gb</PROPERTY>
     <PROPERTY name="port-type">FC</PROPERTY>
+    <PROPERTY name="target-id">207000c0ff26dcb0</PROPERTY>
     <PROPERTY name="health">N/A</PROPERTY>
   </OBJECT>
 <COMP G="1" P="2"/>
@@ -73,6 +74,7 @@ LIST_PORTS = """
  <OBJECT basetype="port" name="ports" oid="3" format="rows">
     <PROPERTY name="durable-id">hostport_A2</PROPERTY>
     <PROPERTY name="port">A2</PROPERTY>
+    <PROPERTY name="target-id">217000c0ff26dcb0</PROPERTY>
     <PROPERTY name="port-type">FC</PROPERTY>
      <PROPERTY name="configured-speed">8Gb</PROPERTY>
     <PROPERTY name="health">N/A</PROPERTY>
@@ -110,6 +112,7 @@ LIST_PORTS = """
 <OBJECT basetype="port" name="ports" oid="9" format="rows">
     <PROPERTY name="durable-id">hostport_B1</PROPERTY>
     <PROPERTY name="port">B1</PROPERTY>
+    <PROPERTY name="target-id">247000c0ff26dcb0</PROPERTY>
     <PROPERTY name="port-type">FC</PROPERTY>
     <PROPERTY name="configured-speed">8Gb</PROPERTY>
     <PROPERTY name="health">N/A</PROPERTY>
@@ -123,6 +126,7 @@ LIST_PORTS = """
     <PROPERTY name="durable-id">hostport_B2</PROPERTY>
     <PROPERTY name="port">B2</PROPERTY>
     <PROPERTY name="port-type">FC</PROPERTY>
+    <PROPERTY name="target-id">257000c0ff26dcb0</PROPERTY>
     <PROPERTY name="configured-speed">8Gb</PROPERTY>
     <PROPERTY name="health">N/A</PROPERTY>
   </OBJECT>
@@ -289,14 +293,16 @@ error_result = [
     {
         'alert_id': 'A891',
         'alert_name': '557',
-        'severity': 'ERROR',
         'category': 'Fault',
-        'type': 'EquipmentAlarm',
-        'sequence_number': '557',
-        'occur_time': 1636704980000,
-        'description': 'ManagementManagement',
+        'description': 'Management',
+        'location': 'An Enclosure Management Processor(EMP)',
+        'match_key': 'd0317252aed04fd8b68e79d7eab08277',
+        'occur_time': 1636704980,
         'resource_type': '557',
-        'location': 'An Enclosure Management Processor(EMP)'
+        'sequence_number': 'A891',
+        'severity': 'ERROR',
+        'time': '2021-11-12 08:16:20',
+        'type': 'EquipmentAlarm'
     }
 ]
 
@@ -359,7 +365,8 @@ ports_result = [
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
         'mac_address': None,
-        'ipv4': None
+        'ipv4': None,
+        'wwn': '207000c0ff26dcb0'
     }, {
         'native_port_id': 'hostport_A2',
         'name': 'A2',
@@ -371,7 +378,8 @@ ports_result = [
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
         'mac_address': None,
-        'ipv4': None
+        'ipv4': None,
+        'wwn': '217000c0ff26dcb0'
     }, {
         'native_port_id': 'hostport_A3',
         'name': 'A3',
@@ -383,7 +391,8 @@ ports_result = [
         'speed': 0,
         'max_speed': 0,
         'mac_address': '00:C0:FF:35:BD:64',
-        'ipv4': '0.0.0.0'
+        'ipv4': '0.0.0.0',
+        'wwn': None
     }, {
         'native_port_id': 'hostport_A4',
         'name': 'A4',
@@ -395,7 +404,8 @@ ports_result = [
         'speed': 0,
         'max_speed': 0,
         'mac_address': '00:C0:FF:35:BD:65',
-        'ipv4': '0.0.0.0'
+        'ipv4': '0.0.0.0',
+        'wwn': None
     }, {
         'native_port_id': 'hostport_B1',
         'name': 'B1',
@@ -407,7 +417,8 @@ ports_result = [
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
         'mac_address': None,
-        'ipv4': None
+        'ipv4': None,
+        'wwn': '247000c0ff26dcb0'
     }, {
         'native_port_id': 'hostport_B2',
         'name': 'B2',
@@ -419,7 +430,8 @@ ports_result = [
         'speed': 8589934592.0,
         'max_speed': 8589934592.0,
         'mac_address': None,
-        'ipv4': None
+        'ipv4': None,
+        'wwn': '257000c0ff26dcb0'
     }, {
         'native_port_id': 'hostport_B3',
         'name': 'B3',
@@ -430,7 +442,8 @@ ports_result = [
         'speed': 0,
         'max_speed': 0,
         'mac_address': '00:C0:FF:35:BA:BC',
-        'ipv4': '0.0.0.0'
+        'ipv4': '0.0.0.0',
+        'wwn': None
     }, {
         'native_port_id': 'hostport_B4',
         'name': 'B4',
@@ -442,7 +455,8 @@ ports_result = [
         'speed': 0,
         'max_speed': 0,
         'mac_address': '00:C0:FF:35:BA:BD',
-        'ipv4': '0.0.0.0'
+        'ipv4': '0.0.0.0',
+        'wwn': None
     }]
 
 disks_result = [
@@ -456,7 +470,7 @@ disks_result = [
         'serial_number': '6SL9CD560000N51404EF',
         'manufacturer': 'SEAGATE',
         'model': 'ST3600057SS',
-        'speed': '15',
+        'speed': 15000,
         'capacity': 644352468582,
         'health_score': 'normal'
     }, {
@@ -469,7 +483,7 @@ disks_result = [
         'serial_number': '6SL7X4RE0000B42601SF',
         'manufacturer': 'SEAGATE',
         'model': 'ST3600057SS',
-        'speed': '15',
+        'speed': 15000,
         'capacity': 644352468582,
         'health_score': 'normal'
     }, {
@@ -482,7 +496,7 @@ disks_result = [
         'serial_number': '6SL9QR5T0000N52120SK',
         'manufacturer': 'SEAGATE',
         'model': 'ST3600057SS',
-        'speed': '15', 'capacity': 644352468582,
+        'speed': 15000, 'capacity': 644352468582,
         'health_score': 'normal'
     }, {
         'native_disk_id': '1.4',
@@ -494,7 +508,7 @@ disks_result = [
         'serial_number': '3SL0WT7G00009051YBTF',
         'manufacturer': 'SEAGATE',
         'model': 'ST3600057SS',
-        'speed': '15',
+        'speed': 15000,
         'capacity': 644352468582,
         'health_score': 'normal'
     }
