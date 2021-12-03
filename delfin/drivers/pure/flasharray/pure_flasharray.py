@@ -134,7 +134,6 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
                 event = alert.get('event')
                 alerts_model['alert_name'] = event
-                alerts_model['sequence_number'] = alert.get('id')
                 alerts_model['match_key'] = hashlib.md5(str(alert.get('id')).
                                                         encode()).hexdigest()
                 alerts_model['description'] = '({}:{}): {}'.\
