@@ -1,6 +1,6 @@
 import hashlib
 import time
-import json
+
 import six
 from oslo_log import log as logging
 from operator import itemgetter
@@ -133,7 +133,6 @@ class SSHHandler(object):
     def list_storage_ports(self, storage_id):
         try:
             ports_info = self.ssh_pool.do_exec('show ports')
-            print(ports_info)
             ports_split = ports_info.split('\n')
             ports_array = ports_split[1:len(ports_split) - 1]
             ports_xml_data = ''.join(ports_array)
@@ -191,7 +190,6 @@ class SSHHandler(object):
                     'wwn': wwn
                 }
                 list_ports.append(data_map)
-            print(list_ports)
             return list_ports
         except Exception as e:
             err_msg = "Failed to get storage ports: %s" % (six.text_type(e))
@@ -404,7 +402,6 @@ class SSHHandler(object):
                 }
                 alert_list.append(alert_model)
             alert_list_data = SSHHandler.get_last_alert_data(alert_list)
-            print(json.dumps(alert_list_data))
             return alert_list_data
         except Exception as e:
             err_msg = "Failed to get storage alert: %s" % (six.text_type(e))
@@ -419,7 +416,6 @@ class SSHHandler(object):
                 'alert_name', 'location', 'severity')):
             i = 0
             for alert_info in item:
-                print(alert_info)
                 if i == 0:
                     alert_list.append(alert_info)
                     break
@@ -428,8 +424,6 @@ class SSHHandler(object):
 
     @staticmethod
     def parse_alert(alert):
-        LOG.info(alert)
-        print(alert)
         try:
             alert_model = dict()
             alert_id = None
@@ -498,6 +492,3 @@ class SSHHandler(object):
                 for child in children.iter('PROPERTY'):
                     msg[child.get('name')] = child.text
         return msg
-
-sshH = SSHHandler(ssh=ssh)
-sshH.list_storage_ports("kkk")
