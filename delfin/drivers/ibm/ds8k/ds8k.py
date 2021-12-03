@@ -29,6 +29,12 @@ class DS8KDriver(driver.StorageDriver):
                      'SCSI-FCP': constants.PortType.FC,
                      'FICON': constants.PortType.FICON
                      }
+    PORT_STATUS_MAP = {
+        'online': constants.PortHealthStatus.NORMAL,
+        'offline': constants.PortHealthStatus.ABNORMAL,
+        'fenced': constants.PortHealthStatus.UNKNOWN,
+        'quiescing': constants.PortHealthStatus.UNKNOWN
+    }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -194,9 +200,8 @@ class DS8KDriver(driver.StorageDriver):
         if port_info:
             port_data = port_info.get('data', {}).get('ioports', [])
             for port in port_data:
-                status = constants.PortHealthStatus.NORMAL if \
-                    port.get('state') == 'online' else\
-                    constants.PortHealthStatus.ABNORMAL
+                status = DS8KDriver.PORT_STATUS_MAP.get(
+                    port.get('state'), constants.PortHealthStatus.UNKNOWN)
                 speed = None
                 if port.get('speed'):
                     speed = int(port.get('speed').split(' ')[0]) * units.G
@@ -226,7 +231,7 @@ class DS8KDriver(driver.StorageDriver):
             for contrl in contrl_data:
                 status = constants.ControllerStatus.NORMAL if \
                     contrl.get('state') == 'online' else \
-                    constants.ControllerStatus.DEGRADED
+                    constants.ControllerStatus.UNKNOWN
                 controller_result = {
                     'name': contrl.get('id'),
                     'storage_id': self.storage_id,
