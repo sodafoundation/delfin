@@ -113,11 +113,11 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 opened = alert.get('opened')
                 time_difference = time.mktime(
                     time.localtime()) - time.mktime(time.gmtime())
-                timestamp = (int(datetime.datetime.strptime(
-                    opened, '%Y-%m-%dT%H:%M:%SZ').timestamp() +
-                                time_difference)
-                                * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) \
-                    if opened is not None else None
+                timestamp = (int(datetime.datetime.strptime
+                                 (opened, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+                                 + time_difference) *
+                             consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if\
+                    opened is not None else None
                 if query_para is not None:
                     try:
                         if timestamp is None or timestamp \
