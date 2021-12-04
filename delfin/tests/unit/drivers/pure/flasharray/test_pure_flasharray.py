@@ -300,7 +300,8 @@ class test_PureFlashArrayDriver(TestCase):
 
     def test_get_storage(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[storage_info, storage_id_info, controllers_info])
+            side_effect=[storage_info, hardware_info, drive_info,
+                         storage_id_info, controllers_info])
         storage_object = self.driver.get_storage(context)
         self.assertEqual(storage_object.get('name'),
                          storage_id_info.get('array_name'))
@@ -319,7 +320,7 @@ class test_PureFlashArrayDriver(TestCase):
 
     def test_list_controllers(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[controllers_info])
+            side_effect=[controllers_info, hardware_info])
         list_controllers = self.driver.list_controllers(context)
         self.assertEqual(list_controllers[0].get('name'),
                          controllers_info[0].get('name'))

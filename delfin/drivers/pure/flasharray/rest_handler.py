@@ -19,7 +19,7 @@ class RestHandler(RestClient):
     REST_DISK_URL = '/api/1.17/drive'
     REST_HARDWARE_URL = '/api/1.17/hardware'
     REST_CONTROLLERS_URL = '/api/1.17/array?controllers=true'
-    REST_ALERTS_URL = '/api/1.17/message?flagged=true'
+    REST_ALERTS_URL = '/api/1.17/message?flagged=true&open=true'
     REST_AUTH_URL = '/api/1.17/auth/apitoken'
     REST_SESSION_URL = '/api/1.17/auth/session'
 
@@ -33,6 +33,12 @@ class RestHandler(RestClient):
             self.init_http_head()
             token_res = self.do_call(RestHandler.REST_AUTH_URL, data,
                                      method='POST')
+            if token_res.json().get('msg') == consts.LOGIN_PASSWORD_ERR:
+                LOG.error("Login error, Obtaining the token is abnormal. "
+                          "status_code:%s, URL: %s",
+                          token_res.status_code, RestHandler.REST_AUTH_URL)
+                raise exception.InvalidUsernameOrPassword(
+                    'Obtaining the token is abnormal')
             if token_res.status_code != consts.SUCCESS_STATUS_CODE or not \
                     token_res.json().get('api_token'):
                 LOG.error("Login error, Obtaining the token is abnormal. "
@@ -45,8 +51,7 @@ class RestHandler(RestClient):
             if session_res.status_code != consts.SUCCESS_STATUS_CODE or not \
                     session_res.json().get('username'):
                 LOG.error("Login error, Obtaining the session is abnormal."
-                          "status_code:%s, URL: %s",
-                          session_res.status_code,
+                          "status_code:%s, URL: %s", session_res.status_code,
                           RestHandler.REST_SESSION_URL)
                 raise exception.StorageBackendException(
                     'Obtaining the session is abnormal.')

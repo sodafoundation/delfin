@@ -48,6 +48,12 @@ CONTROLLER_PRIMARY = 'primary'
 # Normal value of the controller status
 NORMAL_CONTROLLER_STATUS = 'ready'
 
+# disk type
+DISK_TYPE_NVRAM = 'NVRAM'
+
+# The account password is incorrect during login.
+LOGIN_PASSWORD_ERR = 'invalid credentials'
+
 # list_port: Add ":" to the WWN every 2 sequences.
 SPLICE_WWN_SERIAL = 2
 SPLICE_WWN_COLON = ':'
@@ -64,18 +70,20 @@ CATEGORY_MAP = {'fault': constants.Category.FAULT,
                 'recovery': constants.Category.RECOVERY,
                 'notSpecified': constants.Category.NOT_SPECIFIED}
 CONTROLLER_STATUS_MAP = {'normal': constants.ControllerStatus.NORMAL,
-                         'ready': constants.ControllerStatus.NORMAL,
+                         'ok': constants.ControllerStatus.NORMAL,
                          'offline': constants.ControllerStatus.OFFLINE,
+                         'not_installed': constants.ControllerStatus.OFFLINE,
                          'fault': constants.ControllerStatus.FAULT,
                          'degraded': constants.ControllerStatus.DEGRADED,
-                         'unknown': constants.ControllerStatus.UNKNOWN,
                          'unready': constants.ControllerStatus.UNKNOWN}
 DISK_STATUS_MAP = {'normal': constants.DiskStatus.NORMAL,
                    'healthy': constants.DiskStatus.NORMAL,
                    'abnormal': constants.DiskStatus.ABNORMAL,
                    'unhealthy': constants.DiskStatus.ABNORMAL,
                    'offline': constants.DiskStatus.OFFLINE}
-
+PORT_STATUS_MAP = {'ok': constants.PortHealthStatus.NORMAL,
+                   'not_installed': constants.PortHealthStatus.ABNORMAL
+                   }
 
 PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
 PARSE_ALERT_STORAGE_NAME = '1.3.6.1.4.1.40482.3.1'
