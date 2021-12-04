@@ -185,14 +185,11 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 controllers_dict = dict()
                 controller_name = controller.get('name')
                 controllers_dict['name'] = controller_name
-                controllers_dict['status'] = hardware.get(
-                    controller_name, {}).get('status')
                 controllers_dict['status'] = consts.CONTROLLER_STATUS_MAP.get(
                     hardware.get(controller_name, {}).get('status'),
                     constants.ControllerStatus.UNKNOWN)
                 controllers_dict['soft_version'] = controller.get('version')
                 controllers_dict['storage_id'] = self.storage_id
-                controllers_dict['id'] = controller_name
                 controllers_dict['native_controller_id'] = controller_name
                 controllers_dict['location'] = controller_name
                 list_controllers.append(controllers_dict)
@@ -227,7 +224,6 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 disk_dict['serial_number'] = hardware_object. \
                     get('serial_number')
                 disk_dict['native_disk_id'] = drive_name
-                disk_dict['id'] = drive_name
                 disk_dict['location'] = drive_name
                 disk_dict['manufacturer'] = "PURE"
                 disk_dict['firmware'] = ""
