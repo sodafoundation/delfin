@@ -154,7 +154,7 @@ class SSHHandler(object):
     def login(self):
         try:
             with self.ssh_pool.item() as ssh:
-                result = SSHHandler.do_exec('ls', ssh)
+                result = SSHHandler.do_exec('lssystem', ssh)
                 if 'is not a recognized command' in result:
                     raise exception.InvalidIpOrPort()
         except Exception as e:
