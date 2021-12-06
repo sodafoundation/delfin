@@ -301,7 +301,6 @@ error_result = [
         'resource_type': '557',
         'sequence_number': 'A891',
         'severity': 'ERROR',
-        'time': '2021-11-12 08:16:20',
         'type': 'EquipmentAlarm'
     }
 ]
