@@ -117,7 +117,6 @@ class Tools(object):
             remote_file = '%s%s' % (remote_path, file)
             scp_client.get(remote_file, local_path)
             root_node = open(local_file).read()
-            print(root_node)
             root_node = ET.fromstring(root_node)
             return root_node
         except Exception as e:
