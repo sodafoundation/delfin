@@ -56,7 +56,7 @@ NFS_SHARE_COMMAND = "nfs-export list"
 
 CLUSTER_STATUS = {
     'Robust': constants.StorageStatus.NORMAL,
-    'Degraded': constants.StorageStatus.ABNORMAL,
+    'Degraded': constants.StorageStatus.DEGRADED,
     'Critical': constants.StorageStatus.ABNORMAL,
     'OK': constants.StorageStatus.NORMAL,
     'Failure(s)': constants.StorageStatus.ABNORMAL
