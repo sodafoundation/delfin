@@ -407,12 +407,8 @@ class SSHHandler(object):
         alert_json.sort(key=itemgetter('alert_name', 'location', 'severity'))
         for key, item in groupby(alert_json, key=itemgetter(
                 'alert_name', 'location', 'severity')):
-            i = 0
-            for alert_info in item:
-                if i == 0:
-                    alert_list.append(alert_info)
-                    break
-                i = i + 1
+            alert_last_index = 0
+            alert_list.append(list(item)[alert_last_index])
         return alert_list
 
     @staticmethod
