@@ -297,11 +297,10 @@ error_result = [
         'description': 'Management',
         'location': 'An Enclosure Management Processor(EMP)',
         'match_key': 'd0317252aed04fd8b68e79d7eab08277',
-        'occur_time': 1636704980,
+        'occur_time': 1636704980000,
         'resource_type': '557',
         'sequence_number': 'A891',
         'severity': 'ERROR',
-        'time': '2021-11-12 08:16:20',
         'type': 'EquipmentAlarm'
     }
 ]

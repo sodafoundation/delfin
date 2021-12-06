@@ -204,7 +204,7 @@ class SSHHandler(object):
                 cpu_info = data.get('sc-cpu-type')
                 memory_size = data.get('system-memory-size')
                 if memory_size is not None:
-                    memory_size = memory_size + "MB"
+                    memory_size += "MB"
                 system_memory_size = self.parse_string_to_bytes(
                     memory_size)
                 data_map = {
@@ -357,7 +357,8 @@ class SSHHandler(object):
                                        .SECONDS_TO_MS))
                 time_stamp = alert_map.get('time-stamp-numeric')
                 if time_stamp is not None:
-                    occur_time = int(time_stamp)
+                    occur_time = int(time_stamp) * consts.SecondsNumber\
+                        .SECONDS_TO_MS
                     if not alert_util.is_alert_in_time_range(query_para,
                                                              occur_time):
                         continue
@@ -390,7 +391,6 @@ class SSHHandler(object):
                     'description': description,
                     'resource_type': resource_type,
                     'location': location,
-                    'time': alert_map.get('time-stamp'),
                     'match_key': hashlib.md5(match_key.encode()).hexdigest()
                 }
                 alert_list.append(alert_model)
