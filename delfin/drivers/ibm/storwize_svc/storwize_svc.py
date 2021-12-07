@@ -79,6 +79,7 @@ class StorwizeSVCDriver(driver.StorageDriver):
             'resource_metrics': {
                 constants.ResourceType.VOLUME: consts.VOLUME_CAP,
                 constants.ResourceType.PORT: consts.PORT_CAP,
-                constants.ResourceType.DISK: consts.DISK_CAP
+                constants.ResourceType.DISK: consts.DISK_CAP,
+                constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP
             }
         }
