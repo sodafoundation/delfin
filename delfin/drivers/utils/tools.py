@@ -70,7 +70,7 @@ class Tools(object):
     @staticmethod
     def get_capacity_size(value):
         capacity = 0
-        if value and value != '' and value != '-':
+        if value and value != '' and value != '-' and value != '0B':
             if value.isdigit():
                 capacity = float(value)
             else:
@@ -91,15 +91,16 @@ class Tools(object):
                 value = ''
                 if len(string_info) > 1:
                     for string in string_info[1:]:
-                        value += string.replace('""', '')
-                value_map[key] = value
-                if is_alert and key == 'Description':
+                        value = string.replace('""', '')
+                    value_map[key] = value
+                if is_alert and key and len(string_info) > 1:
                     temp_key = key
                     continue
-                if key != 'CorrectiveActions' and temp_key == 'Description':
-                    value_map[temp_key] += string_info[0]
-                if key == 'CorrectiveActions':
-                    temp_key = ''
+                if is_alert and temp_key and 'entries' not in detail:
+                    if len(string_info) > 1:
+                        value_map[temp_key] += string_info[1]
+                    elif len(string_info) == 1:
+                        value_map[temp_key] += string_info[0]
             else:
                 if value_map != {}:
                     map_list.append(value_map)
