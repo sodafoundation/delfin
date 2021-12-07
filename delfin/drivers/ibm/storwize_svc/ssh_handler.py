@@ -766,7 +766,9 @@ class SSHHandler(object):
         elif 'IOPS' in metric_type.upper():
             value = value / interval
         if target == 'res_time':
-            total_io = abs(now_data.get('to') - last_data.get('to'))
+            total_io = now_data.get('to') - last_data.get('to') if \
+                last_data.get('to') <= now_data.get('to') \
+                else now_data.get('to')
             if total_io > 0:
                 value = value / total_io
         value = round(value, 2)
