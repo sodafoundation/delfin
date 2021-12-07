@@ -48,6 +48,14 @@ class SSHHandler(object):
                     "informational": "Informational",
                     "error": "Major"
                     }
+    CONTRL_STATUS_MAP = {"online": constants.ControllerStatus.NORMAL,
+                         "offline": constants.ControllerStatus.OFFLINE,
+                         "service": constants.ControllerStatus.NORMAL,
+                         "flushing": constants.ControllerStatus.UNKNOWN,
+                         "pending": constants.ControllerStatus.UNKNOWN,
+                         "adding": constants.ControllerStatus.UNKNOWN,
+                         "deleting": constants.ControllerStatus.UNKNOWN
+                         }
 
     DISK_PHYSICAL_TYPE = {
         'fc': constants.DiskPhysicalType.FC,
@@ -74,6 +82,15 @@ class SSHHandler(object):
         'throughput': 'tb',
         'iops': 'to'
     }
+    CONTROLLER_PERF_METRICS = {
+        'readIops': 'ro',
+        'writeIops': 'wo',
+        'readThroughput': 'rb',
+        'writeThroughput': 'wb',
+        'responseTime': 'res_time',
+        'throughput': 'tb',
+        'iops': 'to'
+    }
     PORT_PERF_METRICS = {
         'readIops': 'ro',
         'writeIops': 'wo',
@@ -85,12 +102,14 @@ class SSHHandler(object):
     TARGET_RESOURCE_RELATION = {
         constants.ResourceType.DISK: 'mdsk',
         constants.ResourceType.VOLUME: 'vdsk',
-        constants.ResourceType.PORT: 'port'
+        constants.ResourceType.PORT: 'port',
+        constants.ResourceType.CONTROLLER: 'node'
     }
     RESOURCE_PERF_MAP = {
         constants.ResourceType.DISK: DISK_PERF_METRICS,
         constants.ResourceType.VOLUME: VOLUME_PERF_METRICS,
-        constants.ResourceType.PORT: PORT_PERF_METRICS
+        constants.ResourceType.PORT: PORT_PERF_METRICS,
+        constants.ResourceType.CONTROLLER: CONTROLLER_PERF_METRICS
     }
     SECONDS_TO_MS = 1000
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
@@ -446,7 +465,11 @@ class SSHHandler(object):
     def list_controllers(self, storage_id):
         try:
             controller_list = []
-            control_info = self.exec_ssh_command('lscontroller')
+            controller_cmd = 'lsnode'
+            control_info = self.exec_ssh_command(controller_cmd)
+            if 'command not found' in control_info:
+                controller_cmd = 'lsnodecanister'
+                control_info = self.exec_ssh_command(controller_cmd)
             control_res = control_info.split('\n')
             for i in range(1, len(control_res)):
                 if control_res[i] is None or control_res[i] == '':
@@ -454,22 +477,21 @@ class SSHHandler(object):
                 control_str = ' '.join(control_res[i].split())
                 str_info = control_str.split(' ')
                 control_id = str_info[0]
-                detail_command = 'lscontroller %s' % control_id
+                detail_command = '%s %s' % (controller_cmd, control_id)
                 deltail_info = self.exec_ssh_command(detail_command)
                 control_map = {}
                 self.handle_detail(deltail_info, control_map, split=' ')
-                status = constants.ControllerStatus.NORMAL
-                if control_map.get('degraded') == 'yes':
-                    status = constants.ControllerStatus.DEGRADED
-                soft_version = '%s %s' % (control_map.get('vendor_id'),
-                                          control_map.get('product_id_low'))
+                status = SSHHandler.CONTRL_STATUS_MAP.get(
+                    control_map.get('status'),
+                    constants.ControllerStatus.UNKNOWN)
                 controller_result = {
-                    'name': control_map.get('controller_name'),
+                    'name': control_map.get('name'),
                     'storage_id': storage_id,
                     'native_controller_id': control_map.get('id'),
                     'status': status,
-                    'soft_version': soft_version,
-                    'location': control_map.get('controller_name')
+                    'soft_version':
+                        control_map.get('code_level').split(' ')[0],
+                    'location': control_map.get('name')
                 }
                 controller_list.append(controller_result)
             return controller_list
@@ -711,6 +733,8 @@ class SSHHandler(object):
                     unit = consts.VOLUME_CAP[target]['unit']
                 elif resource_type == constants.ResourceType.DISK:
                     unit = consts.DISK_CAP[target]['unit']
+                elif resource_type == constants.ResourceType.CONTROLLER:
+                    unit = consts.CONTROLLER_CAP[target]['unit']
                 labels = {
                     'storage_id': storage_id,
                     'resource_type': resource_type,
@@ -736,11 +760,15 @@ class SSHHandler(object):
         else:
             value = now_data.get(target) - last_data.get(target)
         if 'THROUGHPUT' in metric_type.upper():
-            value = value / interval / units.M
+            value = value / interval / units.Mi
         elif 'IOSIZE' in metric_type.upper():
-            value = value / units.k
+            value = value / units.Ki
         elif 'IOPS' in metric_type.upper():
             value = value / interval
+        if target == 'res_time':
+            total_io = abs(now_data.get('to') - last_data.get('to'))
+            if total_io > 0:
+                value = value / total_io
         value = round(value, 2)
         if metric_map.get(res_id):
             if metric_map.get(res_id).get(metric_type):
@@ -766,6 +794,11 @@ class SSHHandler(object):
                                 resource_type):
                         if resource_type == constants.ResourceType.PORT:
                             resource_info = data.attrib.get('fc_wwpn')
+                        elif resource_type == constants.\
+                                ResourceType.CONTROLLER:
+                            resource_info = '%s_%s' % (
+                                int(data.attrib.get('node_id'), 16),
+                                data.attrib.get('id'))
                         else:
                             resource_info = '%s_%s' % (data.attrib.get('idx'),
                                                        data.attrib.get('id'))
@@ -791,7 +824,11 @@ class SSHHandler(object):
 
     @staticmethod
     def package_xml_data(file_data, file_time, resource_type):
-        now_data = {}
+        rb = 0
+        wb = 0
+        ro = 0
+        wo = 0
+        res_time = 0
         if resource_type == constants.ResourceType.PORT:
             rb = int(file_data.get('cbr')) + int(file_data.get('hbr')) + int(
                 file_data.get('lnbr')) + int(
@@ -803,38 +840,34 @@ class SSHHandler(object):
                 file_data.get('lner')) + int(file_data.get('rmer'))
             wo = int(file_data.get('cet')) + int(file_data.get('het')) + int(
                 file_data.get('lnet')) + int(file_data.get('rmet'))
-            now_data = {
-                'rb': rb,
-                'wb': wb,
-                'ro': ro,
-                'wo': wo,
-                'tb': rb + wb,
-                'to': ro + wo,
-                'time': int(file_time)
-            }
         elif resource_type == constants.ResourceType.VOLUME:
-            now_data = {
-                'rb': int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE,
-                'wb': int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE,
-                'ro': int(file_data.get('ro')),
-                'wo': int(file_data.get('wo')),
-                'tb': int(file_data.get('rb')) + int(file_data.get('wb')),
-                'to': int(file_data.get('ro')) + int(file_data.get('wo')),
-                'res_time': int(file_data.get('xl')),
-                'time': int(file_time)
-            }
+            rb = int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE
+            wb = int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE
+            ro = int(file_data.get('ro'))
+            wo = int(file_data.get('wo'))
+            res_time = int(file_data.get('xl'))
         elif resource_type == constants.ResourceType.DISK:
-            now_data = {
-                'rb': int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE,
-                'wb': int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE,
-                'ro': int(file_data.get('ro')),
-                'wo': int(file_data.get('wo')),
-                'tb': int(file_data.get('rb')) + int(file_data.get('wb')),
-                'to': int(file_data.get('ro')) + int(file_data.get('wo')),
-                'res_time':
-                    int(file_data.get('re')) + int(file_data.get('we')),
-                'time': int(file_time)
-            }
+            rb = int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE
+            wb = int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE
+            ro = int(file_data.get('ro'))
+            wo = int(file_data.get('wo'))
+            res_time = int(file_data.get('rq')) + int(file_data.get('wq'))
+        elif resource_type == constants.ResourceType.CONTROLLER:
+            rb = int(file_data.get('rb')) * SSHHandler.BYTES_TO_BIT
+            wb = int(file_data.get('wb')) * SSHHandler.BYTES_TO_BIT
+            ro = int(file_data.get('ro'))
+            wo = int(file_data.get('wo'))
+            res_time = int(file_data.get('rq')) + int(file_data.get('wq'))
+        now_data = {
+            'rb': rb,
+            'wb': wb,
+            'ro': ro,
+            'wo': wo,
+            'tb': rb + wb,
+            'to': ro + wo,
+            'res_time': res_time,
+            'time': int(file_time)
+        }
         return now_data
 
     def get_stats_file_data(self, file_map, res_type, metrics, storage_id,
@@ -853,6 +886,11 @@ class SSHHandler(object):
             elif 'Nn' in file_tye and res_type == constants.ResourceType.PORT:
                 self.get_stats_from_file(file_list, metric_map, target_list,
                                          constants.ResourceType.PORT)
+                self.packege_data(storage_id, res_type, metrics, metric_map)
+            elif 'Nn' in file_tye and res_type == \
+                    constants.ResourceType.CONTROLLER:
+                self.get_stats_from_file(file_list, metric_map, target_list,
+                                         constants.ResourceType.CONTROLLER)
                 self.packege_data(storage_id, res_type, metrics, metric_map)
 
     def collect_perf_metrics(self, storage_id, resource_metrics,
@@ -882,6 +920,13 @@ class SSHHandler(object):
                     metrics,
                     storage_id,
                     resource_metrics.get(constants.ResourceType.PORT))
+            if resource_metrics.get(constants.ResourceType.CONTROLLER):
+                self.get_stats_file_data(
+                    file_map,
+                    constants.ResourceType.CONTROLLER,
+                    metrics,
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.CONTROLLER))
         except Exception as err:
             err_msg = "Failed to collect metrics from svc: %s" % \
                       (six.text_type(err))

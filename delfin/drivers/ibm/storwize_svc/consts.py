@@ -114,3 +114,12 @@ DISK_CAP = {
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
 }
+CONTROLLER_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}

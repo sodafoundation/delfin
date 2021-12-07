@@ -432,35 +432,71 @@ trap_alert_result = {
     'location': 'Cluster_192.168.70.125',
     'category': 'Fault'
 }
-get_all_controllers = """id controller_name
-16 controller13
+get_all_controllers = """id name
+2  node_165084
 """
-get_single_controller = """id 16
-controller_name controller13
-WWNN 2100340006260912
-mdisk_link_count 5
-max_mdisk_link_count 10
-degraded no
-vendor_id HUAWEI
-product_id_low XSG1
-product_id_high
-product_revision 4301
-ctrl_s/n
-allow_quorum yes
-fabric_type fc
+get_single_controller = """id 2
+id 2
+name node_165084
+UPS_serial_number 100025I194
+WWNN 500507680100EF7C
+status online
+IO_group_id 0
+IO_group_name io_grp0
+partner_node_id 4
+partner_node_name node1
+config_node yes
+UPS_unique_id 2040000085641244
+port_id 500507680140EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680130EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680110EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680120EF7C
+port_status active
+port_speed 8Gb
+hardware CG8
+iscsi_name iqn.1986-03.com.ibm:2145.cluster8.44.162.140.node165084
+iscsi_alias
+failover_active no
+failover_name node1
+failover_iscsi_name iqn.1986-03.com.ibm:2145.cluster8.44.162.140.node1
+failover_iscsi_alias
+panel_name 165084
+enclosure_id
+canister_id
+enclosure_serial_number
+service_IP_address 8.44.162.142
+service_gateway 8.44.128.1
+service_subnet_mask 255.255.192.0
+service_IP_address_6
+service_gateway_6
+service_prefix_6
+service_IP_mode static
+service_IP_mode_6
 site_id
 site_name
+identify_LED off
+product_mtm 2145-CG8
+code_level 7.8.1.11 (build 135.9.1912100725000)
+serial_number 75PVZNA
+machine_signature 0214-784E-C029-0147
 """
 controller_result = [
     {
-        'name': 'controller13',
+        'name': 'node_165084',
         'storage_id': '12345',
-        'native_controller_id': '16',
+        'native_controller_id': '2',
         'status': 'normal',
-        'soft_version': 'HUAWEI XSG1',
-        'location': 'controller13'
+        'soft_version': '7.8.1.11',
+        'location': 'node_165084'
     }
 ]
+
 get_all_disks = """id name
 4 mdisk4
 """
@@ -986,6 +1022,18 @@ lf="9" lsy="21" lsi="5" pspe="0"
 itw="295290111" icrc="0" bbcz="29140"
 />
 """
+file_nn_node_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<node id="node1" cluster="Cluster_V7000" node_id="0x0000000000000003"
+ cluster_id="0x00000200a1207e1f" ro="960680162" wo="940411371"
+  rb="2605358068064" wb="2619210259131" re="1193453" we="135040076"
+   rq="49536391" wq="151133071"/>
+"""
+file_nn_node_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<node id="node1" cluster="Cluster_V7000" node_id="0x0000000000000003"
+ cluster_id="0x00000200a1207e1f" ro="960684525" wo="940415078"
+  rb="2605359825065" wb="2619220318131" re="1193465"
+   we="135040076" rq="49536391" wq="151134080"/>
+"""
 resource_metrics = {
     'volume': [
         'iops', 'readIops', 'writeIops',
@@ -999,6 +1047,11 @@ resource_metrics = {
         'responseTime'
     ],
     'disk': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ],
+    'controller': [
         'iops', 'readIops', 'writeIops',
         'throughput', 'readThroughput', 'writeThroughput',
         'responseTime'
@@ -1416,7 +1469,9 @@ class TestStorwizeSvcStorageDriver(TestCase):
                                       ET.fromstring(file_nm_1611),
                                       ET.fromstring(file_nm_1612),
                                       ET.fromstring(file_nn_1611),
-                                      ET.fromstring(file_nn_1612)
+                                      ET.fromstring(file_nn_1612),
+                                      ET.fromstring(file_nn_node_1611),
+                                      ET.fromstring(file_nn_node_1612)
                                       ]
         mock_fc_port.return_value = perf_get_port_fc
         metrics = self.driver.collect_perf_metrics(context, storage_id,
