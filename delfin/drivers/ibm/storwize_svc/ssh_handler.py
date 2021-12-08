@@ -354,8 +354,8 @@ class SSHHandler(object):
                     continue
                 volume_str = ' '.join(volume_res[i].split())
                 strinfo = volume_str.split(' ')
-                volume_name = strinfo[1]
-                detail_command = 'lsvdisk -delim : %s' % volume_name
+                volume_id = strinfo[0]
+                detail_command = 'lsvdisk -delim : %s' % volume_id
                 deltail_info = self.exec_ssh_command(detail_command)
                 volume_map = {}
                 self.handle_detail(deltail_info, volume_map, split=':')
@@ -391,7 +391,6 @@ class SSHHandler(object):
                     'deduplicated': deduplicated
                 }
                 volume_list.append(v)
-
             return volume_list
         except exception.DelfinException as e:
             err_msg = "Failed to get storage volume: %s" % (six.text_type(e))
@@ -680,21 +679,19 @@ class SSHHandler(object):
             raise exception.InvalidResults(err_msg)
 
     @staticmethod
-    def handle_stats_filename(file_name, file_map, start_time, end_time):
+    def handle_stats_filename(file_name, file_map):
         name_arr = file_name.split('_')
         file_type = '%s_%s_%s' % (name_arr[0], name_arr[1], name_arr[2])
         file_time = '20%s%s' % (name_arr[3], name_arr[4])
         time_pattern = '%Y%m%d%H%M%S'
         tools = Tools()
         occur_time = tools.time_str_to_timestamp(file_time, time_pattern)
-        if occur_time > end_time or occur_time < start_time:
-            return
         if file_map.get(file_type):
             file_map[file_type][occur_time] = file_name
         else:
             file_map[file_type] = {occur_time: file_name}
 
-    def get_stats_filelist(self, start_time, end_time, file_map):
+    def get_stats_filelist(self, file_map):
         stats_file_command = 'lsdumps -prefix /dumps/iostats'
         file_list = self.exec_ssh_command(stats_file_command)
         file_line = file_list.split('\n')
@@ -703,8 +700,7 @@ class SSHHandler(object):
                 file_arr = ' '.join(file.split()).split(' ')
                 if len(file_arr) > 1:
                     file_name = file_arr[1]
-                    SSHHandler.handle_stats_filename(
-                        file_name, file_map, start_time, end_time)
+                    SSHHandler.handle_stats_filename(file_name, file_map)
         for file_stats in file_map:
             file_map[file_stats] = sorted(file_map.get(file_stats).items(),
                                           key=lambda x: x[0], reverse=False)
@@ -718,7 +714,8 @@ class SSHHandler(object):
                 port_info = self.get_fc_port(storage_id)
                 if port_info:
                     for fc_port in port_info:
-                        if resource_info == fc_port.get('wwn'):
+                        if resource_info.strip('0x').upper() == fc_port.get(
+                                'wwn').upper():
                             resource_id = fc_port.get('native_port_id')
                             resource_name = fc_port.get('name')
                             break
@@ -771,6 +768,8 @@ class SSHHandler(object):
                 else now_data.get('to')
             if total_io > 0:
                 value = value / total_io
+            else:
+                value = 0
         value = round(value, 2)
         if metric_map.get(res_id):
             if metric_map.get(res_id).get(metric_type):
@@ -780,49 +779,68 @@ class SSHHandler(object):
         else:
             metric_map[res_id] = {metric_type: {now_data.get('time'): value}}
 
-    def get_stats_from_file(self, file_list, metric_map, target_list,
+    def get_date_from_each_file(self, file, metric_map, target_list,
+                                resource_type, last_data):
+        with self.ssh_pool.item() as ssh:
+            file_xml = Tools.get_remote_file_to_xml(
+                ssh, file[1], consts.LOCAL_FILE_PATH,
+                consts.REMOTE_FILE_PATH)
+            for data in file_xml:
+                if re.sub(u"\\{.*?}", "", data.tag) == \
+                        SSHHandler.TARGET_RESOURCE_RELATION.get(
                             resource_type):
+                    if resource_type == constants.ResourceType.PORT:
+                        resource_info = data.attrib.get('fc_wwpn')
+                    elif resource_type == constants. \
+                            ResourceType.CONTROLLER:
+                        resource_info = '%s_%s' % (
+                            int(data.attrib.get('node_id'), 16),
+                            data.attrib.get('id'))
+                    else:
+                        resource_info = '%s_%s' % (data.attrib.get('idx'),
+                                                   data.attrib.get('id'))
+                    now_data = SSHHandler.package_xml_data(data.attrib,
+                                                           file[0],
+                                                           resource_type)
+                    if last_data.get(resource_info):
+                        interval = (int(file[0]) - last_data.get(
+                            resource_info).get('time')) / units.k
+                        if interval <= 0:
+                            break
+                        for target in target_list:
+                            device_target = SSHHandler. \
+                                RESOURCE_PERF_MAP.get(resource_type)
+                            SSHHandler.count_metric_data(
+                                last_data.get(resource_info),
+                                now_data, interval,
+                                device_target.get(target),
+                                target, metric_map, resource_info)
+                        last_data[resource_info] = now_data
+                    else:
+                        last_data[resource_info] = now_data
+
+    def get_stats_from_file(self, file_list, metric_map, target_list,
+                            resource_type, start_time, end_time):
         if not file_list:
             return
+        find_first_file = False
+        recent_file = None
         last_data = {}
         for file in file_list:
-            with self.ssh_pool.item() as ssh:
-                file_xml = Tools.get_remote_file_to_xml(
-                    ssh, file[1], consts.LOCAL_FILE_PATH,
-                    consts.REMOTE_FILE_PATH)
-                for data in file_xml:
-                    if re.sub(u"\\{.*?}", "", data.tag) == \
-                            SSHHandler.TARGET_RESOURCE_RELATION.get(
-                                resource_type):
-                        if resource_type == constants.ResourceType.PORT:
-                            resource_info = data.attrib.get('fc_wwpn')
-                        elif resource_type == constants.\
-                                ResourceType.CONTROLLER:
-                            resource_info = '%s_%s' % (
-                                int(data.attrib.get('node_id'), 16),
-                                data.attrib.get('id'))
-                        else:
-                            resource_info = '%s_%s' % (data.attrib.get('idx'),
-                                                       data.attrib.get('id'))
-                        now_data = SSHHandler.package_xml_data(data.attrib,
-                                                               file[0],
-                                                               resource_type)
-                        if last_data.get(resource_info):
-                            interval = (int(file[0]) - last_data.get(
-                                resource_info).get('time')) / units.k
-                            if interval <= 0:
-                                break
-                            for target in target_list:
-                                device_target = SSHHandler.\
-                                    RESOURCE_PERF_MAP.get(resource_type)
-                                SSHHandler.count_metric_data(
-                                    last_data.get(resource_info),
-                                    now_data, interval,
-                                    device_target.get(target),
-                                    target, metric_map, resource_info)
-                            last_data[resource_info] = now_data
-                        else:
-                            last_data[resource_info] = now_data
+            if file[0] >= start_time and file[0] <= end_time:
+                if find_first_file is False:
+                    if recent_file:
+                        self.get_date_from_each_file(recent_file, metric_map,
+                                                     target_list,
+                                                     resource_type,
+                                                     last_data)
+                    self.get_date_from_each_file(file, metric_map, target_list,
+                                                 resource_type, last_data)
+                    find_first_file = True
+                else:
+                    self.get_date_from_each_file(file, metric_map, target_list,
+                                                 resource_type, last_data)
+            recent_file = file
 
     @staticmethod
     def package_xml_data(file_data, file_time, resource_type):
@@ -873,26 +891,30 @@ class SSHHandler(object):
         return now_data
 
     def get_stats_file_data(self, file_map, res_type, metrics, storage_id,
-                            target_list):
+                            target_list, start_time, end_time):
         for file_tye in file_map:
             metric_map = {}
             file_list = file_map.get(file_tye)
             if 'Nv' in file_tye and res_type == constants.ResourceType.VOLUME:
                 self.get_stats_from_file(file_list, metric_map, target_list,
-                                         constants.ResourceType.VOLUME)
+                                         constants.ResourceType.VOLUME,
+                                         start_time, end_time)
                 self.packege_data(storage_id, res_type, metrics, metric_map)
             elif 'Nm' in file_tye and res_type == constants.ResourceType.DISK:
                 self.get_stats_from_file(file_list, metric_map, target_list,
-                                         constants.ResourceType.DISK)
+                                         constants.ResourceType.DISK,
+                                         start_time, end_time)
                 self.packege_data(storage_id, res_type, metrics, metric_map)
             elif 'Nn' in file_tye and res_type == constants.ResourceType.PORT:
                 self.get_stats_from_file(file_list, metric_map, target_list,
-                                         constants.ResourceType.PORT)
+                                         constants.ResourceType.PORT,
+                                         start_time, end_time)
                 self.packege_data(storage_id, res_type, metrics, metric_map)
             elif 'Nn' in file_tye and res_type == \
                     constants.ResourceType.CONTROLLER:
                 self.get_stats_from_file(file_list, metric_map, target_list,
-                                         constants.ResourceType.CONTROLLER)
+                                         constants.ResourceType.CONTROLLER,
+                                         start_time, end_time)
                 self.packege_data(storage_id, res_type, metrics, metric_map)
 
     def collect_perf_metrics(self, storage_id, resource_metrics,
@@ -900,35 +922,39 @@ class SSHHandler(object):
         metrics = []
         file_map = {}
         try:
-            self.get_stats_filelist(start_time, end_time, file_map)
+            self.get_stats_filelist(file_map)
             if resource_metrics.get(constants.ResourceType.VOLUME):
                 self.get_stats_file_data(
                     file_map,
                     constants.ResourceType.VOLUME,
                     metrics,
                     storage_id,
-                    resource_metrics.get(constants.ResourceType.VOLUME))
+                    resource_metrics.get(constants.ResourceType.VOLUME),
+                    start_time, end_time)
             if resource_metrics.get(constants.ResourceType.DISK):
                 self.get_stats_file_data(
                     file_map,
                     constants.ResourceType.DISK,
                     metrics,
                     storage_id,
-                    resource_metrics.get(constants.ResourceType.DISK))
+                    resource_metrics.get(constants.ResourceType.DISK),
+                    start_time, end_time)
             if resource_metrics.get(constants.ResourceType.PORT):
                 self.get_stats_file_data(
                     file_map,
                     constants.ResourceType.PORT,
                     metrics,
                     storage_id,
-                    resource_metrics.get(constants.ResourceType.PORT))
+                    resource_metrics.get(constants.ResourceType.PORT),
+                    start_time, end_time)
             if resource_metrics.get(constants.ResourceType.CONTROLLER):
                 self.get_stats_file_data(
                     file_map,
                     constants.ResourceType.CONTROLLER,
                     metrics,
                     storage_id,
-                    resource_metrics.get(constants.ResourceType.CONTROLLER))
+                    resource_metrics.get(constants.ResourceType.CONTROLLER),
+                    start_time, end_time)
         except Exception as err:
             err_msg = "Failed to collect metrics from svc: %s" % \
                       (six.text_type(err))
