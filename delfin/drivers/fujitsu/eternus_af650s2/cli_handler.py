@@ -339,6 +339,7 @@ class CliHandler(object):
                 'manufacturer': disk_map[key].get('Vendor ID'),
                 'model': disk_map[key].get('Type'),
                 'firmware': disk_map[key].get('Firmware Revision'),
+                'location': disk_map[key].get('Location'),
                 'speed': speed,
                 'capacity': size,
                 'status': status,
