@@ -29,6 +29,8 @@ class UnityStorDriver(driver.StorageDriver):
     HEALTH_OK = (5, 7)
     STORAGE_STATUS_MAP = {5: constants.StorageStatus.NORMAL,
                           7: constants.StorageStatus.NORMAL,
+                          15: constants.StorageStatus.NORMAL,
+                          20: constants.StorageStatus.NORMAL,
                           10: constants.StorageStatus.DEGRADED
                           }
     FILESYSTEM_FLR_MAP = {0: constants.WORMType.NON_WORM,
@@ -65,6 +67,17 @@ class UnityStorDriver(driver.StorageDriver):
     def close_connection(self):
         self.rest_handler.logout()
 
+    def get_disk_capacity(self, context):
+        raw_capacity = 0
+        try:
+            disk_info = self.list_disks(context)
+            if disk_info:
+                for disk in disk_info:
+                    raw_capacity += disk.get('capacity')
+        except Exception:
+            LOG.info("get disk info fail in get_disk_capacity")
+        return raw_capacity
+
     def get_storage(self, context):
         system_info = self.rest_handler.get_storage()
         capacity = self.rest_handler.get_capacity()
@@ -95,6 +108,8 @@ class UnityStorDriver(driver.StorageDriver):
                     if content:
                         version = content.get('id')
                         break
+            raw_capacity = self.get_disk_capacity(context)
+            raw_capacity = raw_capacity if raw_capacity else int(total)
             system_result = {
                 'name': name,
                 'vendor': 'DELL EMC',
@@ -105,7 +120,7 @@ class UnityStorDriver(driver.StorageDriver):
                 'location': '',
                 'subscribed_capacity': int(subs),
                 'total_capacity': int(total),
-                'raw_capacity': int(total),
+                'raw_capacity': raw_capacity,
                 'used_capacity': int(used),
                 'free_capacity': int(free)
             }
