@@ -1472,4 +1472,3 @@ class TestUNITYStorDriver(TestCase):
         mock_qtree.return_value = GET_ALL_QTREE
         quota = UnityStorDriver(**ACCESS_INFO).list_quotas(context)
         self.assertEqual(quota, quota_result)
-
