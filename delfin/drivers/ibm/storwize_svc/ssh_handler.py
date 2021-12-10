@@ -489,7 +489,7 @@ class SSHHandler(object):
                     'native_controller_id': control_map.get('id'),
                     'status': status,
                     'soft_version':
-                        control_map.get('code_level').split(' ')[0],
+                        control_map.get('code_level', '').split(' ')[0],
                     'location': control_map.get('name')
                 }
                 controller_list.append(controller_result)
