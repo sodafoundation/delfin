@@ -790,7 +790,10 @@ class SSHHandler(object):
                         SSHHandler.TARGET_RESOURCE_RELATION.get(
                             resource_type):
                     if resource_type == constants.ResourceType.PORT:
-                        resource_info = data.attrib.get('fc_wwpn')
+                        if data.attrib.get('fc_wwpn'):
+                            resource_info = data.attrib.get('fc_wwpn')
+                        else:
+                            continue
                     elif resource_type == constants. \
                             ResourceType.CONTROLLER:
                         resource_info = '%s_%s' % (
@@ -960,5 +963,4 @@ class SSHHandler(object):
                       (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
-
         return metrics
