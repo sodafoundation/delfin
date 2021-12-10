@@ -334,6 +334,15 @@ No.   Name No.  Name                        Protection
 CLI>
 """
 
+VOLUMES = """[Volume No.],[Volume Name],[Status],[Type],[RG or TPP or\
+ FTRP No.],[RG or TPP or FTRP Name],[Size(MB)],[Copy Protection]
+0,volume_10,Available,Standard,0,pool-1,1024,Disable
+1,volume-wsv,Available,TPV,0,thin-1,200,Disable
+2,volume-4,Available,SDPV,1,pool-2,2048,Disable
+3,volume_2,Available,SDV,0,pool-1,209715,Disable
+4,voo-1,Available,TPV,0,thin-1,500,Disable
+CLI>"""
+
 STORAGE_RESULT = {
     'name': 'dx100-test',
     'vendor': 'FUJITSU',
