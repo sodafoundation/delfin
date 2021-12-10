@@ -142,15 +142,17 @@ class CliHandler(object):
                                  len(volumes_type_arr)):
                 volume_type_dict = {}
                 volumes_type_row_arr = volumes_type_arr[row_num].split()
-                if volumes_type_row_arr:
-                    volume_id = volumes_type_row_arr[DIGITAL_CONSTANT.ZERO_INT]
-                    volume_type = volumes_type_row_arr[
-                        DIGITAL_CONSTANT.MINUS_SIX_INT]
-                    volume_type_dict['type'] = volume_type.lower() if \
-                        volume_type else constants.VolumeType.THICK
-                    volume_type_dict['used_capacity'] = int(
-                        volumes_type_row_arr[DIGITAL_CONSTANT.MINUS_ONE_INT])
-                    volume_id_dict[volume_id] = volume_type_dict
+                if not volumes_type_row_arr or\
+                        consts.CLI_STR in volumes_type_row_arr:
+                    continue
+                volume_id = volumes_type_row_arr[DIGITAL_CONSTANT.ZERO_INT]
+                volume_type = volumes_type_row_arr[
+                    DIGITAL_CONSTANT.MINUS_SIX_INT]
+                volume_type_dict['type'] = volume_type.lower() if \
+                    volume_type else constants.VolumeType.THICK
+                volume_type_dict['used_capacity'] = int(
+                    volumes_type_row_arr[DIGITAL_CONSTANT.MINUS_ONE_INT])
+                volume_id_dict[volume_id] = volume_type_dict
         return volume_id_dict
 
     def get_alerts(self, command, query_para, list_alert=None):
@@ -186,6 +188,8 @@ class CliHandler(object):
         events_error_dict = dict()
         events_error_arr = events_error_str.split('\n')
         for events_error_row_str in events_error_arr:
+            if events_error_row_str.strip() in consts.CLI_STR:
+                continue
             error_description_dict = dict()
             time_stamp = Tools().time_str_to_timestamp(
                 events_error_row_str[:consts.OCCUR_TIME_RANGE].strip(),

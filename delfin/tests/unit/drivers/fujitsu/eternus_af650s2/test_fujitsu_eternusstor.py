@@ -45,6 +45,7 @@ Name              [dx100-test]
 Installation Site [test location]
 Contact           []
 Description       [test dx100-test]
+CLI>
 """
 STORAGE_MODEL_DATA = """
 Enclosure View
@@ -61,9 +62,11 @@ Enclosure View
  Firmware Version                  [V10L50-9003]
 
  Controller Enclosure (2.5")       [Normal (Inside unused parts)]
+CLI>
 """
 STORAGE_STATUS_DATA = """
 Summary Status  [Normal]
+CLI>
 """
 NODE_DATAS = """
 CM#0 Information
@@ -279,6 +282,7 @@ Access denied
 f.ce@192.168.1.1's password:
 
 Currently Network Configuration is set to factory default.
+CLI>
 """
 NODE_STATUS_DATAS = """
 Controller Enclosure Information
@@ -299,11 +303,13 @@ Controller Enclosure Status
   CE-Disk#4    [Present                      ]  CE-Disk#5    [Available ]
   CE-Disk#6    [Available                    ]  CE-Disk#7    [Available ]
   CE-Disk#8    [Available                    ]  CE-Disk#9    [Available ]
+CLI>
 """
 POOL_DATAS = """
 [RAID Group No.],[RAID Group Name,R,M,Status,TotalCapacity(MB),FreeCapacity(MB)
 0,pool-1,RAID1+0,CM#0,Available,1118208,1115926
 1,pool-2,RAID5,CM#1,Available,1118208,1118208
+CLI>
 """
 VOLUME_TPV_DATAS \
     = """Volume Status RG or TPP or FTRP TFOG Size(MB) Copy Allocation Used Me
@@ -311,10 +317,12 @@ No. Name No.  Name No. Name Protection Status (%) Level     Capacity(MB)
 ----- ------ ---- ---- ------- --- ------ --- ---- --- --- --- -- --- -----
 1 volume-wsv Available 0 thin-1 - - 200 Disable  Thick  Normal - 80 High 200
 4 voo-1 Available 0 thin-1 - - 500 Disable  Thin  Normal >500 80 High 0
+CLI>
 """
 VOLUME_FTV_DATAS \
     = """Error: E0331 Flexible tier mode is not valid.
              [0305-0505] -type ftv
+CLI>
 """
 VOLUME_DATAS \
     = """Volume Status Type RG or TPP or FTRP Si ze(MB)  Copy
@@ -323,6 +331,7 @@ No.   Name No.  Name                        Protection
     0 volume_10 Available Standard 0 pool-1 1024 Disable
     1 volume_11 Available Standard 0 pool-1 1024 Disable
     3 volume_2 Available SDV 0 pool-1 209715 Disable
+CLI>
 """
 
 STORAGE_RESULT = {
@@ -391,7 +400,8 @@ SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWAHMAA H603 15299 A1>
 2021-08-19 02:33:08   Error         P 85400001   SSD 2.5 DE#00-Slot#1(\
 SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9KJA H603 15299 A1>
 2021-08-19 02:33:08   Error         P 85400000   SSD 2.5 DE#00-Slot#0(\
-SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9GMA H603 15299 A1>"""
+SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9GMA H603 15299 A1>
+CLI>"""
 
 LIST_ALERT_WARNING = """2021-08-19 02:33:08   Warning       P 85400008   SSD\
 Fault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299 A1>
@@ -410,7 +420,8 @@ HUSMM1640ASS204 0QWAHMAA H603 15299 A1>
 2021-08-19 02:33:08   Warning       P 85400001   SSD 2.5 DE#00-S Fault (DE) <\
 HUSMM1640ASS204 0QWA9KJA H603 15299 A1>
 2021-08-19 02:33:08   Warning       P 85400000   SSD 2.5 DE#00- Fault (DE) <\
-HUSMM1640ASS204 0QWA9GMA H603 15299 A1>"""
+HUSMM1640ASS204 0QWA9GMA H603 15299 A1>
+CLI>"""
 
 
 ALERTS_INFO = {
@@ -675,7 +686,8 @@ Controller Enclosure Disk #11 Information
  <Disk Patrol Information>
    Total completed passes               [0Cycles]
    Progress with current pass           [3%]
-   Completed passes since last Power On [0Cycles]"""
+   Completed passes since last Power On [0Cycles]
+CLI>"""
 
 PORT_LIST_INFO = """
 Port                          CM#0 CA#0 Port#0       CM#0 CA#0 Port#1
@@ -716,7 +728,8 @@ REC Transfer Mode Consistency -                      -
 REC Transfer Mode Through     -                      -
 TFO Transfer Mode             -                      -
 WWN Mode                      Custom                 Custom
-WWPN                          500000E0DA0A7D30       500000E0DA0A7D31"""
+WWPN                          500000E0DA0A7D30       500000E0DA0A7D31
+CLI>"""
 
 FCOE_INFO = """Port                          CM#0 CA#0 Port#0           CM#0\
  CA#0 Port#1
@@ -743,7 +756,8 @@ Reset Scope                   I_T_L                      I_T_L
 Reserve Cancel at Chip Reset  Disable                    -
 FCF VLAN ID                   Disable                    Disable
 FCF Fabric Name               Disable                    Disable
-MAC Address                   01:02:03:06:05:06          01:02:03:06:05:07"""
+MAC Address                   01:02:03:06:05:06          01:02:03:06:05:07
+CLI>"""
 
 
 def create_driver():

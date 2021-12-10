@@ -28,33 +28,34 @@ class EternusAf650s2Driver(driver.StorageDriver):
         volumes_arr = volumes_str.split('\n')
         for row_num in range(DIGITAL_CONSTANT.THREE_INT, len(volumes_arr)):
             volumes_row_arr = volumes_arr[row_num].split()
-            if volumes_row_arr:
-                volume_name = volumes_row_arr[consts.VOLUME_NAME_COUNT]
-                volume_status = volumes_row_arr[consts.VOLUME_STATUS_COUNT]
-                volume_native_volume_id = volumes_row_arr[
-                    consts.VOLUME_ID_COUNT]
-                native_storage_pool_id = volumes_row_arr[
-                    consts.NATIVE_STORAGE_POOL_ID_COUNT]
-                total_capacity = int(
-                    volumes_row_arr[consts.TOTAL_CAPACITY_COUNT]) * units.Mi
-                type_capacity = volume_id_dict.get(volume_native_volume_id, {})
-                volume_type = type_capacity.get('type',
-                                                constants.VolumeType.THICK)
-                used_capacity = type_capacity.get('used_capacity',
-                                                  DIGITAL_CONSTANT.ZERO_INT)
-                volume = {
-                    'name': volume_name,
-                    'storage_id': self.storage_id,
-                    'status': consts.LIST_VOLUMES_STATUS_MAP.get(
-                        volume_status),
-                    'native_volume_id': volume_native_volume_id,
-                    'native_storage_pool_id': native_storage_pool_id,
-                    'type': volume_type,
-                    'total_capacity': total_capacity,
-                    'used_capacity': used_capacity,
-                    'free_capacity': total_capacity - used_capacity
-                }
-                volumes.append(volume)
+            if not volumes_row_arr or consts.CLI_STR in volumes_row_arr:
+                continue
+            volume_name = volumes_row_arr[consts.VOLUME_NAME_COUNT]
+            volume_status = volumes_row_arr[consts.VOLUME_STATUS_COUNT]
+            volume_native_volume_id = volumes_row_arr[
+                consts.VOLUME_ID_COUNT]
+            native_storage_pool_id = volumes_row_arr[
+                consts.NATIVE_STORAGE_POOL_ID_COUNT]
+            total_capacity = int(
+                volumes_row_arr[consts.TOTAL_CAPACITY_COUNT]) * units.Mi
+            type_capacity = volume_id_dict.get(volume_native_volume_id, {})
+            volume_type = type_capacity.get('type',
+                                            constants.VolumeType.THICK)
+            used_capacity = type_capacity.get('used_capacity',
+                                              DIGITAL_CONSTANT.ZERO_INT)
+            volume = {
+                'name': volume_name,
+                'storage_id': self.storage_id,
+                'status': consts.LIST_VOLUMES_STATUS_MAP.get(
+                    volume_status),
+                'native_volume_id': volume_native_volume_id,
+                'native_storage_pool_id': native_storage_pool_id,
+                'type': volume_type,
+                'total_capacity': total_capacity,
+                'used_capacity': used_capacity,
+                'free_capacity': total_capacity - used_capacity
+            }
+            volumes.append(volume)
         return volumes
 
     def add_trap_config(self, context, trap_config):
