@@ -15,11 +15,13 @@ import sys
 from unittest import TestCase, mock
 
 sys.modules['delfin.cryptor'] = mock.Mock()
+
+from delfin.drivers.fujitsu.eternus_af_dx.eternus_ssh_client import \
+    EternusSSHPool
 import paramiko
-from delfin.drivers.utils.ssh_client import SSHPool
 from delfin import context
-from delfin.drivers.fujitsu.eternus_af650s2.eternus_af650s2_stor import \
-    EternusAf650s2Driver
+from delfin.drivers.fujitsu.eternus_af_dx.eternus_af_dx_stor import \
+    EternusAfDxDriver
 
 
 class Request:
@@ -45,6 +47,7 @@ Name              [dx100-test]
 Installation Site [test location]
 Contact           []
 Description       [test dx100-test]
+CLI>
 """
 STORAGE_MODEL_DATA = """
 Enclosure View
@@ -61,9 +64,11 @@ Enclosure View
  Firmware Version                  [V10L50-9003]
 
  Controller Enclosure (2.5")       [Normal (Inside unused parts)]
+CLI>
 """
 STORAGE_STATUS_DATA = """
 Summary Status  [Normal]
+CLI>
 """
 NODE_DATAS = """
 CM#0 Information
@@ -279,6 +284,7 @@ Access denied
 f.ce@192.168.1.1's password:
 
 Currently Network Configuration is set to factory default.
+CLI>
 """
 NODE_STATUS_DATAS = """
 Controller Enclosure Information
@@ -299,11 +305,13 @@ Controller Enclosure Status
   CE-Disk#4    [Present                      ]  CE-Disk#5    [Available ]
   CE-Disk#6    [Available                    ]  CE-Disk#7    [Available ]
   CE-Disk#8    [Available                    ]  CE-Disk#9    [Available ]
+CLI>
 """
 POOL_DATAS = """
 [RAID Group No.],[RAID Group Name,R,M,Status,TotalCapacity(MB),FreeCapacity(MB)
 0,pool-1,RAID1+0,CM#0,Available,1118208,1115926
 1,pool-2,RAID5,CM#1,Available,1118208,1118208
+CLI>
 """
 VOLUME_TPV_DATAS \
     = """Volume Status RG or TPP or FTRP TFOG Size(MB) Copy Allocation Used Me
@@ -311,10 +319,12 @@ No. Name No.  Name No. Name Protection Status (%) Level     Capacity(MB)
 ----- ------ ---- ---- ------- --- ------ --- ---- --- --- --- -- --- -----
 1 volume-wsv Available 0 thin-1 - - 200 Disable  Thick  Normal - 80 High 200
 4 voo-1 Available 0 thin-1 - - 500 Disable  Thin  Normal >500 80 High 0
+CLI>
 """
 VOLUME_FTV_DATAS \
     = """Error: E0331 Flexible tier mode is not valid.
              [0305-0505] -type ftv
+CLI>
 """
 VOLUME_DATAS \
     = """Volume Status Type RG or TPP or FTRP Si ze(MB)  Copy
@@ -323,7 +333,17 @@ No.   Name No.  Name                        Protection
     0 volume_10 Available Standard 0 pool-1 1024 Disable
     1 volume_11 Available Standard 0 pool-1 1024 Disable
     3 volume_2 Available SDV 0 pool-1 209715 Disable
+CLI>
 """
+
+VOLUMES = """[Volume No.],[Volume Name],[Status],[Type],[RG or TPP or\
+ FTRP No.],[RG or TPP or FTRP Name],[Size(MB)],[Copy Protection]
+0,volume_10,Available,Standard,0,pool-1,1024,Disable
+1,volume-wsv,Available,TPV,0,thin-1,200,Disable
+2,volume-4,Available,SDPV,1,pool-2,2048,Disable
+3,volume_2,Available,SDV,0,pool-1,209715,Disable
+4,voo-1,Available,TPV,0,thin-1,500,Disable
+CLI>"""
 
 STORAGE_RESULT = {
     'name': 'dx100-test',
@@ -391,7 +411,8 @@ SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWAHMAA H603 15299 A1>
 2021-08-19 02:33:08   Error         P 85400001   SSD 2.5 DE#00-Slot#1(\
 SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9KJA H603 15299 A1>
 2021-08-19 02:33:08   Error         P 85400000   SSD 2.5 DE#00-Slot#0(\
-SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9GMA H603 15299 A1>"""
+SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9GMA H603 15299 A1>
+CLI>"""
 
 LIST_ALERT_WARNING = """2021-08-19 02:33:08   Warning       P 85400008   SSD\
 Fault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299 A1>
@@ -410,8 +431,8 @@ HUSMM1640ASS204 0QWAHMAA H603 15299 A1>
 2021-08-19 02:33:08   Warning       P 85400001   SSD 2.5 DE#00-S Fault (DE) <\
 HUSMM1640ASS204 0QWA9KJA H603 15299 A1>
 2021-08-19 02:33:08   Warning       P 85400000   SSD 2.5 DE#00- Fault (DE) <\
-HUSMM1640ASS204 0QWA9GMA H603 15299 A1>"""
-
+HUSMM1640ASS204 0QWA9GMA H603 15299 A1>
+CLI>"""
 
 ALERTS_INFO = {
     'alert_id': '85400008',
@@ -675,7 +696,8 @@ Controller Enclosure Disk #11 Information
  <Disk Patrol Information>
    Total completed passes               [0Cycles]
    Progress with current pass           [3%]
-   Completed passes since last Power On [0Cycles]"""
+   Completed passes since last Power On [0Cycles]
+CLI>"""
 
 PORT_LIST_INFO = """
 Port                          CM#0 CA#0 Port#0       CM#0 CA#0 Port#1
@@ -716,7 +738,8 @@ REC Transfer Mode Consistency -                      -
 REC Transfer Mode Through     -                      -
 TFO Transfer Mode             -                      -
 WWN Mode                      Custom                 Custom
-WWPN                          500000E0DA0A7D30       500000E0DA0A7D31"""
+WWPN                          500000E0DA0A7D30       500000E0DA0A7D31
+CLI>"""
 
 FCOE_INFO = """Port                          CM#0 CA#0 Port#0           CM#0\
  CA#0 Port#1
@@ -743,67 +766,70 @@ Reset Scope                   I_T_L                      I_T_L
 Reserve Cancel at Chip Reset  Disable                    -
 FCF VLAN ID                   Disable                    Disable
 FCF Fabric Name               Disable                    Disable
-MAC Address                   01:02:03:06:05:06          01:02:03:06:05:07"""
+MAC Address                   01:02:03:06:05:06          01:02:03:06:05:07
+CLI>"""
 
 
 def create_driver():
-    SSHPool.do_exec = mock.Mock(side_effect=["Summary Status  [Normal]"])
-    return EternusAf650s2Driver(**ACCESS_INFO)
+    EternusSSHPool.do_exec_shell = mock.Mock(
+        side_effect=["Summary Status  [Normal]"])
+    return EternusAfDxDriver(**ACCESS_INFO)
 
 
-class TestEternusAf650s2Driver(TestCase):
+class TestEternusAfDxDriver(TestCase):
     driver = create_driver()
 
     def test_get_storage(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[STORAGE_NAME_DATA,
-                                                 STORAGE_MODEL_DATA,
-                                                 STORAGE_STATUS_DATA,
-                                                 DISK_LIST_INFO,
-                                                 POOL_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[STORAGE_NAME_DATA,
+                         STORAGE_MODEL_DATA,
+                         STORAGE_STATUS_DATA,
+                         DISK_LIST_INFO,
+                         POOL_DATAS])
         storage = self.driver.get_storage(context)
         self.assertDictEqual(storage, STORAGE_RESULT)
 
     def test_list_storage_pools(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[POOL_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[POOL_DATAS])
         pools = self.driver.list_storage_pools(context)
         self.assertDictEqual(pools[0], POOL_RESULT[0])
 
     def test_list_volumes(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[VOLUME_TPV_DATAS,
-                                                 VOLUME_FTV_DATAS,
-                                                 VOLUME_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[VOLUMES, VOLUME_TPV_DATAS, VOLUME_FTV_DATAS])
         volumes = self.driver.list_volumes(context)
         self.assertDictEqual(volumes[0], VOLUME_RESULT[0])
 
     def test_get_controllers(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[NODE_DATAS,
-                                                 NODE_STATUS_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[NODE_DATAS, NODE_STATUS_DATAS])
         controllers = self.driver.list_controllers(context)
         self.assertDictEqual(controllers[0], CONTROLLER_RESULT[0])
 
     def test_list_alerts(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[LIST_ALERT_WARNING,
-                                                 LIST_ALERT_ERROR])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[LIST_ALERT_WARNING,
+                         LIST_ALERT_ERROR])
         list_alerts = self.driver.list_alerts(context)
         ALERTS_INFO['occur_time'] = list_alerts[0].get('occur_time')
         ALERTS_INFO['match_key'] = list_alerts[0].get('match_key')
         self.assertDictEqual(list_alerts[0], ALERTS_INFO)
 
     def test_list_disks(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[DISK_LIST_INFO])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[DISK_LIST_INFO])
         data = self.driver.list_disks(context)
         self.assertEqual(
             data[0].get('name'), 'CE-Disk#0')
 
     def test_list_ports(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=['', FCOE_INFO])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=['', FCOE_INFO])
         data = self.driver.list_ports(context)
         self.assertEqual(
             data[0].get('name'), 'CM#0 CA#0 Port#0')

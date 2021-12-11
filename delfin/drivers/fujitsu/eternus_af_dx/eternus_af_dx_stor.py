@@ -2,16 +2,17 @@ import six
 from oslo_log import log
 from oslo_utils import units
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.fujitsu.eternus_af650s2 import cli_handler, consts
-from delfin.drivers.fujitsu.eternus_af650s2.consts import DIGITAL_CONSTANT
+from delfin.drivers.fujitsu.eternus_af_dx import cli_handler, consts
+from delfin.drivers.fujitsu.eternus_af_dx.consts import DIGITAL_CONSTANT
 from delfin.drivers.utils.tools import Tools
 
 LOG = log.getLogger(__name__)
 
 
-class EternusAf650s2Driver(driver.StorageDriver):
+class EternusAfDxDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -19,43 +20,34 @@ class EternusAf650s2Driver(driver.StorageDriver):
         self.login = self.cli_handler.login()
 
     def list_volumes(self, context):
-        volumes = []
-        volume_id_dict = self.cli_handler.get_volumes_type(
-            command=consts.GET_LIST_VOLUMES_TYPE_TPV)
-        volume_id_dict = self.cli_handler.get_volumes_type(
-            volume_id_dict, consts.GET_LIST_VOLUMES_TYPE_FTV)
-        volumes_str = self.cli_handler.exec_command(consts.GET_LIST_VOLUMES)
-        volumes_arr = volumes_str.split('\n')
-        for row_num in range(DIGITAL_CONSTANT.THREE_INT, len(volumes_arr)):
-            volumes_row_arr = volumes_arr[row_num].split()
-            if volumes_row_arr:
-                volume_name = volumes_row_arr[consts.VOLUME_NAME_COUNT]
-                volume_status = volumes_row_arr[consts.VOLUME_STATUS_COUNT]
-                volume_native_volume_id = volumes_row_arr[
-                    consts.VOLUME_ID_COUNT]
-                native_storage_pool_id = volumes_row_arr[
-                    consts.NATIVE_STORAGE_POOL_ID_COUNT]
-                total_capacity = int(
-                    volumes_row_arr[consts.TOTAL_CAPACITY_COUNT]) * units.Mi
-                type_capacity = volume_id_dict.get(volume_native_volume_id, {})
-                volume_type = type_capacity.get('type',
-                                                constants.VolumeType.THICK)
-                used_capacity = type_capacity.get('used_capacity',
-                                                  DIGITAL_CONSTANT.ZERO_INT)
-                volume = {
-                    'name': volume_name,
-                    'storage_id': self.storage_id,
-                    'status': consts.LIST_VOLUMES_STATUS_MAP.get(
-                        volume_status),
-                    'native_volume_id': volume_native_volume_id,
-                    'native_storage_pool_id': native_storage_pool_id,
-                    'type': volume_type,
-                    'total_capacity': total_capacity,
-                    'used_capacity': used_capacity,
-                    'free_capacity': total_capacity - used_capacity
-                }
-                volumes.append(volume)
-        return volumes
+        list_volumes = []
+        volumes = self.cli_handler.get_volumes_or_pool(
+            consts.GET_LIST_VOLUMES, consts.VOLUME_TITLE_PATTERN)
+        for volume_dict in (volumes or []):
+            volume_native_volume_id = volume_dict.get('volumeno.')
+            volume_id_dict = self.cli_handler.get_volumes_type(
+                command=volume_dict.get('type'))
+            type_capacity = volume_id_dict.get(volume_native_volume_id, {})
+            volume_type = type_capacity.get('type',
+                                            constants.VolumeType.THICK)
+            used_capacity = type_capacity.get('used_capacity',
+                                              DIGITAL_CONSTANT.ZERO_INT)
+            total_capacity = float(
+                volume_dict.get('size(mb)')) * units.Mi
+            volume = {
+                'name': volume_dict.get('volumename'),
+                'storage_id': self.storage_id,
+                'status': consts.LIST_VOLUMES_STATUS_MAP.get(
+                    volume_dict.get('status')),
+                'native_volume_id': volume_native_volume_id,
+                'native_storage_pool_id': volume_dict.get('rgortpporftrpno.'),
+                'type': volume_type,
+                'total_capacity': int(total_capacity),
+                'used_capacity': used_capacity,
+                'free_capacity': total_capacity - used_capacity
+            }
+            list_volumes.append(volume)
+        return list_volumes
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -149,31 +141,29 @@ class EternusAf650s2Driver(driver.StorageDriver):
                     False)
             return disk_list
         except Exception as e:
-            LOG.error("Failed to get disk from fujitsu eternus %s" %
-                      (six.text_type(e)))
-            raise e
+            error = six.text_type(e)
+            LOG.error("Failed to get disk from fujitsu eternus %s" % error)
+            raise exception.InvalidResults(error)
 
     def list_ports(self, context):
         try:
-            port_list = \
+            port_list = self.cli_handler.format_data(
+                consts.GET_PORT_FC_PARAMETERS, self.storage_id,
+                self.cli_handler.format_fc_ports, True)
+            port_list.extend(
                 self.cli_handler.format_data(
-                    consts.GET_PORT_COMMAND,
+                    consts.GET_PORT_FCOE_PARAMETERS,
                     self.storage_id,
-                    self.cli_handler.format_fc_ports,
-                    True)
-            port_list.extend(self.cli_handler.format_data(
-                consts.GET_PORT_COMMAND,
-                self.storage_id,
-                self.cli_handler.format_fcoe_ports,
-                True))
+                    self.cli_handler.format_fcoe_ports, True))
             return port_list
         except Exception as e:
-            LOG.error("Failed to get ports from fujitsu eternus %s" %
-                      (six.text_type(e)))
-            raise e
+            error = six.text_type(e)
+            LOG.error("Failed to get ports from fujitsu eternus %s" % error)
+            raise exception.InvalidResults(error)
 
     def list_storage_pools(self, context):
-        pools = self.cli_handler.get_pools()
+        pools = self.cli_handler.get_volumes_or_pool(
+            consts.GET_STORAGE_POOL, consts.POOL_TITLE_PATTERN)
         pool_list = []
         for pool in (pools or []):
             free_cap = float(
