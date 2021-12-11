@@ -30,23 +30,27 @@ class CliHandler(object):
         try:
             self.exec_command(consts.GET_STORAGE_STATUS)
         except Exception as e:
-            LOG.error("Login error: %s", six.text_type(e))
-            raise e
+            error = six.text_type(e)
+            LOG.error("Login error: %s", error)
+            raise exception.SSHException(error)
 
     def exec_command(self, command):
+        res = ''
         try:
             self.lock.acquire()
-            re = self.ssh_pool.do_exec_shell([command])
+            res = self.ssh_pool.do_exec_shell([command])
+        except Exception as e:
+            LOG.error("Login error: %s", six.text_type(e))
         finally:
             self.lock.release()
-        if re:
-            if 'Error: ' in re:
+        if res:
+            if 'Error: ' in res:
                 LOG.error(re)
                 return None
-            elif re.strip() in '^':
-                LOG.error(re)
+            elif res.strip() in '^':
+                LOG.error(res)
                 return None
-        return re
+        return res
 
     def common_data_encapsulation(self, command):
         common_data_str = self.exec_command(command)

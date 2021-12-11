@@ -2,6 +2,7 @@ import six
 from oslo_log import log
 from oslo_utils import units
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.fujitsu.eternus_af_dx import cli_handler, consts
@@ -140,9 +141,9 @@ class EternusAfDxDriver(driver.StorageDriver):
                     False)
             return disk_list
         except Exception as e:
-            LOG.error("Failed to get disk from fujitsu eternus %s" %
-                      (six.text_type(e)))
-            raise e
+            error = six.text_type(e)
+            LOG.error("Failed to get disk from fujitsu eternus %s" % error)
+            raise exception.InvalidResults(error)
 
     def list_ports(self, context):
         try:
@@ -154,11 +155,11 @@ class EternusAfDxDriver(driver.StorageDriver):
                     consts.GET_PORT_FCOE_PARAMETERS,
                     self.storage_id,
                     self.cli_handler.format_fcoe_ports, True))
+            return port_list
         except Exception as e:
-            LOG.error("Failed to get ports from fujitsu eternus %s" %
-                      (six.text_type(e)))
-            raise e
-        return port_list
+            error = six.text_type(e)
+            LOG.error("Failed to get ports from fujitsu eternus %s" % error)
+            raise exception.InvalidResults(error)
 
     def list_storage_pools(self, context):
         pools = self.cli_handler.get_volumes_or_pool(
