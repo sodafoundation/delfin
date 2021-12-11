@@ -15,11 +15,13 @@ import sys
 from unittest import TestCase, mock
 
 sys.modules['delfin.cryptor'] = mock.Mock()
+
+from delfin.drivers.fujitsu.eternus_af_dx.eternus_ssh_client import \
+    EternusSSHPool
 import paramiko
-from delfin.drivers.utils.ssh_client import SSHPool
 from delfin import context
-from delfin.drivers.fujitsu.eternus_af650s2.eternus_af650s2_stor import \
-    EternusAf650s2Driver
+from delfin.drivers.fujitsu.eternus_af_dx.eternus_af_dx_stor import \
+    EternusAfDxDriver
 
 
 class Request:
@@ -432,7 +434,6 @@ HUSMM1640ASS204 0QWA9KJA H603 15299 A1>
 HUSMM1640ASS204 0QWA9GMA H603 15299 A1>
 CLI>"""
 
-
 ALERTS_INFO = {
     'alert_id': '85400008',
     'severity': 'Warning',
@@ -770,63 +771,65 @@ CLI>"""
 
 
 def create_driver():
-    SSHPool.do_exec = mock.Mock(side_effect=["Summary Status  [Normal]"])
-    return EternusAf650s2Driver(**ACCESS_INFO)
+    EternusSSHPool.do_exec_shell = mock.Mock(
+        side_effect=["Summary Status  [Normal]"])
+    return EternusAfDxDriver(**ACCESS_INFO)
 
 
-class TestEternusAf650s2Driver(TestCase):
+class TestEternusAfDxDriver(TestCase):
     driver = create_driver()
 
     def test_get_storage(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[STORAGE_NAME_DATA,
-                                                 STORAGE_MODEL_DATA,
-                                                 STORAGE_STATUS_DATA,
-                                                 DISK_LIST_INFO,
-                                                 POOL_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[STORAGE_NAME_DATA,
+                         STORAGE_MODEL_DATA,
+                         STORAGE_STATUS_DATA,
+                         DISK_LIST_INFO,
+                         POOL_DATAS])
         storage = self.driver.get_storage(context)
         self.assertDictEqual(storage, STORAGE_RESULT)
 
     def test_list_storage_pools(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[POOL_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[POOL_DATAS])
         pools = self.driver.list_storage_pools(context)
         self.assertDictEqual(pools[0], POOL_RESULT[0])
 
     def test_list_volumes(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[VOLUME_TPV_DATAS,
-                                                 VOLUME_FTV_DATAS,
-                                                 VOLUME_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[VOLUMES, VOLUME_TPV_DATAS, VOLUME_FTV_DATAS])
         volumes = self.driver.list_volumes(context)
         self.assertDictEqual(volumes[0], VOLUME_RESULT[0])
 
     def test_get_controllers(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[NODE_DATAS,
-                                                 NODE_STATUS_DATAS])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[NODE_DATAS, NODE_STATUS_DATAS])
         controllers = self.driver.list_controllers(context)
         self.assertDictEqual(controllers[0], CONTROLLER_RESULT[0])
 
     def test_list_alerts(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[LIST_ALERT_WARNING,
-                                                 LIST_ALERT_ERROR])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[LIST_ALERT_WARNING,
+                         LIST_ALERT_ERROR])
         list_alerts = self.driver.list_alerts(context)
         ALERTS_INFO['occur_time'] = list_alerts[0].get('occur_time')
         ALERTS_INFO['match_key'] = list_alerts[0].get('match_key')
         self.assertDictEqual(list_alerts[0], ALERTS_INFO)
 
     def test_list_disks(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=[DISK_LIST_INFO])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[DISK_LIST_INFO])
         data = self.driver.list_disks(context)
         self.assertEqual(
             data[0].get('name'), 'CE-Disk#0')
 
     def test_list_ports(self):
-        SSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        SSHPool.do_exec = mock.Mock(side_effect=['', FCOE_INFO])
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=['', FCOE_INFO])
         data = self.driver.list_ports(context)
         self.assertEqual(
             data[0].get('name'), 'CM#0 CA#0 Port#0')

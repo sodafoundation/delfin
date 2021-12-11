@@ -33,7 +33,7 @@ CURRENT = 'Current'
 FIRMWARE_VERSION_NUMBER = 1
 
 # list_volume  function part
-GET_LIST_VOLUMES = 'show volumes'
+GET_LIST_VOLUMES = 'show volumes -csv'
 GET_LIST_VOLUMES_TYPE_TPV = 'show volumes -type tpv'
 GET_LIST_VOLUMES_TYPE_FTV = 'show volumes -type ftv'
 VOLUMES_TYPE_FTV = 'ftv'
@@ -47,7 +47,8 @@ VOLUME_TYPE_COUNT = 3
 TOTAL_CAPACITY_COUNT = 6
 
 GET_DISK_COMMAND = 'show disks -disk all'
-GET_PORT_COMMAND = 'show fc-parameters'
+GET_PORT_FC_PARAMETERS = 'show fc-parameters'
+GET_PORT_FCOE_PARAMETERS = 'show fcoe-parameters'
 
 DATA_KEY_INDEX = 1
 DATA_VALUE_INDEX = 2
@@ -56,6 +57,7 @@ CONTROLLER_NEWLINE_PATTERN = 'CM#\\d Information'
 COMMON_VALUE_PATTERN = '\\[.*\\]'
 SIZE_PATTERN = "\\d+(?:\\.\\d+)?"
 POOL_TITLE_PATTERN = "^\\[RAID Group No\\.\\],\\[RAID Group Name"
+VOLUME_TITLE_PATTERN = "^\\[Volume No\\.\\],\\[Volume Name]"
 CONTROLLER_STATUS_PATTERN = 'Controller Module Status/Status Code'
 CONTROLLER_STATUS_NORMAL_KEY = 'Normal'
 

@@ -1,5 +1,6 @@
 import hashlib
 import re
+import threading
 
 import six
 from oslo_log import log
@@ -7,19 +8,22 @@ from oslo_utils import units
 
 from delfin import exception
 from delfin.common import constants
-from delfin.drivers.fujitsu.eternus_af650s2 import consts
-from delfin.drivers.fujitsu.eternus_af650s2.consts import DIGITAL_CONSTANT
-from delfin.drivers.utils.ssh_client import SSHPool
+from delfin.drivers.fujitsu.eternus_af_dx import consts
+from delfin.drivers.fujitsu.eternus_af_dx.consts import DIGITAL_CONSTANT
+from delfin.drivers.fujitsu.eternus_af_dx.eternus_ssh_client import \
+    EternusSSHPool
 from delfin.drivers.utils.tools import Tools
 
 LOG = log.getLogger(__name__)
 
 
 class CliHandler(object):
+    lock = None
 
     def __init__(self, **kwargs):
+        self.lock = threading.RLock()
         self.kwargs = kwargs
-        self.ssh_pool = SSHPool(**kwargs)
+        self.ssh_pool = EternusSSHPool(**kwargs)
 
     def login(self):
         """Test SSH connection """
@@ -30,11 +34,18 @@ class CliHandler(object):
             raise e
 
     def exec_command(self, command):
-        re = self.ssh_pool.do_exec(command)
+        try:
+            self.lock.acquire()
+            re = self.ssh_pool.do_exec_shell([command])
+        finally:
+            self.lock.release()
         if re:
             if 'Error: ' in re:
                 LOG.error(re)
-                raise NotImplementedError(re)
+                return None
+            elif re.strip() in '^':
+                LOG.error(re)
+                return None
         return re
 
     def common_data_encapsulation(self, command):
@@ -96,8 +107,8 @@ class CliHandler(object):
             obj_map[key] = value
         return object_info
 
-    def get_pools(self):
-        pool_data_str = self.exec_command(consts.GET_STORAGE_POOL)
+    def get_pools(self, command):
+        pool_data_str = self.exec_command(command)
         pool_info_list = []
         try:
             if pool_data_str:
@@ -142,7 +153,7 @@ class CliHandler(object):
                                  len(volumes_type_arr)):
                 volume_type_dict = {}
                 volumes_type_row_arr = volumes_type_arr[row_num].split()
-                if not volumes_type_row_arr or\
+                if not volumes_type_row_arr or \
                         consts.CLI_STR in volumes_type_row_arr:
                     continue
                 volume_id = volumes_type_row_arr[DIGITAL_CONSTANT.ZERO_INT]
@@ -176,8 +187,8 @@ class CliHandler(object):
             alerts_model['description'] = description
             alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-            alerts_model['alert_name'] = description[0:description.rfind('<')]\
-                .strip()
+            alerts_model['alert_name'] = \
+                description[0:description.rfind('<')].strip()
             alerts_model['match_key'] = hashlib.md5('{}{}{}'.format(
                 occur_time, severity, description).encode()).hexdigest()
             list_alert.append(alerts_model)
@@ -221,31 +232,41 @@ class CliHandler(object):
     def format_data(self, command, storage_id, method, is_port=False):
         data_info = self.exec_command(command)
         data_list = []
-        data_array = data_info.split('\n')
-        data_map = {}
-        for data in data_array:
-            if data:
-                temp_data = data.split('  ')
-                temp_data = list(filter(lambda s: s and s.strip(), temp_data))
-                if len(temp_data) >= consts.DATA_VALUE_INDEX:
-                    data_length = consts.DATA_VALUE_INDEX
-                    if is_port:
-                        data_length = len(temp_data)
-                    for i in range(consts.DATA_KEY_INDEX, data_length):
-                        key = temp_data[0].strip()
-                        value = temp_data[i].replace('[', '').replace(']', '')
-                        value = value.strip()
-                        if data_map.get(i):
-                            data_map[i][key] = value
-                        else:
-                            data_map[i] = {
-                                key: value
-                            }
-            if not data:
+        if not data_info:
+            return data_list
+        try:
+            data_array = data_info.split('\n')
+            data_map = {}
+            for data in data_array:
+                if data:
+                    temp_data = data.split('  ')
+                    temp_data = list(
+                        filter(lambda s: s and s.strip(), temp_data))
+                    if len(temp_data) >= consts.DATA_VALUE_INDEX:
+                        data_length = consts.DATA_VALUE_INDEX
+                        if is_port:
+                            data_length = len(temp_data)
+                        for i in range(consts.DATA_KEY_INDEX, data_length):
+                            key = temp_data[0].strip()
+                            value = temp_data[i].replace('[', '').replace(']',
+                                                                          '')
+                            value = value.strip()
+                            if data_map.get(i):
+                                data_map[i][key] = value
+                            else:
+                                data_map[i] = {
+                                    key: value
+                                }
+                if not data:
+                    data_list.extend(method(data_map, storage_id))
+                    data_map = {}
+            if data_map:
                 data_list.extend(method(data_map, storage_id))
-                data_map = {}
-        if data_map:
-            data_list.extend(method(data_map, storage_id))
+        except Exception as e:
+            err_msg = "Failed: %s" % \
+                      (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
         return data_list
 
     @staticmethod
@@ -260,8 +281,9 @@ class CliHandler(object):
                     constants.PortConnectionStatus.DISCONNECTED
                 health_status = \
                     constants.PortHealthStatus.ABNORMAL
-            speed = None
-            if 'Gbit/s' in port_map[key].get('Transfer Rate'):
+            speed = 0
+            if port_map[key].get('Transfer Rate') and (
+                    'Gbit/s' in port_map[key].get('Transfer Rate')):
                 speed = port_map[key].get('Transfer Rate').split()[0]
                 speed = int(speed) * units.G
             port_model = {
@@ -270,12 +292,11 @@ class CliHandler(object):
                 'native_port_id':
                     '%s-%s' % (constants.PortType.FC,
                                port_map[key].get('Port')),
-                'location': '',
+                'location': port_map[key].get('Port'),
                 'connection_status': connection_status,
                 'health_status': health_status,
                 'type': constants.PortType.FC,
                 'speed': speed,
-                'native_parent_id': None,
                 'wwn': port_map[key].get('WWPN'),
             }
             port_list.append(port_model)
@@ -352,3 +373,36 @@ class CliHandler(object):
             }
             disk_list.append(disk_model)
         return disk_list
+
+    def get_volumes_or_pool(self, command, str_pattern):
+        data_str = self.exec_command(command)
+        pool_info_list = []
+        try:
+            if data_str:
+                result_data_arr = data_str.split('\n')
+                titles = []
+                for common_data_row in result_data_arr:
+                    title_pattern = re.compile(str_pattern)
+                    title_search_obj = title_pattern.search(common_data_row)
+                    if title_search_obj:
+                        titles = common_data_row.split(",")
+                    else:
+                        if common_data_row:
+                            values = common_data_row.split(",")
+                            if values:
+                                if len(values) == len(titles):
+                                    obj_model = {}
+                                    for i in range(len(values)):
+                                        key = titles[i].lower() \
+                                            .replace(' ', '') \
+                                            .replace('[', '') \
+                                            .replace(']', '')
+                                        obj_model[key] = values[i]
+                                    if obj_model:
+                                        pool_info_list.append(obj_model)
+        except Exception as e:
+            err_msg = "execution {}: error: {}".format(command,
+                                                       six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return pool_info_list
