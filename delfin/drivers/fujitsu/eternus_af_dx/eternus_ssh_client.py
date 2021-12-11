@@ -66,7 +66,7 @@ class EternusSSHPool(SSHPool):
                                 timeout=self.ssh_conn_timeout,
                                 look_for_keys=False)
                 else:
-                    raise
+                    raise exception.SSHException(six.text_type(e))
             if self.conn_timeout:
                 transport = ssh.get_transport()
                 transport.set_keepalive(self.SOCKET_TIMEOUT)
