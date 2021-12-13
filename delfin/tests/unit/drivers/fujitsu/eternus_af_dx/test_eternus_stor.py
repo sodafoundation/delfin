@@ -21,7 +21,7 @@ from delfin.drivers.fujitsu.eternus.eternus_ssh_client import \
 import paramiko
 from delfin import context
 from delfin.drivers.fujitsu.eternus.eternus_stor import \
-    EternusAfDxDriver
+    EternusDriver
 
 
 class Request:
@@ -773,10 +773,10 @@ CLI>"""
 def create_driver():
     EternusSSHPool.do_exec_shell = mock.Mock(
         side_effect=["Summary Status  [Normal]"])
-    return EternusAfDxDriver(**ACCESS_INFO)
+    return EternusDriver(**ACCESS_INFO)
 
 
-class TestEternusAfDxDriver(TestCase):
+class TestEternusDriver(TestCase):
     driver = create_driver()
 
     def test_get_storage(self):

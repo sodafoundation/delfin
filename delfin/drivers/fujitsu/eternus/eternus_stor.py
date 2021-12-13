@@ -12,7 +12,7 @@ from delfin.drivers.utils.tools import Tools
 LOG = log.getLogger(__name__)
 
 
-class EternusAfDxDriver(driver.StorageDriver):
+class EternusDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
