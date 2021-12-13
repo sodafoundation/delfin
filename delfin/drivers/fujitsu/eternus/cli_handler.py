@@ -8,9 +8,9 @@ from oslo_utils import units
 
 from delfin import exception
 from delfin.common import constants
-from delfin.drivers.fujitsu.eternus_af_dx import consts
-from delfin.drivers.fujitsu.eternus_af_dx.consts import DIGITAL_CONSTANT
-from delfin.drivers.fujitsu.eternus_af_dx.eternus_ssh_client import \
+from delfin.drivers.fujitsu.eternus import consts
+from delfin.drivers.fujitsu.eternus.consts import DIGITAL_CONSTANT
+from delfin.drivers.fujitsu.eternus.eternus_ssh_client import \
     EternusSSHPool
 from delfin.drivers.utils.tools import Tools
 

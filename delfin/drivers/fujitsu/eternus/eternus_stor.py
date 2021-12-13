@@ -5,14 +5,14 @@ from oslo_utils import units
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.fujitsu.eternus_af_dx import cli_handler, consts
-from delfin.drivers.fujitsu.eternus_af_dx.consts import DIGITAL_CONSTANT
+from delfin.drivers.fujitsu.eternus import cli_handler, consts
+from delfin.drivers.fujitsu.eternus.consts import DIGITAL_CONSTANT
 from delfin.drivers.utils.tools import Tools
 
 LOG = log.getLogger(__name__)
 
 
-class EternusAfDxDriver(driver.StorageDriver):
+class EternusDriver(driver.StorageDriver):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

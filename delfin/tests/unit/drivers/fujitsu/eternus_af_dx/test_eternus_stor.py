@@ -16,12 +16,12 @@ from unittest import TestCase, mock
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 
-from delfin.drivers.fujitsu.eternus_af_dx.eternus_ssh_client import \
+from delfin.drivers.fujitsu.eternus.eternus_ssh_client import \
     EternusSSHPool
 import paramiko
 from delfin import context
-from delfin.drivers.fujitsu.eternus_af_dx.eternus_af_dx_stor import \
-    EternusAfDxDriver
+from delfin.drivers.fujitsu.eternus.eternus_stor import \
+    EternusDriver
 
 
 class Request:
@@ -773,10 +773,10 @@ CLI>"""
 def create_driver():
     EternusSSHPool.do_exec_shell = mock.Mock(
         side_effect=["Summary Status  [Normal]"])
-    return EternusAfDxDriver(**ACCESS_INFO)
+    return EternusDriver(**ACCESS_INFO)
 
 
-class TestEternusAfDxDriver(TestCase):
+class TestEternusDriver(TestCase):
     driver = create_driver()
 
     def test_get_storage(self):

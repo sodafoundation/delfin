@@ -38,7 +38,7 @@ setup(
         ],
         'delfin.storage.drivers': [
             'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
-            'fujitsu eternus_af_dx = delfin.drivers.fujitsu.eternus_af_dx.eternus_af_dx_stor:EternusAfDxDriver',
+            'fujitsu eternus = delfin.drivers.fujitsu.eternus.eternus_stor:EternusDriver',
             'dellemc unity = delfin.drivers.dell_emc.unity.unity:UnityStorDriver',
             'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
             'dellemc vnx_block = delfin.drivers.dell_emc.vnx.vnx_block.vnx_block:VnxBlockStorDriver',
