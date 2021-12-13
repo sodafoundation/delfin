@@ -45,7 +45,7 @@ class CliHandler(object):
             self.lock.release()
         if res:
             if 'Error: ' in res:
-                LOG.error(re)
+                LOG.error(res)
                 return None
             elif res.strip() in '^':
                 LOG.error(res)
