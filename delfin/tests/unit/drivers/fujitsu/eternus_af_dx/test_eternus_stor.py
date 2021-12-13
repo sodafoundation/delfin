@@ -16,11 +16,11 @@ from unittest import TestCase, mock
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 
-from delfin.drivers.fujitsu.eternus_af_dx.eternus_ssh_client import \
+from delfin.drivers.fujitsu.eternus.eternus_ssh_client import \
     EternusSSHPool
 import paramiko
 from delfin import context
-from delfin.drivers.fujitsu.eternus_af_dx.eternus_af_dx_stor import \
+from delfin.drivers.fujitsu.eternus.eternus_stor import \
     EternusAfDxDriver
 
 
