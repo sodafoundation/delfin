@@ -45,10 +45,10 @@ class CliHandler(object):
             self.lock.release()
         if res:
             if 'Error: ' in res:
-                LOG.error(res)
+                LOG.info(res)
                 return None
             elif res.strip() in '^':
-                LOG.error(res)
+                LOG.info(res)
                 return None
         return res
 

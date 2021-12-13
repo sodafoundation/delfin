@@ -193,18 +193,6 @@ class EternusDriver(driver.StorageDriver):
     def reset_connection(self, context, **kwargs):
         pass
 
-    def list_quotas(self, context):
-        pass
-
-    def list_filesystems(self, context):
-        pass
-
-    def list_qtrees(self, context):
-        pass
-
-    def list_shares(self, context):
-        pass
-
     def list_alerts(self, context, query_para=None):
         list_alert = self.cli_handler.get_alerts(
             consts.SHOW_EVENTS_SEVERITY_WARNING, query_para)
