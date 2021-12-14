@@ -223,20 +223,20 @@ class EternusDriver(driver.StorageDriver):
         if len(pools_row_str) < consts.POOL_LENGTH:
             return pool_list
         for pools_row_num in range(consts.POOL_CYCLE, len(pools_row_str)):
-            pools_row_str[pools_row_num].strip()
             pools_row_arr = pools_row_str[pools_row_num].strip()
             if pools_row_arr in consts.CLI_STR:
                 continue
-            pool_id = pools_row_arr[consts.POOL_ID_COUNT]
-            pool_name = pools_row_arr[consts.POOL_NAME_COUNT]
+            pools_arr = pools_row_arr.split()
+            pool_id = pools_arr[consts.POOL_ID_COUNT]
+            pool_name = pools_arr[consts.POOL_NAME_COUNT]
             pool_status = consts.STORAGE_POOL_STATUS_MAP.get(
-                pools_row_arr[consts.POOL_STATUS_COUNT],
+                pools_arr[consts.POOL_STATUS_COUNT],
                 constants.StoragePoolStatus.ABNORMAL)
             try:
                 total_capacity = int(
-                    pools_row_arr[consts.POOL_TOTAL_CAPACITY_COUNT]) * units.Mi
+                    pools_arr[consts.POOL_TOTAL_CAPACITY_COUNT]) * units.Mi
                 free_capacity = int(
-                    pools_row_arr[consts.POOL_FREE_CAPACITY_COUNT]) * units.Mi
+                    pools_arr[consts.POOL_FREE_CAPACITY_COUNT]) * units.Mi
             except Exception as e:
                 LOG.info('Conversion digital exception:%s' % six.text_type(e))
                 return pool_list
