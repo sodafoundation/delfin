@@ -32,15 +32,15 @@ class CliHandler(object):
         except Exception as e:
             error = six.text_type(e)
             LOG.error("Login error: %s", error)
-            raise exception.SSHException(error)
+            raise e
 
     def exec_command(self, command):
-        res = ''
         try:
             self.lock.acquire()
             res = self.ssh_pool.do_exec_shell([command])
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
+            raise e
         finally:
             self.lock.release()
         if res:
