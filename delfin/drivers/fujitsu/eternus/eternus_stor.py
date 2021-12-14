@@ -20,10 +20,6 @@ class EternusDriver(driver.StorageDriver):
         self.login = self.cli_handler.login()
 
     def list_volumes(self, context):
-        enclosure_status = self.cli_handler.common_data_encapsulation(
-            consts.GET_ENCLOSURE_STATUS)
-        firmware_version = enclosure_status.get('Firmware Version')
-        version = firmware_version[:firmware_version.index('-')]
         list_volumes = self.get_volumes()
         if not list_volumes:
             list_volumes = self.get_volumes_old()
@@ -35,8 +31,9 @@ class EternusDriver(driver.StorageDriver):
             consts.GET_LIST_VOLUMES_CSV, consts.VOLUME_TITLE_PATTERN)
         for volume_dict in (volumes or []):
             volume_native_volume_id = volume_dict.get('volumeno.')
-            volume_id_dict = self.cli_handler.get_volumes_type(
-                command=volume_dict.get('type'))
+            command = '{}{}'.format(consts.GET_LIST_VOLUMES_TYPE,
+                                    volume_dict.get('type'))
+            volume_id_dict = self.cli_handler.get_volumes_type(command=command)
             type_capacity = volume_id_dict.get(volume_native_volume_id, {})
             volume_type = type_capacity.get('type',
                                             constants.VolumeType.THICK)
@@ -65,7 +62,7 @@ class EternusDriver(driver.StorageDriver):
         volumes_arr = volumes_str.split('\n')
         for volumes_num in range(DIGITAL_CONSTANT.TWO_INT, len(volumes_arr)):
             volumes_row_str = volumes_arr[volumes_num]
-            if not volumes_row_str and \
+            if not volumes_row_str or \
                     consts.CLI_STR in volumes_row_str.strip():
                 continue
             volumes_row_arr = volumes_row_str.split()
@@ -224,7 +221,8 @@ class EternusDriver(driver.StorageDriver):
             return pool_list
         for pools_row_num in range(consts.POOL_CYCLE, len(pools_row_str)):
             pools_row_arr = pools_row_str[pools_row_num].strip()
-            if pools_row_arr in consts.CLI_STR:
+            if pools_row_arr in consts.CLI_STR or\
+                    pools_row_arr in consts.SPECIAL_CHARACTERS_ONE:
                 continue
             pools_arr = pools_row_arr.split()
             pool_id = pools_arr[consts.POOL_ID_COUNT]

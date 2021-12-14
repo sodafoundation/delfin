@@ -47,9 +47,6 @@ class CliHandler(object):
             if 'Error: ' in res:
                 LOG.info(res)
                 return None
-            elif res.strip() in '^':
-                LOG.info(res)
-                return None
         return res
 
     def common_data_encapsulation(self, command):
@@ -111,38 +108,6 @@ class CliHandler(object):
             obj_map[key] = value
         return object_info
 
-    def get_pools(self, command):
-        pool_data_str = self.exec_command(command)
-        pool_info_list = []
-        try:
-            if pool_data_str:
-                result_data_arr = pool_data_str.split('\n')
-                titles = []
-                for common_data_row in result_data_arr:
-                    title_pattern = re.compile(consts.POOL_TITLE_PATTERN)
-                    title_search_obj = title_pattern.search(common_data_row)
-                    if title_search_obj:
-                        titles = common_data_row.split(",")
-                    else:
-                        if common_data_row:
-                            values = common_data_row.split(",")
-                            if values:
-                                if len(values) == len(titles):
-                                    obj_model = {}
-                                    for i in range(len(values)):
-                                        key = titles[i].lower() \
-                                            .replace(' ', '') \
-                                            .replace('[', '') \
-                                            .replace(']', '')
-                                        obj_model[key] = values[i]
-                                    if obj_model:
-                                        pool_info_list.append(obj_model)
-        except Exception as e:
-            err_msg = "get pool info error: %s", six.text_type(e)
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
-        return pool_info_list
-
     def get_volumes_type(self, volume_id_dict=None, command=None):
         if volume_id_dict is None:
             volume_id_dict = {}
@@ -202,7 +167,9 @@ class CliHandler(object):
         events_error_dict = dict()
         events_error_arr = events_error_str.split('\n')
         for events_error_row_str in events_error_arr:
-            if events_error_row_str.strip() in consts.CLI_STR:
+            events_error_row_str = events_error_row_str.strip()
+            if events_error_row_str in consts.CLI_STR\
+                    or events_error_row_str in consts.SPECIAL_CHARACTERS_ONE:
                 continue
             error_description_dict = dict()
             time_stamp = Tools().time_str_to_timestamp(
@@ -392,17 +359,16 @@ class CliHandler(object):
                     else:
                         if common_data_row:
                             values = common_data_row.split(",")
-                            if values:
-                                if len(values) == len(titles):
-                                    obj_model = {}
-                                    for i in range(len(values)):
-                                        key = titles[i].lower() \
-                                            .replace(' ', '') \
-                                            .replace('[', '') \
-                                            .replace(']', '')
-                                        obj_model[key] = values[i]
-                                    if obj_model:
-                                        pool_info_list.append(obj_model)
+                            if values and len(values) == len(titles):
+                                obj_model = {}
+                                for num in range(len(values)):
+                                    key = titles[num].lower() \
+                                        .replace(' ', '') \
+                                        .replace('[', '') \
+                                        .replace(']', '')
+                                    obj_model[key] = values[num]
+                                if obj_model:
+                                    pool_info_list.append(obj_model)
         except Exception as e:
             err_msg = "execution {}: error: {}".format(command,
                                                        six.text_type(e))
