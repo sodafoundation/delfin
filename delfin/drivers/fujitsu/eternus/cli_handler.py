@@ -208,7 +208,7 @@ class CliHandler(object):
             data_array = data_info.split('\n')
             data_map = {}
             for data in data_array:
-                if data:
+                if data and data not in '\r':
                     temp_data = data.split('  ')
                     temp_data = list(
                         filter(lambda s: s and s.strip(), temp_data))
@@ -227,7 +227,7 @@ class CliHandler(object):
                                 data_map[i] = {
                                     key: value
                                 }
-                if not data:
+                else:
                     data_list.extend(method(data_map, storage_id))
                     data_map = {}
             if data_map:

@@ -750,6 +750,73 @@ Controller Enclosure Disk #11 Information
    Progress with current pass           [3%]
    Completed passes since last Power On [0Cycles]
 CLI>"""
+DISK_OLD = """your ip address
+you username is huawei
+CLI> show disks -disks all
+Controller Enclosure Disk #0 Information
+ Location                   [CE-Disk#0]
+ Status                     [Failed Usable] (Error Code : 0x0001)
+ Size                       [450GB]
+ Type                       [3.5" SAS]
+ Speed                      [15000rpm]
+ Usage                      [System]
+ RAID Group                 [ 0 : JJ]
+ Motor Status               [Active]
+ Rebuild/Copyback Progress  [-]
+ Vendor ID                  [SEAGATE]
+ Product ID                 [ST3450857SS]
+ Serial Number              [6SK2CEG91327]
+ WWN                        [5000C5006BC80184]
+ Firmware Revision          [GF0D]
+\r
+Controller Enclosure Disk #1 Information
+ Location                   [CE-Disk#1]
+ Status                     [Failed Usable] (Error Code : 0x0009)
+ Size                       [450GB]
+ Type                       [3.5" SAS]
+ Speed                      [15000rpm]
+ Usage                      [System]
+ RAID Group                 [ 0 : JJ]
+ Motor Status               [Active]
+ Rebuild/Copyback Progress  [-]
+ Vendor ID                  [SEAGATE]
+ Product ID                 [ST3450857SS]
+ Serial Number              [6SK262SZ1312]
+ WWN                        [5000C5006806E318]
+ Firmware Revision          [GF0D]
+\r
+Controller Enclosure Disk #2 Information
+ Location                   [CE-Disk#2]
+ Status                     [Available]
+ Size                       [450GB]
+ Type                       [3.5" SAS]
+ Speed                      [15000rpm]
+ Usage                      [Data]
+ RAID Group                 [ 0 : JJ]
+ Motor Status               [Active]
+ Rebuild/Copyback Progress  [-]
+ Vendor ID                  [SEAGATE]
+ Product ID                 [ST3450857SS]
+ Serial Number              [6SK26QCA1312]
+ WWN                        [5000C5006810B6AC]
+ Firmware Revision          [GF0D]
+\r
+Controller Enclosure Disk #3 Information
+ Location                   [CE-Disk#3]
+ Status                     [Available]
+ Size                       [450GB]
+ Type                       [3.5" SAS]
+ Speed                      [15000rpm]
+ Usage                      [Data]
+ RAID Group                 [ 0 : JJ]
+ Motor Status               [Active]
+ Rebuild/Copyback Progress  [-]
+ Vendor ID                  [SEAGATE]
+ Product ID                 [ST3450857SS]
+ Serial Number              [6SK2DE941330]
+ WWN                        [5000C5006C3E26FC]
+ Firmware Revision          [GF0D]
+ CLI>"""
 
 PORT_LIST_INFO = """
 Port                          CM#0 CA#0 Port#0       CM#0 CA#0 Port#1
@@ -899,6 +966,13 @@ class TestEternusDriver(TestCase):
     def test_list_disks(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[DISK_LIST_INFO])
+        data = self.driver.list_disks(context)
+        self.assertEqual(
+            data[0].get('name'), 'CE-Disk#0')
+
+    def test_list_disks_OLD(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[DISK_OLD])
         data = self.driver.list_disks(context)
         self.assertEqual(
             data[0].get('name'), 'CE-Disk#0')
