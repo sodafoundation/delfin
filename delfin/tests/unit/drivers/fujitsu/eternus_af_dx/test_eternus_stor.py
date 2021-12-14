@@ -313,7 +313,10 @@ POOL_DATAS = """
 1,pool-2,RAID5,CM#1,Available,1118208,1118208
 CLI>
 """
-POOL_OLD_DATAS = """RAID Group           RAID    Assigned Status\
+POOL_OLD_DATAS = """your ip address
+you username is huawei
+CLI> show raid-groups
+RAID Group           RAID    Assigned Status\
                     Total        Free
 No. Name             Level   CM                                 Capacity(MB)\
  Capacity(MB)
@@ -336,7 +339,10 @@ VOLUME_FTV_DATAS \
              [0305-0505] -type ftv
 CLI>
 """
-VOLUME_DATAS = """Volume                Status                    Type\
+VOLUME_DATAS = """your ip address
+you username is huawei
+CLI> show raid-groups
+Volume                Status                    Type\
       Expansion       RAID Group           Size(MB)   Reserved
 No.  Name                                                 (Concatenation) No.\
  Name                        Deletion
@@ -433,7 +439,10 @@ VOLUME_OLD_RESULT = [
         'used_capacity': 0,
         'free_capacity': 0
     }]
-LIST_ALERT_ERROR = """2021-08-19 02:33:08   Error         P 85400008   SS\
+LIST_ALERT_ERROR = """your ip address
+you username is huawei
+CLI> show raid-groups
+2021-08-19 02:33:08   Error         P 85400008   SS\
 D 2.5 DE#00-Slot#8(SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299\
 A1>
 2021-08-19 02:33:08   Error         P 85400007   SSD 2.5 DE#00-Slot#7(\
@@ -454,7 +463,10 @@ SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9KJA H603 15299 A1>
 SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9GMA H603 15299 A1>
 CLI>"""
 
-LIST_ALERT_WARNING = """2021-08-19 02:33:08   Warning       P 85400008   SSD\
+LIST_ALERT_WARNING = """your ip address
+you username is huawei
+CLI> show raid-groups
+2021-08-19 02:33:08   Warning       P 85400008   SSD\
 Fault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299 A1>
 2021-08-19 02:33:08   Warning       P 85400007   SSD 2.5  Fault (DE) <\
 HUSMM1640ASS204 0QWAHN1A H603 15299 A1>

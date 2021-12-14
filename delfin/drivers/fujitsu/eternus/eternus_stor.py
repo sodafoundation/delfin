@@ -60,7 +60,9 @@ class EternusDriver(driver.StorageDriver):
         list_volumes = []
         volumes_str = self.cli_handler.exec_command(consts.GET_LIST_VOLUMES)
         volumes_arr = volumes_str.split('\n')
-        for volumes_num in range(DIGITAL_CONSTANT.TWO_INT, len(volumes_arr)):
+        if len(volumes_arr) < consts.VOLUMES_LENGTH:
+            return list_volumes
+        for volumes_num in range(consts.VOLUMES_CYCLE, len(volumes_arr)):
             volumes_row_str = volumes_arr[volumes_num]
             if not volumes_row_str or \
                     consts.CLI_STR in volumes_row_str.strip():

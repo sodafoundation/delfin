@@ -168,8 +168,8 @@ class CliHandler(object):
         events_error_arr = events_error_str.split('\n')
         for events_error_row_str in events_error_arr:
             events_error_row_str = events_error_row_str.strip()
-            if events_error_row_str in consts.CLI_STR\
-                    or events_error_row_str in consts.SPECIAL_CHARACTERS_ONE:
+            reg = re.compile(r"(\d{4}-\d{1,2}-\d{1,2})")
+            if not re.match(reg, events_error_row_str):
                 continue
             error_description_dict = dict()
             time_stamp = Tools().time_str_to_timestamp(
