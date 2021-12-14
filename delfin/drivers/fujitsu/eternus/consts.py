@@ -26,25 +26,44 @@ GET_STORAGE_FIRMWARE_VERSION = 'show firmware-version'
 GET_STORAGE_TOTAL_CAPACITY = 'show storage-cluster-license'
 GET_STORAGE_CONTROLLER = 'show fru-ce'
 GET_STORAGE_CONTROLLER_STATUS = 'show enclosure-status -type all'
-GET_STORAGE_POOL = 'show raid-groups -csv'
 FIRMWARE_VERSION_CURRENT_COUNT = 3
 FIRMWARE_VERSION_LENGTH = 4
 CURRENT = 'Current'
 FIRMWARE_VERSION_NUMBER = 1
 
 # list_volume  function part
-GET_LIST_VOLUMES = 'show volumes -csv'
+GET_LIST_VOLUMES_CSV = 'show volumes -csv'
+GET_LIST_VOLUMES = 'show volumes'
 GET_LIST_VOLUMES_TYPE_TPV = 'show volumes -type tpv'
 GET_LIST_VOLUMES_TYPE_FTV = 'show volumes -type ftv'
+GET_LIST_VOLUMES_TYPE = 'show volumes -type '
 VOLUMES_TYPE_FTV = 'ftv'
 VOLUMES_TYPE_TPV = 'tpv'
 CLI_STR = 'CLI>'
+SPECIAL_CHARACTERS_ONE = '^'
+VOLUME_TYPE_OPEN = 'open'
 VOLUME_ID_COUNT = 0
 VOLUME_NAME_COUNT = 1
 VOLUME_STATUS_COUNT = 2
-NATIVE_STORAGE_POOL_ID_COUNT = 4
 VOLUME_TYPE_COUNT = 3
-TOTAL_CAPACITY_COUNT = 6
+NATIVE_STORAGE_POOL_ID_COUNT = 5
+TOTAL_CAPACITY_COUNT = 7
+DEFAULT_USED_CAPACITY = 0
+DEFAULT_FREE_CAPACITY = 0
+VOLUMES_CYCLE = 5
+VOLUMES_LENGTH = 6
+
+# list_storage_pools function part
+GET_STORAGE_POOL_CSV = 'show raid-groups -csv'
+GET_STORAGE_POOL = 'show raid-groups'
+POOL_ID_COUNT = 0
+POOL_NAME_COUNT = 1
+POOL_STATUS_COUNT = 4
+POOL_TOTAL_CAPACITY_COUNT = 5
+POOL_FREE_CAPACITY_COUNT = 6
+POOL_CYCLE = 5
+POOL_LENGTH = 6
+
 
 GET_DISK_COMMAND = 'show disks -disk all'
 GET_PORT_FC_PARAMETERS = 'show fc-parameters'
@@ -68,6 +87,8 @@ SPECIFIC_CHARACTER_TWO = ']'
 # list_alert function
 SHOW_EVENTS_SEVERITY_WARNING = 'show events -severity warning'
 SHOW_EVENTS_SEVERITY_ERROR = 'show events -severity error'
+SHOW_EVENTS_LEVEL_WARNING = 'show events -level warning'
+SHOW_EVENTS_LEVEL_ERROR = 'show events -level error'
 OCCUR_TIME_RANGE = 19
 SEVERITY_RANGE_BEGIN = 22
 SEVERITY_RANGE_END = 34
@@ -83,8 +104,10 @@ class DIGITAL_CONSTANT(object):
     MINUS_ONE_INT = -1
     TWO_INT = 2
     THREE_INT = 3
+    FIVE_INT = 5
     SIX_INT = 6
     MINUS_SIX_INT = -6
+    SEVEN_INT = 7
     THOUSAND_INT = 1000
 
 

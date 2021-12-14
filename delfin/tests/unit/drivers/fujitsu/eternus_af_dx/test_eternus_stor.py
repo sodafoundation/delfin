@@ -313,6 +313,19 @@ POOL_DATAS = """
 1,pool-2,RAID5,CM#1,Available,1118208,1118208
 CLI>
 """
+POOL_OLD_DATAS = """your ip address
+you username is huawei
+CLI> show raid-groups
+RAID Group           RAID    Assigned Status\
+                    Total        Free
+No. Name             Level   CM                                 Capacity(MB)\
+ Capacity(MB)
+  0 JJ               RAID0   CM#0     Broken                         1676288\
+        1358848
+CLI> """
+POOL_ERROR_DATAS = """                   ^
+Error: Ambiguous command
+CLI>"""
 VOLUME_TPV_DATAS \
     = """Volume Status RG or TPP or FTRP TFOG Size(MB) Copy Allocation Used Me
 No. Name No.  Name No. Name Protection Status (%) Level     Capacity(MB)
@@ -326,15 +339,25 @@ VOLUME_FTV_DATAS \
              [0305-0505] -type ftv
 CLI>
 """
-VOLUME_DATAS \
-    = """Volume Status Type RG or TPP or FTRP Si ze(MB)  Copy
-No.   Name No.  Name                        Protection
------ --------- --------- ---------- ---- ---------------- -- ------- ------
-    0 volume_10 Available Standard 0 pool-1 1024 Disable
-    1 volume_11 Available Standard 0 pool-1 1024 Disable
-    3 volume_2 Available SDV 0 pool-1 209715 Disable
-CLI>
-"""
+VOLUME_DATAS = """your ip address
+you username is huawei
+CLI> show raid-groups
+Volume                Status                    Type\
+      Expansion       RAID Group           Size(MB)   Reserved
+No.  Name                                                 (Concatenation) No.\
+ Name                        Deletion
+   0 OVM_Repo0        Broken                    Open                    -   0\
+    JJ                   51200
+   1 OVM_Repo1        Broken                    Open                    -   0\
+    JJ                   51200
+   2 OVM_raw          Broken                    Open                    -   0\
+    JJ                   10240
+   3 OVM_Repo2        Broken                    Open                    -   0\
+    JJ                  204800
+CLI>"""
+
+VOLUMES_ERROR = """                  ^
+CLI>"""
 
 VOLUMES = """[Volume No.],[Volume Name],[Status],[Type],[RG or TPP or\
  FTRP No.],[RG or TPP or FTRP Name],[Size(MB)],[Copy Protection]
@@ -381,6 +404,17 @@ POOL_RESULT = [
         'used_capacity': 2392850432,
         'free_capacity': 1170133221376
     }]
+POOL_old_RESULT = [
+    {
+        'name': 'JJ',
+        'storage_id': '12345',
+        'native_storage_pool_id': '0',
+        'status': 'abnormal',
+        'storage_type': 'block',
+        'total_capacity': 1757715365888,
+        'used_capacity': 332859965440,
+        'free_capacity': 1424855400448
+    }]
 VOLUME_RESULT = [
     {
         'name': 'volume_10',
@@ -393,7 +427,22 @@ VOLUME_RESULT = [
         'used_capacity': 0,
         'free_capacity': 1073741824
     }]
-LIST_ALERT_ERROR = """2021-08-19 02:33:08   Error         P 85400008   SS\
+VOLUME_OLD_RESULT = [
+    {
+        'name': 'OVM_Repo0',
+        'storage_id': '12345',
+        'status': 'abnormal',
+        'native_volume_id': '0',
+        'native_storage_pool_id': '0',
+        'type': 'thick',
+        'total_capacity': 53687091200,
+        'used_capacity': 0,
+        'free_capacity': 0
+    }]
+LIST_ALERT_ERROR = """your ip address
+you username is huawei
+CLI> show raid-groups
+2021-08-19 02:33:08   Error         P 85400008   SS\
 D 2.5 DE#00-Slot#8(SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299\
 A1>
 2021-08-19 02:33:08   Error         P 85400007   SSD 2.5 DE#00-Slot#7(\
@@ -414,7 +463,10 @@ SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9KJA H603 15299 A1>
 SAS 400GB) Fault (DE) <HUSMM1640ASS204 0QWA9GMA H603 15299 A1>
 CLI>"""
 
-LIST_ALERT_WARNING = """2021-08-19 02:33:08   Warning       P 85400008   SSD\
+LIST_ALERT_WARNING = """your ip address
+you username is huawei
+CLI> show raid-groups
+2021-08-19 02:33:08   Warning       P 85400008   SSD\
 Fault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299 A1>
 2021-08-19 02:33:08   Warning       P 85400007   SSD 2.5  Fault (DE) <\
 HUSMM1640ASS204 0QWAHN1A H603 15299 A1>
@@ -441,7 +493,7 @@ ALERTS_INFO = {
     'description': 'SSDFault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299 A1>',
     'type': 'EquipmentAlarm',
     'resource_type': 'Storage',
-    'alert_name': 'SSDFault (DE)',
+    'alert_name': 'SSDFault (DE) <HUSMM1640ASS204 0QWA8YAA H603 15299 A1>',
     'occur_time': 1629311588000,
     'match_key': '1809bdfa672e8b10ec9ec499a54dcd83'
 }
@@ -796,12 +848,26 @@ class TestEternusDriver(TestCase):
         pools = self.driver.list_storage_pools(context)
         self.assertDictEqual(pools[0], POOL_RESULT[0])
 
+    def test_list_storage_pools_old(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[
+            POOL_ERROR_DATAS, POOL_OLD_DATAS])
+        pools = self.driver.list_storage_pools(context)
+        self.assertDictEqual(pools[0], POOL_old_RESULT[0])
+
     def test_list_volumes(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[VOLUMES, VOLUME_TPV_DATAS, VOLUME_FTV_DATAS])
         volumes = self.driver.list_volumes(context)
         self.assertDictEqual(volumes[0], VOLUME_RESULT[0])
+
+    def test_list_volumes_old(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[VOLUMES_ERROR, VOLUME_DATAS])
+        volumes = self.driver.list_volumes(context)
+        self.assertDictEqual(volumes[0], VOLUME_OLD_RESULT[0])
 
     def test_get_controllers(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
@@ -814,6 +880,16 @@ class TestEternusDriver(TestCase):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[LIST_ALERT_WARNING,
+                         LIST_ALERT_ERROR])
+        list_alerts = self.driver.list_alerts(context)
+        ALERTS_INFO['occur_time'] = list_alerts[0].get('occur_time')
+        ALERTS_INFO['match_key'] = list_alerts[0].get('match_key')
+        self.assertDictEqual(list_alerts[0], ALERTS_INFO)
+
+    def test_list_alerts_old(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[None, None, LIST_ALERT_WARNING,
                          LIST_ALERT_ERROR])
         list_alerts = self.driver.list_alerts(context)
         ALERTS_INFO['occur_time'] = list_alerts[0].get('occur_time')

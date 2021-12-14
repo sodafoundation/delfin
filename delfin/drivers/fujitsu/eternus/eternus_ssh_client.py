@@ -105,8 +105,7 @@ class EternusSSHPool(SSHPool):
                             break
                         result += resp
             if 'is not a recognized command' in result \
-                    or 'Unknown command' in result \
-                    or 'Bad command' in result:
+                    or 'Unknown command' in result:
                 raise exception.StorageBackendException(result)
         except paramiko.AuthenticationException as ae:
             LOG.error('doexec Authentication error:{}'.format(ae))
