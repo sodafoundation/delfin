@@ -191,8 +191,7 @@ class CliHandler(object):
             alerts_model['description'] = description
             alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-            alerts_model['alert_name'] = \
-                description[0:description.rfind('<')].strip()
+            alerts_model['alert_name'] = description
             alerts_model['match_key'] = hashlib.md5('{}{}{}'.format(
                 occur_time, severity, description).encode()).hexdigest()
             list_alert.append(alerts_model)

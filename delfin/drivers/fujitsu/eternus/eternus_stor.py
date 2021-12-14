@@ -20,9 +20,19 @@ class EternusDriver(driver.StorageDriver):
         self.login = self.cli_handler.login()
 
     def list_volumes(self, context):
+        enclosure_status = self.cli_handler.common_data_encapsulation(
+            consts.GET_ENCLOSURE_STATUS)
+        firmware_version = enclosure_status.get('Firmware Version')
+        version = firmware_version[:firmware_version.index('-')]
+        list_volumes = self.get_volumes()
+        if not list_volumes:
+            list_volumes = self.get_volumes_old()
+        return list_volumes
+
+    def get_volumes(self):
         list_volumes = []
         volumes = self.cli_handler.get_volumes_or_pool(
-            consts.GET_LIST_VOLUMES, consts.VOLUME_TITLE_PATTERN)
+            consts.GET_LIST_VOLUMES_CSV, consts.VOLUME_TITLE_PATTERN)
         for volume_dict in (volumes or []):
             volume_native_volume_id = volume_dict.get('volumeno.')
             volume_id_dict = self.cli_handler.get_volumes_type(
@@ -47,6 +57,39 @@ class EternusDriver(driver.StorageDriver):
                 'free_capacity': total_capacity - used_capacity
             }
             list_volumes.append(volume)
+        return list_volumes
+
+    def get_volumes_old(self):
+        list_volumes = []
+        volumes_str = self.cli_handler.exec_command(consts.GET_LIST_VOLUMES)
+        volumes_arr = volumes_str.split('\n')
+        for volumes_num in range(DIGITAL_CONSTANT.TWO_INT, len(volumes_arr)):
+            volumes_row_str = volumes_arr[volumes_num]
+            if not volumes_row_str and \
+                    consts.CLI_STR in volumes_row_str.strip():
+                continue
+            volumes_row_arr = volumes_row_str.split()
+            volume_id = volumes_row_arr[consts.VOLUME_ID_COUNT]
+            volume_name = volumes_row_arr[consts.VOLUME_NAME_COUNT]
+            volume_status = volumes_row_arr[consts.VOLUME_STATUS_COUNT]
+            volume_type = volumes_row_arr[consts.VOLUME_TYPE_COUNT]
+            pool_id = volumes_row_arr[consts.NATIVE_STORAGE_POOL_ID_COUNT]
+            total_capacity = volumes_row_arr[consts.TOTAL_CAPACITY_COUNT]
+            volume_results = {
+                'name': volume_name,
+                'storage_id': self.storage_id,
+                'status': consts.LIST_VOLUMES_STATUS_MAP.get(
+                    volume_status),
+                'native_volume_id': volume_id,
+                'native_storage_pool_id': pool_id,
+                'type': constants.VolumeType.THIN if
+                volume_type and consts.VOLUME_TYPE_OPEN in volume_type else
+                constants.VolumeType.THICK,
+                'total_capacity': int(total_capacity) * units.Mi,
+                'used_capacity': consts.DEFAULT_USED_CAPACITY,
+                'free_capacity': consts.DEFAULT_FREE_CAPACITY
+            }
+            list_volumes.append(volume_results)
         return list_volumes
 
     def add_trap_config(self, context, trap_config):
@@ -155,6 +198,11 @@ class EternusDriver(driver.StorageDriver):
                     consts.GET_PORT_FCOE_PARAMETERS,
                     self.storage_id,
                     self.cli_handler.format_fcoe_ports, True))
+            port_list.extend(
+                self.cli_handler.format_data(
+                    consts.GET_PORT_FCOE_PARAMETERS,
+                    self.storage_id,
+                    self.cli_handler.format_fcoe_ports, True))
             return port_list
         except Exception as e:
             error = six.text_type(e)
@@ -162,9 +210,53 @@ class EternusDriver(driver.StorageDriver):
             raise exception.InvalidResults(error)
 
     def list_storage_pools(self, context):
-        pools = self.cli_handler.get_volumes_or_pool(
-            consts.GET_STORAGE_POOL, consts.POOL_TITLE_PATTERN)
+        pool_list = self.get_list_pools()
+        if not pool_list:
+            pool_list = self.get_list_pools_old(pool_list)
+        return pool_list
+
+    def get_list_pools_old(self, pool_list):
+        pools_str = self.cli_handler.exec_command(consts.GET_STORAGE_POOL)
+        if not pools_str:
+            return pool_list
+        pools_row_str = pools_str.split('\n')
+        if len(pools_row_str) < consts.POOL_LENGTH:
+            return pool_list
+        for pools_row_num in range(consts.POOL_CYCLE, len(pools_row_str)):
+            pools_row_str[pools_row_num].strip()
+            pools_row_arr = pools_row_str[pools_row_num].strip()
+            if pools_row_arr in consts.CLI_STR:
+                continue
+            pool_id = pools_row_arr[consts.POOL_ID_COUNT]
+            pool_name = pools_row_arr[consts.POOL_NAME_COUNT]
+            pool_status = consts.STORAGE_POOL_STATUS_MAP.get(
+                pools_row_arr[consts.POOL_STATUS_COUNT],
+                constants.StoragePoolStatus.ABNORMAL)
+            try:
+                total_capacity = int(
+                    pools_row_arr[consts.POOL_TOTAL_CAPACITY_COUNT]) * units.Mi
+                free_capacity = int(
+                    pools_row_arr[consts.POOL_FREE_CAPACITY_COUNT]) * units.Mi
+            except Exception as e:
+                LOG.info('Conversion digital exception:%s' % six.text_type(e))
+                return pool_list
+            pool_model = {
+                'name': pool_name,
+                'storage_id': self.storage_id,
+                'native_storage_pool_id': str(pool_id),
+                'status': pool_status,
+                'storage_type': constants.StorageType.BLOCK,
+                'total_capacity': total_capacity,
+                'used_capacity': total_capacity - free_capacity,
+                'free_capacity': free_capacity
+            }
+            pool_list.append(pool_model)
+        return pool_list
+
+    def get_list_pools(self):
         pool_list = []
+        pools = self.cli_handler.get_volumes_or_pool(
+            consts.GET_STORAGE_POOL_CSV, consts.POOL_TITLE_PATTERN)
         for pool in (pools or []):
             free_cap = float(
                 pool.get("freecapacity(mb)")) * units.Mi
@@ -198,6 +290,11 @@ class EternusDriver(driver.StorageDriver):
             consts.SHOW_EVENTS_SEVERITY_WARNING, query_para)
         list_alert = self.cli_handler.get_alerts(
             consts.SHOW_EVENTS_SEVERITY_ERROR, query_para, list_alert)
+        if not list_alert:
+            list_alert = self.cli_handler.get_alerts(
+                consts.SHOW_EVENTS_LEVEL_WARNING, query_para)
+            list_alert = self.cli_handler.get_alerts(
+                consts.SHOW_EVENTS_LEVEL_ERROR, query_para, list_alert)
         return list_alert
 
     @staticmethod
