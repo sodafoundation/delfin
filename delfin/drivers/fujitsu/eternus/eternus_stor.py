@@ -197,11 +197,6 @@ class EternusDriver(driver.StorageDriver):
                     consts.GET_PORT_FCOE_PARAMETERS,
                     self.storage_id,
                     self.cli_handler.format_fcoe_ports, True))
-            port_list.extend(
-                self.cli_handler.format_data(
-                    consts.GET_PORT_FCOE_PARAMETERS,
-                    self.storage_id,
-                    self.cli_handler.format_fcoe_ports, True))
             return port_list
         except Exception as e:
             error = six.text_type(e)
