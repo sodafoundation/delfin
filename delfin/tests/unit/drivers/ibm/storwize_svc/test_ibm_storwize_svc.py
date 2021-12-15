@@ -950,6 +950,13 @@ get_file_list = 'id filename\n' \
                 '6 Nv_stats_78N16G4-2_211201_161210'
 file_nv_1611 = """<?xml version="1.0" encoding="utf-8" ?>
 <vdsk idx="0"
+ctps="0" ctrhs="0" ctrhps="0" ctds="0"
+ctwfts="0" ctwwts="0" ctwfws="0" ctwhs="0"
+cv="0" cm="0" ctws="0" ctrs="0"
+ctr="0" ctw="0" ctp="0" ctrh="0"
+ctrhp="0" ctd="0" ctwft="0" ctwwt="0"
+ctwfw="0" ctwfwsh="0" ctwfwshs="0" ctwh="0"
+gwot="0" gwo="0" gws="0" gwl="0"
 id="powerha_fence"
 ro="0" wo="0" wou="0" rb="0" wb="0"
 rl="0" wl="0" rlw="0" wlw="0" xl="0">
@@ -960,6 +967,13 @@ dav="0" dcn="0" sav="0" scn="0" teav="0"
 """
 file_nv_1612 = """<?xml version="1.0" encoding="utf-8" ?>
 <vdsk idx="0"
+ctps="0" ctrhs="0" ctrhps="0" ctds="0"
+ctwfts="0" ctwwts="0" ctwfws="0" ctwhs="0"
+cv="0" cm="0" ctws="0" ctrs="0"
+ctr="0" ctw="0" ctp="0" ctrh="0"
+ctrhp="0" ctd="0" ctwft="0" ctwwt="0"
+ctwfw="0" ctwfwsh="0" ctwfwshs="0" ctwh="0"
+gwot="0" gwo="0" gws="0" gwl="0"
 id="powerha_fence"
 ro="0" wo="0" wou="0" rb="0" wb="0"
 rl="0" wl="0" rlw="0" wlw="0" xl="0">

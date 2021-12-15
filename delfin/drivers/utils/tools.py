@@ -110,6 +110,17 @@ class Tools(object):
         return map_list
 
     @staticmethod
+    def remove_file_with_same_type(file_name, file_path):
+        file_type = '%s_%s_%s' % (file_name.split('_')[0],
+                                  file_name.split('_')[1],
+                                  file_name.split('_')[2])
+        path_dir = os.listdir(file_path)
+        for file in path_dir:
+            if file_type in file:
+                local_file = '%s%s' % (file_path, file)
+                os.remove(local_file)
+
+    @staticmethod
     def get_remote_file_to_xml(ssh, file, local_path, remote_path):
         local_file = '%s%s' % (local_path, file)
         try:
@@ -126,4 +137,4 @@ class Tools(object):
             raise exception.SSHException(err_msg)
         finally:
             if os.path.exists(local_file):
-                os.remove(local_file)
+                Tools.remove_file_with_same_type(file, local_path)

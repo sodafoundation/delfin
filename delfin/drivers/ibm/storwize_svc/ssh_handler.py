@@ -71,7 +71,10 @@ class SSHHandler(object):
         'responseTime': 'res_time',
         'throughput': 'tb',
         'iops': 'to',
-        'ioSize': 'tb'
+        'ioSize': 'tb',
+        'cacheHitRatio': 'hrt',
+        'readCacheHitRatio': 'rhr',
+        'writeCacheHitRatio': 'whr'
     }
     DISK_PERF_METRICS = {
         'readIops': 'ro',
@@ -97,6 +100,7 @@ class SSHHandler(object):
         'readThroughput': 'rb',
         'writeThroughput': 'wb',
         'throughput': 'tb',
+        'responseTime': 'res_time',
         'iops': 'to'
     }
     TARGET_RESOURCE_RELATION = {
@@ -752,10 +756,12 @@ class SSHHandler(object):
                           metric_map, res_id):
         if not target:
             return
-        if last_data.get(target) > now_data.get(target):
-            value = now_data.get(target)
+        if 'CACHEHITRATIO' not in metric_type.upper():
+            value = SSHHandler.count_difference(now_data.get(target),
+                                                last_data.get(target))
         else:
-            value = now_data.get(target) - last_data.get(target)
+            value = now_data.get(
+                SSHHandler.VOLUME_PERF_METRICS.get(metric_type))
         if 'THROUGHPUT' in metric_type.upper():
             value = value / interval / units.Mi
         elif 'IOSIZE' in metric_type.upper():
@@ -778,6 +784,32 @@ class SSHHandler(object):
                 metric_map[res_id][metric_type] = {now_data.get('time'): value}
         else:
             metric_map[res_id] = {metric_type: {now_data.get('time'): value}}
+
+    @staticmethod
+    def count_difference(now_value, last_value):
+        value = 0
+        if now_value >= last_value:
+            value = now_value - last_value
+        else:
+            value = now_value
+        return value
+
+    @staticmethod
+    def handle_volume_cach_hit(now_data, last_data):
+        rh = SSHHandler.count_difference(now_data.get('rh'),
+                                         last_data.get('rh'))
+        wh = SSHHandler.count_difference(now_data.get('wh'),
+                                         last_data.get('wh'))
+        rht = SSHHandler.count_difference(now_data.get('rht'),
+                                          last_data.get('rht'))
+        wht = SSHHandler.count_difference(now_data.get('wht'),
+                                          last_data.get('wht'))
+        rhr = rh * 100 / rht if rht > 0 else 0
+        whr = wh * 100 / wht if wht > 0 else 0
+        hrt = rhr + whr
+        now_data['rhr'] = rhr
+        now_data['whr'] = whr
+        now_data['hrt'] = hrt
 
     def get_date_from_each_file(self, file, metric_map, target_list,
                                 resource_type, last_data):
@@ -810,6 +842,9 @@ class SSHHandler(object):
                             resource_info).get('time')) / units.k
                         if interval <= 0:
                             break
+                        if resource_type == constants.ResourceType.VOLUME:
+                            SSHHandler.handle_volume_cach_hit(
+                                now_data, last_data.get(resource_info))
                         for target in target_list:
                             device_target = SSHHandler. \
                                 RESOURCE_PERF_MAP.get(resource_type)
@@ -849,9 +884,11 @@ class SSHHandler(object):
     def package_xml_data(file_data, file_time, resource_type):
         rb = 0
         wb = 0
-        ro = 0
-        wo = 0
         res_time = 0
+        rh = 0
+        wh = 0
+        rht = 0
+        wht = 0
         if resource_type == constants.ResourceType.PORT:
             rb = int(file_data.get('cbr')) + int(file_data.get('hbr')) + int(
                 file_data.get('lnbr')) + int(
@@ -863,24 +900,26 @@ class SSHHandler(object):
                 file_data.get('lner')) + int(file_data.get('rmer'))
             wo = int(file_data.get('cet')) + int(file_data.get('het')) + int(
                 file_data.get('lnet')) + int(file_data.get('rmet'))
-        elif resource_type == constants.ResourceType.VOLUME:
-            rb = int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE
-            wb = int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE
+            res_time = int(file_data.get('dtdt', 0)) / units.Ki
+        else:
+            if resource_type == constants.ResourceType.VOLUME:
+                rb = int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE
+                wb = int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE
+                rh = int(file_data.get('ctrhs'))
+                wh = int(file_data.get('ctwhs'))
+                rht = int(file_data.get('ctrs'))
+                wht = int(file_data.get('ctws'))
+                res_time = int(file_data.get('xl'))
+            elif resource_type == constants.ResourceType.DISK:
+                rb = int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE
+                wb = int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE
+                res_time = int(file_data.get('rq')) + int(file_data.get('wq'))
+            elif resource_type == constants.ResourceType.CONTROLLER:
+                rb = int(file_data.get('rb')) * SSHHandler.BYTES_TO_BIT
+                wb = int(file_data.get('wb')) * SSHHandler.BYTES_TO_BIT
+                res_time = int(file_data.get('rq')) + int(file_data.get('wq'))
             ro = int(file_data.get('ro'))
             wo = int(file_data.get('wo'))
-            res_time = int(file_data.get('xl'))
-        elif resource_type == constants.ResourceType.DISK:
-            rb = int(file_data.get('rb')) * SSHHandler.BLOCK_SIZE
-            wb = int(file_data.get('wb')) * SSHHandler.BLOCK_SIZE
-            ro = int(file_data.get('ro'))
-            wo = int(file_data.get('wo'))
-            res_time = int(file_data.get('rq')) + int(file_data.get('wq'))
-        elif resource_type == constants.ResourceType.CONTROLLER:
-            rb = int(file_data.get('rb')) * SSHHandler.BYTES_TO_BIT
-            wb = int(file_data.get('wb')) * SSHHandler.BYTES_TO_BIT
-            ro = int(file_data.get('ro'))
-            wo = int(file_data.get('wo'))
-            res_time = int(file_data.get('rq')) + int(file_data.get('wq'))
         now_data = {
             'rb': rb,
             'wb': wb,
@@ -888,6 +927,10 @@ class SSHHandler(object):
             'wo': wo,
             'tb': rb + wb,
             'to': ro + wo,
+            'rh': rh,
+            'wh': wh,
+            'rht': rht,
+            'wht': wht,
             'res_time': res_time,
             'time': int(file_time)
         }
