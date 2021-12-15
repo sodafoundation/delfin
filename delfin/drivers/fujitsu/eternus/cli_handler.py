@@ -309,11 +309,13 @@ class CliHandler(object):
             size = Tools.get_capacity_size(disk_map[key].get('Size'))
             physical_type = constants.DiskPhysicalType.UNKNOWN
             if 'SSD' in disk_map[key].get('Type'):
-                physical_type = consts.DiskPhysicalTypeMap['SSD']
+                physical_type = consts.DiskPhysicalTypeMap.get('SSD')
             elif 'Nearline' in disk_map[key].get('Type'):
-                physical_type = consts.DiskPhysicalTypeMap['Nearline']
+                physical_type = consts.DiskPhysicalTypeMap.get('Nearline')
             elif 'Online' in disk_map[key].get('Type'):
-                physical_type = consts.DiskPhysicalTypeMap['Online']
+                physical_type = consts.DiskPhysicalTypeMap.get('Online')
+            elif 'SAS' in disk_map[key].get('Type'):
+                physical_type = consts.DiskPhysicalTypeMap.get('SAS')
             logical_type = \
                 consts.DiskLogicalTypeMap.get(
                     disk_map[key].get('Usage'),

@@ -1,13 +1,16 @@
+import hashlib
+
 import six
 from oslo_log import log
 from oslo_utils import units
 
-from delfin import exception
+from delfin import exception, utils
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.fujitsu.eternus import cli_handler, consts
 from delfin.drivers.fujitsu.eternus.consts import DIGITAL_CONSTANT
 from delfin.drivers.utils.tools import Tools
+from delfin.i18n import _
 
 LOG = log.getLogger(__name__)
 
@@ -218,7 +221,7 @@ class EternusDriver(driver.StorageDriver):
             return pool_list
         for pools_row_num in range(consts.POOL_CYCLE, len(pools_row_str)):
             pools_row_arr = pools_row_str[pools_row_num].strip()
-            if pools_row_arr in consts.CLI_STR or\
+            if pools_row_arr in consts.CLI_STR or \
                     pools_row_arr in consts.SPECIAL_CHARACTERS_ONE:
                 continue
             pools_arr = pools_row_arr.split()
@@ -294,4 +297,29 @@ class EternusDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_alert(context, alert):
-        pass
+        try:
+            alert_model = dict()
+            alert_model['alert_id'] = alert.get(consts.PARSE_ALERT_ALERT_ID)
+            alert_model['severity'] = consts.PARSE_ALERT_SEVERITY_MAP.get(
+                alert.get(consts.PARSE_ALERT_SEVERITY),
+                constants.Severity.NOT_SPECIFIED)
+            alert_model['category'] = constants.Category.FAULT
+            alert_model['occur_time'] = utils.utcnow_ms()
+            alert_model['description'] = alert.get(
+                consts.PARSE_ALERT_DESCRIPTION)
+            alert_model['location'] = alert.get(consts.PARSE_ALERT_LOCATION)
+            alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
+            alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
+            alert_model['alert_name'] = alert.get(
+                consts.PARSE_ALERT_DESCRIPTION)
+            alert_model['match_key'] = hashlib.md5(str(alert.get(
+                consts.PARSE_ALERT_ALERT_ID)).encode()).hexdigest()
+            return alert_model
+        except Exception as e:
+            LOG.error(e)
+            msg = (_("Failed to build alert model as some attributes missing"))
+            raise exception.InvalidResults(msg)
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'
