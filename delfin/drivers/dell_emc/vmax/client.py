@@ -296,7 +296,7 @@ class VMAXClient(object):
                     self.array_id, self.uni_version, director)
 
                 status = constants.ControllerStatus.NORMAL
-                if director_info.get('availability', '').upper() != 'ONLINE':
+                if "OFF" in director_info.get('availability', '').upper():
                     status = constants.ControllerStatus.OFFLINE
 
                 controller = {
@@ -493,4 +493,21 @@ class VMAXClient(object):
             return metrics_array
         except Exception:
             LOG.error("Failed to get CONTROLLER metrics for VMAX")
+            raise
+
+    def get_disk_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get disk performance metrics."""
+        if int(self.uni_version) < 91:
+            return []
+
+        try:
+            perf_list = self.rest.get_disk_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            metrics_array = perf_utils.construct_metrics(
+                storage_id, consts.DISK_METRICS, consts.DISK_CAP, perf_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get DISK metrics for VMAX")
             raise

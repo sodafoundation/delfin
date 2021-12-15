@@ -53,6 +53,13 @@ RDFPORT_METRICS = {
     'readThroughput': 'MBRead',
     'writeThroughput': 'MBWritten',
 }
+DISK_METRICS = {
+    'iops': 'IOs',
+    'throughput': 'MBs',
+    'readThroughput': 'MBReads',
+    'writeThroughput': 'MBWritten',
+    'responseTime': 'AvgResponseTime',
+}
 POOL_METRICS = {
     'iops': 'HostIOs',
     'readIops': 'HostReads',
@@ -141,6 +148,13 @@ CONTROLLER_CAP = {
     "responseTime": RESPONSE_TIME_DESCRIPTION,
 }
 PORT_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}
+DISK_CAP = {
     "iops": IOPS_DESCRIPTION,
     "throughput": THROUGHPUT_DESCRIPTION,
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
