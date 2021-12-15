@@ -45,8 +45,10 @@ class NasHandler(object):
         if res:
             return res
         else:
-            raise exception.\
-                ConnectTimeout('Failed to establish SSC connection')
+            raise \
+                exception.ConnectTimeout(
+                    'Failed to establish SSC connection from hitachi hnas'
+                )
 
     def login(self):
         try:
