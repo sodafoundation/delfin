@@ -139,6 +139,14 @@ class VMAXStorageDriver(driver.StorageDriver):
                     start_time, end_time)
                 metrics.extend(port_metrics)
 
+            # disk metrics
+            if resource_metrics.get(constants.ResourceType.DISK):
+                disk_metrics = self.client.get_disk_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.DISK),
+                    start_time, end_time)
+                metrics.extend(disk_metrics)
+
         except Exception:
             LOG.error("Failed to collect metrics from VMAX")
             raise
@@ -155,5 +163,6 @@ class VMAXStorageDriver(driver.StorageDriver):
                 constants.ResourceType.STORAGE_POOL: consts.POOL_CAP,
                 constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
                 constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP,
             }
         }
