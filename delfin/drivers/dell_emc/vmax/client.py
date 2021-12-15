@@ -414,7 +414,7 @@ class VMAXClient(object):
                     self.array_id, self.uni_version, disk)
 
                 disk_item = {
-                    'name': 'disk_' + disk,
+                    'name': disk,
                     'storage_id': storage_id,
                     'native_disk_id': disk,
                     'manufacturer': disk_info['vendor'],

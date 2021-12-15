@@ -580,14 +580,14 @@ class TestVMAXStorageDriver(TestCase):
         expected = \
             [
                 {
-                    'name': 'disk_1',
+                    'name': '1',
                     'storage_id': '12345',
                     'native_disk_id': '1',
                     'manufacturer': 'HGST',
                     'capacity': 1073741824000
                 },
                 {
-                    'name': 'disk_2',
+                    'name': '2',
                     'storage_id': '12345',
                     'native_disk_id': '2',
                     'manufacturer': 'WD',
