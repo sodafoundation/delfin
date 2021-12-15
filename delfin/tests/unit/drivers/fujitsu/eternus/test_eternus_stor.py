@@ -887,6 +887,12 @@ FCF VLAN ID                   Disable                    Disable
 FCF Fabric Name               Disable                    Disable
 MAC Address                   01:02:03:06:05:06          01:02:03:06:05:07
 CLI>"""
+PARSE_ALERT_INFO = {
+    '1.3.6.1.4.1.211.1.21.1.150.1.1': '123456',
+    '1.3.6.1.4.1.211.1.21.1.150.10': '控制器异常',
+    '1.3.6.1.4.1.211.1.21.1.150.14.1.1': 'warning',
+    '1.3.6.1.4.1.211.1.21.1.150.7': 'cm0'
+}
 
 
 def create_driver():
@@ -983,3 +989,8 @@ class TestEternusDriver(TestCase):
         data = self.driver.list_ports(context)
         self.assertEqual(
             data[0].get('name'), 'CM#0 CA#0 Port#0')
+
+    def test_parse_alert(self):
+        parse_alert = self.driver.parse_alert(context, PARSE_ALERT_INFO)
+        self.assertEqual(parse_alert.get('alert_id'), PARSE_ALERT_INFO.get(
+            '1.3.6.1.4.1.211.1.21.1.150.1.1'))

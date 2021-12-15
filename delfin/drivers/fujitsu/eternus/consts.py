@@ -64,7 +64,6 @@ POOL_FREE_CAPACITY_COUNT = 6
 POOL_CYCLE = 5
 POOL_LENGTH = 6
 
-
 GET_DISK_COMMAND = 'show disks -disk all'
 GET_PORT_FC_PARAMETERS = 'show fc-parameters'
 GET_PORT_FCOE_PARAMETERS = 'show fcoe-parameters'
@@ -179,7 +178,8 @@ DiskPhysicalTypeMap = {
     'Nearline': constants.DiskPhysicalType.UNKNOWN,
     'Online': constants.DiskPhysicalType.UNKNOWN,
     'SSD': constants.DiskPhysicalType.SSD,
-    'unknown': constants.DiskPhysicalType.UNKNOWN,
+    'SAS': constants.DiskPhysicalType.SAS,
+    'unknown': constants.DiskPhysicalType.UNKNOWN
 }
 
 DiskLogicalTypeMap = {
@@ -204,4 +204,17 @@ DISK_STATUS_MAP = {
     'Not Available': constants.DiskStatus.ABNORMAL,
     'Formatting': constants.DiskStatus.NORMAL,
     'Not Format': constants.DiskStatus.NORMAL
+}
+
+PARSE_ALERT_ALERT_ID = '1.3.6.1.4.1.211.1.21.1.150.1.1'
+PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.10'
+PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.211.1.21.1.150.14.1.1'
+PARSE_ALERT_LOCATION = '1.3.6.1.4.1.211.1.21.1.150.7'
+
+PARSE_ALERT_SEVERITY_MAP = {
+    'unknown': constants.Severity.NOT_SPECIFIED,
+    'unused': constants.Severity.NOT_SPECIFIED,
+    'ok': constants.Severity.INFORMATIONAL,
+    'warning': constants.Severity.WARNING,
+    'failed': constants.Severity.FATAL
 }
