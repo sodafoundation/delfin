@@ -14,6 +14,8 @@
 # under the License.
 import hashlib
 import time
+
+import eventlet
 import six
 
 from oslo_log import log as logging
@@ -35,10 +37,16 @@ class NasHandler(object):
         self.evs_list = []
 
     def ssh_do_exec(self, command_list):
-        res = self.ssh_pool.do_exec_shell(command_list)
-        while 'Failed to establish SSC connection' in res:
+        res = None
+        with eventlet.Timeout(60, False):
             res = self.ssh_pool.do_exec_shell(command_list)
-        return res
+            while 'Failed to establish SSC connection' in res:
+                res = self.ssh_pool.do_exec_shell(command_list)
+        if res:
+            return res
+        else:
+            raise exception.\
+                ConnectTimeout('Failed to establish SSC connection')
 
     def login(self):
         try:
