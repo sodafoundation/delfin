@@ -116,22 +116,28 @@ class CliHandler(object):
         except Exception as e:
             LOG.error("Get %s info error: %s" % (command, six.text_type(e)))
             return volume_id_dict
+        block = True
         if volumes_type_str:
-            volumes_type_arr = volumes_type_str.split('\n')
-            for row_num in range(DIGITAL_CONSTANT.THREE_INT,
-                                 len(volumes_type_arr)):
-                volume_type_dict = {}
-                volumes_type_row_arr = volumes_type_arr[row_num].split()
-                if not volumes_type_row_arr or \
-                        consts.CLI_STR in volumes_type_row_arr:
+            volumes_type_arr = volumes_type_str.replace('\r', '').split('\n')
+            for volumes_type_row_str in volumes_type_arr:
+                if not volumes_type_row_str or \
+                        consts.CLI_STR in volumes_type_row_str:
                     continue
+                if consts.SPECIAL_CHARACTERS_TWO in volumes_type_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                volume_type_dict = {}
+                volumes_type_row_arr = volumes_type_row_str.split()
                 volume_id = volumes_type_row_arr[DIGITAL_CONSTANT.ZERO_INT]
                 volume_type = volumes_type_row_arr[
                     DIGITAL_CONSTANT.MINUS_SIX_INT]
                 volume_type_dict['type'] = volume_type.lower() if \
                     volume_type else constants.VolumeType.THICK
                 volume_type_dict['used_capacity'] = int(
-                    volumes_type_row_arr[DIGITAL_CONSTANT.MINUS_ONE_INT])
+                    volumes_type_row_arr[
+                        DIGITAL_CONSTANT.MINUS_ONE_INT]) * units.Mi
                 volume_id_dict[volume_id] = volume_type_dict
         return volume_id_dict
 
@@ -251,10 +257,11 @@ class CliHandler(object):
                     constants.PortConnectionStatus.DISCONNECTED
                 health_status = \
                     constants.PortHealthStatus.ABNORMAL
-            speed = 0
+            speed = None
             if port_map[key].get('Transfer Rate') and (
                     'Gbit/s' in port_map[key].get('Transfer Rate')):
-                speed = port_map[key].get('Transfer Rate').split()[0]
+                speed = port_map[key].get('Transfer Rate').replace('Gbit/s',
+                                                                   '')
                 speed = int(speed) * units.G
             port_model = {
                 'name': port_map[key].get('Port'),
@@ -351,7 +358,7 @@ class CliHandler(object):
         pool_info_list = []
         try:
             if data_str:
-                result_data_arr = data_str.split('\n')
+                result_data_arr = data_str.replace('\r', '').split('\n')
                 titles = []
                 for common_data_row in result_data_arr:
                     title_pattern = re.compile(str_pattern)
