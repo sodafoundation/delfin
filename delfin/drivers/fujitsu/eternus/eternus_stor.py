@@ -222,7 +222,7 @@ class EternusDriver(driver.StorageDriver):
                     if status_key and 'Status/Status Code' in status_key:
                         status_dicts['Status/Status Code'] = status_dict.get(
                             status_key)
-                    if status_key and 'Port WWN' in status_key:
+                    if status_key and status_key in 'Port WWN':
                         status_dicts['WWN'] = status_dict.get(status_key)
                 status = status_dicts.get('Status/Status Code')
                 health_status = constants.PortHealthStatus.UNKNOWN
