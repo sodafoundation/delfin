@@ -702,6 +702,37 @@ class VMaxRest(object):
                                 list()) if response else list()
         return port_ids
 
+    def get_disk(self, array, version, device_id):
+        """Get a VMax disk from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param device_id: the disk device id
+        :returns: disk dict
+        :raises: StorageBackendException
+        """
+        disk_dict = self.get_resource(
+            array, SYSTEM, 'disk', resource_name=device_id,
+            version=version)
+        if not disk_dict:
+            exception_message = (_("Disk %(deviceID)s not found.")
+                                 % {'deviceID': device_id})
+            LOG.error(exception_message)
+            raise exception.DiskNotFound(device_id)
+        return disk_dict
+
+    def get_disk_list(self, array, version, params=None):
+        """Get a filtered list of VMax disks from array.
+        Filter parameters are required as the unfiltered disk list could be
+        very large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: disk_ids -- list
+        """
+        disk_dict_list = self.get_resource(
+            array, SYSTEM, 'disk', version=version, params=params)
+        return disk_dict_list.get('disk_ids', [])
+
     def post_request(self, target_uri, payload):
         """Generate  a POST request.
         :param target_uri: the uri to query from unipshere REST API
