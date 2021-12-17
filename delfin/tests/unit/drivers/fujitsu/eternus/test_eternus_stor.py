@@ -1121,7 +1121,7 @@ class TestEternusDriver(TestCase):
     def test_list_ports(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
-            side_effect=[FC_INFO_OLD, NODE_DATAS])
+            side_effect=[FCOE_INFO, NODE_DATAS])
         data = self.driver.list_ports(context)
         self.assertEqual(
             data[0].get('name'), 'CM#0 CA#0 Port#0')
