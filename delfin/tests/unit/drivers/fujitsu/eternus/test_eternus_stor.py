@@ -387,12 +387,6 @@ CE PSU#0 Information
  Status/Status Code  [Normal      / 0xE001]
 CE PSU#1 Information
  Status/Status Code  [Normal      / 0xE001]
- CLI> show host-iscsi-names
-Error: E0030 Command not supported.
-             [004D-01B0]
-CLI> show host-port-mode
-Error: E0030 Command not supported.
-             [e00A-C101]
 CLI>"""
 NODE_STATUS_DATAS = """
 Controller Enclosure Information
