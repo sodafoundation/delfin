@@ -195,20 +195,45 @@ class EternusDriver(driver.StorageDriver):
             raise exception.InvalidResults(error)
 
     def list_ports(self, context):
-        try:
-            port_list = self.cli_handler.format_data(
-                consts.GET_PORT_FC_PARAMETERS, self.storage_id,
-                self.cli_handler.format_fc_ports, True)
-            port_list.extend(
-                self.cli_handler.format_data(
-                    consts.GET_PORT_FCOE_PARAMETERS,
-                    self.storage_id,
-                    self.cli_handler.format_fcoe_ports, True))
-            return port_list
-        except Exception as e:
-            error = six.text_type(e)
-            LOG.error("Failed to get ports from fujitsu eternus %s" % error)
-            raise exception.InvalidResults(error)
+        port_list = self.cli_handler.format_data(
+            consts.GET_PORT_FC_PARAMETERS, self.storage_id,
+            self.cli_handler.format_fc_ports, True)
+        ports_status = self.cli_handler.get_ports_status()
+        for port in port_list:
+            name = port.get('name')
+            status_dict = ports_status.get(name, {})
+            if status_dict:
+                link_status = status_dict.get('Link Status')
+                connection_status = constants.PortConnectionStatus.UNKNOWN
+                if 'Gbit/s' in link_status:
+                    reality = link_status.split()[0].replace('Gbit/s', '')
+                    speed = int(reality) * units.G
+                    port['speed'] = speed
+                if 'Link Up' in link_status:
+                    connection_status =\
+                        constants.PortConnectionStatus.CONNECTED
+                if 'Link Down' in link_status:
+                    connection_status =\
+                        constants.PortConnectionStatus.DISCONNECTED
+
+                status_keys = status_dict.keys()
+                status_dicts = {}
+                for status_key in status_keys:
+                    if status_key and 'Status/Status Code' in status_key:
+                        status_dicts['Status/Status Code'] = status_dict.get(
+                            status_key)
+                    if status_key and 'Port WWN' in status_key:
+                        status_dicts['WWN'] = status_dict.get(status_key)
+                status = status_dicts.get('Status/Status Code')
+                health_status = constants.PortHealthStatus.UNKNOWN
+                if 'Normal' in status or 'normal' in status:
+                    health_status = constants.PortHealthStatus.NORMAL
+                elif 'Unconnected' in status or 'unconnected' in status:
+                    health_status = constants.PortHealthStatus.ABNORMAL
+                port['connection_status'] = connection_status
+                port['wwn'] = status_dicts.get('WWN')
+                port['health_status'] = health_status
+        return port_list
 
     def list_storage_pools(self, context):
         pool_list = self.get_list_pools()

@@ -86,7 +86,7 @@ class EternusSSHPool(SSHPool):
             else:
                 raise exception.SSHException(err)
 
-    def do_exec_shell(self, command_list):
+    def do_exec_shell(self, command_list, exe_time):
         result = ''
         try:
             with self.item() as ssh:
@@ -95,13 +95,13 @@ class EternusSSHPool(SSHPool):
                     for command in command_list:
                         utils.check_ssh_injection(command)
                         channel.send(command + '\r\n')
-                        time.sleep(0.5)
+                        time.sleep(exe_time)
                     channel.send("exit" + "\r\n")
                     channel.close()
                     while True:
                         resp = channel.recv(9999).decode('utf8')
                         if not resp:
-                            time.sleep(0.5)
+                            time.sleep(exe_time)
                             break
                         result += resp
             if 'is not a recognized command' in result \
