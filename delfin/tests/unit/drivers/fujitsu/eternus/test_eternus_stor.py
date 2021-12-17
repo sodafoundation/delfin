@@ -938,7 +938,8 @@ class TestEternusDriver(TestCase):
     def test_list_volumes_old(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
-            side_effect=[VOLUMES_ERROR, VOLUME_DATAS])
+            side_effect=[VOLUMES_ERROR, VOLUMES_ERROR, VOLUMES_ERROR,
+                         VOLUME_DATAS])
         volumes = self.driver.list_volumes(context)
         self.assertDictEqual(volumes[0], VOLUME_OLD_RESULT[0])
 

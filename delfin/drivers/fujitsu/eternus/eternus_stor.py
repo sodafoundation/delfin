@@ -32,18 +32,22 @@ class EternusDriver(driver.StorageDriver):
         list_volumes = []
         volumes = self.cli_handler.get_volumes_or_pool(
             consts.GET_LIST_VOLUMES_CSV, consts.VOLUME_TITLE_PATTERN)
+        volume_id_dict = self.cli_handler.get_volumes_type(
+            command=consts.GET_LIST_VOLUMES_TYPE_TPV)
+        volume_id_dict = self.cli_handler.get_volumes_type(
+            volume_id_dict, consts.GET_LIST_VOLUMES_TYPE_TPV)
         for volume_dict in (volumes or []):
             volume_native_volume_id = volume_dict.get('volumeno.')
-            command = '{}{}'.format(consts.GET_LIST_VOLUMES_TYPE,
-                                    volume_dict.get('type'))
-            volume_id_dict = self.cli_handler.get_volumes_type(command=command)
-            type_capacity = volume_id_dict.get(volume_native_volume_id, {})
-            volume_type = type_capacity.get('type',
-                                            constants.VolumeType.THICK)
-            used_capacity = type_capacity.get('used_capacity',
-                                              DIGITAL_CONSTANT.ZERO_INT)
-            total_capacity = float(
+            total_capacity = int(
                 volume_dict.get('size(mb)')) * units.Mi
+            volume_type = constants.VolumeType.THICK
+            used_capacity = DIGITAL_CONSTANT.ZERO_INT
+            if volume_dict.get('type'):
+                type_capacity = volume_id_dict.get(volume_native_volume_id, {})
+                volume_type = type_capacity.get('type',
+                                                constants.VolumeType.THICK)
+                used_capacity = type_capacity.get('used_capacity',
+                                                  DIGITAL_CONSTANT.ZERO_INT)
             volume = {
                 'name': volume_dict.get('volumename'),
                 'storage_id': self.storage_id,
@@ -52,7 +56,7 @@ class EternusDriver(driver.StorageDriver):
                 'native_volume_id': volume_native_volume_id,
                 'native_storage_pool_id': volume_dict.get('rgortpporftrpno.'),
                 'type': volume_type,
-                'total_capacity': int(total_capacity),
+                'total_capacity': total_capacity,
                 'used_capacity': used_capacity,
                 'free_capacity': total_capacity - used_capacity
             }
