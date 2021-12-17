@@ -66,9 +66,11 @@ POOL_CYCLE = 5
 POOL_LENGTH = 6
 
 GET_DISK_COMMAND = 'show disks -disk all'
+
+# port
 GET_PORT_FC_PARAMETERS = 'show fc-parameters'
 GET_PORT_FCOE_PARAMETERS = 'show fcoe-parameters'
-
+PORT_NEWLINE_PATTERN = 'CM#\\d.*Port#\\d Information'
 DATA_KEY_INDEX = 1
 DATA_VALUE_INDEX = 2
 
@@ -96,6 +98,8 @@ CODE_RANGE_BEGIN = 38
 CODE_RANGE_END = 46
 DESCRIPTION_RANGE = 48
 TIME_PATTERN = '%Y-%m-%d %H:%M:%S'
+ALERT_EXE_TIME = 5
+DEFAULT_EXE_TIME = 0.5
 
 
 class DIGITAL_CONSTANT(object):

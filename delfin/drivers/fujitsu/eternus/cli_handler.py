@@ -34,10 +34,10 @@ class CliHandler(object):
             LOG.error("Login error: %s", error)
             raise e
 
-    def exec_command(self, command):
+    def exec_command(self, command, exe_time=consts.DEFAULT_EXE_TIME):
         try:
             self.lock.acquire()
-            res = self.ssh_pool.do_exec_shell([command])
+            res = self.ssh_pool.do_exec_shell([command], exe_time)
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
@@ -144,7 +144,7 @@ class CliHandler(object):
     def get_alerts(self, command, query_para, list_alert=None):
         if not list_alert:
             list_alert = []
-        events_error_str = self.exec_command(command)
+        events_error_str = self.exec_command(command, consts.ALERT_EXE_TIME)
         if not events_error_str:
             return list_alert
         events_error_dict = self.get_event(events_error_str, query_para)
@@ -210,98 +210,53 @@ class CliHandler(object):
         data_list = []
         if not data_info:
             return data_list
-        try:
-            data_array = data_info.split('\n')
-            data_map = {}
-            for data in data_array:
-                if data and data not in '\r':
-                    temp_data = data.split('  ')
-                    temp_data = list(
-                        filter(lambda s: s and s.strip(), temp_data))
-                    if len(temp_data) >= consts.DATA_VALUE_INDEX:
-                        data_length = consts.DATA_VALUE_INDEX
-                        if is_port:
-                            data_length = len(temp_data)
-                        for i in range(consts.DATA_KEY_INDEX, data_length):
-                            key = temp_data[0].strip()
-                            value = temp_data[i].replace('[', '').replace(']',
-                                                                          '')
-                            value = value.strip()
-                            if data_map.get(i):
-                                data_map[i][key] = value
-                            else:
-                                data_map[i] = {
-                                    key: value
-                                }
-                else:
-                    data_list.extend(method(data_map, storage_id))
-                    data_map = {}
-            if data_map:
+        data_array = data_info.split('\n')
+        data_map = {}
+        for data in data_array:
+            if data and data not in '\r':
+                temp_data = data.split('  ')
+                temp_data = list(
+                    filter(lambda s: s and s.strip(), temp_data))
+                if len(temp_data) >= consts.DATA_VALUE_INDEX:
+                    data_length = consts.DATA_VALUE_INDEX
+                    if is_port:
+                        data_length = len(temp_data)
+                    for i in range(consts.DATA_KEY_INDEX, data_length):
+                        key = temp_data[0].strip()
+                        value = temp_data[i].replace('[', '').replace(']',
+                                                                      '')
+                        value = value.strip()
+                        if data_map.get(i):
+                            data_map[i][key] = value
+                        else:
+                            data_map[i] = {
+                                key: value
+                            }
+            else:
                 data_list.extend(method(data_map, storage_id))
-        except Exception as e:
-            err_msg = "Failed: %s" % \
-                      (six.text_type(e))
-            LOG.error(err_msg)
-            raise exception.InvalidResults(err_msg)
+                data_map = {}
+        if data_map:
+            data_list.extend(method(data_map, storage_id))
         return data_list
 
     @staticmethod
     def format_fc_ports(port_map, storage_id):
         port_list = []
         for key in port_map:
-            connection_status = \
-                constants.PortConnectionStatus.CONNECTED
-            health_status = constants.PortHealthStatus.NORMAL
-            if port_map[key].get('Connection') != 'FC-AL' or 'Fabric':
-                connection_status = \
-                    constants.PortConnectionStatus.DISCONNECTED
-                health_status = \
-                    constants.PortHealthStatus.ABNORMAL
             speed = None
             if port_map[key].get('Transfer Rate') and (
                     'Gbit/s' in port_map[key].get('Transfer Rate')):
                 speed = port_map[key].get('Transfer Rate').replace('Gbit/s',
                                                                    '')
                 speed = int(speed) * units.G
+            name = port_map[key].get('Port')
             port_model = {
-                'name': port_map[key].get('Port'),
+                'name': name,
                 'storage_id': storage_id,
-                'native_port_id':
-                    '%s-%s' % (constants.PortType.FC,
-                               port_map[key].get('Port')),
+                'native_port_id': port_map[key].get('Port'),
                 'location': port_map[key].get('Port'),
-                'connection_status': connection_status,
-                'health_status': health_status,
                 'type': constants.PortType.FC,
                 'speed': speed,
-                'wwn': port_map[key].get('WWPN'),
-            }
-            port_list.append(port_model)
-        return port_list
-
-    @staticmethod
-    def format_fcoe_ports(port_map, storage_id):
-        port_list = []
-        for key in port_map:
-            connection_status = \
-                constants.PortConnectionStatus.CONNECTED
-            health_status = constants.PortHealthStatus.NORMAL
-            speed = None
-            if 'Gbit/s' in port_map[key].get('Transfer Rate'):
-                speed = port_map[key].get('Transfer Rate').replace('Gbit/s',
-                                                                   '')
-                speed = int(speed) * units.G
-            port_model = {
-                'name': port_map[key].get('Port'),
-                'storage_id': storage_id,
-                'native_port_id':
-                    '%s-%s' % (constants.PortType.FCOE,
-                               port_map[key].get('Port')),
-                'connection_status': connection_status,
-                'health_status': health_status,
-                'type': constants.PortType.FCOE,
-                'speed': speed,
-                'mac_address': port_map[key].get('MAC Address')
             }
             port_list.append(port_model)
         return port_list
@@ -384,3 +339,35 @@ class CliHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
         return pool_info_list
+
+    def get_ports_status(self):
+        port_data_str = self.exec_command(consts.GET_STORAGE_CONTROLLER)
+        port_info_dict = {}
+        try:
+            if port_data_str:
+                result_data_arr = port_data_str.split('\n')
+                port_info_map = {}
+                name = None
+                for common_data_row in result_data_arr:
+                    row_pattern = re.compile(consts.PORT_NEWLINE_PATTERN)
+                    row_search_obj = row_pattern.search(common_data_row)
+                    if row_search_obj:
+                        name = row_search_obj.group().replace(
+                            ' Information', '')
+                        port_info_map['name'] = name
+                        continue
+                    elif port_info_map:
+                        pattern = re.compile(consts.COMMON_VALUE_PATTERN)
+                        search_obj = pattern.search(common_data_row)
+                        if search_obj:
+                            self.analysis_data_to_map(
+                                common_data_row, consts.COMMON_VALUE_PATTERN,
+                                port_info_map)
+                        if 'WWN' in common_data_row:
+                            port_info_dict[name] = port_info_map
+                            port_info_map = {}
+        except Exception as e:
+            err_msg = "get fc port info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return port_info_dict

@@ -286,6 +286,114 @@ f.ce@192.168.1.1's password:
 Currently Network Configuration is set to factory default.
 CLI>
 """
+NODE_DATAS_OLD = """your ip address
+you username is huawei
+CLI> show fru-ce
+CM#0 Information
+ Status/Status Code  [Normal      / 0xE001]
+ Memory Size         [1.0GB]
+ Type                [FC Model]
+ Parts Number        [CA07415-C621]
+ Serial Number       [WK13510516]
+ Hardware Revision   [AA   ]
+ CPU Clock           [1.20GHz]
+ Active EC           [EC#1]
+ Next EC             [EC#1]
+CM#0 Internal Parts Status/Status Code
+ Memory              [Normal      / 0xE001]
+ BE Expander         [Normal      / 0xE001]
+ BE EXP Port#0       [Normal      / 0xE001]
+ BE EXP Port#1       [Undefined   / 0x0000]
+ BE EXP Port#2       [Normal      / 0xE001]
+ DI Port#0           [Normal      / 0xE001]
+ DI Port#1           [Normal      / 0xE001]
+ FC Port#0           [Normal      / 0xE001]
+ FC Port#1           [Normal      / 0xE001]
+ SAS Cable#1(OUT)    [-           / -     ]
+ NAND Controller     [Normal      / 0xE001]
+ Flash ROM           [Normal      / 0xE001]
+CM#0 SCU Information
+ Status/Status Code  [Normal      / 0xE001]
+ Voltage             [9.50V]
+ Expires             [0-00]
+CM#0 Port#0 Information
+ Port Mode           [CA]
+ Status/Status Code  [Normal      / 0xE001]
+ Connection          [Fabric]
+ Loop ID             [-]
+ Transfer Rate       [Auto Negotiation]
+ Link Status         [4Gbit/s Link Up]
+ WWN                 [500000E0D0376706]
+ Host Affinity       [Enable]
+ Host Response       [-]
+CM#0 Port#1 Information
+ Port Mode           [CA]
+ Status/Status Code  [Normal      / 0xE001]
+ Connection          [Loop]
+ Loop ID             [-]
+ Transfer Rate       [Auto Negotiation]
+ Link Status         [Link Down]
+ WWN                 [500000E0D0376707]
+ Host Affinity       [Enable]
+ Host Response       [-]
+CM#1 Information
+ Status/Status Code  [Normal      / 0xE001]
+ Memory Size         [1.0GB]
+ Type                [FC Model]
+ Parts Number        [CA07415-C621]
+ Serial Number       [WK13510538]
+ Hardware Revision   [AA   ]
+ CPU Clock           [1.20GHz]
+ Active EC           [EC#1]
+ Next EC             [EC#1]
+CM#1 Internal Parts Status/Status Code
+ Memory              [Normal      / 0xE001]
+ BE Expander         [Normal      / 0xE001]
+ BE EXP Port#0       [Normal      / 0xE001]
+ BE EXP Port#1       [Undefined   / 0x0000]
+ BE EXP Port#2       [Normal      / 0xE001]
+ DI Port#0           [Normal      / 0xE001]
+ DI Port#1           [Normal      / 0xE001]
+ FC Port#0           [Normal      / 0xE001]
+ FC Port#1           [Normal      / 0xE001]
+ SAS Cable#1(OUT)    [-           / -     ]
+ NAND Controller     [Normal      / 0xE001]
+ Flash ROM           [Normal      / 0xE001]
+CM#1 SCU Information
+ Status/Status Code  [Normal      / 0xE001]
+ Voltage             [9.50V]
+ Expires             [0-00]
+CM#1 Port#0 Information
+ Port Mode           [CA]
+ Status/Status Code  [Normal      / 0xE001]
+ Connection          [Loop]
+ Loop ID             [-]
+ Transfer Rate       [Auto Negotiation]
+ Link Status         [Link Down]
+ WWN                 [500000E0D0376786]
+ Host Affinity       [Enable]
+ Host Response       [-]
+CM#1 Port#1 Information
+ Port Mode           [CA]
+ Status/Status Code  [Normal      / 0xE001]
+ Connection          [Fabric]
+ Loop ID             [-]
+ Transfer Rate       [Auto Negotiation]
+ Link Status         [4Gbit/s Link Up]
+ WWN                 [500000E0D0376787]
+ Host Affinity       [Enable]
+ Host Response       [-]
+CE PSU#0 Information
+ Status/Status Code  [Normal      / 0xE001]
+CE PSU#1 Information
+ Status/Status Code  [Normal      / 0xE001]
+ CLI> show host-iscsi-names
+Error: E0030 Command not supported.
+             [004D-01B0]
+CLI> show host-port-mode
+Error: E0030 Command not supported.
+             [e00A-C101]
+CLI>"""
 NODE_STATUS_DATAS = """
 Controller Enclosure Information
  Location      Status       Error Code  Sensor 1 / Sensor 2
@@ -887,6 +995,32 @@ FCF VLAN ID                   Disable                    Disable
 FCF Fabric Name               Disable                    Disable
 MAC Address                   01:02:03:06:05:06          01:02:03:06:05:07
 CLI>"""
+FC_INFO_OLD = """your ip address
+you username is huawei
+CLI> show fc-parameters
+Port                          CM#0 Port#0      CM#0 Port#1\
+      CM#1 Port#0      CM#1 Port#1
+Port Mode                     CA               CA               CA\
+               CA
+Connection                    Fabric           FC-AL            FC-AL\
+            Fabric
+Loop ID Assign                -                Auto(Ascending)\
+  Auto(Ascending)  -
+Transfer Rate                 Auto Negotiation Auto Negotiation\
+ Auto Negotiation Auto Negotiation
+Frame Size                    2048 bytes       2048 bytes\
+       2048 bytes       2048 bytes
+Host Affinity                 Enable           Enable           Enable\
+           Enable
+Host Response No.             -                -                -\
+                -
+Host Response Name            -                -                -\
+                -
+Reset Scope                   I_T_L            I_T_L            I_T_L\
+            I_T_L
+Reserve Cancel at Chip Reset  Enable           Enable           Enable\
+           Enable\
+CLI>"""
 PARSE_ALERT_INFO = {
     '1.3.6.1.4.1.211.1.21.1.150.1.1': '123456',
     '1.3.6.1.4.1.211.1.21.1.150.10': '控制器异常',
@@ -986,10 +1120,19 @@ class TestEternusDriver(TestCase):
 
     def test_list_ports(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        EternusSSHPool.do_exec_shell = mock.Mock(side_effect=['', FCOE_INFO])
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[FC_INFO_OLD, NODE_DATAS])
         data = self.driver.list_ports(context)
         self.assertEqual(
             data[0].get('name'), 'CM#0 CA#0 Port#0')
+
+    def test_list_ports_old(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[FC_INFO_OLD, NODE_DATAS_OLD])
+        data = self.driver.list_ports(context)
+        self.assertEqual(
+            data[0].get('name'), 'CM#0 Port#0')
 
     def test_parse_alert(self):
         parse_alert = self.driver.parse_alert(context, PARSE_ALERT_INFO)
