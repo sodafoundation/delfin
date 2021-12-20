@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import os
 import re
 import time
 from itertools import islice
@@ -814,8 +815,11 @@ class SSHHandler(object):
     def get_date_from_each_file(self, file, metric_map, target_list,
                                 resource_type, last_data):
         with self.ssh_pool.item() as ssh:
+            local_path = '%s/%s' % (
+                os.path.abspath(os.path.join(os.getcwd(), "../..")),
+                consts.LOCAL_FILE_PATH)
             file_xml = Tools.get_remote_file_to_xml(
-                ssh, file[1], consts.LOCAL_FILE_PATH,
+                ssh, file[1], local_path,
                 consts.REMOTE_FILE_PATH)
             for data in file_xml:
                 if re.sub(u"\\{.*?}", "", data.tag) == \
