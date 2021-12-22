@@ -702,6 +702,37 @@ class VMaxRest(object):
                                 list()) if response else list()
         return port_ids
 
+    def get_disk(self, array, version, device_id):
+        """Get a VMax disk from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param device_id: the disk device id
+        :returns: disk dict
+        :raises: StorageBackendException
+        """
+        disk_dict = self.get_resource(
+            array, SYSTEM, 'disk', resource_name=device_id,
+            version=version)
+        if not disk_dict:
+            exception_message = (_("Disk %(deviceID)s not found.")
+                                 % {'deviceID': device_id})
+            LOG.error(exception_message)
+            raise exception.DiskNotFound(device_id)
+        return disk_dict
+
+    def get_disk_list(self, array, version, params=None):
+        """Get a filtered list of VMax disks from array.
+        Filter parameters are required as the unfiltered disk list could be
+        very large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: disk_ids -- list
+        """
+        disk_dict_list = self.get_resource(
+            array, SYSTEM, 'disk', version=version, params=params)
+        return disk_dict_list.get('disk_ids', [])
+
     def post_request(self, target_uri, payload):
         """Generate  a POST request.
         :param target_uri: the uri to query from unipshere REST API
@@ -976,7 +1007,7 @@ class VMaxRest(object):
          """
         feport_metrics = []
         for k in metrics.keys():
-            vmax_key = constants.RDFDIRECTOR_METRICS.get(k)
+            vmax_key = constants.FEPORT_METRICS.get(k)
             if vmax_key:
                 feport_metrics.append(vmax_key)
 
@@ -1092,7 +1123,7 @@ class VMaxRest(object):
                 if metrics_res:
                     label = {
                         'resource_id': key_dict.get('portId'),
-                        'resource_name': 'BEPort_' +
+                        'resource_name': 'RDFPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
                         'resource_type': delfin_const.ResourceType.PORT,
@@ -1118,6 +1149,42 @@ class VMaxRest(object):
         rdf_metrics = self.get_rdfport_metrics(
             array, metrics, start_time, end_time)
         return be_metrics, fe_metrics, rdf_metrics
+
+    def get_disk_metrics(self, array, metrics, start_time, end_time):
+        """Get a disk performance metrics from VMAX unipshere REST API.
+        :param array: the array serial number
+        :param metrics: required metrics
+        :param start_time: start time for collection
+        :param end_time: end time for collection
+        :returns: message -- response from unipshere REST API
+         """
+        disk_metrics = []
+        for k in metrics.keys():
+            vmax_key = constants.DISK_METRICS.get(k)
+            if vmax_key:
+                disk_metrics.append(vmax_key)
+
+        keys = self.get_resource_keys(array, 'Disk')
+        keys_dict = None
+        if keys:
+            keys_dict = keys.get('diskInfo', None)
+
+        metrics_list = []
+        for key_dict in keys_dict:
+            payload = {'diskId': key_dict.get('diskId')}
+            metrics_res = self.get_resource_metrics(
+                array, start_time, end_time, 'Disk',
+                disk_metrics, payload=payload)
+            if metrics_res:
+                label = {
+                    'resource_id': key_dict.get('diskId'),
+                    'resource_name': 'Disk_' + key_dict.get('diskId'),
+                    'resource_type': delfin_const.ResourceType.DISK,
+                    'metrics': metrics_res
+                }
+                metrics_list.append(label)
+
+        return metrics_list
 
     def list_pagination(self, list_info):
         """Process lists under or over the maxPageSize
