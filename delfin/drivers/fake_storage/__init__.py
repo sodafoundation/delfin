@@ -564,6 +564,7 @@ class FakeStorageDriver(driver.StorageDriver):
         """Get capability of supported driver"""
         return {
             'is_historic': False,
+            'performance_metric_retention_window': 4500,
             'resource_metrics': {
                 "storage": {
                     "throughput": {

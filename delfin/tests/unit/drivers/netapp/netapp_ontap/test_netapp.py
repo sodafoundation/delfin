@@ -33,6 +33,7 @@ class TestNetAppCmodeDriver(TestCase):
         return_value={paramiko.SSHClient()})
 
     NetAppHandler.login = mock.Mock()
+    NetAppHandler.do_rest_call = mock.Mock()
     netapp_client = NetAppCmodeDriver(**test_constans.ACCESS_INFO)
 
     def test_reset_connection(self):
@@ -40,6 +41,7 @@ class TestNetAppCmodeDriver(TestCase):
         NetAppHandler.login = mock.Mock()
         netapp_client = NetAppCmodeDriver(**kwargs)
         netapp_client.reset_connection(context, **kwargs)
+        netapp_client.netapp_handler.do_rest_call = mock.Mock()
         self.assertEqual(netapp_client.netapp_handler.ssh_pool.ssh_host,
                          "192.168.159.130")
         self.assertEqual(netapp_client.netapp_handler.ssh_pool.ssh_port, 22)
