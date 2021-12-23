@@ -169,7 +169,7 @@ LIST_VOLUMES_STATUS_MAP = {
     'Broken': constants.StorageStatus.ABNORMAL,
     'Data Lost': constants.StorageStatus.ABNORMAL,
     'Not Available': constants.StorageStatus.OFFLINE,
-    'Unknown': constants.StorageStatus.ABNORMAL,
+    'Unknown': constants.StorageStatus.UNKNOWN,
 }
 
 SEVERITY_MAP = {
