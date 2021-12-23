@@ -84,6 +84,24 @@ class VMAXClient(object):
                     msg = "Invalid array_id. Expected id: {}". \
                         format(array['symmetrixId'])
                     raise exception.InvalidInput(msg)
+            else:
+                # Get first local array id
+                array_ids = array.get('symmetrixId', list())
+                for array_id in array_ids:
+                    array_info = self.rest.get_array_detail(
+                        version=self.uni_version, array=array_id)
+                    if array_info.get('local'):
+                        LOG.info("Adding local VMAX array {}".
+                                 format(array_id))
+                        if not self.array_id:
+                            self.array_id = array_id
+                        break
+                    else:
+                        LOG.info("Skipping remote VMAX array {}".
+                                 format(array_id))
+            if not self.array_id:
+                msg = "Failed to get VMAX array id from Unisphere"
+                raise exception.InvalidInput(msg)
         except Exception:
             LOG.error("Failed to init_connection to VMAX")
             raise
@@ -278,7 +296,7 @@ class VMAXClient(object):
                     self.array_id, self.uni_version, director)
 
                 status = constants.ControllerStatus.NORMAL
-                if director_info.get('availability', '').upper() != 'ONLINE':
+                if "OFF" in director_info.get('availability', '').upper():
                     status = constants.ControllerStatus.OFFLINE
 
                 controller = {
@@ -307,13 +325,18 @@ class VMAXClient(object):
             # Get list of Directors
             directors = self.rest.get_director_list(self.array_id,
                                                     self.uni_version)
-            switcher = {
-                'A': constants.PortLogicalType.MANAGEMENT,
-                'B': constants.PortLogicalType.SERVICE,
-                'C': constants.PortLogicalType.BACKEND,
-            }
-            port_list = []
-            for director in directors:
+        except Exception:
+            LOG.error("Failed to get director list,"
+                      " while getting port metrics from VMAX")
+            raise
+        switcher = {
+            'A': constants.PortLogicalType.MANAGEMENT,
+            'B': constants.PortLogicalType.SERVICE,
+            'C': constants.PortLogicalType.BACKEND,
+        }
+        port_list = []
+        for director in directors:
+            try:
                 port_keys = self.rest.get_port_list(
                     self.array_id, self.uni_version, director)
                 for port_key in port_keys:
@@ -371,10 +394,37 @@ class VMAXClient(object):
                         'ipv6_mask': None,
                     }
                     port_list.append(port_dict)
+
+            except Exception:
+                LOG.error("Failed to get port list for director: {}"
+                          .format(director))
+
             return port_list
 
+    def list_disks(self, storage_id):
+        if int(self.uni_version) < 91:
+            return []
+        try:
+            # Get list of Disks
+            disks = self.rest.get_disk_list(self.array_id,
+                                            self.uni_version)
+            disk_list = []
+            for disk in disks:
+                disk_info = self.rest.get_disk(
+                    self.array_id, self.uni_version, disk)
+
+                disk_item = {
+                    'name': disk,
+                    'storage_id': storage_id,
+                    'native_disk_id': disk,
+                    'manufacturer': disk_info['vendor'],
+                    'capacity': int(disk_info['capacity']) * units.Gi,
+                }
+                disk_list.append(disk_item)
+            return disk_list
+
         except Exception:
-            LOG.error("Failed to get port metrics from VMAX")
+            LOG.error("Failed to get disk details from VMAX")
             raise
 
     def list_alerts(self, query_para):
@@ -469,4 +519,21 @@ class VMAXClient(object):
             return metrics_array
         except Exception:
             LOG.error("Failed to get CONTROLLER metrics for VMAX")
+            raise
+
+    def get_disk_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get disk performance metrics."""
+        if int(self.uni_version) < 91:
+            return []
+
+        try:
+            perf_list = self.rest.get_disk_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            metrics_array = perf_utils.construct_metrics(
+                storage_id, consts.DISK_METRICS, consts.DISK_CAP, perf_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get DISK metrics for VMAX")
             raise

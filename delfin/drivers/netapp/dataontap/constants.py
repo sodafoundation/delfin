@@ -38,6 +38,7 @@ YEAR_STAMP = '1y'
 
 CLUSTER_PERF_URL = '/api/cluster/metrics?interval=1h&fields=iops,' \
                    'throughput,latency'
+
 POOL_PERF_URL = '/api/storage/aggregates/%s/metrics?interval=1h&'\
                 'fields=iops,throughput,latency'
 VOLUME_PERF_URL = '/api/storage/luns/%s/metrics?interval=1h&fields=iops,'\
@@ -63,7 +64,7 @@ PERF_MAP = {
 }
 
 PATTERN = re.compile('^[-]{3,}')
-FLOAT_PATTERN = r"[-+]?\d*\.\d+|\d+"
+FLOAT_PATTERN = r"\d\.\d"
 IP_PATTERN = re.compile(r'(([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])\.){3}'
                         r'([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])$')
 CLUSTER_SHOW_COMMAND = "cluster identity show"
@@ -591,52 +592,51 @@ CAP_MAP = {
     "writeIoSize": WRITE_IO_SIZE_DESCRIPTION,
 }
 
-PERF_CAPABILITIES = {
-    'is_historic': True,
-    'resource_metrics': {
-        "storage": {
-            "throughput": THROUGHPUT_DESCRIPTION,
-            "responseTime": RESPONSE_TIME_DESCRIPTION,
-            "iops": IOPS_DESCRIPTION,
-            "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-            "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-            "readIops": READ_IOPS_DESCRIPTION,
-            "writeIops": WRITE_IOPS_DESCRIPTION,
-        },
-        "storagePool": {
-            "throughput": THROUGHPUT_DESCRIPTION,
-            "responseTime": RESPONSE_TIME_DESCRIPTION,
-            "iops": IOPS_DESCRIPTION,
-            "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-            "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-            "readIops": READ_IOPS_DESCRIPTION,
-            "writeIops": WRITE_IOPS_DESCRIPTION,
-        },
-        "volume": {
-            "throughput": THROUGHPUT_DESCRIPTION,
-            "responseTime": RESPONSE_TIME_DESCRIPTION,
-            "iops": IOPS_DESCRIPTION,
-            "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-            "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-            "readIops": READ_IOPS_DESCRIPTION,
-            "writeIops": WRITE_IOPS_DESCRIPTION,
-        },
-        "port": {
-            "throughput": THROUGHPUT_DESCRIPTION,
-            "responseTime": RESPONSE_TIME_DESCRIPTION,
-            "iops": IOPS_DESCRIPTION,
-            "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-            "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-            "readIops": READ_IOPS_DESCRIPTION,
-            "writeIops": WRITE_IOPS_DESCRIPTION,
-        },
-        "filesystem": {
-            "throughput": THROUGHPUT_DESCRIPTION,
-            "iops": IOPS_DESCRIPTION,
-            "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-            "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-            "readIops": READ_IOPS_DESCRIPTION,
-            "writeIops": WRITE_IOPS_DESCRIPTION,
-        },
-    }
+STORAGE_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+POOL_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+VOLUME_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+PORT_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+FS_CAPABILITIES = {
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "iops": IOPS_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
 }
