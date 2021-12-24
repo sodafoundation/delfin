@@ -27,7 +27,12 @@ LOG = log.getLogger(__name__)
 class UnityStorDriver(driver.StorageDriver):
     """UnityStorDriver implement the DELL EMC Storage driver"""
     HEALTH_OK = (5, 7)
-
+    STORAGE_STATUS_MAP = {5: constants.StorageStatus.NORMAL,
+                          7: constants.StorageStatus.NORMAL,
+                          15: constants.StorageStatus.NORMAL,
+                          20: constants.StorageStatus.NORMAL,
+                          10: constants.StorageStatus.DEGRADED
+                          }
     FILESYSTEM_FLR_MAP = {0: constants.WORMType.NON_WORM,
                           1: constants.WORMType.ENTERPRISE,
                           2: constants.WORMType.COMPLIANCE
@@ -62,11 +67,21 @@ class UnityStorDriver(driver.StorageDriver):
     def close_connection(self):
         self.rest_handler.logout()
 
+    def get_disk_capacity(self, context):
+        raw_capacity = 0
+        try:
+            disk_info = self.list_disks(context)
+            if disk_info:
+                for disk in disk_info:
+                    raw_capacity += disk.get('capacity')
+        except Exception:
+            LOG.info("get disk info fail in get_disk_capacity")
+        return raw_capacity
+
     def get_storage(self, context):
         system_info = self.rest_handler.get_storage()
         capacity = self.rest_handler.get_capacity()
         version_info = self.rest_handler.get_soft_version()
-        status = constants.StorageStatus.OFFLINE
         if system_info is not None and capacity is not None:
             system_entries = system_info.get('entries')
             for system in system_entries:
@@ -74,11 +89,9 @@ class UnityStorDriver(driver.StorageDriver):
                 name = content.get('name')
                 model = content.get('model')
                 serial_number = content.get('serialNumber')
-                health_value = content.get('health').get('value')
-                if health_value in UnityStorDriver.HEALTH_OK:
-                    status = constants.StorageStatus.NORMAL
-                else:
-                    status = constants.StorageStatus.ABNORMAL
+                health_value = content.get('health', {}).get('value')
+                status = UnityStorDriver.STORAGE_STATUS_MAP.get(
+                    health_value, constants.StorageStatus.ABNORMAL)
                 break
             capacity_info = capacity.get('entries')
             for per_capacity in capacity_info:
@@ -95,6 +108,8 @@ class UnityStorDriver(driver.StorageDriver):
                     if content:
                         version = content.get('id')
                         break
+            raw_capacity = self.get_disk_capacity(context)
+            raw_capacity = raw_capacity if raw_capacity else int(total)
             system_result = {
                 'name': name,
                 'vendor': 'DELL EMC',
@@ -105,7 +120,7 @@ class UnityStorDriver(driver.StorageDriver):
                 'location': '',
                 'subscribed_capacity': int(subs),
                 'total_capacity': int(total),
-                'raw_capacity': int(total),
+                'raw_capacity': raw_capacity,
                 'used_capacity': int(used),
                 'free_capacity': int(free)
             }
