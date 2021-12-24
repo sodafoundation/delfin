@@ -26,6 +26,7 @@ GET_STORAGE_FIRMWARE_VERSION = 'show firmware-version'
 GET_STORAGE_TOTAL_CAPACITY = 'show storage-cluster-license'
 GET_STORAGE_CONTROLLER = 'show fru-ce'
 GET_STORAGE_CONTROLLER_STATUS = 'show enclosure-status -type all'
+SET_CLIENV_FORCE_UNLOCK = 'set clienv-force-unlock'
 FIRMWARE_VERSION_CURRENT_COUNT = 3
 FIRMWARE_VERSION_LENGTH = 4
 CURRENT = 'Current'
@@ -149,7 +150,7 @@ STORAGE_POOL_STATUS_MAP = {'Available': constants.StoragePoolStatus.NORMAL,
                                constants.StoragePoolStatus.ABNORMAL,
                            'SED Locked': constants.StoragePoolStatus.ABNORMAL,
                            'Broken': constants.StoragePoolStatus.ABNORMAL,
-                           'Unknown': constants.StoragePoolStatus.ABNORMAL}
+                           'Unknown': constants.StoragePoolStatus.UNKNOWN}
 
 LIST_VOLUMES_STATUS_MAP = {
     'normal': constants.StorageStatus.NORMAL,
@@ -169,7 +170,7 @@ LIST_VOLUMES_STATUS_MAP = {
     'Broken': constants.StorageStatus.ABNORMAL,
     'Data Lost': constants.StorageStatus.ABNORMAL,
     'Not Available': constants.StorageStatus.OFFLINE,
-    'Unknown': constants.StorageStatus.ABNORMAL,
+    'Unknown': constants.StorageStatus.UNKNOWN,
 }
 
 SEVERITY_MAP = {
@@ -211,15 +212,13 @@ DISK_STATUS_MAP = {
     'Not Format': constants.DiskStatus.NORMAL
 }
 
-PARSE_ALERT_ALERT_ID = '1.3.6.1.4.1.211.1.21.1.150.1.1'
-PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.10'
-PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.211.1.21.1.150.14.1.1'
-PARSE_ALERT_LOCATION = '1.3.6.1.4.1.211.1.21.1.150.7'
+PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
+PARSE_ALERT_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
+PARSE_ALERT_COMPONENT = '1.3.6.1.4.1.211.1.21.1.150.7.0'
+PARSE_ALERT_LOCATION = '1.3.6.1.4.1.211.1.21.1.150.1.1.0'
+PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.11.0'
 
 PARSE_ALERT_SEVERITY_MAP = {
-    'unknown': constants.Severity.NOT_SPECIFIED,
-    'unused': constants.Severity.NOT_SPECIFIED,
-    'ok': constants.Severity.INFORMATIONAL,
-    'warning': constants.Severity.WARNING,
-    'failed': constants.Severity.FATAL
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.5': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2': constants.Severity.FATAL
 }

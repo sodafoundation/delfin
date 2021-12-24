@@ -37,7 +37,8 @@ class CliHandler(object):
     def exec_command(self, command, exe_time=consts.DEFAULT_EXE_TIME):
         try:
             self.lock.acquire()
-            res = self.ssh_pool.do_exec_shell([command], exe_time)
+            res = self.ssh_pool.do_exec_shell([
+                consts.SET_CLIENV_FORCE_UNLOCK, command], exe_time)
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e

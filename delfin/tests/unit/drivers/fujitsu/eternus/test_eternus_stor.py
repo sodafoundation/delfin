@@ -1016,7 +1016,7 @@ Reserve Cancel at Chip Reset  Enable           Enable           Enable\
            Enable\
 CLI>"""
 PARSE_ALERT_INFO = {
-    '1.3.6.1.4.1.211.1.21.1.150.1.1': '123456',
+    '1.3.6.1.2.1.1.3.0': '123456',
     '1.3.6.1.4.1.211.1.21.1.150.10': '控制器异常',
     '1.3.6.1.4.1.211.1.21.1.150.14.1.1': 'warning',
     '1.3.6.1.4.1.211.1.21.1.150.7': 'cm0'
@@ -1131,4 +1131,4 @@ class TestEternusDriver(TestCase):
     def test_parse_alert(self):
         parse_alert = self.driver.parse_alert(context, PARSE_ALERT_INFO)
         self.assertEqual(parse_alert.get('alert_id'), PARSE_ALERT_INFO.get(
-            '1.3.6.1.4.1.211.1.21.1.150.1.1'))
+            '1.3.6.1.2.1.1.3.0'))
