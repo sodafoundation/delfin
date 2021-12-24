@@ -296,7 +296,7 @@ class VMAXClient(object):
                     self.array_id, self.uni_version, director)
 
                 status = constants.ControllerStatus.NORMAL
-                if director_info.get('availability', '').upper() != 'ONLINE':
+                if "OFF" in director_info.get('availability', '').upper():
                     status = constants.ControllerStatus.OFFLINE
 
                 controller = {
@@ -401,6 +401,32 @@ class VMAXClient(object):
 
             return port_list
 
+    def list_disks(self, storage_id):
+        if int(self.uni_version) < 91:
+            return []
+        try:
+            # Get list of Disks
+            disks = self.rest.get_disk_list(self.array_id,
+                                            self.uni_version)
+            disk_list = []
+            for disk in disks:
+                disk_info = self.rest.get_disk(
+                    self.array_id, self.uni_version, disk)
+
+                disk_item = {
+                    'name': disk,
+                    'storage_id': storage_id,
+                    'native_disk_id': disk,
+                    'manufacturer': disk_info['vendor'],
+                    'capacity': int(disk_info['capacity']) * units.Gi,
+                }
+                disk_list.append(disk_item)
+            return disk_list
+
+        except Exception:
+            LOG.error("Failed to get disk details from VMAX")
+            raise
+
     def list_alerts(self, query_para):
         """Get all alerts from an array."""
         return self.rest.get_alerts(query_para, version=self.uni_version,
@@ -493,4 +519,21 @@ class VMAXClient(object):
             return metrics_array
         except Exception:
             LOG.error("Failed to get CONTROLLER metrics for VMAX")
+            raise
+
+    def get_disk_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get disk performance metrics."""
+        if int(self.uni_version) < 91:
+            return []
+
+        try:
+            perf_list = self.rest.get_disk_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            metrics_array = perf_utils.construct_metrics(
+                storage_id, consts.DISK_METRICS, consts.DISK_CAP, perf_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get DISK metrics for VMAX")
             raise
