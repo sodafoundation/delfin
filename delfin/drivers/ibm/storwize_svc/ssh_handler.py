@@ -944,30 +944,27 @@ class SSHHandler(object):
 
     def get_stats_file_data(self, file_map, res_type, metrics, storage_id,
                             target_list, start_time, end_time):
+        metric_map = {}
         for file_tye in file_map:
-            metric_map = {}
             file_list = file_map.get(file_tye)
             if 'Nv' in file_tye and res_type == constants.ResourceType.VOLUME:
                 self.get_stats_from_file(file_list, metric_map, target_list,
                                          constants.ResourceType.VOLUME,
                                          start_time, end_time)
-                self.packege_data(storage_id, res_type, metrics, metric_map)
             elif 'Nm' in file_tye and res_type == constants.ResourceType.DISK:
                 self.get_stats_from_file(file_list, metric_map, target_list,
                                          constants.ResourceType.DISK,
                                          start_time, end_time)
-                self.packege_data(storage_id, res_type, metrics, metric_map)
             elif 'Nn' in file_tye and res_type == constants.ResourceType.PORT:
                 self.get_stats_from_file(file_list, metric_map, target_list,
                                          constants.ResourceType.PORT,
                                          start_time, end_time)
-                self.packege_data(storage_id, res_type, metrics, metric_map)
             elif 'Nn' in file_tye and res_type == \
                     constants.ResourceType.CONTROLLER:
                 self.get_stats_from_file(file_list, metric_map, target_list,
                                          constants.ResourceType.CONTROLLER,
                                          start_time, end_time)
-                self.packege_data(storage_id, res_type, metrics, metric_map)
+        self.packege_data(storage_id, res_type, metrics, metric_map)
 
     def collect_perf_metrics(self, storage_id, resource_metrics,
                              start_time, end_time):
@@ -1013,3 +1010,23 @@ class SSHHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
         return metrics
+
+    def get_latest_perf_timestamp(self):
+        latest_time = 0
+        stats_file_command = 'lsdumps -prefix /dumps/iostats'
+        file_list = self.exec_ssh_command(stats_file_command)
+        file_line = file_list.split('\n')
+        for file in islice(file_line, 1, None):
+            if file:
+                file_arr = ' '.join(file.split()).split(' ')
+                if len(file_arr) > 1:
+                    file_name = file_arr[1]
+                    name_arr = file_name.split('_')
+                    file_time = '20%s%s' % (name_arr[3], name_arr[4])
+                    time_pattern = '%Y%m%d%H%M%S'
+                    tools = Tools()
+                    occur_time = tools.time_str_to_timestamp(
+                        file_time, time_pattern)
+                    if latest_time < occur_time:
+                        latest_time = occur_time
+        return latest_time
