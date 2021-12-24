@@ -336,7 +336,9 @@ class EternusDriver(driver.StorageDriver):
             alert_model['occur_time'] = utils.utcnow_ms()
             alert_model['description'] = alert.get(
                 consts.PARSE_ALERT_DESCRIPTION)
-            alert_model['location'] = alert.get(consts.PARSE_ALERT_LOCATION)
+            alert_model['location'] = '{}{}'.format(alert.get(
+                consts.PARSE_ALERT_LOCATION),
+                alert.get(consts.PARSE_ALERT_COMPONENT))
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
             alert_model['alert_name'] = alert.get(
