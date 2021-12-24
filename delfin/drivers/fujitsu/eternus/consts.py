@@ -26,6 +26,7 @@ GET_STORAGE_FIRMWARE_VERSION = 'show firmware-version'
 GET_STORAGE_TOTAL_CAPACITY = 'show storage-cluster-license'
 GET_STORAGE_CONTROLLER = 'show fru-ce'
 GET_STORAGE_CONTROLLER_STATUS = 'show enclosure-status -type all'
+SET_CLIENV_FORCE_UNLOCK = 'set clienv-force-unlock'
 FIRMWARE_VERSION_CURRENT_COUNT = 3
 FIRMWARE_VERSION_LENGTH = 4
 CURRENT = 'Current'
