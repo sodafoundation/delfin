@@ -14,7 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-LOCAL_FILE_PATH = 'utils/performance_file/svc/'
+LOCAL_FILE_PATH = '/delfin/drivers/utils/performance_file/svc/'
 REMOTE_FILE_PATH = '/dumps/iostats/'
 
 IOPS_DESCRIPTION = {

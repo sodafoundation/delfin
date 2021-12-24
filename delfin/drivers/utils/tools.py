@@ -16,8 +16,6 @@ import time
 
 import six
 
-from delfin import exception
-
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
@@ -122,6 +120,7 @@ class Tools(object):
 
     @staticmethod
     def get_remote_file_to_xml(ssh, file, local_path, remote_path):
+        root_node = None
         local_file = '%s%s' % (local_path, file)
         try:
             scp_client = SCPClient(ssh.get_transport(),
@@ -130,11 +129,11 @@ class Tools(object):
             scp_client.get(remote_file, local_path)
             root_node = open(local_file).read()
             root_node = ET.fromstring(root_node)
-            return root_node
         except Exception as e:
             err_msg = "Failed to copy statics file: %s" % \
                       (six.text_type(e))
-            raise exception.SSHException(err_msg)
+            LOG.error(err_msg)
         finally:
             if os.path.exists(local_file):
                 Tools.remove_file_with_same_type(file, local_path)
+            return root_node

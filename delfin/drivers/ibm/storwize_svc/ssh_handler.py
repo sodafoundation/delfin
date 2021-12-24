@@ -816,11 +816,13 @@ class SSHHandler(object):
                                 resource_type, last_data):
         with self.ssh_pool.item() as ssh:
             local_path = '%s/%s' % (
-                os.path.abspath(os.path.join(os.getcwd(), "../..")),
+                os.path.abspath(os.path.join(os.getcwd())),
                 consts.LOCAL_FILE_PATH)
             file_xml = Tools.get_remote_file_to_xml(
                 ssh, file[1], local_path,
                 consts.REMOTE_FILE_PATH)
+            if not file_xml:
+                return
             for data in file_xml:
                 if re.sub(u"\\{.*?}", "", data.tag) == \
                         SSHHandler.TARGET_RESOURCE_RELATION.get(
