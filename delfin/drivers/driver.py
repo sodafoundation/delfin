@@ -289,3 +289,7 @@ class StorageDriver(object):
 
     def get_alert_sources(self, context):
         return []
+
+    def get_latest_perf_timestamp(self, context):
+        """Get the timestamp of the latest performance data of the device"""
+        pass
