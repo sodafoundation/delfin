@@ -258,7 +258,7 @@ class EternusDriver(driver.StorageDriver):
             pool_name = pools_arr[consts.POOL_NAME_COUNT]
             pool_status = consts.STORAGE_POOL_STATUS_MAP.get(
                 pools_arr[consts.POOL_STATUS_COUNT],
-                constants.StoragePoolStatus.ABNORMAL)
+                constants.StoragePoolStatus.UNKNOWN)
             try:
                 total_capacity = int(
                     pools_arr[consts.POOL_TOTAL_CAPACITY_COUNT]) * units.Mi
@@ -292,7 +292,7 @@ class EternusDriver(driver.StorageDriver):
             used_cap = total_cap - free_cap
             status = consts.STORAGE_POOL_STATUS_MAP.get(
                 pool.get('status'),
-                constants.StoragePoolStatus.ABNORMAL)
+                constants.StoragePoolStatus.UNKNOWN)
             pool_model = {
                 'name': pool.get('raidgroupname'),
                 'storage_id': self.storage_id,
