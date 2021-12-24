@@ -83,3 +83,6 @@ class StorwizeSVCDriver(driver.StorageDriver):
                 constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP
             }
         }
+
+    def get_latest_perf_timestamp(self, context):
+        return self.ssh_hanlder.get_latest_perf_timestamp()
