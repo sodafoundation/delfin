@@ -149,7 +149,7 @@ STORAGE_POOL_STATUS_MAP = {'Available': constants.StoragePoolStatus.NORMAL,
                                constants.StoragePoolStatus.ABNORMAL,
                            'SED Locked': constants.StoragePoolStatus.ABNORMAL,
                            'Broken': constants.StoragePoolStatus.ABNORMAL,
-                           'Unknown': constants.StoragePoolStatus.ABNORMAL}
+                           'Unknown': constants.StoragePoolStatus.UNKNOWN}
 
 LIST_VOLUMES_STATUS_MAP = {
     'normal': constants.StorageStatus.NORMAL,
@@ -211,15 +211,13 @@ DISK_STATUS_MAP = {
     'Not Format': constants.DiskStatus.NORMAL
 }
 
-PARSE_ALERT_ALERT_ID = '1.3.6.1.4.1.211.1.21.1.150.1.1'
-PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.10'
-PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.211.1.21.1.150.14.1.1'
-PARSE_ALERT_LOCATION = '1.3.6.1.4.1.211.1.21.1.150.7'
+PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
+PARSE_ALERT_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
+PARSE_ALERT_COMPONENT = '1.3.6.1.4.1.211.1.21.1.150.7.0'
+PARSE_ALERT_LOCATION = '1.3.6.1.4.1.211.1.21.1.150.1.1.0'
+PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.11.0'
 
 PARSE_ALERT_SEVERITY_MAP = {
-    'unknown': constants.Severity.NOT_SPECIFIED,
-    'unused': constants.Severity.NOT_SPECIFIED,
-    'ok': constants.Severity.INFORMATIONAL,
-    'warning': constants.Severity.WARNING,
-    'failed': constants.Severity.FATAL
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.5': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2': constants.Severity.FATAL
 }
