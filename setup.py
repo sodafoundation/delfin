@@ -38,6 +38,7 @@ setup(
         ],
         'delfin.storage.drivers': [
             'fake_storage fake_driver = delfin.drivers.fake_storage:FakeStorageDriver',
+            'fujitsu eternus = delfin.drivers.fujitsu.eternus.eternus_stor:EternusDriver',
             'dellemc unity = delfin.drivers.dell_emc.unity.unity:UnityStorDriver',
             'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
             'dellemc vnx_block = delfin.drivers.dell_emc.vnx.vnx_block.vnx_block:VnxBlockStorDriver',
@@ -47,7 +48,8 @@ setup(
             'hpe msa = delfin.drivers.hpe.hpe_msa.hpe_msastor:HpeMsaStorDriver',
             'huawei oceanstor = delfin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver',
             'ibm storwize_svc = delfin.drivers.ibm.storwize_svc.storwize_svc:StorwizeSVCDriver',
-            'netapp cmode = delfin.drivers.netapp.dataontap.cluster_mode:NetAppCmodeDriver'
+            'netapp cmode = delfin.drivers.netapp.dataontap.cluster_mode:NetAppCmodeDriver',
+            'hitachi hnas = delfin.drivers.hitachi.hnas.hds_nas:HitachiHNasDriver'
         ]
     },
 )
