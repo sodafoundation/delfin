@@ -709,3 +709,12 @@ class ComponentHandler():
                     'collect_timestamp')
                 metric_list.append(metric_map)
         return collect_resuore_map
+
+    def get_latest_perf_timestamp(self):
+        latest_time = 0
+        disks_metrics_datas = self.ssh_handler.get_disk_metrics(None, None)
+        for metrics_data in (disks_metrics_datas or []):
+            if metrics_data and metrics_data.get('collect_time'):
+                latest_time = metrics_data.get('collect_time')
+                break
+        return latest_time

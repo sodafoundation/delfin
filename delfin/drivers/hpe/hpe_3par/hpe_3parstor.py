@@ -112,7 +112,8 @@ class Hpe3parStorDriver(driver.StorageDriver):
                                                     resource_metrics,
                                                     start_time, end_time)
 
-    def get_capabilities(self, context):
+    @staticmethod
+    def get_capabilities(context, filters=None):
         """Get capability of supported driver"""
         return {
             'is_historic': True,
@@ -123,3 +124,6 @@ class Hpe3parStorDriver(driver.StorageDriver):
                 constants.ResourceType.DISK: consts.DISK_CAP
             }
         }
+
+    def get_latest_perf_timestamp(self, context):
+        return self.comhandler.get_latest_perf_timestamp()

@@ -58,6 +58,7 @@ class SSHHandler(object):
     HPE3PAR_COMMAND_SRSTATPD = 'srstatpd -attime -btsecs %d -etsecs %d'
     HPE3PAR_COMMAND_SRSTATVV = 'srstatvv -attime -groupby VVID,VV_NAME' \
                                ' -btsecs %d -etsecs %d'
+    HPE3PAR_COMMAND_SRSTATPD_ATTIME = 'srstatpd -attime'
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -476,8 +477,10 @@ class SSHHandler(object):
                                            'command': 'parse_metric_table'})
 
     def get_disk_metrics(self, start_time, end_time):
-        command = SSHHandler.HPE3PAR_COMMAND_SRSTATPD % (
-            int(start_time / units.k), int(end_time / units.k))
+        command = SSHHandler.HPE3PAR_COMMAND_SRSTATPD_ATTIME
+        if start_time and end_time:
+            command = SSHHandler.HPE3PAR_COMMAND_SRSTATPD % (
+                int(start_time / units.k), int(end_time / units.k))
         return self.get_resources_info(command,
                                        self.parse_datas_to_list,
                                        pattern_str=consts.SRSTATPD_PATTERN,
