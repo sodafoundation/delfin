@@ -1246,3 +1246,28 @@ class NetAppHandler(object):
             NetAppHandler.get_cap_by_version(version, capabilities)
             cap_map[version] = capabilities
         return cap_map
+
+    def get_latest_perf_timestamp(self):
+        try:
+            timestamp = 0
+            json_info = self.do_rest_call(constant.CLUSTER_PERF_URL, None)
+            for perf_info in json_info:
+                occur_time = \
+                    int(time.mktime(time.strptime(
+                        perf_info.get('timestamp'),
+                        PerformanceHandler.TIME_TYPE))) * 1000
+                if timestamp < occur_time:
+                    timestamp = occur_time
+            if timestamp == 0:
+                return None
+            return timestamp
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage perf timestamp from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage perf timestamp from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
