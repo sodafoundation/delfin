@@ -202,3 +202,9 @@ class TestNetAppCmodeDriver(TestCase):
                              {'firmware_version': 'NetApp Release 9.8R15'})
         self.assertEqual(data['resource_metrics']['storage']
                          ['throughput']['unit'], 'MB/s')
+
+    def test_get_latest_perf_timestamp(self):
+        self.netapp_client.netapp_handler.do_rest_call = mock.Mock(
+            side_effect=[test_constans.CLUSTER_PER_INFO])
+        data = self.netapp_client.get_latest_perf_timestamp()
+        self.assertEqual(data, 1485314400000)
