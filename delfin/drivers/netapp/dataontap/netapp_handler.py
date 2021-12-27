@@ -1255,7 +1255,12 @@ class NetAppHandler(object):
                 occur_time = \
                     int(time.mktime(time.strptime(
                         perf_info.get('timestamp'),
-                        PerformanceHandler.TIME_TYPE))) * 1000
+                        PerformanceHandler.TIME_TYPE)))
+                second_offset = \
+                    (time.mktime(time.localtime()) -
+                     time.mktime(time.gmtime()))
+                occur_time = \
+                    (occur_time + int(second_offset)) * 1000
                 if timestamp < occur_time:
                     timestamp = occur_time
             if timestamp == 0:
