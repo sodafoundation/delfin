@@ -737,6 +737,21 @@ class SSHHandler(object):
                     unit = consts.DISK_CAP[target]['unit']
                 elif resource_type == constants.ResourceType.CONTROLLER:
                     unit = consts.CONTROLLER_CAP[target]['unit']
+                if 'responseTime' == target:
+                    for res_time in metric_map.get(resource_info).get(target):
+                        for iops_time in metric_map.get(resource_info).get(
+                                'iops'):
+                            if res_time == iops_time:
+                                res_value = metric_map.get(resource_info).get(
+                                    target).get(res_time)
+                                iops_value = metric_map.get(
+                                    resource_info).get('iops').get(iops_time)
+                                res_value = \
+                                    res_value / iops_value if iops_value else 0
+                                res_value = round(res_value, 2)
+                                metric_map[resource_info][target][res_time] = \
+                                    res_value
+                                break
                 labels = {
                     'storage_id': storage_id,
                     'resource_type': resource_type,
@@ -767,16 +782,9 @@ class SSHHandler(object):
             value = value / interval / units.Mi
         elif 'IOSIZE' in metric_type.upper():
             value = value / units.Ki
-        elif 'IOPS' in metric_type.upper():
+        elif 'IOPS' in metric_type.upper() or 'RESPONSETIME' \
+                in metric_type.upper():
             value = value / interval
-        if target == 'res_time':
-            total_io = now_data.get('to') - last_data.get('to') if \
-                last_data.get('to') <= now_data.get('to') \
-                else now_data.get('to')
-            if total_io > 0:
-                value = value / total_io
-            else:
-                value = 0
         value = round(value, 2)
         if metric_map.get(res_id):
             if metric_map.get(res_id).get(metric_type):
