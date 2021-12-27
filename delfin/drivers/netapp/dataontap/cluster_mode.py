@@ -89,5 +89,5 @@ class NetAppCmodeDriver(driver.StorageDriver):
     def get_capabilities(context, filters=None):
         return NetAppHandler.get_capabilities(filters)
 
-    def get_latest_perf_timestamp(self):
+    def get_latest_perf_timestamp(self, context):
         return self.netapp_handler.get_latest_perf_timestamp()

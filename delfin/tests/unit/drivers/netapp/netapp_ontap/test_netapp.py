@@ -206,5 +206,5 @@ class TestNetAppCmodeDriver(TestCase):
     def test_get_latest_perf_timestamp(self):
         self.netapp_client.netapp_handler.do_rest_call = mock.Mock(
             side_effect=[test_constans.CLUSTER_PER_INFO])
-        data = self.netapp_client.get_latest_perf_timestamp()
+        data = self.netapp_client.get_latest_perf_timestamp(context)
         self.assertEqual(data, 1485343200000)
