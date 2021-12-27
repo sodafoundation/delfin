@@ -461,13 +461,30 @@ CLI>"""
 VOLUMES_ERROR = """                  ^
 CLI>"""
 
-VOLUMES = """[Volume No.],[Volume Name],[Status],[Type],[RG or TPP or\
- FTRP No.],[RG or TPP or FTRP Name],[Size(MB)],[Copy Protection]
-0,volume_10,Available,Standard,0,pool-1,1024,Disable
-1,volume-wsv,Available,TPV,0,thin-1,200,Disable
-2,volume-4,Available,SDPV,1,pool-2,2048,Disable
-3,volume_2,Available,SDV,0,pool-1,209715,Disable
-4,voo-1,Available,TPV,0,thin-1,500,Disable
+VOLUMES = """CLI> show volumes -mode uid   
+Volume                                 Status                    Type\
+              RG or TPP or FTRP     TFOG                 Size(MB)  UID
+No.   Name                                                             \
+            No.  Name             No. Name                       ID\
+                                           Mode
+----- -------------------------------- ------------------------- ----------\
+------- ---- ---------------- --- ---------------- --------- ---------------\
+----------------- -------
+    0 LUN00                            Available                 TPV          \
+            0 Pool0              - -                    20480\
+             600000E00D29000000291B6B00000000 Default
+    1 LUN01                            Available                 TPV          \
+            0 Pool0              - -                    20480\
+            600000E00D29000000291B6B00010000 Default
+    2 LUN02                            Available                 TPV\
+                      0 Pool0              - -                    20480\
+                       600000E00D29000000291B6B00020000 Default
+    3 LUN03                            Available                 TPV\
+                      0 Pool0              - -                    20480\
+                       600000E00D29000000291B6B00030000 Default
+    4 LUN04                            Available                 TPV\
+                      0 Pool0              - -                    20480\
+                       600000E00D29000000291B6B00040000 Default
 CLI>"""
 
 STORAGE_RESULT = {
@@ -519,15 +536,16 @@ POOL_old_RESULT = [
     }]
 VOLUME_RESULT = [
     {
-        'name': 'volume_10',
+        'name': 'LUN00',
         'storage_id': '12345',
         'status': 'normal',
         'native_volume_id': '0',
         'native_storage_pool_id': '0',
         'type': 'thick',
-        'total_capacity': 1073741824,
+        'wwn': '600000E00D29000000291B6B00000000',
+        'total_capacity': 21474836480,
         'used_capacity': 0,
-        'free_capacity': 1073741824
+        'free_capacity': 21474836480
     }]
 VOLUME_OLD_RESULT = [
     {

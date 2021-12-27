@@ -23,44 +23,63 @@ class EternusDriver(driver.StorageDriver):
         self.login = self.cli_handler.login()
 
     def list_volumes(self, context):
-        list_volumes = self.get_volumes()
+        list_volumes = self.get_volumes_model()
         if not list_volumes:
             list_volumes = self.get_volumes_old()
         return list_volumes
 
-    def get_volumes(self):
+    def get_volumes_model(self):
         list_volumes = []
-        volumes = self.cli_handler.get_volumes_or_pool(
-            consts.GET_LIST_VOLUMES_CSV, consts.VOLUME_TITLE_PATTERN)
+        volumes_str = self.cli_handler.exec_command(
+            consts.GET_LIST_VOLUMES_MODE_UID)
         volume_id_dict = self.cli_handler.get_volumes_type(
             command=consts.GET_LIST_VOLUMES_TYPE_TPV)
         volume_id_dict = self.cli_handler.get_volumes_type(
             volume_id_dict, consts.GET_LIST_VOLUMES_TYPE_TPV)
-        for volume_dict in (volumes or []):
-            volume_native_volume_id = volume_dict.get('volumeno.')
-            total_capacity = int(
-                volume_dict.get('size(mb)')) * units.Mi
-            volume_type = constants.VolumeType.THICK
-            used_capacity = DIGITAL_CONSTANT.ZERO_INT
-            if volume_dict.get('type'):
-                type_capacity = volume_id_dict.get(volume_native_volume_id, {})
+        block = True
+        if volumes_str:
+            volumes_arr = volumes_str.replace('\r', '').split('\n')
+            for volumes_row_str in volumes_arr:
+                if not volumes_row_str or \
+                        consts.CLI_STR in volumes_row_str:
+                    continue
+                if consts.SPECIAL_CHARACTERS_TWO in volumes_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                volumes_row_arr = volumes_row_str.split()
+                volume_id = volumes_row_arr[
+                    consts.GET_VOLUMES_MODEL_VOLUME_ID_COUNT]
+                type_capacity = volume_id_dict.get(volume_id, {})
                 volume_type = type_capacity.get('type',
                                                 constants.VolumeType.THICK)
                 used_capacity = type_capacity.get('used_capacity',
                                                   DIGITAL_CONSTANT.ZERO_INT)
-            volume = {
-                'name': volume_dict.get('volumename'),
-                'storage_id': self.storage_id,
-                'status': consts.LIST_VOLUMES_STATUS_MAP.get(
-                    volume_dict.get('status')),
-                'native_volume_id': volume_native_volume_id,
-                'native_storage_pool_id': volume_dict.get('rgortpporftrpno.'),
-                'type': volume_type,
-                'total_capacity': total_capacity,
-                'used_capacity': used_capacity,
-                'free_capacity': total_capacity - used_capacity
-            }
-            list_volumes.append(volume)
+                volume_name = volumes_row_arr[
+                    consts.GET_VOLUMES_MODEL_VOLUME_NAME_COUNT]
+                volume_status = volumes_row_arr[
+                    consts.GET_VOLUMES_MODEL_VOLUME_STATUS_COUNT]
+                pool_id = volumes_row_arr[
+                    consts.GET_VOLUMES_MODEL_POOL_ID_COUNT]
+                total_capacity =\
+                    int(volumes_row_arr[consts.
+                        GET_VOLUMES_MODEL_TOTAL_CAPACITY_COUNT]) * units.Mi
+                wwn = volumes_row_arr[consts.GET_VOLUMES_MODEL_WWN_COUNT]
+                volume = {
+                    'name': volume_name,
+                    'storage_id': self.storage_id,
+                    'status': consts.LIST_VOLUMES_STATUS_MAP.get(
+                        volume_status),
+                    'native_volume_id': volume_id,
+                    'native_storage_pool_id': pool_id,
+                    'type': volume_type,
+                    'wwn': wwn,
+                    'total_capacity': total_capacity,
+                    'used_capacity': used_capacity,
+                    'free_capacity': total_capacity - used_capacity
+                }
+                list_volumes.append(volume)
         return list_volumes
 
     def get_volumes_old(self):
