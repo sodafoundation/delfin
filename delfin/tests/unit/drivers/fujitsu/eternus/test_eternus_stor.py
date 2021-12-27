@@ -461,7 +461,7 @@ CLI>"""
 VOLUMES_ERROR = """                  ^
 CLI>"""
 
-VOLUMES = """CLI> show volumes -mode uid   
+VOLUMES = """CLI> show volumes -mode uid
 Volume                                 Status                    Type\
               RG or TPP or FTRP     TFOG                 Size(MB)  UID
 No.   Name                                                             \
