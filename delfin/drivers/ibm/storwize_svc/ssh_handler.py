@@ -780,7 +780,13 @@ class SSHHandler(object):
         value = round(value, 2)
         if metric_map.get(res_id):
             if metric_map.get(res_id).get(metric_type):
-                metric_map[res_id][metric_type][now_data.get('time')] = value
+                if metric_map.get(res_id).get(metric_type).get(
+                        now_data.get('time')):
+                    metric_map[res_id][metric_type][now_data.get('time')] \
+                        += value
+                else:
+                    metric_map[res_id][metric_type][now_data.get('time')] \
+                        = value
             else:
                 metric_map[res_id][metric_type] = {now_data.get('time'): value}
         else:
