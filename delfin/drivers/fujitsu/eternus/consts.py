@@ -225,5 +225,18 @@ PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.11.0'
 
 PARSE_ALERT_SEVERITY_MAP = {
     '1.3.6.1.4.1.211.4.1.1.126.1.150.0.5': constants.Severity.WARNING,
-    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2': constants.Severity.FATAL
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2': constants.Severity.FATAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.3': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.9': constants.Severity.INFORMATIONAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.12': constants.Severity.INFORMATIONAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.50': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.51': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.60': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.61': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.62': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.64': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.65': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.66': constants.Severity.INFORMATIONAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.67': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.68': constants.Severity.MINOR
 }
