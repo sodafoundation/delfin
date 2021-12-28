@@ -248,6 +248,8 @@ class EternusDriver(driver.StorageDriver):
                 if 'Normal' in status or 'normal' in status:
                     health_status = constants.PortHealthStatus.NORMAL
                 elif 'Unconnected' in status or 'unconnected' in status:
+                    health_status = constants.PortHealthStatus.UNKNOWN
+                elif 'Error' in status or 'error' in status:
                     health_status = constants.PortHealthStatus.ABNORMAL
                 port['connection_status'] = connection_status
                 port['wwn'] = status_dicts.get('WWN')
