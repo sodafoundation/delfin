@@ -374,8 +374,9 @@ class HitachiVspDriver(driver.StorageDriver):
                         'storage_id': self.storage_id,
                         'native_disk_id': disk.get('driveLocationId'),
                         'serial_number': disk.get('serialNumber'),
-                        'speed': int(disk.get('driveSpeed')),
-                        'capacity': int(disk.get('totalCapacity') * units.Gi),
+                        'speed': int(disk.get('driveSpeed', 0)),
+                        'capacity':
+                            int(disk.get('totalCapacity', 0)) * units.Gi,
                         'status': status,
                         'physical_type': physical_type,
                         'logical_type': logical_type,
