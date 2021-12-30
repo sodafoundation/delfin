@@ -75,6 +75,9 @@ class HitachiVspDriver(driver.StorageDriver):
     TRAP_NICKNAME_OID = '1.3.6.1.4.1.116.5.11.4.2.2'
     OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
     SECONDS_TO_MS = 1000
+    ALERT_START = 1
+    CTL_ALERT_COUNT = 255
+    DKC_ALERT_COUNT = 10239
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -389,6 +392,8 @@ class HitachiVspDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_queried_alerts(alerts, alert_list, query_para=None):
+        if not alerts:
+            return
         for alert in alerts:
             occur_time = int(time.mktime(time.strptime(
                 alert.get('occurenceTime'),
@@ -417,9 +422,15 @@ class HitachiVspDriver(driver.StorageDriver):
     def list_alerts(self, context, query_para=None):
         alert_list = []
         if self.rest_handler.device_model in consts.SUPPORTED_VSP_SERIES:
-            alerts_info_ctl1 = self.resthanlder.get_alerts('type=CTL1')
-            alerts_info_ctl2 = self.resthanlder.get_alerts('type=CTL2')
-            alerts_info_dkc = self.resthanlder.get_alerts('type=DKC')
+            alerts_info_ctl1 = self.resthanlder.get_alerts(
+                'type=CTL1', HitachiVspDriver.ALERT_START,
+                HitachiVspDriver.CTL_ALERT_COUNT)
+            alerts_info_ctl2 = self.resthanlder.get_alerts(
+                'type=CTL2', HitachiVspDriver.ALERT_START,
+                HitachiVspDriver.CTL_ALERT_COUNT)
+            alerts_info_dkc = self.resthanlder.get_alerts(
+                'type=DKC', HitachiVspDriver.ALERT_START,
+                HitachiVspDriver.DKC_ALERT_COUNT)
             HitachiVspDriver.parse_queried_alerts(alerts_info_ctl1,
                                                   alert_list, query_para)
             HitachiVspDriver.parse_queried_alerts(alerts_info_ctl2,
