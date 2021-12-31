@@ -575,9 +575,9 @@ class SSHHandler(object):
                 speed = int(self.handle_port_bps(
                     port_map.get('port_speed'), 'fc'))
             port_result = {
-                'name': port_map.get('id'),
+                'name': location,
                 'storage_id': storage_id,
-                'native_port_id': port_map.get('id'),
+                'native_port_id': location,
                 'location': location,
                 'connection_status': conn_status,
                 'health_status': status,
