@@ -12,8 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import datetime
+import os
 import re
 import time
+
+import six
+
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
+from scp import SCPClient
 
 from oslo_log import log as logging
 from oslo_utils import units
@@ -120,3 +130,34 @@ class Tools(object):
         if object_infos:
             object_info = object_infos[0].replace('(', '').replace(')', '')
         return object_info
+
+    @staticmethod
+    def remove_file_with_same_type(file_name, file_path):
+        file_type = '%s_%s_%s' % (file_name.split('_')[0],
+                                  file_name.split('_')[1],
+                                  file_name.split('_')[2])
+        path_dir = os.listdir(file_path)
+        for file in path_dir:
+            if file_type in file:
+                local_file = '%s%s' % (file_path, file)
+                os.remove(local_file)
+
+    @staticmethod
+    def get_remote_file_to_xml(ssh, file, local_path, remote_path):
+        root_node = None
+        local_file = '%s%s' % (local_path, file)
+        try:
+            scp_client = SCPClient(ssh.get_transport(),
+                                   socket_timeout=15.0)
+            remote_file = '%s%s' % (remote_path, file)
+            scp_client.get(remote_file, local_path)
+            root_node = open(local_file).read()
+            root_node = ET.fromstring(root_node)
+        except Exception as e:
+            err_msg = "Failed to copy statics file: %s" % \
+                      (six.text_type(e))
+            LOG.error(err_msg)
+        finally:
+            if os.path.exists(local_file):
+                Tools.remove_file_with_same_type(file, local_path)
+            return root_node
