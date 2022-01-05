@@ -54,7 +54,8 @@ def set_synced_after():
                 # means all the sync tasks are completed
                 if storage['sync_status'] != constants.SyncStatus.SYNCED:
                     storage['sync_status'] -= sync_result
-                    db.storage_update(self.context, self.storage_id, storage)
+                    db.storage_update(self.context, self.storage_id,
+                                      {'sync_status': storage['sync_status']})
 
         return ret
 

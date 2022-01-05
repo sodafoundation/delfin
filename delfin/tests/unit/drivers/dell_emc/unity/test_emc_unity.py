@@ -92,22 +92,22 @@ storage_normal_result = {
     'status': 'normal',
     'name': 'CETV3182000026',
     'model': 'Unity 350F',
-    'raw_capacity': 8838774259712,
+    'raw_capacity': 12121212,
     'firmware_version': '4.7.1'
 }
 storage_abnormal_result = {
-    'free_capacity': 2311766147072,
-    'serial_number': 'CETV3182000026',
-    'subscribed_capacity': 307567976775680,
-    'used_capacity': 6527008112640,
-    'vendor': 'DELL EMC',
-    'location': '',
-    'total_capacity': 8838774259712,
-    'status': 'abnormal',
     'name': 'CETV3182000026',
+    'vendor': 'DELL EMC',
     'model': 'Unity 350F',
-    'raw_capacity': 8838774259712,
-    'firmware_version': '4.7.1'
+    'status': 'normal',
+    'serial_number': 'CETV3182000026',
+    'firmware_version': '4.7.1',
+    'location': '',
+    'subscribed_capacity': 307567976775680,
+    'total_capacity': 8838774259712,
+    'raw_capacity': 12121212,
+    'used_capacity': 6527008112640,
+    'free_capacity': 2311766147072
 }
 GET_ALL_POOLS = {
     "entries": [
@@ -365,6 +365,7 @@ GET_ALL_DISKS = {
                 "sasExpanderVersion": "",
                 "rpm": 12288,
                 "size": 12121212,
+                "diskTechnology": 1,
                 "diskGroup": {
                     "id": "dp1"
                 }
@@ -387,7 +388,7 @@ disk_result = [
         'physical_type': 'sas',
         'logical_type': '',
         'native_disk_group_id': 'dp1',
-        'location': 12
+        'location': 'disk1'
     }
 ]
 GET_ALL_ETHPORTS = {
@@ -667,7 +668,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E1:50',
@@ -684,7 +686,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E8:4B',
@@ -701,7 +704,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:11:EF',
@@ -718,7 +722,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:DB:5D',
@@ -735,7 +740,8 @@ port_result = [
         'health_status': 'normal',
         'type': 'eth',
         'logical_type': '',
-        'max_speed': 10485760000,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E5:05',
@@ -747,12 +753,13 @@ port_result = [
         'name': 'SP A FC Port 0',
         'storage_id': '12345',
         'native_port_id': 'spa_fc0',
-        'location': None,
-        'connection_status': 'normal',
+        'location': 'SP A FC Port 0',
+        'connection_status': 'connected',
         'health_status': 'normal',
         'type': 'fc',
         'logical_type': '',
-        'max_speed': 10737418240,
+        'speed': 10000000000,
+        'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': 'fffffffffff'
     }
@@ -1330,14 +1337,16 @@ class TestUNITYStorDriver(TestCase):
         pool = UnityStorDriver(**ACCESS_INFO).list_storage_pools(context)
         self.assertDictEqual(pool[0], pool_abnormal_result[0])
 
+    @mock.patch.object(RestHandler, 'get_all_disks')
     @mock.patch.object(RestHandler, 'get_storage')
     @mock.patch.object(RestHandler, 'get_capacity')
     @mock.patch.object(RestHandler, 'get_soft_version')
-    def test_get_storage(self, mock_version, mock_capa, mock_base):
+    def test_get_storage(self, mock_version, mock_capa, mock_base, mock_disk):
         RestHandler.login = mock.Mock(return_value=None)
         mock_version.return_value = GET_SOFT_VERSION
         mock_capa.return_value = GET_CAPACITY
         mock_base.return_value = GET_STORAGE_ABNORMAL
+        mock_disk.return_value = GET_ALL_DISKS
         storage = UnityStorDriver(**ACCESS_INFO).get_storage(context)
         self.assertDictEqual(storage, storage_abnormal_result)
         mock_base.return_value = GET_STORAGE_NORMAL
