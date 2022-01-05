@@ -577,7 +577,7 @@ class NetAppHandler(object):
                     port_id = \
                         eth_map['Node'] + '_' + eth_map['Port']
                     eth_model = {
-                        'name': eth_map['Port'],
+                        'name': eth_map['Node'] + ':' + eth_map['Port'],
                         'storage_id': storage_id,
                         'native_port_id': port_id,
                         'location':
