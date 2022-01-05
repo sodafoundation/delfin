@@ -626,7 +626,7 @@ HPE3PAR_ALERT_CODE = {
     '0x09f0002': 'File Persona CPG grow limit warning',
     '0x0a50001': 'File Access Auditing Alerts'
 }
-NODE_PATTERN = "^\\s*Node\\s+[-]*Name[-]*\\s+[-]*State[-]*\\s+Master\\s+"
+NODE_PATTERN = "^\\s*Node\\s+[-]*Name[-]*\\s+[-]*State[-]*\\s+"
 CPU_PATTERN = "^\\s*Node\\s+CPU\\s+[-]*Manufacturer[-]*\\s+[-]*Serial[-]*" \
               "\\s+CPUSpeed"
 DISK_PATTERN = "^\\s*Id\\s+[-]*CagePos[-]*\\s+[-]*Type[-]*\\s+RPM\\s+State\\s+"
@@ -699,4 +699,9 @@ PORT_TYPE_MAP = {
     'UNKNOWN': constants.PortType.OTHER,
     'RCIP': constants.PortType.RCIP,
     'RCFC': constants.PortType.OTHER
+}
+VERSION_PATTERN = "^\\s*[-]*Service[-]*\\s+[-]*State[-]*\\s+"
+SSH_NODE_MEM_TYPE = {
+    1: "control",
+    2: "data"
 }
