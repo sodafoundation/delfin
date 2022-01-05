@@ -1400,7 +1400,6 @@ class TestHpe3parStorageDriver(TestCase):
                 'iops', 'readIops', 'writeIops',
                 'throughput', 'readThroughput', 'writeThroughput',
                 'responseTime',
-                'cacheHitRatio', 'readCacheHitRatio', 'writeCacheHitRatio',
                 'ioSize', 'readIoSize', 'writeIoSize',
             ],
             'port': [
