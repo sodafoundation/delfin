@@ -27,7 +27,12 @@ LOG = log.getLogger(__name__)
 class UnityStorDriver(driver.StorageDriver):
     """UnityStorDriver implement the DELL EMC Storage driver"""
     HEALTH_OK = (5, 7)
-
+    STORAGE_STATUS_MAP = {5: constants.StorageStatus.NORMAL,
+                          7: constants.StorageStatus.NORMAL,
+                          15: constants.StorageStatus.NORMAL,
+                          20: constants.StorageStatus.NORMAL,
+                          10: constants.StorageStatus.DEGRADED
+                          }
     FILESYSTEM_FLR_MAP = {0: constants.WORMType.NON_WORM,
                           1: constants.WORMType.ENTERPRISE,
                           2: constants.WORMType.COMPLIANCE
@@ -40,6 +45,14 @@ class UnityStorDriver(driver.StorageDriver):
                              7: constants.ControllerStatus.NORMAL,
                              10: constants.ControllerStatus.DEGRADED
                              }
+    DISK_TYPE_MAP = {1: constants.DiskPhysicalType.SAS,
+                     2: constants.DiskPhysicalType.NL_SAS,
+                     6: constants.DiskPhysicalType.FLASH,
+                     7: constants.DiskPhysicalType.FLASH,
+                     8: constants.DiskPhysicalType.FLASH,
+                     9: constants.DiskPhysicalType.FLASH,
+                     99: constants.DiskPhysicalType.VMDISK
+                     }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -54,11 +67,21 @@ class UnityStorDriver(driver.StorageDriver):
     def close_connection(self):
         self.rest_handler.logout()
 
+    def get_disk_capacity(self, context):
+        raw_capacity = 0
+        try:
+            disk_info = self.list_disks(context)
+            if disk_info:
+                for disk in disk_info:
+                    raw_capacity += disk.get('capacity')
+        except Exception:
+            LOG.info("get disk info fail in get_disk_capacity")
+        return raw_capacity
+
     def get_storage(self, context):
         system_info = self.rest_handler.get_storage()
         capacity = self.rest_handler.get_capacity()
         version_info = self.rest_handler.get_soft_version()
-        status = constants.StorageStatus.OFFLINE
         if system_info is not None and capacity is not None:
             system_entries = system_info.get('entries')
             for system in system_entries:
@@ -66,11 +89,9 @@ class UnityStorDriver(driver.StorageDriver):
                 name = content.get('name')
                 model = content.get('model')
                 serial_number = content.get('serialNumber')
-                health_value = content.get('health').get('value')
-                if health_value in UnityStorDriver.HEALTH_OK:
-                    status = constants.StorageStatus.NORMAL
-                else:
-                    status = constants.StorageStatus.ABNORMAL
+                health_value = content.get('health', {}).get('value')
+                status = UnityStorDriver.STORAGE_STATUS_MAP.get(
+                    health_value, constants.StorageStatus.ABNORMAL)
                 break
             capacity_info = capacity.get('entries')
             for per_capacity in capacity_info:
@@ -80,11 +101,15 @@ class UnityStorDriver(driver.StorageDriver):
                 used = content.get('sizeUsed')
                 subs = content.get('sizeSubscribed')
                 break
-            soft_version = version_info.get('entries')
-            for soft_info in soft_version:
-                content = soft_info.get('content', {})
-                version = content.get('id')
-                break
+            if version_info:
+                soft_version = version_info.get('entries')
+                for soft_info in soft_version:
+                    content = soft_info.get('content', {})
+                    if content:
+                        version = content.get('id')
+                        break
+            raw_capacity = self.get_disk_capacity(context)
+            raw_capacity = raw_capacity if raw_capacity else int(total)
             system_result = {
                 'name': name,
                 'vendor': 'DELL EMC',
@@ -95,7 +120,7 @@ class UnityStorDriver(driver.StorageDriver):
                 'location': '',
                 'subscribed_capacity': int(subs),
                 'total_capacity': int(total),
-                'raw_capacity': int(total),
+                'raw_capacity': raw_capacity,
                 'used_capacity': int(used),
                 'free_capacity': int(free)
             }
@@ -164,6 +189,8 @@ class UnityStorDriver(driver.StorageDriver):
         volume_list = []
         while True:
             luns = self.rest_handler.get_all_luns(page_number)
+            if luns is None:
+                break
             if 'entries' not in luns:
                 break
             if len(luns['entries']) < 1:
@@ -178,6 +205,11 @@ class UnityStorDriver(driver.StorageDriver):
         alert_model_list = []
         while True:
             alert_list = self.rest_handler.get_all_alerts(page_number)
+            if not alert_list:
+                alert_list = self.rest_handler.get_all_alerts_without_state(
+                    page_number)
+            if alert_list is None:
+                break
             if 'entries' not in alert_list:
                 break
             if len(alert_list['entries']) < 1:
@@ -232,7 +264,7 @@ class UnityStorDriver(driver.StorageDriver):
         port_list = []
         ports = self.rest_handler.get_all_ethports()
         ip_interfaces = self.rest_handler.get_port_interface()
-        if ports is not None:
+        if ports:
             port_entries = ports.get('entries')
             for port in port_entries:
                 content = port.get('content')
@@ -250,22 +282,23 @@ class UnityStorDriver(driver.StorageDriver):
                 ipv4_mask = None
                 ipv6 = None
                 ipv6_mask = None
-                for ip_info in ip_interfaces.get('entries'):
-                    ip_content = ip_info.get('content')
-                    if not ip_content:
-                        continue
-                    if content.get('id') == ip_content.get(
-                            'ipPort').get('id'):
-                        if ip_content.get('ipProtocolVersion') == 4:
-                            ipv4 = UnityStorDriver.handle_port_ip(
-                                ipv4, ip_content.get('ipAddress'))
-                            ipv4_mask = UnityStorDriver.handle_port_ip(
-                                ipv4_mask, ip_content.get('netmask'))
-                        else:
-                            ipv6 = UnityStorDriver.handle_port_ip(
-                                ipv6, ip_content.get('ipAddress'))
-                            ipv6_mask = UnityStorDriver.handle_port_ip(
-                                ipv6_mask, ip_content.get('netmask'))
+                if ip_interfaces:
+                    for ip_info in ip_interfaces.get('entries'):
+                        ip_content = ip_info.get('content')
+                        if not ip_content:
+                            continue
+                        if content.get('id') == ip_content.get(
+                                'ipPort').get('id'):
+                            if ip_content.get('ipProtocolVersion') == 4:
+                                ipv4 = UnityStorDriver.handle_port_ip(
+                                    ipv4, ip_content.get('ipAddress'))
+                                ipv4_mask = UnityStorDriver.handle_port_ip(
+                                    ipv4_mask, ip_content.get('netmask'))
+                            else:
+                                ipv6 = UnityStorDriver.handle_port_ip(
+                                    ipv6, ip_content.get('ipAddress'))
+                                ipv6_mask = UnityStorDriver.handle_port_ip(
+                                    ipv6_mask, ip_content.get('netmask'))
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
@@ -275,7 +308,10 @@ class UnityStorDriver(driver.StorageDriver):
                     'health_status': status,
                     'type': constants.PortType.ETH,
                     'logical_type': '',
-                    'max_speed': int(content.get('speed')) * units.Mi,
+                    'speed': int(content.get('speed')) * units.M
+                    if content.get('speed') is not None else None,
+                    'max_speed': int(content.get('speed')) * units.M
+                    if content.get('speed') is not None else None,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': '',
@@ -291,28 +327,38 @@ class UnityStorDriver(driver.StorageDriver):
     def get_fc_ports(self):
         port_list = []
         ports = self.rest_handler.get_all_fcports()
-        if ports is not None:
+        if ports:
             port_entries = ports.get('entries')
             for port in port_entries:
                 content = port.get('content')
                 if not content:
                     continue
                 health_value = content.get('health', {}).get('value')
+                connect_value = \
+                    content.get('health', {}).get('descriptionIds', [])
+                if 'ALRT_PORT_LINK_DOWN_NOT_IN_USE' in connect_value:
+                    conn_status = constants.PortConnectionStatus.DISCONNECTED
+                elif 'ALRT_PORT_LINK_UP' in connect_value:
+                    conn_status = constants.PortConnectionStatus.CONNECTED
+                else:
+                    conn_status = constants.PortConnectionStatus.UNKNOWN
                 if health_value in UnityStorDriver.HEALTH_OK:
                     status = constants.PortHealthStatus.NORMAL
                 else:
                     status = constants.PortHealthStatus.ABNORMAL
-                conn_status = status
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
                     'native_port_id': content.get('id'),
-                    'location': content.get('slotNumber'),
+                    'location': content.get('name'),
                     'connection_status': conn_status,
                     'health_status': status,
                     'type': constants.PortType.FC,
                     'logical_type': '',
-                    'max_speed': int(content.get('currentSpeed')) * units.Gi,
+                    'speed': int(content.get('currentSpeed')) * units.G
+                    if content.get('currentSpeed') is not None else None,
+                    'max_speed': int(content.get('currentSpeed')) * units.G
+                    if content.get('currentSpeed') is not None else None,
                     'native_parent_id':
                         content.get('storageProcessor', {}).get('id'),
                     'wwn': content.get('wwn')
@@ -342,10 +388,17 @@ class UnityStorDriver(driver.StorageDriver):
                     if not content:
                         continue
                     health_value = content.get('health', {}).get('value')
+                    slot_info = \
+                        content.get('health', {}).get('descriptionIds', [])
+                    if 'ALRT_DISK_SLOT_EMPTY' in slot_info:
+                        continue
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.DiskStatus.NORMAL
                     else:
                         status = constants.DiskStatus.ABNORMAL
+                    physical_type = UnityStorDriver.DISK_TYPE_MAP.get(
+                        content.get('diskTechnology'),
+                        constants.DiskPhysicalType.UNKNOWN)
                     disk_result = {
                         'name': content.get('name'),
                         'storage_id': self.storage_id,
@@ -357,11 +410,11 @@ class UnityStorDriver(driver.StorageDriver):
                         'speed': int(content.get('rpm')),
                         'capacity': int(content.get('size')),
                         'status': status,
-                        'physical_type': constants.DiskPhysicalType.SAS,
+                        'physical_type': physical_type,
                         'logical_type': '',
                         'native_disk_group_id':
                             content.get('diskGroup', {}).get('id'),
-                        'location': content.get('slotNumber')
+                        'location': content.get('name')
                     }
                     disk_list.append(disk_result)
             return disk_list
@@ -374,6 +427,8 @@ class UnityStorDriver(driver.StorageDriver):
     def list_filesystems(self, context):
         try:
             files = self.rest_handler.get_all_filesystems()
+            if not files:
+                files = self.rest_handler.get_all_filesystems_without_flr()
             fs_list = []
             if files is not None:
                 fs_entries = files.get('entries')
@@ -445,6 +500,8 @@ class UnityStorDriver(driver.StorageDriver):
 
     def get_share_qtree(self, path, qtree_list):
         qtree_id = None
+        if not qtree_list:
+            return qtree_id
         qts_entries = qtree_list.get('entries')
         for qtree in qts_entries:
             content = qtree.get('content')
@@ -470,16 +527,17 @@ class UnityStorDriver(driver.StorageDriver):
                     content = share.get('content')
                     if not content:
                         continue
-                    file_entries = filesystems.get('entries')
                     file_name = ''
-                    for file in file_entries:
-                        file_content = file.get('content')
-                        if not file_content:
-                            continue
-                        if file_content.get('id') == content.get(
-                                'filesystem', {}).get('id'):
-                            file_name = file_content.get('name')
-                            break
+                    if filesystems:
+                        file_entries = filesystems.get('entries')
+                        for file in file_entries:
+                            file_content = file.get('content')
+                            if not file_content:
+                                continue
+                            if file_content.get('id') == content.get(
+                                    'filesystem', {}).get('id'):
+                                file_name = file_content.get('name')
+                                break
                     path = '/%s%s' % (file_name, content.get('path')) if \
                         file_name != '' else content.get('path')
                     fs = {
@@ -505,6 +563,9 @@ class UnityStorDriver(driver.StorageDriver):
             share_list = []
             qtrees = self.rest_handler.get_all_qtrees()
             filesystems = self.rest_handler.get_all_filesystems()
+            if not filesystems:
+                filesystems = \
+                    self.rest_handler.get_all_filesystems_without_flr()
             share_list.extend(self.get_share('cifs', qtrees, filesystems))
             share_list.extend(self.get_share('nfs', qtrees, filesystems))
             return share_list

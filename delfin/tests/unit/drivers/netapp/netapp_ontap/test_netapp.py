@@ -33,6 +33,7 @@ class TestNetAppCmodeDriver(TestCase):
         return_value={paramiko.SSHClient()})
 
     NetAppHandler.login = mock.Mock()
+    NetAppHandler.do_rest_call = mock.Mock()
     netapp_client = NetAppCmodeDriver(**test_constans.ACCESS_INFO)
 
     def test_reset_connection(self):
@@ -40,6 +41,7 @@ class TestNetAppCmodeDriver(TestCase):
         NetAppHandler.login = mock.Mock()
         netapp_client = NetAppCmodeDriver(**kwargs)
         netapp_client.reset_connection(context, **kwargs)
+        netapp_client.netapp_handler.do_rest_call = mock.Mock()
         self.assertEqual(netapp_client.netapp_handler.ssh_pool.ssh_host,
                          "192.168.159.130")
         self.assertEqual(netapp_client.netapp_handler.ssh_pool.ssh_port, 22)
@@ -200,3 +202,9 @@ class TestNetAppCmodeDriver(TestCase):
                              {'firmware_version': 'NetApp Release 9.8R15'})
         self.assertEqual(data['resource_metrics']['storage']
                          ['throughput']['unit'], 'MB/s')
+
+    def test_get_latest_perf_timestamp(self):
+        self.netapp_client.netapp_handler.do_rest_call = mock.Mock(
+            side_effect=[test_constans.CLUSTER_PER_INFO])
+        data = self.netapp_client.get_latest_perf_timestamp(context)
+        self.assertEqual(data, 1485343200000)

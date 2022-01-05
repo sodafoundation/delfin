@@ -16,6 +16,15 @@ from unittest import TestCase, mock
 
 import paramiko
 
+from delfin.common import constants
+
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
+from delfin.drivers.utils.tools import Tools
+
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.ibm.storwize_svc.ssh_handler import SSHHandler
@@ -423,35 +432,71 @@ trap_alert_result = {
     'location': 'Cluster_192.168.70.125',
     'category': 'Fault'
 }
-get_all_controllers = """id controller_name
-16 controller13
+get_all_controllers = """id name
+2  node_165084
 """
-get_single_controller = """id 16
-controller_name controller13
-WWNN 2100340006260912
-mdisk_link_count 5
-max_mdisk_link_count 10
-degraded no
-vendor_id HUAWEI
-product_id_low XSG1
-product_id_high
-product_revision 4301
-ctrl_s/n
-allow_quorum yes
-fabric_type fc
+get_single_controller = """id 2
+id 2
+name node_165084
+UPS_serial_number 100025I194
+WWNN 500507680100EF7C
+status online
+IO_group_id 0
+IO_group_name io_grp0
+partner_node_id 4
+partner_node_name node1
+config_node yes
+UPS_unique_id 2040000085641244
+port_id 500507680140EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680130EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680110EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680120EF7C
+port_status active
+port_speed 8Gb
+hardware CG8
+iscsi_name iqn.1986-03.com.ibm:2145.cluster8.44.162.140.node165084
+iscsi_alias
+failover_active no
+failover_name node1
+failover_iscsi_name iqn.1986-03.com.ibm:2145.cluster8.44.162.140.node1
+failover_iscsi_alias
+panel_name 165084
+enclosure_id
+canister_id
+enclosure_serial_number
+service_IP_address 8.44.162.142
+service_gateway 8.44.128.1
+service_subnet_mask 255.255.192.0
+service_IP_address_6
+service_gateway_6
+service_prefix_6
+service_IP_mode static
+service_IP_mode_6
 site_id
 site_name
+identify_LED off
+product_mtm 2145-CG8
+code_level 7.8.1.11 (build 135.9.1912100725000)
+serial_number 75PVZNA
+machine_signature 0214-784E-C029-0147
 """
 controller_result = [
     {
-        'name': 'controller13',
+        'name': 'node_165084',
         'storage_id': '12345',
-        'native_controller_id': '16',
+        'native_controller_id': '2',
         'status': 'normal',
-        'soft_version': 'HUAWEI XSG1',
-        'location': 'controller13'
+        'soft_version': '7.8.1.11',
+        'location': 'node_165084'
     }
 ]
+
 get_all_disks = """id name
 4 mdisk4
 """
@@ -896,16 +941,147 @@ bandwidth_allocation
 storage
 storage_6
  """
+get_file_list = 'id filename\n' \
+                '1 Nn_stats_78N16G4-2_211201_161110\n' \
+                '2 Nn_stats_78N16G4-2_211201_161210\n' \
+                '3 Nm_stats_78N16G4-2_211201_161110\n' \
+                '4 Nm_stats_78N16G4-2_211201_161210\n' \
+                '5 Nv_stats_78N16G4-2_211201_161110\n' \
+                '6 Nv_stats_78N16G4-2_211201_161210'
+file_nv_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<vdsk idx="0"
+ctps="0" ctrhs="0" ctrhps="0" ctds="0"
+ctwfts="0" ctwwts="0" ctwfws="0" ctwhs="0"
+cv="0" cm="0" ctws="0" ctrs="0"
+ctr="0" ctw="0" ctp="0" ctrh="0"
+ctrhp="0" ctd="0" ctwft="0" ctwwt="0"
+ctwfw="0" ctwfwsh="0" ctwfwshs="0" ctwh="0"
+gwot="0" gwo="0" gws="0" gwl="0"
+id="powerha_fence"
+ro="0" wo="0" wou="0" rb="0" wb="0"
+rl="0" wl="0" rlw="0" wlw="0" xl="0">
+ <ca rh="0" d="0" ft="0" wt="0" fw="0" wh="0" v="0" m="0" ri="0" wi="0" r="0"
+dav="0" dcn="0" sav="0" scn="0" teav="0"
+ tsav="0"  tav="0"  pp="0"/>
+</vdsk>
+"""
+file_nv_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<vdsk idx="0"
+ctps="0" ctrhs="0" ctrhps="0" ctds="0"
+ctwfts="0" ctwwts="0" ctwfws="0" ctwhs="0"
+cv="0" cm="0" ctws="0" ctrs="0"
+ctr="0" ctw="0" ctp="0" ctrh="0"
+ctrhp="0" ctd="0" ctwft="0" ctwwt="0"
+ctwfw="0" ctwfwsh="0" ctwfwshs="0" ctwh="0"
+gwot="0" gwo="0" gws="0" gwl="0"
+id="powerha_fence"
+ro="0" wo="0" wou="0" rb="0" wb="0"
+rl="0" wl="0" rlw="0" wlw="0" xl="0">
+<ca rh="0" d="0" ft="0" wt="0" fw="0" wh="0" v="0" m="0" ri="0"
+ wi="0" r="0" dav="0" dcn="0" sav="0" scn="0" teav="0"
+ tsav="0"  tav="0"  pp="0"/>
+</vdsk>
+"""
+file_nm_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<mdsk idx="0"
+ id="mdisk1" ro="160422028" wo="4792298" rb="65855202896" wb="5087205812"
+  re="4510327873" we="324970648" rq="4510327873" wq="324970648"
+  ure="4511020738035" uwe="325020569160" urq="4511020738035"
+   uwq="325020569160"
+ pre="14804" pwe="0" pro="14804" pwo="0">
+<ca dav="0" dtav="0" dfav="0" />
+</mdsk>
+"""
+file_nm_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<mdsk idx="0"
+ id="mdisk1" ro="16532168" wo="4800940" rb="807398566" wb="1268035694"
+  re="336180638" we="392975230" rq="336180638" wq="392975230"
+  ure="336232281210" uwe="393035597850" urq="336232281210"
+  uwq="393035597850"
+ pre="0" pwe="0" pro="0" pwo="0">
+<ca dav="0" dtav="0" dfav="0" />
+</mdsk>
+"""
+file_nn_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<port id="1"
+type="FC"
+type_id="1"
+wwpn="0x50050768021065cb"
+fc_wwpn="0x50050768021065cb"
+fcoe_wwpn=""
+sas_wwn=""
+iqn=""
+hbt="534901200817" hbr="523369795104" het="0" her="186406977"
+cbt="0" cbr="52250" cet="1324" cer="0"
+lnbt="49310" lnbr="197487" lnet="2073731" lner="2070067"
+rmbt="0" rmbr="0" rmet="0" rmer="0"
+lf="9" lsy="21" lsi="5" pspe="0"
+itw="295290111" icrc="0" bbcz="29140"
+/>
+"""
+file_nn_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<port id="1"
+type="FC"
+type_id="1"
+wwpn="0x50050768021065cb"
+fc_wwpn="0x50050768021065cb"
+fcoe_wwpn=""
+sas_wwn=""
+iqn=""
+hbt="534901200817" hbr="523369795104" het="0" her="186406977"
+cbt="0" cbr="52250" cet="1324" cer="0"
+lnbt="49310" lnbr="197487" lnet="2073806" lner="2070142"
+rmbt="0" rmbr="0" rmet="0" rmer="0"
+lf="9" lsy="21" lsi="5" pspe="0"
+itw="295290111" icrc="0" bbcz="29140"
+/>
+"""
+file_nn_node_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<node id="node1" cluster="Cluster_V7000" node_id="0x0000000000000003"
+ cluster_id="0x00000200a1207e1f" ro="960680162" wo="940411371"
+  rb="2605358068064" wb="2619210259131" re="1193453" we="135040076"
+   rq="49536391" wq="151133071"/>
+"""
+file_nn_node_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<node id="node1" cluster="Cluster_V7000" node_id="0x0000000000000003"
+ cluster_id="0x00000200a1207e1f" ro="960684525" wo="940415078"
+  rb="2605359825065" wb="2619220318131" re="1193465"
+   we="135040076" rq="49536391" wq="151134080"/>
+"""
+resource_metrics = {
+    'volume': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime',
+        'ioSize', 'readIoSize', 'writeIoSize',
+    ],
+    'port': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ],
+    'disk': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ],
+    'controller': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ]
+}
+
 port_result = [
     {
-        'name': '0',
+        'name': 'node1_0',
         'storage_id': '12345',
-        'native_port_id': '0',
+        'native_port_id': 'node1_0',
         'location': 'node1_0',
         'connection_status': 'connected',
         'health_status': 'normal',
         'type': 'fc',
-        'max_speed': 8589934592,
+        'speed': 8000000000,
         'native_parent_id': 'node1',
         'wwn': '500507680140EF3E'
     }, {
@@ -916,7 +1092,7 @@ port_result = [
         'connection_status': 'connected',
         'health_status': 'abnormal',
         'type': 'eth',
-        'max_speed': 1073741824,
+        'speed': 1000000000,
         'native_parent_id': 'node1',
         'mac_address': '34:40:b5:d7:5a:94',
         'ipv4': '',
@@ -930,7 +1106,7 @@ port_result = [
         'connection_status': 'connected',
         'health_status': 'abnormal',
         'type': 'eth',
-        'max_speed': 1073741824,
+        'speed': 1000000000,
         'native_parent_id': 'node_165084',
         'mac_address': '34:40:b5:d4:0c:f0',
         'ipv4': '',
@@ -944,7 +1120,7 @@ port_result = [
         'connection_status': 'connected',
         'health_status': 'abnormal',
         'type': 'eth',
-        'max_speed': 1073741824,
+        'speed': 1000000000,
         'native_parent_id': 'node1',
         'mac_address': '34:40:b5:d7:5a:94',
         'ipv4': '',
@@ -958,7 +1134,7 @@ port_result = [
         'connection_status': 'connected',
         'health_status': 'abnormal',
         'type': 'eth',
-        'max_speed': 1073741824,
+        'speed': 1000000000,
         'native_parent_id': 'node_165084',
         'mac_address': '34:40:b5:d4:0c:f0',
         'ipv4': '',
@@ -966,6 +1142,230 @@ port_result = [
         'ipv6': ''
     }
 ]
+perf_get_port_fc = [
+    {
+        'name': '0',
+        'storage_id': '12345',
+        'native_port_id': '0',
+        'location': 'node1_0',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'fc',
+        'max_speed': 8589934592,
+        'native_parent_id': 'node1',
+        'wwn': '0x50050768021065cb'
+    }
+]
+metrics_result = [
+    constants.metric_struct(
+        name='iops', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='throughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='responseTime', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'ms'
+        }, values={
+            1638346330000: 0
+        }), constants.metric_struct(name='ioSize', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'KB'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIoSize', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'KB'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIoSize', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'KB'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='iops', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='throughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='responseTime', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'ms'
+        }, values={
+            1638346330000: 0
+        }), constants.metric_struct(name='iops', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='throughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        })]
 
 
 def create_driver():
@@ -1066,3 +1466,29 @@ class TestStorwizeSvcStorageDriver(TestCase):
                                  get_iscsiport_1, get_iscsiport_2]
         port = self.driver.list_ports(context)
         self.assertEqual(port, port_result)
+
+    @mock.patch.object(SSHHandler, 'get_fc_port')
+    @mock.patch.object(Tools, 'get_remote_file_to_xml')
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_collect_perf_metrics(self, mock_ssh_get, mock_file_list,
+                                  mock_get_file, mock_fc_port):
+        start_time = 1637346270000
+        end_time = 1639346330000
+        storage_id = '12345'
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_file_list.return_value = get_file_list
+        mock_get_file.return_value = [ET.fromstring(file_nv_1611),
+                                      ET.fromstring(file_nv_1612),
+                                      ET.fromstring(file_nm_1611),
+                                      ET.fromstring(file_nm_1612),
+                                      ET.fromstring(file_nn_1611),
+                                      ET.fromstring(file_nn_1612),
+                                      ET.fromstring(file_nn_node_1611),
+                                      ET.fromstring(file_nn_node_1612)
+                                      ]
+        mock_fc_port.return_value = perf_get_port_fc
+        metrics = self.driver.collect_perf_metrics(context, storage_id,
+                                                   resource_metrics,
+                                                   start_time, end_time)
+        self.assertEqual(metrics[0][1]['resource_name'], 'powerha')

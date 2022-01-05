@@ -19,6 +19,7 @@ from oslo_log import log as logging
 
 from delfin import cryptor
 from delfin import exception
+from delfin.drivers.dell_emc.unity import consts
 from delfin.drivers.utils.rest_client import RestClient
 
 LOG = logging.getLogger(__name__)
@@ -56,14 +57,12 @@ class RestHandler(RestClient):
         """Login dell_emc unity storage array."""
         try:
             with self.session_lock:
-                data = {}
                 if self.session is None:
                     self.init_http_head()
                 self.session.headers.update({"X-EMC-REST-CLIENT": "true"})
                 self.session.auth = requests.auth.HTTPBasicAuth(
                     self.rest_username, cryptor.decode(self.rest_password))
-                res = self.call_with_token(
-                    RestHandler.REST_AUTH_URL, data, 'GET')
+                res = self.call_with_token(RestHandler.REST_AUTH_URL)
                 if res.status_code == 200:
                     self.session.headers[RestHandler.AUTH_KEY] = \
                         cryptor.encode(res.headers[RestHandler.AUTH_KEY])
@@ -81,14 +80,15 @@ class RestHandler(RestClient):
             LOG.error("Login error: %s", six.text_type(e))
             raise e
 
-    def call_with_token(self, url, data, method):
+    def call_with_token(self, url, data=None, method='GET',
+                        calltimeout=consts.DEFAULT_TIMEOUT):
         auth_key = None
         if self.session:
             auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
             if auth_key:
                 self.session.headers[RestHandler.AUTH_KEY] \
                     = cryptor.decode(auth_key)
-        res = self.do_call(url, data, method)
+        res = self.do_call(url, data, method, calltimeout)
         if auth_key:
             self.session.headers[RestHandler.AUTH_KEY] = auth_key
         return res
@@ -96,7 +96,7 @@ class RestHandler(RestClient):
     def logout(self):
         try:
             if self.san_address:
-                self.call(RestHandler.REST_LOGOUT_URL, method='POST')
+                self.call(RestHandler.REST_LOGOUT_URL, None, 'POST')
             if self.session:
                 self.session.close()
         except Exception as e:
@@ -104,21 +104,23 @@ class RestHandler(RestClient):
             LOG.error(err_msg)
             raise e
 
-    def get_rest_info(self, url, data=None, method='GET'):
+    def get_rest_info(self, url, data=None, method='GET',
+                      calltimeout=consts.DEFAULT_TIMEOUT):
         result_json = None
-        res = self.call(url, data, method)
+        res = self.call(url, data, method, calltimeout)
         if res.status_code == 200:
             result_json = res.json()
         return result_json
 
-    def call(self, url, data=None, method=None):
+    def call(self, url, data=None, method='GET',
+             calltimeout=consts.DEFAULT_TIMEOUT):
         try:
-            res = self.call_with_token(url, data, method)
+            res = self.call_with_token(url, data, method, calltimeout)
             if res.status_code == 401:
                 LOG.error("Failed to get token, status_code:%s,error_mesg:%s" %
                           (res.status_code, res.text))
                 self.login()
-                res = self.call_with_token(url, data, method)
+                res = self.call_with_token(url, data, method, calltimeout)
             elif res.status_code == 503:
                 raise exception.InvalidResults(res.text)
             return res
@@ -167,7 +169,18 @@ class RestHandler(RestClient):
                                  'messageId,message,description,'
                                  'descriptionId,state',
                                  page_number)
-        result_json = self.get_rest_info(url)
+        result_json = self.get_rest_info(
+            url, None, 'GET', consts.ALERT_TIMEOUT)
+        return result_json
+
+    def get_all_alerts_without_state(self, page_number):
+        url = '%s?%s&page=%s' % (RestHandler.REST_ALERTS_URL,
+                                 'fields=id,timestamp,severity,component,'
+                                 'messageId,message,description,'
+                                 'descriptionId',
+                                 page_number)
+        result_json = self.get_rest_info(
+            url, None, 'GET', consts.ALERT_TIMEOUT)
         return result_json
 
     def remove_alert(self, alert_id):
@@ -180,16 +193,15 @@ class RestHandler(RestClient):
     def get_all_controllers(self):
         url = '%s?%s' % (RestHandler.REST_CONTROLLER_URL,
                          'fields=id,name,health,model,slotNumber,'
-                         'emcPartNumber,emcSerialNumber,manufacturer,'
-                         'memorySize')
+                         'manufacturer,memorySize')
         result_json = self.get_rest_info(url)
         return result_json
 
     def get_all_disks(self):
         url = '%s?%s' % (RestHandler.REST_DISK_URL,
                          'fields=id,name,health,model,slotNumber,'
-                         'manufacturer,version,emcSerialNumber,wwn'
-                         'emcPartNumber,rpm,size,diskGroup')
+                         'manufacturer,version,emcSerialNumber,wwn,'
+                         'rpm,size,diskGroup,diskTechnology')
         result_json = self.get_rest_info(url)
         return result_json
 
@@ -203,7 +215,7 @@ class RestHandler(RestClient):
     def get_all_ethports(self):
         url = '%s?%s' % (RestHandler.REST_ETHPORT_URL,
                          'fields=id,name,health,portNumber,storageProcessor,'
-                         'speed,isLinkUp,macAddress,maxMtu')
+                         'speed,isLinkUp,macAddress')
         result_json = self.get_rest_info(url)
         return result_json
 
@@ -218,6 +230,13 @@ class RestHandler(RestClient):
         url = '%s?%s' % (RestHandler.REST_FILESYSTEM_URL,
                          'fields=id,name,health,sizeAllocated,accessPolicy,'
                          'sizeTotal,sizeUsed,isThinEnabled,pool,flrVersion')
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_all_filesystems_without_flr(self):
+        url = '%s?%s' % (RestHandler.REST_FILESYSTEM_URL,
+                         'fields=id,name,health,sizeAllocated,accessPolicy,'
+                         'sizeTotal,sizeUsed,isThinEnabled,pool')
         result_json = self.get_rest_info(url)
         return result_json
 
@@ -249,7 +268,6 @@ class RestHandler(RestClient):
 
     def get_quota_configs(self):
         url = '%s?%s' % (RestHandler.REST_QUOTACONFIG_URL,
-                         'fields=id,filesystem,treeQuota,quotaPolicy,'
-                         'isUserQuotaEnabled,isAccessDenyEnabled')
+                         'fields=id,filesystem,treeQuota,quotaPolicy')
         result_json = self.get_rest_info(url)
         return result_json
