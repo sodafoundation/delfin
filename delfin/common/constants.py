@@ -39,8 +39,9 @@ class StoragePoolStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, UNKNOWN)
 
 
 class VolumeStatus(object):
