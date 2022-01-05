@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import copy
+import datetime
 import re
+import time
 
 import six
 from oslo_log import log
@@ -498,8 +500,9 @@ class ComponentHandler():
             obj_labels['unit'] = obj_cap.get(metric_name).get('unit')
             for metric_value in metric_values:
                 if metric_value.get(metric_name) is not None:
-                    values[metric_value.get(
-                        'collect_timestamp')] = metric_value.get(
+                    collect_timestamp = self.convert_to_system_time(
+                        metric_value.get('collect_timestamp'))
+                    values[collect_timestamp] = metric_value.get(
                         metric_name)
             if values:
                 metric_model = constants.metric_struct(name=metric_name,
@@ -718,3 +721,14 @@ class ComponentHandler():
                 latest_time = metrics_data.get('collect_time')
                 break
         return latest_time
+
+    def convert_to_system_time(self, occur_time):
+        dateArray = datetime.datetime.utcfromtimestamp(occur_time / units.k)
+        otherStyleTime = dateArray.strftime("%Y-%m-%d %H:%M:%SZ")
+        timeArray = time.strptime(otherStyleTime, "%Y-%m-%d %H:%M:%SZ")
+        timeStamp = int(time.mktime(timeArray))
+        hour_offset = (time.mktime(time.localtime()) - time.mktime(
+            time.gmtime())) / consts.SECONDS_PER_HOUR
+        occur_time = timeStamp * units.k + (int(hour_offset) *
+                                            consts.SECONDS_PER_HOUR) * units.k
+        return occur_time
