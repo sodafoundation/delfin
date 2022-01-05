@@ -47,6 +47,10 @@ SUCCESS_STATUS_CODES = 200
 # session SUCCESS's status
 LOGIN_SUCCESS_STATUS_CODES = 201
 
+SERVICE_UNAVAILABLE_CODES = 503
+BAD_REQUEST_CODES = 400
+NOT_IMPLEMENTED_CODES = 501
+
 # alert state enumeration
 ALERT_STATE_NEW = 1  # New.
 ALERT_STATE_ACKED = 2  # Acknowledged state.
@@ -654,6 +658,14 @@ FSTORE_PATTERN = "^\\s*Fstore\\s+VFS\\s+FPG\\s+State\\s+Mode"
 FSHARE_PATTERN = "^\\s*ShareName\\s+Protocol\\s+VFS\\s+FileStore\\s+" \
                  "ShareDir\\s+State"
 VFS_PATTERN = "^\\s*VFS\\s+FPG\\s+IPAddr\\s+State"
+
+SRSTATPORT_PATTERN = "^\\s*PORT_N\\s+PORT_S\\s+PORT_P\\s+Rd\\s+Wr\\s+" \
+                     "Tot\\s+Rd\\s+Wr\\s+Tot\\s+Rd\\s+Wr\\s+Tot"
+SRSTATPD_PATTERN = "^\\s*PDID\\s+Rd\\s+Wr\\s+" \
+                   "Tot\\s+Rd\\s+Wr\\s+Tot\\s+Rd\\s+Wr\\s+Tot"
+SRSTATVV_PATTERN = "^\\s*VVID\\s+VV_NAME\\s+Rd\\s+Wr\\s+" \
+                   "Tot\\s+Rd\\s+Wr\\s+Tot\\s+Rd\\s+Wr\\s+Tot"
+
 IPV4_PATTERN = "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
 CONTROLLER_STATUS_MAP = {
     'OK': constants.ControllerStatus.NORMAL,
@@ -699,4 +711,112 @@ PORT_TYPE_MAP = {
     'UNKNOWN': constants.PortType.OTHER,
     'RCIP': constants.PortType.RCIP,
     'RCFC': constants.PortType.OTHER
+}
+SSH_METRIC_TYPE = {
+    1: "io",
+    2: "kbytes",
+    3: "svct",
+    4: "iosz"
+}
+SSH_COLLECT_TIME_PATTERN = "\\(\\d+\\)"
+COLLECT_INTERVAL_HIRES = 60000
+SIXTY_SECONDS = 60
+REST_COLLEC_TTIME_PATTERN = '%Y-%m-%dT%H:%M:%SZ'
+IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read input/output operations per second"
+}
+WRITE_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write input/output operations per second"
+}
+THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data is "
+                   "successfully transferred in MB/s"
+}
+READ_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data read is "
+                   "successfully transferred in MB/s"
+}
+WRITE_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data write is "
+                   "successfully transferred in MB/s"
+}
+RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for an IO "
+                   "operation in ms"
+}
+CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of io that are cache hits"
+}
+READ_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of read ops that are cache hits"
+}
+WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of write ops that are cache hits"
+}
+IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of IO requests in KB"
+}
+READ_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of read IO requests in KB"
+}
+WRITE_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of write IO requests in KB"
+}
+POOL_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION
+}
+VOLUME_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
+    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
+    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
+    "ioSize": IO_SIZE_DESCRIPTION,
+    "readIoSize": READ_IO_SIZE_DESCRIPTION,
+    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION
+}
+PORT_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION
+}
+DISK_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION
 }

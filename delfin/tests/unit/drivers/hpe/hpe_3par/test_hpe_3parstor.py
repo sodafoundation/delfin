@@ -16,6 +16,8 @@ from unittest import TestCase, mock
 
 import paramiko
 
+from delfin.common import constants
+
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import exception
 from delfin import context
@@ -146,6 +148,744 @@ N:S:P      Mode Device Pos Config Topology   Rate Cls Mode_change
   108
 """
 
+POOL_DATAS = ret = {
+    "total": 12,
+    "members": [
+        {
+            "id": 0,
+            "uuid": "aa43f218-d3dd-4626-948f-8a160b0eac1d",
+            "name": "Lcltest333",
+            "numFPVVs": 21,
+            "numTPVVs": 25,
+            "UsrUsage": {
+                "totalMiB": 1381504,
+                "rawTotalMiB": 1842004,
+                "usedMiB": 1376128,
+                "rawUsedMiB": 712703
+            },
+            "SAUsage": {
+                "totalMiB": 140800,
+                "rawTotalMiB": 422400,
+                "usedMiB": 5120,
+                "rawUsedMiB": 15360
+            },
+            "SDUsage": {
+                "totalMiB": 388736,
+                "rawTotalMiB": 518315,
+                "usedMiB": 0,
+                "rawUsedMiB": 0
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 4,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 1,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_Migration1",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 2,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_Oracle",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 3,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_filesystem",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 4,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_test",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 5,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "fs_cpg",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 6,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "ljn2",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 7,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "ljn4_xiuGai",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 8,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "ljn_330",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 9,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "xulin_cpg1",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 10,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "zyz",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 11,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "22",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        }
+    ]
+}
+POOL_METRICS_DATAS = {
+    "sampleTime": "2020-03-01T03:50:00+08:00",
+    "sampleTimeSec": 1583005800,
+    "total": 2,
+    "members": [
+        {
+            "name": "22",
+            "IO": {
+                "read": 0,
+                "write": 0,
+                "total": 10
+            },
+            "KBytes": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "serviceTimeMS": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "IOSizeKB": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "queueLength": 0,
+            "busyPct": 0
+        },
+        {
+            "name": "Lcltest333",
+            "IO": {
+                "read": 0,
+                "write": 0,
+                "total": 20
+            },
+            "KBytes": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "serviceTimeMS": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "IOSizeKB": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "queueLength": 0,
+            "busyPct": 0
+        }
+    ]
+}
+PORT_METRICS_DATAS = """
+Time: 2021-07-14 14:10:00 CST (1626243000)
+                 ----IO/s----- ---KBytes/s---- ----Svct ms----- -IOSz KBytes-
+PORT_N PORT_S PORT_P Rd Wr Tot Rd Wr Tot Rd Wr Tot Rd  Wr   Tot QLen AvgBusy%
+0 0 1 0.0  0.0  0.0 0.0   0.0   0.0 0.00  0.00  0.00 0.0 0.0   0.0    0 0.0
+0 1 1 0.0 14.3 14.3 0.0  86.4  86.4 0.00 11.52 11.52 0.0 6.1   6.1    1 11.9
+----------------------------------------------------------------------------
+      2 7.6 31.4 39.0 0.6 192.0 192.6 0.00 12.34  9.93 0.1 6.2   5.0    1 3.0
+"""
+DISK_METRICS_DATAS = """
+Time: 2021-07-14 15:35:00 CST (1626248100)
+     ----IO/s----- ---KBytes/s---- ----Svct ms----- -IOSz KBytes-
+PDID  Rd   Wr  Tot  Rd    Wr   Tot   Rd    Wr   Tot  Rd   Wr  Tot QLen AvgBusy%
+   0 0.0  0.5  0.5 0.0   4.9   4.9 0.00  3.04  3.04 0.0 10.0 10.0    0      0.1
+   1 0.0  1.6  1.6 0.0  10.2  10.2 0.00  0.89  0.89 0.0  6.3  6.3    0      0.1
+-------------------------------------------------------------------------------
+  2 0.0 31.4 31.4 0.0 191.4 191.4 0.00 11.98 11.98 0.0  6.2  6.2    0      1.5
+"""
+VOLUME_METRICS_DATAS = """
+Time: 2021-07-14 14:10:00 CST (1626243000)
+                 ----IO/s----- ---KBytes/s---- ----Svct ms----- -IOSz KBytes-
+VVID VV_NAME Rd Wr Tot Rd Wr Tot Rd Wr Tot Rd  Wr   Tot QLen AvgBusy%
+0 srdata 0.0  1.0  2.0 3.0 11.0 22.0 33.00 111.00  222.00 333.0 0.0 0.0 0 0.0
+1 admin 0.0 14.3 14.3 0.0  86.4  86.4 0.00 11.52 11.52 0.0 6.1 6.1 1 11.9
+----------------------------------------------------------------------------
+      2 7.6 31.4 39.0 0.6 192.0 192.6 0.00 12.34  9.93 0.1 6.2   5.0    1 3.0
+"""
+
 CONTROLLER_RESULT = [
     {
         'name': '1307327-0',
@@ -195,6 +935,46 @@ PORT_RESULT = [
         'ipv6': None,
         'ipv6_mask': None
     }]
+METRICS_RESULT = [
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'storagePool',
+                                'resource_id': '11',
+                                'type': 'RAW',
+                                'unit': 'IOPS'},
+                            values={1583005800000: 10}
+                            ),
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'volume',
+                                'resource_id': '0',
+                                'type': 'RAW',
+                                'unit': 'IOPS'},
+                            values={1626243000000: 2.0}
+                            ),
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'port',
+                                'resource_id': '0:0:1',
+                                'type': 'RAW',
+                                'unit': 'IOPS'
+                            },
+                            values={1626243000000: 0.0}
+                            ),
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'disk',
+                                'resource_id': '0',
+                                'type': 'RAW',
+                                'unit': 'IOPS'
+                            },
+                            values={1626248100000: 0.5}
+                            ),
+]
 
 
 def create_driver():
@@ -605,3 +1385,60 @@ class TestHpe3parStorageDriver(TestCase):
                          PORT_RCIP_DATAS, PORT_RCIP_DATAS])
         ports = driver.list_ports(context)
         self.assertDictEqual(ports[0], PORT_RESULT[0])
+
+    @mock.patch.object(RestHandler, 'get_pool_metrics')
+    @mock.patch.object(SSHPool, 'do_exec')
+    def test_get_perf_metrics(self, mock_exec, mock_pool):
+        driver = create_driver()
+        resource_metrics = {
+            'storagePool': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'volume': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime',
+                'cacheHitRatio', 'readCacheHitRatio', 'writeCacheHitRatio',
+                'ioSize', 'readIoSize', 'writeIoSize',
+            ],
+            'port': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'disk': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'filesystem': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'readResponseTime', 'writeResponseTime',
+                'readIoSize', 'writeIoSize'
+            ]
+        }
+        start_time = 1628472280000
+        end_time = 1628472900000
+        RestHandler.get_all_pools = mock.Mock(return_value=POOL_DATAS)
+        mock_pool.return_value = POOL_METRICS_DATAS
+        mock_exec.side_effect = [VOLUME_METRICS_DATAS, PORT_METRICS_DATAS,
+                                 DISK_METRICS_DATAS]
+        metrics = driver.collect_perf_metrics(context, '12345',
+                                              resource_metrics, start_time,
+                                              end_time)
+        self.assertEqual(metrics[0], METRICS_RESULT[0])
+        self.assertEqual(metrics[14], METRICS_RESULT[1])
+        self.assertEqual(metrics[34], METRICS_RESULT[2])
+        self.assertEqual(metrics[48], METRICS_RESULT[3])
+
+    def test_get_capabilities(self):
+        driver = create_driver()
+        cap = driver.get_capabilities(context)
+        self.assertIsNotNone(cap.get('resource_metrics'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('storagePool'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('volume'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('port'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('disk'))

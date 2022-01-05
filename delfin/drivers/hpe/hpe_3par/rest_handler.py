@@ -21,6 +21,7 @@ from oslo_log import log as logging
 from delfin import cryptor
 from delfin import exception
 from delfin.drivers.hpe.hpe_3par import consts
+from delfin.drivers.utils.tools import Tools
 
 LOG = logging.getLogger(__name__)
 
@@ -39,6 +40,10 @@ class RestHandler(object):
     REST_ALERTS_URL = '/api/v1/eventlog?query="category EQ 2"'
 
     REST_AUTH_KEY = 'X-HP3PAR-WSAPI-SessionKey'
+
+    REST_CPGSTATISTICS_URL = '/api/v1/systemreporter' \
+                             '/attime/cpgstatistics/hires?' \
+                             'query="sampleTime GE %s AND sampleTime LE %s"'
 
     session_lock = None
 
@@ -103,6 +108,8 @@ class RestHandler(object):
         if res is not None:
             if res.status_code == consts.SUCCESS_STATUS_CODES:
                 rejson = res.json()
+            else:
+                raise exception.StorageBackendException(res.text)
         return rejson
 
     def login(self):
@@ -195,4 +202,14 @@ class RestHandler(object):
     def get_all_volumes(self):
         rejson = self.get_resinfo_call(RestHandler.REST_VOLUMES_URL,
                                        method='GET')
+        return rejson
+
+    def get_pool_metrics(self, start_time, end_time):
+        start_time_str = Tools.timestamp_to_utc_time_str(
+            start_time, consts.REST_COLLEC_TTIME_PATTERN)
+        end_time_str = Tools.timestamp_to_utc_time_str(
+            end_time, consts.REST_COLLEC_TTIME_PATTERN)
+        url = RestHandler.REST_CPGSTATISTICS_URL % (
+            start_time_str, end_time_str)
+        rejson = self.get_resinfo_call(url, method='GET')
         return rejson
