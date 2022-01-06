@@ -271,3 +271,9 @@ class RestHandler(RestClient):
                          'fields=id,filesystem,treeQuota,quotaPolicy')
         result_json = self.get_rest_info(url)
         return result_json
+
+    def get_history_metrics(self, path, page):
+        url = '/api/types/metricValue/instances?filter=path EQ "%s"&page=%s'\
+              % (path, page)
+        result_json = self.get_rest_info(url)
+        return result_json
