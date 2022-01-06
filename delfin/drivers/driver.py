@@ -212,9 +212,13 @@ class StorageDriver(object):
             "Driver API list_storage_hosts() is not Implemented")
 
     def list_storage_host_groups(self, context):
-        """List all storage host groups from storage system."""
         """
-        *********Model description**********
+        Returns a dict with following
+        'storage_host_groups': <List storage host groups from storage system>,
+        'storage_host_grp_host_rels': <List host groups to host relation>,
+        """
+        """
+        ********* storage_host_groups Model description**********
         native_storage_host_group_id: Native id of host grp at backend side
                                       (mandatory)
         name: Name of the host grp
@@ -226,9 +230,13 @@ class StorageDriver(object):
             "Driver API list_storage_host_groups() is not Implemented")
 
     def list_port_groups(self, context):
-        """List all port groups from storage system."""
         """
-        *********Model description**********
+        Returns a dict with following
+        'port_groups': <List port groups from storage system>,
+        'port_grp_port_rels': <List port groups to port relation>,
+        """
+        """
+        ********* port_groups Model description**********
         native_port_group_id: Native id of port grp at backend side (mandatory)
         name: Name of the port grp
         description: Description of the port grp
@@ -239,9 +247,13 @@ class StorageDriver(object):
             "Driver API list_port_groups() is not Implemented")
 
     def list_volume_groups(self, context):
-        """List all volume groups from storage system."""
         """
-        *********Model description**********
+        Returns a dict with following
+        'volume_groups': <List volume groups from storage system>,
+        'vol_grp_vol_rels': <List volume groups to port relation>,
+        """
+        """
+        ********* volume_groups Model description**********
         native_volume_group_id: Native id of volume grp at backend side
                                 (mandatory)
         name: Name of the volume grp

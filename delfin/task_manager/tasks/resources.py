@@ -618,11 +618,15 @@ class StorageHostGroupTask(StorageResourceTask):
         try:
             # Collect the storage host group list from driver and database.
             # Build relation between host grp and host to be handled here.
-            storage_host_groups = self.driver_api \
+            storage_host_group_obj = self.driver_api \
                 .list_storage_host_groups(self.context, self.storage_id)
+            storage_host_groups = storage_host_group_obj['storage_host_groups']
+            storage_host_rels = storage_host_group_obj['storage_host_grp_host_rels']
             if storage_host_groups:
-                _build_storage_host_group_relations(
-                    self.context, self.storage_id, storage_host_groups)
+                db.storage_host_grp_host_rels_delete_by_storage(self.context,
+                                                                self.storage_id)
+                db.storage_host_grp_host_rels_create(
+                    self.context, storage_host_rels)
                 LOG.info('Building host group relations successful for '
                          'storage id:{0}'.format(self.storage_id))
 
@@ -682,11 +686,13 @@ class PortGroupTask(StorageResourceTask):
         try:
             # Collect the port groups from driver and database
             # Build relation between port grp and port to be handled here.
-            port_groups = self.driver_api \
+            port_groups_obj = self.driver_api \
                 .list_port_groups(self.context, self.storage_id)
+            port_groups = port_groups_obj['port_groups']
+            port_group_relation_list = port_groups_obj['port_grp_port_rels']
             if port_groups:
-                _build_port_group_relations(
-                    self.context, self.storage_id, port_groups)
+                db.port_grp_port_rels_delete_by_storage(self.context, self.storage_id)
+                db.port_grp_port_rels_create(self.context, port_group_relation_list)
                 LOG.info('Building port group relations successful for '
                          'storage id:{0}'.format(self.storage_id))
 
@@ -744,11 +750,14 @@ class VolumeGroupTask(StorageResourceTask):
         try:
             # Collect the volume groups from driver and database
             # Build relation between volume grp and volume to be handled here.
-            volume_groups = self.driver_api \
+            volume_groups_obj = self.driver_api \
                 .list_volume_groups(self.context, self.storage_id)
+            volume_groups = volume_groups_obj['volume_groups']
+            volume_groups_rels = volume_groups_obj['vol_grp_vol_rels']
             if volume_groups:
-                _build_volume_group_relations(
-                    self.context, self.storage_id, volume_groups)
+                db.vol_grp_vol_rels_delete_by_storage(
+                    self.context, self.storage_id)
+                db.vol_grp_vol_rels_create(self.context, volume_groups_rels)
                 LOG.info('Building volume group relations successful for '
                          'storage id:{0}'.format(self.storage_id))
 

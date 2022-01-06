@@ -929,7 +929,30 @@ class FakeStorageDriver(driver.StorageDriver):
                 "storage_hosts": storage_hosts
             }
             storage_host_grp_list.append(f)
-        return storage_host_grp_list
+
+        storage_host_grp_relation_list = []
+        for storage_host_group in storage_host_grp_list:
+            storage_hosts = storage_host_group.pop('storage_hosts', None)
+            if not storage_hosts:
+                continue
+            storage_hosts = storage_hosts.split(',')
+
+            for storage_host in storage_hosts:
+                storage_host_group_relation = {
+                    'storage_id': self.storage_id,
+                    'native_storage_host_group_id':
+                        storage_host_group['native_storage_host_group_id'],
+                    'native_storage_host_id': storage_host
+                }
+                storage_host_grp_relation_list \
+                    .append(storage_host_group_relation)
+
+        result = {
+            'storage_host_groups': storage_host_grp_list,
+            'storage_host_grp_host_rels': storage_host_grp_relation_list
+        }
+
+        return result
 
     def list_port_groups(self, ctx):
         rd_port_groups_count = random.randint(MIN_PORT_GROUPS,
@@ -965,7 +988,27 @@ class FakeStorageDriver(driver.StorageDriver):
             }
 
             port_grp_list.append(f)
-        return port_grp_list
+
+        port_group_relation_list = []
+        for port_group in port_grp_list:
+            ports = port_group.pop('ports', None)
+            if not ports:
+                continue
+            ports = ports.split(',')
+
+            for port in ports:
+                port_group_relation = {
+                    'storage_id': self.storage_id,
+                    'native_port_group_id':
+                        port_group['native_port_group_id'],
+                    'native_port_id': port
+                }
+                port_group_relation_list.append(port_group_relation)
+        result = {
+            'port_groups': port_grp_list,
+            'port_grp_port_rels': port_group_relation_list
+        }
+        return result
 
     def list_volume_groups(self, ctx):
         rd_volume_groups_count = random.randint(MIN_VOLUME_GROUPS,
@@ -1000,7 +1043,27 @@ class FakeStorageDriver(driver.StorageDriver):
                 "volumes": volumes
             }
             volume_grp_list.append(f)
-        return volume_grp_list
+
+        volume_group_relation_list = []
+        for volume_group in volume_grp_list:
+            volumes = volume_group.pop('volumes', None)
+            if not volumes:
+                continue
+            volumes = volumes.split(',')
+
+            for volume in volumes:
+                volume_group_relation = {
+                    'storage_id': self.storage_id,
+                    'native_volume_group_id':
+                        volume_group['native_volume_group_id'],
+                    'native_volume_id': volume}
+                volume_group_relation_list.append(volume_group_relation)
+
+        result = {
+            'volume_groups': volume_grp_list,
+            'vol_grp_vol_rels': volume_group_relation_list
+        }
+        return result
 
     def list_masking_views(self, ctx):
         rd_masking_views_count = random.randint(MIN_MASKING_VIEWS,
