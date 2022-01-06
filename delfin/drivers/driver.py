@@ -277,7 +277,6 @@ class StorageDriver(object):
         native_volume_group_id: Native id of volume grp at backend side
         native_storage_host_id: Native id of host at backend side
         native_volume_id: Native id of volume at backend side
-        native_port_id: Native id of port at backend side
         storage_id: Storage id at delfin side
 
         Masking view filling guidelines:
@@ -293,8 +292,7 @@ class StorageDriver(object):
                         | native_storage_host_id)
         From volume side: Mandatorily one of the (native_volume_group_id
                                                  | native_volume_id)
-        From port side: Optionally One of the (native_port_group_id
-                                                 | native_port_id)
+        From port side: Optionally (native_port_group_id)
         """
         raise NotImplementedError(
             "Driver API list_masking_views() is not Implemented")

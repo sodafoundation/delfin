@@ -1081,7 +1081,6 @@ class FakeStorageDriver(driver.StorageDriver):
                 native_port_group_id = "port_group_" + str(idx)
                 native_storage_host_id = ""
                 native_volume_id = ""
-                native_port_id = ""
 
             else:
                 native_storage_host_group_id = ""
@@ -1089,7 +1088,6 @@ class FakeStorageDriver(driver.StorageDriver):
                 native_port_group_id = ""
                 native_storage_host_id = "storage_host_" + str(idx)
                 native_volume_id = "volume_" + str(idx)
-                native_port_id = "port_" + str(idx)
 
             f = {
                 "name": "masking_view_" + str(idx),
@@ -1101,7 +1099,6 @@ class FakeStorageDriver(driver.StorageDriver):
                 "native_port_group_id": native_port_group_id,
                 "native_storage_host_id": native_storage_host_id,
                 "native_volume_id": native_volume_id,
-                "native_port_id": native_port_id
             }
             masking_view_list.append(f)
         return masking_view_list
