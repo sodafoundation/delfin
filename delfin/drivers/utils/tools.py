@@ -11,7 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import time
+
+import six
+
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
+from scp import SCPClient
 
 from oslo_log import log as logging
 from oslo_utils import units
@@ -58,7 +68,7 @@ class Tools(object):
     @staticmethod
     def get_capacity_size(value):
         capacity = 0
-        if value and value != '' and value != '-':
+        if value and value != '' and value != '-' and value != '0B':
             if value.isdigit():
                 capacity = float(value)
             else:
@@ -79,15 +89,16 @@ class Tools(object):
                 value = ''
                 if len(string_info) > 1:
                     for string in string_info[1:]:
-                        value += string.replace('""', '')
-                value_map[key] = value
-                if is_alert and key == 'Description':
+                        value = string.replace('""', '')
+                    value_map[key] = value
+                if is_alert and key and len(string_info) > 1:
                     temp_key = key
                     continue
-                if key != 'CorrectiveActions' and temp_key == 'Description':
-                    value_map[temp_key] += string_info[0]
-                if key == 'CorrectiveActions':
-                    temp_key = ''
+                if is_alert and temp_key and 'entries' not in detail:
+                    if len(string_info) > 1:
+                        value_map[temp_key] += string_info[1]
+                    elif len(string_info) == 1:
+                        value_map[temp_key] += string_info[0]
             else:
                 if value_map != {}:
                     map_list.append(value_map)
@@ -95,3 +106,34 @@ class Tools(object):
         if value_map != {}:
             map_list.append(value_map)
         return map_list
+
+    @staticmethod
+    def remove_file_with_same_type(file_name, file_path):
+        file_type = '%s_%s_%s' % (file_name.split('_')[0],
+                                  file_name.split('_')[1],
+                                  file_name.split('_')[2])
+        path_dir = os.listdir(file_path)
+        for file in path_dir:
+            if file_type in file:
+                local_file = '%s%s' % (file_path, file)
+                os.remove(local_file)
+
+    @staticmethod
+    def get_remote_file_to_xml(ssh, file, local_path, remote_path):
+        root_node = None
+        local_file = '%s%s' % (local_path, file)
+        try:
+            scp_client = SCPClient(ssh.get_transport(),
+                                   socket_timeout=15.0)
+            remote_file = '%s%s' % (remote_path, file)
+            scp_client.get(remote_file, local_path)
+            root_node = open(local_file).read()
+            root_node = ET.fromstring(root_node)
+        except Exception as e:
+            err_msg = "Failed to copy statics file: %s" % \
+                      (six.text_type(e))
+            LOG.error(err_msg)
+        finally:
+            if os.path.exists(local_file):
+                Tools.remove_file_with_same_type(file, local_path)
+            return root_node
