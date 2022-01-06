@@ -913,7 +913,6 @@ class UnityStorDriver(driver.StorageDriver):
                       (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
-
         return metrics
 
     @staticmethod
