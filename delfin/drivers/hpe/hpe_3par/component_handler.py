@@ -100,7 +100,7 @@ class ComponentHandler():
 
             if pools is not None:
                 members = pools.get('members')
-                for pool in members:
+                for pool in (members or []):
                     # Get pool status  1=normal 2,3=abnormal 99=offline
                     status = self.STATUS_MAP.get(pool.get('state'))
 
@@ -153,13 +153,18 @@ class ComponentHandler():
             return
         else:
             members = volumes.get('members')
-            for volume in members:
+            for volume in (members or []):
                 status = self.STATUS_MAP.get(volume.get('state'))
                 orig_pool_name = volume.get('userCPG', '')
 
                 compressed = True
                 deduplicated = True
-
+                if volume.get('compressionState') and volume.get(
+                        'compressionState') != 1:
+                    compressed = False
+                if volume.get('deduplicationState') and volume.get(
+                        'deduplicationState') != 1:
+                    deduplicated = False
                 vol_type = self.VOL_TYPE_MAP.get(
                     volume.get('provisioningType'))
 
@@ -197,7 +202,7 @@ class ComponentHandler():
             pool_ids = {}
             if pools is not None:
                 members = pools.get('members')
-                for pool in members:
+                for pool in (members or []):
                     pool_ids[pool.get('name')] = pool.get('id')
 
             return self.handler_volume(volumes, pool_ids)
@@ -220,12 +225,12 @@ class ComponentHandler():
             node_cpu_map = self.ssh_handler.get_controllers_cpu()
             node_version_map = self.ssh_handler.get_controllers_version()
             for controller in controllers:
-                node_id = controller.get('node_id')
-                memory_size = int(controller.get('node_control_mem',
+                node_id = controller.get('node')
+                memory_size = int(controller.get('controlmem(mb)',
                                                  '0')) * units.Mi + int(
-                    controller.get('node_data_mem', '0')) * units.Mi
+                    controller.get('datamem(mb)', '0')) * units.Mi
                 cpu_info = ''
-                if node_cpu_map:
+                if node_cpu_map and node_cpu_map.get(node_id):
                     cpu_info_map = node_cpu_map.get(node_id)
                     cpu_info_keys = list(cpu_info_map.keys())
                     for cpu_key in cpu_info_keys:
@@ -237,11 +242,11 @@ class ComponentHandler():
                 if node_version_map:
                     soft_version = node_version_map.get(node_id, '')
                 controller_model = {
-                    'name': controller.get('node_name'),
+                    'name': controller.get('name'),
                     'storage_id': storage_id,
                     'native_controller_id': node_id,
                     'status': consts.CONTROLLER_STATUS_MAP.get(
-                        controller.get('node_state', '').upper(),
+                        controller.get('state', '').upper(),
                         constants.ControllerStatus.OFFLINE),
                     'location': None,
                     'soft_version': soft_version,
@@ -261,7 +266,12 @@ class ComponentHandler():
                 status = consts.DISK_STATUS_MAP.get(
                     disk.get('state', '').upper(),
                     constants.DiskStatus.ABNORMAL)
-                capacity = int(float(disk.get("total", 0)) * units.Mi)
+                total = 0
+                if disk.get('total'):
+                    total = float(disk.get("total"))
+                elif disk.get('size_mb'):
+                    total = float(disk.get("size_mb"))
+                capacity = int(total * units.Mi)
                 serial_number = None
                 manufacturer = None
                 model = None
