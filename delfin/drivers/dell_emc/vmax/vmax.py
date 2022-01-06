@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
+import six
+
 from oslo_log import log
 
+from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.vmax import client
@@ -166,3 +170,28 @@ class VMAXStorageDriver(driver.StorageDriver):
                 constants.ResourceType.DISK: consts.DISK_CAP,
             }
         }
+
+    def get_latest_perf_timestamp(self, context):
+        """Get the timestamp of the latest performance data of the device"""
+        try:
+            current_time = int(datetime.now().timestamp())
+            end_time = current_time * 1000
+            start_time = (current_time - 300) * 1000
+            storage_metrics = self.client.get_storage_metrics(
+                self.storage_id,
+                {"iops": {"unit": "IOPS"}},
+                start_time, end_time)
+
+            timestamp = 0
+            for metrics in storage_metrics:
+                max_ts = max(metrics.values.keys())
+                if timestamp < max_ts:
+                    timestamp = max_ts
+            if timestamp == 0:
+                return None
+            return timestamp
+        except Exception as err:
+            err_msg = "Failed to get storage perf timestamp from vmax: " \
+                      "%s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
