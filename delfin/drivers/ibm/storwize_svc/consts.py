@@ -1,5 +1,5 @@
 # Copyright 2020 The SODA Authors.
-#
+# Copyright (c) 2016 Huawei Technologies Co., Ltd.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -14,69 +14,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# minimum interval supported by VMAX
-VMAX_PERF_MIN_INTERVAL = 5
-
-BEDIRECTOR_METRICS = {
-    'iops': 'IOs',
-    'throughput': 'MBs',
-    'readThroughput': 'MBRead',
-    'writeThroughput': 'MBWritten',
-}
-FEDIRECTOR_METRICS = {
-    'iops': 'HostIOs',
-    'throughput': 'HostMBs',
-}
-RDFDIRECTOR_METRICS = {
-    'iops': 'IOs',
-    'throughput': 'MBSentAndReceived',
-    'readThroughput': 'MBRead',
-    'writeThroughput': 'MBWritten',
-    'responseTime': 'AverageIOServiceTime',
-}
-BEPORT_METRICS = {
-    'iops': 'IOs',
-    'throughput': 'MBs',
-    'readThroughput': 'MBRead',
-    'writeThroughput': 'MBWritten',
-}
-FEPORT_METRICS = {
-    'iops': 'IOs',
-    'throughput': 'MBs',
-    'readThroughput': 'MBRead',
-    'writeThroughput': 'MBWritten',
-    'responseTime': 'ResponseTime',
-}
-RDFPORT_METRICS = {
-    'iops': 'IOs',
-    'throughput': 'MBs',
-    'readThroughput': 'MBRead',
-    'writeThroughput': 'MBWritten',
-}
-DISK_METRICS = {
-    'iops': 'IOs',
-    'throughput': 'MBs',
-    'readThroughput': 'MBReads',
-    'writeThroughput': 'MBWritten',
-    'responseTime': 'AvgResponseTime',
-}
-POOL_METRICS = {
-    'iops': 'HostIOs',
-    'readIops': 'HostReads',
-    'writeIops': 'HostWrites',
-    'throughput': 'HostMBs',
-    'readThroughput': 'HostMBReads',
-    'writeThroughput': 'HostMBWritten',
-    'responseTime': 'ResponseTime',
-}
-STORAGE_METRICS = {
-    'iops': 'HostIOs',
-    'readIops': 'HostReads',
-    'writeIops': 'HostWrites',
-    'throughput': 'HostMBs',
-    'readThroughput': 'HostMBReads',
-    'writeThroughput': 'HostMBWritten',
-}
+LOCAL_FILE_PATH = '/delfin/drivers/utils/performance_file/svc/'
+REMOTE_FILE_PATH = '/dumps/iostats/'
 
 IOPS_DESCRIPTION = {
     "unit": "IOPS",
@@ -110,6 +49,18 @@ RESPONSE_TIME_DESCRIPTION = {
     "description": "Average time taken for an IO "
                    "operation in ms"
 }
+CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of io that are cache hits"
+}
+READ_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of read ops that are cache hits"
+}
+WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of write ops that are cache hits"
+}
 IO_SIZE_DESCRIPTION = {
     "unit": "KB",
     "description": "The average size of IO requests in KB"
@@ -122,7 +73,19 @@ WRITE_IO_SIZE_DESCRIPTION = {
     "unit": "KB",
     "description": "The average size of write IO requests in KB"
 }
-STORAGE_CAP = {
+CPU_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of CPU usage"
+}
+MEMORY_USAGE_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of DISK memory usage in percentage"
+}
+SERVICE_TIME = {
+    "unit": 'ms',
+    "description": "Service time of the resource in ms"
+}
+VOLUME_CAP = {
     "iops": IOPS_DESCRIPTION,
     "readIops": READ_IOPS_DESCRIPTION,
     "writeIops": WRITE_IOPS_DESCRIPTION,
@@ -130,8 +93,23 @@ STORAGE_CAP = {
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
+    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
+    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
+    "ioSize": IO_SIZE_DESCRIPTION,
+    "readIoSize": READ_IO_SIZE_DESCRIPTION,
+    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION
 }
-POOL_CAP = {
+PORT_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION
+}
+DISK_CAP = {
     "iops": IOPS_DESCRIPTION,
     "readIops": READ_IOPS_DESCRIPTION,
     "writeIops": WRITE_IOPS_DESCRIPTION,
@@ -142,20 +120,8 @@ POOL_CAP = {
 }
 CONTROLLER_CAP = {
     "iops": IOPS_DESCRIPTION,
-    "throughput": THROUGHPUT_DESCRIPTION,
-    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-    "responseTime": RESPONSE_TIME_DESCRIPTION,
-}
-PORT_CAP = {
-    "iops": IOPS_DESCRIPTION,
-    "throughput": THROUGHPUT_DESCRIPTION,
-    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-    "responseTime": RESPONSE_TIME_DESCRIPTION,
-}
-DISK_CAP = {
-    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
     "throughput": THROUGHPUT_DESCRIPTION,
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
