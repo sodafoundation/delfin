@@ -209,7 +209,8 @@ class TestNetAppCmodeDriver(TestCase):
                          test_constans.FC_INITIATOR_INFO,
                          test_constans.HOSTS_INFO])
         data = self.netapp_client.list_storage_host_initiators(context)
-        self.assertEqual(data[0]['name'], 'fcstart1')
+        self.assertEqual(data[0]['name'],
+                         'iqn.2006-08.com.huawei:21004447dcca426::0')
 
     def test_list_port_groups(self):
         SSHPool.do_exec = mock.Mock(
