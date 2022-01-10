@@ -73,7 +73,9 @@ class UnityStorDriver(driver.StorageDriver):
     }
     ETHERNET_PORT_METRICS = {
         'readThroughput': 'sp.*.net.device.*.bytesInRate',
-        'writeThroughput': 'sp.*.net.device.*.bytesOutRate'
+        'writeThroughput': 'sp.*.net.device.*.bytesOutRate',
+        'readIops': 'sp.*.net.device.*.pktsInRate',
+        'writeIops': 'sp.*.net.device.*.pktsOutRate',
     }
     FC_PORT_METRICS = {
         'readIops': 'sp.*.fibreChannel.fePort.*.readsRate',
@@ -776,8 +778,15 @@ class UnityStorDriver(driver.StorageDriver):
                                             metric.get('type') == target:
                                         if metric.get('values').get(
                                                 occur_time):
-                                            metric.get('values')[occur_time] \
-                                                += int(value)
+                                            if target == 'responseTime':
+                                                metric.get(
+                                                    'values')[occur_time] = \
+                                                    max(value, metric.get(
+                                                        'values').get(
+                                                        occur_time))
+                                            else:
+                                                metric.get('values')[
+                                                    occur_time] += int(value)
                                         else:
                                             metric.get('values')[occur_time] \
                                                 = int(value)
