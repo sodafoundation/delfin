@@ -55,8 +55,8 @@ class VplexStorageDriver(driver.StorageDriver):
                 attr_map = VplexStorageDriver.get_attribute_map(response)
                 operate_status = attr_map.get('operational-status')
                 health_status = attr_map.get('health-state')
-                status = VplexStorageDriver.analyse_status(operate_status,
-                                                           health_status)
+                status = VplexStorageDriver.analyse_storage_status(
+                    operate_status, health_status)
                 try:
                     raw_capacity = self.get_cluster_raw_capacity(cluster_name)
                     total_capacity = self.get_cluster_total_capacity(
@@ -222,6 +222,20 @@ class VplexStorageDriver(driver.StorageDriver):
         status_offline = ["unknown", "isolated", "not-running",
                           "non-recoverable-error"]
         if operational_status and health_status in status_normal:
+            status = constants.StorageStatus.NORMAL
+        elif operational_status and health_status in status_offline:
+            status = constants.StorageStatus.OFFLINE
+        return status
+
+    @staticmethod
+    def analyse_storage_status(operational_status, health_status):
+        status = constants.StorageStatus.ABNORMAL
+        status_normal = ["ok"]
+        status_offline = ["unknown", "isolated", "not-running",
+                          "non-recoverable-error"]
+        if operational_status == constants.StorageStatus.DEGRADED:
+            status = constants.StorageStatus.DEGRADED
+        elif operational_status and health_status in status_normal:
             status = constants.StorageStatus.NORMAL
         elif operational_status and health_status in status_offline:
             status = constants.StorageStatus.OFFLINE

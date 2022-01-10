@@ -40,6 +40,7 @@ class NetAppHandler(object):
     OID_TRAP_DATA = '1.3.6.1.4.1.789.1.1.12.0'
     NODE_NAME = 'controller_name'
     SECONDS_TO_MS = 1000
+    NETAPP_NAA = '60a98000'
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -299,7 +300,9 @@ class NetAppHandler(object):
                         'status': status,
                         'native_volume_id': volume_map['SerialNumber'],
                         'native_storage_pool_id': pool_id,
-                        'wwn': None,
+                        'wwn':
+                            NetAppHandler.NETAPP_NAA +
+                            volume_map['SerialNumber(Hex)'],
                         'compressed': None,
                         'deduplicated': None,
                         'type': type,
@@ -577,7 +580,7 @@ class NetAppHandler(object):
                     port_id = \
                         eth_map['Node'] + '_' + eth_map['Port']
                     eth_model = {
-                        'name': eth_map['Port'],
+                        'name': eth_map['Node'] + ':' + eth_map['Port'],
                         'storage_id': storage_id,
                         'native_port_id': port_id,
                         'location':
@@ -1246,3 +1249,33 @@ class NetAppHandler(object):
             NetAppHandler.get_cap_by_version(version, capabilities)
             cap_map[version] = capabilities
         return cap_map
+
+    def get_latest_perf_timestamp(self):
+        try:
+            timestamp = 0
+            json_info = self.do_rest_call(constant.CLUSTER_PERF_URL, None)
+            for perf_info in json_info:
+                occur_time = \
+                    int(time.mktime(time.strptime(
+                        perf_info.get('timestamp'),
+                        PerformanceHandler.TIME_TYPE)))
+                second_offset = \
+                    (time.mktime(time.localtime()) -
+                     time.mktime(time.gmtime()))
+                occur_time = \
+                    (occur_time + int(second_offset)) * 1000
+                if timestamp < occur_time:
+                    timestamp = occur_time
+            if timestamp == 0:
+                return None
+            return timestamp
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage perf timestamp from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage perf timestamp from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
