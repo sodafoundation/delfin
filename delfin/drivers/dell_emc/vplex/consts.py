@@ -33,9 +33,9 @@ PORT_TYPE_MAP = {
 INITIATOR_DESCRIPTION = {
     'iscsi': 'iSCSI Initiator',
     'fc': 'FC Initiator',
-     'ib': 'IB Initiator',
     'sas': 'SAS Initiator',
-     'ficon': 'FICON Initiator',
+    'ib': 'IB Initiator',
+    'ficon': 'FICON Initiator',
     'eth': 'ETH Initiator'
 }
 
