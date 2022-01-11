@@ -424,32 +424,12 @@ GET_STORAGE_VIEW = {
                 },
                 {
                     "name": "port-name-enabled-status",
-                    "value": ["P0000000047302920-B0-FC00,true,ok",
-                              "P00000000472029E9-A0-FC03,true,ok",
-                              "P0000000047202920-A0-FC00,true,ok",
-                              "P00000000472029E9-A0-FC00,true,ok",
-                              "P0000000047302920-B0-FC01,true,ok",
-                              "P0000000047202920-A0-FC01,true,ok",
-                              "P00000000473029E9-B0-FC00,true,ok",
-                              "P00000000473029E9-B0-FC01,true,ok",
-                              "P0000000047302920-B0-FC03,true,ok",
-                              "P0000000047202920-A0-FC03,true,ok",
-                              "P00000000472029E9-A0-FC01,true,ok"
+                    "value": ["P0000000047302920-B0-FC00,true,ok"
                               ]
                 },
                 {
                     "name": "ports",
                     "value": [
-                        "P00000000472029E9-A0-FC00",
-                        "P00000000472029E9-A0-FC03",
-                        "P0000000047202920-A0-FC01",
-                        "P0000000047202920-A0-FC00",
-                        "P0000000047202920-A0-FC03",
-                        "P00000000472029E9-A0-FC01",
-                        "P00000000473029E9-B0-FC00",
-                        "P00000000473029E9-B0-FC01",
-                        "P0000000047302920-B0-FC01",
-                        "P0000000047302920-B0-FC03",
                         "P0000000047302920-B0-FC00"
                     ]
                 },
@@ -521,27 +501,30 @@ GET_INITIATORS_PORT = {
     ]
 }
 
-list_port_groups_result = [
-    {
-        'name': 'port_group_CHEN_LINUX',
-        'description': 'port_group_CHEN_LINUX',
-        'storage_id': '12345',
-        'native_port_group_id': 'port_group_CHEN_LINUX',
-        'ports': [
-            'P00000000472029E9-A0-FC00',
-            'P00000000472029E9-A0-FC03',
-            'P0000000047202920-A0-FC01',
-            'P0000000047202920-A0-FC00',
-            'P0000000047202920-A0-FC03',
-            'P00000000472029E9-A0-FC01',
-            'P00000000473029E9-B0-FC00',
-            'P00000000473029E9-B0-FC01',
-            'P0000000047302920-B0-FC01',
-            'P0000000047302920-B0-FC03',
-            'P0000000047302920-B0-FC00'
-        ]
-    }
-]
+list_port_groups_result = {
+    'port_groups': [
+        {
+            'name': 'port_group_CHEN_LINUX',
+            'description': 'port_group_CHEN_LINUX',
+            'storage_id': '12345',
+            'native_port_group_id': 'port_group_CHEN_LINUX',
+            'ports': [
+                'P0000000047302920-B0-FC00'
+            ]
+        }
+    ],
+    'port_grp_port_rels': [
+        {
+            "storage_id": "12345",
+            "native_port_group_id": "port_group_CHEN_LINUX",
+            "native_port_id": "P0000000047302920-B0-FC00"
+        }
+    ]
+}
+
+
+
+
 
 list_storage_host_initiators_result = [
     {
@@ -643,7 +626,12 @@ class TestVplexStorDriver(TestCase):
         mock_storage_view.return_value = GET_STORAGE_VIEW
         list_port_groups = VplexStorageDriver(**ACCESS_INFO).\
             list_port_groups(context)
-        self.assertDictEqual(list_port_groups[0], list_port_groups_result[0])
+        print(list_port_groups)
+        port_groups_result = {
+            'port_groups': list_port_groups.get('port_groups'),
+            'port_grp_port_rels': list_port_groups.get('port_grp_port_rels')
+        }
+        self.assertDictEqual(port_groups_result, list_port_groups_result)
 
     @mock.patch.object(RestHandler, 'get_initiators_resp')
     def test_list_storage_hosts(self, mock_storage_view):
