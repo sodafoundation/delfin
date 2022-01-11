@@ -396,6 +396,187 @@ ports_result = [
     }
 ]
 
+GET_STORAGE_VIEW = {
+    "context": [
+        {
+            "type": "storage-view",
+            "parent": "/clusters/cluster-1/exports/storage-views",
+            "attributes": [
+                {
+                    "name": "caw-enabled",
+                    "value": "true"
+                },
+                {
+                    "name": "controller-tag",
+                    "value": None
+                },
+                {
+                    "name": "initiators",
+                    "value": ["CHEN_LINUX"]
+                },
+                {
+                    "name": "name",
+                    "value": "CHEN_LINUX"
+                },
+                {
+                    "name": "operational-status",
+                    "value": "ok"
+                },
+                {
+                    "name": "port-name-enabled-status",
+                    "value": ["P0000000047302920-B0-FC00,true,ok",
+                              "P00000000472029E9-A0-FC03,true,ok",
+                              "P0000000047202920-A0-FC00,true,ok",
+                              "P00000000472029E9-A0-FC00,true,ok",
+                              "P0000000047302920-B0-FC01,true,ok",
+                              "P0000000047202920-A0-FC01,true,ok",
+                              "P00000000473029E9-B0-FC00,true,ok",
+                              "P00000000473029E9-B0-FC01,true,ok",
+                              "P0000000047302920-B0-FC03,true,ok",
+                              "P0000000047202920-A0-FC03,true,ok",
+                              "P00000000472029E9-A0-FC01,true,ok"
+                              ]
+                },
+                {
+                    "name": "ports",
+                    "value": [
+                        "P00000000472029E9-A0-FC00",
+                        "P00000000472029E9-A0-FC03",
+                        "P0000000047202920-A0-FC01",
+                        "P0000000047202920-A0-FC00",
+                        "P0000000047202920-A0-FC03",
+                        "P00000000472029E9-A0-FC01",
+                        "P00000000473029E9-B0-FC00",
+                        "P00000000473029E9-B0-FC01",
+                        "P0000000047302920-B0-FC01",
+                        "P0000000047302920-B0-FC03",
+                        "P0000000047302920-B0-FC00"
+                    ]
+                },
+                {
+                    "name": "scsi-spc-version",
+                    "value": "2"
+                },
+                {
+                    "name": "virtual-volumes",
+                    "value": [
+                        "(0,device_wcj_hp_3_c1_vol,16G)",
+                        "(1,dg_ocr,100G)"
+                    ]
+                },
+                {
+                    "name": "write-same-16-enabled",
+                    "value": "true"
+                },
+                {
+                    "name": "xcopy-enabled",
+                    "value": "true"
+                }
+            ],
+            "children": []
+        }
+    ]
+}
+
+GET_INITIATORS_PORT = {
+    "context": [
+        {
+            "type": "fc-initiator-port",
+            "parent": "/clusters/cluster-1/exports/initiator-ports",
+            "attributes": [
+                {
+                    "name": "name",
+                    "value": "0x2000002ec7dfe7d9"
+                },
+                {
+                    "name": "node-wwn",
+                    "value": "0x2000002ec7dfe7d9"
+                },
+                {
+                    "name": "port-wwn",
+                    "value": "0x2000002ec7dfe7d9"
+                },
+                {
+                    "name": "scsi-spc-version",
+                    "value": "2"
+                },
+                {
+                    "name": "suspend-on-detach",
+                    "value": None
+                },
+                {
+                    "name": "target-ports",
+                    "value": [
+                        "P0000000047302920-B0-FC03",
+                        "P0000000047302920-B0-FC01"
+                    ]
+                },
+                {
+                    "name": "type",
+                    "value": "default"
+                }
+            ],
+            "children": []
+        }
+    ]
+}
+
+list_port_groups_result = [
+    {
+        'name': 'port_group_CHEN_LINUX',
+        'description': 'port_group_CHEN_LINUX',
+        'storage_id': '12345',
+        'native_port_group_id': 'port_group_CHEN_LINUX',
+        'ports': [
+            'P00000000472029E9-A0-FC00',
+            'P00000000472029E9-A0-FC03',
+            'P0000000047202920-A0-FC01',
+            'P0000000047202920-A0-FC00',
+            'P0000000047202920-A0-FC03',
+            'P00000000472029E9-A0-FC01',
+            'P00000000473029E9-B0-FC00',
+            'P00000000473029E9-B0-FC01',
+            'P0000000047302920-B0-FC01',
+            'P0000000047302920-B0-FC03',
+            'P0000000047302920-B0-FC00'
+        ]
+    }
+]
+
+list_storage_host_initiators_result = [
+    {
+        'name': '0x2000002ec7dfe7d9',
+        'description': 'FC Initiator',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': '0x2000002ec7dfe7d9',
+        'wwn': '0x2000002ec7dfe7d9',
+        'status': 'online',
+        'native_storage_host_id': '0x2000002ec7dfe7d9'
+    }
+]
+
+list_storage_hosts_result = [
+    {
+        'name': '0x2000002ec7dfe7d9',
+        'description': '0x2000002ec7dfe7d9',
+        'storage_id': '12345',
+        'native_storage_host_id': '0x2000002ec7dfe7d9',
+        'os_type': '',
+        'status': 'normal'
+    }
+]
+
+list_masking_views_result = [
+    {
+        'name': 'CHEN_LINUX',
+        'description': 'CHEN_LINUX',
+        'storage_id': '12345',
+        'native_masking_view_id': 'CHEN_LINUX',
+        'native_port_group_id': 'port_group_CHEN_LINUX',
+        'native_volume_group_id': 'device_wcj_hp_3_c1_vol'
+    }
+]
+
 
 class TestVplexStorDriver(TestCase):
     RestHandler.login = mock.Mock(return_value=None)
@@ -456,3 +637,34 @@ class TestVplexStorDriver(TestCase):
         mock_export_port.return_value = GET_ALL_CLUSTER_EXPORT_PORT
         ports = VplexStorageDriver(**ACCESS_INFO).list_ports(context)
         self.assertDictEqual(ports[0], ports_result[0])
+
+    @mock.patch.object(RestHandler, 'get_storage_views')
+    def test_list_port_groups(self, mock_storage_view):
+        mock_storage_view.return_value = GET_STORAGE_VIEW
+        list_port_groups = VplexStorageDriver(**ACCESS_INFO).\
+            list_port_groups(context)
+        self.assertDictEqual(list_port_groups[0], list_port_groups_result[0])
+
+    @mock.patch.object(RestHandler, 'get_initiators_resp')
+    def test_list_storage_hosts(self, mock_storage_view):
+        mock_storage_view.return_value = GET_INITIATORS_PORT
+        list_storage_hosts = VplexStorageDriver(**ACCESS_INFO). \
+            list_storage_hosts(context)
+        self.assertDictEqual(list_storage_hosts[0],
+                             list_storage_hosts_result[0])
+
+    @mock.patch.object(RestHandler, 'get_storage_views')
+    def test_list_masking_views(self, mock_storage_view):
+        mock_storage_view.return_value = GET_STORAGE_VIEW
+        list_masking_views = VplexStorageDriver(**ACCESS_INFO). \
+            list_masking_views(context)
+        self.assertDictEqual(list_masking_views[0],
+                             list_masking_views_result[0])
+
+    @mock.patch.object(RestHandler, 'get_initiators_resp')
+    def test_list_storage_host_initiators(self, mock_initiators_port):
+        mock_initiators_port.return_value = GET_INITIATORS_PORT
+        list_storage_host_initiators = VplexStorageDriver(**ACCESS_INFO). \
+            list_storage_host_initiators(context)
+        self.assertDictEqual(list_storage_host_initiators[0],
+                             list_storage_host_initiators_result[0])
