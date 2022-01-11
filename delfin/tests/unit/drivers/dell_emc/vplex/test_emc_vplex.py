@@ -622,7 +622,6 @@ class TestVplexStorDriver(TestCase):
         mock_storage_view.return_value = GET_STORAGE_VIEW
         list_port_groups = VplexStorageDriver(**ACCESS_INFO).\
             list_port_groups(context)
-        print(list_port_groups)
         port_groups_result = {
             'port_groups': list_port_groups.get('port_groups'),
             'port_grp_port_rels': list_port_groups.get('port_grp_port_rels')

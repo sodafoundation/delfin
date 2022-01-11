@@ -668,11 +668,11 @@ class VplexStorageDriver(driver.StorageDriver):
                                 port_group_relation_list.append(
                                     port_group_relation)
                         port_groups_list.append(port_group_map)
-            result = {
+            result_map = {
                 'port_groups': port_groups_list,
                 'port_grp_port_rels': port_group_relation_list
             }
-            return result
+            return result_map
         except Exception:
             LOG.error("Failed to get port_groups from vplex")
             raise
