@@ -585,7 +585,7 @@ class VplexStorageDriver(driver.StorageDriver):
                             view_list.append(view_map)
             return view_list
         except Exception:
-            LOG.error("Failed to get view view from vplex")
+            LOG.error("Failed to get view  from vplex")
             raise
 
     def list_storage_host_initiators(self, content):
