@@ -543,6 +543,142 @@ class VplexStorageDriver(driver.StorageDriver):
                     speed = speed * units.k
         return speed
 
+    def list_masking_views(self, content):
+        try:
+            view_list = []
+            view_response = self.rest_handler.get_storage_views()
+            storage_view_list = self.get_attributes_from_response(
+                view_response)
+            for storage_view in storage_view_list:
+                virtual_volumes = storage_view.get('virtual-volumes')
+                initiators_list = storage_view.get('initiators')
+                view_name = storage_view.get('name')
+                if initiators_list:
+                    for initiator_info in initiators_list:
+                        native_masking_view_id = initiator_info
+                        if virtual_volumes:
+                            for virtual_volume in virtual_volumes:
+                                volume_value = virtual_volume.split(',')
+                                native_volume_group_id = volume_value[1]
+                                view_map = {
+                                    "name": view_name,
+                                    "description": view_name,
+                                    "storage_id": self.storage_id,
+                                    "native_masking_view_id":
+                                        native_masking_view_id,
+                                    "native_port_group_id": "port_group_"
+                                                            + initiator_info,
+                                    "native_volume_group_id":
+                                        native_volume_group_id
+                                }
+                                view_list.append(view_map)
+                        else:
+                            view_map = {
+                                "name": view_name,
+                                "description": view_name,
+                                "storage_id": self.storage_id,
+                                "native_masking_view_id":
+                                    native_masking_view_id,
+                                "native_port_group_id": "port_group_"
+                                                        + initiator_info
+                            }
+                            view_list.append(view_map)
+            return view_list
+        except Exception:
+            LOG.error("Failed to get view view from vplex")
+            raise
+
+    def list_storage_host_initiators(self, content):
+        try:
+            initiators_list = []
+            initiators_response = self.rest_handler.get_initiators_resp()
+            initiators_info_list = self.get_attributes_from_response(
+                initiators_response)
+            for initiators_map in initiators_info_list:
+                initiators_type = initiators_map.get('port_type')
+                initiators_type_arr = initiators_type.split('-')
+                initiators_type_index = initiators_type_arr[0]
+                description = consts.INITIATOR_DESCRIPTION.get(
+                    initiators_type_index,
+                    consts.UNKNOWN_INITIATOR_DESCRIPTION)
+                initiator_item = {
+                    "name": initiators_map.get('name'),
+                    "description": description,
+                    "storage_id": self.storage_id,
+                    "native_storage_host_initiator_id":
+                        initiators_map.get('node-wwn'),
+                    "wwn": initiators_map.get('node-wwn'),
+                    "status": constants.InitiatorStatus.ONLINE,
+                    "native_storage_host_id": initiators_map.get('node-wwn')
+                }
+                initiators_list.append(initiator_item)
+            return initiators_list
+        except Exception:
+            LOG.error("Failed to get host_initiators from vplex")
+            raise
+
+    def list_storage_hosts(self, content):
+        try:
+            hosts_list = []
+            host_response = self.rest_handler.get_initiators_resp()
+            hosts_info_list = self.get_attributes_from_response(host_response)
+            for host_info in hosts_info_list:
+                host_dict = {
+                    "name": host_info.get('node-wwn'),
+                    "description": host_info.get('node-wwn'),
+                    "storage_id": self.storage_id,
+                    "native_storage_host_id": host_info.get('node-wwn'),
+                    "os_type": '',
+                    "status": constants.HostStatus.NORMAL
+                }
+                hosts_list.append(host_dict)
+            return hosts_list
+        except Exception:
+            LOG.error("Failed to get storage_host from vplex")
+            raise
+
+    def list_port_groups(self, context):
+        try:
+            port_groups_list = []
+            port_group_response = self.rest_handler.get_storage_views()
+            storage_view_list = self.get_attributes_from_response(
+                port_group_response)
+            for storage_view in storage_view_list:
+                ports = storage_view.get('ports')
+                initiators_info_list = storage_view.get('initiators')
+                if initiators_info_list:
+                    for initiator_info in initiators_info_list:
+                        port_group_map = {
+                            "name": "port_group_" + initiator_info,
+                            "description": "port_group_" + initiator_info,
+                            "storage_id": self.storage_id,
+                            "native_port_group_id": "port_group_"
+                                                    + initiator_info,
+                            "ports": ports
+                        }
+                        port_groups_list.append(port_group_map)
+            return port_groups_list
+        except Exception:
+            LOG.error("Failed to get port_groups from vplex")
+            raise
+
+    @staticmethod
+    def get_attributes_from_response(response):
+        attributes_list = []
+        if response:
+            contexts = response.get("context")
+            for context in contexts:
+                child_map = {}
+                attributes = context.get("attributes")
+                context_type = context.get("type")
+                child_map['port_type'] = context_type
+                for children in attributes:
+                    name = children.get("name")
+                    value = children.get("value")
+                    child_map[name] = value
+                attributes_list.append(child_map)
+        return attributes_list
+
 
 @staticmethod
 def handle_detail_list(detail_info, detail_map, split):
