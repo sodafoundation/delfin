@@ -522,10 +522,6 @@ list_port_groups_result = {
     ]
 }
 
-
-
-
-
 list_storage_host_initiators_result = [
     {
         'name': '0x2000002ec7dfe7d9',
