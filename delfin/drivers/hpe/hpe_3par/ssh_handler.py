@@ -48,6 +48,11 @@ class SSHHandler(object):
     HPE3PAR_COMMAND_SHOWPORT_RCIP = 'showport -rcip'
     HPE3PAR_COMMAND_SHOWPORT_FCOE = 'showport -fcoe'
     HPE3PAR_COMMAND_SHOWPORT_FS = 'showport -fs'
+    HPE3PAR_COMMAND_SHOWHOSTSET_D = 'showhostset -d'
+    HPE3PAR_COMMAND_SHOWVVSET_D = 'showvvset -d'
+    HPE3PAR_COMMAND_SHOWHOST_D = 'showhost -d'
+    HPE3PAR_COMMAND_SHOWVV = 'showvv'
+    HPE3PAR_COMMAND_SHOWVLUN_T = 'showvlun -a'
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -288,6 +293,23 @@ class SSHHandler(object):
                                                              str_info,
                                                              obj_list,
                                                              titles)
+                        elif para_map and para_map.get('command', '') \
+                                == 'parse_set_groups_table':
+                            if '---------------------------------' in str_line:
+                                break
+                            obj_list = self.parse_set_groups_table(cols_size,
+                                                                   titles_size,
+                                                                   str_info,
+                                                                   obj_list)
+                        elif para_map and para_map.get('command', '') \
+                                == 'parse_view_table':
+                            if '---------------------------------' in str_line:
+                                break
+                            obj_list = self.parse_view_table(cols_size,
+                                                             titles_size,
+                                                             str_info,
+                                                             obj_list,
+                                                             titles)
                         else:
                             if cols_size == titles_size:
                                 obj_model = {}
@@ -414,3 +436,83 @@ class SSHHandler(object):
                 LOG.error("command %s failed: %s" % (command, re))
                 raise exception.StorageBackendException(re)
         return re
+
+    def list_storage_host_groups(self):
+        para_map = {
+            'command': 'parse_set_groups_table'
+        }
+        return self.get_resources_info(
+            SSHHandler.HPE3PAR_COMMAND_SHOWHOSTSET_D,
+            self.parse_datas_to_list,
+            pattern_str=consts.HOST_OR_VV_SET_PATTERN,
+            para_map=para_map)
+
+    def list_volume_groups(self):
+        para_map = {
+            'command': 'parse_set_groups_table'
+        }
+        return self.get_resources_info(
+            SSHHandler.HPE3PAR_COMMAND_SHOWVVSET_D,
+            self.parse_datas_to_list,
+            pattern_str=consts.HOST_OR_VV_SET_PATTERN,
+            para_map=para_map)
+
+    def parse_set_groups_table(self, cols_size, titles_size, str_info,
+                               obj_list):
+        if cols_size >= titles_size:
+            members = []
+            value = str_info[2].replace('-', '')
+            if value:
+                members = [value]
+            obj_model = {
+                'id': str_info[0],
+                'name': str_info[1],
+                'members': members,
+                'comment': (" ".join(str_info[3:])).replace('-', ''),
+            }
+            obj_list.append(obj_model)
+        elif obj_list and cols_size == 1:
+            value = str_info[0].replace('-', '')
+            if value:
+                obj_model = obj_list[-1]
+                if obj_model and obj_model.get('members'):
+                    obj_model.get('members').append(value)
+        return obj_list
+
+    def parse_view_table(self, cols_size, titles_size, str_info, obj_list,
+                         titles):
+        if cols_size >= titles_size:
+            obj_model = {}
+            for i in range(titles_size):
+                key = titles[i].lower().replace('-', '')
+                obj_model[key] = str_info[i]
+            if obj_model:
+                obj_list.append(obj_model)
+        return obj_list
+
+    def get_resources_ids(self, command, pattern_str, para_map=None):
+        if not para_map:
+            para_map = {
+                'key_position': 1,
+                'value_position': 0
+            }
+        return self.get_resources_info(command,
+                                       self.parse_datas_to_map,
+                                       pattern_str=pattern_str,
+                                       para_map=para_map, throw_excep=False)
+
+    def list_storage_host_initiators(self):
+        return self.get_resources_info(
+            SSHHandler.HPE3PAR_COMMAND_SHOWHOST_D,
+            self.parse_datas_to_list,
+            pattern_str=consts.HOST_OR_VV_PATTERN)
+
+    def list_masking_views(self):
+        para_map = {
+            'command': 'parse_view_table'
+        }
+        return self.get_resources_info(
+            SSHHandler.HPE3PAR_COMMAND_SHOWVLUN_T,
+            self.parse_datas_to_list,
+            pattern_str=consts.VLUN_PATTERN,
+            para_map=para_map)

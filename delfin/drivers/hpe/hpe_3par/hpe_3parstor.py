@@ -104,3 +104,21 @@ class Hpe3parStorDriver(driver.StorageDriver):
 
     def list_shares(self, context):
         pass
+
+    def list_storage_host_initiators(self, context):
+        return self.comhandler.list_storage_host_initiators(self.storage_id)
+
+    def list_storage_hosts(self, context):
+        return self.comhandler.list_storage_hosts(self.storage_id)
+
+    def list_storage_host_groups(self, context):
+        return self.comhandler.list_storage_host_groups(self.storage_id)
+
+    def list_port_groups(self, context):
+        return self.comhandler.list_port_groups(self.storage_id)
+
+    def list_volume_groups(self, context):
+        return self.comhandler.list_volume_groups(self.storage_id)
+
+    def list_masking_views(self, context):
+        return self.comhandler.list_masking_views(self.storage_id)

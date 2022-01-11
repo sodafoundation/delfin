@@ -38,6 +38,8 @@ class RestHandler(object):
 
     REST_ALERTS_URL = '/api/v1/eventlog?query="category EQ 2"'
 
+    REST_HOSTS_URL = '/api/v1/hosts'
+
     REST_AUTH_KEY = 'X-HP3PAR-WSAPI-SessionKey'
 
     session_lock = None
@@ -194,5 +196,10 @@ class RestHandler(object):
 
     def get_all_volumes(self):
         rejson = self.get_resinfo_call(RestHandler.REST_VOLUMES_URL,
+                                       method='GET')
+        return rejson
+
+    def list_storage_host(self):
+        rejson = self.get_resinfo_call(RestHandler.REST_HOSTS_URL,
                                        method='GET')
         return rejson

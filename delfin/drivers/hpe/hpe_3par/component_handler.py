@@ -417,3 +417,244 @@ class ComponentHandler():
             err_msg = "analyse speed error: %s" % (six.text_type(err))
             LOG.error(err_msg)
         return speed
+
+    def list_storage_host_initiators(self, storage_id):
+        initiators = self.ssh_handler.list_storage_host_initiators()
+        initiators_list = []
+        for initiator in (initiators or []):
+            if initiator:
+                wwn = initiator.get('wwn/iscsi_name', '').replace('-', '')
+                if wwn:
+                    port = initiator.get('port', '').replace('-', '')
+                    ip_addr = initiator.get('ip_addr')
+                    type = constants.PortType.FC
+                    if ip_addr and ip_addr != 'n/a':
+                        type = constants.PortType.ISCSI
+                    name = wwn
+                    if port:
+                        name = '%s_%s' % (wwn, port)
+                    initiator_model = {
+                        "name": name,
+                        "storage_id": storage_id,
+                        "native_storage_host_initiator_id": name,
+                        "wwn": wwn,
+                        "type": type,
+                        "status": constants.InitiatorStatus.ONLINE,
+                        "native_storage_host_id": initiator.get('id',
+                                                                '').replace(
+                            '-', ''),
+                    }
+                    initiators_list.append(initiator_model)
+        return initiators_list
+
+    def list_storage_hosts(self, storage_id):
+        host_datas = self.rest_handler.list_storage_host()
+        host_list = []
+        if host_datas:
+            hosts = host_datas.get('members')
+            for host in (hosts or []):
+                if host and host.get('name'):
+                    descriptors = host.get('descriptors')
+                    comment = None
+                    os = ''
+                    ip_addr = None
+                    if descriptors:
+                        comment = descriptors.get('comment')
+                        os = descriptors.get('os', '')
+                        ip_addr = descriptors.get('IPAddr')
+                    host_model = {
+                        "name": host.get('name'),
+                        "description": comment,
+                        "storage_id": storage_id,
+                        "native_storage_host_id": host.get('id'),
+                        "os_type": consts.HOST_OS_MAP.get(os, 'Unknown'),
+                        "status": constants.HostStatus.NORMAL,
+                        "ip_address": ip_addr
+                    }
+                    host_list.append(host_model)
+        return host_list
+
+    def list_storage_host_groups(self, storage_id):
+        host_groups = self.ssh_handler.list_storage_host_groups()
+        host_group_list = []
+        result = {}
+        if host_groups:
+            hosts_map = self.ssh_handler.get_resources_ids(
+                self.ssh_handler.HPE3PAR_COMMAND_SHOWHOST_D,
+                consts.HOST_OR_VV_PATTERN)
+            for host_group in host_groups:
+                host_members = host_group.get('members')
+                host_ids = []
+                if hosts_map:
+                    for host_name in (host_members or []):
+                        host_id = hosts_map.get(host_name)
+                        if host_id:
+                            host_ids.append(host_id)
+                host_group_model = {
+                    "name": host_group.get('name'),
+                    "description": host_group.get('comment'),
+                    "storage_id": storage_id,
+                    "native_storage_host_group_id": host_group.get('id'),
+                    "storage_hosts": ','.join(host_ids)
+                }
+                host_group_list.append(host_group_model)
+            storage_host_grp_relation_list = []
+            for storage_host_group in host_group_list:
+                storage_hosts = storage_host_group.pop('storage_hosts', None)
+                if not storage_hosts:
+                    continue
+                storage_hosts = storage_hosts.split(',')
+
+                for storage_host in storage_hosts:
+                    storage_host_group_relation = {
+                        'storage_id': storage_id,
+                        'native_storage_host_group_id': storage_host_group.get(
+                            'native_storage_host_group_id'),
+                        'native_storage_host_id': storage_host
+                    }
+                    storage_host_grp_relation_list \
+                        .append(storage_host_group_relation)
+
+            result = {
+                'storage_host_groups': host_group_list,
+                'storage_host_grp_host_rels': storage_host_grp_relation_list
+            }
+        return result
+
+    def list_port_groups(self, storage_id):
+        views = self.ssh_handler.list_masking_views()
+        port_groups_list = []
+        port_list = []
+        for view in (views or []):
+            port = view.get('port', '').replace('-', '')
+            if port:
+                if port in port_list:
+                    continue
+                port_list.append(port)
+                port_group_model = {
+                    "name": "port_group_" + port,
+                    "description": "port_group_" + port,
+                    "storage_id": storage_id,
+                    "native_port_group_id": "port_group_" + port,
+                    "ports": port
+                }
+                port_groups_list.append(port_group_model)
+        port_group_relation_list = []
+        for port_group in port_groups_list:
+            ports = port_group.pop('ports', None)
+            if not ports:
+                continue
+            ports = ports.split(',')
+
+            for port in ports:
+                port_group_relation = {
+                    'storage_id': storage_id,
+                    'native_port_group_id':
+                        port_group.get('native_port_group_id'),
+                    'native_port_id': port
+                }
+                port_group_relation_list.append(port_group_relation)
+        result = {
+            'port_groups': port_groups_list,
+            'port_grp_port_rels': port_group_relation_list
+        }
+        return result
+
+    def list_volume_groups(self, storage_id):
+        volume_groups = self.ssh_handler.list_volume_groups()
+        volume_group_list = []
+        result = {}
+        if volume_groups:
+            volumes_map = self.ssh_handler.get_resources_ids(
+                self.ssh_handler.HPE3PAR_COMMAND_SHOWVV,
+                consts.HOST_OR_VV_PATTERN)
+            for volume_group in volume_groups:
+                volume_members = volume_group.get('members')
+                volume_ids = []
+                if volumes_map:
+                    for volume_name in (volume_members or []):
+                        volume_id = volumes_map.get(volume_name)
+                        if volume_id:
+                            volume_ids.append(volume_id)
+                volume_group_model = {
+                    "name": volume_group.get('name'),
+                    "description": volume_group.get('comment'),
+                    "storage_id": storage_id,
+                    "native_volume_group_id": volume_group.get('id'),
+                    "volumes": ','.join(volume_ids)
+                }
+                volume_group_list.append(volume_group_model)
+            volume_group_relation_list = []
+            for volume_group in volume_group_list:
+                volumes = volume_group.pop('volumes', None)
+                if not volumes:
+                    continue
+                volumes = volumes.split(',')
+
+                for volume in volumes:
+                    volume_group_relation = {
+                        'storage_id': storage_id,
+                        'native_volume_group_id':
+                            volume_group.get('native_volume_group_id'),
+                        'native_volume_id': volume}
+                    volume_group_relation_list.append(volume_group_relation)
+
+            result = {
+                'volume_groups': volume_group_list,
+                'vol_grp_vol_rels': volume_group_relation_list
+            }
+        return result
+
+    def list_masking_views(self, storage_id):
+        views = self.ssh_handler.list_masking_views()
+        views_list = []
+        if views:
+            hosts_map = self.ssh_handler.get_resources_ids(
+                self.ssh_handler.HPE3PAR_COMMAND_SHOWHOST_D,
+                consts.HOST_OR_VV_PATTERN)
+            hosts_group_map = self.ssh_handler.get_resources_ids(
+                self.ssh_handler.HPE3PAR_COMMAND_SHOWHOSTSET_D,
+                consts.HOST_OR_VV_PATTERN)
+            volumes_map = self.ssh_handler.get_resources_ids(
+                self.ssh_handler.HPE3PAR_COMMAND_SHOWVV,
+                consts.HOST_OR_VV_PATTERN)
+            volumes_group_map = self.ssh_handler.get_resources_ids(
+                self.ssh_handler.HPE3PAR_COMMAND_SHOWVVSET_D,
+                consts.HOST_OR_VV_PATTERN)
+            for view in views:
+                vv_name = view.get('vvname')
+                host_name = view.get('hostname')
+                if vv_name and host_name:
+                    port = view.get('port', '').replace('-', '')
+                    id = view.get('lun')
+                    wwn = view.get('host_wwn/iscsi_name', '').replace('-', '')
+                    native_port_group_id = None
+                    if port:
+                        id = '%s_%s' % (view.get('lun'), port)
+                        native_port_group_id = 'port_group_%s' % port
+                    if wwn:
+                        id = '%s_%s' % (id, wwn)
+                    view_model = {
+                        'native_masking_view_id': id,
+                        "name": view.get('lun'),
+                        'native_port_group_id': native_port_group_id,
+                        "storage_id": storage_id
+                    }
+                    if 'set:' in vv_name:
+                        vv_set_id = volumes_group_map.get(
+                            vv_name.replace('set:', ''))
+                        view_model['native_volume_group_id'] = vv_set_id
+                    else:
+                        vv_id = volumes_map.get(vv_name)
+                        view_model['native_volume_id'] = vv_id
+                    if 'set:' in host_name:
+                        host_set_id = hosts_group_map.get(
+                            host_name.replace('set:', ''))
+                        view_model[
+                            'native_storage_host_group_id'] = host_set_id
+                    else:
+                        host_id = hosts_map.get(host_name)
+                        view_model['native_storage_host_id'] = host_id
+
+                    views_list.append(view_model)
+        return views_list
