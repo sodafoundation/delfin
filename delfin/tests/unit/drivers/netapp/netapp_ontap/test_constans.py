@@ -1805,3 +1805,234 @@ ETH_PER_INFO = [
         "duration": "PT15S"
     }
 ]
+
+FC_INITIATOR_INFO = """         Vserver: svm1\r
+                      Logical Interface: PSAO2-xiejun\r
+                         Initiator WWPN: 10:00:00:00:c9:d5:b9:6e\r
+                           Port Address: 50400\r
+                         Initiator WWNN: 20:00:00:00:c9:d5:b9:6e\r
+                  Initiator WWPN Alias : -\r
+                            Igroup Name: Test MKL_ Suse 8. 44.133.65"""
+
+ISCSI_INITIATOR_INFO = """      Vserver: svm3\r
+                    Target Portal Group: zb_IPV602\r
+                      Target Session ID: 357\r
+Initiator Name: iqn.2006-08.com.huawei:21004447dcca426::0\r
+                       Initiator Alias : -\r
+                            TPGroup Tag: 1062 \r
+                   Initiator Session ID: 80:12:34:58:78:9a\r
+                            Igroup Name: svm3"""
+
+HOSTS_INFO = """          Vserver Name: svm1\r
+           Igroup Name: fcstart1\r
+              Protocol: fcp\r
+               OS Type: mixed\r
+Portset Binding Igroup: portgroup\r
+           Igroup UUID: c5ca5750-121f-11ec-b66c-000c29bfc4d7\r
+                  ALUA: true\r
+            Initiators: 20:01:00:0c:29:bf:c4:d7 (not logged in)\r
+10:00:00:00:c9:d5:b9:6e (not logged in)\r
+iqn.2006-08.com.huawei:21004447dcca426::0 (not logged in)\r
+\r
+          Vserver Name: svm3\r
+           Igroup Name: svm3\r
+              Protocol: iscsi\r
+               OS Type: windows\r
+Portset Binding Igroup: portgroup2\r
+           Igroup UUID: 9a6c2496-174b-11ec-b66c-000c29bfc4d7\r
+                  ALUA: true\r
+Initiators: iqn.2006-08.com.huawei:21004447dcca426::0 (not logged in)"""
+
+PORT_SET_INFO = """        Vserver Name: svm1\r
+    Portset Name: portgroup\r
+ LIF Or TPG Name: ontap-01_fc_lif_1, ontap-01_fcoe_lif_1, fc1\r
+        Protocol: fcp\r
+ Number Of Ports: 3\r
+Bound To Igroups: fcstart1\r
+\r
+    Vserver Name: svm3\r
+    Portset Name: portgroup2\r
+ LIF Or TPG Name: ontap-01_iscsi_lif_1\r
+        Protocol: iscsi\r
+ Number Of Ports: 1\r
+Bound To Igroups: svm3\r
+2 entries were displayed."""
+
+LIF_INFO = """                    Vserver Name: svm1\r
+          Logical Interface Name: ontap-01_fc_lif_1\r
+                            Role: data\r
+                   Data Protocol: fcp\r
+                       Home Node: ontap-01\r
+                       Home Port: 0a\r
+                    Current Node: ontap-01\r
+                    Current Port: 0a\r
+              Operational Status: down\r
+                 Extended Status: Groovy, man!\r
+                         Is Home: true\r
+                 Network Address: -\r
+                         Netmask: -\r
+             Bits in the Netmask: -\r
+                     Subnet Name: -\r
+           Administrative Status: up\r
+                 Failover Policy: disabled\r
+                 Firewall Policy: -\r
+                     Auto Revert: false\r
+   Fully Qualified DNS Zone Name: none\r
+         DNS Query Listen Enable: -\r
+             Failover Group Name: -\r
+                        FCP WWPN: 20:00:00:0c:29:bf:c4:d7\r
+                  Address family: -\r
+                         Comment: -\r
+                  IPspace of LIF: -\r
+  Is Dynamic DNS Update Enabled?: -\r
+\r
+                    Vserver Name: svm1\r
+          Logical Interface Name: ontap-01_fcoe_lif_1\r
+                            Role: data\r
+                   Data Protocol: fcp\r
+                       Home Node: ontap-01\r
+                       Home Port: 0c\r
+                    Current Node: ontap-01\r
+                    Current Port: 0c\r
+              Operational Status: down\r
+                 Extended Status: Groovy, man!\r
+                         Is Home: true\r
+                 Network Address: -\r
+                         Netmask: -\r
+             Bits in the Netmask: -\r
+                     Subnet Name: -\r
+           Administrative Status: up\r
+                 Failover Policy: disabled\r
+                 Firewall Policy: -\r
+                     Auto Revert: false\r
+   Fully Qualified DNS Zone Name: none\r
+         DNS Query Listen Enable: -\r
+             Failover Group Name: -\r
+                        FCP WWPN: 20:01:00:0c:29:bf:c4:d7\r
+                  Address family: -\r
+                         Comment: -\r
+                  IPspace of LIF: -\r
+  Is Dynamic DNS Update Enabled?: -\r
+\r
+                    Vserver Name: svm3\r
+          Logical Interface Name: ontap-01_iscsi_lif_1\r
+                            Role: data\r
+                   Data Protocol: iscsi\r
+                       Home Node: ontap-01\r
+                       Home Port: e0a\r
+                    Current Node: ontap-01\r
+                    Current Port: e0a\r
+              Operational Status: up\r
+                 Extended Status: -\r
+                         Is Home: true\r
+                 Network Address: 192.168.159.140\r
+                         Netmask: 255.255.255.0\r
+             Bits in the Netmask: 24\r
+                     Subnet Name: -\r
+           Administrative Status: up\r
+                 Failover Policy: disabled\r
+                 Firewall Policy: data\r
+                     Auto Revert: false\r
+   Fully Qualified DNS Zone Name: none\r
+         DNS Query Listen Enable: false\r
+             Failover Group Name: -\r
+                        FCP WWPN: -\r
+                  Address family: ipv4\r
+                         Comment: -\r
+                  IPspace of LIF: Default\r
+  Is Dynamic DNS Update Enabled?: false"""
+
+LUN_MAPPING_INFO = """          Vserver Name: svm1\r
+              LUN Path: /vol/lun_1_vol/lun_1\r
+           Volume Name: lun_1_vol\r
+            Qtree Name: ""\r
+              LUN Name: lun_1\r
+           Igroup Name: fcstart1\r
+        Igroup OS Type: windows\r
+  Igroup Protocol Type: fcp\r
+                LUN ID: 123\r
+Portset Binding Igroup: portgroup\r
+                  ALUA: true\r
+            Initiators: 20:00:00:0c:29:bf:c4:d7, 10:00:00:00:c9:d5:b9:6e\r
+              LUN Node: ontap-01\r
+       Reporting Nodes: ontap-01\r
+\r
+          Vserver Name: svm3\r
+              LUN Path: /vol/svm3_lun/svm3_lun\r
+           Volume Name: svm3_lun\r
+            Qtree Name: ""\r
+              LUN Name: svm3_lun\r
+           Igroup Name: svm3\r
+        Igroup OS Type: windows\r
+  Igroup Protocol Type: iscsi\r
+                LUN ID: 0\r
+Portset Binding Igroup: portgroup2\r
+                  ALUA: true\r
+            Initiators: iqn.2006-08.com.huawei:21004447dcca426::0\r
+              LUN Node: ontap-01\r
+       Reporting Nodes: ontap-01\r
+2 entries were displayed."""
+
+MAPPING_LUN_INFO = """              Vserver Name: svm1\r
+                  LUN Path: /vol/lun_1_vol/lun_1\r
+               Volume Name: lun_1_vol\r
+                Qtree Name: ""\r
+                  LUN Name: lun_1\r
+                  LUN Size: 1.00GB\r
+                   OS Type: windows_2008\r
+         Space Reservation: enabled\r
+             Serial Number: wpEzy]RQjLqN\r
+       Serial Number (Hex): 7770457a795d52516a4c714e\r
+                   Comment:\r
+Space Reservations Honored: true\r
+          Space Allocation: disabled\r
+                     State: online\r
+                  LUN UUID: 2aa5a7ab-efbe-41f3-a4bf-dcd741e641a1\r
+                    Mapped: mapped\r
+          Device Legacy ID: -\r
+          Device Binary ID: -\r
+            Device Text ID: -\r
+                 Read Only: false\r
+     Fenced Due to Restore: false\r
+                 Used Size: 0\r
+       Maximum Resize Size: 502.0GB\r
+             Creation Time: 9/10/2021 09:57:47\r
+                     Class: regular\r
+      Node Hosting the LUN: ontap-01\r
+          QoS Policy Group: -\r
+       Caching Policy Name: -\r
+                     Clone: false\r
+  Clone Autodelete Enabled: false\r
+       Inconsistent Import: false\r
+\r
+              Vserver Name: svm3\r
+                  LUN Path: /vol/svm3_lun/svm3_lun\r
+               Volume Name: svm3_lun\r
+                Qtree Name: ""\r
+                  LUN Name: svm3_lun\r
+                  LUN Size: 1.00GB\r
+                   OS Type: windows_2008\r
+         Space Reservation: enabled\r
+             Serial Number: wpEzy]RQjLqA\r
+       Serial Number (Hex): 7770457a795d52516a4c714e\r
+                   Comment:\r
+Space Reservations Honored: true\r
+          Space Allocation: disabled\r
+                     State: online\r
+                  LUN UUID: 2aa5a7ab-efbe-41f3-a4bf-dcd741e624a1\r
+                    Mapped: mapped\r
+          Device Legacy ID: -\r
+          Device Binary ID: -\r
+            Device Text ID: -\r
+                 Read Only: false\r
+     Fenced Due to Restore: false\r
+                 Used Size: 0\r
+       Maximum Resize Size: 502.0GB\r
+             Creation Time: 9/10/2021 09:57:47\r
+                     Class: regular\r
+      Node Hosting the LUN: ontap-01\r
+          QoS Policy Group: -\r
+       Caching Policy Name: -\r
+                     Clone: false\r
+  Clone Autodelete Enabled: false\r
+       Inconsistent Import: false"""

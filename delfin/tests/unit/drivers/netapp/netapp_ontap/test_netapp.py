@@ -203,6 +203,36 @@ class TestNetAppCmodeDriver(TestCase):
         self.assertEqual(data['resource_metrics']['storage']
                          ['throughput']['unit'], 'MB/s')
 
+    def test_list_storage_host_initiators(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.ISCSI_INITIATOR_INFO,
+                         test_constans.FC_INITIATOR_INFO,
+                         test_constans.HOSTS_INFO])
+        data = self.netapp_client.list_storage_host_initiators(context)
+        self.assertEqual(data[0]['name'],
+                         'iqn.2006-08.com.huawei:21004447dcca426::0')
+
+    def test_list_port_groups(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.PORT_SET_INFO,
+                         test_constans.LIF_INFO])
+        data = self.netapp_client.list_port_groups(context)
+        self.assertEqual(data[0]['name'], 'portgroup')
+
+    def test_list_storage_hosts(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.HOSTS_INFO])
+        data = self.netapp_client.list_storage_hosts(context)
+        self.assertEqual(data[0]['name'], 'fcstart1')
+
+    def test_list_masking_views(self):
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[test_constans.LUN_MAPPING_INFO,
+                         test_constans.MAPPING_LUN_INFO,
+                         test_constans.HOSTS_INFO])
+        data = self.netapp_client.list_masking_views(context)
+        self.assertEqual(data[0]['name'], 'fcstart1_lun_1')
+
     def test_get_latest_perf_timestamp(self):
         self.netapp_client.netapp_handler.do_rest_call = mock.Mock(
             side_effect=[test_constans.CLUSTER_PER_INFO])
