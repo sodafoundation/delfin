@@ -599,7 +599,7 @@ class VplexStorageDriver(driver.StorageDriver):
                             view_list.append(view_map)
             return view_list
         except Exception:
-            LOG.error("Failed to get view view from vplex")
+            LOG.error("Failed to get view  from vplex")
             raise
 
     def list_storage_host_initiators(self, content):
@@ -654,6 +654,7 @@ class VplexStorageDriver(driver.StorageDriver):
     def list_port_groups(self, context):
         try:
             port_groups_list = []
+            port_group_relation_list = []
             port_group_response = self.rest_handler.get_storage_views()
             storage_view_list = self.get_attributes_from_response(
                 port_group_response)
@@ -670,8 +671,22 @@ class VplexStorageDriver(driver.StorageDriver):
                                                     + initiator_info,
                             "ports": ports
                         }
+                        if ports:
+                            for port in ports:
+                                port_group_relation = {
+                                    'storage_id': self.storage_id,
+                                    'native_port_group_id': "port_group_"
+                                                            + initiator_info,
+                                    'native_port_id': port
+                                }
+                                port_group_relation_list.append(
+                                    port_group_relation)
                         port_groups_list.append(port_group_map)
-            return port_groups_list
+            port_groups_result = {
+                'port_groups': port_groups_list,
+                'port_grp_port_rels': port_group_relation_list
+            }
+            return port_groups_result
         except Exception:
             LOG.error("Failed to get port_groups from vplex")
             raise
