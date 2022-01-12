@@ -1366,6 +1366,113 @@ metrics_result = [
         }, values={
             1638346330000: 0.0
         })]
+get_all_hosts = """id name
+1 host1
+"""
+get_host_summery = """id 38
+name tjy_test_iscsi
+port_count 3
+type generic
+mask 11111111111111111111111111111111111111
+iogrp_count 4
+status online
+site_id
+site_name
+host_cluster_id
+host_cluster_name
+WWPN 21000024FF543B0C
+node_logged_in_count 1
+state inactive
+WWPN 21000024FF438098
+node_logged_in_count 1
+state active
+WWPN 21000024FF41C461
+node_logged_in_count 1
+state inactive
+"""
+host_result = [
+    {
+        'name': 'tjy_test_iscsi',
+        'storage_id': '12345',
+        'native_storage_host_id': '38',
+        'os_type': 'Linux',
+        'status': 'normal'
+    }
+]
+get_all_views = """id name SCSI_id vdisk_id vdisk_name
+2  Solaris11.3_57         0       27       PG_1
+6  hwstorage_8.44.133.80  0       24       wyktest
+7  VNX-WIN8-TEST          0       31       SVC-WIN8_test
+14 pd_esx6                0       65       pd_taiping0
+14 pd_esx6                1       66       pd_taiping1
+14 pd_esx6                2       67       pd_taiping2
+"""
+view_result = [
+    {
+        'name': '2_27',
+        'native_storage_host_id': '2',
+        'storage_id': '12345',
+        'native_volume_id': '27',
+        'native_masking_view_id': '2_27'
+    }, {
+        'name': '6_24',
+        'native_storage_host_id': '6',
+        'storage_id': '12345',
+        'native_volume_id': '24',
+        'native_masking_view_id': '6_24'
+    }, {
+        'name': '7_31',
+        'native_storage_host_id': '7',
+        'storage_id': '12345',
+        'native_volume_id': '31',
+        'native_masking_view_id': '7_31'
+    }, {
+        'name': '14_65',
+        'native_storage_host_id': '14',
+        'storage_id': '12345',
+        'native_volume_id': '65',
+        'native_masking_view_id': '14_65'
+    }, {
+        'name': '14_66',
+        'native_storage_host_id': '14',
+        'storage_id': '12345',
+        'native_volume_id': '66',
+        'native_masking_view_id': '14_66'
+    }, {
+        'name': '14_67',
+        'native_storage_host_id': '14',
+        'storage_id': '12345',
+        'native_volume_id': '67',
+        'native_masking_view_id': '14_67'
+    }
+]
+init_result = [
+    {
+        'name': '21000024FF543B0C',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': '21000024FF543B0C',
+        'wwn': '21000024FF543B0C',
+        'status': 'online',
+        'type': 'fc',
+        'native_storage_host_id': '38'
+    }, {
+        'name': '21000024FF438098',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': '21000024FF438098',
+        'wwn': '21000024FF438098',
+        'status': 'online',
+        'type': 'fc',
+        'native_storage_host_id': '38'
+    }, {
+        'name': '21000024FF41C461',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': '21000024FF41C461',
+        'wwn': '21000024FF41C461',
+        'status': 'online',
+        'type': 'fc',
+        'native_storage_host_id': '38'
+    }
+]
 
 
 def create_driver():
@@ -1492,3 +1599,27 @@ class TestStorwizeSvcStorageDriver(TestCase):
                                                    resource_metrics,
                                                    start_time, end_time)
         self.assertEqual(metrics[0][1]['resource_name'], 'powerha')
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_hosts(self, mock_ssh_get, mock_host):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_host.side_effect = [get_all_hosts, get_host_summery]
+        host = self.driver.list_storage_hosts(context)
+        self.assertEqual(host, host_result)
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_masking_views(self, mock_ssh_get, mock_view):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_view.return_value = get_all_views
+        view = self.driver.list_masking_views(context)
+        self.assertEqual(view, view_result)
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_host_initiators(self, mock_ssh_get, mock_host):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_host.side_effect = [get_all_hosts, get_host_summery]
+        init = self.driver.list_storage_host_initiators(context)
+        self.assertEqual(init, init_result)
