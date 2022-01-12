@@ -14,6 +14,8 @@
 import sys
 from unittest import TestCase, mock
 
+from flask import ctx
+
 sys.modules['delfin.cryptor'] = mock.Mock()
 
 from delfin.drivers.fujitsu.eternus.eternus_ssh_client import \
@@ -1033,6 +1035,340 @@ Reset Scope                   I_T_L            I_T_L            I_T_L\
 Reserve Cancel at Chip Reset  Enable           Enable           Enable\
            Enable\
 CLI>"""
+HOST_STATUS_INFO = """CLI> show host-path-state
+ Port                  Host                  Path State
+                       No.  Name
+ --------------------- ---- ---------------- ----------
+ CM#0 CA#0 Port#0         0 dbs01_0          Online
+ CM#0 CA#0 Port#0         1 dbs01_1          Online
+ CM#0 CA#0 Port#1         1 dbs01_1          Online
+ CM#0 CA#0 Port#1         2 dbs02_0          Online
+ CM#1 CA#0 Port#0         0 dbs01_0          Online
+ CM#1 CA#0 Port#0         1 dbs01_1          Online
+ CM#1 CA#0 Port#0         3 dbs02_1          Online
+ CM#1 CA#0 Port#1         7 h_g_1_0          Online
+CLI>"""
+FC_HOSTS_INFO = """CLI> show host-wwn-names
+Host                  WWN              Host Response
+No.  Name                              No. Name
+---- ---------------- ---------------- --- ----------------
+   0 dbs01_0          10000090faec8449   0 Default
+   1 dbs01_1          10000090faec84a7   0 Default
+   2 dbs02_0          10000090faec852a   0 Default
+   3 dbs02_1          10000090faec842d   0 Default
+   4 dbs03_0          10000090faec7f2f   0 Default
+   5 dbs03_1          10000090faec7f06   0 Default
+   7 h_g_1_0          12ac13ab15af21ae 252 AIX
+CLI>"""
+ISCSI_HOST_INFO = """CLI> show host-iscsi-names
+Host                  Host Response        IP Address\
+                              iSCSI Name                       CmdSN Count
+No.  Name             No. Name
+---- ---------------- --- ---------------- ---------------------------------\
+------ -------------------------------- -----------
+   0 iscsi_host_0     252 AIX              126.0.0.2\
+                                  iqn.2006-08.com.huawei:21004447d Unlimited
+                                                                cca426::0
+   1 iscsi_host-1_0   252 AIX              126.0.0.3\
+                                  iqn.2006-08.com.huawei:21004447d Unlimited
+                                                                cca426::1
+   2 iscsi_1_0          0 Default          *(IPv6)\
+                                    iqn.2007-08.com.huawei:21004447d Unlimited
+                                                                cca426::7\
+CLI>"""
+ISCSI_HOST_DETAIL_ZERO = """CLI> show host-iscsi-names -host-number 0
+Host No.             0
+Host Name            iscsi_host_0
+iSCSI Name           iqn.2006-08.com.huawei:21004447dcca426::0
+Alias Name           iscsi
+IP Address           126.0.0.2
+Chap User Name
+Host Response No.    252
+Host Response Name   AIX
+CmdSN Count          Unlimited
+
+CLI>"""
+ISCSI_HOST_DETAIL_ONE = """CLI> show host-iscsi-names -host-number 1
+Host No.             1
+Host Name            iscsi_host-1_0
+iSCSI Name           iqn.2006-08.com.huawei:21004447dcca426::1
+Alias Name           iscsi1
+IP Address           126.0.0.3
+Chap User Name
+Host Response No.    252
+Host Response Name   AIX
+CmdSN Count          Unlimited
+
+CLI>"""
+ISCSI_HOST_DETAIL_TWO = """CLI> show host-iscsi-names -host-number 2
+Host No.             2
+Host Name            iscsi_1_0
+iSCSI Name           iqn.2007-08.com.huawei:21004447dcca426::7
+Alias Name
+IP Address           *(IPv6)
+Chap User Name
+Host Response No.    0
+Host Response Name   Default
+CmdSN Count          Unlimited
+
+CLI>"""
+SAS_HOST_INFO = """CLI> show host-sas-addresses
+Host                  SAS Address      Host Response
+No.  Name                              No. Name
+---- ---------------- ---------------- --- ----------------
+   6 sas_g_0_0        12ab13ac14ad15af 253 AIX VxVM
+   8 sas2_0           14ab13ac46ae20af   0 Default
+CLI>"""
+INITIATORS_DATA = [
+    {'name': 'dbs01_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '10000090faec8449',
+     'wwn': '10000090faec8449', 'status': 'online',
+     'native_storage_host_id': 'dbs01_0', 'type': 'fc'},
+    {'name': 'dbs01_1', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '10000090faec84a7',
+     'wwn': '10000090faec84a7', 'status': 'online',
+     'native_storage_host_id': 'dbs01_1', 'type': 'fc'},
+    {'name': 'dbs02_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '10000090faec852a',
+     'wwn': '10000090faec852a', 'status': 'online',
+     'native_storage_host_id': 'dbs02_0', 'type': 'fc'},
+    {'name': 'dbs02_1', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '10000090faec842d',
+     'wwn': '10000090faec842d', 'status': 'online',
+     'native_storage_host_id': 'dbs02_1', 'type': 'fc'},
+    {'name': 'dbs03_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '10000090faec7f2f',
+     'wwn': '10000090faec7f2f', 'status': 'offline',
+     'native_storage_host_id': 'dbs03_0', 'type': 'fc'},
+    {'name': 'dbs03_1', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '10000090faec7f06',
+     'wwn': '10000090faec7f06', 'status': 'offline',
+     'native_storage_host_id': 'dbs03_1', 'type': 'fc'},
+    {'name': 'h_g_1_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '12ac13ab15af21ae',
+     'wwn': '12ac13ab15af21ae', 'status': 'online',
+     'native_storage_host_id': 'h_g_1_0', 'type': 'fc'},
+    {'name': 'iscsi_host_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id':
+         'iqn.2006-08.com.huawei:21004447dcca426::0',
+     'wwn': 'iqn.2006-08.com.huawei:21004447dcca426::0',
+     'status': 'offline', 'native_storage_host_id': 'iscsi_host_0',
+     'type': 'iscsi', 'alias': 'iscsi'},
+    {'name': 'iscsi_host-1_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id':
+         'iqn.2006-08.com.huawei:21004447dcca426::1',
+     'wwn': 'iqn.2006-08.com.huawei:21004447dcca426::1',
+     'status': 'offline', 'native_storage_host_id': 'iscsi_host-1_0',
+     'type': 'iscsi', 'alias': 'iscsi1'},
+    {'name': 'iscsi_1_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id':
+         'iqn.2007-08.com.huawei:21004447dcca426::7',
+     'wwn': 'iqn.2007-08.com.huawei:21004447dcca426::7',
+     'status': 'offline', 'native_storage_host_id': 'iscsi_1_0',
+     'type': 'iscsi'},
+    {'name': 'sas_g_0_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '12ab13ac14ad15af',
+     'wwn': '12ab13ac14ad15af', 'status': 'offline',
+     'native_storage_host_id': 'sas_g_0_0', 'type': 'sas'},
+    {'name': 'sas2_0', 'storage_id': '12345',
+     'native_storage_host_initiator_id': '14ab13ac46ae20af',
+     'wwn': '14ab13ac46ae20af', 'status': 'offline',
+     'native_storage_host_id': 'sas2_0', 'type': 'sas'
+     }]
+HOST_GROUPS_INFO = """CLI> show host-groups -all
+Host Group            Host Response        Host Type
+No.  Name             No. Name
+---- ---------------- --- ---------------- ----------
+   0 dbs01              0 Default          FC/FCoE
+<Host List>
+  Host                  WWN
+  No.  Name
+  ---- ---------------- ----------------------------------------
+     0 dbs01_0          10000090faec8449
+     1 dbs01_1          10000090faec84a7
+
+Host Group            Host Response        Host Type
+No.  Name             No. Name
+---- ---------------- --- ---------------- ----------
+   1 dbs02              0 Default          FC/FCoE
+<Host List>
+  Host                  WWN
+  No.  Name
+  ---- ---------------- ----------------------------------------
+     2 dbs02_0          10000090faec852a
+     3 dbs02_1          10000090faec842d
+
+Host Group            Host Response        Host Type
+No.  Name             No. Name
+---- ---------------- --- ---------------- ----------
+   2 dbs03              0 Default          FC/FCoE
+<Host List>
+  Host                  WWN
+  No.  Name
+  ---- ---------------- ----------------------------------------
+     4 dbs03_0          10000090faec7f2f
+     5 dbs03_1          10000090faec7f06
+CLI>"""
+HOST_GROUPS_DATA = [
+    {'name': 'dbs01', 'storage_id': '12345',
+     'native_storage_host_group_id': '0',
+     'storage_hosts': 'dbs01_0,dbs01_1'},
+    {'name': 'dbs02', 'storage_id': '12345',
+     'native_storage_host_group_id': '1', 'storage_hosts': 'dbs02_0,dbs02_1'},
+    {'name': 'dbs03', 'storage_id': '12345',
+     'native_storage_host_group_id': '2', 'storage_hosts': 'dbs03_0,dbs03_1'}]
+VOLUME_GROUPS_INFO = """CLI> show lun-groups
+LUN Group             LUN Overlap
+No.  Name             Volumes
+---- ---------------- -----------
+   0 dbs01            No
+CLI>
+"""
+VOLUME_DETAILS_INFO = """CLI> show lun-groups -lg-number 0
+LUN Group No.0
+LUN Group Name   dbs01
+LUN  Volume                                 Status                    Size(MB)\
+  LUN Overlap UID
+     No.   Name\
+                                                                      Volume
+---- ----- -------------------------------- -------------------------\
+ --------- ----------- --------------------------------
+   0     0 LUN00                            Available\
+                        20480 No          600000E00D29000000291B6B00000000
+   1     1 LUN01                            Available\
+                        20480 No          600000E00D29000000291B6B00010000
+   2     2 LUN02                            Available\
+                        20480 No          600000E00D29000000291B6B00020000
+CLI>
+"""
+VOLUME_GROUPS_DATA = [
+    {'name': 'dbs01', 'storage_id': '12345',
+     'native_volume_group_id': '0', 'volumes': '0,1,2'}
+]
+PORT_G_VIEW_INFO = """CLI> show port-groups -all
+Port Group           CA Type
+No. Name
+--- ---------------- -------
+  0 PortGroup01      FC
+<Port List>
+  CM#0 CA#0 Port#0
+  CM#1 CA#0 Port#0
+
+Port Group           CA Type
+No. Name
+--- ---------------- -------
+  1 PortGroup02      FC
+<Port List>
+  CM#0 CA#0 Port#1
+  CM#1 CA#0 Port#1
+
+Port Group           CA Type
+No. Name
+--- ---------------- -------
+  2 PortGroup03      FC
+<Port List>
+  CM#0 CA#1 Port#0
+  CM#1 CA#1 Port#0
+CLI>"""
+PORT_G_DATA = [
+    {'name': 'PortGroup01', 'storage_id': '12345', 'native_port_group_id': '0',
+     'ports': 'CM#0 CA#0 Port#0,CM#1 CA#0 Port#0'},
+    {'name': 'PortGroup02', 'storage_id': '12345', 'native_port_group_id': '1',
+     'ports': 'CM#0 CA#0 Port#1,CM#1 CA#0 Port#1'},
+    {'name': 'PortGroup03', 'storage_id': '12345', 'native_port_group_id': '2',
+     'ports': 'CM#0 CA#1 Port#0,CM#1 CA#1 Port#0'}]
+MASKING_VIEWS_INFO = """CLI> show host-affinity -host-name dbs01_0
+Port Group           Host Group            LUN Group             LUN Overlap
+No. Name             No.  Name             No.  Name             Volumes
+--- ---------------- ---- ---------------- ---- ---------------- -----------
+  0 PortGroup01         0 dbs01               0 lun_dbs01        No
+<Connection List>
+  Port                  Host
+                        No.  Name
+  --------------------- ---- ----------------
+  CM#0 CA#0 Port#0         0 dbs01_0
+  CM#1 CA#0 Port#0         0 dbs01_0
+CLI>"""
+MASKING_VIEWS_TWO_INFO = """CLI> show host-affinity -host-name dbs02_0
+
+CM#0 CA#0 Port#1 (Host Affinity Mode Enable)
+Host                  LUN Group             LUN Overlap LUN Mask
+No.  Name             No.  Name             Volumes     Group No.
+---- ---------------- ---- ---------------- ----------- ---------
+   2 dbs02_0             1 lun_dbs02        No                  -
+CLI>"""
+GET_MAPPING = """CLI> show mapping
+CM#0 CA#0 Port#0 (Host Affinity Mode Enable)
+
+CM#0 CA#0 Port#1 (Host Affinity Mode Enable)
+
+CM#0 CA#1 Port#0 (Host Affinity Mode Enable)
+
+CM#0 CA#1 Port#1 (Host Affinity Mode Disable)
+LUN  Volume                                 Status                    Size(MB)
+     No.   Name
+---- ----- -------------------------------- ------------------------- ---------
+   0     3 LUN03                            Available                     20480
+   1     6 lun051                           Available                      2048
+
+CM#1 CA#0 Port#0 (Host Affinity Mode Enable)
+
+CM#1 CA#0 Port#1 (Host Affinity Mode Enable)
+
+CM#1 CA#1 Port#0 (Host Affinity Mode Enable)
+
+CM#1 CA#1 Port#1 (Host Affinity Mode Disable)
+LUN  Volume                                 Status                    Size(MB)
+     No.   Name
+---- ----- -------------------------------- ------------------------- ---------
+   1     5 lun050                           Available                      2048
+CLI>"""
+MASKING_VIEWS_DATA = [
+    {'native_masking_view_id': 'dbs01_0CM#0 CA#0 Port#00',
+     'name': 'dbs01_0CM#0 CA#0 Port#00',
+     'native_storage_host_group_id': 'dbs01',
+     'native_port_group_id': 'PortGroup01',
+     'native_volume_group_id': '0',
+     'native_storage_host_id': 'dbs01_0',
+     'native_port_id': 'CM#0 CA#0 Port#0',
+     'storage_id': '12345'},
+    {'native_masking_view_id': 'dbs01_0CM#1 CA#0 Port#00',
+     'name': 'dbs01_0CM#1 CA#0 Port#00',
+     'native_storage_host_group_id': 'dbs01',
+     'native_port_group_id': 'PortGroup01',
+     'native_volume_group_id': '0',
+     'native_storage_host_id': 'dbs01_0',
+     'native_port_id': 'CM#1 CA#0 Port#0',
+     'storage_id': '12345'},
+    {'native_masking_view_id': 'dbs01_1CM#0 CA#0 Port#11',
+     'name': 'dbs01_1CM#0 CA#0 Port#11',
+     'native_port_group_id': 'FUJITSU_1641968407019',
+     'native_volume_group_id': '1',
+     'native_storage_host_id': 'dbs01_1',
+     'native_port_id': 'CM#0 CA#0 Port#1',
+     'storage_id': '12345'},
+    {
+        'native_masking_view_id': '3FUJITSU_1641968407019CM#0 CA#1 Port#1',
+        'name': '3FUJITSU_1641968407019CM#0 CA#1 Port#1',
+        'native_port_group_id': 'FUJITSU_1641968407019',
+        'native_volume_id': '3',
+        'native_port_id': 'CM#0 CA#1 Port#1',
+        'storage_id': '12345'},
+    {
+        'native_masking_view_id': '6FUJITSU_1641968407019CM#0 CA#1 Port#1',
+        'name': '6FUJITSU_1641968407019CM#0 CA#1 Port#1',
+        'native_port_group_id': 'FUJITSU_1641968407019',
+        'native_volume_id': '6',
+        'native_port_id': 'CM#0 CA#1 Port#1',
+        'storage_id': '12345'},
+    {
+        'native_masking_view_id': '5FUJITSU_1641968407019CM#1 CA#1 Port#1',
+        'name': '5FUJITSU_1641968407019CM#1 CA#1 Port#1',
+        'native_port_group_id': 'FUJITSU_1641968407019',
+        'native_volume_id': '5',
+        'native_port_id': 'CM#1 CA#1 Port#1',
+        'storage_id': '12345'}
+]
 PARSE_ALERT_INFO = {
     '1.3.6.1.2.1.1.3.0': '123456',
     '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2',
@@ -1151,3 +1487,57 @@ class TestEternusDriver(TestCase):
         parse_alert = self.driver.parse_alert(context, PARSE_ALERT_INFO)
         self.assertEqual(parse_alert.get('alert_id'), PARSE_ALERT_INFO.get(
             '1.3.6.1.2.1.1.3.0'))
+
+    def test_list_storage_host_initiators(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[HOST_STATUS_INFO, FC_HOSTS_INFO, ISCSI_HOST_INFO,
+                         ISCSI_HOST_DETAIL_ZERO, ISCSI_HOST_DETAIL_ONE,
+                         ISCSI_HOST_DETAIL_TWO, SAS_HOST_INFO])
+        initiators = self.driver.list_storage_host_initiators(ctx)
+        self.assertEqual(initiators[0].get('native_storage_host_id'),
+                         INITIATORS_DATA[0].get('native_storage_host_id'))
+
+    def test_list_storage_hosts(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[HOST_STATUS_INFO, FC_HOSTS_INFO, ISCSI_HOST_INFO,
+                         ISCSI_HOST_DETAIL_ZERO, ISCSI_HOST_DETAIL_ONE,
+                         ISCSI_HOST_DETAIL_TWO, SAS_HOST_INFO])
+        hosts = self.driver.list_storage_hosts(ctx)
+        self.assertEqual(hosts[0].get('native_storage_host_id'),
+                         INITIATORS_DATA[0].get('native_storage_host_id'))
+
+    def test_list_storage_host_groups(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[HOST_GROUPS_INFO])
+        host_groups = self.driver.list_storage_host_groups(ctx)
+        self.assertListEqual(host_groups, HOST_GROUPS_DATA)
+
+    def test_list_port_groups(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[PORT_G_VIEW_INFO])
+        host_groups = self.driver.list_port_groups(ctx)
+        self.assertListEqual(host_groups, PORT_G_DATA)
+
+    def test_list_volume_groups(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[VOLUME_GROUPS_INFO, VOLUME_DETAILS_INFO])
+        volume_groups = self.driver.list_volume_groups(ctx)
+        self.assertListEqual(volume_groups, VOLUME_GROUPS_DATA)
+
+    def test_list_masking_views(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[PORT_G_VIEW_INFO,
+                         HOST_STATUS_INFO, FC_HOSTS_INFO, ISCSI_HOST_INFO,
+                         ISCSI_HOST_DETAIL_ZERO, ISCSI_HOST_DETAIL_ONE,
+                         ISCSI_HOST_DETAIL_TWO, SAS_HOST_INFO,
+                         MASKING_VIEWS_INFO, MASKING_VIEWS_TWO_INFO, None,
+                         None, None, None, None, None, None, None, None, None,
+                         GET_MAPPING])
+        masking_views = self.driver.list_masking_views(ctx)
+        self.assertDictEqual(masking_views[0], MASKING_VIEWS_DATA[0])
