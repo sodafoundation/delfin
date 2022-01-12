@@ -1,4 +1,5 @@
 import hashlib
+import re
 
 import six
 from oslo_log import log
@@ -377,3 +378,547 @@ class EternusDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def list_storage_host_initiators(self, ctx):
+        initiator_list = []
+        host_status = self.get_host_status()
+        host_fc_list = self.get_fc_host()
+        for host_fc in (host_fc_list or []):
+            initiator_item = {
+                "name": host_fc.get('name'),
+                "storage_id": self.storage_id,
+                "native_storage_host_initiator_id": host_fc.get('wwn'),
+                "wwn": host_fc.get('wwn'),
+                "status": constants.InitiatorStatus.ONLINE if
+                host_status.get(host_fc.get('name')) else
+                constants.InitiatorStatus.OFFLINE,
+                "native_storage_host_id": host_fc.get('name'),
+                'type': constants.PortType.FC
+            }
+            initiator_list.append(initiator_item)
+        host_iscsi_list = self.get_iscsi_host()
+        for host_iscsi in (host_iscsi_list or []):
+            initiator_item = {
+                "name": host_iscsi.get('name'),
+                "storage_id": self.storage_id,
+                "native_storage_host_initiator_id": host_iscsi.get('iqn'),
+                "wwn": host_iscsi.get('iqn'),
+                "status": constants.InitiatorStatus.ONLINE if
+                host_status.get(host_iscsi.get('name')) else
+                constants.InitiatorStatus.OFFLINE,
+                "native_storage_host_id": host_iscsi.get('name'),
+                'type': constants.PortType.ISCSI
+            }
+            if host_iscsi.get('alias'):
+                initiator_item['alias'] = host_iscsi.get('alias')
+            initiator_list.append(initiator_item)
+        host_sas_list = self.get_sas_host()
+        for host_sas in (host_sas_list or []):
+            initiator_item = {
+                "name": host_sas.get('sas_name'),
+                "storage_id": self.storage_id,
+                "native_storage_host_initiator_id": host_sas.get(
+                    'sas_address'),
+                "wwn": host_sas.get('sas_address'),
+                "status": constants.InitiatorStatus.ONLINE if
+                host_status.get(host_sas.get('sas_name')) else
+                constants.InitiatorStatus.OFFLINE,
+                "native_storage_host_id": host_sas.get('sas_name'),
+                'type': constants.PortType.SAS
+            }
+            initiator_list.append(initiator_item)
+        return initiator_list
+
+    def list_storage_hosts(self, ctx):
+        host_list = []
+        host_status = self.get_host_status()
+        host_fc_list = self.get_fc_host()
+        for host_fc in (host_fc_list or []):
+            h = {
+                "name": host_fc.get('name'),
+                "storage_id": self.storage_id,
+                "native_storage_host_id": host_fc.get('name'),
+                "os_type": host_fc.get('os_type'),
+                "status": constants.HostStatus.NORMAL if
+                host_status.get(host_fc.get('name')) else
+                constants.HostStatus.OFFLINE
+            }
+            host_list.append(h)
+        host_iscsi_list = self.get_iscsi_host()
+        for host_iscsi in (host_iscsi_list or []):
+            h = {
+                "name": host_iscsi.get('name'),
+                "storage_id": self.storage_id,
+                "native_storage_host_id": host_iscsi.get('name'),
+                "os_type": host_iscsi.get('os'),
+                "status": constants.HostStatus.NORMAL if
+                host_status.get(host_iscsi.get('name')) else
+                constants.HostStatus.OFFLINE
+            }
+            if host_iscsi.get('address'):
+                h['ip_address'] = host_iscsi.get('address')
+            host_list.append(h)
+        host_sas_list = self.get_sas_host()
+        for host_sas in (host_sas_list or []):
+            h = {
+                "name": host_sas.get('sas_name'),
+                "storage_id": self.storage_id,
+                "native_storage_host_id": host_sas.get('sas_name'),
+                "os_type": host_sas.get('sas_os'),
+                "status": constants.HostStatus.NORMAL if
+                host_status.get(host_sas.get('sas_name')) else
+                constants.HostStatus.OFFLINE,
+                'ip_address': host_sas.get('sas_address')
+            }
+            host_list.append(h)
+        return host_list
+
+    def get_fc_host(self):
+        host_list = []
+        host_str = self.cli_handler.exec_command(consts.GET_HOST_WWN_NAMES)
+        block = True
+        if host_str:
+            host_arr = host_str.strip().replace('\r', '').split('\n')
+            for host_row_str in (host_arr or []):
+                if not host_row_str or \
+                        consts.CLI_STR in host_row_str:
+                    continue
+                if consts.SPECIAL_CHARACTERS_TWO in host_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                host_row_arr = host_row_str.strip().split()
+                if len(host_row_arr) < consts.HOST_TOTAL:
+                    continue
+                host_id = host_row_arr[consts.HOST_ID_COUNT]
+                host_name = host_row_arr[consts.HOST_NAME_COUNT]
+                host_wwn = host_row_arr[consts.HOST_WWN_COUNT]
+                os_type = host_row_arr[consts.HOST_TYPE_COUNT]
+                if len(host_row_arr) > consts.HOST_TOTAL:
+                    os_type = '{} {}'.format(os_type,
+                                             host_row_arr[consts.HOST_FC_FIVE])
+                h = {
+                    "name": host_name,
+                    "host_id": host_id,
+                    "os_type": os_type,
+                    'wwn': host_wwn
+                }
+                host_list.append(h)
+        return host_list
+
+    def get_iscsi_host(self):
+        iscsi_list = []
+        iscsi_ids_str = self.cli_handler.exec_command(
+            consts.GET_HOST_ISCSI_NAMES)
+        block = True
+        if iscsi_ids_str:
+            iscsi_ids_arr = iscsi_ids_str.strip().replace('\r', '').split('\n')
+            for iscsi_ids_row_str in (iscsi_ids_arr or []):
+                if not iscsi_ids_row_str or \
+                        consts.CLI_STR in iscsi_ids_row_str:
+                    continue
+                if consts.HOST_PATH_STATUS_SPECIFIC_ONE in iscsi_ids_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                iscsi_ids_row_arr = iscsi_ids_row_str.strip().split()
+                if len(iscsi_ids_row_arr) < consts.HOST_ISCSI_NAMES_SEVEN:
+                    continue
+                details = self.get_iscsi_details(
+                    iscsi_ids_row_arr[consts.HOST_ISCSI_NAMES_ZERO])
+                iscsi_d = {
+                    'iscsi_id': details.get('Host No.'),
+                    'name': details.get('Host Name'),
+                    'iqn': details.get('iSCSI Name'),
+                    'alias': details.get('Alias Name'),
+                    'address': None if
+                    consts.HOST_ISCSI_SPECIFIC_ONE in
+                    details.get('IP Address') else details.get('IP Address'),
+                    'os': details.get('Host Response Name')
+                }
+                iscsi_list.append(iscsi_d)
+        return iscsi_list
+
+    def get_sas_host(self):
+        host_sas_list = []
+        host_sas_str = self.cli_handler.exec_command(
+            consts.GET_HOST_SAS_ADDRESSES)
+        block = True
+        if host_sas_str:
+            host_sas_arr = host_sas_str.strip().replace('\r', '') \
+                .split('\n')
+            for host_sas_row_str in (host_sas_arr or []):
+                if not host_sas_row_str or \
+                        consts.CLI_STR in host_sas_row_str:
+                    continue
+                if consts.HOST_PATH_STATUS_SPECIFIC_ONE in \
+                        host_sas_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                host_sas_row_arr = host_sas_row_str.strip().split()
+                if len(host_sas_row_arr) < consts.HOST_SAS_FIVE:
+                    continue
+                os = None
+                if len(host_sas_row_arr) == consts.HOST_SAS_FIVE:
+                    os = host_sas_row_arr[consts.HOST_SAS_FOUR]
+                elif len(host_sas_row_arr) == consts.HOST_SAS_SIX:
+                    os = '{} {}'.format(host_sas_row_arr[consts.HOST_SAS_FOUR],
+                                        host_sas_row_arr[consts.HOST_SAS_FIVE])
+                sas = {
+                    'sas_id': host_sas_row_arr[consts.HOST_SAS_ZERO],
+                    'sas_name': host_sas_row_arr[consts.HOST_SAS_ONE],
+                    'sas_address': host_sas_row_arr[consts.HOST_SAS_TWO],
+                    'sas_os': os
+                }
+                host_sas_list.append(sas)
+        return host_sas_list
+
+    def get_iscsi_details(self, number):
+        details = {}
+        iscsi_details_str = self.cli_handler.exec_command(
+            consts.GET_HOST_ISCSI_NAMES_NUMBER.format(number))
+        if iscsi_details_str:
+            iscsi_ids_arr = iscsi_details_str.strip().replace('\r', '') \
+                .split('\n')
+            for iscsi_details_row_str in (iscsi_ids_arr or []):
+                if not iscsi_details_row_str or \
+                        consts.CLI_STR in iscsi_details_row_str:
+                    continue
+                iscsi_details_row_arr = iscsi_details_row_str.strip(). \
+                    split('   ')
+                if len(iscsi_details_row_arr) < consts.HOST_ISCSI_NAMES_TWO:
+                    continue
+                key = iscsi_details_row_arr[consts.HOST_ISCSI_NAMES_ZERO] \
+                    .strip()
+                value = iscsi_details_row_arr[
+                    consts.HOST_ISCSI_NAMES_MINUS_ONE].strip()
+                details[key] = value
+        return details
+
+    def get_host_status(self):
+        status_d = {}
+        status_str = self.cli_handler.exec_command(consts.GET_HOST_PATH_STATUS)
+        block = True
+        if status_str:
+            status_arr = status_str.strip().replace('\r', '').split('\n')
+            for status_row_str in (status_arr or []):
+                if not status_row_str or \
+                        consts.CLI_STR in status_row_str:
+                    continue
+                if consts.HOST_PATH_STATUS_SPECIFIC_ONE in status_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                host_row_arr = status_row_str.strip().split()
+                if len(host_row_arr) < consts.HOST_PATH_STATUS_TOTAL:
+                    continue
+                host_name = host_row_arr[consts.HOST_PATH_STATUS_NAME]
+                state = host_row_arr[consts.HOST_PATH_STATUS]
+                status_d[host_name] = state
+        return status_d
+
+    def list_storage_host_groups(self, ctx):
+        host_group_list = []
+        host_group_all = self.cli_handler.exec_command(
+            consts.GET_HOST_GROUPS_ALL)
+        if host_group_all:
+            host_group_all_arr = host_group_all.replace('\r', '').split('\n\n')
+            for host_group_str in (host_group_all_arr or []):
+                host_group_arr = host_group_str.split(
+                    consts.HOST_GROUPS_SPECIFIC_ONE)
+                host_group_row_arr = host_group_arr[
+                    consts.HOST_GROUP_ZERO].strip().split('\n')
+                host_group_id = None
+                host_group_name = None
+                block = True
+                for host_group_row_str in (host_group_row_arr or []):
+                    if not host_group_row_str or \
+                            consts.CLI_STR in host_group_row_str:
+                        continue
+                    if consts.HOST_GROUPS_SPECIFIC_TWO in host_group_row_str:
+                        block = False
+                        continue
+                    if block:
+                        continue
+                    host_group = host_group_row_str.split()
+                    host_group_id = host_group[consts.HOST_GROUP_ZERO]
+                    host_group_name = host_group[consts.HOST_GROUP_ONE]
+                storage_hosts = self.get_storage_hosts(host_group_arr)
+                host_g = {
+                    "name": host_group_name,
+                    "storage_id": self.storage_id,
+                    "native_storage_host_group_id": host_group_id,
+                    "storage_hosts": storage_hosts
+                }
+                host_group_list.append(host_g)
+        return host_group_list
+
+    @staticmethod
+    def get_storage_hosts(host_group_arr):
+        storage_hosts = None
+        if len(host_group_arr) == consts.HOST_GROUP_TOTAL:
+            host_row_arr = host_group_arr[consts.HOST_GROUP_ONE].split('\n')
+            block = True
+            for host_row_str in (host_row_arr or []):
+                if not host_row_str or consts.CLI_STR in host_row_str:
+                    continue
+                if consts.HOST_GROUPS_SPECIFIC_TWO in host_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                host_arr = host_row_str.split()
+                host_id = host_arr[consts.HOST_GROUP_ONE]
+                if storage_hosts:
+                    storage_hosts = "{0},{1}".format(storage_hosts,
+                                                     host_id)
+                else:
+                    storage_hosts = "{0}".format(host_id)
+        return storage_hosts
+
+    def list_volume_groups(self, ctx):
+        vol_group_list = []
+        lun_groups_str = self.cli_handler.exec_command(consts.GET_LUN_GROUPS)
+        if lun_groups_str:
+            lun_groups_arr = lun_groups_str.strip().replace('\r', ''). \
+                split('\n')
+            block = True
+            for lun_groups_row_str in (lun_groups_arr or []):
+                if not lun_groups_row_str or \
+                        consts.CLI_STR in lun_groups_row_str:
+                    continue
+                if consts.LUN_GROUPS_SPECIFIC_TWO in lun_groups_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                lun_groups_row_arr = lun_groups_row_str.strip().split()
+                lun_groups_id = lun_groups_row_arr[consts.LUN_GROUPS_ID_COUNT]
+                lun_groups_name = lun_groups_row_arr[
+                    consts.LUN_GROUPS_NAME_COUNT]
+                volumes_str = self.get_lun_group_details(lun_groups_id)
+                vol_g = {
+                    "name": lun_groups_name,
+                    "storage_id": self.storage_id,
+                    "native_volume_group_id": lun_groups_id,
+                    "volumes": volumes_str
+                }
+                vol_group_list.append(vol_g)
+        return vol_group_list
+
+    def get_lun_group_details(self, lun_groups_id):
+        lun_group_details_str = self.cli_handler.exec_command(
+            consts.GET_LUN_GROUPS_LG_NUMBER.format(lun_groups_id))
+        volumes_str = None
+        if lun_group_details_str:
+            lun_group_details_arr = lun_group_details_str.strip(
+            ).replace('\r', '').split('\n')
+            block = True
+            for lun_details_row_str in (lun_group_details_arr or []):
+                if not lun_details_row_str or \
+                        consts.CLI_STR in lun_details_row_str:
+                    continue
+                if consts.LUN_GROUPS_SPECIFIC_TWO in lun_details_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                lun_details_arr = lun_details_row_str.strip().split()
+                volume_id = lun_details_arr[consts.LUN_VOLUME_ID]
+                if volumes_str:
+                    volumes_str = "{0},{1}".format(volumes_str, volume_id)
+                else:
+                    volumes_str = "{0}".format(volume_id)
+        return volumes_str
+
+    def list_masking_views(self, ctx):
+        list_masking_views = []
+        port_g_view = self.get_port_group_view()
+        hosts = self.list_storage_hosts(ctx)
+        for host in (hosts or []):
+            host_name = host.get('name')
+            views_str = self.cli_handler.exec_command(
+                consts.GET_HOST_AFFINITY_NAME.format(host_name))
+            if views_str:
+                views_arr = views_str.strip().replace('\r', '').split('\n\n')
+                for views_group_str in (views_arr or []):
+                    if consts.LIST_MASKING_VIEWS_SPECIFIC_FOUR \
+                            in views_group_str:
+                        self.get_host_group_views(
+                            host_name, list_masking_views,
+                            port_g_view, views_group_str)
+                    else:
+                        self.get_host_views(host_name, list_masking_views,
+                                            views_group_str)
+        self.get_mapping(list_masking_views)
+        return list_masking_views
+
+    def get_mapping(self, list_masking_views):
+        volume_views = self.cli_handler.exec_command(consts.GET_MAPPING)
+        volume_group_views = volume_views.strip(). \
+            replace('\r', '').split('\n\n')
+        for views_group in (volume_group_views or []):
+            if consts.LIST_MASKING_VIEWS_SPECIFIC_SEVEN not in views_group:
+                continue
+            views_row = views_group.split('\n')
+            block = True
+            port_id = None
+            for views_row_str in (views_row or []):
+                if not views_row_str or \
+                        consts.CLI_STR in views_row_str:
+                    continue
+                if consts.LIST_MASKING_VIEWS_SPECIFIC_FIVE in views_row_str:
+                    port_id = views_row_str.split(
+                        consts.LIST_MASKING_VIEWS_SPECIFIC_SIX)[
+                        consts.LIST_MASKING_VIEWS_CONSTANT_ZERO]
+                if consts.LIST_MASKING_VIEWS_SPECIFIC_ONE in views_row_str:
+                    block = False
+                    continue
+                if block:
+                    continue
+                views_arr = views_row_str.strip().split()
+                volume_id = views_arr[consts.LIST_MASKING_VIEWS_VOLUME_ID]
+                port_group_id = '{}_{}'.format(consts.GET_STORAGE_VENDOR,
+                                               utils.utcnow_ms())
+                view_id = '{}{}{}'.format(volume_id, port_group_id, port_id)
+                view = {
+                    'native_masking_view_id': view_id,
+                    'name': view_id,
+                    'native_port_group_id': port_group_id,
+                    'native_volume_id': volume_id,
+                    'native_port_id': port_id,
+                    'storage_id': self.storage_id,
+                }
+                list_masking_views.append(view)
+
+    def get_host_views(self, host_name, list_masking_views, views_group_str):
+        views_row_arr = views_group_str.strip().split('\n')
+        block = True
+        key = []
+        port_id = None
+        for views_row_str in (views_row_arr or []):
+            if not views_row_str or \
+                    consts.CLI_STR in views_row_str:
+                continue
+            if consts.LIST_MASKING_VIEWS_SPECIFIC_FIVE in views_row_str:
+                port_id = views_row_str.split(
+                    consts.LIST_MASKING_VIEWS_SPECIFIC_SIX)[
+                    consts.LIST_MASKING_VIEWS_CONSTANT_ZERO]
+            self.get_group_key(views_row_str,
+                               consts.VIEWS_REGULAR_SPECIFIC_TWO, key)
+            if consts.LIST_MASKING_VIEWS_SPECIFIC_ONE in views_row_str:
+                block = False
+                continue
+            if block:
+                continue
+            if len(key) != consts.VIEWS_HOST_ROW_KEY_LENGTH:
+                continue
+            views_arr = views_row_str.strip().split()
+            volume_group_id = views_arr[consts.LIST_MASKING_VIEWS_CONSTANT_TWO]
+            port_group_id = '{}_{}'.format(consts.GET_STORAGE_VENDOR,
+                                           utils.utcnow_ms())
+            view_id = '{}{}{}'.format(host_name, port_id, volume_group_id)
+            view = {
+                'native_masking_view_id': view_id,
+                'name': view_id,
+                'native_port_group_id': port_group_id,
+                'native_volume_group_id': volume_group_id,
+                'native_storage_host_id': host_name,
+                'native_port_id': port_id,
+                'storage_id': self.storage_id,
+            }
+            list_masking_views.append(view)
+
+    def get_host_group_views(self, host_name, list_masking_views, port_g_view,
+                             views_group_str):
+        views_group_arr = views_group_str.strip().split(
+            consts.LIST_MASKING_VIEWS_SPECIFIC_FOUR)
+        views_group_row_arr = views_group_arr[
+            consts.VIEWS_GROUP_NUM_ZERO].strip().split('\n')
+        block = True
+        group_key = []
+        for views_group_row in (views_group_row_arr or []):
+            if not views_group_row or \
+                    consts.CLI_STR in views_group_row:
+                continue
+            self.get_group_key(views_group_row,
+                               consts.VIEWS_REGULAR_SPECIFIC_ONE, group_key)
+            if consts.LIST_MASKING_VIEWS_SPECIFIC_ONE in views_group_row:
+                block = False
+                continue
+            if block:
+                continue
+            views_row_arr = views_group_row.strip().split()
+            if len(views_row_arr) != consts.VIEWS_GROUP_ROW_VALUE_LENGTH \
+                    or len(group_key) != consts.VIEWS_GROUP_ROW_KEY_LENGTH:
+                continue
+            for port_id in (port_g_view.get(
+                    views_row_arr[consts.PORT_GROUP_ID_NUM]) or []):
+                host_group_name = views_row_arr[consts.HOST_GROUP_NAME_NUM]
+                volume_group_id = views_row_arr[consts.LUN_GROUP_ID_NUM]
+                view_id = '{}{}{}'.format(host_name, port_id, volume_group_id)
+                view = {
+                    'native_masking_view_id': view_id,
+                    'name': view_id,
+                    'native_storage_host_group_id': host_group_name,
+                    'native_port_group_id': views_row_arr[
+                        consts.PORT_GROUP_NAME_NUM],
+                    'native_volume_group_id': volume_group_id,
+                    'native_storage_host_id': host_name,
+                    'native_port_id': port_id,
+                    'storage_id': self.storage_id,
+                }
+                list_masking_views.append(view)
+
+    @staticmethod
+    def get_group_key(views_group_row, regular_str, key):
+        title_pattern = re.compile(regular_str)
+        title_search_obj = title_pattern.search(views_group_row)
+        if title_search_obj:
+            views_row_arr = views_group_row.strip().split('  ')
+            for views in (views_row_arr or []):
+                if views:
+                    key.append(views.strip())
+        return key
+
+    def get_port_group_view(self):
+        port_groups_str = self.cli_handler.exec_command(consts.GET_PORT_GROUPS)
+        port_g_view = {}
+        if port_groups_str:
+            port_groups_arr = port_groups_str.strip().replace('\r', '').split(
+                '\n\n')
+            for port_group_str in port_groups_arr:
+                port_group_arr = port_group_str.split(
+                    consts.LIST_MASKING_VIEWS_SPECIFIC_TWO)
+                port_g_row_arr = port_group_arr[
+                    consts.PORT_GROUP_ROW_ARR_NUM].split('\n')
+                port_group_id = None
+                block = True
+                for port_g_row_str in port_g_row_arr:
+                    if not port_g_row_str or \
+                            consts.CLI_STR in port_g_row_str:
+                        continue
+                    if consts.LIST_MASKING_VIEWS_SPECIFIC_ONE \
+                            in port_g_row_str:
+                        block = False
+                        continue
+                    if block:
+                        continue
+                    port_group = port_g_row_str.strip().split()
+                    port_group_id = port_group[consts.PORT_GROUP_ID_NUM]
+                    break
+                port_id_list = []
+                if len(port_group_arr) == consts.PORT_GROUP_ARR_LENGTH:
+                    port_list_row_arr = port_group_arr[
+                        consts.PORT_LIST_ROW_ARR_NUM].strip().split('\n')
+                    for port in (port_list_row_arr or []):
+                        port_id = port.strip()
+                        if port_id not in consts.CLI_STR:
+                            port_id_list.append(port_id)
+                port_g_view[port_group_id] = port_id_list
+        return port_g_view
