@@ -749,6 +749,55 @@ class EternusDriver(driver.StorageDriver):
                     volumes_str = "{0}".format(volume_id)
         return volumes_str
 
+    def list_port_groups(self, context):
+        port_group_list = []
+        port_groups_str = self.cli_handler.exec_command(consts.GET_PORT_GROUPS)
+        if port_groups_str:
+            port_groups_arr = port_groups_str.strip().replace('\r', '').split(
+                '\n\n')
+            for port_group_str in port_groups_arr:
+                port_group_arr = port_group_str.split(
+                    consts.LIST_MASKING_VIEWS_SPECIFIC_TWO)
+                port_g_row_arr = port_group_arr[
+                    consts.PORT_GROUP_ROW_ARR_NUM].split('\n')
+                port_group_id = None
+                port_group_name = None
+                block = True
+                for port_g_row_str in port_g_row_arr:
+                    if not port_g_row_str or \
+                            consts.CLI_STR in port_g_row_str:
+                        continue
+                    if consts.LIST_MASKING_VIEWS_SPECIFIC_ONE \
+                            in port_g_row_str:
+                        block = False
+                        continue
+                    if block:
+                        continue
+                    port_group = port_g_row_str.strip().split()
+                    port_group_id = port_group[consts.PORT_GROUP_ID_NUM]
+                    port_group_name = port_group[consts.PORT_GROUP_NAME_NUM]
+                    break
+                ports_str = None
+                if len(port_group_arr) == consts.PORT_GROUP_ARR_LENGTH:
+                    port_list_row_arr = port_group_arr[
+                        consts.PORT_LIST_ROW_ARR_NUM].strip().split('\n')
+                    for port in (port_list_row_arr or []):
+                        port_id = port.strip()
+                        if port_id in consts.CLI_STR:
+                            continue
+                        if ports_str:
+                            ports_str = "{0},{1}".format(ports_str, port_id)
+                        else:
+                            ports_str = "{0}".format(port_id)
+                port_g = {
+                    "name": port_group_name,
+                    "storage_id": self.storage_id,
+                    "native_port_group_id": port_group_id,
+                    "ports": ports_str
+                }
+                port_group_list.append(port_g)
+        return port_group_list
+
     def list_masking_views(self, ctx):
         list_masking_views = []
         port_g_view = self.get_port_group_view()

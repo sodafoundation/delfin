@@ -1210,19 +1210,13 @@ No.  Name             No. Name
      5 dbs03_1          10000090faec7f06
 CLI>"""
 HOST_GROUPS_DATA = [
-    {
-        'name': 'dbs01', 'storage_id': '12345',
-        'native_storage_host_group_id': '0', 'storage_hosts': '0,1'
-    },
-    {
-        'name': 'dbs02', 'storage_id': '12345',
-        'native_storage_host_group_id': '1', 'storage_hosts': '2,3'
-    },
-    {
-        'name': 'dbs03', 'storage_id': '12345',
-        'native_storage_host_group_id': '2', 'storage_hosts': '4,5'
-    }
-]
+    {'name': 'dbs01', 'storage_id': '12345',
+     'native_storage_host_group_id': '0',
+     'storage_hosts': 'dbs01_0,dbs01_1'},
+    {'name': 'dbs02', 'storage_id': '12345',
+     'native_storage_host_group_id': '1', 'storage_hosts': 'dbs02_0,dbs02_1'},
+    {'name': 'dbs03', 'storage_id': '12345',
+     'native_storage_host_group_id': '2', 'storage_hosts': 'dbs03_0,dbs03_1'}]
 VOLUME_GROUPS_INFO = """CLI> show lun-groups
 LUN Group             LUN Overlap
 No.  Name             Volumes
@@ -1276,6 +1270,13 @@ No. Name
   CM#0 CA#1 Port#0
   CM#1 CA#1 Port#0
 CLI>"""
+PORT_G_DATA = [
+    {'name': 'PortGroup01', 'storage_id': '12345', 'native_port_group_id': '0',
+     'ports': 'CM#0 CA#0 Port#0,CM#1 CA#0 Port#0'},
+    {'name': 'PortGroup02', 'storage_id': '12345', 'native_port_group_id': '1',
+     'ports': 'CM#0 CA#0 Port#1,CM#1 CA#0 Port#1'},
+    {'name': 'PortGroup03', 'storage_id': '12345', 'native_port_group_id': '2',
+     'ports': 'CM#0 CA#1 Port#0,CM#1 CA#1 Port#0'}]
 MASKING_VIEWS_INFO = """CLI> show host-affinity -host-name dbs01_0
 Port Group           Host Group            LUN Group             LUN Overlap
 No. Name             No.  Name             No.  Name             Volumes
@@ -1513,6 +1514,13 @@ class TestEternusDriver(TestCase):
             side_effect=[HOST_GROUPS_INFO])
         host_groups = self.driver.list_storage_host_groups(ctx)
         self.assertListEqual(host_groups, HOST_GROUPS_DATA)
+
+    def test_list_port_groups(self):
+        EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
+        EternusSSHPool.do_exec_shell = mock.Mock(
+            side_effect=[PORT_G_VIEW_INFO])
+        host_groups = self.driver.list_port_groups(ctx)
+        self.assertListEqual(host_groups, PORT_G_DATA)
 
     def test_list_volume_groups(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
