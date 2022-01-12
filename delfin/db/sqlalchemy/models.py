@@ -361,7 +361,6 @@ class MaskingView(BASE, DelfinBase):
     native_port_group_id = Column(String(255))
     native_storage_host_id = Column(String(255))
     native_volume_id = Column(String(255))
-    native_port_id = Column(String(255))
     native_masking_view_id = Column(String(255))
 
 

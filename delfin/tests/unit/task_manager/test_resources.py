@@ -203,7 +203,7 @@ storage_hosts_list = [{
 }
 ]
 
-storage_host_groups_list = [{
+storage_hg_list = [{
     "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
     "name": "storage_host_group_" + str(id),
     "description": "storage_host_group_" + str(id),
@@ -212,7 +212,16 @@ storage_host_groups_list = [{
 }
 ]
 
-port_groups_list = [{
+storage_host_groups_list = {
+    'storage_host_groups': storage_hg_list,
+    'storage_host_grp_host_rels': ''
+}
+empty_shgs_list = {
+    'storage_host_groups': list(),
+    'storage_host_grp_host_rels': ''
+}
+
+pg_list = [{
     "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
     "name": "port_group_" + str(id),
     "description": "port_group_" + str(id),
@@ -221,7 +230,17 @@ port_groups_list = [{
 }
 ]
 
-volume_groups_list = [{
+port_groups_list = {
+    "port_groups": pg_list,
+    "port_grp_port_rels": '',
+}
+
+empty_port_groups_list = {
+    "port_groups": list(),
+    "port_grp_port_rels": '',
+}
+
+vg_list = [{
     "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
     "name": "volume_group_" + str(id),
     "description": "volume_group_" + str(id),
@@ -229,6 +248,16 @@ volume_groups_list = [{
     "native_volume_group_id": "volume_group_" + str(id),
 }
 ]
+
+volume_groups_list = {
+    'volume_groups': vg_list,
+    'vol_grp_vol_rels': ''
+}
+
+empty_volume_groups_list = {
+    'volume_groups': list(),
+    'vol_grp_vol_rels': ''
+}
 
 masking_views_list = [{
     "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
@@ -855,14 +884,14 @@ class TestStorageHostGroupTask(test.TestCase):
         mock_list_storage_host_groups.return_value \
             = storage_host_groups_list
         mock_storage_host_groups_get_all.return_value \
-            = storage_host_groups_list
+            = storage_hg_list
         storage_host_group_obj.sync()
         self.assertTrue(mock_storage_host_group_update.called)
 
         # Delete the storage host groups to DB
-        mock_list_storage_host_groups.return_value = list()
+        mock_list_storage_host_groups.return_value = empty_shgs_list
         mock_storage_host_groups_get_all.return_value \
-            = storage_host_groups_list
+            = storage_hg_list
         storage_host_group_obj.sync()
         self.assertTrue(mock_storage_host_group_del.called)
 
@@ -907,14 +936,14 @@ class TestVolumeGroupTask(test.TestCase):
         mock_list_volume_groups.return_value \
             = volume_groups_list
         mock_volume_groups_get_all.return_value \
-            = volume_groups_list
+            = vg_list
         volume_group_obj.sync()
         self.assertTrue(mock_volume_group_update.called)
 
         # Delete the volume groups to DB
-        mock_list_volume_groups.return_value = list()
+        mock_list_volume_groups.return_value = empty_volume_groups_list
         mock_volume_groups_get_all.return_value \
-            = volume_groups_list
+            = vg_list
         volume_group_obj.sync()
         self.assertTrue(mock_volume_group_del.called)
 
@@ -960,14 +989,14 @@ class TestPortGroupTask(test.TestCase):
         mock_list_port_groups.return_value \
             = port_groups_list
         mock_port_groups_get_all.return_value \
-            = port_groups_list
+            = pg_list
         port_group_obj.sync()
         self.assertTrue(mock_port_group_update.called)
 
         # Delete the storage host groups to DB
-        mock_list_port_groups.return_value = list()
+        mock_list_port_groups.return_value = empty_port_groups_list
         mock_port_groups_get_all.return_value \
-            = port_groups_list
+            = pg_list
         port_group_obj.sync()
         self.assertTrue(mock_port_group_del.called)
 

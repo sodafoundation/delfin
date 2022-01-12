@@ -266,7 +266,6 @@ def fake_masking_view_create():
         'updated_at': '2020-06-10T07:17:08.707356',
         'native_storage_host_id': 'storage_host_1',
         'native_volume_id': 'volume_1',
-        'native_port_id': 'port_1',
         'native_masking_view_id': 'masking_view_1', }
     return fake_masking_views
 
@@ -282,7 +281,6 @@ def fake_expected_masking_views_create():
             "storage_id": '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
             "native_storage_host_id": "storage_host_1",
             "native_volume_id": "volume_1",
-            "native_port_id": "port_1",
             "native_storage_host_group_id": None,
             "native_port_group_id": None,
             "native_volume_group_id": None,
