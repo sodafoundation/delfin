@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
 import re
 
 import six
@@ -443,3 +444,141 @@ class ComponentHandler(object):
             name = '%s-%s' % (iscsi_port.get('sp'), iscsi_port.get('port_id'))
             iscsi_port_map[name] = iscsi_port
         return iscsi_port_map
+
+    def list_masking_views(self, storage_id):
+        views = self.navi_handler.list_masking_views()
+        views_list = []
+        if views:
+            for view in views:
+                name = view.get('storage_group_name')
+                host_names = view.get('host_names')
+                lun_ids = view.get('lun_ids')
+                if name:
+                    if name == '~physical' or name == '~management':
+                        continue
+                    view_model_template = {
+                        'native_masking_view_id': view.get(
+                            'storage_group_uid'),
+                        "name": view.get('storage_group_name'),
+                        "storage_id": storage_id
+                    }
+                    if host_names and lun_ids:
+                        host_names = list(set(host_names))
+                        for host_name in host_names:
+                            host_id = host_name.replace(' ', '')
+                            for lun_id in lun_ids:
+                                view_model = copy.deepcopy(view_model_template)
+                                view_model[
+                                    'native_storage_host_id'] = host_id
+                                view_model['native_volume_id'] = lun_id
+                                view_model[
+                                    'native_masking_view_id'] = '%s_%s_%s' % (
+                                    view_model.get('native_masking_view_id'),
+                                    host_id, lun_id)
+                                views_list.append(view_model)
+                    elif lun_ids:
+                        for lun_id in lun_ids:
+                            view_model = copy.deepcopy(view_model_template)
+                            view_model['native_volume_id'] = lun_id
+                            view_model[
+                                'native_masking_view_id'] = '%s_%s' % (
+                                view_model.get('native_masking_view_id'),
+                                lun_id)
+                            views_list.append(view_model)
+                    elif host_names:
+                        host_names = list(set(host_names))
+                        for host_name in host_names:
+                            host_id = host_name.replace(' ', '')
+                            view_model = copy.deepcopy(view_model_template)
+                            view_model['native_storage_host_id'] = host_id
+                            view_model[
+                                'native_masking_view_id'] = '%s_%s' % (
+                                view_model.get('native_masking_view_id'),
+                                host_id)
+                            views_list.append(view_model)
+                    else:
+                        views_list.append(view_model_template)
+        return views_list
+
+    def list_storage_host_initiators(self, storage_id):
+        initiators = self.navi_handler.list_hbas()
+        initiators_list = []
+        initiator_set = set()
+        port_types = {}
+        if initiators:
+            ports = self.list_ports(storage_id)
+            for port in (ports or []):
+                if port and port.get('type'):
+                    port_types[port.get('name')] = port.get('type')
+            for initiator in (initiators or []):
+                if initiator and initiator.get('hba_uid'):
+                    hba_uid = initiator.get('hba_uid')
+                    type = ''
+                    if port_types:
+                        ports = initiator.get('port_ids')
+                        if ports:
+                            port_id = list(ports)[0]
+                            type = port_types.get(port_id, '')
+                    host_id = initiator.get('server_name', '').replace(' ', '')
+                    if host_id == hba_uid:
+                        host_id = None
+                    if not host_id:
+                        continue
+                    if hba_uid in initiator_set:
+                        continue
+                    initiator_set.add(hba_uid)
+
+                    initiator_model = {
+                        "name": hba_uid,
+                        "storage_id": storage_id,
+                        "native_storage_host_initiator_id": hba_uid,
+                        "wwn": hba_uid,
+                        "type": consts.INITIATOR_TYPE_MAP.get(
+                            type.upper(), constants.InitiatorType.UNKNOWN),
+                        "status": constants.InitiatorStatus.ONLINE,
+                        "native_storage_host_id": host_id
+                    }
+                    initiators_list.append(initiator_model)
+        return initiators_list
+
+    def list_storage_hosts(self, storage_id):
+        hosts = self.navi_handler.list_hbas()
+        host_list = []
+        host_ids = set()
+        host_ips = {}
+        for host in (hosts or []):
+            if host and host.get('server_name'):
+                os_type = constants.HostOSTypes.UNKNOWN
+                os_name = host.get('hba_vendor_description')
+                ip_addr = host.get('server_ip_address')
+                if ip_addr == 'UNKNOWN':
+                    continue
+                if os_name and 'VMware ESXi' in os_name:
+                    os_type = constants.HostOSTypes.VMWARE_ESX
+                id = host.get('server_name').replace(' ', '')
+                if id in host_ids:
+                    continue
+                host_ids.add(id)
+
+                if ip_addr in host_ips.keys():
+                    first_port_ids = host_ips.get(ip_addr)
+                    cur_port_ids = host.get('port_ids')
+                    add_host = False
+                    intersections = list(
+                        set(first_port_ids).intersection(set(cur_port_ids)))
+                    if not intersections:
+                        add_host = True
+                    if not add_host:
+                        continue
+                host_ips[ip_addr] = host.get('port_ids')
+
+                host_model = {
+                    "name": host.get('server_name'),
+                    "storage_id": storage_id,
+                    "native_storage_host_id": id,
+                    "os_type": os_type,
+                    "status": constants.HostStatus.NORMAL,
+                    "ip_address": ip_addr
+                }
+                host_list.append(host_model)
+        return host_list
