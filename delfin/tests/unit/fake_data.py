@@ -103,7 +103,7 @@ def fake_storage_host_initiator_create():
         'updated_at': '2020-06-10T07:17:08.707356',
         'native_storage_host_initiator_id': 'storage_host_initiator_1',
         'native_storage_host_id': 'storage_host_1',
-        'wwn': 'wwn1', }
+        'wwn': 'wwn1', 'type': 'fcinitiator'}
     return fake_storage_host_initiators
 
 
@@ -121,6 +121,7 @@ def fake_expected_storage_host_initiator_create():
             "native_storage_host_initiator_id": "storage_host_initiator_1",
             "native_storage_host_id": "storage_host_1",
             "wwn": "wwn1",
+            "type": "fcinitiator"
 
         },
     ]
