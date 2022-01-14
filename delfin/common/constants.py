@@ -274,6 +274,15 @@ class InitiatorStatus(object):
     ALL = (ONLINE, OFFLINE, UNKNOWN)
 
 
+class InitiatorType(object):
+    FC = 'fcinitiator'
+    ISCSI = 'iscsiinitiator'
+    NVME_OVER_ROCE = 'roceinitiator'
+    UNKNOWN = 'unknown'
+
+    ALL = (FC, ISCSI, NVME_OVER_ROCE, UNKNOWN)
+
+
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'
