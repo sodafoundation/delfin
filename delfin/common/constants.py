@@ -275,9 +275,9 @@ class InitiatorStatus(object):
 
 
 class InitiatorType(object):
-    FC = 'fcinitiator'
-    ISCSI = 'iscsiinitiator'
-    NVME_OVER_ROCE = 'roceinitiator'
+    FC = 'fc'
+    ISCSI = 'iscsi'
+    NVME_OVER_ROCE = 'roce'
     UNKNOWN = 'unknown'
 
     ALL = (FC, ISCSI, NVME_OVER_ROCE, UNKNOWN)
