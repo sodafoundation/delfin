@@ -438,6 +438,7 @@ class ComponentHandler():
                         "storage_id": storage_id,
                         "native_storage_host_initiator_id": name,
                         "wwn": wwn,
+                        'alias': name,
                         "type": type,
                         "status": constants.InitiatorStatus.ONLINE,
                         "native_storage_host_id": initiator.get('id',
