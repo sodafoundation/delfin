@@ -420,6 +420,8 @@ class TelemetryCollection(object):
     DEF_PERFORMANCE_TIMESTAMP_OVERLAP = 60
     """Maximum failed task retry window in seconds"""
     MAX_FAILED_TASK_RETRY_WINDOW = 7200
+    # Maximux tolerable time difference in seconds
+    MAX_TOLERABLE_TIME_DIFF = 1800
 
 
 class TelemetryTaskStatus(object):

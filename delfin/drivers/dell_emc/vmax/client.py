@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 
 from oslo_log import log
 from oslo_utils import units
@@ -149,7 +150,8 @@ class VMAXClient(object):
                 physical_capacity = storage_info.get('physicalCapacity')
                 total_cap = system_capacity.get('usable_total_tb')
                 used_cap = system_capacity.get('usable_used_tb')
-                subscribed_cap = system_capacity.get('subscribed_total_tb')
+                subscribed_cap = system_capacity.get(
+                    'subscribed_allocated_tb')
                 total_raw = physical_capacity.get('total_capacity_gb')
                 free_cap = total_cap - used_cap
 
@@ -189,7 +191,8 @@ class VMAXClient(object):
                     srp_cap = pool_info['srp_capacity']
                     total_cap = srp_cap['usable_total_tb'] * units.Ti
                     used_cap = srp_cap['usable_used_tb'] * units.Ti
-                    subscribed_cap = srp_cap['subscribed_total_tb'] * units.Ti
+                    subscribed_cap = \
+                        srp_cap['subscribed_allocated_tb'] * units.Ti
 
                 p = {
                     "name": pool,
@@ -209,7 +212,7 @@ class VMAXClient(object):
             return pool_list
 
         except Exception:
-            LOG.error("Failed to get pool metrics from VMAX")
+            LOG.error("Failed to get pool info from VMAX")
             raise
 
     def list_volumes(self, storage_id):
@@ -295,6 +298,9 @@ class VMAXClient(object):
                 director_info = self.rest.get_director(
                     self.array_id, self.uni_version, director)
 
+                if director_info.get('num_of_ports') == 0:
+                    continue
+
                 status = constants.ControllerStatus.NORMAL
                 if "OFF" in director_info.get('availability', '').upper():
                     status = constants.ControllerStatus.OFFLINE
@@ -308,7 +314,7 @@ class VMAXClient(object):
                         'slot_' +
                         str(director_info.get('director_slot_number')),
                     'soft_version': None,
-                    'cpu_info': 'Cores-'
+                    'cpu_info': 'number_of_cores_'
                                 + str(director_info.get('num_of_cores')),
                     'memory_size': None
 
@@ -317,7 +323,7 @@ class VMAXClient(object):
             return controller_list
 
         except Exception:
-            LOG.error("Failed to get controller metrics from VMAX")
+            LOG.error("Failed to get controller info from VMAX")
             raise
 
     def list_ports(self, storage_id):
@@ -327,7 +333,7 @@ class VMAXClient(object):
                                                     self.uni_version)
         except Exception:
             LOG.error("Failed to get director list,"
-                      " while getting port metrics from VMAX")
+                      " while getting port info from VMAX")
             raise
         switcher = {
             'A': constants.PortLogicalType.MANAGEMENT,
@@ -356,6 +362,8 @@ class VMAXClient(object):
                         port_type = constants.PortType.FC
                     if port_info.get('type', '').upper().find('ETH') != -1:
                         port_type = constants.PortType.ETH
+                    if port_info.get('type', '').upper().find('GIGE') != -1:
+                        port_type = constants.PortType.ETH
 
                     name = "{0}:{1}".format(port_key['directorId'],
                                             port_key['portId'])
@@ -377,8 +385,8 @@ class VMAXClient(object):
                     port_dict = {
                         'name': name,
                         'storage_id': storage_id,
-                        'native_port_id': port_key['portId'],
-                        'location': 'director_' + port_key['directorId'],
+                        'native_port_id': name,
+                        'location': name,
                         'connection_status': connection_status,
                         'health_status': constants.PortHealthStatus.NORMAL,
                         'type': port_type,
@@ -537,3 +545,29 @@ class VMAXClient(object):
         except Exception:
             LOG.error("Failed to get DISK metrics for VMAX")
             raise
+
+    def get_latest_perf_timestamp(self, context):
+        """Get the latest time within 30 minutes before and
+        after the current time
+        """
+        current_time = int(datetime.datetime.now().timestamp())
+        try:
+            start_time = (current_time - constants.TelemetryCollection.
+                          MAX_TOLERABLE_TIME_DIFF) * 1000
+
+            end_time = (current_time - constants.TelemetryCollection.
+                        MAX_TOLERABLE_TIME_DIFF) * 1000
+            perf_list = self.rest.get_storage_metrics(
+                self.array_id, consts.METRICS_FOR_COLLECT_TIMESTAMP,
+                start_time, end_time)
+            timestamp_list = []
+            for perf in perf_list:
+                timestamp_list.extend(
+                    [collected_metrics.get('timestamp', 0)
+                     for collected_metrics in perf.get('metrics', [])])
+            if timestamp_list and max(timestamp_list):
+                return max(timestamp_list)
+            return current_time * 1000
+        except Exception as e:
+            LOG.error(f'Get latest performance data timestamp failed: {e}')
+            return current_time * 1000

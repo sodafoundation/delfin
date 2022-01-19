@@ -31,8 +31,8 @@ def parse_performance_data(metrics):
 
 def construct_metrics(storage_id, resource_metrics, unit_map, perf_list):
     metrics_list = []
-    metrics_values = {}
     for perf in perf_list:
+        metrics_values = {}
         collected_metrics_list = perf.get('metrics')
         for collected_metrics in collected_metrics_list:
             metrics_map = parse_performance_data(collected_metrics)

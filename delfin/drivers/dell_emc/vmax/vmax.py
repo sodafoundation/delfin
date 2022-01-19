@@ -52,7 +52,7 @@ class VMAXStorageDriver(driver.StorageDriver):
             # Unisphere Rest API do not provide Array name .
             # Generate  name  by combining model and symmetrixId
             'name': display_name,
-            'vendor': 'Dell EMC',
+            'vendor': 'DELL EMC',
             'description': '',
             'model': model,
             'firmware_version': ucode,
@@ -166,3 +166,10 @@ class VMAXStorageDriver(driver.StorageDriver):
                 constants.ResourceType.DISK: consts.DISK_CAP,
             }
         }
+
+    def get_latest_perf_timestamp(self, context):
+        return self.client.get_latest_perf_timestamp(context)
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}:{port}'
