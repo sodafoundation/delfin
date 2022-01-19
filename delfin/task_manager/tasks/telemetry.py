@@ -17,7 +17,7 @@ import abc
 import six
 from oslo_log import log
 
-from delfin import context, db
+from delfin import db
 from delfin import exception
 from delfin.common.constants import TelemetryTaskStatus
 from delfin.drivers import api as driver_api
@@ -30,10 +30,6 @@ LOG = log.getLogger(__name__)
 class TelemetryTask(object):
     @abc.abstractmethod
     def collect(self, ctx, storage_id, args, start_time, end_time):
-        pass
-
-    @abc.abstractmethod
-    def remove_telemetry(self, ctx, storage_id):
         pass
 
 
@@ -67,7 +63,7 @@ class PerformanceCollectionTask(TelemetryTask):
                 LOG.error(msg)
                 return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
 
-            self.perf_exporter.dispatch(context, perf_metrics)
+            self.perf_exporter.dispatch(ctx, perf_metrics)
             return TelemetryTaskStatus.TASK_EXEC_STATUS_SUCCESS
         except Exception as e:
             LOG.error("Failed to collect performance metrics for "

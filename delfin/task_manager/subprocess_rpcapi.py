@@ -26,9 +26,7 @@ CONF = cfg.CONF
 
 class SubprocessAPI(object):
     """Client side of the subprocess metrics manager collection rpc API.
-
     API version history:
-
         1.0 - Initial version.
     """
 

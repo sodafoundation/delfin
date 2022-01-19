@@ -133,7 +133,9 @@ class SchedulerManager(object):
         self.scheduler.add_job(partitioner.watch_group_change, 'interval',
                                seconds=self.GROUP_CHANGE_DETECT_INTERVAL_SEC,
                                next_run_time=datetime.now(),
-                               id=self.watch_job_id)
+                               id=self.watch_job_id,
+                               misfire_grace_time=int(
+                                   self.GROUP_CHANGE_DETECT_INTERVAL_SEC / 2))
 
     def stop(self):
         """Cleanup periodic jobs"""

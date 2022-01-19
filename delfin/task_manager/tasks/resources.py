@@ -43,8 +43,8 @@ def set_synced_after():
             try:
                 storage = db.storage_get(self.context, self.storage_id)
             except exception.StorageNotFound:
-                LOG.warn('Storage %s not found when set synced'
-                         % self.storage_id)
+                LOG.warning('Storage %s not found when set synced'
+                            % self.storage_id)
             else:
                 # One sync task done, sync status minus 1
                 # When sync status get to 0

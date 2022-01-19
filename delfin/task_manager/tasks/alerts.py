@@ -37,11 +37,15 @@ class AlertSyncTask(object):
         LOG.info('Syncing alerts for storage id:{0}'.format(storage_id))
         try:
             storage = db.storage_get(ctx, storage_id)
+            if query_para:
+                LOG.info('Syncing alerts time range: %s - %s'
+                         % (query_para.get('begin_time', ''),
+                            query_para.get('end_time')))
 
             current_alert_list = self.driver_manager.list_alerts(ctx,
                                                                  storage_id,
                                                                  query_para)
-            if not len(current_alert_list):
+            if not current_alert_list:
                 # No alerts to sync
                 LOG.info('No alerts to sync from storage device for '
                          'storage id:{0}'.format(storage_id))
