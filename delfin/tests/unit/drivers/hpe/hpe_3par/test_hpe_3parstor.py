@@ -1321,7 +1321,6 @@ INITIATOR_RESULT = [
         'storage_id': '12345',
         'native_storage_host_initiator_id': '2408244427906812',
         'wwn': '2408244427906812',
-        'alias': '2408244427906812',
         'type': 'fc',
         'status': 'online',
         'native_storage_host_id': '175'
