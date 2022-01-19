@@ -85,8 +85,7 @@ class JobHandler(object):
             job['method'])
         instance = collection_class.get_instance(self.ctx, self.task_id)
         current_time = int(datetime.now().timestamp())
-        last_run_time = current_time
-        next_collection_time = last_run_time + job['interval']
+        next_collection_time = current_time + job['interval']
         job_id = uuidutils.generate_uuid()
         next_collection_time = datetime \
             .fromtimestamp(next_collection_time) \
@@ -118,13 +117,19 @@ class JobHandler(object):
             # adjust start_time based on interval or history_on_reschedule
             # whichever is smaller
 
-            end_time = current_time * 1000
+            telemetry = PerformanceCollectionTask()
+            end_time = telemetry.get_latest_perf_timestamp(self.ctx,
+                                                           self.storage_id)
             # Maximum supported history duration on restart
             history_on_reschedule = CONF.telemetry. \
                 performance_history_on_reschedule
+            # The timestamp obtained from the device is milliseconds. However,
+            # the time for collecting performance data is accurate to seconds.
+            # Therefore, a 1000 times data conversion is required.
+            last_run_time = end_time / 1000
             if job['last_run_time']:
                 start_time = job['last_run_time'] * 1000 \
-                    if current_time - job['last_run_time'] < \
+                    if end_time / 1000 - job['last_run_time'] < \
                     history_on_reschedule \
                     else (end_time - history_on_reschedule * 1000)
                 self.perform_history_collection(start_time, end_time,

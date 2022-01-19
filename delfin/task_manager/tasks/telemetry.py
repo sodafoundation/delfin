@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import abc
+from datetime import datetime
 
 import six
 from oslo_log import log
@@ -70,3 +71,17 @@ class PerformanceCollectionTask(TelemetryTask):
                       "storage id :{0}, reason:{1}".format(storage_id,
                                                            six.text_type(e)))
             return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
+
+    def get_latest_perf_timestamp(self, ctx, storage_id):
+        current_time = int(datetime.now().timestamp())
+        try:
+            latest_storage_perf_time = \
+                self.driver_api.get_latest_perf_timestamp(ctx, storage_id)
+            if latest_storage_perf_time:
+                return latest_storage_perf_time
+            else:
+                return current_time * 1000
+
+        except Exception as e:
+            LOG.warning(f'Get latest performance data timestamp failed: {e}')
+            return current_time * 1000
