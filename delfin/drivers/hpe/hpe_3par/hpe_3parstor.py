@@ -96,15 +96,6 @@ class Hpe3parStorDriver(driver.StorageDriver):
     def clear_alert(self, context, alert):
         return self.alert_handler.clear_alert(context, alert)
 
-    def list_filesystems(self, context):
-        pass
-
-    def list_qtrees(self, context):
-        pass
-
-    def list_shares(self, context):
-        pass
-
     def list_storage_host_initiators(self, context):
         return self.comhandler.list_storage_host_initiators(self.storage_id)
 

@@ -421,24 +421,23 @@ class ComponentHandler():
     def list_storage_host_initiators(self, storage_id):
         initiators = self.ssh_handler.list_storage_host_initiators()
         initiators_list = []
+        wwn_set = set()
         for initiator in (initiators or []):
             if initiator:
                 wwn = initiator.get('wwn/iscsi_name', '').replace('-', '')
                 if wwn:
-                    port = initiator.get('port', '').replace('-', '')
+                    if wwn in wwn_set:
+                        continue
+                    wwn_set.add(wwn)
                     ip_addr = initiator.get('ip_addr')
                     type = constants.InitiatorType.FC
                     if ip_addr and ip_addr != 'n/a':
                         type = constants.InitiatorType.ISCSI
-                    name = wwn
-                    if port:
-                        name = '%s_%s' % (wwn, port)
                     initiator_model = {
-                        "name": name,
+                        "name": wwn,
                         "storage_id": storage_id,
-                        "native_storage_host_initiator_id": name,
+                        "native_storage_host_initiator_id": wwn,
                         "wwn": wwn,
-                        'alias': name,
                         "type": type,
                         "status": constants.InitiatorStatus.ONLINE,
                         "native_storage_host_id": initiator.get('id',
