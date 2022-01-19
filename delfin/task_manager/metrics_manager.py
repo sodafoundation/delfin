@@ -14,7 +14,9 @@
 """
 periodical task manager for metric collection tasks**
 """
+
 from apscheduler.schedulers.background import BackgroundScheduler
+import time
 import datetime
 import six
 
@@ -166,14 +168,20 @@ class MetricsTaskManager(manager.Manager):
                                seconds=CONF.telemetry.
                                group_change_detect_interval,
                                next_run_time=datetime.datetime.now(),
-                               id=self.watch_job_id)
+                               id=self.watch_job_id,
+                               misfire_grace_time=int(
+                                   CONF.telemetry.
+                                   group_change_detect_interval / 2))
         LOG.info('Created watch for group membership change for group {0}.'
                  .format(group))
         self.cleanup_job_id = uuidutils.generate_uuid()
         self.scheduler.add_job(self.process_cleanup, 'interval',
                                seconds=CONF.telemetry.process_cleanup_interval,
                                next_run_time=datetime.datetime.now(),
-                               id=self.cleanup_job_id)
+                               id=self.cleanup_job_id,
+                               misfire_grace_time=int(
+                                   CONF.telemetry.
+                                   process_cleanup_interval / 2))
         LOG.info('Created process cleanup background job for group {0}.'
                  .format(group))
 
@@ -287,6 +295,7 @@ class MetricsTaskManager(manager.Manager):
                          .format(executor_topic, storage_id))
                 launcher = self.create_process(
                     topic=executor_topic, host=executor)
+                time.sleep(10)
                 self.executor_map[name] = {
                     "storages": [storage_id],
                     "launcher": launcher,
