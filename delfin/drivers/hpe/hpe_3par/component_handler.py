@@ -427,9 +427,9 @@ class ComponentHandler():
                 if wwn:
                     port = initiator.get('port', '').replace('-', '')
                     ip_addr = initiator.get('ip_addr')
-                    type = constants.PortType.FC
+                    type = constants.InitiatorType.FC
                     if ip_addr and ip_addr != 'n/a':
-                        type = constants.PortType.ISCSI
+                        type = constants.InitiatorType.ISCSI
                     name = wwn
                     if port:
                         name = '%s_%s' % (wwn, port)
@@ -468,7 +468,8 @@ class ComponentHandler():
                         "description": comment,
                         "storage_id": storage_id,
                         "native_storage_host_id": host.get('id'),
-                        "os_type": consts.HOST_OS_MAP.get(os, 'Unknown'),
+                        "os_type": consts.HOST_OS_MAP.get(
+                            os, constants.HostOSTypes.UNKNOWN),
                         "status": constants.HostStatus.NORMAL,
                         "ip_address": ip_addr
                     }
