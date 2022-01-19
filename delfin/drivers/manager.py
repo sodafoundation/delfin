@@ -114,3 +114,6 @@ class DriverManager(stevedore.ExtensionManager):
         msg = "Storage driver '%s' could not be found." % name
         LOG.error(msg)
         raise exception.StorageDriverNotFound(name)
+
+    def clear_driver_factory(self):
+        self.driver_factory = dict()

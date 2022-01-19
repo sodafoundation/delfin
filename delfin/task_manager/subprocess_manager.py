@@ -20,6 +20,7 @@ from oslo_config import cfg
 
 from delfin.coordination import GroupMembership
 from delfin import manager
+from delfin.drivers.manager import DriverManager
 from delfin.task_manager.scheduler import schedule_manager
 from delfin.task_manager.scheduler.schedulers.telemetry.job_handler \
     import FailedJobHandler
@@ -45,6 +46,8 @@ class SubprocessManager(manager.Manager):
         watcher = GroupMembership(topic)
         watcher.start()
         watcher.join_group(host)
+        driver_manager = DriverManager()
+        driver_manager.clear_driver_factory()
 
     def assign_job_local(self, context, task_id):
         instance = JobHandler.get_instance(context, task_id)
