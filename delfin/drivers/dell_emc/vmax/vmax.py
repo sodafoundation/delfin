@@ -96,7 +96,7 @@ class VMAXStorageDriver(driver.StorageDriver):
     def clear_alert(self, context, sequence_number):
         return self.client.clear_alert(sequence_number)
 
-    def list_alerts(self, context, query_para):
+    def list_alerts(self, context, query_para=None):
         alert_list = self.client.list_alerts(query_para)
         alert_model_list = unisphere_alerts.AlertHandler()\
             .parse_queried_alerts(alert_list)

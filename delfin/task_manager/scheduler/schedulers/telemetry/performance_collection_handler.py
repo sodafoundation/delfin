@@ -86,7 +86,8 @@ class PerformanceCollectionHandler(object):
             if self.start_time:
                 start_time = self.start_time
             else:
-                start_time = end_time - (self.interval * 1000) - (overlap * 1000)
+                start_time = \
+                    end_time - (self.interval * 1000) - (overlap * 1000)
             self.start_time = end_time
             # The start time of the task is equal to the end time of the
             # previous performance collection task to avoid repeated data

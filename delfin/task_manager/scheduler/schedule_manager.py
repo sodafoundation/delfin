@@ -89,8 +89,8 @@ class SchedulerManager(object):
                          (failed_task['id'], origin_executor, new_executor))
                 self.task_rpcapi.remove_failed_job(
                     self.ctx, failed_task['id'], failed_task['executor'])
-            distributor.distribute_failed_job(failed_task['id'],
-                                              task['executor'])
+                distributor.distribute_failed_job(failed_task['id'],
+                                                  task['executor'])
         partitioner.stop()
 
     def on_node_leave(self, event):

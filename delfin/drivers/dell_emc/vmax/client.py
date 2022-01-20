@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import datetime
+from datetime import datetime
 
 from oslo_log import log
 from oslo_utils import units
@@ -437,7 +437,7 @@ class VMAXClient(object):
 
     def list_alerts(self, query_para):
         """Get all alerts from an array."""
-        return self.rest.get_alerts(query_para, version=self.uni_version,
+        return self.rest.get_alerts(version=self.uni_version,
                                     array=self.array_id)
 
     def clear_alert(self, sequence_number):
@@ -548,14 +548,13 @@ class VMAXClient(object):
 
     def get_latest_perf_timestamp(self, context):
         """Get the latest time within 30 minutes before and
-        after the current time
-        """
-        current_time = int(datetime.datetime.now().timestamp())
+        after the current time"""
+        current_time = int(datetime.now().timestamp())
         try:
             start_time = (current_time - constants.TelemetryCollection.
                           MAX_TOLERABLE_TIME_DIFF) * 1000
 
-            end_time = (current_time - constants.TelemetryCollection.
+            end_time = (current_time + constants.TelemetryCollection.
                         MAX_TOLERABLE_TIME_DIFF) * 1000
             perf_list = self.rest.get_storage_metrics(
                 self.array_id, consts.METRICS_FOR_COLLECT_TIMESTAMP,
