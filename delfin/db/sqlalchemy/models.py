@@ -302,6 +302,7 @@ class StorageHostInitiator(BASE, DelfinBase):
     alias = Column(String(255))
     wwn = Column(String(255))
     status = Column(String(255))
+    type = Column(String(255))
     native_storage_host_id = Column(String(255))
     native_storage_host_initiator_id = Column(String(255))
 
