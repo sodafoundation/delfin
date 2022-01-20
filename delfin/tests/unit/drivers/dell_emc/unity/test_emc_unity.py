@@ -1526,7 +1526,7 @@ HOST_RESULT = [
         'storage_id': '12345',
         'native_storage_host_id': 'host1',
         'os_type': 'AIX',
-        'status': 'online',
+        'status': 'normal',
         'ip_address': '1.1.1.1'
     }, {
         'name': 'boga',
@@ -1534,7 +1534,7 @@ HOST_RESULT = [
         'storage_id': '12345',
         'native_storage_host_id': 'host2',
         'os_type': 'XenServer',
-        'status': 'online',
+        'status': 'normal',
         'ip_address': '1.1.1.2'
     }, {
         'name': 'fs2',
@@ -1542,7 +1542,7 @@ HOST_RESULT = [
         'storage_id': '12345',
         'native_storage_host_id': 'host3',
         'os_type': 'VMware ESX',
-        'status': 'online',
+        'status': 'normal',
         'ip_address': '1.1.1.1'
     }
 ]
