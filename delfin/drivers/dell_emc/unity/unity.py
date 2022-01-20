@@ -57,9 +57,9 @@ class UnityStorDriver(driver.StorageDriver):
     OS_TYPE_MAP = {'AIX': constants.HostOSTypes.AIX,
                    'Citrix XenServer': constants.HostOSTypes.XEN_SERVER,
                    'HP-UX': constants.HostOSTypes.HP_UX,
-                   'IBM VIOS': constants.HostOSTypes.HP_UX,
+                   'IBM VIOS': constants.HostOSTypes.UNKNOWN,
                    'Linux': constants.HostOSTypes.LINUX,
-                   'Mac OS': constants.HostOSTypes.HP_UX,
+                   'Mac OS': constants.HostOSTypes.UNKNOWN,
                    'Solaris': constants.HostOSTypes.SOLARIS,
                    'VMware ESXi': constants.HostOSTypes.VMWARE_ESX,
                    'Windows Client': constants.HostOSTypes.WINDOWS,
@@ -71,9 +71,15 @@ class UnityStorDriver(driver.StorageDriver):
                             20: constants.InitiatorStatus.ONLINE,
                             10: constants.InitiatorStatus.OFFLINE
                             }
-    INITIATOR_TYPE_MAP = {0: 'unknown',
-                          1: 'fc',
-                          2: 'iscsi'
+    HOST_STATUS_MAP = {5: constants.HostStatus.NORMAL,
+                       7: constants.HostStatus.NORMAL,
+                       15: constants.HostStatus.NORMAL,
+                       20: constants.HostStatus.NORMAL,
+                       10: constants.HostStatus.ABNORMAL
+                       }
+    INITIATOR_TYPE_MAP = {0: constants.InitiatorType.UNKNOWN,
+                          1: constants.InitiatorType.FC,
+                          2: constants.InitiatorType.ISCSI
                           }
 
     def __init__(self, **kwargs):
@@ -730,9 +736,9 @@ class UnityStorDriver(driver.StorageDriver):
                     if not content:
                         continue
                     health_value = content.get('health', {}).get('value')
-                    status = UnityStorDriver.INITIATOR_STATUS_MAP.get(
+                    status = UnityStorDriver.HOST_STATUS_MAP.get(
                         health_value,
-                        constants.InitiatorStatus.UNKNOWN
+                        constants.HostStatus.OFFLINE
                     )
                     if ips:
                         ip_entries = ips.get('entries')
@@ -749,7 +755,8 @@ class UnityStorDriver(driver.StorageDriver):
                             os_type = constants.HostOSTypes.VMWARE_ESX
                         else:
                             os_type = UnityStorDriver.OS_TYPE_MAP.get(
-                                content.get('osType'))
+                                content.get('osType'),
+                                constants.HostOSTypes.UNKNOWN)
                     else:
                         os_type = None
                     host_result = {
