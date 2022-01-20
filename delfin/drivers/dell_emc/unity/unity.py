@@ -755,7 +755,8 @@ class UnityStorDriver(driver.StorageDriver):
                             os_type = constants.HostOSTypes.VMWARE_ESX
                         else:
                             os_type = UnityStorDriver.OS_TYPE_MAP.get(
-                                content.get('osType'))
+                                content.get('osType'),
+                                constants.HostOSTypes.UNKNOWN)
                     else:
                         os_type = None
                     host_result = {
