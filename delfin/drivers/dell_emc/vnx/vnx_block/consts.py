@@ -64,6 +64,8 @@ GET_RESUME_API = 'getresume -all'
 GET_LOG_API = 'getlog -date %(begin_time)s %(end_time)s'
 EMCVNX_VENDOR = 'DELL EMC'
 RAID_GROUP_ID_PREFIX = 'raid_group_'
+GET_SG_LIST_HOST_API = 'storagegroup -messner -list -host'
+GET_PORT_LIST_HBA_API = 'port -list -hba'
 STATUS_MAP = {
     'Ready': constants.StoragePoolStatus.NORMAL,
     'Offline': constants.StoragePoolStatus.OFFLINE,
@@ -143,3 +145,12 @@ PORT_TYPE_MAP = {
     'SAS': constants.PortType.SAS,
     'UNKNOWN': constants.PortType.OTHER
 }
+INITIATOR_TYPE_MAP = {
+    'FC': constants.InitiatorType.FC,
+    'FCOE': constants.InitiatorType.UNKNOWN,
+    'ISCSI': constants.InitiatorType.ISCSI,
+    'SAS': constants.InitiatorType.UNKNOWN,
+    'UNKNOWN': constants.InitiatorType.UNKNOWN
+}
+ALU_PAIRS_PATTERN = '^[0-9]+\\s+[0-9]+$'
+HBA_UID_PATTERN = "^\\s*HBA UID\\s+SP Name\\s+SPPort"
