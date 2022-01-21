@@ -476,28 +476,6 @@ class ComponentHandler(object):
                                     view_model.get('native_masking_view_id'),
                                     host_id, lun_id)
                                 views_list.append(view_model)
-                    elif lun_ids:
-                        for lun_id in lun_ids:
-                            view_model = copy.deepcopy(view_model_template)
-                            view_model['native_volume_id'] = lun_id
-                            view_model[
-                                'native_masking_view_id'] = '%s_%s' % (
-                                view_model.get('native_masking_view_id'),
-                                lun_id)
-                            views_list.append(view_model)
-                    elif host_names:
-                        host_names = list(set(host_names))
-                        for host_name in host_names:
-                            host_id = host_name.replace(' ', '')
-                            view_model = copy.deepcopy(view_model_template)
-                            view_model['native_storage_host_id'] = host_id
-                            view_model[
-                                'native_masking_view_id'] = '%s_%s' % (
-                                view_model.get('native_masking_view_id'),
-                                host_id)
-                            views_list.append(view_model)
-                    else:
-                        views_list.append(view_model_template)
         return views_list
 
     def list_storage_host_initiators(self, storage_id):
