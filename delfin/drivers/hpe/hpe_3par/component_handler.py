@@ -629,13 +629,16 @@ class ComponentHandler():
                     port = view.get('port', '').replace('-', '')
                     lun_id = view.get('lun')
                     wwn = view.get('host_wwn/iscsi_name', '').replace('-', '')
+                    native_port_group_id = None
                     if port:
                         lun_id = '%s_%s' % (view.get('lun'), port)
+                        native_port_group_id = 'port_group_%s' % port
                     if wwn:
                         lun_id = '%s_%s' % (lun_id, wwn)
                     view_model = {
                         'native_masking_view_id': lun_id,
                         "name": view.get('lun'),
+                        'native_port_group_id': native_port_group_id,
                         "storage_id": storage_id
                     }
                     if 'set:' in vv_name:
@@ -653,6 +656,9 @@ class ComponentHandler():
                     else:
                         host_id = hosts_map.get(host_name)
                         view_model['native_storage_host_id'] = host_id
-
-                    views_list.append(view_model)
+                    if (view_model.get('native_storage_host_id')
+                        or view_model.get('native_storage_host_group_id')) \
+                            and (view_model.get('native_volume_id')
+                                 or view_model.get('native_volume_group_id')):
+                        views_list.append(view_model)
         return views_list
