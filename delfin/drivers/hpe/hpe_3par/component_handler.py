@@ -627,14 +627,14 @@ class ComponentHandler():
                 host_name = view.get('hostname')
                 if vv_name and host_name:
                     port = view.get('port', '').replace('-', '')
-                    id = view.get('lun')
+                    lun_id = view.get('lun')
                     wwn = view.get('host_wwn/iscsi_name', '').replace('-', '')
                     if port:
-                        id = '%s_%s' % (view.get('lun'), port)
+                        lun_id = '%s_%s' % (view.get('lun'), port)
                     if wwn:
-                        id = '%s_%s' % (id, wwn)
+                        lun_id = '%s_%s' % (lun_id, wwn)
                     view_model = {
-                        'native_masking_view_id': id,
+                        'native_masking_view_id': lun_id,
                         "name": view.get('lun'),
                         "storage_id": storage_id
                     }
