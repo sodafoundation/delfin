@@ -1329,7 +1329,6 @@ VIEW_RESULT = [
     {
         'native_masking_view_id': '2_0:2:1',
         'name': '2',
-        'native_port_group_id': 'port_group_0:2:1',
         'storage_id': '12345',
         'native_volume_id': '666',
         'native_storage_host_id': '160'
