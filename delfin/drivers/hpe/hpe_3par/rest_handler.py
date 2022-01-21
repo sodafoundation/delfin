@@ -109,7 +109,10 @@ class RestHandler(object):
             if res.status_code == consts.SUCCESS_STATUS_CODES:
                 rejson = res.json()
             else:
-                raise exception.StorageBackendException(res.text)
+                if res.text and 'unsupported' in res.text:
+                    LOG.warn('rest api error: {}'.format(res.text))
+                else:
+                    raise exception.StorageBackendException(res.text)
         return rejson
 
     def login(self):

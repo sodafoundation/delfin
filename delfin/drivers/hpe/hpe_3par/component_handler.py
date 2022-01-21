@@ -580,7 +580,7 @@ class ComponentHandler():
         except Exception as err:
             err_msg = "Failed to collect volume metrics: %s" \
                       % (six.text_type(err))
-            LOG.error(err_msg)
+            LOG.warn(err_msg)
         if obj_metrics:
             for obj_id in obj_metrics.keys():
                 labels = {
