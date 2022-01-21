@@ -390,7 +390,7 @@ Information about each port of this HBA:
     Trusted:               NO
     Logged In:             NO
     Defined:               YES
-    Initiator Type:           3
+    Initiator Type:          3
     StorageGroup Name:     None
 """
 
