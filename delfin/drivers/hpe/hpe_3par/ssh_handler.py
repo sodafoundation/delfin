@@ -456,7 +456,7 @@ class SSHHandler(object):
         re = self.ssh_pool.do_exec(command)
         if re:
             if 'invalid command name' in re or 'Invalid option' in re:
-                LOG.warn(re)
+                LOG.warning(re)
                 raise NotImplementedError(re)
             elif 'Too many local CLI connections' in re:
                 LOG.error("command %s failed: %s" % (command, re))

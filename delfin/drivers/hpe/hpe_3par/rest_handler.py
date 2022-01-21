@@ -110,7 +110,7 @@ class RestHandler(object):
                 rejson = res.json()
             else:
                 if res.text and 'unsupported' in res.text:
-                    LOG.warn('rest api error: {}'.format(res.text))
+                    LOG.warning('rest api error: {}'.format(res.text))
                 else:
                     raise exception.StorageBackendException(res.text)
         return rejson
