@@ -661,9 +661,9 @@ HOST_OS_TYPE_MAP = {
     'hpux': constants.HostOSTypes.HP_UX,
     'aix': constants.HostOSTypes.AIX,
     'linux': constants.HostOSTypes.LINUX,
-    'netware': constants.HostOSTypes.WINDOWS,
+    'netware': constants.HostOSTypes.UNKNOWN,
     'vmware': constants.HostOSTypes.VMWARE_ESX,
     'openvms': constants.HostOSTypes.OPEN_VMS,
     'xen': constants.HostOSTypes.XEN_SERVER,
-    'hyper_v': constants.HostOSTypes.WINDOWS
+    'hyper_v': constants.HostOSTypes.UNKNOWN
 }
