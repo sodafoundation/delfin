@@ -629,16 +629,13 @@ class ComponentHandler():
                     port = view.get('port', '').replace('-', '')
                     id = view.get('lun')
                     wwn = view.get('host_wwn/iscsi_name', '').replace('-', '')
-                    native_port_group_id = None
                     if port:
                         id = '%s_%s' % (view.get('lun'), port)
-                        native_port_group_id = 'port_group_%s' % port
                     if wwn:
                         id = '%s_%s' % (id, wwn)
                     view_model = {
                         'native_masking_view_id': id,
                         "name": view.get('lun'),
-                        'native_port_group_id': native_port_group_id,
                         "storage_id": storage_id
                     }
                     if 'set:' in vv_name:
