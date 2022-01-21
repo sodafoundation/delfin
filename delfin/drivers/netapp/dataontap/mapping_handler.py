@@ -111,6 +111,7 @@ class MappingHandler(object):
                     'type': protocol_type,
                     'status': constants.InitiatorStatus.ONLINE,
                     'storage_id': storage_id,
+                    'wwn': initiator_id
                 }
                 initiator_list.append(initiator_model)
                 for key in initiator_map:
@@ -129,6 +130,7 @@ class MappingHandler(object):
                             'type': protocol_type,
                             'status': constants.InitiatorStatus.ONLINE,
                             'storage_id': storage_id,
+                            'wwn': initiator_id
                         }
                         initiator_list.append(initiator_model)
         for initiator in init_list:
@@ -147,7 +149,7 @@ class MappingHandler(object):
             if 'IgroupName' in initiator_map:
                 initiator_model = {
                     'native_storage_host_id':
-                        initiator_map.get('IgroupUUID'),
+                        initiator_map.get('IgroupName'),
                     'name': initiator_map.get('IgroupName'),
                     'os_type':
                         constant.HOST_OS_TYPE_MAP.get(
