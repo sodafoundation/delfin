@@ -622,10 +622,16 @@ class ComponentHandler():
             volumes_group_map = self.ssh_handler.get_resources_ids(
                 self.ssh_handler.HPE3PAR_COMMAND_SHOWVVSET_D,
                 consts.HOST_OR_VV_PATTERN)
+            host_vv_set = set()
             for view in views:
                 vv_name = view.get('vvname')
                 host_name = view.get('hostname')
                 if vv_name and host_name:
+                    host_vv_key = '%s_%s' % (host_name, vv_name)
+                    host_vv_key = host_vv_key.replace(' ', '')
+                    if host_vv_key in host_vv_set:
+                        continue
+                    host_vv_set.add(host_vv_key)
                     port = view.get('port', '').replace('-', '')
                     lun_id = view.get('lun')
                     wwn = view.get('host_wwn/iscsi_name', '').replace('-', '')
