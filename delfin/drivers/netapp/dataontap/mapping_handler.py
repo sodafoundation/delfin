@@ -54,6 +54,7 @@ class MappingHandler(object):
                     'alias': initiator_map.get('InitiatorAlias'),
                     'type': constants.PortType.ISCSI,
                     'status': constants.InitiatorStatus.ONLINE,
+                    'wwn': initiator_id,
                     'storage_id': storage_id,
                 }
                 initiator_list.append(initiator_model)
