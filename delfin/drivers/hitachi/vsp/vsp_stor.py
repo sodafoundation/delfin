@@ -71,10 +71,9 @@ class HitachiVspDriver(driver.StorageDriver):
                         "FAI": constants.DiskStatus.ABNORMAL,
                         "BLK": constants.DiskStatus.ABNORMAL,
                         "WAR": constants.DiskStatus.ABNORMAL,
-                        "UNK": constants.DiskStatus.ABNORMAL,
-                        "Unknown": constants.DiskStatus.ABNORMAL
+                        "UNK": constants.DiskStatus.NORMAL,
+                        "Unknown": constants.DiskStatus.NORMAL
                         }
-
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
     AUTO_PORT_SPEED = 8 * units.Gi
 
