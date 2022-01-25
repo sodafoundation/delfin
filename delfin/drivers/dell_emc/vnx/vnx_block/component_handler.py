@@ -448,6 +448,7 @@ class ComponentHandler(object):
     def list_masking_views(self, storage_id):
         views = self.navi_handler.list_masking_views()
         views_list = []
+        host_vv_set = set()
         if views:
             for view in views:
                 name = view.get('storage_group_name')
@@ -467,6 +468,10 @@ class ComponentHandler(object):
                         for host_name in host_names:
                             host_id = host_name.replace(' ', '')
                             for lun_id in lun_ids:
+                                host_vv_key = '%s_%s' % (host_id, lun_id)
+                                if host_vv_key in host_vv_set:
+                                    continue
+                                host_vv_set.add(host_vv_key)
                                 view_model = copy.deepcopy(view_model_template)
                                 view_model[
                                     'native_storage_host_id'] = host_id
