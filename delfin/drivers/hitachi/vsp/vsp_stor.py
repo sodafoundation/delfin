@@ -64,6 +64,16 @@ class HitachiVspDriver(driver.StorageDriver):
                      "HNASS": constants.PortType.OTHER,
                      "HNASU": constants.PortType.OTHER
                      }
+    DISK_STATUS_TYPE = {"NML": constants.DiskStatus.NORMAL,
+                        "CPY": constants.DiskStatus.NORMAL,
+                        "CPI": constants.DiskStatus.NORMAL,
+                        "RSV": constants.DiskStatus.NORMAL,
+                        "FAI": constants.DiskStatus.ABNORMAL,
+                        "BLK": constants.DiskStatus.ABNORMAL,
+                        "WAR": constants.DiskStatus.ABNORMAL,
+                        "UNK": constants.DiskStatus.ABNORMAL,
+                        "Unknown": constants.DiskStatus.ABNORMAL
+                        }
 
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
     AUTO_PORT_SPEED = 8 * units.Gi
@@ -359,9 +369,8 @@ class HitachiVspDriver(driver.StorageDriver):
             if disks is not None:
                 disk_entries = disks.get('data')
                 for disk in disk_entries:
-                    status = constants.DiskStatus.ABNORMAL
-                    if disk.get('status' == 'NML'):
-                        status = constants.DiskStatus.NORMAL
+                    status = HitachiVspDriver.DISK_STATUS_TYPE.get(
+                        disk.get('status'), constants.DiskStatus.NORMAL)
                     physical_type = \
                         HitachiVspDriver.DISK_PHYSICAL_TYPE_MAP.get(
                             disk.get('driveTypeName'),
