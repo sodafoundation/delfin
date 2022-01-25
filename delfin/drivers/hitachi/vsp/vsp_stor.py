@@ -74,7 +74,6 @@ class HitachiVspDriver(driver.StorageDriver):
                         "UNK": constants.DiskStatus.NORMAL,
                         "Unknown": constants.DiskStatus.NORMAL
                         }
-
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
     AUTO_PORT_SPEED = 8 * units.Gi
 
