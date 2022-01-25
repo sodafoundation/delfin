@@ -370,10 +370,16 @@ class HitachiVspDriver(driver.StorageDriver):
                 for disk in disk_entries:
                     status = HitachiVspDriver.DISK_STATUS_TYPE.get(
                         disk.get('status'), constants.DiskStatus.NORMAL)
-                    physical_type = \
-                        HitachiVspDriver.DISK_PHYSICAL_TYPE_MAP.get(
-                            disk.get('driveTypeName'),
-                            constants.DiskPhysicalType.UNKNOWN)
+                    if disk.get('driveTypeName'):
+                        type_name = 'SSD' if 'SSD' in \
+                                             disk.get('driveTypeName').upper()\
+                            else disk.get('driveTypeName')
+                        physical_type = \
+                            HitachiVspDriver.DISK_PHYSICAL_TYPE_MAP.get(
+                                type_name,
+                                constants.DiskPhysicalType.UNKNOWN)
+                    else:
+                        physical_type = constants.DiskPhysicalType.UNKNOWN
                     logical_type = HitachiVspDriver.DISK_LOGIC_TYPE_MAP.get(
                         disk.get('usageType'),
                         constants.DiskLogicalType.UNKNOWN)

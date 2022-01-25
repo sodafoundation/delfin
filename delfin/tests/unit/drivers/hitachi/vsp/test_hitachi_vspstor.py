@@ -146,7 +146,7 @@ GET_ALL_DISKS = {
     "data": [
         {
             "driveLocationId": "0-0",
-            "driveTypeName": "SAS",
+            "driveTypeName": "SSD(FMC)",
             "driveSpeed": 10000,
             "totalCapacity": 600,
             "driveType": "DKR5D-J600SS",
@@ -328,7 +328,7 @@ disk_result = [
         'speed': 10000,
         'capacity': 644245094400,
         'status': 'normal',
-        'physical_type': 'sas',
+        'physical_type': 'ssd',
         'logical_type': 'member',
         'native_disk_group_id': '1-6',
         'location': '0-0'
