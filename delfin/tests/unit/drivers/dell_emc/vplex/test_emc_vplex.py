@@ -28,12 +28,14 @@ ACCESS_INFO = {
         "password": "Abcdef@123"
     }
 }
+
 TRAP_INFO = {
     "1.3.6.1.2.1.1.3.0": "0",
     '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.1139.21.0',
     '1.3.6.1.4.1.1139.21.1.5.0': 'this is test',
     '1.3.6.1.4.1.1139.21.1.3.0': '123321'
 }
+
 trap_result = {
     'alert_id': '123321',
     'alert_name': 'this is test',
@@ -46,6 +48,7 @@ trap_result = {
     'location': '',
     'match_key': '8c6d115258631625b625486f81b09532'
 }
+
 GET_ALL_CLUSTER = {
     "context": [{
         "children": [{
@@ -56,6 +59,7 @@ GET_ALL_CLUSTER = {
     }
     ]
 }
+
 GET_ALL_LUNS = {
     "context": [
         {
@@ -68,6 +72,7 @@ GET_ALL_LUNS = {
         }
     ]
 }
+
 GET_LUN = {
     "context": [
         {
@@ -114,6 +119,7 @@ volume_result = [{
     'wwn': '60000000000000000000000000000000'
 }
 ]
+
 GET_ALL_POOLS = {
     "context": [
         {
@@ -126,6 +132,7 @@ GET_ALL_POOLS = {
         }
     ]
 }
+
 GET_POOL = {
     "context": [
         {
@@ -154,6 +161,7 @@ GET_POOL = {
         }
     ]
 }
+
 pool_result = [
     {
         'name': 'Device_KLM_test01',
@@ -167,6 +175,7 @@ pool_result = [
         'free_capacity': 0
     }
 ]
+
 GET_HEALH_CHECK = {
     "context": None,
     "message": "health-check -l",
@@ -174,6 +183,7 @@ GET_HEALH_CHECK = {
     "custom-data": "Product Version: 6.1.0.01.00.13\n"
                    "Product Type: Local\n"
 }
+
 GET_CLUSTER = {
     "context": [
         {
@@ -196,6 +206,7 @@ GET_CLUSTER = {
         }
     ]
 }
+
 storage_result = {
     'name': 'cluster-1',
     'vendor': 'DELL EMC',
@@ -210,16 +221,20 @@ storage_result = {
     'used_capacity': 8983009998929,
     'free_capacity': 2671813255496
 }
+
 GET_ALL_STORAGE_VOLUME_SUMMARY = {
     "custom-data": "Capacity                total         11.6T\n\n"
 }
+
 GET_ALL_POOLS_SUMMARY = {
     "custom-data": "total capacity    1.88T  total capacity    "
                    "8.68T  total capacity    10.6T\n\n"
 }
+
 GET_ALL_LUNS_SUMMARY = {
     "custom-data": "Total virtual-volume capacity is 8.17T."
 }
+
 GET_ALL_ENGINE_DIRECTOR = {
     "context": [
         {
@@ -242,6 +257,7 @@ GET_ALL_ENGINE_DIRECTOR = {
         }
     ]
 }
+
 controllers_result = [
     {
         'native_controller_id': '0x00000000472029e9',
@@ -374,6 +390,7 @@ GET_ALL_ENGINE_DIRECTOR_HARDWARE_PORT = {
         }
     ]
 }
+
 ports_result = [
     {
         'native_port_id': 'P00000000472029E9-A0-FC00',
@@ -466,15 +483,15 @@ GET_INITIATORS_PORT = {
             "attributes": [
                 {
                     "name": "name",
-                    "value": "0x2000002ec7dfe7d9"
+                    "value": "CHEN_LINUX"
                 },
                 {
                     "name": "node-wwn",
-                    "value": "0x2000002ec7dfe7d9"
+                    "value": "0x21000024ff7fb74d"
                 },
                 {
                     "name": "port-wwn",
-                    "value": "0x2000002ec7dfe7d9"
+                    "value": "0x21000024ff7fb74d"
                 },
                 {
                     "name": "scsi-spc-version",
@@ -524,36 +541,27 @@ list_port_groups_result = {
 
 list_storage_host_initiators_result = [
     {
-        'name': '0x2000002ec7dfe7d9',
+        'name': 'CHEN_LINUX',
         'type': 'fc',
         'storage_id': '12345',
-        'native_storage_host_initiator_id': '0x2000002ec7dfe7d9',
-        'wwn': '0x2000002ec7dfe7d9',
-        'alias': '0x2000002ec7dfe7d9',
+        'native_storage_host_initiator_id': '0x21000024ff7fb74d',
+        'wwn': '0x21000024ff7fb74d',
+        'alias': '0x21000024ff7fb74d',
         'status': 'online',
-        'native_storage_host_id': '0x2000002ec7dfe7d9'
+        'native_storage_host_id': '0x21000024ff7fb74d'
     }
 ]
 
 list_storage_hosts_result = [
     {
-        'name': '0x2000002ec7dfe7d9',
-        'description': '0x2000002ec7dfe7d9',
-        'storage_id': '12345',
-        'native_storage_host_id': '0x2000002ec7dfe7d9',
-        'status': 'normal'
-    }
-]
-
-list_view_hosts_result = [
-    {
         'name': 'CHEN_LINUX',
-        'description': 'CHEN_LINUX',
+        'description': '0x21000024ff7fb74d',
         'storage_id': '12345',
         'native_storage_host_id': '0x21000024ff7fb74d',
         'status': 'normal'
     }
 ]
+
 
 list_masking_views_result = [
     {
@@ -659,7 +667,7 @@ class TestVplexStorDriver(TestCase):
     @mock.patch.object(RestHandler, 'get_storage_views')
     @mock.patch.object(VplexStorageDriver, 'list_storage_hosts')
     def test_list_masking_views(self, mock_storage_view, mock_storage_hosts):
-        mock_storage_view.return_value = list_view_hosts_result
+        mock_storage_view.return_value = list_storage_hosts_result
         mock_storage_hosts.return_value = GET_STORAGE_VIEW
         list_masking_views = VplexStorageDriver(**ACCESS_INFO). \
             list_masking_views(context)
