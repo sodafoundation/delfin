@@ -454,6 +454,115 @@ port_result = [
         'ipv4_mask': '255.255.0.0',
         'ipv6': None
     }]
+GET_ALL_GROUPS = {
+    "data": [
+        {
+            "hostGroupId": "CL1-A,0",
+            "portId": "CL1-A",
+            "hostGroupNumber": 0,
+            "hostGroupName": "1A-G00",
+            "hostMode": "LINUX/IRIX"
+        }
+    ]
+}
+GET_SINGLE_WWN_GROUP = {
+    "hostGroupId": "CL1-A,0",
+    "portId": "CL1-A",
+    "hostGroupNumber": 0,
+    "hostGroupName": "1A-G00",
+    "hostMode": "LINUX/IRIX"
+}
+GET_SINGLE_ISCSI_GROUP = {
+    "hostGroupId": "CL1-A,0",
+    "portId": "CL1-A",
+    "hostGroupNumber": 0,
+    "hostGroupName": "1A-G00",
+    "hostMode": "LINUX/IRIX",
+    "iscsiName": "iqn.ewdhehdhdhh"
+}
+GET_HOST_WWN = {
+    "data": [
+        {
+            "hostWwnId": "CL1-A,0,21000024ff8f5296",
+            "portId": "CL1-A",
+            "hostGroupNumber": 0,
+            "hostGroupName": "1A-G00",
+            "hostWwn": "21000024ff8f5296",
+            "wwnNickname": "-"
+        }
+    ]
+}
+GET_HOST_ISCSI = {
+    "data": [
+        {
+            "hostIscsiId": "CL1-A,0,iqn.ewdhehdhdhh",
+            "portId": "CL1-A",
+            "hostGroupNumber": 0,
+            "hostGroupName": "3C-G00",
+            "iscsiName": "iqn.ewdhehdhdhh",
+            "iscsiNickname": "test_tjy"
+        }
+    ]
+}
+GET_LUN_PATH = {
+    "data": [
+        {
+            "lunId": "CL1-A,1,1",
+            "portId": "CL1-A",
+            "hostGroupNumber": 0,
+            "hostMode": "LINUX/IRIX",
+            "lun": 1,
+            "ldevId": 1
+        }
+    ]
+}
+initator_result = [
+    {
+        'name': '21000024ff8f5296',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': 'CL1-A_0_21000024ff8f5296',
+        'wwn': '21000024ff8f5296',
+        'status': 'online',
+        'type': 'fc',
+        'alias': 'CL1-A',
+        'native_storage_host_id': 'CL1-A_0_21000024ff8f5296'
+    }
+]
+host_result = [
+    {
+        'name': 'test_tjy',
+        'storage_id': '12345',
+        'native_storage_host_id': 'CL1-A_0_iqn.ewdhehdhdhh',
+        'os_type': 'Linux',
+        'status': 'normal'
+    }
+]
+view_result = [
+    {
+        'name': 'CL1-A,1,1',
+        'native_storage_host_group_id': 'CL1-A_0',
+        'storage_id': '12345',
+        'native_volume_id': '00:00:01',
+        'native_masking_view_id': 'CL1-A_1_1'
+    }
+]
+groups_result = {
+    'storage_host_groups': [
+        {
+            'name': '1A-G00',
+            'storage_id': '12345',
+            'native_storage_host_group_id': 'CL1-A_0',
+            'storage_hosts': 'CL1-A_0_iqn.ewdhehdhdhh'
+        }
+    ],
+    'storage_host_grp_host_rels': [
+        {
+            'storage_id': '12345',
+            'native_storage_host_group_id': 'CL1-A_0',
+            'native_storage_host_id': 'CL1-A_0_iqn.ewdhehdhdhh'
+        }
+    ]
+}
 
 
 def create_driver():
@@ -551,3 +660,47 @@ class TestHitachiVspStorStorageDriver(TestCase):
         mock_detail.return_value = GET_DETAIL_PORT
         port = HitachiVspDriver(**ACCESS_INFO).list_ports(context)
         self.assertEqual(port, port_result)
+
+    @mock.patch.object(RestHandler, 'get_specific_host_group')
+    @mock.patch.object(RestHandler, 'get_all_host_groups')
+    @mock.patch.object(RestHandler, 'get_host_wwn')
+    def test_host_initiators(self, mock_wwn, mock_groups, mock_group):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_groups.return_value = GET_ALL_GROUPS
+        mock_group.return_value = GET_SINGLE_WWN_GROUP
+        mock_wwn.return_value = GET_HOST_WWN
+        initiators = HitachiVspDriver(
+            **ACCESS_INFO).list_storage_host_initiators(context)
+        self.assertEqual(initiators, initator_result)
+
+    @mock.patch.object(RestHandler, 'get_specific_host_group')
+    @mock.patch.object(RestHandler, 'get_all_host_groups')
+    @mock.patch.object(RestHandler, 'get_iscsi_name')
+    def test_hosts(self, mock_iscsi, mock_groups, mock_group):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_groups.return_value = GET_ALL_GROUPS
+        mock_group.return_value = GET_SINGLE_ISCSI_GROUP
+        mock_iscsi.return_value = GET_HOST_ISCSI
+        hosts = HitachiVspDriver(**ACCESS_INFO).list_storage_hosts(context)
+        self.assertEqual(hosts, host_result)
+
+    @mock.patch.object(RestHandler, 'get_all_host_groups')
+    @mock.patch.object(RestHandler, 'get_lun_path')
+    def test_masking_views(self, mock_view, mock_groups):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_groups.return_value = GET_ALL_GROUPS
+        mock_view.return_value = GET_LUN_PATH
+        views = HitachiVspDriver(**ACCESS_INFO).list_masking_views(context)
+        self.assertEqual(views, view_result)
+
+    @mock.patch.object(RestHandler, 'get_specific_host_group')
+    @mock.patch.object(RestHandler, 'get_all_host_groups')
+    @mock.patch.object(RestHandler, 'get_iscsi_name')
+    def test_host_groups(self, mock_iscsi, mock_groups, mock_group):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_groups.return_value = GET_ALL_GROUPS
+        mock_group.return_value = GET_SINGLE_ISCSI_GROUP
+        mock_iscsi.return_value = GET_HOST_ISCSI
+        groups = \
+            HitachiVspDriver(**ACCESS_INFO).list_storage_host_groups(context)
+        self.assertEqual(groups, groups_result)

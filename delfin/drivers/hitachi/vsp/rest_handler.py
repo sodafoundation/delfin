@@ -18,7 +18,7 @@ import requests
 import six
 from oslo_log import log as logging
 
-from delfin import cryptor
+# from delfin import cryptor
 from delfin import exception
 from delfin.drivers.hitachi.vsp import consts
 from delfin.drivers.utils.rest_client import RestClient
@@ -73,7 +73,7 @@ class RestHandler(RestClient):
             auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
             if auth_key:
                 self.session.headers[RestHandler.AUTH_KEY] \
-                    = cryptor.decode(auth_key)
+                    = auth_key
         res = self. \
             do_call(url, data, method, calltimeout)
         if auth_key:
@@ -106,17 +106,17 @@ class RestHandler(RestClient):
                     self.session.auth = \
                         requests.auth.HTTPBasicAuth(
                             self.rest_username,
-                            cryptor.decode(self.rest_password))
+                            self.rest_password)
                     res = self.call_with_token(url, data, 'POST', 30)
                     if res.status_code == 200:
                         succeed = True
                         result = res.json()
-                        self.session_id = cryptor.encode(
-                            result.get('sessionId'))
+                        self.session_id = \
+                            result.get('sessionId')
                         access_session = 'Session %s' % result.get('token')
                         self.session.headers[
-                            RestHandler.AUTH_KEY] = cryptor.encode(
-                            access_session)
+                            RestHandler.AUTH_KEY] = \
+                            access_session
                     else:
                         LOG.error("Login error. URL: %(url)s\n"
                                   "Reason: %(reason)s.",
@@ -152,7 +152,7 @@ class RestHandler(RestClient):
                 url = '%s/%s/sessions/%s' % \
                       (RestHandler.COMM_URL,
                        self.storage_device_id,
-                       cryptor.decode(self.session_id))
+                       self.session_id)
                 if self.san_address:
                     self.call(url, method='DELETE')
                     url = None
@@ -184,7 +184,8 @@ class RestHandler(RestClient):
                         self.device_model = system.get('model')
                         self.serial_number = system.get('serialNumber')
                         break
-                elif system.get('svpIp') == self.rest_host:
+                # elif system.get('svpIp') == self.rest_host:
+                else:
                     self.storage_device_id = system.get('storageDeviceId')
                     self.device_model = system.get('model')
                     self.serial_number = system.get('serialNumber')
@@ -259,5 +260,39 @@ class RestHandler(RestClient):
         url = '%s/%s/alerts?%s&start=%s&count=%s' % (RestHandler.COMM_URL,
                                                      self.storage_device_id,
                                                      param, start, end)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_all_host_groups(self):
+        url = '%s/%s/host-groups' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_specific_host_group(self, group_id):
+        url = '%s/%s/host-groups/%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, group_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_host_wwn(self, port_id, group_number):
+        url = '%s/%s/host-wwns?portId=%s&hostGroupNumber=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id,
+               group_number)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_iscsi_name(self, port_id, group_number):
+        url = '%s/%s/host-iscsis?portId=%s&hostGroupNumber=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id,
+               group_number)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_lun_path(self, port_id, group_number):
+        url = '%s/%s/luns?portId=%s&hostGroupNumber=%s&' \
+              'isBasicLunInformation=true' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id,
+               group_number)
         result_json = self.get_rest_info(url)
         return result_json
