@@ -541,7 +541,6 @@ class HitachiVspDriver(driver.StorageDriver):
                     'result': host_list
                 }
                 self.handle_san_info(**kwargs)
-            LOG.error(host_list)
             return host_list
         except Exception as e:
             LOG.error("Failed to get host from vsp")
@@ -562,11 +561,13 @@ class HitachiVspDriver(driver.StorageDriver):
                     initiator_id = host.get('hostWwnId')
                     init_type = constants.InitiatorType.FC
                     init_name = host.get('hostWwn')
+                for initiator in initiator_list:
+                    if initiator.get('wwn') == init_name:
+                        continue
                 init_result = {
                     "name": init_name,
                     "storage_id": storage_id,
-                    "native_storage_host_initiator_id":
-                        initiator_id.replace(",", "_"),
+                    "native_storage_host_initiator_id": init_name,
                     "wwn": init_name,
                     "status": constants.InitiatorStatus.ONLINE,
                     "type": init_type,
@@ -590,7 +591,6 @@ class HitachiVspDriver(driver.StorageDriver):
                     'result': initiator_list
                 }
                 self.handle_san_info(**kwargs)
-            LOG.error(initiator_list)
             return initiator_list
         except Exception as e:
             LOG.error("Failed to get initiators from vsp")
@@ -634,7 +634,6 @@ class HitachiVspDriver(driver.StorageDriver):
                 'storage_host_groups': host_group_list,
                 'storage_host_grp_host_rels': host_grp_relation_list
             }
-            LOG.error(result)
             return result
         except Exception:
             LOG.error("Failed to get host_groups from vsp")
@@ -677,7 +676,6 @@ class HitachiVspDriver(driver.StorageDriver):
                     'result': view_list
                 }
                 self.handle_lun_path(**kwargs)
-            LOG.error(view_list)
             return view_list
         except Exception as e:
             LOG.error("Failed to get views from vsp")
