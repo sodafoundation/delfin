@@ -1109,7 +1109,6 @@ class SSHHandler(object):
                         "native_masking_view_id": view_id,
                     }
                     view_list.append(view_result)
-
             return view_list
         except Exception as e:
             LOG.error("Failed to get view metrics from svc")
