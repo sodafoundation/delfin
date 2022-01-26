@@ -28,10 +28,11 @@ class TrapSeverity:
         '10': 'mark'
     }
 
-    SEVERITY_MAP = {"warning": "Warning",
-                    "informational": "Informational",
-                    "error": "Major"
-                    }
+    SEVERITY_MAP = {
+        "warning": "Warning",
+        "informational": "Informational",
+        "error": "Major"
+    }
 
 
 class SecondsNumber:
@@ -52,8 +53,6 @@ class DiskPhysicalType:
 class InitiatorType:
     ISCSI_INITIATOR_TYPE = "9"
     FC_INITIATOR_TYPE = "6"
-    SAS_INITIATOR_TYPE = "8"
-    ISCSI_INITIATOR_DESCRIPTION = 'iSCSI Initiator'
-    FC_INITIATOR_DESCRIPTION = 'FC Initiator'
-    IB_INITIATOR_DESCRIPTION = 'IB Initiator'
-    UNKNOWN_INITIATOR_DESCRIPTION = 'Unknown Initiator'
+    ISCSI_INITIATOR_DESCRIPTION = constants.InitiatorType.ISCSI
+    FC_INITIATOR_DESCRIPTION = constants.InitiatorType.FC
+    UNKNOWN_INITIATOR_DESCRIPTION = constants.InitiatorType.UNKNOWN
