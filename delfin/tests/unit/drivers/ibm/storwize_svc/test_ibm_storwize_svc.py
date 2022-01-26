@@ -1395,7 +1395,7 @@ host_result = [
         'name': 'tjy_test_iscsi',
         'storage_id': '12345',
         'native_storage_host_id': '38',
-        'os_type': 'Linux',
+        'os_type': 'Unknown',
         'status': 'normal'
     }
 ]
