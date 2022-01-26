@@ -587,7 +587,7 @@ class SSHHandler(object):
             port_result = {
                 'name': location,
                 'storage_id': storage_id,
-                'native_port_id': location,
+                'native_port_id': port_map.get('id'),
                 'location': location,
                 'connection_status': conn_status,
                 'health_status': status,
@@ -758,7 +758,7 @@ class SSHHandler(object):
                                     resource_info).get('iops').get(iops_time)
                                 res_value = \
                                     res_value / iops_value if iops_value else 0
-                                res_value = round(res_value, 2)
+                                res_value = round(res_value, 3)
                                 metric_map[resource_info][target][res_time] = \
                                     res_value
                                 break
@@ -795,7 +795,7 @@ class SSHHandler(object):
         elif 'IOPS' in metric_type.upper() or 'RESPONSETIME' \
                 in metric_type.upper():
             value = value / interval
-        value = round(value, 2)
+        value = round(value, 3)
         if metric_map.get(res_id):
             if metric_map.get(res_id).get(metric_type):
                 if metric_map.get(res_id).get(metric_type).get(
