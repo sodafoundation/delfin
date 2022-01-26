@@ -17,8 +17,6 @@ SOCKET_TIMEOUT = 10
 BASE_CONTEXT = '/vplex'
 REST_AUTH_URL = '/vplex/clusters'
 
-UNKNOWN_INITIATOR_DESCRIPTION = 'Unknown Initiator'
-
 PORT_TYPE_MAP = {
     'fc': constants.PortType.FC,
     'iscsi': constants.PortType.ISCSI,
@@ -31,12 +29,8 @@ PORT_TYPE_MAP = {
 }
 
 INITIATOR_DESCRIPTION = {
-    'iscsi': 'iSCSI Initiator',
-    'fc': 'FC Initiator',
-    'sas': 'SAS Initiator',
-    'ib': 'IB Initiator',
-    'ficon': 'FICON Initiator',
-    'eth': 'ETH Initiator'
+    'iscsi': constants.InitiatorType.ISCSI,
+    'fc': constants.InitiatorType.FC,
 }
 
 PORT_LOGICAL_TYPE_MAP = {

@@ -563,6 +563,7 @@ class VplexStorageDriver(driver.StorageDriver):
             view_response = self.rest_handler.get_storage_views()
             storage_view_list = self.get_attributes_from_response(
                 view_response)
+            host_list = self.list_storage_hosts(content)
             for storage_view in storage_view_list:
                 virtual_volumes = storage_view.get('virtual-volumes')
                 initiators_list = storage_view.get('initiators')
@@ -570,33 +571,43 @@ class VplexStorageDriver(driver.StorageDriver):
                 if initiators_list:
                     for initiator_info in initiators_list:
                         native_masking_view_id = initiator_info
-                        if virtual_volumes:
-                            for virtual_volume in virtual_volumes:
-                                volume_value = virtual_volume.split(',')
-                                native_volume_group_id = volume_value[1]
-                                view_map = {
-                                    "name": view_name,
-                                    "description": view_name,
-                                    "storage_id": self.storage_id,
-                                    "native_masking_view_id":
-                                        native_masking_view_id,
-                                    "native_port_group_id": "port_group_"
-                                                            + initiator_info,
-                                    "native_volume_group_id":
-                                        native_volume_group_id
-                                }
-                                view_list.append(view_map)
-                        else:
-                            view_map = {
-                                "name": view_name,
-                                "description": view_name,
-                                "storage_id": self.storage_id,
-                                "native_masking_view_id":
-                                    native_masking_view_id,
-                                "native_port_group_id": "port_group_"
-                                                        + initiator_info
-                            }
-                            view_list.append(view_map)
+                        for host_value in host_list:
+                            host_name = host_value.get('name')
+                            if host_name == initiator_info:
+                                native_storage_host_id = host_value.get(
+                                    'native_storage_host_id')
+                                if virtual_volumes:
+                                    for virtual_volume in virtual_volumes:
+                                        volume_value = virtual_volume.split(
+                                            ',')
+                                        native_volume_id = volume_value[2]
+                                        view_map = {
+                                            "name": view_name,
+                                            "description": view_name,
+                                            "storage_id": self.storage_id,
+                                            "native_masking_view_id":
+                                                native_masking_view_id,
+                                            "native_port_group_id":
+                                                "port_group_" + initiator_info,
+                                            "native_volume_id":
+                                                native_volume_id,
+                                            "native_storage_host_id":
+                                                native_storage_host_id
+                                        }
+                                        view_list.append(view_map)
+                                else:
+                                    view_map = {
+                                        "name": view_name,
+                                        "description": view_name,
+                                        "storage_id": self.storage_id,
+                                        "native_masking_view_id":
+                                            native_masking_view_id,
+                                        "native_port_group_id":
+                                            "port_group_" + initiator_info,
+                                        "native_storage_host_id":
+                                            native_storage_host_id
+                                    }
+                                    view_list.append(view_map)
             return view_list
         except Exception:
             LOG.error("Failed to get view  from vplex")
@@ -614,16 +625,17 @@ class VplexStorageDriver(driver.StorageDriver):
                 initiators_type_index = initiators_type_arr[0]
                 description = consts.INITIATOR_DESCRIPTION.get(
                     initiators_type_index,
-                    consts.UNKNOWN_INITIATOR_DESCRIPTION)
+                    constants.InitiatorType.UNKNOWN)
                 initiator_item = {
                     "name": initiators_map.get('name'),
-                    "description": description,
+                    "type": description,
                     "storage_id": self.storage_id,
                     "native_storage_host_initiator_id":
-                        initiators_map.get('node-wwn'),
-                    "wwn": initiators_map.get('node-wwn'),
+                        initiators_map.get('port-wwn'),
+                    "wwn": initiators_map.get('port-wwn'),
+                    "alias": initiators_map.get('port-wwn'),
                     "status": constants.InitiatorStatus.ONLINE,
-                    "native_storage_host_id": initiators_map.get('node-wwn')
+                    "native_storage_host_id": initiators_map.get('port-wwn')
                 }
                 initiators_list.append(initiator_item)
             return initiators_list
@@ -638,11 +650,10 @@ class VplexStorageDriver(driver.StorageDriver):
             hosts_info_list = self.get_attributes_from_response(host_response)
             for host_info in hosts_info_list:
                 host_dict = {
-                    "name": host_info.get('node-wwn'),
-                    "description": host_info.get('node-wwn'),
+                    "name": host_info.get('name'),
+                    "description": host_info.get('port-wwn'),
                     "storage_id": self.storage_id,
-                    "native_storage_host_id": host_info.get('node-wwn'),
-                    "os_type": '',
+                    "native_storage_host_id": host_info.get('port-wwn'),
                     "status": constants.HostStatus.NORMAL
                 }
                 hosts_list.append(host_dict)
