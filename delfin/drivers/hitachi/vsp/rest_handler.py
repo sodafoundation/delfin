@@ -18,7 +18,7 @@ import requests
 import six
 from oslo_log import log as logging
 
-# from delfin import cryptor
+from delfin import cryptor
 from delfin import exception
 from delfin.drivers.hitachi.vsp import consts
 from delfin.drivers.utils.rest_client import RestClient
@@ -73,7 +73,7 @@ class RestHandler(RestClient):
             auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
             if auth_key:
                 self.session.headers[RestHandler.AUTH_KEY] \
-                    = auth_key
+                    = cryptor.decode(auth_key)
         res = self. \
             do_call(url, data, method, calltimeout)
         if auth_key:
@@ -106,17 +106,17 @@ class RestHandler(RestClient):
                     self.session.auth = \
                         requests.auth.HTTPBasicAuth(
                             self.rest_username,
-                            self.rest_password)
+                            cryptor.decode(self.rest_password))
                     res = self.call_with_token(url, data, 'POST', 30)
                     if res.status_code == 200:
                         succeed = True
                         result = res.json()
-                        self.session_id = \
-                            result.get('sessionId')
+                        self.session_id = cryptor.encode(
+                            result.get('sessionId'))
                         access_session = 'Session %s' % result.get('token')
                         self.session.headers[
-                            RestHandler.AUTH_KEY] = \
-                            access_session
+                            RestHandler.AUTH_KEY] = cryptor.encode(
+                            access_session)
                     else:
                         LOG.error("Login error. URL: %(url)s\n"
                                   "Reason: %(reason)s.",
@@ -152,7 +152,7 @@ class RestHandler(RestClient):
                 url = '%s/%s/sessions/%s' % \
                       (RestHandler.COMM_URL,
                        self.storage_device_id,
-                       self.session_id)
+                       cryptor.decode(self.session_id))
                 if self.san_address:
                     self.call(url, method='DELETE')
                     url = None
