@@ -440,8 +440,8 @@ GET_STORAGE_VIEW = {
                 {
                     "name": "virtual-volumes",
                     "value": [
-                        "(0,device_wcj_hp_3_c1_vol,16G)",
-                        "(1,dg_ocr,100G)"
+                        "(0,device_wcj_hp_3_c1_vol,123,16G)",
+                        "(1,dg_ocr,456,100G)"
                     ]
                 },
                 {
@@ -525,10 +525,11 @@ list_port_groups_result = {
 list_storage_host_initiators_result = [
     {
         'name': '0x2000002ec7dfe7d9',
-        'description': 'FC Initiator',
+        'type': 'fc',
         'storage_id': '12345',
         'native_storage_host_initiator_id': '0x2000002ec7dfe7d9',
         'wwn': '0x2000002ec7dfe7d9',
+        'alias': '0x2000002ec7dfe7d9',
         'status': 'online',
         'native_storage_host_id': '0x2000002ec7dfe7d9'
     }
@@ -540,7 +541,16 @@ list_storage_hosts_result = [
         'description': '0x2000002ec7dfe7d9',
         'storage_id': '12345',
         'native_storage_host_id': '0x2000002ec7dfe7d9',
-        'os_type': '',
+        'status': 'normal'
+    }
+]
+
+list_view_hosts_result = [
+    {
+        'name': 'CHEN_LINUX',
+        'description': 'CHEN_LINUX',
+        'storage_id': '12345',
+        'native_storage_host_id': '0x21000024ff7fb74d',
         'status': 'normal'
     }
 ]
@@ -552,7 +562,17 @@ list_masking_views_result = [
         'storage_id': '12345',
         'native_masking_view_id': 'CHEN_LINUX',
         'native_port_group_id': 'port_group_CHEN_LINUX',
-        'native_volume_group_id': 'device_wcj_hp_3_c1_vol'
+        'native_volume_id': '123',
+        'native_storage_host_id': '0x21000024ff7fb74d'
+    },
+    {
+        'name': 'CHEN_LINUX',
+        'description': 'CHEN_LINUX',
+        'storage_id': '12345',
+        'native_masking_view_id': 'CHEN_LINUX',
+        'native_port_group_id': 'port_group_CHEN_LINUX',
+        'native_volume_id': '456',
+        'native_storage_host_id': '0x21000024ff7fb74d'
     }
 ]
 
@@ -637,8 +657,10 @@ class TestVplexStorDriver(TestCase):
                              list_storage_hosts_result[0])
 
     @mock.patch.object(RestHandler, 'get_storage_views')
-    def test_list_masking_views(self, mock_storage_view):
-        mock_storage_view.return_value = GET_STORAGE_VIEW
+    @mock.patch.object(VplexStorageDriver, 'list_storage_hosts')
+    def test_list_masking_views(self, mock_storage_view, mock_storage_hosts):
+        mock_storage_view.return_value = list_view_hosts_result
+        mock_storage_hosts.return_value = GET_STORAGE_VIEW
         list_masking_views = VplexStorageDriver(**ACCESS_INFO). \
             list_masking_views(context)
         self.assertDictEqual(list_masking_views[0],
