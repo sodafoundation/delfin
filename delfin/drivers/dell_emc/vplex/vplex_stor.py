@@ -563,39 +563,26 @@ class VplexStorageDriver(driver.StorageDriver):
             view_response = self.rest_handler.get_storage_views()
             storage_view_list = self.get_attributes_from_response(
                 view_response)
-            host_list = self.list_storage_hosts(content)
-            for storage_view in storage_view_list:
-                virtual_volumes = storage_view.get('virtual-volumes')
-                initiators_list = storage_view.get('initiators')
-                view_name = storage_view.get('name')
-                if initiators_list:
-                    for initiator_info in initiators_list:
-                        native_masking_view_id = initiator_info
-                        for host_value in host_list:
-                            host_name = host_value.get('name')
-                            if host_name == initiator_info:
-                                native_storage_host_id = host_value.get(
-                                    'native_storage_host_id')
-                                if virtual_volumes:
-                                    for virtual_volume in virtual_volumes:
-                                        volume_value = virtual_volume.split(
-                                            ',')
-                                        native_volume_id = volume_value[2]
-                                        view_map = {
-                                            "name": view_name,
-                                            "description": view_name,
-                                            "storage_id": self.storage_id,
-                                            "native_masking_view_id":
-                                                native_masking_view_id,
-                                            "native_port_group_id":
-                                                "port_group_" + initiator_info,
-                                            "native_volume_id":
-                                                native_volume_id,
-                                            "native_storage_host_id":
-                                                native_storage_host_id
-                                        }
-                                        view_list.append(view_map)
-                                else:
+            if storage_view_list:
+                host_list = self.list_storage_hosts(content)
+                host_map = {}
+                for host_value in host_list:
+                    host_map[host_value.get('name')] = \
+                        host_value.get('native_storage_host_id')
+                for storage_view in storage_view_list:
+                    virtual_volumes = storage_view.get('virtual-volumes')
+                    initiators_list = storage_view.get('initiators')
+                    view_name = storage_view.get('name')
+                    if initiators_list:
+                        for initiator_info in initiators_list:
+                            native_masking_view_id = initiator_info
+                            native_storage_host_id = host_map.get(
+                                initiator_info)
+                            if virtual_volumes:
+                                for virtual_volume in virtual_volumes:
+                                    volume_value = virtual_volume.split(
+                                        ',')
+                                    native_volume_id = volume_value[2]
                                     view_map = {
                                         "name": view_name,
                                         "description": view_name,
@@ -604,6 +591,8 @@ class VplexStorageDriver(driver.StorageDriver):
                                             native_masking_view_id,
                                         "native_port_group_id":
                                             "port_group_" + initiator_info,
+                                        "native_volume_id":
+                                            native_volume_id,
                                         "native_storage_host_id":
                                             native_storage_host_id
                                     }
