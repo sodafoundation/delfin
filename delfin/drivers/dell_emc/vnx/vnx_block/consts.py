@@ -147,9 +147,9 @@ PORT_TYPE_MAP = {
 }
 INITIATOR_TYPE_MAP = {
     'FC': constants.InitiatorType.FC,
-    'FCOE': constants.InitiatorType.UNKNOWN,
+    'FCOE': constants.InitiatorType.FC,
     'ISCSI': constants.InitiatorType.ISCSI,
-    'SAS': constants.InitiatorType.UNKNOWN,
+    'SAS': constants.InitiatorType.SAS,
     'UNKNOWN': constants.InitiatorType.UNKNOWN
 }
 ALU_PAIRS_PATTERN = '^[0-9]+\\s+[0-9]+$'
