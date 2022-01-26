@@ -184,8 +184,7 @@ class RestHandler(RestClient):
                         self.device_model = system.get('model')
                         self.serial_number = system.get('serialNumber')
                         break
-                # elif system.get('svpIp') == self.rest_host:
-                else:
+                elif system.get('svpIp') == self.rest_host:
                     self.storage_device_id = system.get('storageDeviceId')
                     self.device_model = system.get('model')
                     self.serial_number = system.get('serialNumber')
