@@ -562,7 +562,6 @@ list_storage_hosts_result = [
     }
 ]
 
-
 list_masking_views_result = [
     {
         'name': 'CHEN_LINUX',
