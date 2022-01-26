@@ -520,7 +520,7 @@ initator_result = [
     {
         'name': '21000024ff8f5296',
         'storage_id': '12345',
-        'native_storage_host_initiator_id': 'CL1-A_0_21000024ff8f5296',
+        'native_storage_host_initiator_id': '21000024ff8f5296',
         'wwn': '21000024ff8f5296',
         'status': 'online',
         'type': 'fc',
