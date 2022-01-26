@@ -17,8 +17,6 @@ SOCKET_TIMEOUT = 10
 BASE_CONTEXT = '/vplex'
 REST_AUTH_URL = '/vplex/clusters'
 
-
-
 PORT_TYPE_MAP = {
     'fc': constants.PortType.FC,
     'iscsi': constants.PortType.ISCSI,
