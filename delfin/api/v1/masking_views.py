@@ -28,7 +28,6 @@ class MaskingViewController(wsgi.Controller):
                                'native_storage_volume_group_id',
                                'native_storage_host_id',
                                'native_volume_id',
-                               'native_port_id',
                                'native_masking_view_id']
 
     def _get_masking_view_search_options(self):

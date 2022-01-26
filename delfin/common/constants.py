@@ -30,16 +30,18 @@ class StorageStatus(object):
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
     DEGRADED = 'degraded'
+    UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED, UNKNOWN)
 
 
 class StoragePoolStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, UNKNOWN)
 
 
 class VolumeStatus(object):
@@ -259,9 +261,10 @@ class HostOSTypes(object):
     WINDOWS_SERVER_2012 = 'Windows Server 2012'
     ORACLE_VM = 'Oracle VM'
     OPEN_VMS = 'Open VMS'
+    UNKNOWN = 'Unknown'
 
     ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
-           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS)
+           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS, UNKNOWN)
 
 
 class InitiatorStatus(object):
@@ -270,6 +273,15 @@ class InitiatorStatus(object):
     UNKNOWN = 'unknown'
 
     ALL = (ONLINE, OFFLINE, UNKNOWN)
+
+
+class InitiatorType(object):
+    FC = 'fc'
+    ISCSI = 'iscsi'
+    NVME_OVER_ROCE = 'roce'
+    UNKNOWN = 'unknown'
+
+    ALL = (FC, ISCSI, NVME_OVER_ROCE, UNKNOWN)
 
 
 # Enumerations for alert severity

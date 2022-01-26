@@ -211,7 +211,7 @@ storage_result = {
     'name': 'cluster-1',
     'vendor': 'DELL EMC',
     'description': 'EMC VPlex Storage',
-    'status': 'abnormal',
+    'status': 'degraded',
     'serial_number': 'FNM00000000000',
     'firmware_version': ' 6.1.0.01.00.13',
     'model': 'EMC VPLEX  Local',
