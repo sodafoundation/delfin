@@ -120,11 +120,11 @@ class SSHHandler(object):
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
     BLOCK_SIZE = 512
     BYTES_TO_BIT = 8
-    OS_TYPE_MAP = {'generic': constants.HostOSTypes.LINUX,
+    OS_TYPE_MAP = {'generic': constants.HostOSTypes.UNKNOWN,
                    'hp/unix': constants.HostOSTypes.HP_UX,
                    'openvms': constants.HostOSTypes.OPEN_VMS,
-                   'tpgs': constants.HostOSTypes.AIX,
-                   'vvol': constants.HostOSTypes.AIX
+                   'tpgs': constants.HostOSTypes.UNKNOWN,
+                   'vvol': constants.HostOSTypes.UNKNOWN
                    }
     INITIATOR_STATUS_MAP = {'active': constants.InitiatorStatus.ONLINE,
                             'offline': constants.InitiatorStatus.OFFLINE,
