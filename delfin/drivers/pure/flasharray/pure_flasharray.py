@@ -129,7 +129,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 timestamp = (int(datetime.datetime.strptime
                                  (opened, '%Y-%m-%dT%H:%M:%SZ').timestamp()
                                  + time_difference) *
-                             consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if\
+                             consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if \
                     opened is not None else None
                 if query_para is not None:
                     try:
@@ -362,3 +362,144 @@ class PureFlashArrayDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def list_storage_host_initiators(self, context):
+        list_initiators = []
+        initiators = self.rest_handler.rest_call(
+            self.rest_handler.REST_HOST_URL)
+        for initiator in (initiators or []):
+            host_id = initiator.get('name')
+            self.get_initiator(initiator, list_initiators, host_id, 'iqn',
+                               constants.InitiatorType.ISCSI)
+            self.get_initiator(initiator, list_initiators, host_id, 'wwn',
+                               constants.InitiatorType.FC)
+            self.get_initiator(initiator, list_initiators, host_id, 'nqn',
+                               constants.InitiatorType.NVME_OVER_FABRIC)
+        return list_initiators
+
+    def get_initiator(self, initiator, list_initiators, host_id, protocol,
+                      network):
+        protocol_list = initiator.get(protocol)
+        if protocol_list:
+            for initiator_protocol in (protocol_list or []):
+                if 'wwn' in protocol:
+                    initiator_protocol = self.get_splice_wwn(
+                        initiator_protocol)
+                initiator_d = {
+                    'native_storage_host_initiator_id': initiator_protocol,
+                    'native_storage_host_id': host_id,
+                    'name': initiator_protocol,
+                    'type': network,
+                    'status': constants.InitiatorStatus.UNKNOWN,
+                    'wwn': initiator_protocol,
+                    'storage_id': self.storage_id
+                }
+                list_initiators.append(initiator_d)
+
+    def list_storage_hosts(self, ctx):
+        host_list = []
+        hosts = self.rest_handler.rest_call(
+            self.rest_handler.REST_HOST_PERSONALITY_URL)
+        for host in (hosts or []):
+            name = host.get('name')
+            personality = host.get('personality')
+            if personality:
+                personality = personality.lower()
+            h = {
+                "name": name,
+                "storage_id": self.storage_id,
+                "native_storage_host_id": name,
+                "os_type": consts.HOST_OS_TYPES_MAP.get(
+                    personality, constants.HostOSTypes.UNKNOWN),
+                "status": constants.HostStatus.NORMAL
+            }
+            host_list.append(h)
+        return host_list
+
+    def list_storage_host_groups(self, context):
+        host_groups = self.rest_handler.rest_call(
+            self.rest_handler.REST_HGROUP_URL)
+        host_group_list = []
+        storage_host_grp_relation_list = []
+        for hgroup in (host_groups or []):
+            name = hgroup.get('name')
+            hg = {
+                'native_storage_host_group_id': name,
+                'name': name,
+                'storage_id': self.storage_id
+            }
+            host_group_list.append(hg)
+            for host in (hgroup.get('hosts') or []):
+                host_relation = {
+                    'native_storage_host_group_id': name,
+                    'storage_id': self.storage_id,
+                    'native_storage_host_id': host
+                }
+                storage_host_grp_relation_list.append(host_relation)
+        result = {
+            'storage_host_groups': host_group_list,
+            'storage_host_grp_host_rels': storage_host_grp_relation_list
+        }
+        return result
+
+    def list_volume_groups(self, context):
+        volume_groups = self.rest_handler.rest_call(
+            self.rest_handler.REST_VOLUME_GROUP_URL)
+        vol_group_list = []
+        vol_grp_vol_relation_list = []
+        for volume_group in (volume_groups or []):
+            name = volume_group.get('name')
+            vol_g = {
+                'name': name,
+                'storage_id': self.storage_id,
+                'native_volume_group_id': name
+            }
+            vol_group_list.append(vol_g)
+            for volume_id in (volume_group.get('volumes') or []):
+                volume_group_relation = {
+                    'storage_id': self.storage_id,
+                    'native_volume_group_id': name,
+                    'native_volume_id': volume_id
+                }
+                vol_grp_vol_relation_list.append(volume_group_relation)
+        result = {
+            'volume_groups': vol_group_list,
+            'vol_grp_vol_rels': vol_grp_vol_relation_list
+        }
+        return result
+
+    def list_masking_views(self, context):
+        list_masking_views = []
+        volume_g = self.get_volume_group()
+        masking_views = self.rest_handler.rest_call(
+            self.rest_handler.REST_HOST_ALL_URL)
+        view_id_dict = {}
+        for masking_view in (masking_views or []):
+            host_id = masking_view.get('name')
+            native_volume_id = masking_view.get('vol')
+            native_masking_view_id = '{}{}'.format(host_id, native_volume_id)
+            if view_id_dict.get(native_masking_view_id):
+                continue
+            view_id_dict[native_masking_view_id] = native_masking_view_id
+            view = {
+                'native_masking_view_id': native_masking_view_id,
+                'name': native_masking_view_id,
+                'native_storage_host_group_id': masking_view.get('hgroup') if
+                masking_view.get('hgroup') else None,
+                'native_volume_group_id': volume_g.get(native_volume_id),
+                'native_storage_host_id': host_id,
+                'native_volume_id': native_volume_id,
+                'storage_id': self.storage_id
+            }
+            list_masking_views.append(view)
+        return list_masking_views
+
+    def get_volume_group(self):
+        volume_g = {}
+        volume_groups = self.rest_handler.rest_call(
+            self.rest_handler.REST_VOLUME_GROUP_URL)
+        for volume_group in (volume_groups or []):
+            name = volume_group.get('name')
+            for volume_id in (volume_group.get('volumes') or []):
+                volume_g[volume_id] = name
+        return volume_g

@@ -35,6 +35,11 @@ class RestHandler(RestClient):
     REST_ALERTS_URL = '/api/1.17/message?flagged=true&open=true'
     REST_AUTH_URL = '/api/1.17/auth/apitoken'
     REST_SESSION_URL = '/api/1.17/auth/session'
+    REST_HOST_URL = '/api/1.17/host'
+    REST_HOST_PERSONALITY_URL = '/api/1.17/host?personality=true'
+    REST_HOST_ALL_URL = '/api/1.17/host?all=true'
+    REST_HGROUP_URL = '/api/1.17/hgroup'
+    REST_VOLUME_GROUP_URL = '/api/1.17/vgroup'
 
     def __init__(self, **kwargs):
         super(RestHandler, self).__init__(**kwargs)
