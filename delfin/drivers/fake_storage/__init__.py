@@ -861,6 +861,11 @@ class FakeStorageDriver(driver.StorageDriver):
             MIN_STORAGE_HOST_INITIATORS, MAX_STORAGE_HOST_INITIATORS)
         LOG.info("###########fake_storage_host_initiators for %s: %d"
                  % (self.storage_id, rd_storage_host_initiators_count))
+        initiator_type = list(constants.InitiatorType.ALL)
+        initiator_type_len = len(constants.InitiatorType.ALL) - 1
+        initiator_status = list(constants.InitiatorStatus.ALL)
+        initiator_status_len = len(constants.InitiatorStatus.ALL) - 1
+
         storage_host_initiators_list = []
         for idx in range(rd_storage_host_initiators_count):
             f = {
@@ -871,7 +876,10 @@ class FakeStorageDriver(driver.StorageDriver):
                 "native_storage_host_initiator_id":
                     "storage_host_initiator_" + str(idx),
                 "wwn": "wwn_" + str(idx),
-                "status": "Normal",
+                "type": initiator_type[
+                    random.randint(0, initiator_type_len)],
+                "status": initiator_status[
+                    random.randint(0, initiator_status_len)],
                 "native_storage_host_id": "storage_host_" + str(idx),
             }
             storage_host_initiators_list.append(f)
