@@ -15,12 +15,14 @@
 import inspect
 
 import decorator
+
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import uuidutils
 import six
 from tooz import coordination
 from tooz import locking
+from tooz import partitioner
 
 from delfin import cryptor
 from delfin import exception
@@ -45,7 +47,10 @@ coordination_opts = [
                help='The backend server for distributed coordination.'),
     cfg.IntOpt('expiration',
                default=100,
-               help='The expiration(in second) of the lock.')
+               help='The expiration(in second) of the lock.'),
+    cfg.IntOpt('lease_timeout',
+               default=15,
+               help='The expiration(in second) of the lock.'),
 ]
 
 CONF = cfg.CONF
@@ -76,6 +81,10 @@ class Coordinator(object):
 
         # NOTE(gouthamr): Tooz expects member_id as a byte string.
         member_id = (self.prefix + self.agent_id).encode('ascii')
+
+        LOG.info('Started Coordinator (Agent ID: %(agent)s, prefix: '
+                 '%(prefix)s)', {'agent': self.agent_id,
+                                 'prefix': self.prefix})
 
         backend_url = _get_redis_backend_url()
         self.coordinator = coordination.get_coordinator(
@@ -110,6 +119,78 @@ class Coordinator(object):
 
 
 LOCK_COORDINATOR = Coordinator(prefix='delfin-')
+
+
+class LeaderElectionCoordinator(Coordinator):
+
+    def __init__(self, agent_id=None):
+        super(LeaderElectionCoordinator, self). \
+            __init__(agent_id=agent_id, prefix="leader_election")
+        self.group = None
+
+    def start(self):
+        """Connect to coordination back end."""
+        if self.started:
+            return
+
+        # NOTE(gouthamr): Tooz expects member_id as a byte string.
+        member_id = (self.prefix + "-" + self.agent_id).encode('ascii')
+        LOG.info('Started Coordinator (Agent ID: %(agent)s, '
+                 'prefix: %(prefix)s)', {'agent': self.agent_id,
+                                         'prefix': self.prefix})
+
+        backend_url = _get_redis_backend_url()
+        self.coordinator = coordination.get_coordinator(
+            backend_url, member_id,
+            timeout=CONF.coordination.lease_timeout)
+        self.coordinator.start()
+        self.started = True
+
+    def ensure_group(self, group):
+        req = self.coordinator.get_groups()
+        groups = req.get()
+        try:
+            # Check if group exist
+            groups.index(group)
+        except Exception:
+            # Create a group if not exist
+            LOG.debug("Exception is expected as requested group not available "
+                      "in tooz backend. Creating the group")
+            request = self.coordinator.create_group(group)
+            request.get()
+        else:
+            LOG.info("Leader group already exist")
+
+        self.group = group
+
+    def join_group(self):
+        if self.group:
+            request = self.coordinator.join_group(self.group)
+            request.get()
+
+    def register_on_start_leading_callback(self, callback):
+        return self.coordinator.watch_elected_as_leader(self.group, callback)
+
+    def send_heartbeat(self):
+        return self.coordinator.heartbeat()
+
+    def start_leader_watch(self):
+        return self.coordinator.run_watchers()
+
+    def stop(self):
+        """Disconnect from coordination back end."""
+        if self.started:
+            self.coordinator.stop()
+            self.coordinator = None
+            self.started = False
+
+        LOG.info('Stopped Coordinator (Agent ID: %(agent)s',
+                 {'agent': self.agent_id})
+
+    def is_still_leader(self):
+        for acquired_lock in self.coordinator._acquired_locks:
+            return acquired_lock.is_still_owner()
+        return False
 
 
 class Lock(locking.Lock):
@@ -241,3 +322,85 @@ def _get_redis_backend_url():
             .format(backend_type=CONF.coordination.backend_type,
                     server=CONF.coordination.backend_server)
     return backend_url
+
+
+class ConsistentHashing(Coordinator):
+    GROUP_NAME = 'partitioner_group'
+    PARTITIONS = 2**5
+
+    def __init__(self):
+        super(ConsistentHashing, self). \
+            __init__(agent_id=CONF.host, prefix="")
+
+    def join_group(self):
+        try:
+            weight = CONF.telemetry.node_weight
+            self.coordinator.join_partitioned_group(self.GROUP_NAME,
+                                                    weight=weight,
+                                                    partitions=self.PARTITIONS)
+        except coordination.MemberAlreadyExist:
+            LOG.info('Member %s already in partitioner_group' % CONF.host)
+
+    def get_task_executor(self, task_id):
+        part = partitioner.Partitioner(self.coordinator, self.GROUP_NAME)
+        members = part.members_for_object(task_id)
+        for member in members:
+            LOG.info('For task id %s, host should be %s' % (task_id, member))
+            return member.decode('utf-8')
+
+    def register_watcher_func(self, on_node_join, on_node_leave):
+        self.coordinator.watch_join_group(self.GROUP_NAME, on_node_join)
+        self.coordinator.watch_leave_group(self.GROUP_NAME, on_node_leave)
+
+    def watch_group_change(self):
+        self.coordinator.run_watchers()
+
+
+class GroupMembership(Coordinator):
+
+    def __init__(self, agent_id):
+        super(GroupMembership, self). \
+            __init__(agent_id=agent_id, prefix="")
+
+    def create_group(self, group):
+        try:
+            self.coordinator.create_group(group.encode()).get()
+        except coordination.GroupAlreadyExist:
+            LOG.info("Group {0} already exist".format(group))
+
+    def delete_group(self, group):
+        try:
+            self.coordinator.delete_group(group.encode()).get()
+        except coordination.GroupNotCreated:
+            LOG.info("Group {0} not created".format(group))
+        except coordination.GroupNotEmpty:
+            LOG.info("Group {0} not empty".format(group))
+        except coordination.ToozError:
+            LOG.info("Group {0} internal error while delete".format(group))
+
+    def join_group(self, group):
+        try:
+            self.coordinator.join_group(group.encode()).get()
+        except coordination.MemberAlreadyExist:
+            LOG.info('Member %s already in group' % group)
+
+    def leave_group(self, group):
+        try:
+            self.coordinator.leave_group(group.encode()).get()
+        except coordination.GroupNotCreated:
+            LOG.info('Group %s not created' % group)
+
+    def get_members(self, group):
+        try:
+            return self.coordinator.get_members(group.encode()).get()
+        except coordination.GroupNotCreated:
+            LOG.info('Group %s not created' % group)
+
+        return None
+
+    def register_watcher_func(self, group, on_process_join, on_process_leave):
+        self.coordinator.watch_join_group(group.encode(), on_process_join)
+        self.coordinator.watch_leave_group(group.encode(), on_process_leave)
+
+    def watch_group_change(self):
+        self.coordinator.run_watchers()

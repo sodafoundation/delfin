@@ -110,3 +110,34 @@ class TestAccessInfoController(test.TestCase):
             "updated_at": "2020-06-15T09:50:31.698956"
         }
         self.assertDictEqual(expctd_dict, res_dict)
+
+    def test_show_all(self):
+        self.mock_object(
+            db, 'access_info_get_all',
+            fakes.fake_access_infos_show_all
+        )
+        req = fakes.HTTPRequest.blank('/storages/access-infos')
+
+        res_dict = self.controller.show_all(req)
+        expctd_dict = {
+            'access_infos': [{
+                "model": "fake_driver",
+                "vendor": "fake_storage",
+                "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
+                "rest": {
+                    "host": "10.0.0.0",
+                    "port": 1234,
+                    "username": "admin"
+                },
+                "ssh": None,
+                "cli": None,
+                "smis": None,
+                "extra_attributes": {
+                    "array_id": "0001234567897"
+                },
+                "created_at": "2020-06-15T09:50:31.698956",
+                "updated_at": "2020-06-15T09:50:31.698956"
+            }]
+        }
+
+        self.assertDictEqual(expctd_dict, res_dict)

@@ -30,21 +30,12 @@ from delfin.api.views import storages as storage_view
 from delfin.common import constants
 from delfin.drivers import api as driverapi
 from delfin.i18n import _
+from delfin.task_manager import perf_job_controller
 from delfin.task_manager import rpcapi as task_rpcapi
 from delfin.task_manager.tasks import resources
-from delfin.task_manager.tasks import telemetry as task_telemetry
 
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
-
-telemetry_opts = [
-    cfg.IntOpt('performance_collection_interval',
-               default=constants.TelemetryCollection
-               .DEF_PERFORMANCE_COLLECTION_INTERVAL,
-               help='default interval (in sec) for performance collection'),
-]
-
-CONF.register_opts(telemetry_opts, "telemetry")
 
 
 class StorageController(wsgi.Controller):
@@ -118,7 +109,7 @@ class StorageController(wsgi.Controller):
             capabilities = self.driver_api.get_capabilities(
                 context=ctxt, storage_id=storage['id'])
             validation.validate_capabilities(capabilities)
-            _create_performance_monitoring_task(ctxt, storage['id'],
+            perf_job_controller.create_perf_job(ctxt, storage['id'],
                                                 capabilities)
         except exception.EmptyResourceMetrics:
             msg = _("Resource metric provided by capabilities is empty for "
@@ -143,13 +134,8 @@ class StorageController(wsgi.Controller):
                 storage['id'],
                 subclass.__module__ + '.' + subclass.__name__)
 
-        for subclass in task_telemetry.TelemetryTask.__subclasses__():
-            self.task_rpcapi.remove_telemetry_instances(ctxt,
-                                                        storage['id'],
-                                                        subclass.__module__ +
-                                                        '.'
-                                                        + subclass.__name__)
         self.task_rpcapi.remove_storage_in_cache(ctxt, storage['id'])
+        perf_job_controller.delete_perf_job(ctxt, storage['id'])
 
     @wsgi.response(202)
     def sync_all(self, req):
@@ -239,7 +225,7 @@ class StorageController(wsgi.Controller):
         storage_info = db.storage_get(ctx, id)
 
         # Fetch supported driver's capability
-        capabilities = self.driver_api.\
+        capabilities = self.driver_api. \
             get_capabilities(ctx, storage_info['id'])
 
         # validate capabilities
@@ -274,18 +260,3 @@ def _set_synced_if_ok(context, storage_id, resource_count):
         storage['sync_status'] = resource_count * constants.ResourceSync.START
         storage['updated_at'] = current_time
         db.storage_update(context, storage['id'], storage)
-
-
-def _create_performance_monitoring_task(context, storage_id, capabilities):
-    # Check resource_metric attribute availability and
-    # check if resource_metric is empty
-    if 'resource_metrics' not in capabilities \
-            or not bool(capabilities.get('resource_metrics')):
-        raise exception.EmptyResourceMetrics()
-
-    task = dict()
-    task.update(storage_id=storage_id)
-    task.update(args=capabilities.get('resource_metrics'))
-    task.update(interval=CONF.telemetry.performance_collection_interval)
-    task.update(method=constants.TelemetryCollection.PERFORMANCE_TASK_METHOD)
-    db.task_create(context=context, values=task)

@@ -29,16 +29,19 @@ class StorageStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
+    UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED, UNKNOWN)
 
 
 class StoragePoolStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, UNKNOWN)
 
 
 class VolumeStatus(object):
@@ -51,9 +54,11 @@ class VolumeStatus(object):
 class ControllerStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
+    FAULT = 'fault'
+    DEGRADED = 'degraded'
     UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, UNKNOWN)
+    ALL = (NORMAL, OFFLINE, FAULT, DEGRADED, UNKNOWN)
 
 
 class StorageType(object):
@@ -99,9 +104,18 @@ class PortType(object):
     ETH = 'eth'
     SAS = 'sas'
     IB = 'ib'
+    LOGIC = 'logic'
+    CIFS = 'cifs'
+    NFS = 'nfs'
+    FCACHE = 'fcache'
+    COMBO = 'combo'
+    CNA = 'cna'
+    RCIP = 'rcip'
+    NFS_CIFS = 'nfs-cifs'
     OTHER = 'other'
 
-    ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, OTHER)
+    ALL = (FC, ISCSI, FICON, FCOE, ETH, SAS, IB, LOGIC,
+           CIFS, NFS, FCACHE, COMBO, CNA, RCIP, NFS_CIFS, OTHER)
 
 
 class PortLogicalType(object):
@@ -112,10 +126,19 @@ class PortLogicalType(object):
     INTERNAL = 'internal'
     MAINTENANCE = 'maintenance'
     INTERCONNECT = 'interconnect'
+    CLUSTER = 'cluster'
+    DATA = 'data'
+    NODE_MGMT = 'node-mgmt'
+    INTERCLUSTER = 'intercluster'
+    CLUSTER_MGMT = 'cluster-mgmt'
+    PHYSICAL = 'physical'
+    IF_GROUP = 'if-group'
+    VLAN = 'vlan'
     OTHER = 'other'
 
     ALL = (FRONTEND, BACKEND, SERVICE, MANAGEMENT,
-           INTERNAL, MAINTENANCE, INTERCONNECT, OTHER)
+           INTERNAL, MAINTENANCE, INTERCONNECT, CLUSTER, DATA, NODE_MGMT,
+           INTERCLUSTER, CLUSTER_MGMT, PHYSICAL, IF_GROUP, VLAN, OTHER)
 
 
 class DiskStatus(object):
@@ -131,9 +154,19 @@ class DiskPhysicalType(object):
     SAS = 'sas'
     SSD = 'ssd'
     NL_SSD = 'nl-ssd'
+    FC = 'fc'
+    LUN = 'lun'
+    ATA = 'ata'
+    FLASH = 'flash'
+    VMDISK = 'vmdisk'
+    NL_SAS = 'nl-sas'
+    SSD_CARD = 'ssd-card'
+    SAS_FLASH_VP = 'sas-flash-vp'
     UNKNOWN = 'unknown'
 
-    ALL = (SATA, SAS, SSD, NL_SSD, UNKNOWN)
+    ALL = (
+        SATA, SAS, SSD, NL_SSD, FC, LUN, ATA, FLASH, VMDISK,
+        NL_SAS, SSD_CARD, SAS_FLASH_VP, UNKNOWN)
 
 
 class DiskLogicalType(object):
@@ -141,9 +174,22 @@ class DiskLogicalType(object):
     MEMBER = 'member'
     HOTSPARE = 'hotspare'
     CACHE = 'cache'
+    AGGREGATE = 'aggregate'
+    BROKEN = 'broken'
+    FOREIGN = 'foreign'
+    LABELMAINT = 'labelmaint'
+    MAINTENANCE = 'maintenance'
+    SHARED = 'shared'
+    SPARE = 'spare'
+    UNASSIGNED = 'unassigned'
+    UNSUPPORTED = 'unsupported'
+    REMOTE = 'remote'
+    MEDIATOR = 'mediator'
     UNKNOWN = 'unknown'
 
-    ALL = (FREE, MEMBER, HOTSPARE, CACHE, UNKNOWN)
+    ALL = (FREE, MEMBER, HOTSPARE, CACHE, AGGREGATE, BROKEN, FOREIGN,
+           LABELMAINT, MAINTENANCE, SHARED, SPARE, UNASSIGNED, UNSUPPORTED,
+           REMOTE, MEDIATOR, UNKNOWN)
 
 
 class FilesystemStatus(object):
@@ -193,6 +239,51 @@ class ShareProtocol(object):
     HDFS = 'hdfs'
 
     ALL = (CIFS, NFS, FTP, HDFS)
+
+
+class HostStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    ABNORMAL = 'abnormal'
+
+    ALL = (NORMAL, OFFLINE, ABNORMAL)
+
+
+class HostOSTypes(object):
+    LINUX = 'Linux'
+    WINDOWS = 'Windows'
+    SOLARIS = 'Solaris'
+    HP_UX = 'HP-UX'
+    AIX = 'AIX'
+    XEN_SERVER = 'XenServer'
+    VMWARE_ESX = 'VMware ESX'
+    LINUX_VIS = 'LINUX_VIS'
+    WINDOWS_SERVER_2012 = 'Windows Server 2012'
+    ORACLE_VM = 'Oracle VM'
+    OPEN_VMS = 'Open VMS'
+    UNKNOWN = 'Unknown'
+
+    ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
+           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS, UNKNOWN)
+
+
+class InitiatorStatus(object):
+    ONLINE = 'online'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (ONLINE, OFFLINE, UNKNOWN)
+
+
+class InitiatorType(object):
+    FC = 'fc'
+    ISCSI = 'iscsi'
+    NVME_OVER_ROCE = 'roce'
+    SAS = 'sas'
+    NVME_OVER_FABRIC = 'nvme-of'
+    UNKNOWN = 'unknown'
+
+    ALL = (FC, ISCSI, NVME_OVER_ROCE, SAS, NVME_OVER_FABRIC, UNKNOWN)
 
 
 # Enumerations for alert severity
@@ -281,6 +372,21 @@ class SecurityLevel(object):
 # Metric model
 metric_struct = namedtuple("Metric", "name labels values")
 
+
+class ResourceType(object):
+    STORAGE = 'storage'
+    STORAGE_POOL = 'storagePool'
+    VOLUME = 'volume'
+    CONTROLLER = 'controller'
+    PORT = 'port'
+    DISK = 'disk'
+    FILESYSTEM = 'filesystem'
+    SHARE = 'share'
+
+    ALL = (STORAGE, STORAGE_POOL, VOLUME, CONTROLLER,
+           PORT, DISK, FILESYSTEM, SHARE)
+
+
 # Unified Array metrics model
 DELFIN_ARRAY_METRICS = [
     "responseTime",
@@ -306,14 +412,16 @@ class TelemetryCollection(object):
     PERFORMANCE_TASK_METHOD = "delfin.task_manager.scheduler.schedulers." \
                               "telemetry.performance_collection_handler." \
                               "PerformanceCollectionHandler"
-    """Performance monitoring job interval"""
-    PERIODIC_JOB_INTERVAL = 180
     """Failed Performance monitoring job interval"""
-    FAILED_JOB_SCHEDULE_INTERVAL = 240
+    FAILED_JOB_SCHEDULE_INTERVAL = 900
     """Failed Performance monitoring retry count"""
     MAX_FAILED_JOB_RETRY_COUNT = 5
     """Default performance collection interval"""
     DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
+    DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 1800
+    DEF_PERFORMANCE_TIMESTAMP_OVERLAP = 60
+    """Maximum failed task retry window in seconds"""
+    MAX_FAILED_TASK_RETRY_WINDOW = 7200
 
 
 class TelemetryTaskStatus(object):

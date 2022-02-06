@@ -17,6 +17,7 @@ from oslo_log import log
 from delfin.common import constants
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.vmax import client
+from delfin.drivers.dell_emc.vmax import constants as consts
 from delfin.drivers.dell_emc.vmax.alert_handler import snmp_alerts
 from delfin.drivers.dell_emc.vmax.alert_handler import unisphere_alerts
 
@@ -74,13 +75,13 @@ class VMAXStorageDriver(driver.StorageDriver):
         return self.client.list_volumes(self.storage_id)
 
     def list_controllers(self, context):
-        pass
+        return self.client.list_controllers(self.storage_id)
 
     def list_ports(self, context):
-        pass
+        return self.client.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        pass
+        return self.client.list_disks(self.storage_id)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -104,48 +105,64 @@ class VMAXStorageDriver(driver.StorageDriver):
     def collect_perf_metrics(self, context, storage_id,
                              resource_metrics, start_time,
                              end_time):
-        return self.client.get_array_performance_metrics(self.storage_id,
-                                                         start_time, end_time)
+        metrics = []
+        try:
+            # storage metrics
+            if resource_metrics.get(constants.ResourceType.STORAGE):
+                storage_metrics = self.client.get_storage_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.STORAGE),
+                    start_time, end_time)
+                metrics.extend(storage_metrics)
+
+            # storage-pool metrics
+            if resource_metrics.get(constants.ResourceType.STORAGE_POOL):
+                pool_metrics = self.client.get_pool_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.STORAGE_POOL),
+                    start_time, end_time)
+                metrics.extend(pool_metrics)
+
+            # controller metrics
+            if resource_metrics.get(constants.ResourceType.CONTROLLER):
+                controller_metrics = self.client.get_controller_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.CONTROLLER),
+                    start_time, end_time)
+                metrics.extend(controller_metrics)
+
+            # port metrics
+            if resource_metrics.get(constants.ResourceType.PORT):
+                port_metrics = self.client.get_port_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.PORT),
+                    start_time, end_time)
+                metrics.extend(port_metrics)
+
+            # disk metrics
+            if resource_metrics.get(constants.ResourceType.DISK):
+                disk_metrics = self.client.get_disk_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.DISK),
+                    start_time, end_time)
+                metrics.extend(disk_metrics)
+
+        except Exception:
+            LOG.error("Failed to collect metrics from VMAX")
+            raise
+
+        return metrics
 
     @staticmethod
-    def get_capabilities(context):
+    def get_capabilities(context, filters=None):
         """Get capability of supported driver"""
         return {
             'is_historic': True,
             'resource_metrics': {
-                "storage": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data is "
-                                       "successfully transferred in MB/s"
-                    },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation in ms"
-                    },
-                    "requests": {
-                        "unit": "IOPS",
-                        "description": "Input/output operations per second"
-                    },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data read is "
-                                       "successfully transferred in MB/s"
-                    },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data write is "
-                                       "successfully transferred in MB/s"
-                    },
-                    "readRequests": {
-                        "unit": "IOPS",
-                        "description": "Read requests per second"
-                    },
-                    "writeRequests": {
-                        "unit": "IOPS",
-                        "description": "Write requests per second"
-                    },
-                }
+                constants.ResourceType.STORAGE: consts.STORAGE_CAP,
+                constants.ResourceType.STORAGE_POOL: consts.POOL_CAP,
+                constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP,
             }
         }

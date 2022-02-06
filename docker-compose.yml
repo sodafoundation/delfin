@@ -12,37 +12,125 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Installation Steps:
+# ------------------
+#
+# 1. Create the 'sodafoundation/delfin' docker image with Dockerfile in
+#    delfin project using command below. (Note: In future we will upload
+#    this image to docker-hub and it can be downloaded with out this step)
+#
+#    $ docker build -t sodafoundation/delfin .
+#
+# 2. Export (optional) environment vars for hostnames for redis, rabbitmq and credentials for rabbitmq. Eg.
+#    Here is example for exporting variable and its current values in setup.
+#
+#    $ export DELFIN_RABBITMQ_USER=delfinuser
+#    $ export DELFIN_RABBITMQ_PASS=delfinpass
+#    $ export DELFIN_RABBITMQ_HOSTNAME=rabbitmq
+#    $ export DELFIN_REDIS_HOSTNAME=redis
+#    $ export DELFIN_METRICS_DIR=/var/lib/delfin/metrics
+#
+# 3. Bring up delfin project using following command
+#
+#    $ docker-compose up -d
+#
+# 4. When finished using delfin project, bring down containers using following command
+#
+#    $ docker-compose down
+#
+# 5. To bring up delfin project with multiple service instances
+#
+#    $ docker-compose up -d --scale <<service-name>>=<<number of instances>>
+#
+#    example: Deploy delfin with 3 delfin-task and 2 delfin-alert instances
+#       $ docker-compose up -d --scale delfin-task=3 --scale delfin-alert=2
+#    Note: Multiple instances of delfin-api are not allowed
 
-version: '2'
+version: '3.3'
 
 services:
 
   redis:
     image: redis
-    container_name: redis
+    container_name: ${DELFIN_REDIS_HOSTNAME:-redis}
     command: redis-server
     ports:
-      - "6379:6379"
+      - 6379:6379
+    restart: always
 
   rabbitmq:
       image: rabbitmq:3-management
-      container_name: rabbitmq
-      volumes:
-          - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+      container_name: ${DELFIN_RABBITMQ_HOSTNAME:-rabbitmq}
       environment:
-          RABBITMQ_DEFAULT_USER: ${DELFIN_RABBITMQ_USER}
-          RABBITMQ_DEFAULT_PASS: ${DELFIN_RABBITMQ_PASS}
+          RABBITMQ_DEFAULT_USER: ${DELFIN_RABBITMQ_USER:-delfinuser}
+          RABBITMQ_DEFAULT_PASS: ${DELFIN_RABBITMQ_PASS:-delfinpass}
           RABBITMQ_DEFAULT_VHOST: "/"
       ports:
           - 5672:5672
           - 15672:15672
+      restart: always
 
-  delfin:
+  delfin-api:
     image: sodafoundation/delfin
+    command: "api"
     volumes:
-      - /var/log/delfin:/var/log/delfin
+      - ./etc/delfin:/etc/delfin
+      - db_data:/var/lib/delfin
     ports:
       - 8190:8190
+    restart: always
     environment:
-      - OS_COORDINATION__BACKEND_SERVER=${DELFIN_HOST_IP}:6379
-      - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER}:${DELFIN_RABBITMQ_PASS}@${DELFIN_HOST_IP}:5672//
+      - OS_COORDINATION__BACKEND_SERVER=${DELFIN_REDIS_HOSTNAME:-redis}:6379
+      - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER:-delfinuser}:${DELFIN_RABBITMQ_PASS:-delfinpass}@${DELFIN_RABBITMQ_HOSTNAME:-rabbitmq}:5672//
+    depends_on:
+      - redis
+      - rabbitmq
+
+  delfin-task:
+    image: sodafoundation/delfin
+    command: "task"
+    volumes:
+      - ./etc/delfin:/etc/delfin
+      - db_data:/var/lib/delfin
+      - metrics_dir:${DELFIN_METRICS_DIR:-/var/lib/delfin/metrics}
+    restart: always
+    environment:
+      - OS_COORDINATION__BACKEND_SERVER=${DELFIN_REDIS_HOSTNAME:-redis}:6379
+      - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER:-delfinuser}:${DELFIN_RABBITMQ_PASS:-delfinpass}@${DELFIN_RABBITMQ_HOSTNAME:-rabbitmq}:5672//
+      - OS_PROMETHEUS_EXPORTER__METRICS_DIR=${DELFIN_METRICS_DIR:-/var/lib/delfin/metrics}
+    depends_on:
+      - redis
+      - rabbitmq
+
+  delfin-alert:
+    image: sodafoundation/delfin
+    command: "alert"
+    volumes:
+      - ./etc/delfin:/etc/delfin
+      - db_data:/var/lib/delfin
+    restart: always
+    environment:
+      - OS_COORDINATION__BACKEND_SERVER=${DELFIN_REDIS_HOSTNAME:-redis}:6379
+      - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER:-delfinuser}:${DELFIN_RABBITMQ_PASS:-delfinpass}@${DELFIN_RABBITMQ_HOSTNAME:-rabbitmq}:5672//
+    depends_on:
+      - redis
+      - rabbitmq
+
+  delfin-exporter:
+    image: sodafoundation/delfin
+    command: "exporter"
+    volumes:
+      - ./etc/delfin:/etc/delfin
+      - metrics_dir:${DELFIN_METRICS_DIR:-/var/lib/delfin/metrics}
+    ports:
+      - 8195:8195
+    restart: always
+    environment:
+      - OS_DEFAULT__TRANSPORT_URL=rabbit://${DELFIN_RABBITMQ_USER:-delfinuser}:${DELFIN_RABBITMQ_PASS:-delfinpass}@${DELFIN_RABBITMQ_HOSTNAME:-rabbitmq}:5672//
+      - OS_PROMETHEUS_EXPORTER__METRICS_DIR=${DELFIN_METRICS_DIR:-/var/lib/delfin/metrics}
+    depends_on:
+      - rabbitmq
+
+volumes:
+  db_data: {}
+  metrics_dir: {}

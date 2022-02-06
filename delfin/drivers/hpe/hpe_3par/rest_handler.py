@@ -88,8 +88,10 @@ class RestHandler(object):
                 LOG.error('Rest exec failed')
 
             return res
-        except exception.SSLCertificateFailed:
-            raise
+        except exception.DelfinException as e:
+            err_msg = "Call failed: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
         except Exception as e:
             err_msg = "Get RestHandler.call failed: %s" % (six.text_type(e))
             LOG.error(err_msg)
@@ -119,7 +121,6 @@ class RestHandler(object):
 
                 if self.rest_client.rest_auth_token is not None:
                     return self.rest_client.rest_auth_token
-
                 self.rest_client.init_http_head()
                 res = self.rest_client. \
                     do_call(url, data, 'POST',
@@ -144,7 +145,8 @@ class RestHandler(object):
                     if 'invalid username or password' in res.text:
                         raise exception.InvalidUsernameOrPassword()
                     else:
-                        raise exception.BadResponse(res.text)
+                        raise exception.StorageBackendException(
+                            six.text_type(res.text))
             else:
                 LOG.error('Login Parameter error')
 

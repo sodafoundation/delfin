@@ -16,6 +16,15 @@ from unittest import TestCase, mock
 
 import paramiko
 
+from delfin.common import constants
+
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+
+from delfin.drivers.utils.tools import Tools
+
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
 from delfin.drivers.ibm.storwize_svc.ssh_handler import SSHHandler
@@ -423,6 +432,940 @@ trap_alert_result = {
     'location': 'Cluster_192.168.70.125',
     'category': 'Fault'
 }
+get_all_controllers = """id name
+2  node_165084
+"""
+get_single_controller = """id 2
+id 2
+name node_165084
+UPS_serial_number 100025I194
+WWNN 500507680100EF7C
+status online
+IO_group_id 0
+IO_group_name io_grp0
+partner_node_id 4
+partner_node_name node1
+config_node yes
+UPS_unique_id 2040000085641244
+port_id 500507680140EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680130EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680110EF7C
+port_status active
+port_speed 8Gb
+port_id 500507680120EF7C
+port_status active
+port_speed 8Gb
+hardware CG8
+iscsi_name iqn.1986-03.com.ibm:2145.cluster8.44.162.140.node165084
+iscsi_alias
+failover_active no
+failover_name node1
+failover_iscsi_name iqn.1986-03.com.ibm:2145.cluster8.44.162.140.node1
+failover_iscsi_alias
+panel_name 165084
+enclosure_id
+canister_id
+enclosure_serial_number
+service_IP_address 8.44.162.142
+service_gateway 8.44.128.1
+service_subnet_mask 255.255.192.0
+service_IP_address_6
+service_gateway_6
+service_prefix_6
+service_IP_mode static
+service_IP_mode_6
+site_id
+site_name
+identify_LED off
+product_mtm 2145-CG8
+code_level 7.8.1.11 (build 135.9.1912100725000)
+serial_number 75PVZNA
+machine_signature 0214-784E-C029-0147
+"""
+controller_result = [
+    {
+        'name': 'node_165084',
+        'storage_id': '12345',
+        'native_controller_id': '2',
+        'status': 'normal',
+        'soft_version': '7.8.1.11',
+        'location': 'node_165084'
+    }
+]
+
+get_all_disks = """id name
+4 mdisk4
+"""
+get_single_disk = """id 4
+name mdisk4
+status offline
+mode managed
+mdisk_grp_id 1
+mdisk_grp_name Pool0_NBE
+capacity 2.0TB
+quorum_index
+block_size 512
+controller_name NBEPOC_target_Dorado5000V6
+ctrl_type 4
+ctrl_WWNN 210030E98EE1914C
+controller_id 41
+path_count 0
+max_path_count 0
+ctrl_LUN_# 0000000000000001
+UID 630e98e100e1914c1aa793ae0000001900000000000000000000000000000000
+preferred_WWPN
+active_WWPN
+fast_write_state empty
+raid_status
+raid_level
+redundancy
+strip_size
+spare_goal
+spare_protection_min
+balanced
+tier tier0_flash
+slow_write_priority
+fabric_type fc
+site_id
+site_name
+easy_tier_load medium
+encrypt no
+distributed no
+drive_class_id
+drive_count 0
+stripe_width 0
+rebuild_areas_total
+rebuild_areas_available
+rebuild_areas_goal
+dedupe no
+preferred_iscsi_port_id
+active_iscsi_port_id
+replacement_date
+"""
+disk_result = [
+    {
+        'name': 'mdisk4',
+        'storage_id': '12345',
+        'native_disk_id': '4',
+        'capacity': 2199023255552,
+        'status': 'offline',
+        'physical_type': 'fc',
+        'native_disk_group_id': 'Pool0_NBE',
+        'location': 'NBEPOC_target_Dorado5000V6_mdisk4'
+    }
+]
+get_all_fcports = """id fc_io_port_id
+0 1
+"""
+get_single_fcport = """id 0
+fc_io_port_id 1
+port_id 1
+type fc
+port_speed 8Gb
+node_id 1
+node_name node1
+WWPN 500507680140EF3E
+nportid 850600
+status active
+switch_WWPN 200650EB1A8A59B8
+fpma N/A
+vlanid N/A
+fcf_MAC N/A
+attachment switch
+cluster_use local_partner
+adapter_location 1
+adapter_port_id 1
+fabric_WWN 100050EB1A8A59B8
+ """
+get_iscsiport_1 = """id 1
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 1
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 1
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 1
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+ """
+get_iscsiport_2 = """id 2
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 2
+node_id 1
+node_name node1
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d7:5a:94
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 2
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover no
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+
+id 2
+node_id 2
+node_name node_165084
+IP_address
+mask
+gateway
+IP_address_6
+prefix_6
+gateway_6
+MAC 34:40:b5:d4:0c:f0
+duplex Full
+state unconfigured
+speed 1Gb/s
+failover yes
+mtu 1500
+link_state active
+host
+remote_copy 0
+host_6
+remote_copy_6 0
+remote_copy_status
+remote_copy_status_6
+vlan
+vlan_6
+adapter_location 0
+adapter_port_id 1
+dcbx_state
+lossless_iscsi
+lossless_iscsi6
+iscsi_priority_tag
+fcoe_priority_tag
+pfc_enabled_tags
+pfc_disabled_tags
+priority_group_0
+priority_group_1
+priority_group_2
+priority_group_3
+priority_group_4
+priority_group_5
+priority_group_6
+priority_group_7
+bandwidth_allocation
+storage
+storage_6
+ """
+get_file_list = 'id filename\n' \
+                '1 Nn_stats_78N16G4-2_211201_161110\n' \
+                '2 Nn_stats_78N16G4-2_211201_161210\n' \
+                '3 Nm_stats_78N16G4-2_211201_161110\n' \
+                '4 Nm_stats_78N16G4-2_211201_161210\n' \
+                '5 Nv_stats_78N16G4-2_211201_161110\n' \
+                '6 Nv_stats_78N16G4-2_211201_161210'
+file_nv_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<vdsk idx="0"
+ctps="0" ctrhs="0" ctrhps="0" ctds="0"
+ctwfts="0" ctwwts="0" ctwfws="0" ctwhs="0"
+cv="0" cm="0" ctws="0" ctrs="0"
+ctr="0" ctw="0" ctp="0" ctrh="0"
+ctrhp="0" ctd="0" ctwft="0" ctwwt="0"
+ctwfw="0" ctwfwsh="0" ctwfwshs="0" ctwh="0"
+gwot="0" gwo="0" gws="0" gwl="0"
+id="powerha_fence"
+ro="0" wo="0" wou="0" rb="0" wb="0"
+rl="0" wl="0" rlw="0" wlw="0" xl="0">
+ <ca rh="0" d="0" ft="0" wt="0" fw="0" wh="0" v="0" m="0" ri="0" wi="0" r="0"
+dav="0" dcn="0" sav="0" scn="0" teav="0"
+ tsav="0"  tav="0"  pp="0"/>
+</vdsk>
+"""
+file_nv_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<vdsk idx="0"
+ctps="0" ctrhs="0" ctrhps="0" ctds="0"
+ctwfts="0" ctwwts="0" ctwfws="0" ctwhs="0"
+cv="0" cm="0" ctws="0" ctrs="0"
+ctr="0" ctw="0" ctp="0" ctrh="0"
+ctrhp="0" ctd="0" ctwft="0" ctwwt="0"
+ctwfw="0" ctwfwsh="0" ctwfwshs="0" ctwh="0"
+gwot="0" gwo="0" gws="0" gwl="0"
+id="powerha_fence"
+ro="0" wo="0" wou="0" rb="0" wb="0"
+rl="0" wl="0" rlw="0" wlw="0" xl="0">
+<ca rh="0" d="0" ft="0" wt="0" fw="0" wh="0" v="0" m="0" ri="0"
+ wi="0" r="0" dav="0" dcn="0" sav="0" scn="0" teav="0"
+ tsav="0"  tav="0"  pp="0"/>
+</vdsk>
+"""
+file_nm_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<mdsk idx="0"
+ id="mdisk1" ro="160422028" wo="4792298" rb="65855202896" wb="5087205812"
+  re="4510327873" we="324970648" rq="4510327873" wq="324970648"
+  ure="4511020738035" uwe="325020569160" urq="4511020738035"
+   uwq="325020569160"
+ pre="14804" pwe="0" pro="14804" pwo="0">
+<ca dav="0" dtav="0" dfav="0" />
+</mdsk>
+"""
+file_nm_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<mdsk idx="0"
+ id="mdisk1" ro="16532168" wo="4800940" rb="807398566" wb="1268035694"
+  re="336180638" we="392975230" rq="336180638" wq="392975230"
+  ure="336232281210" uwe="393035597850" urq="336232281210"
+  uwq="393035597850"
+ pre="0" pwe="0" pro="0" pwo="0">
+<ca dav="0" dtav="0" dfav="0" />
+</mdsk>
+"""
+file_nn_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<port id="1"
+type="FC"
+type_id="1"
+wwpn="0x50050768021065cb"
+fc_wwpn="0x50050768021065cb"
+fcoe_wwpn=""
+sas_wwn=""
+iqn=""
+hbt="534901200817" hbr="523369795104" het="0" her="186406977"
+cbt="0" cbr="52250" cet="1324" cer="0"
+lnbt="49310" lnbr="197487" lnet="2073731" lner="2070067"
+rmbt="0" rmbr="0" rmet="0" rmer="0"
+lf="9" lsy="21" lsi="5" pspe="0"
+itw="295290111" icrc="0" bbcz="29140"
+/>
+"""
+file_nn_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<port id="1"
+type="FC"
+type_id="1"
+wwpn="0x50050768021065cb"
+fc_wwpn="0x50050768021065cb"
+fcoe_wwpn=""
+sas_wwn=""
+iqn=""
+hbt="534901200817" hbr="523369795104" het="0" her="186406977"
+cbt="0" cbr="52250" cet="1324" cer="0"
+lnbt="49310" lnbr="197487" lnet="2073806" lner="2070142"
+rmbt="0" rmbr="0" rmet="0" rmer="0"
+lf="9" lsy="21" lsi="5" pspe="0"
+itw="295290111" icrc="0" bbcz="29140"
+/>
+"""
+file_nn_node_1611 = """<?xml version="1.0" encoding="utf-8" ?>
+<node id="node1" cluster="Cluster_V7000" node_id="0x0000000000000003"
+ cluster_id="0x00000200a1207e1f" ro="960680162" wo="940411371"
+  rb="2605358068064" wb="2619210259131" re="1193453" we="135040076"
+   rq="49536391" wq="151133071"/>
+"""
+file_nn_node_1612 = """<?xml version="1.0" encoding="utf-8" ?>
+<node id="node1" cluster="Cluster_V7000" node_id="0x0000000000000003"
+ cluster_id="0x00000200a1207e1f" ro="960684525" wo="940415078"
+  rb="2605359825065" wb="2619220318131" re="1193465"
+   we="135040076" rq="49536391" wq="151134080"/>
+"""
+resource_metrics = {
+    'volume': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime',
+        'ioSize', 'readIoSize', 'writeIoSize',
+    ],
+    'port': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ],
+    'disk': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ],
+    'controller': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ]
+}
+
+port_result = [
+    {
+        'name': 'node1_0',
+        'storage_id': '12345',
+        'native_port_id': '0',
+        'location': 'node1_0',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'fc',
+        'speed': 8000000000,
+        'native_parent_id': 'node1',
+        'wwn': '500507680140EF3E'
+    }, {
+        'name': 'node1_1',
+        'storage_id': '12345',
+        'native_port_id': 'node1_1',
+        'location': 'node1_1',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'speed': 1000000000,
+        'native_parent_id': 'node1',
+        'mac_address': '34:40:b5:d7:5a:94',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }, {
+        'name': 'node_165084_1',
+        'storage_id': '12345',
+        'native_port_id': 'node_165084_1',
+        'location': 'node_165084_1',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'speed': 1000000000,
+        'native_parent_id': 'node_165084',
+        'mac_address': '34:40:b5:d4:0c:f0',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }, {
+        'name': 'node1_2',
+        'storage_id': '12345',
+        'native_port_id': 'node1_2',
+        'location': 'node1_2',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'speed': 1000000000,
+        'native_parent_id': 'node1',
+        'mac_address': '34:40:b5:d7:5a:94',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }, {
+        'name': 'node_165084_2',
+        'storage_id': '12345',
+        'native_port_id': 'node_165084_2',
+        'location': 'node_165084_2',
+        'connection_status': 'connected',
+        'health_status': 'abnormal',
+        'type': 'eth',
+        'speed': 1000000000,
+        'native_parent_id': 'node_165084',
+        'mac_address': '34:40:b5:d4:0c:f0',
+        'ipv4': '',
+        'ipv4_mask': '',
+        'ipv6': ''
+    }
+]
+perf_get_port_fc = [
+    {
+        'name': '0',
+        'storage_id': '12345',
+        'native_port_id': '0',
+        'location': 'node1_0',
+        'connection_status': 'connected',
+        'health_status': 'normal',
+        'type': 'fc',
+        'max_speed': 8589934592,
+        'native_parent_id': 'node1',
+        'wwn': '0x50050768021065cb'
+    }
+]
+metrics_result = [
+    constants.metric_struct(
+        name='iops', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='throughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='responseTime', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'ms'
+        }, values={
+            1638346330000: 0
+        }), constants.metric_struct(name='ioSize', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'KB'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIoSize', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'KB'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIoSize', labels={
+            'storage_id': '12345',
+            'resource_type': 'volume',
+            'resource_id': '0',
+            'resource_name': 'powerha',
+            'type': 'RAW',
+            'unit': 'KB'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='iops', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='throughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='responseTime', labels={
+            'storage_id': '12345',
+            'resource_type': 'disk',
+            'resource_id': '0',
+            'resource_name': 'mdisk1',
+            'type': 'RAW',
+            'unit': 'ms'
+        }, values={
+            1638346330000: 0
+        }), constants.metric_struct(name='iops', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeIops', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'IOPS'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='throughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='readThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        }), constants.metric_struct(name='writeThroughput', labels={
+            'storage_id': '12345',
+            'resource_type': 'port',
+            'resource_id': '0',
+            'resource_name': '0',
+            'type': 'RAW',
+            'unit': 'MB/s'
+        }, values={
+            1638346330000: 0.0
+        })]
 
 
 def create_driver():
@@ -498,3 +1441,54 @@ class TestStorwizeSvcStorageDriver(TestCase):
             self.driver.clear_alert(context, alert_id)
         self.assertIn('The results are invalid. can not find alert',
                       str(exc.exception))
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_controllers(self, mock_ssh_get, mock_control):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_control.side_effect = [get_all_controllers, get_single_controller]
+        controller = self.driver.list_controllers(context)
+        self.assertEqual(controller, controller_result)
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_disks(self, mock_ssh_get, mock_disk):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_disk.side_effect = [get_all_disks, get_single_disk]
+        disk = self.driver.list_disks(context)
+        self.assertEqual(disk, disk_result)
+
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_ports(self, mock_ssh_get, mock_port):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_port.side_effect = [get_all_fcports, get_single_fcport,
+                                 get_iscsiport_1, get_iscsiport_2]
+        port = self.driver.list_ports(context)
+        self.assertEqual(port, port_result)
+
+    @mock.patch.object(SSHHandler, 'get_fc_port')
+    @mock.patch.object(Tools, 'get_remote_file_to_xml')
+    @mock.patch.object(SSHHandler, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_collect_perf_metrics(self, mock_ssh_get, mock_file_list,
+                                  mock_get_file, mock_fc_port):
+        start_time = 1637346270000
+        end_time = 1639346330000
+        storage_id = '12345'
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_file_list.return_value = get_file_list
+        mock_get_file.return_value = [ET.fromstring(file_nv_1611),
+                                      ET.fromstring(file_nv_1612),
+                                      ET.fromstring(file_nm_1611),
+                                      ET.fromstring(file_nm_1612),
+                                      ET.fromstring(file_nn_1611),
+                                      ET.fromstring(file_nn_1612),
+                                      ET.fromstring(file_nn_node_1611),
+                                      ET.fromstring(file_nn_node_1612)
+                                      ]
+        mock_fc_port.return_value = perf_get_port_fc
+        metrics = self.driver.collect_perf_metrics(context, storage_id,
+                                                   resource_metrics,
+                                                   start_time, end_time)
+        self.assertEqual(metrics[0][1]['resource_name'], 'powerha')

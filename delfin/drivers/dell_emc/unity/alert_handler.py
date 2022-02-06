@@ -17,7 +17,7 @@ import time
 import six
 from oslo_log import log
 
-from delfin import exception
+from delfin import exception, utils
 from delfin.common import alert_util
 from delfin.common import constants
 from delfin.drivers.dell_emc.unity import consts
@@ -81,7 +81,7 @@ class AlertHandler(object):
                 constants.Severity.INFORMATIONAL)
             alert_model['category'] = constants.Category.FAULT
             alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
-            occur_time = int(time.time()) * AlertHandler.SECONDS_TO_MS
+            occur_time = utils.utcnow_ms()
             alert_model['occur_time'] = occur_time
             alert_model['description'] = alert_desc
             alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
@@ -131,9 +131,11 @@ class AlertHandler(object):
                 alert_model['description'] = content.get('description')
                 alert_model['resource_type'] = resource_type
                 alert_model['location'] = location
-                alert_model_list.append(alert_model)
                 alert_model['match_key'] = hashlib.md5(
                     content.get('message').encode()).hexdigest()
+                if alert_model['severity'] == 'Informational':
+                    continue
+                alert_model_list.append(alert_model)
             except Exception as e:
                 LOG.error(e)
                 err_msg = "Failed to build alert model as some attributes " \

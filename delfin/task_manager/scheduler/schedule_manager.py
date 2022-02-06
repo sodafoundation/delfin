@@ -15,38 +15,146 @@
 from datetime import datetime
 
 import six
+from apscheduler.schedulers.background import BackgroundScheduler
 from oslo_log import log
 from oslo_utils import uuidutils
 
 from delfin import context
-from delfin.common.constants import TelemetryCollection
-from delfin.task_manager.scheduler import scheduler
-from delfin.task_manager.scheduler.schedulers.telemetry import telemetry_job
+from delfin import db
+from delfin import service
+from delfin import utils
+from delfin.coordination import ConsistentHashing
+from delfin.leader_election.distributor.task_distributor \
+    import TaskDistributor
+from delfin.task_manager import metrics_rpcapi as task_rpcapi
 
 LOG = log.getLogger(__name__)
 
 
+@six.add_metaclass(utils.Singleton)
 class SchedulerManager(object):
-    def __init__(self):
-        self.schedule_instance = scheduler.Scheduler.get_instance()
+
+    GROUP_CHANGE_DETECT_INTERVAL_SEC = 30
+
+    def __init__(self, scheduler=None):
+        if not scheduler:
+            scheduler = BackgroundScheduler()
+        self.scheduler = scheduler
+        self.scheduler_started = False
+        self.ctx = context.get_admin_context()
+        self.task_rpcapi = task_rpcapi.TaskAPI()
+        self.watch_job_id = None
 
     def start(self):
         """ Initialise the schedulers for periodic job creation
         """
-        ctxt = context.get_admin_context()
-        try:
+        if not self.scheduler_started:
+            self.scheduler.start()
+            self.scheduler_started = True
 
-            # Create a jobs for periodic scheduling
-            periodic_scheduler_job_id = uuidutils.generate_uuid()
-            self.schedule_instance.add_job(
-                telemetry_job.TelemetryJob(ctxt), 'interval', args=[ctxt],
-                seconds=TelemetryCollection.PERIODIC_JOB_INTERVAL,
-                next_run_time=datetime.now(),
-                id=periodic_scheduler_job_id)
-        except Exception as e:
-            # TODO: Currently failure of scheduler is failing task manager
-            #  start flow, it is logged and ignored.
-            LOG.error("Failed to initialize periodic tasks, reason: %s.",
-                      six.text_type(e))
-        else:
-            self.schedule_instance.start()
+    def on_node_join(self, event):
+        # A new node joined the group, all the job would be re-distributed.
+        # If the job is already on the node, it would be ignore and would
+        # not be scheduled again
+        LOG.info('Member %s joined the group %s' % (event.member_id,
+                                                    event.group_id))
+        # Get all the jobs
+        filters = {'deleted': False}
+        tasks = db.task_get_all(self.ctx, filters=filters)
+        distributor = TaskDistributor(self.ctx)
+        partitioner = ConsistentHashing()
+        partitioner.start()
+        for task in tasks:
+            # Get the specific executor
+            origin_executor = task['executor']
+            # If the target executor is different from current executor,
+            # remove the job from old executor and add it to new executor
+            new_executor = partitioner.get_task_executor(task['id'])
+            if new_executor != origin_executor:
+                LOG.info('Re-distribute job %s from %s to %s' %
+                         (task['id'], origin_executor, new_executor))
+                self.task_rpcapi.remove_job(self.ctx, task['id'],
+                                            task['executor'])
+            distributor.distribute_new_job(task['id'])
+        failed_tasks = db.failed_task_get_all(self.ctx, filters=filters)
+        for failed_task in failed_tasks:
+            # Get the parent task executor
+            task = db.task_get(self.ctx, failed_task['task_id'])
+            origin_executor = failed_task['executor']
+            new_executor = task['executor']
+            # If the target executor is different from current executor,
+            # remove the job from old executor and add it to new executor
+            if new_executor != origin_executor:
+                LOG.info('Re-distribute failed_job %s from %s to %s' %
+                         (failed_task['id'], origin_executor, new_executor))
+                self.task_rpcapi.remove_failed_job(
+                    self.ctx, failed_task['id'], failed_task['executor'])
+            distributor.distribute_failed_job(failed_task['id'],
+                                              task['executor'])
+        partitioner.stop()
+
+    def on_node_leave(self, event):
+        LOG.info('Member %s left the group %s' % (event.member_id,
+                                                  event.group_id))
+        filters = {'executor': event.member_id.decode('utf-8'),
+                   'deleted': False}
+        re_distribute_tasks = db.task_get_all(self.ctx, filters=filters)
+        distributor = TaskDistributor(self.ctx)
+        for task in re_distribute_tasks:
+            distributor.distribute_new_job(task['id'])
+
+        re_distribute_failed_tasks = db.failed_task_get_all(self.ctx,
+                                                            filters=filters)
+        for failed_task in re_distribute_failed_tasks:
+            task = db.task_get(self.ctx, failed_task['task_id'])
+            executor = task['executor']
+            distributor.distribute_failed_job(failed_task['id'], executor)
+
+    def schedule_boot_jobs(self):
+        # Recover the job in db
+        self.recover_job()
+        self.recover_failed_job()
+        # Start the consumer of job creation message
+        job_generator = service. \
+            TaskService.create(binary='delfin-task',
+                               topic='JobGenerator',
+                               manager='delfin.'
+                                       'leader_election.'
+                                       'distributor.'
+                                       'perf_job_manager.'
+                                       'PerfJobManager',
+                               coordination=True)
+        service.serve(job_generator)
+        partitioner = ConsistentHashing()
+        partitioner.start()
+        partitioner.register_watcher_func(self.on_node_join,
+                                          self.on_node_leave)
+        self.watch_job_id = uuidutils.generate_uuid()
+        self.scheduler.add_job(partitioner.watch_group_change, 'interval',
+                               seconds=self.GROUP_CHANGE_DETECT_INTERVAL_SEC,
+                               next_run_time=datetime.now(),
+                               id=self.watch_job_id)
+
+    def stop(self):
+        """Cleanup periodic jobs"""
+        if self.watch_job_id:
+            self.scheduler.remove_job(self.watch_job_id)
+
+    def get_scheduler(self):
+        return self.scheduler
+
+    def recover_job(self):
+        filters = {'deleted': False}
+        all_tasks = db.task_get_all(self.ctx, filters=filters)
+        distributor = TaskDistributor(self.ctx)
+        for task in all_tasks:
+            distributor.distribute_new_job(task['id'])
+
+    def recover_failed_job(self):
+        filters = {'deleted': False}
+        all_failed_tasks = db.failed_task_get_all(self.ctx, filters=filters)
+        distributor = TaskDistributor(self.ctx)
+        for failed_task in all_failed_tasks:
+            task = db.task_get(self.ctx, failed_task['task_id'])
+            executor = task['executor']
+            distributor.distribute_failed_job(failed_task['id'], executor)

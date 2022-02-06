@@ -33,3 +33,11 @@ def build_alert_source(value):
         # Remove the key not belong to snmpv3
         view.pop('community_string')
     return dict(view)
+
+
+def show_all_snmp_configs(values):
+    snmp_configs = []
+    for snmp_config in values:
+        snmp_config_dict = build_alert_source(dict(snmp_config))
+        snmp_configs.append(snmp_config_dict)
+    return dict(snmp_configs=snmp_configs)

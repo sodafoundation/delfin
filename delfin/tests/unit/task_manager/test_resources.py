@@ -178,6 +178,96 @@ shares_list = [{
 }
 ]
 
+storage_host_initiators_list = [{
+    "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
+    "name": "storage_host_initiator_" + str(id),
+    "description": "storage_host_initiator_" + str(id),
+    "alias": "storage_host_initiator_" + str(id),
+    "storage_id": "c5c91c98-91aa-40e6-85ac-37a1d3b32bda",
+    "native_storage_host_initiator_id": "storage_host_initiator_" + str(id),
+    "wwn": "wwn_" + str(id),
+    "status": "Normal",
+    "native_storage_host_id": "storage_host_" + str(id),
+}
+]
+
+storage_hosts_list = [{
+    "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
+    "name": "storage_host_" + str(id),
+    "description": "storage_host_" + str(id),
+    "storage_id": "c5c91c98-91aa-40e6-85ac-37a1d3b32bda",
+    "native_storage_host_id": "storage_host_" + str(id),
+    "os_type": "linux",
+    "status": "Normal",
+    "ip_address": "1.2.3.4"
+}
+]
+
+storage_hg_list = [{
+    "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
+    "name": "storage_host_group_" + str(id),
+    "description": "storage_host_group_" + str(id),
+    "storage_id": "c5c91c98-91aa-40e6-85ac-37a1d3b32bda",
+    "native_storage_host_group_id": "storage_host_group_" + str(id),
+}
+]
+
+storage_host_groups_list = {
+    'storage_host_groups': storage_hg_list,
+    'storage_host_grp_host_rels': ''
+}
+empty_shgs_list = {
+    'storage_host_groups': list(),
+    'storage_host_grp_host_rels': ''
+}
+
+pg_list = [{
+    "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
+    "name": "port_group_" + str(id),
+    "description": "port_group_" + str(id),
+    "storage_id": "c5c91c98-91aa-40e6-85ac-37a1d3b32bda",
+    "native_port_group_id": "port_group_" + str(id),
+}
+]
+
+port_groups_list = {
+    "port_groups": pg_list,
+    "port_grp_port_rels": '',
+}
+
+empty_port_groups_list = {
+    "port_groups": list(),
+    "port_grp_port_rels": '',
+}
+
+vg_list = [{
+    "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
+    "name": "volume_group_" + str(id),
+    "description": "volume_group_" + str(id),
+    "storage_id": "c5c91c98-91aa-40e6-85ac-37a1d3b32bda",
+    "native_volume_group_id": "volume_group_" + str(id),
+}
+]
+
+volume_groups_list = {
+    'volume_groups': vg_list,
+    'vol_grp_vol_rels': ''
+}
+
+empty_volume_groups_list = {
+    'volume_groups': list(),
+    'vol_grp_vol_rels': ''
+}
+
+masking_views_list = [{
+    "id": "4e62c66a-39ef-43f2-9690-e936ca876574",
+    "name": "masking_view_" + str(id),
+    "description": "masking_view_" + str(id),
+    "storage_id": "c5c91c98-91aa-40e6-85ac-37a1d3b32bda",
+    "native_masking_view_id": "masking_view_" + str(id),
+}
+]
+
 
 class TestStorageDeviceTask(test.TestCase):
     def setUp(self):
@@ -655,3 +745,317 @@ class TestStorageShareTask(test.TestCase):
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
         share_obj.remove()
         self.assertTrue(mock_share_del.called)
+
+
+class TestStorageHostInitiatorTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_storage_host_initiators')
+    @mock.patch('delfin.db.storage_host_initiators_get_all')
+    @mock.patch('delfin.db.storage_host_initiators_delete')
+    @mock.patch('delfin.db.storage_host_initiators_update')
+    @mock.patch('delfin.db.storage_host_initiators_create')
+    def test_sync_successful(self, mock_storage_host_initiator_create,
+                             mock_storage_host_initiator_update,
+                             mock_storage_host_initiator_del,
+                             mock_storage_host_initiators_get_all,
+                             mock_list_storage_host_initiators, get_lock):
+        storage_host_initiator_obj = resources.StorageHostInitiatorTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        storage_host_initiator_obj.sync()
+        self.assertTrue(mock_list_storage_host_initiators.called)
+        self.assertTrue(mock_storage_host_initiators_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # Collect the storage host initiators from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # Add the storage host initiators to DB
+        mock_list_storage_host_initiators.return_value \
+            = fake_storage_obj.list_storage_host_initiators(context)
+        mock_storage_host_initiators_get_all.return_value = list()
+        storage_host_initiator_obj.sync()
+        self.assertTrue(mock_storage_host_initiator_create.called)
+
+        # Update the storage host initiators to DB
+        mock_list_storage_host_initiators.return_value \
+            = storage_host_initiators_list
+        mock_storage_host_initiators_get_all.return_value \
+            = storage_host_initiators_list
+        storage_host_initiator_obj.sync()
+        self.assertTrue(mock_storage_host_initiator_update.called)
+
+        # Delete the storage host initiators to DB
+        mock_list_storage_host_initiators.return_value = list()
+        mock_storage_host_initiators_get_all.return_value \
+            = storage_host_initiators_list
+        storage_host_initiator_obj.sync()
+        self.assertTrue(mock_storage_host_initiator_del.called)
+
+    @mock.patch('delfin.db.storage_host_initiators_delete_by_storage')
+    def test_remove(self, mock_storage_host_initiators_del):
+        storage_host_initiator_obj = resources.StorageHostInitiatorTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        storage_host_initiator_obj.remove()
+        self.assertTrue(mock_storage_host_initiators_del.called)
+
+
+class TestStorageHostTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_storage_hosts')
+    @mock.patch('delfin.db.storage_hosts_get_all')
+    @mock.patch('delfin.db.storage_hosts_delete')
+    @mock.patch('delfin.db.storage_hosts_update')
+    @mock.patch('delfin.db.storage_hosts_create')
+    def test_sync_successful(self, mock_storage_host_create,
+                             mock_storage_host_update,
+                             mock_storage_host_del,
+                             mock_storage_hosts_get_all,
+                             mock_list_storage_hosts, get_lock):
+        storage_host_obj = resources.StorageHostTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        storage_host_obj.sync()
+        self.assertTrue(mock_list_storage_hosts.called)
+        self.assertTrue(mock_storage_hosts_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # Collect the storage hosts from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # Add the storage hosts to DB
+        mock_list_storage_hosts.return_value \
+            = fake_storage_obj.list_storage_hosts(context)
+        mock_storage_hosts_get_all.return_value = list()
+        storage_host_obj.sync()
+        self.assertTrue(mock_storage_host_create.called)
+
+        # Update the storage hosts to DB
+        mock_list_storage_hosts.return_value \
+            = storage_hosts_list
+        mock_storage_hosts_get_all.return_value \
+            = storage_hosts_list
+        storage_host_obj.sync()
+        self.assertTrue(mock_storage_host_update.called)
+
+        # Delete the storage hosts to DB
+        mock_list_storage_hosts.return_value = list()
+        mock_storage_hosts_get_all.return_value \
+            = storage_hosts_list
+        storage_host_obj.sync()
+        self.assertTrue(mock_storage_host_del.called)
+
+    @mock.patch('delfin.db.storage_hosts_delete_by_storage')
+    def test_remove(self, mock_storage_hosts_del):
+        storage_host_obj = resources.StorageHostTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        storage_host_obj.remove()
+        self.assertTrue(mock_storage_hosts_del.called)
+
+
+class TestStorageHostGroupTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_storage_host_groups')
+    @mock.patch('delfin.db.storage_host_groups_get_all')
+    @mock.patch('delfin.db.storage_host_groups_delete')
+    @mock.patch('delfin.db.storage_host_groups_update')
+    @mock.patch('delfin.db.storage_host_groups_create')
+    def test_sync_successful(self, mock_storage_host_group_create,
+                             mock_storage_host_group_update,
+                             mock_storage_host_group_del,
+                             mock_storage_host_groups_get_all,
+                             mock_list_storage_host_groups, get_lock):
+        storage_host_group_obj = resources.StorageHostGroupTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        storage_host_group_obj.sync()
+        self.assertTrue(mock_list_storage_host_groups.called)
+        self.assertTrue(mock_storage_host_groups_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # Collect the storage host groups from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # Add the storage host groups to DB
+        mock_list_storage_host_groups.return_value \
+            = fake_storage_obj.list_storage_host_groups(context)
+        mock_storage_host_groups_get_all.return_value = list()
+        storage_host_group_obj.sync()
+        self.assertTrue(mock_storage_host_group_create.called)
+
+        # Update the storage host groups to DB
+        mock_list_storage_host_groups.return_value \
+            = storage_host_groups_list
+        mock_storage_host_groups_get_all.return_value \
+            = storage_hg_list
+        storage_host_group_obj.sync()
+        self.assertTrue(mock_storage_host_group_update.called)
+
+        # Delete the storage host groups to DB
+        mock_list_storage_host_groups.return_value = empty_shgs_list
+        mock_storage_host_groups_get_all.return_value \
+            = storage_hg_list
+        storage_host_group_obj.sync()
+        self.assertTrue(mock_storage_host_group_del.called)
+
+    @mock.patch('delfin.db.storage_host_groups_delete_by_storage')
+    def test_remove(self, mock_storage_host_groups_del):
+        storage_host_group_obj = resources.StorageHostGroupTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        storage_host_group_obj.remove()
+        self.assertTrue(mock_storage_host_groups_del.called)
+
+
+class TestVolumeGroupTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_volume_groups')
+    @mock.patch('delfin.db.volume_groups_get_all')
+    @mock.patch('delfin.db.volume_groups_delete')
+    @mock.patch('delfin.db.volume_groups_update')
+    @mock.patch('delfin.db.volume_groups_create')
+    def test_sync_successful(self, mock_volume_group_create,
+                             mock_volume_group_update,
+                             mock_volume_group_del,
+                             mock_volume_groups_get_all,
+                             mock_list_volume_groups, get_lock):
+        volume_group_obj = resources.VolumeGroupTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        volume_group_obj.sync()
+        self.assertTrue(mock_list_volume_groups.called)
+        self.assertTrue(mock_volume_groups_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # Collect the volume groups from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # Add the volume groups to DB
+        mock_list_volume_groups.return_value \
+            = fake_storage_obj.list_volume_groups(context)
+        mock_volume_groups_get_all.return_value = list()
+        volume_group_obj.sync()
+        self.assertTrue(mock_volume_group_create.called)
+
+        # Update the volume groups to DB
+        mock_list_volume_groups.return_value \
+            = volume_groups_list
+        mock_volume_groups_get_all.return_value \
+            = vg_list
+        volume_group_obj.sync()
+        self.assertTrue(mock_volume_group_update.called)
+
+        # Delete the volume groups to DB
+        mock_list_volume_groups.return_value = empty_volume_groups_list
+        mock_volume_groups_get_all.return_value \
+            = vg_list
+        volume_group_obj.sync()
+        self.assertTrue(mock_volume_group_del.called)
+
+    @mock.patch('delfin.db.volume_groups_delete_by_storage')
+    def test_remove(self, mock_volume_groups_del):
+        volume_group_obj = resources.VolumeGroupTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        volume_group_obj.remove()
+        self.assertTrue(mock_volume_groups_del.called)
+
+
+class TestPortGroupTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_port_groups')
+    @mock.patch('delfin.db.port_groups_get_all')
+    @mock.patch('delfin.db.port_groups_delete')
+    @mock.patch('delfin.db.port_groups_update')
+    @mock.patch('delfin.db.port_groups_create')
+    def test_sync_successful(self, mock_port_group_create,
+                             mock_port_group_update,
+                             mock_port_group_del,
+                             mock_port_groups_get_all,
+                             mock_list_port_groups, get_lock):
+        ctxt = context.get_admin_context()
+        port_group_obj = resources.PortGroupTask(
+            ctxt, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        port_group_obj.sync()
+        self.assertTrue(mock_list_port_groups.called)
+        self.assertTrue(mock_port_groups_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # Collect the storage host groups from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # Add the storage host groups to DB
+        mock_list_port_groups.return_value \
+            = fake_storage_obj.list_port_groups(context)
+        mock_port_groups_get_all.return_value = list()
+        port_group_obj.sync()
+        self.assertTrue(mock_port_group_create.called)
+
+        # Update the storage host groups to DB
+        mock_list_port_groups.return_value \
+            = port_groups_list
+        mock_port_groups_get_all.return_value \
+            = pg_list
+        port_group_obj.sync()
+        self.assertTrue(mock_port_group_update.called)
+
+        # Delete the storage host groups to DB
+        mock_list_port_groups.return_value = empty_port_groups_list
+        mock_port_groups_get_all.return_value \
+            = pg_list
+        port_group_obj.sync()
+        self.assertTrue(mock_port_group_del.called)
+
+    @mock.patch('delfin.db.port_groups_delete_by_storage')
+    def test_remove(self, mock_port_groups_del):
+        port_group_obj = resources.PortGroupTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        port_group_obj.remove()
+        self.assertTrue(mock_port_groups_del.called)
+
+
+class TestMaskingViewTask(test.TestCase):
+    @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
+    @mock.patch('delfin.drivers.api.API.list_masking_views')
+    @mock.patch('delfin.db.masking_views_get_all')
+    @mock.patch('delfin.db.masking_views_delete')
+    @mock.patch('delfin.db.masking_views_update')
+    @mock.patch('delfin.db.masking_views_create')
+    def test_sync_successful(self, mock_masking_view_create,
+                             mock_masking_view_update,
+                             mock_masking_view_del,
+                             mock_masking_views_get_all,
+                             mock_list_masking_views, get_lock):
+        cntxt = context.get_admin_context()
+        masking_view_obj = resources.MaskingViewTask(
+            cntxt, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        masking_view_obj.sync()
+        self.assertTrue(mock_list_masking_views.called)
+        self.assertTrue(mock_masking_views_get_all.called)
+        self.assertTrue(get_lock.called)
+
+        # Collect the volume groups from fake_storage
+        fake_storage_obj = fake_storage.FakeStorageDriver()
+
+        # Add the volume groups to DB
+        mock_list_masking_views.return_value \
+            = fake_storage_obj.list_masking_views(context)
+        mock_masking_views_get_all.return_value = list()
+        masking_view_obj.sync()
+        self.assertTrue(mock_masking_view_create.called)
+
+        # Update the volume groups to DB
+        mock_list_masking_views.return_value \
+            = masking_views_list
+        mock_masking_views_get_all.return_value \
+            = masking_views_list
+        masking_view_obj.sync()
+        self.assertTrue(mock_masking_view_update.called)
+
+        # Delete the volume groups to DB
+        mock_list_masking_views.return_value = list()
+        mock_masking_views_get_all.return_value \
+            = masking_views_list
+        masking_view_obj.sync()
+        self.assertTrue(mock_masking_view_del.called)
+
+    @mock.patch('delfin.db.masking_views_delete_by_storage')
+    def test_remove(self, mock_masking_views_del):
+        masking_view_obj = resources.MaskingViewTask(
+            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        masking_view_obj.remove()
+        self.assertTrue(mock_masking_views_del.called)

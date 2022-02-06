@@ -17,6 +17,7 @@ from oslo_utils import units
 
 from delfin import exception
 from delfin.common import constants
+from delfin.drivers.dell_emc.vmax import constants as consts
 from delfin.drivers.dell_emc.vmax import rest, perf_utils
 
 LOG = log.getLogger(__name__)
@@ -83,12 +84,27 @@ class VMAXClient(object):
                     msg = "Invalid array_id. Expected id: {}". \
                         format(array['symmetrixId'])
                     raise exception.InvalidInput(msg)
-        except exception.SSLCertificateFailed:
-            LOG.error('SSL certificate failed when init connection for VMax')
+            else:
+                # Get first local array id
+                array_ids = array.get('symmetrixId', list())
+                for array_id in array_ids:
+                    array_info = self.rest.get_array_detail(
+                        version=self.uni_version, array=array_id)
+                    if array_info.get('local'):
+                        LOG.info("Adding local VMAX array {}".
+                                 format(array_id))
+                        if not self.array_id:
+                            self.array_id = array_id
+                        break
+                    else:
+                        LOG.info("Skipping remote VMAX array {}".
+                                 format(array_id))
+            if not self.array_id:
+                msg = "Failed to get VMAX array id from Unisphere"
+                raise exception.InvalidInput(msg)
+        except Exception:
+            LOG.error("Failed to init_connection to VMAX")
             raise
-        except Exception as err:
-            msg = "Failed to get array details from VMAX: {}".format(err)
-            raise exception.StorageBackendException(msg)
 
         if not self.array_id:
             msg = "Input array_id is missing. Supported ids: {}". \
@@ -100,13 +116,9 @@ class VMAXClient(object):
             # Get the VMAX array properties
             return self.rest.get_vmax_array_details(version=self.uni_version,
                                                     array=self.array_id)
-        except exception.SSLCertificateFailed:
-            LOG.error('SSL certificate failed when get array info for VMax')
+        except Exception:
+            LOG.error("Failed to get array details from VMAX")
             raise
-        except Exception as err:
-            msg = "Failed to get array details from VMAX: {}".format(err)
-            LOG.error(msg)
-            raise exception.StorageBackendException(msg)
 
     def get_storage_capacity(self):
         try:
@@ -150,17 +162,11 @@ class VMAXClient(object):
             return total_capacity, used_capacity, free_capacity,\
                 raw_capacity, subscribed_capacity
 
-        except exception.SSLCertificateFailed:
-            LOG.error('SSL certificate failed when '
-                      'get storage capacity for VMax')
+        except Exception:
+            LOG.error("Failed to get capacity from VMAX")
             raise
-        except Exception as err:
-            msg = "Failed to get capacity from VMAX: {}".format(err)
-            LOG.error(msg)
-            raise exception.StorageBackendException(msg)
 
     def list_storage_pools(self, storage_id):
-
         try:
             # Get list of SRP pool names
             pools = self.rest.get_srp_by_name(
@@ -177,7 +183,7 @@ class VMAXClient(object):
                 if int(self.uni_version) < 90:
                     total_cap = pool_info['total_usable_cap_gb'] * units.Gi
                     used_cap = pool_info['total_allocated_cap_gb'] * units.Gi
-                    subscribed_cap =\
+                    subscribed_cap = \
                         pool_info['total_subscribed_cap_gb'] * units.Gi
                 else:
                     srp_cap = pool_info['srp_capacity']
@@ -202,13 +208,9 @@ class VMAXClient(object):
 
             return pool_list
 
-        except exception.SSLCertificateFailed:
-            LOG.error('SSL certificate failed when list pools for VMax')
+        except Exception:
+            LOG.error("Failed to get pool metrics from VMAX")
             raise
-        except Exception as err:
-            msg = "Failed to get pool metrics from VMAX: {}".format(err)
-            LOG.error(msg)
-            raise exception.StorageBackendException(msg)
 
     def list_volumes(self, storage_id):
 
@@ -224,9 +226,9 @@ class VMAXClient(object):
             # TODO: Update constants.VolumeStatus to make mapping more precise
             switcher = {
                 'Ready': constants.VolumeStatus.AVAILABLE,
-                'Not Ready': constants.VolumeStatus.ERROR,
-                'Mixed': constants.VolumeStatus.ERROR,
-                'Write Disabled': constants.VolumeStatus.ERROR,
+                'Not Ready': constants.VolumeStatus.AVAILABLE,
+                'Mixed': constants.VolumeStatus.AVAILABLE,
+                'Write Disabled': constants.VolumeStatus.AVAILABLE,
                 'N/A': constants.VolumeStatus.ERROR,
             }
 
@@ -241,8 +243,8 @@ class VMAXClient(object):
                 used_cap = (total_cap * vol['allocated_percent']) / 100.0
                 free_cap = total_cap - used_cap
 
-                status = switcher.get(vol['status'],
-                                      constants.VolumeStatus.ERROR)
+                status = switcher.get(vol.get('status'),
+                                      constants.VolumeStatus.AVAILABLE)
 
                 description = "Dell EMC VMAX volume"
                 if vol['type'] == 'TDEV':
@@ -269,7 +271,7 @@ class VMAXClient(object):
                     sg = vol['storageGroupId'][0]
                     sg_info = self.rest.get_storage_group(
                         self.array_id, self.uni_version, sg)
-                    v['native_storage_pool_id'] =\
+                    v['native_storage_pool_id'] = \
                         sg_info.get('srp', default_srps[emulation_type])
                     v['compressed'] = sg_info.get('compression', False)
                 else:
@@ -279,13 +281,151 @@ class VMAXClient(object):
 
             return volume_list
 
-        except exception.SSLCertificateFailed:
-            LOG.error('SSL certificate failed when list volumes for VMax')
+        except Exception:
+            LOG.error("Failed to get list volumes from VMAX")
             raise
-        except Exception as err:
-            msg = "Failed to get list volumes from VMAX: {}".format(err)
-            LOG.error(msg)
-            raise exception.StorageBackendException(msg)
+
+    def list_controllers(self, storage_id):
+        try:
+            # Get list of Directors
+            directors = self.rest.get_director_list(self.array_id,
+                                                    self.uni_version)
+            controller_list = []
+            for director in directors:
+                director_info = self.rest.get_director(
+                    self.array_id, self.uni_version, director)
+
+                status = constants.ControllerStatus.NORMAL
+                if "OFF" in director_info.get('availability', '').upper():
+                    status = constants.ControllerStatus.OFFLINE
+
+                controller = {
+                    'name': director_info['directorId'],
+                    'storage_id': storage_id,
+                    'native_controller_id': director_info['directorId'],
+                    'status': status,
+                    'location':
+                        'slot_' +
+                        str(director_info.get('director_slot_number')),
+                    'soft_version': None,
+                    'cpu_info': 'Cores-'
+                                + str(director_info.get('num_of_cores')),
+                    'memory_size': None
+
+                }
+                controller_list.append(controller)
+            return controller_list
+
+        except Exception:
+            LOG.error("Failed to get controller metrics from VMAX")
+            raise
+
+    def list_ports(self, storage_id):
+        try:
+            # Get list of Directors
+            directors = self.rest.get_director_list(self.array_id,
+                                                    self.uni_version)
+        except Exception:
+            LOG.error("Failed to get director list,"
+                      " while getting port metrics from VMAX")
+            raise
+        switcher = {
+            'A': constants.PortLogicalType.MANAGEMENT,
+            'B': constants.PortLogicalType.SERVICE,
+            'C': constants.PortLogicalType.BACKEND,
+        }
+        port_list = []
+        for director in directors:
+            try:
+                port_keys = self.rest.get_port_list(
+                    self.array_id, self.uni_version, director)
+                for port_key in port_keys:
+                    port_info = self.rest.get_port(
+                        self.array_id, self.uni_version,
+                        director, port_key['portId'])['symmetrixPort']
+
+                    connection_status = \
+                        constants.PortConnectionStatus.CONNECTED
+                    if port_info.get('port_status',
+                                     '').upper().find('OFF') != -1:
+                        connection_status = \
+                            constants.PortConnectionStatus.DISCONNECTED
+
+                    port_type = constants.PortType.OTHER
+                    if port_info.get('type', '').upper().find('FIBRE') != -1:
+                        port_type = constants.PortType.FC
+                    if port_info.get('type', '').upper().find('ETH') != -1:
+                        port_type = constants.PortType.ETH
+
+                    name = "{0}:{1}".format(port_key['directorId'],
+                                            port_key['portId'])
+
+                    director_emulation = port_key['directorId'][4]
+                    logical_type = switcher.get(
+                        director_emulation, constants.PortLogicalType.OTHER)
+                    if logical_type == constants.PortLogicalType.OTHER:
+                        port_prefix = port_key['directorId'][:2]
+                        if port_prefix in ['FA', 'FE', 'EA', 'EF', 'SE']:
+                            logical_type = constants.PortLogicalType.FRONTEND
+                        if port_prefix in ['DA', 'DF', 'DX']:
+                            logical_type = constants.PortLogicalType.BACKEND
+
+                    speed = int(port_info.get('negotiated_speed',
+                                              '0')) * units.Gi
+                    max_speed = int(port_info.get('max_speed',
+                                                  '0')) * units.Gi
+                    port_dict = {
+                        'name': name,
+                        'storage_id': storage_id,
+                        'native_port_id': port_key['portId'],
+                        'location': 'director_' + port_key['directorId'],
+                        'connection_status': connection_status,
+                        'health_status': constants.PortHealthStatus.NORMAL,
+                        'type': port_type,
+                        'logical_type': logical_type,
+                        'speed': speed,
+                        'max_speed': max_speed,
+                        'native_parent_id': port_key['directorId'],
+                        'wwn': port_info.get('identifier', None),
+                        'mac_address': None,
+                        'ipv4': port_info.get('ipv4_address'),
+                        'ipv4_mask': port_info.get('ipv4_netmask'),
+                        'ipv6': port_info.get('ipv6_address'),
+                        'ipv6_mask': None,
+                    }
+                    port_list.append(port_dict)
+
+            except Exception:
+                LOG.error("Failed to get port list for director: {}"
+                          .format(director))
+
+            return port_list
+
+    def list_disks(self, storage_id):
+        if int(self.uni_version) < 91:
+            return []
+        try:
+            # Get list of Disks
+            disks = self.rest.get_disk_list(self.array_id,
+                                            self.uni_version)
+            disk_list = []
+            for disk in disks:
+                disk_info = self.rest.get_disk(
+                    self.array_id, self.uni_version, disk)
+
+                disk_item = {
+                    'name': disk,
+                    'storage_id': storage_id,
+                    'native_disk_id': disk,
+                    'manufacturer': disk_info['vendor'],
+                    'capacity': int(disk_info['capacity']) * units.Gi,
+                }
+                disk_list.append(disk_item)
+            return disk_list
+
+        except Exception:
+            LOG.error("Failed to get disk details from VMAX")
+            raise
 
     def list_alerts(self, query_para):
         """Get all alerts from an array."""
@@ -297,30 +437,103 @@ class VMAXClient(object):
         return self.rest.clear_alert(sequence_number, version=self.uni_version,
                                      array=self.array_id)
 
-    def get_array_performance_metrics(self, storage_id, start_time, end_time):
+    def get_storage_metrics(self, storage_id, metrics, start_time, end_time):
         """Get performance metrics."""
         try:
-            # Fetch VMAX Array Performance data from REST client
-            # TODO  :
-            #  Check whether array is registered for performance collection
-            #  in unisphere
-            perf_data = self.rest.get_array_performance_metrics(
-                self.array_id, start_time, end_time)
-            # parse VMAX REST response to metric->values map
-            metrics_value_map = perf_utils.parse_performance_data(perf_data)
-            # prepare  labels required for array_leval performance data
-            labels = {'storage_id': storage_id, 'resource_type': 'array'}
-            # map to unified delifn  metrics
-            delfin_metrics = perf_utils.\
-                map_array_perf_metrics_to_delfin_metrics(metrics_value_map)
-            metrics_array = []
-            for key in constants.DELFIN_ARRAY_METRICS:
-                m = constants.metric_struct(name=key, labels=labels,
-                                            values=delfin_metrics[key])
-                metrics_array.append(m)
+            perf_list = self.rest.get_storage_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            return perf_utils.construct_metrics(storage_id,
+                                                consts.STORAGE_METRICS,
+                                                consts.STORAGE_CAP,
+                                                perf_list)
+        except Exception:
+            LOG.error("Failed to get STORAGE metrics for VMAX")
+            raise
+
+    def get_pool_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get performance metrics."""
+        try:
+            perf_list = self.rest.get_pool_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            metrics_array = perf_utils.construct_metrics(
+                storage_id, consts.POOL_METRICS, consts.POOL_CAP, perf_list)
+
             return metrics_array
-        except Exception as err:
-            msg = "Failed to get performance metrics data for VMAX: {}".format(
-                err)
-            LOG.error(msg)
-            raise exception.StorageBackendException(msg)
+        except Exception:
+            LOG.error("Failed to get STORAGE POOL metrics for VMAX")
+            raise
+
+    def get_port_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get performance metrics."""
+        try:
+            be_perf_list, fe_perf_list, rdf_perf_list = \
+                self.rest.get_port_metrics(self.array_id,
+                                           metrics, start_time, end_time)
+
+            metrics_array = []
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.BEPORT_METRICS,
+                consts.PORT_CAP, be_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.FEPORT_METRICS,
+                consts.PORT_CAP, fe_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.RDFPORT_METRICS,
+                consts.PORT_CAP, rdf_perf_list)
+            metrics_array.extend(metrics_list)
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get PORT metrics for VMAX")
+            raise
+
+    def get_controller_metrics(self, storage_id,
+                               metrics, start_time, end_time):
+        """Get performance metrics."""
+        try:
+            be_perf_list, fe_perf_list, rdf_perf_list = self.rest.\
+                get_controller_metrics(self.array_id,
+                                       metrics, start_time, end_time)
+
+            metrics_array = []
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.BEDIRECTOR_METRICS,
+                consts.CONTROLLER_CAP, be_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.FEDIRECTOR_METRICS,
+                consts.CONTROLLER_CAP, fe_perf_list)
+            metrics_array.extend(metrics_list)
+
+            metrics_list = perf_utils.construct_metrics(
+                storage_id, consts.RDFDIRECTOR_METRICS,
+                consts.CONTROLLER_CAP, rdf_perf_list)
+            metrics_array.extend(metrics_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get CONTROLLER metrics for VMAX")
+            raise
+
+    def get_disk_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get disk performance metrics."""
+        if int(self.uni_version) < 91:
+            return []
+
+        try:
+            perf_list = self.rest.get_disk_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            metrics_array = perf_utils.construct_metrics(
+                storage_id, consts.DISK_METRICS, consts.DISK_CAP, perf_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get DISK metrics for VMAX")
+            raise

@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.ibm.storwize_svc import ssh_handler
+from delfin.drivers.ibm.storwize_svc import ssh_handler, consts
 from delfin.drivers.ibm.storwize_svc.ssh_handler import SSHHandler
 
 
@@ -37,13 +37,13 @@ class StorwizeSVCDriver(driver.StorageDriver):
         return self.ssh_hanlder.list_volumes(self.storage_id)
 
     def list_controllers(self, context):
-        pass
+        return self.ssh_hanlder.list_controllers(self.storage_id)
 
     def list_ports(self, context):
-        pass
+        return self.ssh_hanlder.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        pass
+        return self.ssh_hanlder.list_disks(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
         return self.ssh_hanlder.list_alerts(query_para)
@@ -60,3 +60,29 @@ class StorwizeSVCDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         return self.ssh_hanlder.fix_alert(alert)
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time,
+                             end_time):
+        return self.ssh_hanlder.collect_perf_metrics(
+            storage_id, resource_metrics, start_time, end_time)
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP,
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP,
+                constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        return self.ssh_hanlder.get_latest_perf_timestamp()

@@ -230,3 +230,34 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(RestHandler.COMM_URL, timeout=10)
 
         return result_json
+
+    def get_controllers(self):
+        url = '%s/%s/components/instance' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_disks(self):
+        url = '%s/%s/drives' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_all_ports(self):
+        url = '%s/%s/ports' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_detail_ports(self, port_id):
+        url = '%s/%s/ports/%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_alerts(self, param, start, end):
+        url = '%s/%s/alerts?%s&start=%s&count=%s' % (RestHandler.COMM_URL,
+                                                     self.storage_device_id,
+                                                     param, start, end)
+        result_json = self.get_rest_info(url)
+        return result_json

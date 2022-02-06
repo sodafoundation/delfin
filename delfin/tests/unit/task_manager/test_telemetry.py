@@ -18,6 +18,12 @@ from delfin import db
 from delfin import exception
 from delfin import test
 from delfin.task_manager.tasks import telemetry
+from delfin.task_manager.metrics_manager import MetricsTaskManager
+from delfin.task_manager.scheduler.schedulers.telemetry.job_handler \
+    import JobHandler, FailedJobHandler
+from apscheduler.schedulers.background import BackgroundScheduler
+from delfin.task_manager.subprocess_rpcapi import SubprocessAPI
+
 
 fake_storage = {
     'id': '12c2d52f-01bc-41f5-b73f-7abf6f38a2a6',
@@ -71,15 +77,141 @@ class TestPerformanceCollectionTask(test.TestCase):
         self.assertEqual(mock_dispatch.call_count, 0)
         self.assertEqual(mock_log_error.call_count, 1)
 
-    @mock.patch('delfin.db.failed_task_delete_by_storage')
-    @mock.patch('delfin.db.task_delete_by_storage')
-    def test_successful_remove(self, mock_task_del, mock_failed_task_del):
-        telemetry_obj = telemetry.PerformanceCollectionTask(
-        )
-        telemetry_obj.remove_telemetry(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+    @mock.patch.object(SubprocessAPI, 'assign_job_local')
+    @mock.patch.object(db, 'task_get')
+    @mock.patch.object(JobHandler, 'schedule_job')
+    @mock.patch.object(MetricsTaskManager, 'schedule_boot_jobs')
+    @mock.patch.object(MetricsTaskManager, 'create_process')
+    def test_metric_manager_assign_job(self, mock_create, mock_boot_job,
+                                       mock_job_schedule, mock_db,
+                                       mock_subprocess_api):
+        mock_db.return_value = {
+            'storage_id': 'storage_id1',
+            'args': 'args',
+            'interval': 10,
+        }
+        mock_create.return_value = None
+        mock_boot_job.return_value = None
+        mock_job_schedule.return_value = None
+        mock_subprocess_api.return_value = None
 
-        mock_task_del.assert_called_with(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
-        mock_failed_task_del.assert_called_with(
-            context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
+        mgr = MetricsTaskManager()
+        mgr.enable_sub_process = False
+
+        mgr.assign_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+
+        mgr.enable_sub_process = True
+        mgr.scheduler = BackgroundScheduler()
+        mgr.scheduler.start()
+        mgr.assign_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+        self.assertEqual(mock_subprocess_api.call_count, 1)
+
+    @mock.patch.object(SubprocessAPI, 'remove_job_local')
+    @mock.patch.object(db, 'task_get')
+    @mock.patch.object(JobHandler, 'remove_job')
+    @mock.patch.object(MetricsTaskManager, 'schedule_boot_jobs')
+    @mock.patch.object(MetricsTaskManager, 'create_process')
+    def test_metric_manager_remove_job(self, mock_create, mock_boot_job,
+                                       mock_job_schedule, mock_db,
+                                       mock_subprocess_api):
+        mock_db.return_value = {
+            'storage_id': 'storage_id1',
+            'args': 'args',
+            'interval': 10,
+        }
+        mock_create.return_value = None
+        mock_boot_job.return_value = None
+        mock_job_schedule.return_value = None
+        mock_subprocess_api.return_value = None
+
+        mgr = MetricsTaskManager()
+        mgr.enable_sub_process = False
+
+        mgr.remove_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+
+        mgr.enable_sub_process = True
+        mgr.executor_map = {
+            'host1': {
+                "storages": ['storage_id1'],
+            }
+        }
+        mgr.scheduler = BackgroundScheduler()
+        mgr.scheduler.start()
+        mgr.remove_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+        self.assertEqual(mock_subprocess_api.call_count, 1)
+
+    @mock.patch.object(SubprocessAPI, 'assign_failed_job_local')
+    @mock.patch.object(db, 'failed_task_get')
+    @mock.patch.object(FailedJobHandler, 'schedule_failed_job')
+    @mock.patch.object(MetricsTaskManager, 'schedule_boot_jobs')
+    @mock.patch.object(MetricsTaskManager, 'create_process')
+    @mock.patch.object(MetricsTaskManager, 'get_local_executor')
+    def test_metric_manager_assign_failed_job(self, mock_executor,
+                                              mock_create,
+                                              mock_boot_job,
+                                              mock_job_schedule, mock_db,
+                                              mock_subprocess_api):
+        mock_db.return_value = {
+            'storage_id': 'storage_id1',
+            'args': 'args',
+            'interval': 10,
+        }
+        mock_create.return_value = None
+        mock_boot_job.return_value = None
+        mock_job_schedule.return_value = None
+        mock_subprocess_api.return_value = None
+        mock_executor.return_value = None
+
+        mgr = MetricsTaskManager()
+        mgr.enable_sub_process = False
+
+        mgr.assign_failed_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+
+        mgr.enable_sub_process = True
+        mgr.scheduler = BackgroundScheduler()
+        mgr.scheduler.start()
+        mgr.assign_failed_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+        self.assertEqual(mock_subprocess_api.call_count, 1)
+
+    @mock.patch.object(SubprocessAPI, 'remove_failed_job_local')
+    @mock.patch.object(db, 'failed_task_get')
+    @mock.patch.object(FailedJobHandler, 'remove_failed_job')
+    @mock.patch.object(MetricsTaskManager, 'schedule_boot_jobs')
+    @mock.patch.object(MetricsTaskManager, 'create_process')
+    def test_metric_manager_remove_failed_job(self, mock_create,
+                                              mock_boot_job,
+                                              mock_job_schedule, mock_db,
+                                              mock_subprocess_api):
+        mock_db.return_value = {
+            'storage_id': 'storage_id1',
+            'args': 'args',
+            'interval': 10,
+        }
+        mock_create.return_value = None
+        mock_boot_job.return_value = None
+        mock_job_schedule.return_value = None
+        mock_subprocess_api.return_value = None
+
+        mgr = MetricsTaskManager()
+        mgr.enable_sub_process = False
+
+        mgr.remove_failed_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+
+        mgr.enable_sub_process = True
+        mgr.executor_map = {
+            'host1': {
+                "storages": ['storage_id1'],
+            }
+        }
+        mgr.scheduler = BackgroundScheduler()
+        mgr.scheduler.start()
+        mgr.remove_failed_job('context', 'task_id1', 'host1')
+        self.assertEqual(mock_job_schedule.call_count, 1)
+        self.assertEqual(mock_subprocess_api.call_count, 1)

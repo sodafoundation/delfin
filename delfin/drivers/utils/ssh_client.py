@@ -13,6 +13,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import time
+
 import paramiko
 import six
 from eventlet import pools
@@ -20,7 +22,7 @@ from oslo_log import log as logging
 from paramiko.hostkeys import HostKeyEntry
 
 from delfin import cryptor
-from delfin import exception
+from delfin import exception, utils
 
 LOG = logging.getLogger(__name__)
 
@@ -191,7 +193,7 @@ class SSHPool(pools.Pool):
             return ssh
         except Exception as e:
             err = six.text_type(e)
-            LOG.error('doexec InvalidUsernameOrPassword error')
+            LOG.error(err)
             if 'timed out' in err:
                 raise exception.InvalidIpOrPort()
             elif 'No authentication methods available' in err \
@@ -218,10 +220,15 @@ class SSHPool(pools.Pool):
                     return conn
                 else:
                     conn.close()
-            return self.create()
+                    self.current_size -= 1
         if self.current_size < self.max_size:
-            created = self.create()
-            self.current_size += 1
+            try:
+                self.current_size += 1
+                created = self.create()
+            except Exception as e:
+                self.current_size -= 1
+                raise e
+
             return created
         return self.channel.get()
 
@@ -239,3 +246,80 @@ class SSHPool(pools.Pool):
             self.current_size -= 1
             return
         super(SSHPool, self).put(conn)
+
+    def do_exec(self, command_str):
+        result = ''
+        try:
+            with self.item() as ssh:
+                utils.check_ssh_injection(command_str)
+                if command_str is not None and ssh is not None:
+                    stdin, stdout, stderr = ssh.exec_command(command_str)
+                    res, err = stdout.read(), stderr.read()
+                    re = res if res else err
+                    result = re.decode()
+        except paramiko.AuthenticationException as ae:
+            LOG.error('doexec Authentication error:{}'.format(ae))
+            raise exception.InvalidUsernameOrPassword()
+        except Exception as e:
+            err = six.text_type(e)
+            LOG.error(err)
+            if 'timed out' in err \
+                    or 'SSH connect timeout' in err\
+                    or 'Unable to connect to port' in err:
+                raise exception.ConnectTimeout()
+            elif 'No authentication methods available' in err \
+                    or 'Authentication failed' in err \
+                    or 'Invalid username or password' in err:
+                raise exception.InvalidUsernameOrPassword()
+            elif 'not a valid RSA private key file' in err \
+                    or 'not a valid RSA private key' in err:
+                raise exception.InvalidPrivateKey()
+            else:
+                raise exception.SSHException(err)
+        if 'invalid command name' in result or 'login failed' in result or\
+                'is not a recognized command' in result:
+            raise exception.StorageBackendException(result)
+        return result
+
+    def do_exec_shell(self, command_list):
+        result = ''
+        try:
+            with self.item() as ssh:
+                if command_list and ssh:
+                    channel = ssh.invoke_shell()
+                    for command in command_list:
+                        utils.check_ssh_injection(command)
+                        channel.send(command + '\n')
+                        time.sleep(0.5)
+                    channel.send("exit" + "\n")
+                    channel.close()
+                    while True:
+                        resp = channel.recv(9999).decode('utf8')
+                        if not resp:
+                            break
+                        result += resp
+            if 'is not a recognized command' in result \
+                    or 'Unknown command' in result:
+                raise exception.InvalidIpOrPort()
+        except paramiko.AuthenticationException as ae:
+            LOG.error('doexec Authentication error:{}'.format(ae))
+            raise exception.InvalidUsernameOrPassword()
+        except Exception as e:
+            err = six.text_type(e)
+            LOG.error(err)
+            if 'timed out' in err \
+                    or 'SSH connect timeout' in err:
+                raise exception.SSHConnectTimeout()
+            elif 'No authentication methods available' in err \
+                    or 'Authentication failed' in err \
+                    or 'Invalid username or password' in err:
+                raise exception.InvalidUsernameOrPassword()
+            elif 'not a valid RSA private key file' in err \
+                    or 'not a valid RSA private key' in err:
+                raise exception.InvalidPrivateKey()
+            elif 'Unable to connect to port' in err \
+                    or 'Invalid ip or port' in err:
+                raise exception.InvalidIpOrPort()
+            else:
+                raise exception.SSHException(err)
+        return result

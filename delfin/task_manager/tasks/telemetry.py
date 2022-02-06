@@ -18,6 +18,7 @@ import six
 from oslo_log import log
 
 from delfin import context, db
+from delfin import exception
 from delfin.common.constants import TelemetryTaskStatus
 from delfin.drivers import api as driver_api
 from delfin.exporter import base_exporter
@@ -57,6 +58,9 @@ class PerformanceCollectionTask(TelemetryTask):
                 for m in perf_metrics:
                     m.labels["name"] = storage_details.name
                     m.labels["serial_number"] = storage_details.serial_number
+            except exception.StorageNotFound:
+                LOG.warning(f'Storage(id={storage_id}) has been removed.')
+                return TelemetryTaskStatus.TASK_EXEC_STATUS_SUCCESS
             except Exception as e:
                 msg = _('Failed to add extra labels to performance '
                         'metrics: {0}'.format(e))
@@ -70,12 +74,3 @@ class PerformanceCollectionTask(TelemetryTask):
                       "storage id :{0}, reason:{1}".format(storage_id,
                                                            six.text_type(e)))
             return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
-
-    def remove_telemetry(self, ctx, storage_id):
-        try:
-            db.task_delete_by_storage(ctx, storage_id)
-            db.failed_task_delete_by_storage(ctx, storage_id)
-        except Exception as e:
-            LOG.error("Failed to remove task entries from DB  for "
-                      "storage id :{0}, reason:{1}".format(storage_id,
-                                                           six.text_type(e)))

@@ -6,5 +6,7 @@ coverage:
   precision: 2
   round: down
   status:
-    patch: false
-
+    project:
+      default:
+        target: 70%
+    patch: off
