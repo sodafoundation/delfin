@@ -1806,27 +1806,53 @@ ETH_PER_INFO = [
     }
 ]
 
-FC_INITIATOR_INFO = """         Vserver: svm1\r
-                      Logical Interface: PSAO2-xiejun\r
-                         Initiator WWPN: 10:00:00:00:c9:d5:b9:6e\r
-                           Port Address: 50400\r
-                         Initiator WWNN: 20:00:00:00:c9:d5:b9:6e\r
-                  Initiator WWPN Alias : -\r
-                            Igroup Name: Test MKL_ Suse 8. 44.133.65"""
+FC_INITIATOR_INFO = """             Vserver: PSA-xiejun00295347\r
+   Logical Interface: PSA02-xiejun\r
+      Initiator WWPN: 10:00:00:00:c9:d5:b9:6e\r
+        Port Address: 50400\r
+      Initiator WWNN: 20:00:00:00:c9:d5:b9:6e\r
+Initiator WWPN Alias: -\r
+         Igroup Name: test00101, Test_MKL_Suse_8.44.133.65\r
+\r
+             Vserver: SVC_FC\r
+   Logical Interface: Migration_NetApp02_0c_02\r
+      Initiator WWPN: 10:00:00:00:c9:d5:b9:6e\r
+        Port Address: 50400\r
+      Initiator WWNN: 20:00:00:00:c9:d5:b9:6e\r
+Initiator WWPN Alias: -\r
+         Igroup Name: -\r
+\r
+             Vserver: SVM_VDF\r
+   Logical Interface: VDF_test02\r
+      Initiator WWPN: 10:00:00:00:c9:d5:b9:6e\r
+        Port Address: 50400\r
+      Initiator WWNN: 20:00:00:00:c9:d5:b9:6e\r
+Initiator WWPN Alias: -\r
+         Igroup Name: -\r
+\r
+             Vserver: xiejun_00295347\r
+   Logical Interface: xiejun_port1\r
+      Initiator WWPN: 10:00:00:00:c9:d5:b9:6e\r
+        Port Address: 50400\r
+      Initiator WWNN: 20:00:00:00:c9:d5:b9:6e\r
+Initiator WWPN Alias: -\r
+         Igroup Name: -\r
+4 entries were displayed.
+"""
 
 ISCSI_INITIATOR_INFO = """      Vserver: svm3\r
                     Target Portal Group: zb_IPV602\r
                       Target Session ID: 357\r
-Initiator Name: iqn.2006-08.com.huawei:21004447dcca426::0\r
+Initiator Name: iqn.2006-08.com.huawei:21004447dcca426::01\r
                        Initiator Alias : -\r
                             TPGroup Tag: 1062 \r
                    Initiator Session ID: 80:12:34:58:78:9a\r
-                            Igroup Name: svm3"""
+                            Igroup Name: -"""
 
 HOSTS_INFO = """          Vserver Name: svm1\r
            Igroup Name: fcstart1\r
-              Protocol: fcp\r
-               OS Type: mixed\r
+              Protocol: mixed\r
+               OS Type: linux\r
 Portset Binding Igroup: portgroup\r
            Igroup UUID: c5ca5750-121f-11ec-b66c-000c29bfc4d7\r
                   ALUA: true\r
@@ -1836,12 +1862,13 @@ iqn.2006-08.com.huawei:21004447dcca426::0 (not logged in)\r
 \r
           Vserver Name: svm3\r
            Igroup Name: svm3\r
-              Protocol: iscsi\r
+              Protocol: mixed\r
                OS Type: windows\r
 Portset Binding Igroup: portgroup2\r
            Igroup UUID: 9a6c2496-174b-11ec-b66c-000c29bfc4d7\r
                   ALUA: true\r
-Initiators: iqn.2006-08.com.huawei:21004447dcca426::0 (not logged in)"""
+Initiators: iqn.2006-08.com.huawei:21004447dcca426::0 (not logged in)\r
+10:00:00:00:c9:d5:b9:6e (not logged in)"""
 
 PORT_SET_INFO = """        Vserver Name: svm1\r
     Portset Name: portgroup\r

@@ -1290,15 +1290,15 @@ class NetAppHandler(object):
                 constant.FC_INITIATOR_COMMAND)
             new_initiator_info = self.ssh_pool.do_exec(
                 constant.HOST_COMMAND)
-            initiator_list.extend(
-                MappingHandler.format_initiators(
-                    initiator_list, iscsi_initiator_info, storage_id, 'iscsi'))
-            initiator_list.extend(
-                MappingHandler.format_initiators(
-                    initiator_list, fc_initiator_info, storage_id, 'fc'))
-            initiator_list.extend(
-                MappingHandler.format_initiators(
-                    initiator_list, new_initiator_info, storage_id, '', True))
+            MappingHandler.format_initiators(
+                initiator_list, new_initiator_info,
+                storage_id, '', is_default=True)
+            MappingHandler.format_initiators(
+                initiator_list, iscsi_initiator_info,
+                storage_id, 'iscsi')
+            MappingHandler.format_initiators(
+                initiator_list, fc_initiator_info,
+                storage_id, 'fc')
             return initiator_list
         except exception.DelfinException as e:
             err_msg = "Failed to get storage initiators from " \

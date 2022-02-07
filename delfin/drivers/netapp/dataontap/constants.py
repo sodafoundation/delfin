@@ -67,10 +67,9 @@ PATTERN = re.compile('^[-]{3,}')
 FLOAT_PATTERN = r"\d\.\d"
 IP_PATTERN = re.compile(r'(([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])\.){3}'
                         r'([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])$')
-
-IQN_PATTERN = re.compile('^[iqn]{0,}')
+IQN_PATTERN = re.compile('^[i][q][n].')
 WWN_PATTERN = re.compile('^(([a-z|0-9]){2}:){7}(([a-z|0-9]){2})')
-INITIATOR_KEY = '(notloggedin)'
+INITIATOR_KEY = 'loggedin'
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
 STORAGE_STATUS_COMMAND = "system health status show"
