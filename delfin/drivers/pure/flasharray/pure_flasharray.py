@@ -470,24 +470,23 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
     def list_masking_views(self, context):
         list_masking_views = []
-        volume_g = self.get_volume_group()
         masking_views = self.rest_handler.rest_call(
             self.rest_handler.REST_HOST_ALL_URL)
         view_id_dict = {}
         for masking_view in (masking_views or []):
+            hgroup = masking_view.get('hgroup')
             host_id = masking_view.get('name')
             native_volume_id = masking_view.get('vol')
-            native_masking_view_id = '{}{}'.format(host_id, native_volume_id)
+            native_masking_view_id = '{}{}{}'.format(
+                host_id, hgroup, native_volume_id)
             if view_id_dict.get(native_masking_view_id):
                 continue
             view_id_dict[native_masking_view_id] = native_masking_view_id
             view = {
                 'native_masking_view_id': native_masking_view_id,
                 'name': native_masking_view_id,
-                'native_storage_host_group_id': masking_view.get('hgroup') if
-                masking_view.get('hgroup') else None,
-                'native_volume_group_id': volume_g.get(native_volume_id),
-                'native_storage_host_id': host_id,
+                'native_storage_host_group_id': hgroup if hgroup else None,
+                'native_storage_host_id': None if hgroup else host_id,
                 'native_volume_id': native_volume_id,
                 'storage_id': self.storage_id
             }

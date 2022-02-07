@@ -1526,7 +1526,7 @@ class test_PureFlashArrayDriver(TestCase):
 
     def test_list_masking_views(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[VOLUME_GROUP_INFO, HOSTS_ALL_INFO])
+            side_effect=[HOSTS_ALL_INFO])
         views = self.driver.list_masking_views(context)
         self.assertEqual(views[0].get('native_volume_id'),
                          HOSTS_ALL_INFO[0].get('vol'))
