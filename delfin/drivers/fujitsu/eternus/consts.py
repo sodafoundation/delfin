@@ -26,19 +26,17 @@ GET_STORAGE_FIRMWARE_VERSION = 'show firmware-version'
 GET_STORAGE_TOTAL_CAPACITY = 'show storage-cluster-license'
 GET_STORAGE_CONTROLLER = 'show fru-ce'
 GET_STORAGE_CONTROLLER_STATUS = 'show enclosure-status -type all'
+SET_CLIENV_FORCE_UNLOCK = 'set clienv-force-unlock'
 FIRMWARE_VERSION_CURRENT_COUNT = 3
 FIRMWARE_VERSION_LENGTH = 4
 CURRENT = 'Current'
 FIRMWARE_VERSION_NUMBER = 1
 
 # list_volume  function part
-GET_LIST_VOLUMES_CSV = 'show volumes -csv'
 GET_LIST_VOLUMES = 'show volumes'
+GET_LIST_VOLUMES_MODE_UID = 'show volumes -mode uid'
 GET_LIST_VOLUMES_TYPE_TPV = 'show volumes -type tpv'
 GET_LIST_VOLUMES_TYPE_FTV = 'show volumes -type ftv'
-GET_LIST_VOLUMES_TYPE = 'show volumes -type '
-VOLUMES_TYPE_FTV = 'ftv'
-VOLUMES_TYPE_TPV = 'tpv'
 CLI_STR = 'CLI>'
 SPECIAL_CHARACTERS_ONE = '^'
 SPECIAL_CHARACTERS_TWO = '--'
@@ -53,6 +51,14 @@ DEFAULT_USED_CAPACITY = 0
 DEFAULT_FREE_CAPACITY = 0
 VOLUMES_CYCLE = 5
 VOLUMES_LENGTH = 6
+
+# get_volumes_model function part
+GET_VOLUMES_MODEL_VOLUME_ID_COUNT = 0
+GET_VOLUMES_MODEL_VOLUME_NAME_COUNT = 1
+GET_VOLUMES_MODEL_VOLUME_STATUS_COUNT = 2
+GET_VOLUMES_MODEL_POOL_ID_COUNT = 4
+GET_VOLUMES_MODEL_TOTAL_CAPACITY_COUNT = 8
+GET_VOLUMES_MODEL_WWN_COUNT = 9
 
 # list_storage_pools function part
 GET_STORAGE_POOL_CSV = 'show raid-groups -csv'
@@ -149,7 +155,7 @@ STORAGE_POOL_STATUS_MAP = {'Available': constants.StoragePoolStatus.NORMAL,
                                constants.StoragePoolStatus.ABNORMAL,
                            'SED Locked': constants.StoragePoolStatus.ABNORMAL,
                            'Broken': constants.StoragePoolStatus.ABNORMAL,
-                           'Unknown': constants.StoragePoolStatus.ABNORMAL}
+                           'Unknown': constants.StoragePoolStatus.UNKNOWN}
 
 LIST_VOLUMES_STATUS_MAP = {
     'normal': constants.StorageStatus.NORMAL,
@@ -169,7 +175,7 @@ LIST_VOLUMES_STATUS_MAP = {
     'Broken': constants.StorageStatus.ABNORMAL,
     'Data Lost': constants.StorageStatus.ABNORMAL,
     'Not Available': constants.StorageStatus.OFFLINE,
-    'Unknown': constants.StorageStatus.ABNORMAL,
+    'Unknown': constants.StorageStatus.UNKNOWN,
 }
 
 SEVERITY_MAP = {
@@ -211,15 +217,117 @@ DISK_STATUS_MAP = {
     'Not Format': constants.DiskStatus.NORMAL
 }
 
-PARSE_ALERT_ALERT_ID = '1.3.6.1.4.1.211.1.21.1.150.1.1'
-PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.10'
-PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.211.1.21.1.150.14.1.1'
-PARSE_ALERT_LOCATION = '1.3.6.1.4.1.211.1.21.1.150.7'
+PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
+PARSE_ALERT_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
+PARSE_ALERT_COMPONENT = '1.3.6.1.4.1.211.1.21.1.150.7.0'
+PARSE_ALERT_LOCATION = '1.3.6.1.4.1.211.1.21.1.150.1.1.0'
+PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.211.1.21.1.150.11.0'
 
 PARSE_ALERT_SEVERITY_MAP = {
-    'unknown': constants.Severity.NOT_SPECIFIED,
-    'unused': constants.Severity.NOT_SPECIFIED,
-    'ok': constants.Severity.INFORMATIONAL,
-    'warning': constants.Severity.WARNING,
-    'failed': constants.Severity.FATAL
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.5': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2': constants.Severity.FATAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.3': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.9': constants.Severity.INFORMATIONAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.12': constants.Severity.INFORMATIONAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.50': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.51': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.60': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.61': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.62': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.64': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.65': constants.Severity.WARNING,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.66': constants.Severity.INFORMATIONAL,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.67': constants.Severity.MINOR,
+    '1.3.6.1.4.1.211.4.1.1.126.1.150.0.68': constants.Severity.MINOR
+}
+
+# list_storage_hosts
+GET_HOST_WWN_NAMES = 'show host-wwn-names'
+GET_HOST_PATH_STATUS = 'show host-path-state'
+GET_HOST_ISCSI_NAMES = 'show host-iscsi-names'
+GET_HOST_ISCSI_NAMES_NUMBER = 'show host-iscsi-names -host-number {}'
+GET_HOST_SAS_ADDRESSES = 'show host-sas-addresses'
+HOST_PATH_STATUS_SPECIFIC_ONE = '----'
+HOST_PATH_STATUS_SPECIFIC_TWO = 'Online'
+HOST_ID_COUNT = 0
+HOST_NAME_COUNT = 1
+HOST_WWN_COUNT = 2
+HOST_TYPE_COUNT = 4
+HOST_TOTAL = 5
+HOST_FC_FIVE = 5
+HOST_PATH_STATUS_NAME = 2
+HOST_PATH_STATUS = 3
+HOST_PATH_STATUS_TOTAL = 4
+HOST_ISCSI_NAMES_ZERO = 0
+HOST_ISCSI_ONE = 1
+HOST_ISCSI_THREE = 3
+HOST_ISCSI_FOUR = 4
+HOST_ISCSI_NAMES_TWO = 2
+HOST_ISCSI_DETAIL_EIGHTEEN = 18
+HOST_ISCSI_NAMES_SEVEN = 7
+HOST_ISCSI_SPECIFIC_ONE = '*('
+HOST_SAS_ZERO = 0
+HOST_SAS_ONE = 1
+HOST_SAS_TWO = 2
+HOST_SAS_FOUR = 4
+HOST_SAS_FIVE = 5
+HOST_SAS_SIX = 6
+
+# list_storage_host_groups
+GET_HOST_GROUPS_ALL = 'show host-groups -all'
+HOST_GROUPS_SPECIFIC_ONE = '<Host List>'
+HOST_GROUPS_SPECIFIC_TWO = '----'
+HOST_GROUP_ZERO = 0
+HOST_GROUP_ONE = 1
+HOST_GROUP_TOTAL = 2
+
+# list_volume_groups
+GET_LUN_GROUPS = 'show lun-groups'
+LUN_GROUPS_SPECIFIC_TWO = '----'
+GET_LUN_GROUPS_LG_NUMBER = 'show lun-groups -lg-number {}'
+LUN_GROUPS_ID_COUNT = 0
+LUN_GROUPS_NAME_COUNT = 1
+LUN_VOLUME_ID = 1
+LUN_VOLUME_LENGTH = 3
+
+# list_masking_views
+GET_HOST_AFFINITY_NAME = 'show host-affinity -host-name {}'
+GET_PORT_GROUPS = 'show port-groups -all'
+GET_MAPPING = 'show mapping'
+PORT_GROUP_ARR_LENGTH = 2
+PORT_GROUP_ID_NUM = 0
+PORT_GROUP_NAME_NUM = 1
+HOST_GROUP_NAME_NUM = 3
+LUN_GROUP_ID_NUM = 4
+LIST_MASKING_VIEWS_VOLUME_ID = 1
+PORT_GROUP_ROW_ARR_NUM = 0
+PORT_LIST_ROW_ARR_NUM = 1
+VIEWS_GROUP_NUM_ZERO = 0
+VIEWS_GROUP_ROW_KEY_LENGTH = 4
+VIEWS_HOST_ROW_KEY_LENGTH = 3
+VIEWS_GROUP_ROW_VALUE_LENGTH = 7
+LIST_MASKING_VIEWS_SPECIFIC_ONE = '---'
+LIST_MASKING_VIEWS_SPECIFIC_TWO = '<Port List>'
+LIST_MASKING_VIEWS_SPECIFIC_FOUR = '<Connection List>'
+LIST_MASKING_VIEWS_SPECIFIC_FIVE = 'CM#'
+LIST_MASKING_VIEWS_SPECIFIC_SIX = ' (Host'
+LIST_MASKING_VIEWS_SPECIFIC_SEVEN = 'LUN  Volume'
+VIEWS_REGULAR_SPECIFIC_ONE = '^Port Group'
+VIEWS_REGULAR_SPECIFIC_TWO = '^Host'
+LIST_MASKING_VIEWS_CONSTANT_ZERO = 0
+LIST_MASKING_VIEWS_CONSTANT_TWO = 2
+
+HOST_OS_TYPES_MAP = {
+    'linux': constants.HostOSTypes.LINUX,
+    'windows': constants.HostOSTypes.WINDOWS,
+    'solaris': constants.HostOSTypes.SOLARIS,
+    'hp-ux': constants.HostOSTypes.HP_UX,
+    'aix': constants.HostOSTypes.AIX,
+    'xenserver': constants.HostOSTypes.XEN_SERVER,
+    'vmware esx': constants.HostOSTypes.VMWARE_ESX,
+    'linux_vis': constants.HostOSTypes.LINUX_VIS,
+    'windows server 2012': constants.HostOSTypes.WINDOWS_SERVER_2012,
+    'oracle vm': constants.HostOSTypes.ORACLE_VM,
+    'open vms': constants.HostOSTypes.OPEN_VMS,
+    'unknown': constants.HostOSTypes.UNKNOWN
 }
