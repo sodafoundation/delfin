@@ -1076,7 +1076,7 @@ port_result = [
     {
         'name': 'node1_0',
         'storage_id': '12345',
-        'native_port_id': 'node1_0',
+        'native_port_id': '0',
         'location': 'node1_0',
         'connection_status': 'connected',
         'health_status': 'normal',
