@@ -493,12 +493,3 @@ class PureFlashArrayDriver(driver.StorageDriver):
             list_masking_views.append(view)
         return list_masking_views
 
-    def get_volume_group(self):
-        volume_g = {}
-        volume_groups = self.rest_handler.rest_call(
-            self.rest_handler.REST_VOLUME_GROUP_URL)
-        for volume_group in (volume_groups or []):
-            name = volume_group.get('name')
-            for volume_id in (volume_group.get('volumes') or []):
-                volume_g[volume_id] = name
-        return volume_g
