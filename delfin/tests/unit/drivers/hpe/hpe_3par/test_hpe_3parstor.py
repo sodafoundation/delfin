@@ -1327,7 +1327,7 @@ INITIATOR_RESULT = [
     }]
 VIEW_RESULT = [
     {
-        'native_masking_view_id': '2_0:2:1',
+        'native_masking_view_id': '2_0:2:1_host002_yytest_vv_001',
         'name': '2',
         'storage_id': '12345',
         'native_port_group_id': 'port_group_0:2:1',
