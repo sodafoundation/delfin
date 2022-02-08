@@ -245,8 +245,9 @@ class HostStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED)
 
 
 class HostOSTypes(object):
