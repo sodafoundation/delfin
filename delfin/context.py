@@ -70,6 +70,7 @@ class RequestContext(context.RequestContext):
             roles=roles)
 
         self.user_id = self.user
+        self.tenant = project_id or tenant
         self.project_id = self.tenant
 
         self.read_deleted = read_deleted
