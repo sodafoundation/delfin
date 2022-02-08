@@ -288,6 +288,814 @@ reset_connection_info = {
     "username": "username",
     "status": 200
 }
+hosts_info = [
+    {
+        "iqn": [
+            "iqn.1996-04.de.suse:01:ca9f3bcaf47"
+        ],
+        "wwn": [],
+        "nqn": [],
+        "name": "host",
+        "hgroup": "HGTest"
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "wxth",
+        "hgroup": None
+    },
+    {
+        "iqn": [
+            "iqn.1991-05.com.microsoft:win3"
+        ],
+        "wwn": [],
+        "nqn": [],
+        "name": "huhuitest",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "testGroup",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "21000024FF2C9524",
+            "21000024FF2C9525"
+        ],
+        "nqn": [],
+        "name": "windows223",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "10000000C9D5BC06",
+            "10000000C9D5BC07"
+        ],
+        "nqn": [],
+        "name": "CL-B06-RH2288HV3-8-44-157-33",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "21000024FF76D0CC",
+            "21000024FF76D0CD"
+        ],
+        "nqn": [],
+        "name": "CL-C21-RH5885HV3-8-44-165-22",
+        "hgroup": None
+    },
+    {
+        "iqn": [
+            "iqn.1996-04.de.suse:01:66bf70288332"
+        ],
+        "wwn": [],
+        "nqn": [],
+        "name": "test-1s",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "rhev125",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "210034800D6E7ADE",
+            "210034800D6E7ADF"
+        ],
+        "nqn": [],
+        "name": "QIB",
+        "hgroup": "QIB"
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "20090002D2937E9F",
+            "20190002D2937E9F"
+        ],
+        "nqn": [],
+        "name": "v6-8-44-128-21",
+        "hgroup": None
+    },
+    {
+        "iqn": [
+            "iqn.1994-05.com.redhat:1a9eaa70b558"
+        ],
+        "wwn": [],
+        "nqn": [],
+        "name": "host135",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "2200CC05777C3EDF",
+            "2210CC05777C3EDF"
+        ],
+        "nqn": [],
+        "name": "zty-doradoV6",
+        "hgroup": None
+    },
+    {
+        "iqn": [
+            "iqn.1994-05.com.redhat:71cfb5b97df"
+        ],
+        "wwn": [
+            "21000024FF76D0CF"
+        ],
+        "nqn": [],
+        "name": "CL-Test1",
+        "hgroup": None
+    },
+    {
+        "iqn": [
+            "iqn.1994-05.com.redhat:80c412848b94"
+        ],
+        "wwn": [],
+        "nqn": [],
+        "name": "host137",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "hsesxi",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "21000024FF40272A",
+            "21000024FF40272B"
+        ],
+        "nqn": [],
+        "name": "zty-windows",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "hosttest",
+        "hgroup": "HGTest"
+    },
+    {
+        "iqn": [],
+        "wwn": [
+            "21000024FF5351F0",
+            "21000024FF5351F1"
+        ],
+        "nqn": [],
+        "name": "hswin41",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "ztj201",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "test123",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [],
+        "name": "zsytest",
+        "hgroup": None
+    },
+    {
+        "iqn": [],
+        "wwn": [],
+        "nqn": [
+            "nqn.2021-12.org.nvmexpress.mytest"
+        ],
+        "name": "zhilong-host0000002130",
+        "hgroup": None
+    }
+]
+HOSTS_PERSONALITY_INFO = [
+    {
+        "name": "host",
+        "personality": None
+    },
+    {
+        "name": "wxth",
+        "personality": None
+    },
+    {
+        "name": "huhuitest",
+        "personality": None
+    },
+    {
+        "name": "testGroup",
+        "personality": None
+    },
+    {
+        "name": "windows223",
+        "personality": None
+    },
+    {
+        "name": "CL-B06-RH2288HV3-8-44-157-33",
+        "personality": None
+    },
+    {
+        "name": "CL-C21-RH5885HV3-8-44-165-22",
+        "personality": None
+    },
+    {
+        "name": "test-1s",
+        "personality": None
+    },
+    {
+        "name": "rhev125",
+        "personality": None
+    },
+    {
+        "name": "QIB",
+        "personality": None
+    },
+    {
+        "name": "v6-8-44-128-21",
+        "personality": None
+    },
+    {
+        "name": "host135",
+        "personality": None
+    },
+    {
+        "name": "zty-doradoV6",
+        "personality": None
+    },
+    {
+        "name": "CL-Test1",
+        "personality": None
+    },
+    {
+        "name": "host137",
+        "personality": None
+    },
+    {
+        "name": "hsesxi",
+        "personality": None
+    },
+    {
+        "name": "zty-windows",
+        "personality": None
+    },
+    {
+        "name": "hosttest",
+        "personality": None
+    },
+    {
+        "name": "hswin41",
+        "personality": None
+    },
+    {
+        "name": "ztj201",
+        "personality": None
+    },
+    {
+        "name": "test123",
+        "personality": None
+    },
+    {
+        "name": "zsytest",
+        "personality": None
+    },
+    {
+        "name": "zhilong-host0000002130",
+        "personality": "aix"
+    }
+]
+HGROUP_INFO = [
+    {
+        "hosts": [],
+        "name": "podgroup"
+    },
+    {
+        "hosts": [],
+        "name": "NewTest"
+    },
+    {
+        "hosts": [
+            "QIB"
+        ],
+        "name": "QIB"
+    },
+    {
+        "hosts": [
+            "host",
+            "hosttest"
+        ],
+        "name": "HGTest"
+    }
+]
+
+VOLUME_GROUP_INFO = [
+    {
+        "name": "vvol-pure-VM1-072e131e-vg",
+        "volumes": []
+    },
+    {
+        "name": "vvol-pure-vm2-e48a0ef8-vg",
+        "volumes": []
+    },
+    {
+        "name": "vvol-pure-vm3-65d42a4e-vg",
+        "volumes": []
+    },
+    {
+        "name": "vvol-pure-vm4-17c41971-vg",
+        "volumes": []
+    },
+    {
+        "name": "Volume-Group",
+        "volumes": [
+            "Volume-Group/voltest001",
+            "Volume-Group/voltest002",
+            "Volume-Group/voltest003",
+            "Volume-Group/voltest004",
+            "Volume-Group/voltest005"
+        ]
+    },
+    {
+        "name": "test1",
+        "volumes": []
+    },
+    {
+        "name": "tangxuan",
+        "volumes": []
+    }
+]
+HOSTS_CONNECT_INFO = [
+    {
+        "vol": "huhuitest",
+        "name": "huhuitest",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "test",
+        "name": "wxth",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "test",
+        "name": "testGroup",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "win2016_223",
+        "name": "windows223",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "pure-protocol-endpoint",
+        "name": "CL-C21-RH5885HV3-8-44-165-22",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "CL_VOLUME_1_remote",
+        "name": "CL-C21-RH5885HV3-8-44-165-22",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "lun-test1s",
+        "name": "test-1s",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "QIB1",
+        "name": "QIB",
+        "lun": 254,
+        "hgroup": "QIB"
+    },
+    {
+        "vol": "QIB1",
+        "name": "zty-windows",
+        "lun": 254,
+        "hgroup": "QIB"
+    },
+    {
+        "vol": "QIB2",
+        "name": "zty-windows",
+        "lun": 253,
+        "hgroup": "QIB"
+    },
+    {
+        "vol": "QIB2",
+        "name": "QIB",
+        "lun": 253,
+        "hgroup": "QIB"
+    },
+    {
+        "vol": "yzw_iotest",
+        "name": "host135",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000003",
+        "name": "host137",
+        "lun": 3,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000009",
+        "name": "host135",
+        "lun": 3,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000012",
+        "name": "host135",
+        "lun": 6,
+        "hgroup": None
+    },
+    {
+        "vol": "v6-8-44-128-21",
+        "name": "v6-8-44-128-21",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "V6-8-44-128-21-002",
+        "name": "v6-8-44-128-21",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000007",
+        "name": "host137",
+        "lun": 7,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000010",
+        "name": "host135",
+        "lun": 4,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000013",
+        "name": "host137",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000000",
+        "name": "host135",
+        "lun": 5,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000001",
+        "name": "host137",
+        "lun": 4,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000016",
+        "name": "host137",
+        "lun": 5,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000018",
+        "name": "host135",
+        "lun": 7,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000015",
+        "name": "host135",
+        "lun": 8,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000020",
+        "name": "host137",
+        "lun": 6,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000021",
+        "name": "host135",
+        "lun": 9,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000022",
+        "name": "host137",
+        "lun": 8,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000019",
+        "name": "host135",
+        "lun": 10,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000026",
+        "name": "host137",
+        "lun": 9,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000028",
+        "name": "host135",
+        "lun": 11,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000024",
+        "name": "host137",
+        "lun": 10,
+        "hgroup": None
+    },
+    {
+        "vol": "hsboot",
+        "name": "hsesxi",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "hszdata",
+        "name": "hsesxi",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun16",
+        "name": "zty-doradoV6",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun15",
+        "name": "zty-doradoV6",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun13",
+        "name": "zty-doradoV6",
+        "lun": 3,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun11",
+        "name": "zty-doradoV6",
+        "lun": 4,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun14",
+        "name": "zty-doradoV6",
+        "lun": 5,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun2",
+        "name": "zty-doradoV6",
+        "lun": 6,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun5",
+        "name": "zty-doradoV6",
+        "lun": 7,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun4",
+        "name": "zty-doradoV6",
+        "lun": 8,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun1",
+        "name": "zty-doradoV6",
+        "lun": 9,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun3",
+        "name": "zty-doradoV6",
+        "lun": 10,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun6",
+        "name": "zty-doradoV6",
+        "lun": 11,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun12",
+        "name": "zty-doradoV6",
+        "lun": 12,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun10",
+        "name": "zty-doradoV6",
+        "lun": 13,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun8",
+        "name": "zty-doradoV6",
+        "lun": 14,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun7",
+        "name": "zty-doradoV6",
+        "lun": 15,
+        "hgroup": None
+    },
+    {
+        "vol": "zty_lun9",
+        "name": "zty-doradoV6",
+        "lun": 16,
+        "hgroup": None
+    },
+    {
+        "vol": "Volume-Group/voltest005",
+        "name": "hosttest",
+        "lun": 254,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest005",
+        "name": "host",
+        "lun": 254,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "host",
+        "lun": 253,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "hosttest",
+        "lun": 253,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest002",
+        "name": "host",
+        "lun": 252,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest002",
+        "name": "hosttest",
+        "lun": 252,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest003",
+        "name": "host",
+        "lun": 251,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest003",
+        "name": "hosttest",
+        "lun": 251,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest004",
+        "name": "hosttest",
+        "lun": 250,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest004",
+        "name": "host",
+        "lun": 250,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "homelab-pso-db_0000000001-u",
+        "name": "CL-B06-RH2288HV3-8-44-157-33",
+        "lun": 4,
+        "hgroup": None
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "CL-B06-RH2288HV3-8-44-157-33",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "hswin4102",
+        "name": "zhilong-host0000002130",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "tangxuan/tt001",
+        "name": "host135",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "hswin",
+        "name": "CL-Test1",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000000-u",
+        "name": "zhilong-host0000002130",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "nc::136_connect",
+        "name": "hosttest",
+        "lun": 1,
+        "hgroup": None
+    }
+]
+HGROUP_CONNECT_INFO = [
+    {
+        "vol": "QIB1",
+        "name": "QIB",
+        "lun": 254
+    },
+    {
+        "vol": "QIB2",
+        "name": "QIB",
+        "lun": 253
+    },
+    {
+        "vol": "Volume-Group/voltest005",
+        "name": "HGTest",
+        "lun": 254
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "HGTest",
+        "lun": 253
+    },
+    {
+        "vol": "Volume-Group/voltest002",
+        "name": "HGTest",
+        "lun": 252
+    },
+    {
+        "vol": "Volume-Group/voltest003",
+        "name": "HGTest",
+        "lun": 251
+    },
+    {
+        "vol": "Volume-Group/voltest004",
+        "name": "HGTest",
+        "lun": 250
+    },
+    {
+        "vol": "homelab-pso-db_0000000002",
+        "name": "NewTest",
+        "lun": 254
+    },
+    {
+        "vol": "yzw_test0",
+        "name": "zhilong-hg",
+        "lun": 254
+    }
+]
 
 
 def create_driver():
@@ -366,3 +1174,38 @@ class test_PureFlashArrayDriver(TestCase):
             LOG.error("test_reset_connection error: %s", six.text_type(e))
             username = reset_connection_info.get('username')
         self.assertEqual(username, None)
+
+    def test_list_storage_host_initiators(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[hosts_info])
+        hosts = self.driver.list_storage_host_initiators(context)
+        self.assertEqual(hosts[0].get('name'),
+                         hosts_info[0].get('iqn')[0])
+
+    def test_list_storage_hosts(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[HOSTS_PERSONALITY_INFO])
+        hosts = self.driver.list_storage_hosts(context)
+        self.assertEqual(hosts[0].get('name'),
+                         HOSTS_PERSONALITY_INFO[0].get('name'))
+
+    def test_list_storage_host_groups(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[HGROUP_INFO])
+        hgroup = self.driver.list_storage_host_groups(context)
+        self.assertEqual(hgroup.get('storage_host_groups')[0].get('name'),
+                         HGROUP_INFO[0].get('name'))
+
+    def test_list_volume_groups(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[VOLUME_GROUP_INFO])
+        v_group = self.driver.list_volume_groups(context)
+        self.assertEqual(v_group.get('volume_groups')[0].get('name'),
+                         VOLUME_GROUP_INFO[0].get('name'))
+
+    def test_list_masking_views(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[HGROUP_CONNECT_INFO, HOSTS_CONNECT_INFO])
+        views = self.driver.list_masking_views(context)
+        self.assertEqual(views[0].get('native_volume_id'),
+                         HGROUP_CONNECT_INFO[0].get('vol'))
