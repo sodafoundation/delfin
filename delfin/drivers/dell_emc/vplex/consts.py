@@ -27,6 +27,12 @@ PORT_TYPE_MAP = {
     'ib': constants.PortType.IB,
     'other': constants.PortType.OTHER,
 }
+
+INITIATOR_DESCRIPTION = {
+    'iscsi': constants.InitiatorType.ISCSI,
+    'fc': constants.InitiatorType.FC,
+}
+
 PORT_LOGICAL_TYPE_MAP = {
     'front-end': constants.PortLogicalType.FRONTEND,
     'back-end': constants.PortLogicalType.BACKEND,
@@ -59,4 +65,9 @@ CONTROLLER_STATUS_MAP = {
     "no contact": constants.ControllerStatus.OFFLINE,
     "lost communication": constants.ControllerStatus.OFFLINE,
     "unknown": constants.ControllerStatus.UNKNOWN
+}
+HOST_TYPE_MAP = {
+    "hpux": constants.HostOSTypes.HP_UX,
+    "aix": constants.HostOSTypes.AIX,
+    "unknown": constants.HostOSTypes.UNKNOWN
 }
