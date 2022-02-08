@@ -509,9 +509,9 @@ class SSHHandler(object):
                     }
                     initiator_list.append(initiator_item)
             return initiator_list
-        except Exception:
+        except Exception as e:
             LOG.error("Failed to get initiators from msa")
-            raise
+            raise e
 
     def list_storage_hosts(self, storage_id):
         try:
@@ -533,9 +533,9 @@ class SSHHandler(object):
                     }
                     host_list.append(host_dict)
             return host_list
-        except Exception:
+        except Exception as e:
             LOG.error("Failed to get host from msa")
-            raise
+            raise e
 
     def list_storage_host_groups(self, storage_id):
         try:
@@ -582,9 +582,9 @@ class SSHHandler(object):
                         storage_host_grp_relation_list
                 }
             return storage_host_groups_result
-        except Exception:
+        except Exception as e:
             LOG.error("Failed to get host_groups from msa")
-            raise
+            raise e
 
     def list_volume_groups(self, storage_id):
         try:
@@ -630,9 +630,9 @@ class SSHHandler(object):
                     'vol_grp_vol_rels': volume_group_relation_list
                 }
             return volume_group_result
-        except Exception:
+        except Exception as e:
             LOG.error("Failed to get vol_groups from msa")
-            raise
+            raise e
 
     def list_port_groups(self, storage_id):
         try:
@@ -694,9 +694,9 @@ class SSHHandler(object):
                     'port_grp_port_rels': port_group_relation_list
                 }
                 return result
-        except Exception:
+        except Exception as e:
             LOG.error("Failed to get port groups  from msa")
-            raise
+            raise e
 
     def list_masking_views(self, storage_id):
         try:
@@ -718,9 +718,9 @@ class SSHHandler(object):
                     storage_host_volume_groups_view, 'group',
                     storage_id, storage_port_list, host_list, initiators_list))
             return views_list
-        except Exception:
+        except Exception as e:
             LOG.error("Failed to get view  from msa")
-            raise
+            raise e
 
     @staticmethod
     def get_storage_view_list(storage_view_list, vol_type, storage_id,
