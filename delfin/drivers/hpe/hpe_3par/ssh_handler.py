@@ -52,7 +52,7 @@ class SSHHandler(object):
     HPE3PAR_COMMAND_SHOWVVSET_D = 'showvvset -d'
     HPE3PAR_COMMAND_SHOWHOST_D = 'showhost -d'
     HPE3PAR_COMMAND_SHOWVV = 'showvv'
-    HPE3PAR_COMMAND_SHOWVLUN_T = 'showvlun -a'
+    HPE3PAR_COMMAND_SHOWVLUN_T = 'showvlun -t'
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs

@@ -637,10 +637,11 @@ class ComponentHandler():
                     wwn = view.get('host_wwn/iscsi_name', '').replace('-', '')
                     native_port_group_id = None
                     if port:
-                        lun_id = '%s_%s' % (view.get('lun'), port)
+                        lun_id = '%s_%s' % (lun_id, port)
                         native_port_group_id = 'port_group_%s' % port
                     if wwn:
                         lun_id = '%s_%s' % (lun_id, wwn)
+                    lun_id = '%s_%s' % (lun_id, host_vv_key)
                     view_model = {
                         'native_masking_view_id': lun_id,
                         "name": view.get('lun'),
