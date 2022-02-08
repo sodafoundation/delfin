@@ -121,7 +121,6 @@ class TestHpeMsaStorageDriver(TestCase):
         mock_control.side_effect = [test_constans.LIST_HOST_GROUPS]
         list_storage_host_groups = HpeMsaStorDriver(**ACCESS_INFO) \
             .list_storage_host_groups(context)
-        print(list_storage_host_groups)
         self.assertEqual(list_storage_host_groups, test_constans
                          .list_storage_host_groups)
 
