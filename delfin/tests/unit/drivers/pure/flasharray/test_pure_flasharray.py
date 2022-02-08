@@ -645,776 +645,455 @@ VOLUME_GROUP_INFO = [
         "volumes": []
     }
 ]
-HOSTS_ALL_INFO = [
+HOSTS_CONNECT_INFO = [
     {
-        "host_wwn": None,
-        "name": "host",
-        "host_iqn": "iqn.1996-04.de.suse:01:ca9f3bcaf47",
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "oracle-oltp-1",
-        "target_port": [],
-        "lun": 1
-    },
-    {
-        "host_wwn": None,
-        "name": "huhuitest",
-        "host_iqn": "iqn.1991-05.com.microsoft:win3",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "huhuitest",
-        "target_port": [],
-        "lun": 1
+        "name": "huhuitest",
+        "lun": 1,
+        "hgroup": None
     },
     {
-        "host_wwn": "21000024FF2C9524",
-        "name": "windows223",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
+        "vol": "test",
+        "name": "wxth",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "test",
+        "name": "testGroup",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
         "vol": "win2016_223",
-        "target_port": [],
-        "lun": 1
-    },
-    {
-        "host_wwn": "21000024FF2C9525",
         "name": "windows223",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "win2016_223",
-        "target_port": [],
-        "lun": 1
+        "lun": 1,
+        "hgroup": None
     },
     {
-        "host_wwn": "21000024FF76D0CC",
-        "name": "CL-C21-RH5885HV3-8-44-165-22",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "pure-protocol-endpoint",
-        "target_port": [],
-        "lun": 1
+        "name": "CL-C21-RH5885HV3-8-44-165-22",
+        "lun": 1,
+        "hgroup": None
     },
     {
-        "host_wwn": "21000024FF76D0CD",
-        "name": "CL-C21-RH5885HV3-8-44-165-22",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "pure-protocol-endpoint",
-        "target_port": [],
-        "lun": 1
-    },
-    {
-        "host_wwn": "21000024FF76D0CC",
-        "name": "CL-C21-RH5885HV3-8-44-165-22",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "CL_VOLUME_1_remote",
-        "target_port": [],
-        "lun": 2
-    },
-    {
-        "host_wwn": "21000024FF76D0CD",
         "name": "CL-C21-RH5885HV3-8-44-165-22",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "CL_VOLUME_1_remote",
-        "target_port": [],
-        "lun": 2
+        "lun": 2,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "test-1s",
-        "host_iqn": "iqn.1996-04.de.suse:01:66bf70288332",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "lun-test1s",
-        "target_port": [],
-        "lun": 1
+        "name": "test-1s",
+        "lun": 1,
+        "hgroup": None
     },
     {
-        "host_wwn": "210034800D6E7ADE",
-        "name": "QIB",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": "QIB",
         "vol": "QIB1",
-        "target_port": [],
-        "lun": 254
+        "name": "QIB",
+        "lun": 254,
+        "hgroup": "QIB"
     },
     {
-        "host_wwn": "210034800D6E7ADF",
-        "name": "QIB",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": "QIB",
         "vol": "QIB1",
-        "target_port": [],
-        "lun": 254
+        "name": "zty-windows",
+        "lun": 254,
+        "hgroup": "QIB"
     },
     {
-        "host_wwn": "210034800D6E7ADE",
-        "name": "QIB",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": "QIB",
         "vol": "QIB2",
-        "target_port": [],
-        "lun": 253
+        "name": "zty-windows",
+        "lun": 253,
+        "hgroup": "QIB"
     },
     {
-        "host_wwn": "210034800D6E7ADF",
-        "name": "QIB",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": "QIB",
         "vol": "QIB2",
-        "target_port": [],
-        "lun": 253
+        "name": "QIB",
+        "lun": 253,
+        "hgroup": "QIB"
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "yzw_iotest",
-        "target_port": [],
-        "lun": 2
+        "name": "host135",
+        "lun": 2,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000003",
-        "target_port": [],
-        "lun": 3
+        "name": "host137",
+        "lun": 3,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000009",
-        "target_port": [],
-        "lun": 3
+        "name": "host135",
+        "lun": 3,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000012",
-        "target_port": [],
-        "lun": 6
+        "name": "host135",
+        "lun": 6,
+        "hgroup": None
     },
     {
-        "host_wwn": "20090002D2937E9F",
-        "name": "v6-8-44-128-21",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "v6-8-44-128-21",
-        "target_port": [],
-        "lun": 1
+        "name": "v6-8-44-128-21",
+        "lun": 1,
+        "hgroup": None
     },
     {
-        "host_wwn": "20190002D2937E9F",
-        "name": "v6-8-44-128-21",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "v6-8-44-128-21",
-        "target_port": [],
-        "lun": 1
-    },
-    {
-        "host_wwn": "20090002D2937E9F",
-        "name": "v6-8-44-128-21",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "V6-8-44-128-21-002",
-        "target_port": [],
-        "lun": 2
-    },
-    {
-        "host_wwn": "20190002D2937E9F",
         "name": "v6-8-44-128-21",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "V6-8-44-128-21-002",
-        "target_port": [],
-        "lun": 2
+        "lun": 2,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000007",
-        "target_port": [],
-        "lun": 7
+        "name": "host137",
+        "lun": 7,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000010",
-        "target_port": [],
-        "lun": 4
+        "name": "host135",
+        "lun": 4,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000013",
-        "target_port": [],
-        "lun": 2
+        "name": "host137",
+        "lun": 2,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000000",
-        "target_port": [],
-        "lun": 5
+        "name": "host135",
+        "lun": 5,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000001",
-        "target_port": [],
-        "lun": 4
+        "name": "host137",
+        "lun": 4,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000016",
-        "target_port": [],
-        "lun": 5
+        "name": "host137",
+        "lun": 5,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000018",
-        "target_port": [],
-        "lun": 7
+        "name": "host135",
+        "lun": 7,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000015",
-        "target_port": [],
-        "lun": 8
+        "name": "host135",
+        "lun": 8,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000020",
-        "target_port": [],
-        "lun": 6
+        "name": "host137",
+        "lun": 6,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000021",
-        "target_port": [],
-        "lun": 9
+        "name": "host135",
+        "lun": 9,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000022",
-        "target_port": [],
-        "lun": 8
+        "name": "host137",
+        "lun": 8,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "homelab-pso-db_0000000019",
-        "target_port": [],
-        "lun": 10
-    },
-    {
-        "host_wwn": None,
-        "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "homelab-pso-db_0000000026",
-        "target_port": [],
-        "lun": 9
-    },
-    {
-        "host_wwn": None,
         "name": "host135",
-        "host_iqn": "iqn.1994-05.com.redhat:1a9eaa70b558",
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "homelab-pso-db_0000000028",
-        "target_port": [],
-        "lun": 11
+        "lun": 10,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
+        "vol": "homelab-pso-db_0000000026",
         "name": "host137",
-        "host_iqn": "iqn.1994-05.com.redhat:80c412848b94",
-        "host_nqn": None,
-        "hgroup": None,
+        "lun": 9,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000028",
+        "name": "host135",
+        "lun": 11,
+        "hgroup": None
+    },
+    {
         "vol": "homelab-pso-db_0000000024",
-        "target_port": [],
-        "lun": 10
+        "name": "host137",
+        "lun": 10,
+        "hgroup": None
     },
     {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
+        "vol": "hsboot",
+        "name": "hsesxi",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "hszdata",
+        "name": "hsesxi",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
         "vol": "zty_lun16",
-        "target_port": [],
-        "lun": 1
+        "name": "zty-doradoV6",
+        "lun": 1,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun16",
-        "target_port": [],
-        "lun": 1
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun15",
-        "target_port": [],
-        "lun": 2
+        "name": "zty-doradoV6",
+        "lun": 2,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun15",
-        "target_port": [],
-        "lun": 2
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun13",
-        "target_port": [],
-        "lun": 3
+        "name": "zty-doradoV6",
+        "lun": 3,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun13",
-        "target_port": [],
-        "lun": 3
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun11",
-        "target_port": [],
-        "lun": 4
+        "name": "zty-doradoV6",
+        "lun": 4,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun11",
-        "target_port": [],
-        "lun": 4
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun14",
-        "target_port": [],
-        "lun": 5
+        "name": "zty-doradoV6",
+        "lun": 5,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun14",
-        "target_port": [],
-        "lun": 5
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun2",
-        "target_port": [],
-        "lun": 6
+        "name": "zty-doradoV6",
+        "lun": 6,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun2",
-        "target_port": [],
-        "lun": 6
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun5",
-        "target_port": [],
-        "lun": 7
+        "name": "zty-doradoV6",
+        "lun": 7,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun5",
-        "target_port": [],
-        "lun": 7
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun4",
-        "target_port": [],
-        "lun": 8
+        "name": "zty-doradoV6",
+        "lun": 8,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun4",
-        "target_port": [],
-        "lun": 8
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun1",
-        "target_port": [],
-        "lun": 9
+        "name": "zty-doradoV6",
+        "lun": 9,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun1",
-        "target_port": [],
-        "lun": 9
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun3",
-        "target_port": [],
-        "lun": 10
+        "name": "zty-doradoV6",
+        "lun": 10,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun3",
-        "target_port": [],
-        "lun": 10
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun6",
-        "target_port": [],
-        "lun": 11
+        "name": "zty-doradoV6",
+        "lun": 11,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun6",
-        "target_port": [],
-        "lun": 11
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun12",
-        "target_port": [],
-        "lun": 12
+        "name": "zty-doradoV6",
+        "lun": 12,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun12",
-        "target_port": [],
-        "lun": 12
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun10",
-        "target_port": [],
-        "lun": 13
+        "name": "zty-doradoV6",
+        "lun": 13,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun10",
-        "target_port": [],
-        "lun": 13
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun8",
-        "target_port": [],
-        "lun": 14
+        "name": "zty-doradoV6",
+        "lun": 14,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun8",
-        "target_port": [],
-        "lun": 14
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun7",
-        "target_port": [],
-        "lun": 15
+        "name": "zty-doradoV6",
+        "lun": 15,
+        "hgroup": None
     },
     {
-        "host_wwn": "2210CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun7",
-        "target_port": [],
-        "lun": 15
-    },
-    {
-        "host_wwn": "2200CC05777C3EDF",
-        "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
         "vol": "zty_lun9",
-        "target_port": [],
-        "lun": 16
-    },
-    {
-        "host_wwn": "2210CC05777C3EDF",
         "name": "zty-doradoV6",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "zty_lun9",
-        "target_port": [],
-        "lun": 16
+        "lun": 16,
+        "hgroup": None
     },
     {
-        "host_wwn": None,
-        "name": "host",
-        "host_iqn": "iqn.1996-04.de.suse:01:ca9f3bcaf47",
-        "host_nqn": None,
-        "hgroup": "HGTest",
         "vol": "Volume-Group/voltest005",
-        "target_port": [],
+        "name": "hosttest",
+        "lun": 254,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest005",
+        "name": "host",
+        "lun": 254,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "host",
+        "lun": 253,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "hosttest",
+        "lun": 253,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest002",
+        "name": "host",
+        "lun": 252,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest002",
+        "name": "hosttest",
+        "lun": 252,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest003",
+        "name": "host",
+        "lun": 251,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest003",
+        "name": "hosttest",
+        "lun": 251,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest004",
+        "name": "hosttest",
+        "lun": 250,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "Volume-Group/voltest004",
+        "name": "host",
+        "lun": 250,
+        "hgroup": "HGTest"
+    },
+    {
+        "vol": "homelab-pso-db_0000000001-u",
+        "name": "CL-B06-RH2288HV3-8-44-157-33",
+        "lun": 4,
+        "hgroup": None
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "CL-B06-RH2288HV3-8-44-157-33",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "hswin4102",
+        "name": "zhilong-host0000002130",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "tangxuan/tt001",
+        "name": "host135",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "hswin",
+        "name": "CL-Test1",
+        "lun": 1,
+        "hgroup": None
+    },
+    {
+        "vol": "homelab-pso-db_0000000000-u",
+        "name": "zhilong-host0000002130",
+        "lun": 2,
+        "hgroup": None
+    },
+    {
+        "vol": "nc::136_connect",
+        "name": "hosttest",
+        "lun": 1,
+        "hgroup": None
+    }
+]
+HGROUP_CONNECT_INFO = [
+    {
+        "vol": "QIB1",
+        "name": "QIB",
         "lun": 254
     },
     {
-        "host_wwn": None,
-        "name": "host",
-        "host_iqn": "iqn.1996-04.de.suse:01:ca9f3bcaf47",
-        "host_nqn": None,
-        "hgroup": "HGTest",
-        "vol": "Volume-Group/voltest001",
-        "target_port": [],
+        "vol": "QIB2",
+        "name": "QIB",
         "lun": 253
     },
     {
-        "host_wwn": None,
-        "name": "host",
-        "host_iqn": "iqn.1996-04.de.suse:01:ca9f3bcaf47",
-        "host_nqn": None,
-        "hgroup": "HGTest",
+        "vol": "Volume-Group/voltest005",
+        "name": "HGTest",
+        "lun": 254
+    },
+    {
+        "vol": "Volume-Group/voltest001",
+        "name": "HGTest",
+        "lun": 253
+    },
+    {
         "vol": "Volume-Group/voltest002",
-        "target_port": [],
+        "name": "HGTest",
         "lun": 252
     },
     {
-        "host_wwn": None,
-        "name": "host",
-        "host_iqn": "iqn.1996-04.de.suse:01:ca9f3bcaf47",
-        "host_nqn": None,
-        "hgroup": "HGTest",
         "vol": "Volume-Group/voltest003",
-        "target_port": [],
+        "name": "HGTest",
         "lun": 251
     },
     {
-        "host_wwn": None,
-        "name": "host",
-        "host_iqn": "iqn.1996-04.de.suse:01:ca9f3bcaf47",
-        "host_nqn": None,
-        "hgroup": "HGTest",
         "vol": "Volume-Group/voltest004",
-        "target_port": [],
+        "name": "HGTest",
         "lun": 250
     },
     {
-        "host_wwn": "10000000C9D5BC06",
-        "name": "CL-B06-RH2288HV3-8-44-157-33",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "homelab-pso-db_0000000001-u",
-        "target_port": [],
-        "lun": 4
+        "vol": "homelab-pso-db_0000000002",
+        "name": "NewTest",
+        "lun": 254
     },
     {
-        "host_wwn": "10000000C9D5BC07",
-        "name": "CL-B06-RH2288HV3-8-44-157-33",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "homelab-pso-db_0000000001-u",
-        "target_port": [],
-        "lun": 4
-    },
-    {
-        "host_wwn": "10000000C9D5BC06",
-        "name": "CL-B06-RH2288HV3-8-44-157-33",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "Volume-Group/voltest001",
-        "target_port": [],
-        "lun": 1
-    },
-    {
-        "host_wwn": "10000000C9D5BC07",
-        "name": "CL-B06-RH2288HV3-8-44-157-33",
-        "host_iqn": None,
-        "host_nqn": None,
-        "hgroup": None,
-        "vol": "Volume-Group/voltest001",
-        "target_port": [],
-        "lun": 1
+        "vol": "yzw_test0",
+        "name": "zhilong-hg",
+        "lun": 254
     }
 ]
 
@@ -1526,7 +1205,7 @@ class test_PureFlashArrayDriver(TestCase):
 
     def test_list_masking_views(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[HOSTS_ALL_INFO])
+            side_effect=[HGROUP_CONNECT_INFO, HOSTS_CONNECT_INFO])
         views = self.driver.list_masking_views(context)
         self.assertEqual(views[0].get('native_volume_id'),
-                         HOSTS_ALL_INFO[0].get('vol'))
+                         HGROUP_CONNECT_INFO[0].get('vol'))
