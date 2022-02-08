@@ -78,7 +78,8 @@ class Tools(object):
         return capacity
 
     @staticmethod
-    def split_value_map_list(value_info, map_list, is_alert=False, split=":"):
+    def split_value_map_list(value_info, map_list, is_mapping=False,
+                             is_alert=False, split=":"):
         detail_array = value_info.split('\r\n')
         value_map = {}
         temp_key = ''
@@ -87,7 +88,7 @@ class Tools(object):
                 string_info = detail.split(split + " ")
                 key = string_info[0].replace(' ', '')
                 value = ''
-                if len(string_info) > 1:
+                if len(string_info) > 1 or is_mapping:
                     for string in string_info[1:]:
                         value = string.replace('""', '')
                     value_map[key] = value
