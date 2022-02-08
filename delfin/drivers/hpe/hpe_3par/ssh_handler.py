@@ -477,6 +477,10 @@ class SSHHandler(object):
                 obj_model = obj_list[-1]
                 if obj_model and obj_model.get('members'):
                     obj_model.get('members').append(value)
+                else:
+                    members = [value]
+                    obj_model['members'] = members
+
         return obj_list
 
     def parse_view_table(self, cols_size, titles_size, str_info, obj_list,
