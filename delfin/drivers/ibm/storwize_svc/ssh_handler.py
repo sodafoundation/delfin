@@ -121,7 +121,7 @@ class SSHHandler(object):
     BLOCK_SIZE = 512
     BYTES_TO_BIT = 8
     OS_TYPE_MAP = {'generic': constants.HostOSTypes.UNKNOWN,
-                   'hp/unix': constants.HostOSTypes.HP_UX,
+                   'hpux': constants.HostOSTypes.HP_UX,
                    'openvms': constants.HostOSTypes.OPEN_VMS,
                    'tpgs': constants.HostOSTypes.UNKNOWN,
                    'vvol': constants.HostOSTypes.UNKNOWN
@@ -130,6 +130,11 @@ class SSHHandler(object):
                             'offline': constants.InitiatorStatus.OFFLINE,
                             'inactive': constants.InitiatorStatus.ONLINE
                             }
+    HOST_STATUS_MAP = {'online': constants.HostStatus.NORMAL,
+                       'offline': constants.HostStatus.OFFLINE,
+                       'degraded': constants.HostStatus.DEGRADED,
+                       'mask': constants.HostStatus.NORMAL,
+                       }
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -1070,9 +1075,7 @@ class SSHHandler(object):
                 deltail_info = self.exec_ssh_command(detail_command)
                 host_map = {}
                 self.handle_detail(deltail_info, host_map, split=' ')
-                status = constants.HostStatus.NORMAL if\
-                    host_map.get('status') == 'online' \
-                    else constants.HostStatus.OFFLINE
+                status = SSHHandler.HOST_STATUS_MAP.get(host_map.get('status'))
                 host_result = {
                     "name": host_map.get('name'),
                     "storage_id": storage_id,
