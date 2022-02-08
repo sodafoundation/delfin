@@ -463,7 +463,7 @@ class SSHHandler(object):
             members = []
             value = str_info[2].replace('-', '')
             if value:
-                members = [value]
+                members = [str_info[2]]
             obj_model = {
                 'id': str_info[0],
                 'name': str_info[1],
@@ -476,9 +476,9 @@ class SSHHandler(object):
             if value:
                 obj_model = obj_list[-1]
                 if obj_model and obj_model.get('members'):
-                    obj_model.get('members').append(value)
+                    obj_model.get('members').append(str_info[0])
                 else:
-                    members = [value]
+                    members = [str_info[0]]
                     obj_model['members'] = members
 
         return obj_list
