@@ -911,9 +911,9 @@ class EternusDriver(driver.StorageDriver):
             if len(views_row_arr) != consts.VIEWS_GROUP_ROW_VALUE_LENGTH \
                     or len(group_key) != consts.VIEWS_GROUP_ROW_KEY_LENGTH:
                 continue
-            host_group_name = views_row_arr[consts.HOST_GROUP_NAME_NUM]
+            host_group_id = views_row_arr[consts.HOST_GROUP_ID_NUM]
             volume_group_id = views_row_arr[consts.LUN_GROUP_ID_NUM]
-            view_id = '{}{}{}{}'.format(host_group_name, volume_group_id,
+            view_id = '{}{}{}{}'.format(host_group_id, volume_group_id,
                                         None, None)
             if view_id_dict.get(view_id):
                 continue
@@ -921,7 +921,7 @@ class EternusDriver(driver.StorageDriver):
             view = {
                 'native_masking_view_id': view_id,
                 'name': view_id,
-                'native_storage_host_group_id': host_group_name,
+                'native_storage_host_group_id': host_group_id,
                 'native_port_group_id': views_row_arr[
                     consts.PORT_GROUP_NAME_NUM],
                 'native_volume_group_id': volume_group_id,
