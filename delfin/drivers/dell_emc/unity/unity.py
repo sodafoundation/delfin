@@ -75,7 +75,7 @@ class UnityStorDriver(driver.StorageDriver):
                        7: constants.HostStatus.NORMAL,
                        15: constants.HostStatus.NORMAL,
                        20: constants.HostStatus.NORMAL,
-                       10: constants.HostStatus.ABNORMAL
+                       10: constants.HostStatus.DEGRADED
                        }
     INITIATOR_TYPE_MAP = {0: constants.InitiatorType.UNKNOWN,
                           1: constants.InitiatorType.FC,
