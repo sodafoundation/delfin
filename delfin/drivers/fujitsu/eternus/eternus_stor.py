@@ -408,10 +408,10 @@ class EternusDriver(driver.StorageDriver):
                 'storage_id': self.storage_id,
                 'native_storage_host_initiator_id': fc_wwn,
                 'wwn': fc_wwn,
-                'status': constants.HostStatus.NORMAL if
+                'status': constants.InitiatorStatus.ONLINE if
                 state is not None and state in
                 consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.HostStatus.OFFLINE,
+                constants.InitiatorStatus.OFFLINE,
                 'native_storage_host_id': fc_name,
                 'type': constants.InitiatorType.FC
             }
@@ -425,10 +425,10 @@ class EternusDriver(driver.StorageDriver):
                 "storage_id": self.storage_id,
                 "native_storage_host_initiator_id": host_iscsi.get('iqn'),
                 "wwn": host_iscsi.get('iqn'),
-                "status": constants.HostStatus.NORMAL if
+                "status": constants.InitiatorStatus.ONLINE if
                 state is not None and state in
                 consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.HostStatus.OFFLINE,
+                constants.InitiatorStatus.OFFLINE,
                 "native_storage_host_id": iscsi_name,
                 'type': constants.InitiatorType.ISCSI,
                 'alias': host_iscsi.get('alias')
@@ -447,10 +447,10 @@ class EternusDriver(driver.StorageDriver):
                 "storage_id": self.storage_id,
                 "native_storage_host_initiator_id": sas_address,
                 "wwn": sas_address,
-                "status": constants.HostStatus.NORMAL if
+                "status": constants.InitiatorStatus.ONLINE if
                 state is not None and state in
                 consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.HostStatus.OFFLINE,
+                constants.InitiatorStatus.OFFLINE,
                 "native_storage_host_id": sas_name,
                 'type': constants.InitiatorType.SAS
             }
