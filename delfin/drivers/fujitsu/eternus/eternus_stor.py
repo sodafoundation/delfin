@@ -831,25 +831,21 @@ class EternusDriver(driver.StorageDriver):
 
     def list_masking_views(self, ctx):
         list_masking_views = []
-        hosts = self.list_storage_hosts(ctx)
         view_id_dict = {}
-        for host in (hosts or []):
-            host_name = host.get('name')
-            views_str = self.cli_handler.exec_command(
-                consts.GET_HOST_AFFINITY_NAME.format(host_name))
-            if views_str:
-                views_arr = views_str.strip().replace('\r', '').split('\n\n')
-                for views_group_str in (views_arr or []):
-                    if consts.LIST_MASKING_VIEWS_SPECIFIC_FOUR \
-                            in views_group_str:
-                        self.get_host_group_views(
-                            view_id_dict, list_masking_views, views_group_str)
-                    else:
-                        self.get_host_views(host_name, list_masking_views,
-                                            views_group_str, view_id_dict)
+        views_str = self.cli_handler.exec_command(consts.GET_HOST_AFFINITY)
+        if views_str:
+            views_arr = views_str.strip().replace('\r', '').split('\n\n')
+            for views_group_str in (views_arr or []):
+                if consts.LIST_MASKING_VIEWS_SPECIFIC_FOUR \
+                        in views_group_str:
+                    self.get_host_group_views(
+                        view_id_dict, list_masking_views, views_group_str)
+                else:
+                    self.get_host_views(list_masking_views,
+                                        views_group_str, view_id_dict)
         return list_masking_views
 
-    def get_host_views(self, host_name, list_masking_views,
+    def get_host_views(self, list_masking_views,
                        views_group_str, view_id_dict):
         views_row_arr = views_group_str.strip().split('\n')
         block = True
@@ -874,6 +870,7 @@ class EternusDriver(driver.StorageDriver):
                 continue
             views_arr = views_row_str.strip().split()
             volume_group_id = views_arr[consts.LIST_MASKING_VIEWS_CONSTANT_TWO]
+            host_name = views_arr[consts.HOST_NAME_NUM]
             view_id = '{}{}{}{}'.format(None, volume_group_id, host_name, None)
             if view_id_dict.get(view_id):
                 continue

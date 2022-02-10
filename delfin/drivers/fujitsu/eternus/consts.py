@@ -291,12 +291,13 @@ LUN_VOLUME_ID = 1
 LUN_VOLUME_LENGTH = 3
 
 # list_masking_views
-GET_HOST_AFFINITY_NAME = 'show host-affinity -host-name {}'
+GET_HOST_AFFINITY = 'show host-affinity'
 GET_PORT_GROUPS = 'show port-groups -all'
 GET_MAPPING = 'show mapping'
 PORT_GROUP_ARR_LENGTH = 2
 PORT_GROUP_ID_NUM = 0
 PORT_GROUP_NAME_NUM = 1
+HOST_NAME_NUM = 1
 HOST_GROUP_ID_NUM = 2
 LUN_GROUP_ID_NUM = 4
 LIST_MASKING_VIEWS_VOLUME_ID = 1
