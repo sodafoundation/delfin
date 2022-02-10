@@ -1308,25 +1308,62 @@ PORT_G_DATA = {
          'native_port_id': 'CM#0 CA#1 Port#0'},
         {'storage_id': '12345', 'native_port_group_id': '2',
          'native_port_id': 'CM#1 CA#1 Port#0'}]}
-MASKING_VIEWS_INFO = """CLI> show host-affinity -host-name dbs01_0
-Port Group           Host Group            LUN Group             LUN Overlap
-No. Name             No.  Name             No.  Name             Volumes
---- ---------------- ---- ---------------- ---- ---------------- -----------
-  0 PortGroup01         0 dbs01               0 lun_dbs01        No
+MASKING_VIEWS_INFO = """CLI> show host-affinity
+Port Group           Host Group           LUN Group             LUN Overlap
+No. Name             No. Name             No.  Name             Volumes
+--- ---------------- --- ---------------- ---- ---------------- -----------
+  0 huawie             3 Dorado5000V6        7 test             No
 <Connection List>
-  Port                  Host
-                        No.  Name
-  --------------------- ---- ----------------
-  CM#0 CA#0 Port#0         0 dbs01_0
-  CM#1 CA#0 Port#0         0 dbs01_0
-CLI>"""
-MASKING_VIEWS_TWO_INFO = """CLI> show host-affinity -host-name dbs02_0
+  Port             Host
+                   No.  Name
+  ---------------- ---- ----------------
+  CM#0 CA#0 Port#1    6 Dorado5000V6_0
+  CM#0 CA#0 Port#1    7 Dorado5000V6_1
+  CM#1 CA#0 Port#0    6 Dorado5000V6_0
+  CM#1 CA#0 Port#0    7 Dorado5000V6_1
 
-CM#0 CA#0 Port#1 (Host Affinity Mode Enable)
+Port Group           Host Group           LUN Group             LUN Overlap
+No. Name             No. Name             No.  Name             Volumes
+--- ---------------- --- ---------------- ---- ---------------- -----------
+  0 huawie            10 Dorado5500_V6       9 lun_fujitsu      No
+<Connection List>
+  Port             Host
+                   No.  Name
+  ---------------- ---- ----------------
+  CM#0 CA#0 Port#1    4 Dorado5500v6_0
+  CM#0 CA#0 Port#1    5 Dorado5500v6_1
+  CM#1 CA#0 Port#0    4 Dorado5500v6_0
+  CM#1 CA#0 Port#0    5 Dorado5500v6_1
+
+Port Group           Host Group           LUN Group             LUN Overlap
+No. Name             No. Name             No.  Name             Volumes
+--- ---------------- --- ---------------- ---- ---------------- -----------
+  0 huawie            12 AIX206              8 new1             No
+<Connection List>
+  Port             Host
+                   No.  Name
+  ---------------- ---- ----------------
+  CM#0 CA#0 Port#1   20 AIX206_0
+  CM#0 CA#0 Port#1   21 AIX206_1
+  CM#1 CA#0 Port#0   20 AIX206_0
+  CM#1 CA#0 Port#0   21 AIX206_1
+
+CM#0 CA#0 Port#0 (Host Affinity Mode Enable)
 Host                  LUN Group             LUN Overlap LUN Mask
 No.  Name             No.  Name             Volumes     Group No.
 ---- ---------------- ---- ---------------- ----------- ---------
-   2 dbs02_0             1 lun_dbs02        No                  -
+   1 RH_196_02           1 RH2288_test      No                  -
+  20 AIX206_0            9 lun_fujitsu      No                  -
+
+CM#0 CA#0 Port#1 (Host Affinity Mode Enable)
+
+CM#1 CA#0 Port#0 (Host Affinity Mode Enable)
+Host                  LUN Group             LUN Overlap LUN Mask
+No.  Name             No.  Name             Volumes     Group No.
+---- ---------------- ---- ---------------- ----------- ---------
+   2 RH197_0             5 RH196            Yes                 -
+
+CM#1 CA#0 Port#1 (Host Affinity Mode Disable)
 CLI>"""
 GET_MAPPING = """CLI> show mapping
 CM#0 CA#0 Port#0 (Host Affinity Mode Enable)
@@ -1355,13 +1392,27 @@ LUN  Volume                                 Status                    Size(MB)
    1     5 lun050                           Available                      2048
 CLI>"""
 MASKING_VIEWS_DATA = [
-    {'native_masking_view_id': '00NoneNone',
-     'name': '00NoneNone', 'native_storage_host_group_id': '0',
-     'native_port_group_id': '0', 'native_volume_group_id': '0',
-     'storage_id': '12345'},
-    {'native_masking_view_id': 'None1dbs01_1None', 'name': 'None1dbs01_1None',
-     'native_storage_host_id': 'dbs01_1', 'native_volume_group_id': '1',
-     'native_port_id': 'CM#0 CA#0 Port#1', 'storage_id': '12345'}]
+    {'native_masking_view_id': '37NoneNone', 'name': '37NoneNone',
+     'native_storage_host_group_id': '3', 'native_port_group_id': '0',
+     'native_volume_group_id': '7', 'storage_id': '12345'},
+    {'native_masking_view_id': '109NoneNone', 'name': '109NoneNone',
+     'native_storage_host_group_id': '10', 'native_port_group_id': '0',
+     'native_volume_group_id': '9', 'storage_id': '12345'},
+    {'native_masking_view_id': '128NoneNone', 'name': '128NoneNone',
+     'native_storage_host_group_id': '12', 'native_port_group_id': '0',
+     'native_volume_group_id': '8', 'storage_id': '12345'},
+    {'native_masking_view_id': 'None1RH_196_02None',
+     'name': 'None1RH_196_02None', 'native_storage_host_id': 'RH_196_02',
+     'native_volume_group_id': '1', 'native_port_id': 'CM#0 CA#0 Port#0',
+     'storage_id': '12345'}, {'native_masking_view_id': 'None9AIX206_0None',
+                              'name': 'None9AIX206_0None',
+                              'native_storage_host_id': 'AIX206_0',
+                              'native_volume_group_id': '9',
+                              'native_port_id': 'CM#0 CA#0 Port#0',
+                              'storage_id': '12345'},
+    {'native_masking_view_id': 'None5RH197_0None', 'name': 'None5RH197_0None',
+     'native_storage_host_id': 'RH197_0', 'native_volume_group_id': '5',
+     'native_port_id': 'CM#1 CA#0 Port#0', 'storage_id': '12345'}]
 PARSE_ALERT_INFO = {
     '1.3.6.1.2.1.1.3.0': '123456',
     '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2',
@@ -1525,12 +1576,6 @@ class TestEternusDriver(TestCase):
     def test_list_masking_views(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
-            side_effect=[HOST_STATUS_INFO, FC_HOSTS_INFO, ISCSI_HOST_INFO,
-                         ISCSI_HOST_DETAIL_ZERO, ISCSI_HOST_DETAIL_ONE,
-                         ISCSI_HOST_DETAIL_TWO, SAS_HOST_INFO,
-                         MASKING_VIEWS_INFO,
-                         MASKING_VIEWS_TWO_INFO,
-                         None, None, None, None, None, None, None, None, None,
-                         None])
+            side_effect=[MASKING_VIEWS_INFO])
         masking_views = self.driver.list_masking_views(ctx)
         self.assertDictEqual(masking_views[0], MASKING_VIEWS_DATA[0])
