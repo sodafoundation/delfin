@@ -1357,7 +1357,7 @@ CLI>"""
 MASKING_VIEWS_DATA = [
     {'native_masking_view_id': '00NoneNone',
      'name': '00NoneNone', 'native_storage_host_group_id': '0',
-     'native_port_group_id': 'PortGroup01', 'native_volume_group_id': '0',
+     'native_port_group_id': '0', 'native_volume_group_id': '0',
      'storage_id': '12345'},
     {'native_masking_view_id': 'None1dbs01_1None', 'name': 'None1dbs01_1None',
      'native_storage_host_id': 'dbs01_1', 'native_volume_group_id': '1',
