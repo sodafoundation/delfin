@@ -245,8 +245,9 @@ class HostStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED)
 
 
 class HostOSTypes(object):
@@ -279,9 +280,11 @@ class InitiatorType(object):
     FC = 'fc'
     ISCSI = 'iscsi'
     NVME_OVER_ROCE = 'roce'
+    SAS = 'sas'
+    NVME_OVER_FABRIC = 'nvme-of'
     UNKNOWN = 'unknown'
 
-    ALL = (FC, ISCSI, NVME_OVER_ROCE, UNKNOWN)
+    ALL = (FC, ISCSI, NVME_OVER_ROCE, SAS, NVME_OVER_FABRIC, UNKNOWN)
 
 
 # Enumerations for alert severity
