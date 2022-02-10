@@ -1295,10 +1295,10 @@ class NetAppHandler(object):
                 storage_id, '', is_default=True)
             MappingHandler.format_initiators(
                 initiator_list, iscsi_initiator_info,
-                storage_id, 'iscsi')
+                storage_id, constants.InitiatorType.ISCSI)
             MappingHandler.format_initiators(
                 initiator_list, fc_initiator_info,
-                storage_id, 'fc')
+                storage_id, constants.InitiatorType.FC)
             return initiator_list
         except exception.DelfinException as e:
             err_msg = "Failed to get storage initiators from " \

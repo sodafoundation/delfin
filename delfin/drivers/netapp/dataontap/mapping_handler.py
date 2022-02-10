@@ -24,10 +24,12 @@ class MappingHandler(object):
         initiator_map_list = []
         Tools.split_value_map_list(
             initiator_info, initiator_map_list, is_mapping=True, split=':')
-        if not is_default and protocol_type == 'fc':
+        if not is_default and protocol_type ==\
+                constants.InitiatorType.FC:
             MappingHandler.get_fc_initiator(
                 initiator_list, initiator_map_list, storage_id)
-        elif not is_default and protocol_type == 'iscsi':
+        elif not is_default and protocol_type ==\
+                constants.InitiatorType.ISCSI:
             MappingHandler.get_iscsi_initiator(
                 initiator_list, initiator_map_list, storage_id)
         if is_default:
@@ -58,7 +60,7 @@ class MappingHandler(object):
                     'native_storage_host_id': None,
                     'name': initiator_id,
                     'alias': initiator_map.get('InitiatorAlias'),
-                    'type': constants.PortType.ISCSI,
+                    'type': constants.InitiatorType.ISCSI,
                     'status': constants.InitiatorStatus.ONLINE,
                     'wwn': initiator_id,
                     'storage_id': storage_id,
@@ -78,7 +80,7 @@ class MappingHandler(object):
                     'native_storage_host_id': None,
                     'name': initiator_id,
                     'alias': initiator_map.get('InitiatorWWPNAlias'),
-                    'type': constants.PortType.FC,
+                    'type': constants.InitiatorType.FC,
                     'status': constants.InitiatorStatus.ONLINE,
                     'wwn': initiator_map.get('InitiatorWWPN'),
                     'storage_id': storage_id,
