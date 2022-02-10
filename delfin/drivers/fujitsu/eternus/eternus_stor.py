@@ -923,7 +923,7 @@ class EternusDriver(driver.StorageDriver):
                 'name': view_id,
                 'native_storage_host_group_id': host_group_id,
                 'native_port_group_id': views_row_arr[
-                    consts.PORT_GROUP_NAME_NUM],
+                    consts.PORT_GROUP_ID_NUM],
                 'native_volume_group_id': volume_group_id,
                 'storage_id': self.storage_id,
             }
