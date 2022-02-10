@@ -1308,45 +1308,45 @@ PORT_G_DATA = {
          'native_port_id': 'CM#0 CA#1 Port#0'},
         {'storage_id': '12345', 'native_port_group_id': '2',
          'native_port_id': 'CM#1 CA#1 Port#0'}]}
-MASKING_VIEWS_INFO = """CLI> show host-affinity     
+MASKING_VIEWS_INFO = """CLI> show host-affinity
 Port Group           Host Group           LUN Group             LUN Overlap
-No. Name             No. Name             No.  Name             Volumes    
+No. Name             No. Name             No.  Name             Volumes
 --- ---------------- --- ---------------- ---- ---------------- -----------
   0 huawie             3 Dorado5000V6        7 test             No
 <Connection List>
   Port             Host
                    No.  Name
   ---------------- ---- ----------------
-  CM#0 CA#0 Port#1    6 Dorado5000V6_0   
-  CM#0 CA#0 Port#1    7 Dorado5000V6_1   
-  CM#1 CA#0 Port#0    6 Dorado5000V6_0   
-  CM#1 CA#0 Port#0    7 Dorado5000V6_1   
+  CM#0 CA#0 Port#1    6 Dorado5000V6_0
+  CM#0 CA#0 Port#1    7 Dorado5000V6_1
+  CM#1 CA#0 Port#0    6 Dorado5000V6_0
+  CM#1 CA#0 Port#0    7 Dorado5000V6_1
 
 Port Group           Host Group           LUN Group             LUN Overlap
-No. Name             No. Name             No.  Name             Volumes    
+No. Name             No. Name             No.  Name             Volumes
 --- ---------------- --- ---------------- ---- ---------------- -----------
   0 huawie            10 Dorado5500_V6       9 lun_fujitsu      No
 <Connection List>
   Port             Host
                    No.  Name
   ---------------- ---- ----------------
-  CM#0 CA#0 Port#1    4 Dorado5500v6_0   
-  CM#0 CA#0 Port#1    5 Dorado5500v6_1   
-  CM#1 CA#0 Port#0    4 Dorado5500v6_0   
-  CM#1 CA#0 Port#0    5 Dorado5500v6_1   
+  CM#0 CA#0 Port#1    4 Dorado5500v6_0
+  CM#0 CA#0 Port#1    5 Dorado5500v6_1
+  CM#1 CA#0 Port#0    4 Dorado5500v6_0
+  CM#1 CA#0 Port#0    5 Dorado5500v6_1
 
 Port Group           Host Group           LUN Group             LUN Overlap
-No. Name             No. Name             No.  Name             Volumes    
+No. Name             No. Name             No.  Name             Volumes
 --- ---------------- --- ---------------- ---- ---------------- -----------
   0 huawie            12 AIX206              8 new1             No
 <Connection List>
   Port             Host
                    No.  Name
   ---------------- ---- ----------------
-  CM#0 CA#0 Port#1   20 AIX206_0         
-  CM#0 CA#0 Port#1   21 AIX206_1         
-  CM#1 CA#0 Port#0   20 AIX206_0         
-  CM#1 CA#0 Port#0   21 AIX206_1         
+  CM#0 CA#0 Port#1   20 AIX206_0
+  CM#0 CA#0 Port#1   21 AIX206_1
+  CM#1 CA#0 Port#0   20 AIX206_0
+  CM#1 CA#0 Port#0   21 AIX206_1
 
 CM#0 CA#0 Port#0 (Host Affinity Mode Enable)
 Host                  LUN Group             LUN Overlap LUN Mask
