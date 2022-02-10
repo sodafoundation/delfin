@@ -268,9 +268,9 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(url)
         return result_json
 
-    def get_specific_host_group(self, group_id):
-        url = '%s/%s/host-groups/%s' % \
-              (RestHandler.COMM_URL, self.storage_device_id, group_id)
+    def get_specific_host_group(self, port_id):
+        url = '%s/%s/host-groups?portId=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id)
         result_json = self.get_rest_info(url)
         return result_json
 

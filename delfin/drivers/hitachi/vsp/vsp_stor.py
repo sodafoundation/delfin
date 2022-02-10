@@ -501,6 +501,22 @@ class HitachiVspDriver(driver.StorageDriver):
         pass
 
     @staticmethod
+    def handle_group_with_port(group_info):
+        group_list = {}
+        if not group_info:
+            return group_list
+        group_entries = group_info.get('data')
+        for group in group_entries:
+            if group_list.get(group.get('portId')):
+                group_list[group.get('portId')].append(
+                    group.get('hostGroupNumber'))
+            else:
+                group_list[group.get('portId')] = []
+                group_list[group.get('portId')].append(
+                    group.get('hostGroupNumber'))
+        return group_list
+
+    @staticmethod
     def get_host_info(data, storage_id, host_list, type, os_type):
         if data:
             host_entries = data.get('data')
@@ -533,11 +549,12 @@ class HitachiVspDriver(driver.StorageDriver):
             host_list = []
             if not host_groups:
                 return host_list
-            group_entries = host_groups.get('data')
-            for group in group_entries:
+            group_with_port = HitachiVspDriver.handle_group_with_port(
+                host_groups)
+            for port in group_with_port:
                 kwargs = {
                     'method': 'host',
-                    'group': group,
+                    'port': port,
                     'result': host_list
                 }
                 self.handle_san_info(**kwargs)
@@ -583,11 +600,12 @@ class HitachiVspDriver(driver.StorageDriver):
             host_groups = self.rest_handler.get_all_host_groups()
             if not host_groups:
                 return initiator_list
-            group_entries = host_groups.get('data')
-            for group in group_entries:
+            group_with_port = HitachiVspDriver.handle_group_with_port(
+                host_groups)
+            for port in group_with_port:
                 kwargs = {
                     'method': 'initator',
-                    'group': group,
+                    'port': port,
                     'result': initiator_list
                 }
                 self.handle_san_info(**kwargs)
@@ -621,11 +639,12 @@ class HitachiVspDriver(driver.StorageDriver):
             host_grp_relation_list = []
             if not host_groups:
                 return host_group_list
-            group_data = host_groups.get('data')
-            for group in group_data:
+            group_with_port = HitachiVspDriver.handle_group_with_port(
+                host_groups)
+            for port in group_with_port:
                 kwargs = {
                     'method': 'group',
-                    'group': group,
+                    'port': port,
                     'result': host_grp_relation_list,
                     'group_list': host_group_list
                 }
@@ -682,55 +701,56 @@ class HitachiVspDriver(driver.StorageDriver):
             raise e
 
     def handle_san_info(self, **kwargs):
-        specific_group = self.rest_handler.get_specific_host_group(
-            kwargs.get('group').get('hostGroupId'))
-        iscsis = None
-        wwns = None
-        result = None
-        if specific_group.get('iscsiName'):
-            iscsis = self.rest_handler.get_iscsi_name(
-                kwargs.get('group').get('portId'),
-                kwargs.get('group').get('hostGroupNumber'))
-        else:
-            wwns = self.rest_handler.get_host_wwn(
-                kwargs.get('group').get('portId'),
-                kwargs.get('group').get('hostGroupNumber'))
-        if kwargs.get('method') == 'host':
-            os_type = HitachiVspDriver.OS_TYPE_MAP.get(
-                kwargs.get('group').get('hostMode'),
-                constants.HostOSTypes.UNKNOWN)
+        groups = self.rest_handler.get_specific_host_group(
+            kwargs.get('port'))
+        group_data = groups.get('data')
+        for specific_group in group_data:
+            iscsis = None
+            wwns = None
             if specific_group.get('iscsiName'):
-                result = HitachiVspDriver.get_host_info(
-                    iscsis, self.storage_id, kwargs.get('result'),
-                    'iscsi', os_type)
+                iscsis = self.rest_handler.get_iscsi_name(
+                    specific_group.get('portId'),
+                    specific_group.get('hostGroupNumber'))
             else:
-                result = HitachiVspDriver.get_host_info(
-                    wwns, self.storage_id, kwargs.get('result'), 'fc', os_type)
-        elif kwargs.get('method') == 'group':
-            host_ids = []
-            group_id = kwargs.get('group').get('hostGroupId').replace(",", "_")
-            if specific_group.get('iscsiName'):
-                HitachiVspDriver.get_host_ids(
-                    iscsis, 'hostIscsiId', host_ids,
-                    kwargs.get('result'), self.storage_id,
-                    group_id)
+                wwns = self.rest_handler.get_host_wwn(
+                    specific_group.get('portId'),
+                    specific_group.get('hostGroupNumber'))
+            if kwargs.get('method') == 'host':
+                os_type = HitachiVspDriver.OS_TYPE_MAP.get(
+                    specific_group.get('hostMode'),
+                    constants.HostOSTypes.UNKNOWN)
+                if specific_group.get('iscsiName'):
+                    HitachiVspDriver.get_host_info(
+                        iscsis, self.storage_id, kwargs.get('result'),
+                        'iscsi', os_type)
+                else:
+                    HitachiVspDriver.get_host_info(
+                        wwns, self.storage_id,
+                        kwargs.get('result'), 'fc', os_type)
+            elif kwargs.get('method') == 'group':
+                host_ids = []
+                group_id = specific_group.get('hostGroupId').replace(",", "_")
+                if specific_group.get('iscsiName'):
+                    HitachiVspDriver.get_host_ids(
+                        iscsis, 'hostIscsiId', host_ids,
+                        kwargs.get('result'), self.storage_id,
+                        group_id)
+                else:
+                    HitachiVspDriver.get_host_ids(
+                        wwns, 'hostWwnId', host_ids,
+                        kwargs.get('result'), self.storage_id,
+                        group_id)
+                group_result = {
+                    "name": specific_group.get('hostGroupName'),
+                    "storage_id": self.storage_id,
+                    "native_storage_host_group_id": group_id,
+                    "storage_hosts": ','.join(host_ids)
+                }
+                kwargs.get('group_list').append(group_result)
             else:
-                HitachiVspDriver.get_host_ids(
-                    wwns, 'hostWwnId', host_ids,
-                    kwargs.get('result'), self.storage_id,
-                    group_id)
-            group_result = {
-                "name": kwargs.get('group').get('hostGroupName'),
-                "storage_id": self.storage_id,
-                "native_storage_host_group_id": group_id,
-                "storage_hosts": ','.join(host_ids)
-            }
-            kwargs.get('group_list').append(group_result)
-        else:
-            if specific_group.get('iscsiName'):
-                result = HitachiVspDriver.get_initiator_from_host(
-                    iscsis, self.storage_id, kwargs.get('result'), 'iscsi')
-            else:
-                result = HitachiVspDriver.get_initiator_from_host(
-                    wwns, self.storage_id, kwargs.get('result'), 'fc')
-        return result
+                if specific_group.get('iscsiName'):
+                    HitachiVspDriver.get_initiator_from_host(
+                        iscsis, self.storage_id, kwargs.get('result'), 'iscsi')
+                else:
+                    HitachiVspDriver.get_initiator_from_host(
+                        wwns, self.storage_id, kwargs.get('result'), 'fc')

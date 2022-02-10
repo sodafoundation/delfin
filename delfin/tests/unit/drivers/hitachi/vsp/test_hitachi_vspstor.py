@@ -466,19 +466,27 @@ GET_ALL_GROUPS = {
     ]
 }
 GET_SINGLE_WWN_GROUP = {
-    "hostGroupId": "CL1-A,0",
-    "portId": "CL1-A",
-    "hostGroupNumber": 0,
-    "hostGroupName": "1A-G00",
-    "hostMode": "LINUX/IRIX"
+    "data": [
+        {
+            "hostGroupId": "CL1-A,0",
+            "portId": "CL1-A",
+            "hostGroupNumber": 0,
+            "hostGroupName": "1A-G00",
+            "hostMode": "LINUX/IRIX"
+        }
+    ]
 }
 GET_SINGLE_ISCSI_GROUP = {
-    "hostGroupId": "CL1-A,0",
-    "portId": "CL1-A",
-    "hostGroupNumber": 0,
-    "hostGroupName": "1A-G00",
-    "hostMode": "LINUX/IRIX",
-    "iscsiName": "iqn.ewdhehdhdhh"
+    "data": [
+        {
+            "hostGroupId": "CL1-A,0",
+            "portId": "CL1-A",
+            "hostGroupNumber": 0,
+            "hostGroupName": "1A-G00",
+            "hostMode": "LINUX/IRIX",
+            "iscsiName": "iqn.ewdhehdhdhh"
+        }
+    ]
 }
 GET_HOST_WWN = {
     "data": [
