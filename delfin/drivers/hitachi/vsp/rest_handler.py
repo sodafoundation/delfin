@@ -177,14 +177,14 @@ class RestHandler(RestClient):
             system_info = storage_systems.get('data')
             for system in system_info:
                 succeed = True
-                if system.get('model') in consts.SUPPORTED_VSP_SERIES:
-                    if system.get('ctl1Ip') == self.rest_host or \
-                            system.get('ctl2Ip') == self.rest_host:
+                if system.get('svpIp'):
+                    if system.get('svpIp') == self.rest_host:
                         self.storage_device_id = system.get('storageDeviceId')
                         self.device_model = system.get('model')
                         self.serial_number = system.get('serialNumber')
                         break
-                elif system.get('svpIp') == self.rest_host:
+                elif system.get('ctl1Ip') == self.rest_host or \
+                        system.get('ctl2Ip') == self.rest_host:
                     self.storage_device_id = system.get('storageDeviceId')
                     self.device_model = system.get('model')
                     self.serial_number = system.get('serialNumber')
