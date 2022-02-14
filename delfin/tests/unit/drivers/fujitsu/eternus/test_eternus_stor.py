@@ -14,8 +14,6 @@
 import sys
 from unittest import TestCase, mock
 
-from flask import ctx
-
 sys.modules['delfin.cryptor'] = mock.Mock()
 
 from delfin.drivers.fujitsu.eternus.eternus_ssh_client import \
@@ -1120,61 +1118,97 @@ No.  Name                              No. Name
    8 sas2_0           14ab13ac46ae20af   0 Default
 CLI>"""
 INITIATORS_DATA = [
-    {'name': 'dbs01_0', 'storage_id': '12345',
+    {'name': '10000090faec8449', 'storage_id': '12345',
      'native_storage_host_initiator_id': '10000090faec8449',
      'wwn': '10000090faec8449', 'status': 'online',
      'native_storage_host_id': 'dbs01_0', 'type': 'fc'},
-    {'name': 'dbs01_1', 'storage_id': '12345',
+    {'name': '10000090faec84a7', 'storage_id': '12345',
      'native_storage_host_initiator_id': '10000090faec84a7',
      'wwn': '10000090faec84a7', 'status': 'online',
      'native_storage_host_id': 'dbs01_1', 'type': 'fc'},
-    {'name': 'dbs02_0', 'storage_id': '12345',
+    {'name': '10000090faec852a', 'storage_id': '12345',
      'native_storage_host_initiator_id': '10000090faec852a',
      'wwn': '10000090faec852a', 'status': 'online',
      'native_storage_host_id': 'dbs02_0', 'type': 'fc'},
-    {'name': 'dbs02_1', 'storage_id': '12345',
+    {'name': '10000090faec842d', 'storage_id': '12345',
      'native_storage_host_initiator_id': '10000090faec842d',
      'wwn': '10000090faec842d', 'status': 'online',
      'native_storage_host_id': 'dbs02_1', 'type': 'fc'},
-    {'name': 'dbs03_0', 'storage_id': '12345',
+    {'name': '10000090faec7f2f', 'storage_id': '12345',
      'native_storage_host_initiator_id': '10000090faec7f2f',
      'wwn': '10000090faec7f2f', 'status': 'offline',
      'native_storage_host_id': 'dbs03_0', 'type': 'fc'},
-    {'name': 'dbs03_1', 'storage_id': '12345',
+    {'name': '10000090faec7f06', 'storage_id': '12345',
      'native_storage_host_initiator_id': '10000090faec7f06',
      'wwn': '10000090faec7f06', 'status': 'offline',
      'native_storage_host_id': 'dbs03_1', 'type': 'fc'},
-    {'name': 'h_g_1_0', 'storage_id': '12345',
+    {'name': '12ac13ab15af21ae', 'storage_id': '12345',
      'native_storage_host_initiator_id': '12ac13ab15af21ae',
      'wwn': '12ac13ab15af21ae', 'status': 'online',
      'native_storage_host_id': 'h_g_1_0', 'type': 'fc'},
-    {'name': 'iscsi_host_0', 'storage_id': '12345',
+    {'name': 'iqn.2006-08.com.huawei:21004447dcca426::0',
+     'storage_id': '12345',
      'native_storage_host_initiator_id':
          'iqn.2006-08.com.huawei:21004447dcca426::0',
-     'wwn': 'iqn.2006-08.com.huawei:21004447dcca426::0',
-     'status': 'offline', 'native_storage_host_id': 'iscsi_host_0',
-     'type': 'iscsi', 'alias': 'iscsi'},
-    {'name': 'iscsi_host-1_0', 'storage_id': '12345',
+     'wwn': 'iqn.2006-08.com.huawei:21004447dcca426::0', 'status': 'offline',
+     'native_storage_host_id': 'iscsi_host_0', 'type': 'iscsi',
+     'alias': 'iscsi 230   25'},
+    {'name': 'iqn.2006-08.com.huawei:21004447dcca426::1',
+     'storage_id': '12345',
      'native_storage_host_initiator_id':
          'iqn.2006-08.com.huawei:21004447dcca426::1',
-     'wwn': 'iqn.2006-08.com.huawei:21004447dcca426::1',
-     'status': 'offline', 'native_storage_host_id': 'iscsi_host-1_0',
-     'type': 'iscsi', 'alias': 'iscsi1'},
-    {'name': 'iscsi_1_0', 'storage_id': '12345',
+     'wwn': 'iqn.2006-08.com.huawei:21004447dcca426::1', 'status': 'offline',
+     'native_storage_host_id': 'iscsi_host-1_0', 'type': 'iscsi',
+     'alias': 'iscsi1'},
+    {'name': 'iqn.2007-08.com.huawei:21004447dcca426::7',
+     'storage_id': '12345',
      'native_storage_host_initiator_id':
          'iqn.2007-08.com.huawei:21004447dcca426::7',
      'wwn': 'iqn.2007-08.com.huawei:21004447dcca426::7',
-     'status': 'offline', 'native_storage_host_id': 'iscsi_1_0',
-     'type': 'iscsi'},
-    {'name': 'sas_g_0_0', 'storage_id': '12345',
+     'status': 'offline',
+     'native_storage_host_id': 'iscsi_1_0',
+     'type': 'iscsi', 'alias': None},
+    {'name': '12ab13ac14ad15af', 'storage_id': '12345',
      'native_storage_host_initiator_id': '12ab13ac14ad15af',
      'wwn': '12ab13ac14ad15af', 'status': 'offline',
      'native_storage_host_id': 'sas_g_0_0', 'type': 'sas'},
-    {'name': 'sas2_0', 'storage_id': '12345',
+    {'name': '14ab13ac46ae20af', 'storage_id': '12345',
      'native_storage_host_initiator_id': '14ab13ac46ae20af',
      'wwn': '14ab13ac46ae20af', 'status': 'offline',
-     'native_storage_host_id': 'sas2_0', 'type': 'sas'
-     }]
+     'native_storage_host_id': 'sas2_0', 'type': 'sas'}]
+HOSTS_DATA = [
+    {'name': 'dbs01_0', 'storage_id': '12345',
+     'native_storage_host_id': 'dbs01_0', 'os_type': 'Unknown',
+     'status': 'normal'}, {'name': 'dbs01_1', 'storage_id': '12345',
+                           'native_storage_host_id': 'dbs01_1',
+                           'os_type': 'Unknown', 'status': 'normal'},
+    {'name': 'dbs02_0', 'storage_id': '12345',
+     'native_storage_host_id': 'dbs02_0', 'os_type': 'Unknown',
+     'status': 'normal'}, {'name': 'dbs02_1', 'storage_id': '12345',
+                           'native_storage_host_id': 'dbs02_1',
+                           'os_type': 'Unknown', 'status': 'normal'},
+    {'name': 'dbs03_0', 'storage_id': '12345',
+     'native_storage_host_id': 'dbs03_0', 'os_type': 'Unknown',
+     'status': 'offline'}, {'name': 'dbs03_1', 'storage_id': '12345',
+                            'native_storage_host_id': 'dbs03_1',
+                            'os_type': 'Unknown', 'status': 'offline'},
+    {'name': 'h_g_1_0', 'storage_id': '12345',
+     'native_storage_host_id': 'h_g_1_0', 'os_type': 'AIX',
+     'status': 'normal'}, {'name': 'iscsi_host_0', 'storage_id': '12345',
+                           'native_storage_host_id': 'iscsi_host_0',
+                           'os_type': 'AIX', 'status': 'offline',
+                           'ip_address': '126.0.0.2'},
+    {'name': 'iscsi_host-1_0', 'storage_id': '12345',
+     'native_storage_host_id': 'iscsi_host-1_0', 'os_type': 'AIX',
+     'status': 'offline', 'ip_address': '126.0.0.3'},
+    {'name': 'iscsi_1_0', 'storage_id': '12345',
+     'native_storage_host_id': 'iscsi_1_0', 'os_type': 'Unknown',
+     'status': 'offline', 'ip_address': None},
+    {'name': 'sas_g_0_0', 'storage_id': '12345',
+     'native_storage_host_id': 'sas_g_0_0', 'os_type': 'Unknown',
+     'status': 'offline'}, {'name': 'sas2_0', 'storage_id': '12345',
+                            'native_storage_host_id': 'sas2_0',
+                            'os_type': 'Unknown', 'status': 'offline'}]
 HOST_GROUPS_INFO = """CLI> show host-groups -all
 Host Group            Host Response        Host Type
 No.  Name             No. Name
@@ -1392,27 +1426,154 @@ LUN  Volume                                 Status                    Size(MB)
    1     5 lun050                           Available                      2048
 CLI>"""
 MASKING_VIEWS_DATA = [
-    {'native_masking_view_id': '37NoneNone', 'name': '37NoneNone',
-     'native_storage_host_group_id': '3', 'native_port_group_id': '0',
-     'native_volume_group_id': '7', 'storage_id': '12345'},
-    {'native_masking_view_id': '109NoneNone', 'name': '109NoneNone',
-     'native_storage_host_group_id': '10', 'native_port_group_id': '0',
-     'native_volume_group_id': '9', 'storage_id': '12345'},
-    {'native_masking_view_id': '128NoneNone', 'name': '128NoneNone',
-     'native_storage_host_group_id': '12', 'native_port_group_id': '0',
-     'native_volume_group_id': '8', 'storage_id': '12345'},
-    {'native_masking_view_id': 'None1RH_196_02None',
-     'name': 'None1RH_196_02None', 'native_storage_host_id': 'RH_196_02',
-     'native_volume_group_id': '1', 'native_port_id': 'CM#0 CA#0 Port#0',
-     'storage_id': '12345'}, {'native_masking_view_id': 'None9AIX206_0None',
-                              'name': 'None9AIX206_0None',
-                              'native_storage_host_id': 'AIX206_0',
+    {'native_masking_view_id': '37host_idvolume_id',
+     'name': '37host_idvolume_id', 'native_storage_host_group_id': '3',
+     'native_port_group_id': '0', 'native_volume_group_id': '7',
+     'storage_id': '12345'}, {'native_masking_view_id': '109host_idvolume_id',
+                              'name': '109host_idvolume_id',
+                              'native_storage_host_group_id': '10',
+                              'native_port_group_id': '0',
                               'native_volume_group_id': '9',
-                              'native_port_id': 'CM#0 CA#0 Port#0',
                               'storage_id': '12345'},
-    {'native_masking_view_id': 'None5RH197_0None', 'name': 'None5RH197_0None',
+    {'native_masking_view_id': '128host_idvolume_id',
+     'name': '128host_idvolume_id', 'native_storage_host_group_id': '12',
+     'native_port_group_id': '0', 'native_volume_group_id': '8',
+     'storage_id': '12345'},
+    {'native_masking_view_id': 'host_group_id1RH_196_02volume_id',
+     'name': 'host_group_id1RH_196_02volume_id',
+     'native_storage_host_id': 'RH_196_02', 'native_volume_group_id': '1',
+     'native_port_id': 'CM#0 CA#0 Port#0', 'storage_id': '12345'},
+    {'native_masking_view_id': 'host_group_id9AIX206_0volume_id',
+     'name': 'host_group_id9AIX206_0volume_id',
+     'native_storage_host_id': 'AIX206_0', 'native_volume_group_id': '9',
+     'native_port_id': 'CM#0 CA#0 Port#0', 'storage_id': '12345'},
+    {'native_masking_view_id': 'host_group_id5RH197_0volume_id',
+     'name': 'host_group_id5RH197_0volume_id',
      'native_storage_host_id': 'RH197_0', 'native_volume_group_id': '5',
      'native_port_id': 'CM#1 CA#0 Port#0', 'storage_id': '12345'}]
+PARSE_ALERT_DATA = {
+    'alert_id': '123456', 'severity': 'Fatal',
+    'category': 'Fault', 'occur_time': 1644827799328,
+    'description': 'cm0 error', 'location': 'cm0#eterus-213546',
+    'type': 'EquipmentAlarm', 'resource_type': 'Storage',
+    'alert_name': 'cm0 error', 'match_key': 'e10adc3949ba59abbe56e057f20f883e'}
+PORTS_OLD_DATA = [
+    {'name': 'CM#0 Port#0', 'storage_id': '12345',
+     'native_port_id': 'CM#0 Port#0', 'location': 'CM#0 Port#0', 'type': 'fc',
+     'speed': 4000000000, 'connection_status': 'connected',
+     'wwn': '500000E0D0376706', 'health_status': 'normal'},
+    {'name': 'CM#0 Port#1', 'storage_id': '12345',
+     'native_port_id': 'CM#0 Port#1', 'location': 'CM#0 Port#1', 'type': 'fc',
+     'speed': None, 'connection_status': 'disconnected',
+     'wwn': '500000E0D0376707', 'health_status': 'normal'},
+    {'name': 'CM#1 Port#0', 'storage_id': '12345',
+     'native_port_id': 'CM#1 Port#0', 'location': 'CM#1 Port#0', 'type': 'fc',
+     'speed': None, 'connection_status': 'disconnected',
+     'wwn': '500000E0D0376786', 'health_status': 'normal'},
+    {'name': 'CM#1 Port#1', 'storage_id': '12345',
+     'native_port_id': 'CM#1 Port#1', 'location': 'CM#1 Port#1', 'type': 'fc',
+     'speed': 4000000000, 'connection_status': 'connected',
+     'wwn': '500000E0D0376787', 'health_status': 'normal'}]
+PORTS_DATA = [{'name': 'CM#0 CA#0 Port#0', 'storage_id': '12345',
+               'native_port_id': 'CM#0 CA#0 Port#0',
+               'location': 'CM#0 CA#0 Port#0', 'type': 'fc',
+               'speed': 10000000000, 'connection_status': 'unknown',
+               'wwn': '500000E0DA0A7D20', 'health_status': 'unknown'},
+              {'name': 'CM#0 CA#0 Port#1', 'storage_id': '12345',
+               'native_port_id': 'CM#0 CA#0 Port#1',
+               'location': 'CM#0 CA#0 Port#1', 'type': 'fc',
+               'speed': 10000000000, 'connection_status': 'unknown',
+               'wwn': '500000E0DA0A7D21', 'health_status': 'unknown'},
+              {'name': 'CM#0 CA#1 Port#0', 'storage_id': '12345',
+               'native_port_id': 'CM#0 CA#1 Port#0',
+               'location': 'CM#0 CA#1 Port#0', 'type': 'fc',
+               'speed': 10000000000},
+              {'name': 'CM#0 CA#1 Port#1', 'storage_id': '12345',
+               'native_port_id': 'CM#0 CA#1 Port#1',
+               'location': 'CM#0 CA#1 Port#1', 'type': 'fc',
+               'speed': 10000000000}]
+DISKS_OLD = [
+    {'name': 'CE-Disk#0', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#0',
+     'serial_number': '6SK2CEG91327', 'manufacturer': 'SEAGATE',
+     'model': '3.5" SAS', 'firmware': 'GF0D', 'location': 'CE-Disk#0',
+     'speed': 15000, 'capacity': 483183820800.0, 'status': 'abnormal',
+     'physical_type': 'sas', 'logical_type': 'unknown'},
+    {'name': 'CE-Disk#1', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#1',
+     'serial_number': '6SK262SZ1312', 'manufacturer': 'SEAGATE',
+     'model': '3.5" SAS', 'firmware': 'GF0D', 'location': 'CE-Disk#1',
+     'speed': 15000, 'capacity': 483183820800.0, 'status': 'abnormal',
+     'physical_type': 'sas', 'logical_type': 'unknown'},
+    {'name': 'CE-Disk#2', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#2',
+     'serial_number': '6SK26QCA1312', 'manufacturer': 'SEAGATE',
+     'model': '3.5" SAS', 'firmware': 'GF0D', 'location': 'CE-Disk#2',
+     'speed': 15000, 'capacity': 483183820800.0, 'status': 'normal',
+     'physical_type': 'sas', 'logical_type': 'member'},
+    {'name': 'CE-Disk#3', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#3',
+     'serial_number': '6SK2DE941330', 'manufacturer': 'SEAGATE',
+     'model': '3.5" SAS', 'firmware': 'GF0D', 'location': 'CE-Disk#3',
+     'speed': 15000, 'capacity': 483183820800.0, 'status': 'normal',
+     'physical_type': 'sas', 'logical_type': 'member'}]
+DISKS_DATA = [
+    {'name': 'CE-Disk#0', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#0',
+     'serial_number': '0QWA91YA', 'manufacturer': 'HGST', 'model': '2.5 SSD-M',
+     'firmware': 'H603', 'location': 'CE-Disk#0', 'speed': None,
+     'capacity': 429496729600.0, 'status': 'normal', 'physical_type': 'ssd',
+     'logical_type': 'member'},
+    {'name': 'CE-Disk#1', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#1',
+     'serial_number': '0QWAHN1A', 'manufacturer': 'HGST', 'model': '2.5 SSD-M',
+     'firmware': 'H603', 'location': 'CE-Disk#1', 'speed': None,
+     'capacity': 429496729600.0, 'status': 'normal', 'physical_type': 'ssd',
+     'logical_type': 'member'},
+    {'name': 'CE-Disk#2', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#2',
+     'serial_number': '0QWA9GMA', 'manufacturer': 'HGST', 'model': '2.5 SSD-M',
+     'firmware': 'H603', 'location': 'CE-Disk#2', 'speed': None,
+     'capacity': 429496729600.0, 'status': 'normal', 'physical_type': 'ssd',
+     'logical_type': 'member'},
+    {'name': 'CE-Disk#3', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#3',
+     'serial_number': '0QWA9KJA', 'manufacturer': 'HGST', 'model': '2.5 SSD-M',
+     'firmware': 'H603', 'location': 'CE-Disk#3', 'speed': None,
+     'capacity': 429496729600.0, 'status': 'normal', 'physical_type': 'ssd',
+     'logical_type': 'member'},
+    {'name': 'CE-Disk#4', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#4',
+     'serial_number': '0QWAHMAA', 'manufacturer': 'HGST', 'model': '2.5 SSD-M',
+     'firmware': 'H603', 'location': 'CE-Disk#4', 'speed': None,
+     'capacity': 429496729600.0, 'status': 'normal', 'physical_type': 'ssd',
+     'logical_type': 'member'},
+    {'name': 'CE-Disk#5', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#5',
+     'serial_number': 'S7M1LC92', 'manufacturer': 'SEAGATE',
+     'model': '2.5 Online', 'firmware': 'VE0C', 'location': 'CE-Disk#5',
+     'speed': 15000, 'capacity': 644245094400.0, 'status': 'normal',
+     'physical_type': 'unknown', 'logical_type': 'member'},
+    {'name': 'CE-Disk#6', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#6',
+     'serial_number': 'W7M0M8PR', 'manufacturer': 'SEAGATE',
+     'model': '2.5 Online', 'firmware': 'VE0C', 'location': 'CE-Disk#6',
+     'speed': 15000, 'capacity': 644245094400.0, 'status': 'normal',
+     'physical_type': 'unknown', 'logical_type': 'member'},
+    {'name': 'CE-Disk#7', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#7',
+     'serial_number': 'S7M1LC99', 'manufacturer': 'SEAGATE',
+     'model': '2.5 Online', 'firmware': 'VE0C', 'location': 'CE-Disk#7',
+     'speed': 15000, 'capacity': 644245094400.0, 'status': 'normal',
+     'physical_type': 'unknown', 'logical_type': 'member'},
+    {'name': 'CE-Disk#8', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#8',
+     'serial_number': 'S7M1L3XD', 'manufacturer': 'SEAGATE',
+     'model': '2.5 Online', 'firmware': 'VE0C', 'location': 'CE-Disk#8',
+     'speed': 15000, 'capacity': 644245094400.0, 'status': 'normal',
+     'physical_type': 'unknown', 'logical_type': 'member'},
+    {'name': 'CE-Disk#9', 'storage_id': '12345', 'native_disk_id': 'CE-Disk#9',
+     'serial_number': 'S7M1KXS5', 'manufacturer': 'SEAGATE',
+     'model': '2.5 Online', 'firmware': 'VE0C', 'location': 'CE-Disk#9',
+     'speed': 15000, 'capacity': 644245094400.0, 'status': 'normal',
+     'physical_type': 'unknown', 'logical_type': 'member'},
+    {'name': 'CE-Disk#10', 'storage_id': '12345',
+     'native_disk_id': 'CE-Disk#10', 'serial_number': 'S7M1KCPD',
+     'manufacturer': 'SEAGATE', 'model': '2.5 Online', 'firmware': 'VE0C',
+     'location': 'CE-Disk#10', 'speed': 15000, 'capacity': 644245094400.0,
+     'status': 'normal', 'physical_type': 'unknown', 'logical_type': 'member'},
+    {'name': 'CE-Disk#11', 'storage_id': '12345',
+     'native_disk_id': 'CE-Disk#11', 'serial_number': 'W7M0MYYA',
+     'manufacturer': 'SEAGATE', 'model': '2.5 Online', 'firmware': 'VE0C',
+     'location': 'CE-Disk#11', 'speed': 15000, 'capacity': 644245094400.0,
+     'status': 'normal', 'physical_type': 'unknown', 'logical_type': 'member'}]
 PARSE_ALERT_INFO = {
     '1.3.6.1.2.1.1.3.0': '123456',
     '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.211.4.1.1.126.1.150.0.2',
@@ -1501,36 +1662,32 @@ class TestEternusDriver(TestCase):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[DISK_LIST_INFO])
         data = self.driver.list_disks(context)
-        self.assertEqual(
-            data[0].get('name'), 'CE-Disk#0')
+        self.assertEqual(data, DISKS_DATA)
 
     def test_list_disks_OLD(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(side_effect=[DISK_OLD])
         data = self.driver.list_disks(context)
-        self.assertEqual(
-            data[0].get('name'), 'CE-Disk#0')
+        self.assertListEqual(data, DISKS_OLD)
 
     def test_list_ports(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[FCOE_INFO, NODE_DATAS])
         data = self.driver.list_ports(context)
-        self.assertEqual(
-            data[0].get('name'), 'CM#0 CA#0 Port#0')
+        self.assertListEqual(data, PORTS_DATA)
 
     def test_list_ports_old(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[FC_INFO_OLD, NODE_DATAS_OLD])
         data = self.driver.list_ports(context)
-        self.assertEqual(
-            data[0].get('name'), 'CM#0 Port#0')
+        self.assertListEqual(data, PORTS_OLD_DATA)
 
     def test_parse_alert(self):
         parse_alert = self.driver.parse_alert(context, PARSE_ALERT_INFO)
-        self.assertEqual(parse_alert.get('alert_id'), PARSE_ALERT_INFO.get(
-            '1.3.6.1.2.1.1.3.0'))
+        PARSE_ALERT_DATA['occur_time'] = parse_alert.get('occur_time')
+        self.assertDictEqual(parse_alert, PARSE_ALERT_DATA)
 
     def test_list_storage_host_initiators(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
@@ -1538,9 +1695,8 @@ class TestEternusDriver(TestCase):
             side_effect=[HOST_STATUS_INFO, FC_HOSTS_INFO, ISCSI_HOST_INFO,
                          ISCSI_HOST_DETAIL_ZERO, ISCSI_HOST_DETAIL_ONE,
                          ISCSI_HOST_DETAIL_TWO, SAS_HOST_INFO])
-        initiators = self.driver.list_storage_host_initiators(ctx)
-        self.assertEqual(initiators[0].get('native_storage_host_id'),
-                         INITIATORS_DATA[0].get('native_storage_host_id'))
+        initiators = self.driver.list_storage_host_initiators(context)
+        self.assertListEqual(initiators, INITIATORS_DATA)
 
     def test_list_storage_hosts(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
@@ -1548,34 +1704,33 @@ class TestEternusDriver(TestCase):
             side_effect=[HOST_STATUS_INFO, FC_HOSTS_INFO, ISCSI_HOST_INFO,
                          ISCSI_HOST_DETAIL_ZERO, ISCSI_HOST_DETAIL_ONE,
                          ISCSI_HOST_DETAIL_TWO, SAS_HOST_INFO])
-        hosts = self.driver.list_storage_hosts(ctx)
-        self.assertEqual(hosts[0].get('native_storage_host_id'),
-                         INITIATORS_DATA[0].get('native_storage_host_id'))
+        hosts = self.driver.list_storage_hosts(context)
+        self.assertListEqual(hosts, HOSTS_DATA)
 
     def test_list_storage_host_groups(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[HOST_GROUPS_INFO])
-        host_groups = self.driver.list_storage_host_groups(ctx)
+        host_groups = self.driver.list_storage_host_groups(context)
         self.assertDictEqual(host_groups, HOST_GROUPS_DATA)
 
     def test_list_port_groups(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[PORT_G_VIEW_INFO])
-        host_groups = self.driver.list_port_groups(ctx)
+        host_groups = self.driver.list_port_groups(context)
         self.assertDictEqual(host_groups, PORT_G_DATA)
 
     def test_list_volume_groups(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[VOLUME_GROUPS_INFO, VOLUME_DETAILS_INFO])
-        volume_groups = self.driver.list_volume_groups(ctx)
+        volume_groups = self.driver.list_volume_groups(context)
         self.assertDictEqual(volume_groups, VOLUME_GROUPS_DATA)
 
     def test_list_masking_views(self):
         EternusSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         EternusSSHPool.do_exec_shell = mock.Mock(
             side_effect=[MASKING_VIEWS_INFO])
-        masking_views = self.driver.list_masking_views(ctx)
-        self.assertDictEqual(masking_views[0], MASKING_VIEWS_DATA[0])
+        masking_views = self.driver.list_masking_views(context)
+        self.assertListEqual(masking_views, MASKING_VIEWS_DATA)
