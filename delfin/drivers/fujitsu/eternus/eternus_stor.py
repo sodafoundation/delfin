@@ -395,78 +395,82 @@ class EternusDriver(driver.StorageDriver):
     def list_storage_host_initiators(self, ctx):
         initiator_list = []
         host_status = self.get_host_status()
-        host_fc_list = self.get_data(consts.GET_HOST_WWN_NAMES,
-                                     consts.HOST_TOTAL)
-        for host_fc in (host_fc_list or []):
-            if len(host_fc) < consts.HOST_TOTAL:
+        self.get_fc_sas_initiator(host_status, initiator_list,
+                                  consts.GET_HOST_WWN_NAMES,
+                                  consts.HOST_FC_ENCAPSULATE_DATA_TOTAL,
+                                  consts.HOST_NAME_COUNT,
+                                  consts.HOST_WWN_COUNT,
+                                  constants.InitiatorType.FC)
+        self.get_iscsi_initiator(host_status, initiator_list)
+        self.get_fc_sas_initiator(host_status, initiator_list,
+                                  consts.GET_HOST_SAS_ADDRESSES,
+                                  consts.HOST_SAS_ENCAPSULATE_DATA_TOTAL,
+                                  consts.HOST_SAS_NAME,
+                                  consts.HOST_SAS_ADDRESS,
+                                  constants.InitiatorType.SAS)
+        return initiator_list
+
+    def get_fc_sas_initiator(self, host_status, initiator_list, command,
+                             encapsulate_data_total, name_count,
+                             wwn_count, initiator_type):
+        host_fc_list = self.get_data(command)
+        for host_fc in host_fc_list:
+            if len(host_fc) < encapsulate_data_total:
                 continue
-            fc_name = host_fc[consts.HOST_NAME_COUNT]
-            fc_wwn = host_fc[consts.HOST_WWN_COUNT]
+            fc_name = host_fc[name_count]
+            fc_wwn = host_fc[wwn_count]
             state = host_status.get(fc_name)
-            initiator_item = {
-                'name': fc_wwn,
-                'storage_id': self.storage_id,
-                'native_storage_host_initiator_id': fc_wwn,
-                'wwn': fc_wwn,
-                'status': constants.InitiatorStatus.ONLINE if
-                state is not None and state in
-                consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.InitiatorStatus.OFFLINE,
-                'native_storage_host_id': fc_name,
-                'type': constants.InitiatorType.FC
-            }
+            initiator_item = self.initiator_dict(
+                fc_wwn, fc_name, state, initiator_type)
             initiator_list.append(initiator_item)
-        host_iscsi_list = self.get_iscsi_host()
-        for host_iscsi in (host_iscsi_list or []):
+
+    def initiator_dict(self, wwn, host_id, state, initiator_type):
+        initiator_item = {
+            "name": wwn,
+            "storage_id": self.storage_id,
+            "native_storage_host_initiator_id": wwn,
+            "wwn": wwn,
+            "status": constants.InitiatorStatus.ONLINE if
+            state is not None and state ==
+            consts.HOST_PATH_STATUS_SPECIFIC_TWO else
+            constants.InitiatorStatus.OFFLINE,
+            "native_storage_host_id": host_id,
+            'type': initiator_type
+        }
+        return initiator_item
+
+    def get_iscsi_initiator(self, host_status, initiator_list):
+        host_iscsi_list = self.get_iscsi_host_data()
+        for host_iscsi in host_iscsi_list:
             iscsi_name = host_iscsi.get('name')
             state = host_status.get(iscsi_name)
-            initiator_item = {
-                "name": host_iscsi.get('iqn'),
-                "storage_id": self.storage_id,
-                "native_storage_host_initiator_id": host_iscsi.get('iqn'),
-                "wwn": host_iscsi.get('iqn'),
-                "status": constants.InitiatorStatus.ONLINE if
-                state is not None and state in
-                consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.InitiatorStatus.OFFLINE,
-                "native_storage_host_id": iscsi_name,
-                'type': constants.InitiatorType.ISCSI,
-                'alias': host_iscsi.get('alias')
-            }
+            iqn = host_iscsi.get('iqn')
+            initiator_item = self.initiator_dict(
+                iqn, iscsi_name, state, constants.InitiatorType.ISCSI)
+            initiator_item['alias'] = host_iscsi.get('alias')
             initiator_list.append(initiator_item)
-        host_sas_list = self.get_data(consts.GET_HOST_SAS_ADDRESSES,
-                                      consts.HOST_SAS_FIVE)
-        for host_sas in (host_sas_list or []):
-            if len(host_sas) < consts.HOST_SAS_FIVE:
-                continue
-            sas_name = host_sas[consts.HOST_SAS_ONE]
-            sas_address = host_sas[consts.HOST_SAS_TWO]
-            state = host_status.get(sas_name)
-            initiator_item = {
-                "name": sas_address,
-                "storage_id": self.storage_id,
-                "native_storage_host_initiator_id": sas_address,
-                "wwn": sas_address,
-                "status": constants.InitiatorStatus.ONLINE if
-                state is not None and state in
-                consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.InitiatorStatus.OFFLINE,
-                "native_storage_host_id": sas_name,
-                'type': constants.InitiatorType.SAS
-            }
-            initiator_list.append(initiator_item)
-        return initiator_list
 
     def list_storage_hosts(self, ctx):
         host_list = []
         host_status = self.get_host_status()
-        host_fc_list = self.get_data(consts.GET_HOST_WWN_NAMES,
-                                     consts.HOST_TOTAL)
-        for host_fc in (host_fc_list or []):
-            if len(host_fc) < consts.HOST_TOTAL:
+        self.get_fc_sas_host(host_list, host_status, consts.GET_HOST_WWN_NAMES,
+                             consts.HOST_FC_ENCAPSULATE_DATA_TOTAL,
+                             consts.HOST_NAME_COUNT, consts.HOST_TYPE_COUNT)
+        self.get_iscsi_host(host_list, host_status)
+        self.get_fc_sas_host(host_list, host_status,
+                             consts.GET_HOST_SAS_ADDRESSES,
+                             consts.HOST_SAS_ENCAPSULATE_DATA_TOTAL,
+                             consts.HOST_SAS_NAME, consts.HOST_SAS_OS)
+        return host_list
+
+    def get_fc_sas_host(self, host_list, host_status, command,
+                        encapsulate_data_total, name_count, type_count):
+        host_fc_list = self.get_data(command)
+        for host_fc in host_fc_list:
+            if len(host_fc) < encapsulate_data_total:
                 continue
-            fc_name = host_fc[consts.HOST_NAME_COUNT]
-            os = host_fc[consts.HOST_TYPE_COUNT].lower()
+            fc_name = host_fc[name_count]
+            os = host_fc[type_count].lower()
             state = host_status.get(fc_name)
             host_d = {
                 "name": fc_name,
@@ -475,14 +479,15 @@ class EternusDriver(driver.StorageDriver):
                 "os_type": consts.HOST_OS_TYPES_MAP.get(
                     os, constants.HostOSTypes.UNKNOWN),
                 "status": constants.HostStatus.NORMAL if
-                state is not None and state in
+                state is not None and state ==
                 consts.HOST_PATH_STATUS_SPECIFIC_TWO else
                 constants.HostStatus.OFFLINE
             }
             host_list.append(host_d)
 
-        host_iscsi_list = self.get_iscsi_host()
-        for host_iscsi in (host_iscsi_list or []):
+    def get_iscsi_host(self, host_list, host_status):
+        host_iscsi_list = self.get_iscsi_host_data()
+        for host_iscsi in host_iscsi_list:
             iscsi_name = host_iscsi.get('name')
             state = host_status.get(iscsi_name)
             os = host_iscsi.get('os')
@@ -494,43 +499,21 @@ class EternusDriver(driver.StorageDriver):
                 "os_type": consts.HOST_OS_TYPES_MAP.get(
                     os, constants.HostOSTypes.UNKNOWN),
                 "status": constants.HostStatus.NORMAL if
-                state is not None and state in
+                state is not None and state ==
                 consts.HOST_PATH_STATUS_SPECIFIC_TWO else
                 constants.HostStatus.OFFLINE,
                 'ip_address': host_iscsi.get('address')
             }
             host_list.append(host_d)
 
-        host_sas_list = self.get_data(consts.GET_HOST_SAS_ADDRESSES,
-                                      consts.HOST_SAS_FIVE)
-        for host_sas in (host_sas_list or []):
-            if len(host_sas) < consts.HOST_SAS_FIVE:
-                continue
-            sas_name = host_sas[consts.HOST_SAS_ONE]
-            sas_os = host_sas[consts.HOST_SAS_FOUR].lower()
-            state = host_status.get(sas_name)
-            host_d = {
-                "name": sas_name,
-                "storage_id": self.storage_id,
-                "native_storage_host_id": sas_name,
-                "os_type": consts.HOST_OS_TYPES_MAP.get(
-                    sas_os, constants.HostOSTypes.UNKNOWN),
-                "status": constants.HostStatus.NORMAL if
-                state is not None and state in
-                consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.HostStatus.OFFLINE
-            }
-            host_list.append(host_d)
-        return host_list
-
-    def get_data(self, command, length_count):
+    def get_data(self, command):
         host_list = []
         host_str = self.cli_handler.exec_command(command)
         block = True
         length_list = []
         if host_str:
             host_arr = host_str.strip().replace('\r', '').split('\n')
-            for host_row_str in (host_arr or []):
+            for host_row_str in host_arr:
                 if not host_row_str or \
                         consts.CLI_STR in host_row_str:
                     continue
@@ -541,8 +524,6 @@ class EternusDriver(driver.StorageDriver):
                     block = False
                     continue
                 if block:
-                    continue
-                if len(host_row_str.split()) < length_count:
                     continue
                 volume_list = []
                 key_length = DIGITAL_CONSTANT.ZERO_INT
@@ -555,14 +536,14 @@ class EternusDriver(driver.StorageDriver):
                 host_list.append(volume_list)
         return host_list
 
-    def get_iscsi_host(self):
+    def get_iscsi_host_data(self):
         iscsi_list = []
         iscsi_ids_str = self.cli_handler.exec_command(
             consts.GET_HOST_ISCSI_NAMES)
         block = True
         if iscsi_ids_str:
             iscsi_ids_arr = iscsi_ids_str.strip().replace('\r', '').split('\n')
-            for iscsi_ids_row_str in (iscsi_ids_arr or []):
+            for iscsi_ids_row_str in iscsi_ids_arr:
                 if not iscsi_ids_row_str or \
                         consts.CLI_STR in iscsi_ids_row_str:
                     continue
@@ -596,7 +577,7 @@ class EternusDriver(driver.StorageDriver):
         if iscsi_details_str:
             iscsi_ids_arr = iscsi_details_str.strip().replace('\r', '') \
                 .split('\n')
-            for row_str in (iscsi_ids_arr or []):
+            for row_str in iscsi_ids_arr:
                 if not row_str or consts.CLI_STR in row_str:
                     continue
                 iscsi_details_row_arr = row_str.strip().split('   ')
@@ -609,8 +590,7 @@ class EternusDriver(driver.StorageDriver):
 
     def get_host_status(self):
         status_d = {}
-        status_list = self.get_data(consts.GET_HOST_PATH_STATUS,
-                                    consts.HOST_PATH_STATUS_TOTAL)
+        status_list = self.get_data(consts.GET_HOST_PATH_STATUS)
         for status_row in status_list:
             if len(status_row) < consts.HOST_PATH_STATUS_TOTAL:
                 continue
@@ -621,12 +601,11 @@ class EternusDriver(driver.StorageDriver):
 
     def list_storage_host_groups(self, ctx):
         host_group_list = []
-        storage_id = self.storage_id
         host_group_all = self.cli_handler.exec_command(
             consts.GET_HOST_GROUPS_ALL)
         if host_group_all:
             host_group_all_arr = host_group_all.replace('\r', '').split('\n\n')
-            for host_group_str in (host_group_all_arr or []):
+            for host_group_str in host_group_all_arr:
                 host_group_arr = host_group_str.split(
                     consts.HOST_GROUPS_SPECIFIC_ONE)
                 host_group_row_arr = host_group_arr[
@@ -634,7 +613,7 @@ class EternusDriver(driver.StorageDriver):
                 host_group_id = None
                 host_group_name = None
                 block = True
-                for host_group_row_str in (host_group_row_arr or []):
+                for host_group_row_str in host_group_row_arr:
                     if not host_group_row_str or \
                             consts.CLI_STR in host_group_row_str:
                         continue
@@ -649,7 +628,7 @@ class EternusDriver(driver.StorageDriver):
                 storage_hosts = self.get_storage_hosts(host_group_arr)
                 host_g = {
                     'name': host_group_name,
-                    'storage_id': storage_id,
+                    'storage_id': self.storage_id,
                     'native_storage_host_group_id': host_group_id,
                     'storage_hosts': storage_hosts,
                 }
@@ -663,7 +642,7 @@ class EternusDriver(driver.StorageDriver):
 
             for storage_host in storage_hosts:
                 storage_host_group_relation = {
-                    'storage_id': storage_id,
+                    'storage_id': self.storage_id,
                     'native_storage_host_group_id': storage_host_group.get(
                         'native_storage_host_group_id'),
                     'native_storage_host_id': storage_host
@@ -682,7 +661,7 @@ class EternusDriver(driver.StorageDriver):
         if len(host_group_arr) == consts.HOST_GROUP_TOTAL:
             host_row_arr = host_group_arr[consts.HOST_GROUP_ONE].split('\n')
             block = True
-            for host_row_str in (host_row_arr or []):
+            for host_row_str in host_row_arr:
                 if not host_row_str or consts.CLI_STR in host_row_str:
                     continue
                 if consts.HOST_GROUPS_SPECIFIC_TWO in host_row_str:
@@ -702,9 +681,8 @@ class EternusDriver(driver.StorageDriver):
     def list_volume_groups(self, ctx):
         vol_group_list = []
         storage_id = self.storage_id
-        lun_groups_list = self.get_data(
-            consts.GET_LUN_GROUPS, consts.LUN_VOLUME_LENGTH)
-        for lun in (lun_groups_list or []):
+        lun_groups_list = self.get_data(consts.GET_LUN_GROUPS)
+        for lun in lun_groups_list:
             lun_groups_id = lun[consts.LUN_GROUPS_ID_COUNT]
             lun_groups_name = lun[consts.LUN_GROUPS_NAME_COUNT]
             volumes_str = self.get_lun_group_details(lun_groups_id)
@@ -743,7 +721,7 @@ class EternusDriver(driver.StorageDriver):
             lun_group_details_arr = lun_group_details_str.strip(
             ).replace('\r', '').split('\n')
             block = True
-            for lun_details_row_str in (lun_group_details_arr or []):
+            for lun_details_row_str in lun_group_details_arr:
                 if not lun_details_row_str or \
                         consts.CLI_STR in lun_details_row_str:
                     continue
@@ -793,7 +771,7 @@ class EternusDriver(driver.StorageDriver):
                 if len(port_group_arr) == consts.PORT_GROUP_ARR_LENGTH:
                     port_list_row_arr = port_group_arr[
                         consts.PORT_LIST_ROW_ARR_NUM].strip().split('\n')
-                    for port in (port_list_row_arr or []):
+                    for port in port_list_row_arr:
                         port_id = port.strip()
                         if port_id in consts.CLI_STR:
                             continue
@@ -835,7 +813,7 @@ class EternusDriver(driver.StorageDriver):
         views_str = self.cli_handler.exec_command(consts.GET_HOST_AFFINITY)
         if views_str:
             views_arr = views_str.strip().replace('\r', '').split('\n\n')
-            for views_group_str in (views_arr or []):
+            for views_group_str in views_arr:
                 if consts.LIST_MASKING_VIEWS_SPECIFIC_FOUR \
                         in views_group_str:
                     self.get_host_group_views(
@@ -851,7 +829,7 @@ class EternusDriver(driver.StorageDriver):
         block = True
         key = []
         port_id = None
-        for views_row_str in (views_row_arr or []):
+        for views_row_str in views_row_arr:
             if not views_row_str or \
                     consts.CLI_STR in views_row_str:
                 continue
@@ -871,7 +849,8 @@ class EternusDriver(driver.StorageDriver):
             views_arr = views_row_str.strip().split()
             volume_group_id = views_arr[consts.LIST_MASKING_VIEWS_CONSTANT_TWO]
             host_name = views_arr[consts.HOST_NAME_NUM]
-            view_id = '{}{}{}{}'.format(None, volume_group_id, host_name, None)
+            view_id = '{}{}{}{}'.format(
+                'host_group_id', volume_group_id, host_name, 'volume_id')
             if view_id_dict.get(view_id):
                 continue
             view_id_dict[view_id] = view_id
@@ -893,7 +872,7 @@ class EternusDriver(driver.StorageDriver):
             consts.VIEWS_GROUP_NUM_ZERO].strip().split('\n')
         block = True
         group_key = []
-        for views_group_row in (views_group_row_arr or []):
+        for views_group_row in views_group_row_arr:
             if not views_group_row or \
                     consts.CLI_STR in views_group_row:
                 continue
@@ -911,7 +890,7 @@ class EternusDriver(driver.StorageDriver):
             host_group_id = views_row_arr[consts.HOST_GROUP_ID_NUM]
             volume_group_id = views_row_arr[consts.LUN_GROUP_ID_NUM]
             view_id = '{}{}{}{}'.format(host_group_id, volume_group_id,
-                                        None, None)
+                                        'host_id', 'volume_id')
             if view_id_dict.get(view_id):
                 continue
             view_id_dict[view_id] = view_id
@@ -932,7 +911,7 @@ class EternusDriver(driver.StorageDriver):
         title_search_obj = title_pattern.search(views_group_row)
         if title_search_obj:
             views_row_arr = views_group_row.strip().split('  ')
-            for views in (views_row_arr or []):
+            for views in views_row_arr:
                 if views:
                     key.append(views.strip())
         return key
