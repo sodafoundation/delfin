@@ -100,6 +100,7 @@ HOST_OS_TYPES_MAP = {
     'windows': constants.HostOSTypes.WINDOWS,
     'solaris': constants.HostOSTypes.SOLARIS,
     'hp-ux': constants.HostOSTypes.HP_UX,
+    'hpux': constants.HostOSTypes.HP_UX,
     'aix': constants.HostOSTypes.AIX,
     'xenserver': constants.HostOSTypes.XEN_SERVER,
     'vmware esx': constants.HostOSTypes.VMWARE_ESX,
