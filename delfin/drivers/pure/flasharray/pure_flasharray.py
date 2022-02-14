@@ -402,9 +402,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_HOST_PERSONALITY_URL)
         for host in (hosts or []):
             name = host.get('name')
-            personality = host.get('personality')
-            if personality:
-                personality = personality.lower()
+            personality = host.get('personality').lower()\
+                if host.get('personality') else None
             h = {
                 "name": name,
                 "storage_id": self.storage_id,
