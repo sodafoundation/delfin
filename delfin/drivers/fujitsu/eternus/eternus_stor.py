@@ -425,15 +425,15 @@ class EternusDriver(driver.StorageDriver):
             initiator_list.append(initiator_item)
 
     def initiator_dict(self, wwn, host_id, state, initiator_type):
+        state_bool =\
+            state is not None and state == consts.HOST_PATH_STATUS_SPECIFIC_TWO
         initiator_item = {
             "name": wwn,
             "storage_id": self.storage_id,
             "native_storage_host_initiator_id": wwn,
             "wwn": wwn,
-            "status": constants.InitiatorStatus.ONLINE if
-            state is not None and state ==
-            consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-            constants.InitiatorStatus.OFFLINE,
+            "status": constants.InitiatorStatus.ONLINE
+            if state_bool else constants.InitiatorStatus.OFFLINE,
             "native_storage_host_id": host_id,
             'type': initiator_type
         }
@@ -472,16 +472,16 @@ class EternusDriver(driver.StorageDriver):
             fc_name = host_fc[name_count]
             os = host_fc[type_count].lower()
             state = host_status.get(fc_name)
+            state_bool = state is not None and state == consts.\
+                HOST_PATH_STATUS_SPECIFIC_TWO
             host_d = {
                 "name": fc_name,
                 "storage_id": self.storage_id,
                 "native_storage_host_id": fc_name,
                 "os_type": consts.HOST_OS_TYPES_MAP.get(
                     os, constants.HostOSTypes.UNKNOWN),
-                "status": constants.HostStatus.NORMAL if
-                state is not None and state ==
-                consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.HostStatus.OFFLINE
+                "status": constants.HostStatus.NORMAL
+                if state_bool else constants.HostStatus.OFFLINE
             }
             host_list.append(host_d)
 
@@ -492,16 +492,16 @@ class EternusDriver(driver.StorageDriver):
             state = host_status.get(iscsi_name)
             os = host_iscsi.get('os')
             os = os.lower() if os else None
+            state_bool = state is not None and state == consts. \
+                HOST_PATH_STATUS_SPECIFIC_TWO
             host_d = {
                 "name": iscsi_name,
                 "storage_id": self.storage_id,
                 "native_storage_host_id": iscsi_name,
                 "os_type": consts.HOST_OS_TYPES_MAP.get(
                     os, constants.HostOSTypes.UNKNOWN),
-                "status": constants.HostStatus.NORMAL if
-                state is not None and state ==
-                consts.HOST_PATH_STATUS_SPECIFIC_TWO else
-                constants.HostStatus.OFFLINE,
+                "status": constants.HostStatus.NORMAL
+                if state_bool else constants.HostStatus.OFFLINE,
                 'ip_address': host_iscsi.get('address')
             }
             host_list.append(host_d)
@@ -518,9 +518,8 @@ class EternusDriver(driver.StorageDriver):
                         consts.CLI_STR in host_row_str:
                     continue
                 if consts.SPECIAL_CHARACTERS_TWO in host_row_str:
-                    identify_list = host_row_str.split()
-                    for identify in identify_list:
-                        length_list.append(len(identify))
+                    length_list.extend(
+                        [len(identify) for identify in host_row_str.split()])
                     block = False
                     continue
                 if block:
@@ -531,8 +530,8 @@ class EternusDriver(driver.StorageDriver):
                     volume = host_row_str[key_length:
                                           key_length + length_key].strip()
                     volume_list.append(volume)
-                    key_length = key_length + length_key + DIGITAL_CONSTANT \
-                        .ONE_INT
+                    key_length =\
+                        key_length + length_key + DIGITAL_CONSTANT.ONE_INT
                 host_list.append(volume_list)
         return host_list
 
