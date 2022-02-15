@@ -403,7 +403,7 @@ GET_HOST_MAPPING = {
             {
                 "lunid": "00",
                 "volume": {
-                    "id": "0005",
+                    "id": "0005"
                 }
             }
         ]
