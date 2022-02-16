@@ -32,7 +32,7 @@ RDFDIRECTOR_METRICS = {
     'throughput': 'MBSentAndReceived',
     'readThroughput': 'MBRead',
     'writeThroughput': 'MBWritten',
-    'responseTime': 'AverageIOServiceTime',
+    'responseTime': 'AvgIOServiceTime',
 }
 BEPORT_METRICS = {
     'iops': 'IOs',
@@ -76,6 +76,8 @@ STORAGE_METRICS = {
     'throughput': 'HostMBs',
     'readThroughput': 'HostMBReads',
     'writeThroughput': 'HostMBWritten',
+    'readResponseTime': 'ReadResponseTime',
+    'writeResponseTime': 'WriteResponseTime',
 }
 
 IOPS_DESCRIPTION = {
@@ -110,6 +112,16 @@ RESPONSE_TIME_DESCRIPTION = {
     "description": "Average time taken for an IO "
                    "operation in ms"
 }
+READ_RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for a read IO "
+                   "operation in ms"
+}
+WRITE_RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for a write IO "
+                   "operation in ms"
+}
 IO_SIZE_DESCRIPTION = {
     "unit": "KB",
     "description": "The average size of IO requests in KB"
@@ -129,7 +141,8 @@ STORAGE_CAP = {
     "throughput": THROUGHPUT_DESCRIPTION,
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "readResponseTime": READ_RESPONSE_TIME_DESCRIPTION,
+    "writeResponseTime": WRITE_RESPONSE_TIME_DESCRIPTION,
 }
 POOL_CAP = {
     "iops": IOPS_DESCRIPTION,
@@ -160,4 +173,7 @@ DISK_CAP = {
     "readThroughput": READ_THROUGHPUT_DESCRIPTION,
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "responseTime": RESPONSE_TIME_DESCRIPTION,
+}
+METRICS_FOR_COLLECT_TIMESTAMP = {
+    'iops': IOPS_DESCRIPTION
 }

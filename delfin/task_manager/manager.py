@@ -21,7 +21,7 @@ from oslo_utils import importutils
 
 from delfin import manager
 from delfin.drivers import manager as driver_manager
-from delfin.task_manager.tasks import alerts, telemetry
+from delfin.task_manager.tasks import alerts
 
 LOG = log.getLogger(__name__)
 
@@ -33,7 +33,6 @@ class TaskManager(manager.Manager):
 
     def __init__(self, service_name=None, *args, **kwargs):
         self.alert_task = alerts.AlertSyncTask()
-        self.telemetry_task = telemetry.TelemetryTask()
         super(TaskManager, self).__init__(*args, **kwargs)
 
     def sync_storage_resource(self, context, storage_id, resource_task):

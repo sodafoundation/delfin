@@ -84,7 +84,7 @@ class TestVMAXStorageDriver(TestCase):
                          mock_array_details, mock_capacity):
         expected = {
             'name': 'VMAX250F-00112233',
-            'vendor': 'Dell EMC',
+            'vendor': 'DELL EMC',
             'description': '',
             'model': 'VMAX250F',
             'firmware_version': '5978.221.221',
@@ -101,7 +101,7 @@ class TestVMAXStorageDriver(TestCase):
             'system_capacity': {
                 'usable_total_tb': 100,
                 'usable_used_tb': 75,
-                'subscribed_total_tb': 200
+                'subscribed_allocated_tb': 200
             },
             'physicalCapacity': {
                 'total_capacity_gb': 1500
@@ -182,7 +182,7 @@ class TestVMAXStorageDriver(TestCase):
             'srp_capacity': {
                 'usable_total_tb': 100,
                 'usable_used_tb': 75,
-                'subscribed_total_tb': 200
+                'subscribed_allocated_tb': 200
             },
             'srpId': 'SRP_ID'
         }
@@ -354,7 +354,7 @@ class TestVMAXStorageDriver(TestCase):
                 'status': 'normal',
                 'location': 'slot_10',
                 'soft_version': None,
-                'cpu_info': 'Cores-64',
+                'cpu_info': 'number_of_cores_64',
                 'memory_size': None
             }
         ]
@@ -427,11 +427,11 @@ class TestVMAXStorageDriver(TestCase):
         expected = [{
             'name': 'DF-1D:30',
             'storage_id': '12345',
-            'native_port_id': '30',
-            'location': 'director_DF-1D',
+            'native_port_id': 'DF-1D:30',
+            'location': 'DF-1D:30',
             'connection_status': 'connected',
             'health_status': 'normal',
-            'type': 'other',
+            'type': 'eth',
             'logical_type': 'backend',
             'speed': 0,
             'max_speed': 10737418240,
@@ -738,7 +738,7 @@ class TestVMAXStorageDriver(TestCase):
                                     labels={
                                         'storage_id': '12345',
                                         'resource_type': 'port',
-                                        'resource_id': '12',
+                                        'resource_id': 'DF-1C:12',
                                         'resource_name': 'BEPort_DF-1C_12',
                                         'type': 'RAW',
                                         'unit': 'IOPS'
@@ -942,7 +942,7 @@ class TestVMAXStorageDriver(TestCase):
         self.assertEqual(ret[0], expected[0])
         self.assertEqual(ret[2], expected[1])
         self.assertEqual(ret[4], expected[2])
-        self.assertEqual(ret[13], expected[3])
+        self.assertEqual(ret[14], expected[3])
 
         with self.assertRaises(Exception) as exc:
             driver.collect_perf_metrics(context,

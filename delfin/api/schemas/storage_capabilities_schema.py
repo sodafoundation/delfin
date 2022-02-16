@@ -41,6 +41,24 @@ STORAGE_CAPABILITIES_SCHEMA = {
                                                 'maxLength': 255}
                             },
                         },
+                        'readResponseTime': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'writeResponseTime': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
                         'iops': {
                             'type': 'object',
                             'properties': {

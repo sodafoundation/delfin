@@ -418,11 +418,13 @@ class TelemetryCollection(object):
     """Failed Performance monitoring retry count"""
     MAX_FAILED_JOB_RETRY_COUNT = 5
     """Default performance collection interval"""
-    DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
+    DEF_PERFORMANCE_COLLECTION_INTERVAL = 300
     DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 1800
     DEF_PERFORMANCE_TIMESTAMP_OVERLAP = 60
     """Maximum failed task retry window in seconds"""
     MAX_FAILED_TASK_RETRY_WINDOW = 7200
+    # Maximux tolerable time difference in seconds
+    MAX_TOLERABLE_TIME_DIFF = 1800
 
 
 class TelemetryTaskStatus(object):

@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import abc
+from datetime import datetime
 
 import six
 from oslo_log import log
 
-from delfin import context, db
+from delfin import db
 from delfin import exception
 from delfin.common.constants import TelemetryTaskStatus
 from delfin.drivers import api as driver_api
@@ -30,10 +31,6 @@ LOG = log.getLogger(__name__)
 class TelemetryTask(object):
     @abc.abstractmethod
     def collect(self, ctx, storage_id, args, start_time, end_time):
-        pass
-
-    @abc.abstractmethod
-    def remove_telemetry(self, ctx, storage_id):
         pass
 
 
@@ -67,10 +64,24 @@ class PerformanceCollectionTask(TelemetryTask):
                 LOG.error(msg)
                 return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
 
-            self.perf_exporter.dispatch(context, perf_metrics)
+            self.perf_exporter.dispatch(ctx, perf_metrics)
             return TelemetryTaskStatus.TASK_EXEC_STATUS_SUCCESS
         except Exception as e:
             LOG.error("Failed to collect performance metrics for "
                       "storage id :{0}, reason:{1}".format(storage_id,
                                                            six.text_type(e)))
             return TelemetryTaskStatus.TASK_EXEC_STATUS_FAILURE
+
+    def get_latest_perf_timestamp(self, ctx, storage_id):
+        current_time = int(datetime.now().timestamp())
+        try:
+            latest_storage_perf_time = \
+                self.driver_api.get_latest_perf_timestamp(ctx, storage_id)
+            if latest_storage_perf_time:
+                return latest_storage_perf_time
+            else:
+                return current_time * 1000
+
+        except Exception as e:
+            LOG.warning(f'Get latest performance data timestamp failed: {e}')
+            return current_time * 1000

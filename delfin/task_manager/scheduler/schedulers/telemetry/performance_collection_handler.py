@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-
 import six
 from oslo_config import cfg
 
@@ -32,7 +30,6 @@ from delfin.task_manager.scheduler.schedulers.telemetry. \
     FailedPerformanceCollectionHandler
 from delfin.task_manager.tasks.telemetry import PerformanceCollectionTask
 
-CONF = cfg.CONF
 LOG = log.getLogger(__name__)
 CONF = cfg.CONF
 
@@ -48,6 +45,7 @@ class PerformanceCollectionHandler(object):
         self.driver_api = driverapi.API()
         self.executor = executor
         self.scheduler = schedule_manager.SchedulerManager().get_scheduler()
+        self.start_time = None
 
     @staticmethod
     def get_instance(ctx, task_id):
@@ -78,19 +76,31 @@ class PerformanceCollectionHandler(object):
         try:
             LOG.debug('Collecting performance metrics for task id: %s'
                       % self.task_id)
-            current_time = int(datetime.now().timestamp())
 
             # Times are epoch time in milliseconds
             overlap = CONF.telemetry. \
                 performance_timestamp_overlap
-            end_time = current_time * 1000
-            start_time = end_time - (self.interval * 1000) - (overlap * 1000)
             telemetry = PerformanceCollectionTask()
+            end_time = telemetry.get_latest_perf_timestamp(self.ctx,
+                                                           self.storage_id)
+            if self.start_time:
+                start_time = self.start_time
+            else:
+                start_time = \
+                    end_time - (self.interval * 1000) - (overlap * 1000)
+            self.start_time = end_time
+            # The start time of the task is equal to the end time of the
+            # previous performance collection task to avoid repeated data
+            # collection, the start is increased by one second
+            self.start_time += 1000
+            # ctx = copy.copy(self.ctx)
+            # ctx.task_info = {'task_id': self.task_id,
+            #                  'last_run_time': end_time / 1000}
             status = telemetry.collect(self.ctx, self.storage_id, self.args,
                                        start_time, end_time)
 
             db.task_update(self.ctx, self.task_id,
-                           {'last_run_time': current_time})
+                           {'last_run_time': end_time / 1000})
 
             if not status:
                 raise exception.TelemetryTaskExecError()

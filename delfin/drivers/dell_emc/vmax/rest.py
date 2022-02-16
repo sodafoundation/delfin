@@ -27,7 +27,6 @@ from oslo_log import log as logging
 from delfin import cryptor
 from delfin import exception
 from delfin import ssl_utils
-from delfin.common import alert_util
 from delfin.common import constants as delfin_const
 from delfin.drivers.dell_emc.vmax import constants
 from delfin.i18n import _
@@ -87,10 +86,11 @@ class VMaxRest(object):
                  {'base_uri': self.base_uri})
         if self.session:
             self.session.close()
-        session = requests.session()
-        session.headers = {'content-type': 'application/json',
-                           'accept': 'application/json',
-                           'Application-Type': 'delfin'}
+        session = requests.Session()
+        session.headers.update({
+            'content-type': 'application/json',
+            'accept': 'application/json',
+            'Application-Type': 'delfin'})
         session.auth = requests.auth.HTTPBasicAuth(
             self.user, cryptor.decode(self.passwd))
 
@@ -100,13 +100,14 @@ class VMaxRest(object):
             LOG.debug("Enable certificate verification, ca_path: {0}".format(
                 self.verify))
             session.verify = self.verify
+        session.trust_env = False
         session.mount("https://", ssl_utils.get_host_name_ignore_adapter())
 
         self.session = session
         return session
 
     def request(self, target_uri, method, params=None, request_object=None,
-                timeout=None):
+                timeout=None, retry=True):
         """Sends a request (GET, POST, PUT, DELETE) to the target api.
         :param target_uri: target uri (string)
         :param method: The method (GET, POST, PUT, or DELETE)
@@ -154,6 +155,10 @@ class VMaxRest(object):
                           'status_code': status_code})
 
         except r_exc.SSLError as e:
+            if retry:
+                self.establish_rest_session()
+                return self.request(target_uri, method, params,
+                                    request_object, timeout, retry=False)
             msg = _("The connection to %(base_uri)s has encountered an "
                     "SSL error. Please check your SSL config or supplied "
                     "SSL cert in Delfin configuration. SSL Exception "
@@ -471,7 +476,7 @@ class VMaxRest(object):
         system_info = self.get_array_detail(version, array)
         vmax_model = system_info.get('model', 'VMAX')
         vmax_ucode = system_info.get('ucode')
-        vmax_display_name = system_info.get('display_name', vmax_model)
+        vmax_display_name = system_info.get('display_name', array)
         array_details = {"model": vmax_model,
                          "ucode": vmax_ucode,
                          "display_name": vmax_display_name}
@@ -585,7 +590,7 @@ class VMaxRest(object):
 
         if int(version) < 84:
             LOG.error("Director is not supported in Unisphere version < 8.4")
-            return None
+            raise NotImplementedError
 
         if not director_dict:
             exception_message = (_("Director %(deviceID)s not found.")
@@ -616,7 +621,7 @@ class VMaxRest(object):
 
         if int(version) < 84:
             LOG.error("Director not supported in Unisphere version < 8.4")
-            return []
+            raise NotImplementedError
 
         if not response:
             exception_message = (_("Get Director list failed.")
@@ -654,7 +659,7 @@ class VMaxRest(object):
 
         if int(version) < 84:
             LOG.error("Port get is not supported in Unisphere version < 8.4")
-            return None
+            raise NotImplementedError
 
         if not port_dict:
             exception_message = (_("Port %(deviceID)s not found.")
@@ -690,7 +695,7 @@ class VMaxRest(object):
 
         if int(version) < 84:
             LOG.error("Port list not supported in Unisphere version < 8.4")
-            return []
+            raise NotImplementedError
 
         if not response:
             exception_message = (_("Get Port list failed.")
@@ -1018,20 +1023,22 @@ class VMaxRest(object):
 
         metrics_list = []
         for director_key_dict in director_keys_dict:
-            payload = {'directorId': director_key_dict.get('directorId')}
+            director_id = director_key_dict.get('directorId')
+            payload = {'directorId': director_id}
             keys = self.get_resource_keys(array, 'FEPort', payload=payload)
             keys_dict = None
             if keys:
                 keys_dict = keys.get('fePortInfo', None)
 
             for key_dict in keys_dict:
-                payload['portId'] = key_dict.get('portId')
+                port_id = director_id + ':' + key_dict.get('portId')
+                payload['portId'] = port_id
                 metrics_res = self.get_resource_metrics(
                     array, start_time, end_time, 'FEPort',
                     feport_metrics, payload=payload)
                 if metrics_res:
                     label = {
-                        'resource_id': key_dict.get('portId'),
+                        'resource_id': port_id,
                         'resource_name': 'FEPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
@@ -1064,20 +1071,22 @@ class VMaxRest(object):
 
         metrics_list = []
         for director_key_dict in director_keys_dict:
-            payload = {'directorId': director_key_dict.get('directorId')}
+            director_id = director_key_dict.get('directorId')
+            payload = {'directorId': director_id}
             keys = self.get_resource_keys(array, 'BEPort', payload=payload)
             keys_dict = None
             if keys:
                 keys_dict = keys.get('bePortInfo', None)
 
             for key_dict in keys_dict:
-                payload['portId'] = key_dict.get('portId')
+                port_id = director_id + ':' + key_dict.get('portId')
+                payload['portId'] = port_id
                 metrics_res = self.get_resource_metrics(
                     array, start_time, end_time, 'BEPort',
                     beport_metrics, payload=payload)
                 if metrics_res:
                     label = {
-                        'resource_id': key_dict.get('portId'),
+                        'resource_id': port_id,
                         'resource_name': 'BEPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
@@ -1109,20 +1118,22 @@ class VMaxRest(object):
 
         metrics_list = []
         for director_key_dict in director_keys_dict:
-            payload = {'directorId': director_key_dict.get('directorId')}
+            director_id = director_key_dict.get('directorId')
+            payload = {'directorId': director_id}
             keys = self.get_resource_keys(array, 'RDFPort', payload=payload)
             keys_dict = None
             if keys:
                 keys_dict = keys.get('rdfPortInfo', None)
 
             for key_dict in keys_dict:
-                payload['portId'] = key_dict.get('portId')
+                port_id = director_id + ':' + key_dict.get('portId')
+                payload['portId'] = port_id
                 metrics_res = self.get_resource_metrics(
                     array, start_time, end_time, 'RDFPort',
                     rdfport_metrics, payload=payload)
                 if metrics_res:
                     label = {
-                        'resource_id': key_dict.get('portId'),
+                        'resource_id': port_id,
                         'resource_name': 'RDFPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
@@ -1249,9 +1260,8 @@ class VMaxRest(object):
 
         return iterator_result
 
-    def get_alerts(self, query_para, array, version):
+    def get_alerts(self, version, array):
         """Get all alerts with given version and arrayid
-        :param query_para: Contains optional begin and end time
         :param array: the array serial number
         :param version: the unisphere version
         :returns: alert_list -- dict or None
@@ -1273,8 +1283,7 @@ class VMaxRest(object):
             target_uri = '/%s/system/symmetrix/%s/alert/%s' \
                          % (version, array, alert_id)
             alert = self.get_alert_request(target_uri)
-            if alert is not None and alert_util.is_alert_in_time_range(
-                    query_para, alert['created_date_milliseconds']):
+            if alert is not None:
                 alert_list.append(alert)
 
         return alert_list
