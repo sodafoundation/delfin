@@ -127,7 +127,7 @@ SECURITY_STYLE = {
 STORAGE_STATUS = {
     'ok': constants.StorageStatus.NORMAL,
     'ok-with-suppressed': constants.StorageStatus.NORMAL,
-    'degraded': constants.StorageStatus.ABNORMAL,
+    'degraded': constants.StorageStatus.DEGRADED,
     'unreachable': constants.StorageStatus.ABNORMAL,
     'unknown': constants.StorageStatus.ABNORMAL
 }
