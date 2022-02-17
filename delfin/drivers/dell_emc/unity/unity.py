@@ -772,7 +772,7 @@ class UnityStorDriver(driver.StorageDriver):
                             perf_value = content.get('values').get(sp_value)
                             for key, value in perf_value.items():
                                 bfind = False
-                                value = round(int(value), 3)
+                                value = round(float(value), 3)
                                 for metric in metrics:
                                     if metric.get('resource_id') == key and \
                                             metric.get('type') == target:
@@ -786,10 +786,10 @@ class UnityStorDriver(driver.StorageDriver):
                                                         occur_time))
                                             else:
                                                 metric.get('values')[
-                                                    occur_time] += int(value)
+                                                    occur_time] += value
                                         else:
                                             metric.get('values')[occur_time] \
-                                                = int(value)
+                                                = value
                                         bfind = True
                                         break
                                 if bfind is False:
