@@ -786,7 +786,7 @@ class SSHHandler(object):
                         "native_storage_host_id": native_storage_host_id
                     }
                     if native_port_group_id:
-                        view_map['native_port_group_id'] = "port_group_" + \
-                                                           native_port_group_id
+                        view_map['native_port_group_id'] = \
+                            "port_group_" + native_port_group_id
                     views_list.append(view_map)
             return views_list
