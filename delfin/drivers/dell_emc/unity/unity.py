@@ -708,7 +708,7 @@ class UnityStorDriver(driver.StorageDriver):
                          end_time, metrics, path):
         page = 1
         bend = False
-        latest_time = 0
+        time_map = {'latest_time': 0}
         if not path:
             return
         while True:
@@ -722,7 +722,7 @@ class UnityStorDriver(driver.StorageDriver):
             if len(results['entries']) < 1:
                 break
             bend = UnityStorDriver.get_metric_value(
-                target, start_time, end_time, metrics, results, latest_time)
+                target, start_time, end_time, metrics, results, time_map)
             page += 1
 
     def get_history_metrics(self, resource_type, targets,
@@ -749,7 +749,7 @@ class UnityStorDriver(driver.StorageDriver):
 
     @staticmethod
     def get_metric_value(target, start_time, end_time, metrics,
-                         results, latest_time):
+                         results, time_map):
         try:
             if results is None:
                 return True
@@ -769,15 +769,16 @@ class UnityStorDriver(driver.StorageDriver):
                                                UnityStorDriver.MS_PER_HOUR)
                     if occur_time < start_time:
                         return True
-                    if latest_time <= occur_time and latest_time != 0:
+                    if time_map.get('latest_time') <= occur_time \
+                            and time_map.get('latest_time') != 0:
                         continue
-                    latest_time = occur_time
+                    time_map['latest_time'] = occur_time
                     if start_time <= occur_time <= end_time:
                         for sp_value in content.get('values'):
                             perf_value = content.get('values').get(sp_value)
                             for key, value in perf_value.items():
                                 bfind = False
-                                value = round(float(value), 3)
+                                value = float(value)
                                 for metric in metrics:
                                     if metric.get('resource_id') == key and \
                                             metric.get('type') == target:
@@ -872,8 +873,7 @@ class UnityStorDriver(driver.StorageDriver):
             if 'THROUGHPUT' in metric.get('type').upper() or \
                     'RESPONSETIME' in metric.get('type').upper():
                 for tm in metric.get('values'):
-                    metric['values'][tm] = round(
-                        metric['values'][tm] / units.k, 3)
+                    metric['values'][tm] = metric['values'][tm] / units.k
             value = constants.metric_struct(name=metric.get('type'),
                                             labels=labels,
                                             values=metric.get('values'))
