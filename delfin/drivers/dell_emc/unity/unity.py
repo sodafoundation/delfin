@@ -59,7 +59,7 @@ class UnityStorDriver(driver.StorageDriver):
                    'HP-UX': constants.HostOSTypes.HP_UX,
                    'IBM VIOS': constants.HostOSTypes.UNKNOWN,
                    'Linux': constants.HostOSTypes.LINUX,
-                   'Mac OS': constants.HostOSTypes.UNKNOWN,
+                   'Mac OS': constants.HostOSTypes.MAC_OS,
                    'Solaris': constants.HostOSTypes.SOLARIS,
                    'VMware ESXi': constants.HostOSTypes.VMWARE_ESX,
                    'Windows Client': constants.HostOSTypes.WINDOWS,
