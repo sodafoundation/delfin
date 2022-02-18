@@ -567,7 +567,7 @@ list_masking_views_result = [
         'name': 'CHEN_LINUX',
         'description': 'CHEN_LINUX',
         'storage_id': '12345',
-        'native_masking_view_id': 'CHEN_LINUX',
+        'native_masking_view_id': 'CHEN_LINUX123',
         'native_port_group_id': 'port_group_CHEN_LINUX',
         'native_volume_id': '123',
         'native_storage_host_id': '0x21000024ff7fb74d'
