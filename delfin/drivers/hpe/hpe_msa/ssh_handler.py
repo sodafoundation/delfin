@@ -12,9 +12,9 @@ from delfin.drivers.utils.tools import Tools
 from delfin.drivers.hpe.hpe_msa import consts
 
 try:
-    import xml.etree.cElementTree as Et
+    import defusedxml.cElementTree as Et
 except ImportError:
-    import xml.etree.ElementTree as Et
+    import defusedxml.ElementTree as Et
 
 LOG = logging.getLogger(__name__)
 
@@ -518,20 +518,26 @@ class SSHHandler(object):
             hosts_info = self.ssh_pool.do_exec('show host-groups')
             host_list = []
             hosts = self.handle_xml_to_json(hosts_info, 'host')
+            host_map = {}
             for host in hosts:
                 status = constants.HostStatus.NORMAL
                 os_type = constants.HostOSTypes.HP_UX
                 host_member_count = int(host.get('member-count'))
                 if host_member_count > 0:
-                    host_dict = {
-                        "name": host.get('name'),
-                        "description": host.get('durable-id'),
-                        "storage_id": storage_id,
-                        "native_storage_host_id": host.get('serial-number'),
-                        "os_type": os_type,
-                        "status": status
-                    }
-                    host_list.append(host_dict)
+                    serial_number = host_map.get(host.get('serial-number'))
+                    if not serial_number:
+                        host_map[host.get('serial-number')] = \
+                            host.get('serial-number')
+                        host_dict = {
+                            "name": host.get('name'),
+                            "description": host.get('durable-id'),
+                            "storage_id": storage_id,
+                            "native_storage_host_id":
+                                host.get('serial-number'),
+                            "os_type": os_type,
+                            "status": status
+                        }
+                        host_list.append(host_dict)
             return host_list
         except Exception as e:
             LOG.error("Failed to get host from msa")
@@ -668,32 +674,34 @@ class SSHHandler(object):
                                                 .format(port_name)
                                             native_port_group_name = "{0}" \
                                                 .format(durable_id)
-
-                    native_port_group_id = "port_group_" + native_port_group_id
-                    if reduce_map.get(native_port_group_id):
-                        continue
-                    reduce_map[native_port_group_id] = native_port_group_id
-                    port_group_map = {
-                        'name': native_port_group_id,
-                        'description': native_port_group_id,
-                        'storage_id': storage_id,
-                        'native_port_group_id': native_port_group_id,
-                        'ports': native_port_group_name
-                    }
-                    port_ids = native_port_group_name.split(',')
-                    for port_id in port_ids:
-                        port_group_relation = {
+                    if native_port_group_name:
+                        native_port_group_id = "port_group_" + \
+                                               native_port_group_id
+                        if reduce_map.get(native_port_group_id):
+                            continue
+                        reduce_map[native_port_group_id] = native_port_group_id
+                        port_group_map = {
+                            'name': native_port_group_id,
+                            'description': native_port_group_id,
                             'storage_id': storage_id,
                             'native_port_group_id': native_port_group_id,
-                            'native_port_id': port_id
+                            'ports': native_port_group_name
                         }
-                        port_group_relation_list.append(port_group_relation)
-                    port_group_list.append(port_group_map)
-                result = {
-                    'port_groups': port_group_list,
-                    'port_grp_port_rels': port_group_relation_list
-                }
-                return result
+                        port_ids = native_port_group_name.split(',')
+                        for port_id in port_ids:
+                            port_group_relation = {
+                                'storage_id': storage_id,
+                                'native_port_group_id': native_port_group_id,
+                                'native_port_id': port_id
+                            }
+                            port_group_relation_list.append(
+                                port_group_relation)
+                        port_group_list.append(port_group_map)
+                    result = {
+                        'port_groups': port_group_list,
+                        'port_grp_port_rels': port_group_relation_list
+                    }
+                    return result
         except Exception as e:
             LOG.error("Failed to get port groups  from msa")
             raise e
@@ -731,50 +739,54 @@ class SSHHandler(object):
             if vol_type == 'group':
                 native_volume_group_name = 'native_volume_group_id'
             for host_view in storage_view_list:
-                mapped_id = host_view.get('mapped-id')
-                native_masking_view_id = host_view.get('durable-id')
-                volume_id = host_view.get('parent-id')
-                port_number = host_view.get('ports')
-                view_name = host_view.get('nickname')
-                native_port_group_id = None
-                if port_number:
-                    port_codes = port_number.split(',')
-                    for port_code in port_codes:
-                        if storage_port_list:
-                            for port in storage_port_list:
-                                port_name = port.get('name')
-                                if port_code in port_name:
-                                    if native_port_group_id:
-                                        native_port_group_id = "{0}{1}". \
-                                            format(native_port_group_id,
-                                                   port_name)
-                                    else:
-                                        native_port_group_id = "{0}" \
-                                            .format(port_name)
-                native_storage_host_id = None
-                if host_list:
-                    for host_value in host_list:
-                        host_durable_id = host_value.get('description')
-                        if host_durable_id == mapped_id:
-                            native_storage_host_id = host_value.get(
-                                'native_storage_host_id')
-                if not native_storage_host_id:
-                    if initiators_list:
-                        for initiators in initiators_list:
-                            initiators_durable_id = initiators.get(
-                                'native_storage_host_initiator_id')
-                            if initiators_durable_id == mapped_id:
-                                native_storage_host_id = initiators.get(
+                access = host_view.get('access')
+                if access != 'not-mapped':
+                    mapped_id = host_view.get('mapped-id')
+                    native_masking_view_id = host_view.get('durable-id')
+                    volume_id = host_view.get('parent-id')
+                    port_number = host_view.get('ports')
+                    view_name = host_view.get('nickname')
+                    native_port_group_id = None
+                    if port_number:
+                        port_codes = port_number.split(',')
+                        for port_code in port_codes:
+                            if storage_port_list:
+                                for port in storage_port_list:
+                                    port_name = port.get('name')
+                                    if port_code in port_name:
+                                        if native_port_group_id:
+                                            native_port_group_id = "{0}{1}". \
+                                                format(native_port_group_id,
+                                                       port_name)
+                                        else:
+                                            native_port_group_id = "{0}" \
+                                                .format(port_name)
+                    native_storage_host_id = None
+                    if host_list:
+                        for host_value in host_list:
+                            host_durable_id = host_value.get('description')
+                            if host_durable_id == mapped_id:
+                                native_storage_host_id = host_value.get(
                                     'native_storage_host_id')
-                view_map = {
-                    "name": view_name,
-                    "description": view_name,
-                    "storage_id": storage_id,
-                    "native_masking_view_id": native_masking_view_id,
-                    "native_port_group_id": "port_group_" +
-                                            native_port_group_id,
-                    native_volume_group_name: volume_id,
-                    "native_storage_host_id": native_storage_host_id
-                }
-                views_list.append(view_map)
+                    if not native_storage_host_id:
+                        if initiators_list:
+                            for initiators in initiators_list:
+                                initiators_durable_id = initiators.get(
+                                    'native_storage_host_initiator_id')
+                                if initiators_durable_id == mapped_id:
+                                    native_storage_host_id = initiators.get(
+                                        'native_storage_host_id')
+                    view_map = {
+                        "name": view_name,
+                        "description": view_name,
+                        "storage_id": storage_id,
+                        "native_masking_view_id":
+                            native_masking_view_id + volume_id,
+                        native_volume_group_name: volume_id,
+                        "native_storage_host_id": native_storage_host_id
+                    }
+                    if native_port_group_id:
+                        view_map['native_port_group_id'] = "port_group_" + \
+                                                           native_port_group_id
+                    views_list.append(view_map)
             return views_list

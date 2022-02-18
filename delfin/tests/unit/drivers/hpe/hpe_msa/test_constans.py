@@ -1315,7 +1315,7 @@ list_masking_views = [
         'name': 'FC-port3',
         'description': 'FC-port3',
         'storage_id': 'kkk',
-        'native_masking_view_id': 'V3_I0',
+        'native_masking_view_id': 'V3_I0V3',
         'native_port_group_id': 'port_group_A3B3A4B4',
         'native_volume_id': 'V3',
         'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
@@ -1324,7 +1324,7 @@ list_masking_views = [
         'name': 'FC-port2',
         'description': 'FC-port2',
         'storage_id': 'kkk',
-        'native_masking_view_id': 'V0_I1',
+        'native_masking_view_id': 'V0_I1V0',
         'native_port_group_id': 'port_group_A1B1A2B2',
         'native_volume_id': 'V0',
         'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
@@ -1333,7 +1333,7 @@ list_masking_views = [
         'name': 'rac01.*',
         'description': 'rac01.*',
         'storage_id': 'kkk',
-        'native_masking_view_id': 'V1_H4',
+        'native_masking_view_id': 'V1_H4V1',
         'native_port_group_id': 'port_group_A1B1A2B2',
         'native_volume_id': 'V1',
         'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000'
@@ -1342,7 +1342,7 @@ list_masking_views = [
         'name': 'rac02_01',
         'description': 'rac02_01',
         'storage_id': 'kkk',
-        'native_masking_view_id': 'VG5_I3',
+        'native_masking_view_id': 'VG5_I3VG5',
         'native_port_group_id': 'port_group_A1B1A2B2',
         'native_volume_group_id': 'VG5',
         'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000'
