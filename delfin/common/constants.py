@@ -262,10 +262,12 @@ class HostOSTypes(object):
     WINDOWS_SERVER_2012 = 'Windows Server 2012'
     ORACLE_VM = 'Oracle VM'
     OPEN_VMS = 'Open VMS'
+    MAC_OS = 'Mac OS'
     UNKNOWN = 'Unknown'
 
     ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
-           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS, UNKNOWN)
+           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS, MAC_OS,
+           UNKNOWN)
 
 
 class InitiatorStatus(object):
