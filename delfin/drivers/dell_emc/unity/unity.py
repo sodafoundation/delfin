@@ -708,6 +708,7 @@ class UnityStorDriver(driver.StorageDriver):
                          end_time, metrics, path):
         page = 1
         bend = False
+        latest_time = 0
         if not path:
             return
         while True:
@@ -721,7 +722,7 @@ class UnityStorDriver(driver.StorageDriver):
             if len(results['entries']) < 1:
                 break
             bend = UnityStorDriver.get_metric_value(
-                target, start_time, end_time, metrics, results)
+                target, start_time, end_time, metrics, results, latest_time)
             page += 1
 
     def get_history_metrics(self, resource_type, targets,
@@ -747,7 +748,8 @@ class UnityStorDriver(driver.StorageDriver):
         return metrics
 
     @staticmethod
-    def get_metric_value(target, start_time, end_time, metrics, results):
+    def get_metric_value(target, start_time, end_time, metrics,
+                         results, latest_time):
         try:
             if results is None:
                 return True
@@ -755,7 +757,7 @@ class UnityStorDriver(driver.StorageDriver):
             for entry in entries:
                 content = entry.get('content')
                 if not content:
-                    continue
+                    return True
                 if content.get('values'):
                     occur_time = int(time.mktime(time.strptime(
                         content.get('timestamp'),
@@ -767,6 +769,9 @@ class UnityStorDriver(driver.StorageDriver):
                                                UnityStorDriver.MS_PER_HOUR)
                     if occur_time < start_time:
                         return True
+                    if latest_time <= occur_time and latest_time != 0:
+                        continue
+                    latest_time = occur_time
                     if start_time <= occur_time <= end_time:
                         for sp_value in content.get('values'):
                             perf_value = content.get('values').get(sp_value)
@@ -799,6 +804,8 @@ class UnityStorDriver(driver.StorageDriver):
                                         'values': {occur_time: value}
                                     }
                                     metrics.append(metric_value)
+                else:
+                    return True
         except Exception as err:
             err_msg = "Failed to collect history metrics from Unity: %s, " \
                       "target:%s" % (six.text_type(err), target)
@@ -936,3 +943,23 @@ class UnityStorDriver(driver.StorageDriver):
                 constants.ResourceType.FILESYSTEM: consts.FILESYSTEM_CAP
             }
         }
+
+    def get_latest_perf_timestamp(self):
+        latest_time = 0
+        stats_file_command = 'lsdumps -prefix /dumps/iostats'
+        file_list = self.exec_ssh_command(stats_file_command)
+        file_line = file_list.split('\n')
+        for file in islice(file_line, 1, None):
+            if file:
+                file_arr = ' '.join(file.split()).split(' ')
+                if len(file_arr) > 1:
+                    file_name = file_arr[1]
+                    name_arr = file_name.split('_')
+                    file_time = '20%s%s' % (name_arr[3], name_arr[4])
+                    time_pattern = '%Y%m%d%H%M%S'
+                    tools = Tools()
+                    occur_time = tools.time_str_to_timestamp(
+                        file_time, time_pattern)
+                    if latest_time < occur_time:
+                        latest_time = occur_time
+        return latest_time
