@@ -2457,3 +2457,11 @@ class TestUNITYStorDriver(TestCase):
         metrics = UnityStorDriver(**ACCESS_INFO).collect_perf_metrics(
             context, storage_id, resource_metrics, start_time, end_time)
         self.assertEqual(metrics[0][1]['resource_id'], 'volume0')
+
+    @mock.patch.object(RestHandler, 'get_history_metrics')
+    def test_latest_perf_timestamp(self, mock_history):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_history.return_value = GET_VOLUME_READ_THR_PERF
+        last_time = UnityStorDriver(**ACCESS_INFO).get_latest_perf_timestamp(
+            context)
+        self.assertEqual(last_time, 1625726830000)

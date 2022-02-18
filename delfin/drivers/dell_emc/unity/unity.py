@@ -708,6 +708,7 @@ class UnityStorDriver(driver.StorageDriver):
                          end_time, metrics, path):
         page = 1
         bend = False
+        time_map = {'latest_time': 0}
         if not path:
             return
         while True:
@@ -721,7 +722,7 @@ class UnityStorDriver(driver.StorageDriver):
             if len(results['entries']) < 1:
                 break
             bend = UnityStorDriver.get_metric_value(
-                target, start_time, end_time, metrics, results)
+                target, start_time, end_time, metrics, results, time_map)
             page += 1
 
     def get_history_metrics(self, resource_type, targets,
@@ -747,7 +748,8 @@ class UnityStorDriver(driver.StorageDriver):
         return metrics
 
     @staticmethod
-    def get_metric_value(target, start_time, end_time, metrics, results):
+    def get_metric_value(target, start_time, end_time, metrics,
+                         results, time_map):
         try:
             if results is None:
                 return True
@@ -755,7 +757,7 @@ class UnityStorDriver(driver.StorageDriver):
             for entry in entries:
                 content = entry.get('content')
                 if not content:
-                    continue
+                    return True
                 if content.get('values'):
                     occur_time = int(time.mktime(time.strptime(
                         content.get('timestamp'),
@@ -767,12 +769,16 @@ class UnityStorDriver(driver.StorageDriver):
                                                UnityStorDriver.MS_PER_HOUR)
                     if occur_time < start_time:
                         return True
+                    if time_map.get('latest_time') <= occur_time \
+                            and time_map.get('latest_time') != 0:
+                        continue
+                    time_map['latest_time'] = occur_time
                     if start_time <= occur_time <= end_time:
                         for sp_value in content.get('values'):
                             perf_value = content.get('values').get(sp_value)
                             for key, value in perf_value.items():
                                 bfind = False
-                                value = round(float(value), 3)
+                                value = float(value)
                                 for metric in metrics:
                                     if metric.get('resource_id') == key and \
                                             metric.get('type') == target:
@@ -799,6 +805,8 @@ class UnityStorDriver(driver.StorageDriver):
                                         'values': {occur_time: value}
                                     }
                                     metrics.append(metric_value)
+                else:
+                    return True
         except Exception as err:
             err_msg = "Failed to collect history metrics from Unity: %s, " \
                       "target:%s" % (six.text_type(err), target)
@@ -865,8 +873,7 @@ class UnityStorDriver(driver.StorageDriver):
             if 'THROUGHPUT' in metric.get('type').upper() or \
                     'RESPONSETIME' in metric.get('type').upper():
                 for tm in metric.get('values'):
-                    metric['values'][tm] = round(
-                        metric['values'][tm] / units.k, 3)
+                    metric['values'][tm] = metric['values'][tm] / units.k
             value = constants.metric_struct(name=metric.get('type'),
                                             labels=labels,
                                             values=metric.get('values'))
@@ -936,3 +943,32 @@ class UnityStorDriver(driver.StorageDriver):
                 constants.ResourceType.FILESYSTEM: consts.FILESYSTEM_CAP
             }
         }
+
+    def get_latest_perf_timestamp(self, context):
+        latest_time = 0
+        page = 1
+        results = self.rest_handler.get_history_metrics(
+            UnityStorDriver.VOLUME_PERF_METRICS.get('readIops'), page)
+        if not results:
+            results = self.rest_handler.get_history_metrics(
+                UnityStorDriver.ETHERNET_PORT_METRICS.get('readIops'), page)
+        if results:
+            if 'entries' in results:
+                entries = results.get('entries')
+                for entry in entries:
+                    content = entry.get('content')
+                    if not content:
+                        return latest_time
+                    occur_time = int(time.mktime(time.strptime(
+                        content.get('timestamp'),
+                        AlertHandler.TIME_PATTERN))
+                    ) * AlertHandler.SECONDS_TO_MS
+                    hour_offset = \
+                        (time.mktime(time.localtime()) -
+                         time.mktime(time.gmtime()))\
+                        / AlertHandler.SECONDS_PER_HOUR
+                    occur_time = occur_time + (int(hour_offset) *
+                                               UnityStorDriver.MS_PER_HOUR)
+                    latest_time = occur_time
+                    break
+        return latest_time
