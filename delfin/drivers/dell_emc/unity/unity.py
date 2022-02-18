@@ -944,22 +944,31 @@ class UnityStorDriver(driver.StorageDriver):
             }
         }
 
-    def get_latest_perf_timestamp(self):
+    def get_latest_perf_timestamp(self, context):
         latest_time = 0
-        stats_file_command = 'lsdumps -prefix /dumps/iostats'
-        file_list = self.exec_ssh_command(stats_file_command)
-        file_line = file_list.split('\n')
-        for file in islice(file_line, 1, None):
-            if file:
-                file_arr = ' '.join(file.split()).split(' ')
-                if len(file_arr) > 1:
-                    file_name = file_arr[1]
-                    name_arr = file_name.split('_')
-                    file_time = '20%s%s' % (name_arr[3], name_arr[4])
-                    time_pattern = '%Y%m%d%H%M%S'
-                    tools = Tools()
-                    occur_time = tools.time_str_to_timestamp(
-                        file_time, time_pattern)
-                    if latest_time < occur_time:
-                        latest_time = occur_time
+        page = 1
+        results = self.rest_handler.get_history_metrics(
+            UnityStorDriver.VOLUME_PERF_METRICS.get('readIops'), page)
+        if not results:
+            results = self.rest_handler.get_history_metrics(
+                UnityStorDriver.ETHERNET_PORT_METRICS.get('readIops'), page)
+        if results:
+            if 'entries' in results:
+                entries = results.get('entries')
+                for entry in entries:
+                    content = entry.get('content')
+                    if not content:
+                        return latest_time
+                    occur_time = int(time.mktime(time.strptime(
+                        content.get('timestamp'),
+                        AlertHandler.TIME_PATTERN))
+                    ) * AlertHandler.SECONDS_TO_MS
+                    hour_offset = \
+                        (time.mktime(time.localtime()) -
+                         time.mktime(time.gmtime()))\
+                        / AlertHandler.SECONDS_PER_HOUR
+                    occur_time = occur_time + (int(hour_offset) *
+                                               UnityStorDriver.MS_PER_HOUR)
+                    latest_time = occur_time
+                    break
         return latest_time
