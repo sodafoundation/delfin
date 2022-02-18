@@ -583,12 +583,14 @@ class VplexStorageDriver(driver.StorageDriver):
                                     volume_value = virtual_volume.split(
                                         ',')
                                     native_volume_id = volume_value[2]
+                                    volume_id = native_volume_id.replace(
+                                        ':', '')
                                     view_map = {
                                         "name": view_name,
                                         "description": view_name,
                                         "storage_id": self.storage_id,
                                         "native_masking_view_id":
-                                            native_masking_view_id,
+                                            native_masking_view_id + volume_id,
                                         "native_port_group_id":
                                             "port_group_" + initiator_info,
                                         "native_volume_id":
