@@ -344,6 +344,135 @@ trap_result = {
     'resource_type': 'Storage',
     'location': 'eeeeeeeee'
 }
+resource_metrics = {
+    'storage': [
+        'iops', 'readIops', 'writeIops',
+        'responseTime'
+    ]
+}
+GET_PERF_DATA = {
+    "data": {
+        "performance": [
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "3"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "0"
+                },
+                "performancesampletime": "2021-04-14T14:27:20+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "4"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "0"
+                },
+                "performancesampletime": "2021-04-14T14:26:19+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "0"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "0"
+                },
+                "performancesampletime": "2021-04-14T14:25:19+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "0"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "0"
+                },
+                "performancesampletime": "2021-04-14T14:24:18+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "0"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "0"
+                },
+                "performancesampletime": "2021-04-14T14:23:18+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "0"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "0"
+                },
+                "performancesampletime": "2021-04-14T14:22:17+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "0"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "0"
+                },
+                "performancesampletime": "2021-04-14T14:21:17+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "0",
+                    "write": "0",
+                    "total": "0"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "11"
+                },
+                "performancesampletime": "2021-04-14T14:20:17+0800"
+            },
+            {
+                "IOPS": {
+                    "read": "1",
+                    "write": "1",
+                    "total": "2"
+                },
+                "responseTime": {
+                    "read": "0",
+                    "write": "0",
+                    "average": "1"
+                },
+                "performancesampletime": "2021-04-14T14:19:16+0800"
+            }
+        ]
+    }
+}
 
 
 class TestDS8KDriver(TestCase):
@@ -401,3 +530,22 @@ class TestDS8KDriver(TestCase):
         mock_contrl.return_value = GET_ALL_CONTROLLERS
         controller = DS8KDriver(**ACCESS_INFO).list_controllers(context)
         self.assertEqual(controller, contrl_result)
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_collect_perf_metrics(self, mock_history):
+        RestHandler.login = mock.Mock(return_value=None)
+        start_time = 1618381156000
+        end_time = 1618381579000
+        storage_id = '12345'
+        mock_history.side_effect = [GET_STORAGE, GET_PERF_DATA]
+        metrics = DS8KDriver(**ACCESS_INFO).collect_perf_metrics(
+            context, storage_id, resource_metrics, start_time, end_time)
+        self.assertEqual(metrics[0][1]['resource_id'], '12345')
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_latest_perf_timestamp(self, mock_history):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_history.side_effect = [GET_STORAGE, GET_PERF_DATA]
+        last_time = DS8KDriver(**ACCESS_INFO).get_latest_perf_timestamp(
+            context)
+        self.assertEqual(last_time, 1618381640000)

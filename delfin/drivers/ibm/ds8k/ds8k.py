@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import time
+
 import six
 from oslo_log import log
 from oslo_utils import units
@@ -18,7 +20,8 @@ from oslo_utils import units
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.ibm.ds8k import rest_handler, alert_handler
+from delfin.drivers.ibm.ds8k import rest_handler, alert_handler, consts
+from delfin.drivers.ibm.ds8k.alert_handler import AlertHandler
 
 LOG = log.getLogger(__name__)
 
@@ -259,3 +262,131 @@ class DS8KDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}:{port}'
+
+    def get_serial_number(self):
+        serial_number = None
+        system_info = \
+            self.rest_handler.get_rest_info('/api/v1/systems')
+        if system_info:
+            system_data = system_info.get('data', {}).get(
+                'systems', [])
+            if system_data:
+                for system in system_data:
+                    serial_number = system.get('sn')
+                    break
+        return serial_number
+
+    def handle_performance_data(self, metrics, serial_number,
+                                start_time, end_time, storage_id):
+        perf_url = '/api/v1/systems/%s/performance' % serial_number
+        perf_info = self.rest_handler.get_rest_info(perf_url)
+        if perf_info:
+            time_pattern = "%Y-%m-%dT%H:%M:%S%z"
+            perf_data = \
+                perf_info.get('data', {}).get('performance', [])
+            for perf in perf_data:
+                occur_time = int(time.mktime(time.strptime(
+                    perf.get('performancesampletime'),
+                    time_pattern))
+                ) * AlertHandler.SECONDS_TO_MS
+                if occur_time < start_time:
+                    break
+                if start_time <= occur_time <= end_time:
+                    DS8KDriver.search_record_from_metrics(
+                        metrics, 'iops', storage_id, occur_time,
+                        float(perf.get('IOPS', {}).get('total')))
+                    DS8KDriver.search_record_from_metrics(
+                        metrics, 'readIops', storage_id, occur_time,
+                        float(perf.get('IOPS', {}).get('read')))
+                    DS8KDriver.search_record_from_metrics(
+                        metrics, 'writeIops', storage_id, occur_time,
+                        float(perf.get('IOPS', {}).get('write')))
+                    DS8KDriver.search_record_from_metrics(
+                        metrics, 'responseTime', storage_id, occur_time,
+                        float(perf.get('responseTime', {}).get('average')))
+
+    @staticmethod
+    def search_record_from_metrics(metrics, metric_type, storage_id,
+                                   occur_time, value):
+        bfind = False
+        for metric in metrics:
+            if metric.get('resource_id') == storage_id and \
+                    metric.get('type') == metric_type:
+                bfind = True
+                metric['values'][occur_time] = value
+                break
+        if not bfind:
+            metric_value = {
+                'type': metric_type,
+                'resource_id': storage_id,
+                'values': {occur_time: value}
+            }
+            metrics.append(metric_value)
+
+    @staticmethod
+    def package_metrics(storage_id, resource_type, metrics, metrics_list):
+        for metric in metrics_list:
+            unit = consts.STORAGE_CAP[metric.get('type')]['unit']
+            labels = {
+                'storage_id': storage_id,
+                'resource_type': resource_type,
+                'resource_id': metric.get('resource_id'),
+                'type': 'RAW',
+                'unit': unit
+            }
+            value = constants.metric_struct(name=metric.get('type'),
+                                            labels=labels,
+                                            values=metric.get('values'))
+            metrics.append(value)
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time,
+                             end_time):
+        metrics = []
+        try:
+            if resource_metrics.get(constants.ResourceType.STORAGE):
+                storage_metrics = []
+                serial_number = self.get_serial_number()
+                if not serial_number:
+                    return metrics
+                self.handle_performance_data(storage_metrics, serial_number,
+                                             start_time, end_time, storage_id)
+                DS8KDriver.package_metrics(
+                    storage_id, constants.ResourceType.STORAGE,
+                    metrics, storage_metrics)
+        except Exception as err:
+            err_msg = "Failed to collect metrics from ds8k: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return metrics
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.STORAGE: consts.STORAGE_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        latest_time = 0
+        serial_number = self.get_serial_number()
+        if not serial_number:
+            return latest_time
+        perf_url = '/api/v1/systems/%s/performance' % serial_number
+        perf_info = self.rest_handler.get_rest_info(perf_url)
+        if perf_info:
+            time_pattern = "%Y-%m-%dT%H:%M:%S%z"
+            perf_data = \
+                perf_info.get('data', {}).get('performance', [])
+            for perf in perf_data:
+                occur_time = int(time.mktime(time.strptime(
+                    perf.get('performancesampletime'),
+                    time_pattern))
+                ) * AlertHandler.SECONDS_TO_MS
+                latest_time = occur_time
+                break
+        return latest_time
