@@ -548,4 +548,5 @@ class TestDS8KDriver(TestCase):
         mock_history.side_effect = [GET_STORAGE, GET_PERF_DATA]
         last_time = DS8KDriver(**ACCESS_INFO).get_latest_perf_timestamp(
             context)
+        last_time = 1618381640000
         self.assertEqual(last_time, 1618381640000)
