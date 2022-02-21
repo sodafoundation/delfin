@@ -466,6 +466,9 @@ def fake_getcmd_success(auth_data, transport_target, *var_names, **kwargs):
 
 def fake_get_capabilities(context, storage_id):
     return {'is_historic': False,
+            'resource_type': ['storage', 'storagePool', 'volume', 'controller',
+                              'port', 'disk', 'filesystem', 'share', 'quota',
+                              'qtree'],
             'resource_metrics': {
                 "storage": {
                     "throughput": {
