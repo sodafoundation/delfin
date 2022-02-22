@@ -653,9 +653,12 @@ class SSHHandler(object):
                 reduce_map = {}
                 for storage_view in storage_host_view:
                     port_number = storage_view.get('ports')
-                    native_port_group_id, native_port_group_name = \
-                        self.get_port_group_id_and_name(port_number,
-                                                        storage_port_list)
+                    port_group_dict = self.get_port_group_id_and_name(
+                        port_number, storage_port_list)
+                    native_port_group_id = port_group_dict.get(
+                        'native_port_group_id')
+                    native_port_group_name = port_group_dict.get(
+                        'native_port_group_name')
                     if native_port_group_name:
                         native_port_group_id = "port_group_" + \
                                                native_port_group_id
@@ -712,7 +715,11 @@ class SSHHandler(object):
                                     .format(port_name)
                                 native_port_group_name = "{0}" \
                                     .format(durable_id)
-        return native_port_group_id, native_port_group_name
+        port_group_dict = {
+            'native_port_group_id': native_port_group_id,
+            'native_port_group_name': native_port_group_name
+        }
+        return port_group_dict
 
     def list_masking_views(self, storage_id):
         try:
@@ -761,8 +768,11 @@ class SSHHandler(object):
                     native_host_group_name = 'native_storage_host_id'
                     if '.*.*' in view_name:
                         native_host_group_name = 'native_storage_host_group_id'
-                    native_port_group_id = \
-                        self.get_port_group_num(port_number, storage_port_list)
+                    native_port_group_dict = \
+                        self.get_port_group_id_and_name(port_number,
+                                                        storage_port_list)
+                    native_port_group_id = native_port_group_dict.get\
+                        ('native_port_group_id')
                     native_storage_host_id = self.get_storage_host_id(
                         host_list, mapped_id, initiators_list,
                         storage_host_groups, view_name)
@@ -808,22 +818,3 @@ class SSHHandler(object):
                         native_storage_host_id = host_group. \
                             get('native_storage_host_group_id')
         return native_storage_host_id
-
-    @staticmethod
-    def get_port_group_num(port_number, storage_port_list):
-        native_port_group_id = None
-        if port_number:
-            port_codes = port_number.split(',')
-            for port_code in port_codes:
-                if storage_port_list:
-                    for port in storage_port_list:
-                        port_name = port.get('name')
-                        if port_code in port_name:
-                            if native_port_group_id:
-                                native_port_group_id = "{0}{1}". \
-                                    format(native_port_group_id,
-                                           port_name)
-                            else:
-                                native_port_group_id = "{0}" \
-                                    .format(port_name)
-        return native_port_group_id
