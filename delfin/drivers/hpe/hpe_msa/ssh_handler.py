@@ -554,7 +554,7 @@ class SSHHandler(object):
             host_info_list = self.handle_xml_to_json(host_groups_info, 'host')
             if host_groups:
                 for host_group in host_groups:
-                    hosts_str = None
+                    hosts_str = []
                     storage_host_group_id = host_group.get('serial-number')
                     if host_info_list:
                         for host_info in host_info_list:
@@ -562,11 +562,7 @@ class SSHHandler(object):
                             host_group_id = host_info.get('host-group')
                             if host_id != 'NOHOST':
                                 if host_group_id == storage_host_group_id:
-                                    if hosts_str:
-                                        hosts_str = "{0},{1}".format(hosts_str,
-                                                                     host_id)
-                                    else:
-                                        hosts_str = "{0}".format(host_id)
+                                    hosts_str.append(host_id)
                                     storage_host_group_relation = {
                                         'storage_id': storage_id,
                                         'native_storage_host_group_id':
@@ -580,7 +576,7 @@ class SSHHandler(object):
                         "description": host_group.get('durable-id'),
                         "storage_id": storage_id,
                         "native_storage_host_group_id": storage_host_group_id,
-                        "storage_hosts": hosts_str
+                        "storage_hosts": ','.join(hosts_str)
                     }
                     host_group_list.append(host_group_map)
                 storage_host_groups_result = {
@@ -605,18 +601,14 @@ class SSHHandler(object):
                 volume_groups_info, 'volumes')
             if volume_groups_json:
                 for volume_group in volume_groups_json:
-                    volumes_str = None
+                    volumes_str = []
                     durable_id = volume_group.get('durable-id')
                     if volumes_json:
                         for volume_info in volumes_json:
                             group_key = volume_info.get('group-key')
                             volume_id = volume_info.get('durable-id')
                             if group_key == durable_id:
-                                if volumes_str:
-                                    volumes_str = "{0},{1}".format(
-                                        volumes_str, volume_id)
-                                else:
-                                    volumes_str = "{0}".format(volume_id)
+                                volumes_str.append(volume_id)
                                 volume_group_relation = {
                                     'storage_id': storage_id,
                                     'native_volume_group_id': durable_id,
@@ -629,7 +621,7 @@ class SSHHandler(object):
                         "description": volume_group.get('durable-id'),
                         "storage_id": storage_id,
                         "native_volume_group_id": durable_id,
-                        "volumes": volumes_str
+                        "volumes": ','.join(volumes_str)
                     }
                     volume_group_list.append(volume_groups_map)
                 volume_group_result = {
@@ -693,31 +685,20 @@ class SSHHandler(object):
 
     @staticmethod
     def get_port_group_id_and_name(port_number, storage_port_list):
-        native_port_group_id = None
-        native_port_group_name = None
+        native_port_group_id = []
+        native_port_group_name = []
         if port_number:
             port_codes = port_number.split(',')
             for port_code in port_codes:
-                if storage_port_list:
                     for port in storage_port_list:
                         port_name = port.get('name')
                         durable_id = port.get('native_port_id')
                         if port_code in port_name:
-                            if native_port_group_id:
-                                native_port_group_id = "{0}{1}". \
-                                    format(native_port_group_id,
-                                           port_name)
-                                native_port_group_name = "{0},{1}" \
-                                    .format(native_port_group_name,
-                                            durable_id)
-                            else:
-                                native_port_group_id = "{0}" \
-                                    .format(port_name)
-                                native_port_group_name = "{0}" \
-                                    .format(durable_id)
+                            native_port_group_id.append(port_name)
+                            native_port_group_name.append(durable_id)
         port_group_dict = {
-            'native_port_group_id': native_port_group_id,
-            'native_port_group_name': native_port_group_name
+            'native_port_group_id': ''.join(native_port_group_id),
+            'native_port_group_name': ''.join(native_port_group_name)
         }
         return port_group_dict
 
@@ -794,27 +775,24 @@ class SSHHandler(object):
     @staticmethod
     def get_storage_host_id(host_list, mapped_id, initiators_list,
                             storage_host_groups, view_name):
-        native_storage_host_id = None
-        if host_list:
-            for host_value in host_list:
-                host_durable_id = host_value.get('description')
-                if host_durable_id == mapped_id:
-                    native_storage_host_id = host_value.get(
-                        'native_storage_host_id')
-        if not native_storage_host_id:
-            if initiators_list:
-                for initiators in initiators_list:
-                    initiators_durable_id = initiators.get(
-                        'native_storage_host_initiator_id')
-                    if initiators_durable_id == mapped_id:
-                        native_storage_host_id = initiators.get(
-                            'native_storage_host_id')
-        if not native_storage_host_id:
-            if storage_host_groups:
-                group_name_list = view_name.split('.')
-                group_name = group_name_list[0]
-                for host_group in storage_host_groups:
-                    if group_name == host_group.get('name'):
-                        native_storage_host_id = host_group. \
-                            get('native_storage_host_group_id')
-        return native_storage_host_id
+        for host_value in host_list:
+            host_durable_id = host_value.get('description')
+            if host_durable_id == mapped_id:
+                native_storage_host_id = \
+                    host_value.get('native_storage_host_id')
+                return native_storage_host_id
+
+        for initiators in initiators_list:
+            initiators_durable_id = initiators.get(
+                'native_storage_host_initiator_id')
+            if initiators_durable_id == mapped_id:
+                native_storage_host_id = \
+                    initiators.get('native_storage_host_id')
+                return native_storage_host_id
+
+        group_name = view_name.split('.')[0]
+        for host_group in storage_host_groups:
+            if group_name == host_group.get('name'):
+                native_storage_host_id = \
+                    host_group.get('native_storage_host_group_id')
+                return native_storage_host_id

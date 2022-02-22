@@ -1246,7 +1246,7 @@ list_storage_host_groups = {
             'description': 'HGU',
             'storage_id': 'kkk',
             'native_storage_host_group_id': 'UNGROUPEDHOSTS',
-            'storage_hosts': None
+            'storage_hosts': ''
         }, {
             'name': 'HostGroup1',
             'description': 'HG0',
