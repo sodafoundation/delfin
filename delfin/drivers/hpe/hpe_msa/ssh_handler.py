@@ -735,8 +735,7 @@ class SSHHandler(object):
             LOG.error("Failed to get view  from msa")
             raise e
 
-    @staticmethod
-    def get_storage_view_list(storage_view_list, vol_type, storage_id,
+    def get_storage_view_list(self, storage_view_list, vol_type, storage_id,
                               storage_port_list, host_list, initiators_list,
                               storage_host_groups):
         views_list = []
@@ -755,44 +754,11 @@ class SSHHandler(object):
                     native_host_group_name = 'native_storage_host_id'
                     if '.*.*' in view_name:
                         native_host_group_name = 'native_storage_host_group_id'
-                    native_port_group_id = None
-                    if port_number:
-                        port_codes = port_number.split(',')
-                        for port_code in port_codes:
-                            if storage_port_list:
-                                for port in storage_port_list:
-                                    port_name = port.get('name')
-                                    if port_code in port_name:
-                                        if native_port_group_id:
-                                            native_port_group_id = "{0}{1}". \
-                                                format(native_port_group_id,
-                                                       port_name)
-                                        else:
-                                            native_port_group_id = "{0}" \
-                                                .format(port_name)
-                    native_storage_host_id = None
-                    if host_list:
-                        for host_value in host_list:
-                            host_durable_id = host_value.get('description')
-                            if host_durable_id == mapped_id:
-                                native_storage_host_id = host_value.get(
-                                    'native_storage_host_id')
-                    if not native_storage_host_id:
-                        if initiators_list:
-                            for initiators in initiators_list:
-                                initiators_durable_id = initiators.get(
-                                    'native_storage_host_initiator_id')
-                                if initiators_durable_id == mapped_id:
-                                    native_storage_host_id = initiators.get(
-                                        'native_storage_host_id')
-                    if not native_storage_host_id:
-                        if storage_host_groups:
-                            group_name_list = view_name.split('.')
-                            group_name = group_name_list[0]
-                            for host_group in storage_host_groups:
-                                if group_name == host_group.get('name'):
-                                    native_storage_host_id = host_group.\
-                                        get('native_storage_host_group_id')
+                    native_port_group_id = \
+                        self.get_port_group_num(port_number, storage_port_list)
+                    native_storage_host_id = self.get_storage_host_id(
+                        host_list, mapped_id, initiators_list,
+                        storage_host_groups, view_name)
                     view_map = {
                         "name": view_name,
                         "description": view_name,
@@ -807,3 +773,50 @@ class SSHHandler(object):
                             "port_group_" + native_port_group_id
                     views_list.append(view_map)
             return views_list
+
+    @staticmethod
+    def get_storage_host_id(host_list, mapped_id, initiators_list,
+                            storage_host_groups, view_name):
+        native_storage_host_id = None
+        if host_list:
+            for host_value in host_list:
+                host_durable_id = host_value.get('description')
+                if host_durable_id == mapped_id:
+                    native_storage_host_id = host_value.get(
+                        'native_storage_host_id')
+        if not native_storage_host_id:
+            if initiators_list:
+                for initiators in initiators_list:
+                    initiators_durable_id = initiators.get(
+                        'native_storage_host_initiator_id')
+                    if initiators_durable_id == mapped_id:
+                        native_storage_host_id = initiators.get(
+                            'native_storage_host_id')
+        if not native_storage_host_id:
+            if storage_host_groups:
+                group_name_list = view_name.split('.')
+                group_name = group_name_list[0]
+                for host_group in storage_host_groups:
+                    if group_name == host_group.get('name'):
+                        native_storage_host_id = host_group. \
+                            get('native_storage_host_group_id')
+        return native_storage_host_id
+
+    @staticmethod
+    def get_port_group_num(port_number, storage_port_list):
+        native_port_group_id = None
+        if port_number:
+            port_codes = port_number.split(',')
+            for port_code in port_codes:
+                if storage_port_list:
+                    for port in storage_port_list:
+                        port_name = port.get('name')
+                        if port_code in port_name:
+                            if native_port_group_id:
+                                native_port_group_id = "{0}{1}". \
+                                    format(native_port_group_id,
+                                           port_name)
+                            else:
+                                native_port_group_id = "{0}" \
+                                    .format(port_name)
+        return native_port_group_id
