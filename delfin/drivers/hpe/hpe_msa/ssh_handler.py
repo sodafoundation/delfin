@@ -560,20 +560,21 @@ class SSHHandler(object):
                         for host_info in host_info_list:
                             host_id = host_info.get('serial-number')
                             host_group_id = host_info.get('host-group')
-                            if host_group_id == storage_host_group_id:
-                                if hosts_str:
-                                    hosts_str = "{0},{1}".format(hosts_str,
-                                                                 host_id)
-                                else:
-                                    hosts_str = "{0}".format(host_id)
-                                storage_host_group_relation = {
-                                    'storage_id': storage_id,
-                                    'native_storage_host_group_id':
-                                        storage_host_group_id,
-                                    'native_storage_host_id': host_id
-                                }
-                                storage_host_grp_relation_list.\
-                                    append(storage_host_group_relation)
+                            if host_id != 'NOHOST':
+                                if host_group_id == storage_host_group_id:
+                                    if hosts_str:
+                                        hosts_str = "{0},{1}".format(hosts_str,
+                                                                     host_id)
+                                    else:
+                                        hosts_str = "{0}".format(host_id)
+                                    storage_host_group_relation = {
+                                        'storage_id': storage_id,
+                                        'native_storage_host_group_id':
+                                            storage_host_group_id,
+                                        'native_storage_host_id': host_id
+                                    }
+                                    storage_host_grp_relation_list.\
+                                        append(storage_host_group_relation)
                     host_group_map = {
                         "name": host_group.get('name'),
                         "description": host_group.get('durable-id'),
@@ -714,17 +715,21 @@ class SSHHandler(object):
                 storage_port_list = self.list_storage_ports(storage_id)
                 host_list = self.list_storage_hosts(storage_id)
                 initiators_list = self.list_storage_host_initiators(storage_id)
+                host_group_list = self.list_storage_host_groups(storage_id)
+                storage_host_group = host_group_list.get('storage_host_groups')
                 storage_host_view = self.handle_xml_to_json(
                     storage_view_info, 'volume-view-mappings')
                 views_list.extend(
                     self.get_storage_view_list(storage_host_view, 'volume',
                                                storage_id, storage_port_list,
-                                               host_list, initiators_list))
+                                               host_list, initiators_list,
+                                               storage_host_group))
                 storage_host_volume_groups_view = self.handle_xml_to_json(
                     storage_view_info, 'volume-group-view-mappings')
                 views_list.extend(self.get_storage_view_list(
                     storage_host_volume_groups_view, 'group',
-                    storage_id, storage_port_list, host_list, initiators_list))
+                    storage_id, storage_port_list, host_list, initiators_list,
+                    storage_host_group))
             return views_list
         except Exception as e:
             LOG.error("Failed to get view  from msa")
@@ -732,7 +737,8 @@ class SSHHandler(object):
 
     @staticmethod
     def get_storage_view_list(storage_view_list, vol_type, storage_id,
-                              storage_port_list, host_list, initiators_list):
+                              storage_port_list, host_list, initiators_list,
+                              storage_host_groups):
         views_list = []
         if storage_view_list:
             native_volume_group_name = 'native_volume_id'
@@ -746,6 +752,9 @@ class SSHHandler(object):
                     volume_id = host_view.get('parent-id')
                     port_number = host_view.get('ports')
                     view_name = host_view.get('nickname')
+                    native_host_group_name = 'native_storage_host_id'
+                    if '.*.*' in view_name:
+                        native_host_group_name = 'native_storage_host_group_id'
                     native_port_group_id = None
                     if port_number:
                         port_codes = port_number.split(',')
@@ -776,6 +785,14 @@ class SSHHandler(object):
                                 if initiators_durable_id == mapped_id:
                                     native_storage_host_id = initiators.get(
                                         'native_storage_host_id')
+                    if not native_storage_host_id:
+                        if storage_host_groups:
+                            group_name_list = view_name.split('.')
+                            group_name = group_name_list[0]
+                            for host_group in storage_host_groups:
+                                if group_name == host_group.get('name'):
+                                    native_storage_host_id = host_group.\
+                                        get('native_storage_host_group_id')
                     view_map = {
                         "name": view_name,
                         "description": view_name,
@@ -783,7 +800,7 @@ class SSHHandler(object):
                         "native_masking_view_id":
                             native_masking_view_id + volume_id,
                         native_volume_group_name: volume_id,
-                        "native_storage_host_id": native_storage_host_id
+                        native_host_group_name: native_storage_host_id
                     }
                     if native_port_group_id:
                         view_map['native_port_group_id'] = \
