@@ -1129,14 +1129,87 @@ controller_result = [
 ]
 
 list_storage_host_initiators = [
-    {'name': 'FC-port1', 'type': 'fc', 'alias': 'I2', 'storage_id': 'kkk',
-     'native_storage_host_initiator_id': 'I2',
-     'wwn': '21000024ff3dfed1',
-     'status': 'online',
-     'native_storage_host_id': 'NOHOST'
-     }
+    {
+        'name': 'FC-port1',
+        'type': 'fc',
+        'alias': 'I2',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I2',
+        'wwn': '21000024ff3dfed1',
+        'status': 'online',
+        'native_storage_host_id': 'NOHOST'
+    },
+    {
+        'name': 'FC-port2',
+        'type': 'fc',
+        'alias': 'I1',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I1',
+        'wwn': '10000090fa13870e',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+    },
+    {
+        'name': 'FC-port3',
+        'type': 'fc',
+        'alias': 'I0',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I0',
+        'wwn': '10000090fa13870f',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+    },
+    {
+        'name': 'rac01_01',
+        'type': 'fc',
+        'alias': 'I6',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I6',
+        'wwn': '500143801875548e',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000'
+    },
+    {
+        'name': 'rac01_02',
+        'type': 'fc',
+        'alias': 'I5',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I5',
+        'wwn': '5001438012097ed6',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000'
+    },
+    {
+        'name': 'rac02_01',
+        'type': 'fc',
+        'alias': 'I3',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I3',
+        'wwn': '50014380029ceb58',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000'
+    },
+    {
+        'name': 'rac02_02',
+        'type': 'fc',
+        'alias': 'I4',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I4',
+        'wwn': '500143801209031c',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000'
+    },
+    {
+        'name': 'FC-port1',
+        'type': 'fc',
+        'alias': 'I2',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I2',
+        'wwn': '21000024ff3dfed1',
+        'status': 'online',
+        'native_storage_host_id': 'NOHOST'
+    }
 ]
-
 
 list_storage_hosts = [
     {
