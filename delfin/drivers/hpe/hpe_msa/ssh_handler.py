@@ -653,28 +653,9 @@ class SSHHandler(object):
                 reduce_map = {}
                 for storage_view in storage_host_view:
                     port_number = storage_view.get('ports')
-                    native_port_group_id = None
-                    native_port_group_name = None
-                    if port_number:
-                        port_codes = port_number.split(',')
-                        for port_code in port_codes:
-                            if storage_port_list:
-                                for port in storage_port_list:
-                                    port_name = port.get('name')
-                                    durable_id = port.get('native_port_id')
-                                    if port_code in port_name:
-                                        if native_port_group_id:
-                                            native_port_group_id = "{0}{1}". \
-                                                format(native_port_group_id,
-                                                       port_name)
-                                            native_port_group_name = "{0},{1}"\
-                                                .format(native_port_group_name,
-                                                        durable_id)
-                                        else:
-                                            native_port_group_id = "{0}" \
-                                                .format(port_name)
-                                            native_port_group_name = "{0}" \
-                                                .format(durable_id)
+                    native_port_group_id, native_port_group_name = \
+                        self.get_port_group_id_and_name(port_number,
+                                                        storage_port_list)
                     if native_port_group_name:
                         native_port_group_id = "port_group_" + \
                                                native_port_group_id
@@ -706,6 +687,32 @@ class SSHHandler(object):
         except Exception as e:
             LOG.error("Failed to get port groups  from msa")
             raise e
+
+    @staticmethod
+    def get_port_group_id_and_name(port_number, storage_port_list):
+        native_port_group_id = None
+        native_port_group_name = None
+        if port_number:
+            port_codes = port_number.split(',')
+            for port_code in port_codes:
+                if storage_port_list:
+                    for port in storage_port_list:
+                        port_name = port.get('name')
+                        durable_id = port.get('native_port_id')
+                        if port_code in port_name:
+                            if native_port_group_id:
+                                native_port_group_id = "{0}{1}". \
+                                    format(native_port_group_id,
+                                           port_name)
+                                native_port_group_name = "{0},{1}" \
+                                    .format(native_port_group_name,
+                                            durable_id)
+                            else:
+                                native_port_group_id = "{0}" \
+                                    .format(port_name)
+                                native_port_group_name = "{0}" \
+                                    .format(durable_id)
+        return native_port_group_id, native_port_group_name
 
     def list_masking_views(self, storage_id):
         try:
