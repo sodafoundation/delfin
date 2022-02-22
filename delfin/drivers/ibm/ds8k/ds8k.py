@@ -294,16 +294,16 @@ class DS8KDriver(driver.StorageDriver):
                 if start_time <= occur_time <= end_time:
                     DS8KDriver.search_record_from_metrics(
                         metrics, 'iops', storage_id, occur_time,
-                        float(perf.get('IOPS', {}).get('total')))
+                        float(perf.get('IOPS', {}).get('total', 0)))
                     DS8KDriver.search_record_from_metrics(
                         metrics, 'readIops', storage_id, occur_time,
-                        float(perf.get('IOPS', {}).get('read')))
+                        float(perf.get('IOPS', {}).get('read', 0)))
                     DS8KDriver.search_record_from_metrics(
                         metrics, 'writeIops', storage_id, occur_time,
-                        float(perf.get('IOPS', {}).get('write')))
+                        float(perf.get('IOPS', {}).get('write', 0)))
                     DS8KDriver.search_record_from_metrics(
                         metrics, 'responseTime', storage_id, occur_time,
-                        float(perf.get('responseTime', {}).get('average')))
+                        float(perf.get('responseTime', {}).get('average', 0)))
 
     @staticmethod
     def search_record_from_metrics(metrics, metric_type, storage_id,
