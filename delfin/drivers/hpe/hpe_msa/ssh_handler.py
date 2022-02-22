@@ -771,8 +771,8 @@ class SSHHandler(object):
                     native_port_group_dict = \
                         self.get_port_group_id_and_name(port_number,
                                                         storage_port_list)
-                    native_port_group_id = native_port_group_dict.get\
-                        ('native_port_group_id')
+                    native_port_group_id = native_port_group_dict.get(
+                        'native_port_group_id')
                     native_storage_host_id = self.get_storage_host_id(
                         host_list, mapped_id, initiators_list,
                         storage_host_groups, view_name)

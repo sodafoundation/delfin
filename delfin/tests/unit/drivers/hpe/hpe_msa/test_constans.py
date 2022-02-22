@@ -1207,9 +1207,6 @@ list_storage_host_groups = {
     ]
 }
 
-
-
-
 list_volume_groups = {
     'volume_groups':
         [
