@@ -101,8 +101,8 @@ class TestHpeMsaStorageDriver(TestCase):
         mock_control.side_effect = [test_constans.LIST_HOST_INITIATORS]
         list_storage_host_initiators = HpeMsaStorDriver(**ACCESS_INFO)\
             .list_storage_host_initiators(context)
-        self.assertEqual(list_storage_host_initiators, test_constans
-                         .list_storage_host_initiators)
+        self.assertEqual(list_storage_host_initiators[0], test_constans
+                         .list_storage_host_initiators[0])
 
     @mock.patch.object(SSHPool, 'do_exec')
     @mock.patch.object(SSHPool, 'get')
