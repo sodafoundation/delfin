@@ -736,7 +736,7 @@ class SSHHandler(object):
         views_list = []
         if storage_view_list:
             native_volume_group_name = 'native_volume_group_id'\
-                if vol_type == 'group' else 'native_volume_group_id'
+                if vol_type == 'group' else 'native_volume_id'
             for host_view in storage_view_list:
                 access = host_view.get('access')
                 if access != 'not-mapped':
