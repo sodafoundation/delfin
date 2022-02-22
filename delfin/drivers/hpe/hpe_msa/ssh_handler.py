@@ -690,12 +690,12 @@ class SSHHandler(object):
         if port_number:
             port_codes = port_number.split(',')
             for port_code in port_codes:
-                    for port in storage_port_list:
-                        port_name = port.get('name')
-                        durable_id = port.get('native_port_id')
-                        if port_code in port_name:
-                            native_port_group_id.append(port_name)
-                            native_port_group_name.append(durable_id)
+                for port in storage_port_list:
+                    port_name = port.get('name')
+                    durable_id = port.get('native_port_id')
+                    if port_code in port_name:
+                        native_port_group_id.append(port_name)
+                        native_port_group_name.append(durable_id)
         port_group_dict = {
             'native_port_group_id': ''.join(native_port_group_id),
             'native_port_group_name': ''.join(native_port_group_name)
