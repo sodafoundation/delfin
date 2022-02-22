@@ -534,8 +534,8 @@ class TestDS8KDriver(TestCase):
     @mock.patch.object(RestHandler, 'get_rest_info')
     def test_collect_perf_metrics(self, mock_history):
         RestHandler.login = mock.Mock(return_value=None)
-        start_time = 1618381156000
-        end_time = 1618381579000
+        start_time = 1618181156000
+        end_time = 1618481579000
         storage_id = '12345'
         mock_history.side_effect = [GET_STORAGE, GET_PERF_DATA]
         metrics = DS8KDriver(**ACCESS_INFO).collect_perf_metrics(
