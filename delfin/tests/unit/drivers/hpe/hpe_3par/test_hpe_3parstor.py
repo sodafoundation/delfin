@@ -1257,7 +1257,7 @@ DISK_RESULT = [
         'firmware': 'FW_Rev111',
         'speed': 15000,
         'capacity': 599684808704,
-        'status': 'abnormal',
+        'status': 'degraded',
         'physical_type': 'fc',
         'logical_type': None,
         'health_score': None,

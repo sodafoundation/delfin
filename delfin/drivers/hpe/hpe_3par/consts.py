@@ -673,7 +673,7 @@ DISK_PHYSICAL_TYPE_MAP = {
 }
 DISK_STATUS_MAP = {
     'NORMAL': constants.DiskStatus.NORMAL,
-    'DEGRADED': constants.DiskStatus.ABNORMAL,
+    'DEGRADED': constants.DiskStatus.DEGRADED,
     'FAILED': constants.DiskStatus.ABNORMAL,
     'NEW': constants.DiskStatus.ABNORMAL
 }
