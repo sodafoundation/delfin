@@ -540,7 +540,7 @@ class TestDS8KDriver(TestCase):
         mock_history.side_effect = [GET_STORAGE, GET_PERF_DATA]
         metrics = DS8KDriver(**ACCESS_INFO).collect_perf_metrics(
             context, storage_id, resource_metrics, start_time, end_time)
-        self.assertEqual(metrics[0][1]['resource_id'], '12345')
+        self.assertEqual(metrics[1][0], 'readIops')
 
     @mock.patch.object(RestHandler, 'get_rest_info')
     def test_latest_perf_timestamp(self, mock_history):
