@@ -270,10 +270,9 @@ class DS8KDriver(driver.StorageDriver):
         if system_info:
             system_data = system_info.get('data', {}).get(
                 'systems', [])
-            if system_data:
-                for system in system_data:
-                    serial_number = system.get('sn')
-                    break
+            for system in system_data:
+                serial_number = system.get('sn')
+                break
         return serial_number
 
     def handle_performance_data(self, metrics, serial_number,
