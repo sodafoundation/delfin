@@ -1173,16 +1173,14 @@ list_storage_host_groups = {
             'description': 'HGU',
             'storage_id': 'kkk',
             'native_storage_host_group_id': 'UNGROUPEDHOSTS',
-            'storage_hosts': 'NOHOST,NOHOST'
-        },
-        {
+            'storage_hosts': None
+        }, {
             'name': 'HostGroup1',
             'description': 'HG0',
             'storage_id': 'kkk',
             'native_storage_host_group_id': '00c0ff26c2360000223a9f6101010000',
             'storage_hosts': '00c0ff26c2360000e2399f6101010000'
-        },
-        {
+        }, {
             'name': 'rac',
             'description': 'HG2',
             'storage_id': 'kkk',
@@ -1192,21 +1190,10 @@ list_storage_host_groups = {
         }
     ],
     'storage_host_grp_host_rels': [
-        {
-            'storage_id': 'kkk',
-            'native_storage_host_group_id': 'UNGROUPEDHOSTS',
-            'native_storage_host_id': 'NOHOST'
-        },
-        {
-            'storage_id': 'kkk',
-            'native_storage_host_group_id': 'UNGROUPEDHOSTS',
-            'native_storage_host_id': 'NOHOST'
-        },
-        {
-            'storage_id': 'kkk',
-            'native_storage_host_group_id': '00c0ff26c2360000223a9f6101010000',
-            'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
-        },
+        {'storage_id': 'kkk',
+         'native_storage_host_group_id': '00c0ff26c2360000223a9f6101010000',
+         'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+         },
         {
             'storage_id': 'kkk',
             'native_storage_host_group_id': '00c0ff26c4ea00008c81245b01010000',
@@ -1219,6 +1206,9 @@ list_storage_host_groups = {
         }
     ]
 }
+
+
+
 
 list_volume_groups = {
     'volume_groups':
