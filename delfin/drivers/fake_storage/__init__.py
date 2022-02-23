@@ -840,6 +840,11 @@ class FakeStorageDriver(driver.StorageDriver):
                         "unit": "IOPS",
                         "description": "Write operations per second"
                     },
+                    "ioSize": {
+                        "unit": "KB",
+                        "description": "The average size of IO requests "
+                                       "in KB."
+                    },
                     "readIoSize": {
                         "unit": "KB",
                         "description": "The average size of read IO requests "
@@ -847,7 +852,7 @@ class FakeStorageDriver(driver.StorageDriver):
                     },
                     "writeIoSize": {
                         "unit": "KB",
-                        "description": "The average size of read IO requests"
+                        "description": "The average size of write IO requests"
                                        " in KB."
                     },
                 },
