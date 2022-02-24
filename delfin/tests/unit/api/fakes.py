@@ -741,6 +741,11 @@ def fake_get_capabilities(context, storage_id):
                         "unit": "IOPS",
                         "description": "Write operations per second"
                     },
+                    "ioSize": {
+                        "unit": "KB",
+                        "description": "The average size of IO requests "
+                                       "in KB."
+                    },
                     "readIoSize": {
                         "unit": "KB",
                         "description": "The average size of read IO requests "
@@ -748,7 +753,7 @@ def fake_get_capabilities(context, storage_id):
                     },
                     "writeIoSize": {
                         "unit": "KB",
-                        "description": "The average size of read IO requests"
+                        "description": "The average size of write IO requests"
                                        " in KB."
                     },
                 },
