@@ -368,7 +368,7 @@ INIT_RESULT = [
         'native_storage_host_initiator_id': '50050763030813A2',
         'wwn': '50050763030813A2',
         'status': 'online',
-        'type': 'fc',
+        'type': 'unknown',
         'native_storage_host_id': 'myhost'
     }
 ]
