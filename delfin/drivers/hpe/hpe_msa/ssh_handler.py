@@ -552,21 +552,20 @@ class SSHHandler(object):
             for host_group in host_groups:
                 hosts_list = []
                 storage_host_group_id = host_group.get('serial-number')
-                if host_info_list:
-                    for host_info in host_info_list:
-                        host_id = host_info.get('serial-number')
-                        host_group_id = host_info.get('host-group')
-                        if host_id != 'NOHOST' and \
-                                host_group_id == storage_host_group_id:
-                            hosts_list.append(host_id)
-                            storage_host_group_relation = {
-                                'storage_id': storage_id,
-                                'native_storage_host_group_id':
-                                    storage_host_group_id,
-                                'native_storage_host_id': host_id
-                            }
-                            storage_host_grp_relation_list.\
-                                append(storage_host_group_relation)
+                for host_info in host_info_list:
+                    host_id = host_info.get('serial-number')
+                    host_group_id = host_info.get('host-group')
+                    if host_id != 'NOHOST' and \
+                            host_group_id == storage_host_group_id:
+                        hosts_list.append(host_id)
+                        storage_host_group_relation = {
+                            'storage_id': storage_id,
+                            'native_storage_host_group_id':
+                                storage_host_group_id,
+                            'native_storage_host_id': host_id
+                        }
+                        storage_host_grp_relation_list.\
+                            append(storage_host_group_relation)
                 host_group_map = {
                     "name": host_group.get('name'),
                     "description": host_group.get('durable-id'),
