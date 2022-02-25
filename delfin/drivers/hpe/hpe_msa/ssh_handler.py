@@ -510,7 +510,8 @@ class SSHHandler(object):
                     initiator_list.append(initiator_item)
             return initiator_list
         except Exception as e:
-            LOG.error("Failed to get initiators from msa")
+            LOG.error("Failed to get initiator "
+                      "from msa storage_id: %s" % storage_id)
             raise e
 
     def list_storage_hosts(self, storage_id):
@@ -518,16 +519,15 @@ class SSHHandler(object):
             hosts_info = self.ssh_pool.do_exec('show host-groups')
             host_list = []
             hosts = self.handle_xml_to_json(hosts_info, 'host')
-            host_map = {}
+            host_set = set()
             for host in hosts:
                 status = constants.HostStatus.NORMAL
                 os_type = constants.HostOSTypes.HP_UX
                 host_member_count = int(host.get('member-count'))
                 if host_member_count > 0:
-                    serial_number = host_map.get(host.get('serial-number'))
-                    if not serial_number:
-                        host_map[host.get('serial-number')] = \
-                            host.get('serial-number')
+                    serial_number = host.get('serial-number')
+                    if serial_number not in host_set:
+                        host_set.add(host.get('serial-number'))
                         host_dict = {
                             "name": host.get('name'),
                             "description": host.get('durable-id'),
@@ -540,53 +540,53 @@ class SSHHandler(object):
                         host_list.append(host_dict)
             return host_list
         except Exception as e:
-            LOG.error("Failed to get host from msa")
+            LOG.error("Failed to get host "
+                      "from msa storage_id: %s" % storage_id)
             raise e
 
     def list_storage_host_groups(self, storage_id):
         try:
             host_groups_info = self.ssh_pool.do_exec('show host-groups')
-            storage_host_groups_result = {}
             host_group_list = []
             storage_host_grp_relation_list = []
             host_groups = self.handle_xml_to_json(
                 host_groups_info, 'host-group')
             host_info_list = self.handle_xml_to_json(host_groups_info, 'host')
-            if host_groups:
-                for host_group in host_groups:
-                    hosts_list = []
-                    storage_host_group_id = host_group.get('serial-number')
-                    if host_info_list:
-                        for host_info in host_info_list:
-                            host_id = host_info.get('serial-number')
-                            host_group_id = host_info.get('host-group')
-                            if host_id != 'NOHOST':
-                                if host_group_id == storage_host_group_id:
-                                    hosts_list.append(host_id)
-                                    storage_host_group_relation = {
-                                        'storage_id': storage_id,
-                                        'native_storage_host_group_id':
-                                            storage_host_group_id,
-                                        'native_storage_host_id': host_id
-                                    }
-                                    storage_host_grp_relation_list.\
-                                        append(storage_host_group_relation)
-                    host_group_map = {
-                        "name": host_group.get('name'),
-                        "description": host_group.get('durable-id'),
-                        "storage_id": storage_id,
-                        "native_storage_host_group_id": storage_host_group_id,
-                        "storage_hosts": ','.join(hosts_list)
-                    }
-                    host_group_list.append(host_group_map)
-                storage_host_groups_result = {
-                    'storage_host_groups': host_group_list,
-                    'storage_host_grp_host_rels':
-                        storage_host_grp_relation_list
+            for host_group in host_groups:
+                hosts_list = []
+                storage_host_group_id = host_group.get('serial-number')
+                if host_info_list:
+                    for host_info in host_info_list:
+                        host_id = host_info.get('serial-number')
+                        host_group_id = host_info.get('host-group')
+                        if host_id != 'NOHOST' and \
+                                host_group_id == storage_host_group_id:
+                            hosts_list.append(host_id)
+                            storage_host_group_relation = {
+                                'storage_id': storage_id,
+                                'native_storage_host_group_id':
+                                    storage_host_group_id,
+                                'native_storage_host_id': host_id
+                            }
+                            storage_host_grp_relation_list.\
+                                append(storage_host_group_relation)
+                host_group_map = {
+                    "name": host_group.get('name'),
+                    "description": host_group.get('durable-id'),
+                    "storage_id": storage_id,
+                    "native_storage_host_group_id": storage_host_group_id,
+                    "storage_hosts": ','.join(hosts_list)
                 }
+                host_group_list.append(host_group_map)
+            storage_host_groups_result = {
+                'storage_host_groups': host_group_list,
+                'storage_host_grp_host_rels':
+                    storage_host_grp_relation_list
+            }
             return storage_host_groups_result
         except Exception as e:
-            LOG.error("Failed to get host_groups from msa")
+            LOG.error("Failed to get host_group from msa "
+                      "storage_id: %s" % storage_id)
             raise e
 
     def list_volume_groups(self, storage_id):
@@ -630,7 +630,8 @@ class SSHHandler(object):
                 }
             return volume_group_result
         except Exception as e:
-            LOG.error("Failed to get vol_groups from msa")
+            LOG.error("Failed to get volume_group"
+                      " from msa storage_id: %s" % storage_id)
             raise e
 
     def list_port_groups(self, storage_id):
@@ -680,7 +681,8 @@ class SSHHandler(object):
                     }
                     return result
         except Exception as e:
-            LOG.error("Failed to get port groups  from msa")
+            LOG.error("Failed to get port_group"
+                      " from msa storage_id: %s" % storage_id)
             raise e
 
     @staticmethod
@@ -727,7 +729,8 @@ class SSHHandler(object):
                     storage_host_group))
             return views_list
         except Exception as e:
-            LOG.error("Failed to get view  from msa")
+            LOG.error("Failed to get view "
+                      "from msa storage_id: %s" % storage_id)
             raise e
 
     def get_storage_view_list(self, storage_view_list, vol_type, storage_id,
