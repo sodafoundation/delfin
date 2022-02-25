@@ -334,7 +334,7 @@ class DS8KDriver(driver.StorageDriver):
                     "native_storage_host_initiator_id": port.get('wwpn'),
                     "wwn": port.get('wwpn'),
                     "status": status,
-                    "type": constants.InitiatorType.FC,
+                    "type": constants.InitiatorType.UNKNOWN,
                     "native_storage_host_id": port.get('host', {}).get('name')
                 }
                 initiator_list.append(init_result)
