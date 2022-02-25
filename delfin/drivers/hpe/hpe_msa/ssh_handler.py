@@ -589,7 +589,6 @@ class SSHHandler(object):
         try:
             volume_group_list = []
             volume_group_relation_list = []
-            volume_group_result = {}
             volume_groups_info = self.ssh_pool.do_exec('show volume-groups')
             volume_groups_json = self.handle_xml_to_json(
                 volume_groups_info, 'volume-groups')
