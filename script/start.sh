@@ -17,7 +17,7 @@ set -e
 
 case "$1" in
   api)
-    # Register database schema
+    # Register database schema..
     python3 script/create_db.py --config-file /etc/delfin/delfin.conf
     # Run API Server
     exec python3 delfin/cmd/api.py --config-file /etc/delfin/delfin.conf
