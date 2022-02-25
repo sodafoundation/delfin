@@ -18,7 +18,7 @@ from oslo_utils import units
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.ibm.ds8k import rest_handler, alert_handler
+from delfin.drivers.ibm.ds8k import rest_handler, alert_handler, consts
 
 LOG = log.getLogger(__name__)
 
@@ -267,7 +267,7 @@ class DS8KDriver(driver.StorageDriver):
     def list_storage_hosts(self, context):
         try:
             host_list = []
-            hosts = self.rest_handler.get_rest_info('/api/v1/hosts')
+            hosts = self.rest_handler.get_rest_info(consts.HOST_URL)
             if not hosts:
                 return host_list
             host_entries = hosts.get('data', {}).get('hosts', [])
@@ -294,12 +294,13 @@ class DS8KDriver(driver.StorageDriver):
     def list_masking_views(self, context):
         try:
             view_list = []
-            hosts = self.rest_handler.get_rest_info('/api/v1/hosts')
+            hosts = self.rest_handler.get_rest_info(consts.HOST_URL)
             if not hosts:
                 return view_list
             host_entries = hosts.get('data', {}).get('hosts', [])
             for host in host_entries:
-                view_url = '/api/v1/hosts/%s/mappings' % host.get('name')
+                view_url = '%s/%s/mappings' % (consts.HOST_URL,
+                                               host.get('name'))
                 views = self.rest_handler.get_rest_info(view_url)
                 if not views:
                     continue
@@ -322,7 +323,7 @@ class DS8KDriver(driver.StorageDriver):
     def list_storage_host_initiators(self, context):
         try:
             initiator_list = []
-            host_ports = self.rest_handler.get_rest_info('/api/v1/host_ports')
+            host_ports = self.rest_handler.get_rest_info(consts.HOST_PORT_URL)
             if not host_ports:
                 return initiator_list
             port_entries = host_ports.get('data', {}).get('host_ports', [])
