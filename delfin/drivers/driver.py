@@ -176,7 +176,9 @@ class StorageDriver(object):
 
     @staticmethod
     def get_capabilities(context, filters=None):
-        """Get capability of driver"""
+        """Get capability of driver, please refer to
+        STORAGE_CAPABILITIES_SCHEMA
+        in api/schemas/storage_capabilities_schema.py."""
         pass
 
     def list_storage_host_initiators(self, context):
