@@ -64,3 +64,7 @@ class HpeMsaStorDriver(driver.StorageDriver):
 
     def list_masking_views(self, context):
         return self.ssh_handler.list_masking_views(self.storage_id)
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'
