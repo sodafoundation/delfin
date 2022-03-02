@@ -1194,10 +1194,11 @@ HOSTS_DATA = [
                             'os_type': 'Unknown', 'status': 'offline'},
     {'name': 'h_g_1_0', 'storage_id': '12345',
      'native_storage_host_id': 'h_g_1_0', 'os_type': 'AIX',
-     'status': 'normal'}, {'name': 'iscsi_host_0', 'storage_id': '12345',
-                           'native_storage_host_id': 'iscsi_host_0',
-                           'os_type': 'AIX', 'status': 'offline',
-                           'ip_address': '126.0.0.2'},
+     'status': 'normal'},
+    {'name': 'iscsi_host_0', 'storage_id': '12345',
+     'native_storage_host_id': 'iscsi_host_0',
+     'os_type': 'AIX', 'status': 'offline',
+     'ip_address': '126.0.0.2'},
     {'name': 'iscsi_host-1_0', 'storage_id': '12345',
      'native_storage_host_id': 'iscsi_host-1_0', 'os_type': 'AIX',
      'status': 'offline', 'ip_address': '126.0.0.3'},
@@ -1205,10 +1206,11 @@ HOSTS_DATA = [
      'native_storage_host_id': 'iscsi_1_0', 'os_type': 'Unknown',
      'status': 'offline', 'ip_address': None},
     {'name': 'sas_g_0_0', 'storage_id': '12345',
-     'native_storage_host_id': 'sas_g_0_0', 'os_type': 'Unknown',
-     'status': 'offline'}, {'name': 'sas2_0', 'storage_id': '12345',
-                            'native_storage_host_id': 'sas2_0',
-                            'os_type': 'Unknown', 'status': 'offline'}]
+     'native_storage_host_id': 'sas_g_0_0', 'os_type': 'AIX',
+     'status': 'offline'},
+    {'name': 'sas2_0', 'storage_id': '12345',
+     'native_storage_host_id': 'sas2_0',
+     'os_type': 'Unknown', 'status': 'offline'}]
 HOST_GROUPS_INFO = """CLI> show host-groups -all
 Host Group            Host Response        Host Type
 No.  Name             No. Name
