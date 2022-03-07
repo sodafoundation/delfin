@@ -189,3 +189,15 @@ The logs can be uniquely identified based upon the timestamp.
   4. [Optional] If prometheus is configured, monitor the performance metrics on prometheus server at default location
 
      http://localhost:9090/graph
+     
+# Installing Pycharm
+  Note: Make sure that you have Python version 3.6 and above
+  
+  You can install PyCharm by running the following command in the terminal 
+  ```
+  sudo snap install [pycharm-professional|pycharm-community] --classic
+  ```
+  The professional version is the paid version that allows for both scientific and web python development.
+  
+  If needed you can also download Pycharm manually by visiting this [link](https://www.jetbrains.com/pycharm/download/#section=linux)
+  
