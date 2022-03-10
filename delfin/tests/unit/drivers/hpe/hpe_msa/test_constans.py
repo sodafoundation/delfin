@@ -1241,7 +1241,7 @@ list_storage_hosts = [
 
 list_storage_host_groups = {
     'storage_host_groups': [
-       {
+        {
             'name': 'HostGroup1',
             'description': 'HG0',
             'storage_id': 'kkk',
