@@ -1,6 +1,6 @@
 import hashlib
 import time
-
+import json
 import six
 from oslo_log import log as logging
 from operator import itemgetter
@@ -550,30 +550,32 @@ class SSHHandler(object):
                 host_groups_info, 'host-group')
             host_info_list = self.handle_xml_to_json(host_groups_info, 'host')
             for host_group in host_groups:
-                hosts_list = []
-                storage_host_group_id = host_group.get('serial-number')
-                for host_info in host_info_list:
-                    host_id = host_info.get('serial-number')
-                    host_group_id = host_info.get('host-group')
-                    if host_id != 'NOHOST' and \
-                            host_group_id == storage_host_group_id:
-                        hosts_list.append(host_id)
-                        storage_host_group_relation = {
-                            'storage_id': storage_id,
-                            'native_storage_host_group_id':
-                                storage_host_group_id,
-                            'native_storage_host_id': host_id
-                        }
-                        storage_host_grp_relation_list.\
-                            append(storage_host_group_relation)
-                host_group_map = {
-                    "name": host_group.get('name'),
-                    "description": host_group.get('durable-id'),
-                    "storage_id": storage_id,
-                    "native_storage_host_group_id": storage_host_group_id,
-                    "storage_hosts": ','.join(hosts_list)
-                }
-                host_group_list.append(host_group_map)
+                member_count = int(host_group.get('member-count'))
+                if member_count > 0:
+                    hosts_list = []
+                    storage_host_group_id = host_group.get('serial-number')
+                    for host_info in host_info_list:
+                        host_id = host_info.get('serial-number')
+                        host_group_id = host_info.get('host-group')
+                        if host_id != 'NOHOST' and \
+                                host_group_id == storage_host_group_id:
+                            hosts_list.append(host_id)
+                            storage_host_group_relation = {
+                                'storage_id': storage_id,
+                                'native_storage_host_group_id':
+                                    storage_host_group_id,
+                                'native_storage_host_id': host_id
+                            }
+                            storage_host_grp_relation_list.\
+                                append(storage_host_group_relation)
+                    host_group_map = {
+                        "name": host_group.get('name'),
+                        "description": host_group.get('durable-id'),
+                        "storage_id": storage_id,
+                        "native_storage_host_group_id": storage_host_group_id,
+                        "storage_hosts": ','.join(hosts_list)
+                    }
+                    host_group_list.append(host_group_map)
             storage_host_groups_result = {
                 'storage_host_groups': host_group_list,
                 'storage_host_grp_host_rels':
