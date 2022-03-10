@@ -1241,13 +1241,7 @@ list_storage_hosts = [
 
 list_storage_host_groups = {
     'storage_host_groups': [
-        {
-            'name': '-ungrouped-',
-            'description': 'HGU',
-            'storage_id': 'kkk',
-            'native_storage_host_group_id': 'UNGROUPEDHOSTS',
-            'storage_hosts': ''
-        }, {
+       {
             'name': 'HostGroup1',
             'description': 'HG0',
             'storage_id': 'kkk',
