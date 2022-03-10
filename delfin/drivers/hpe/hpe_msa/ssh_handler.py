@@ -1,6 +1,6 @@
 import hashlib
 import time
-import json
+
 import six
 from oslo_log import log as logging
 from operator import itemgetter
