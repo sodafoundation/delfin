@@ -702,6 +702,234 @@ class VMaxRest(object):
                                 list()) if response else list()
         return port_ids
 
+    def get_disk(self, array, version, device_id):
+        """Get a VMax disk from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param device_id: the disk device id
+        :returns: disk dict
+        :raises: StorageBackendException
+        """
+        disk_dict = self.get_resource(
+            array, SYSTEM, 'disk', resource_name=device_id,
+            version=version)
+        if not disk_dict:
+            exception_message = (_("Disk %(deviceID)s not found.")
+                                 % {'deviceID': device_id})
+            LOG.error(exception_message)
+            raise exception.DiskNotFound(device_id)
+        return disk_dict
+
+    def get_disk_list(self, array, version, params=None):
+        """Get a filtered list of VMax disks from array.
+        Filter parameters are required as the unfiltered disk list could be
+        very large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: disk_ids -- list
+        """
+        disk_dict_list = self.get_resource(
+            array, SYSTEM, 'disk', version=version, params=params)
+        return disk_dict_list.get('disk_ids', [])
+
+    def get_initiator(self, array, version, initiator_id):
+        """Get a VMax initiator from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param initiator_id: the initiator id
+        :returns: initiator dict
+        :raises: StorageHostInitiatorNotFound
+        """
+        initiator_dict = self.get_resource(
+            array, SLOPROVISIONING, 'initiator', resource_name=initiator_id,
+            version=version)
+        if not initiator_dict:
+            exception_message = (_("Initiator %(initiator_id)s not found.")
+                                 % {'initiator_id': initiator_id})
+            LOG.error(exception_message)
+            raise exception.StorageHostInitiatorNotFound(initiator_id)
+        return initiator_dict
+
+    def get_initiator_list(self, array, version, params=None):
+        """Get a filtered list of VMax initiators from array.
+        Filter parameters are required as the unfiltered initiator list
+        could bevery large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: initiatorId -- list
+        """
+        initiator_dict_list = self.get_resource(
+            array, SLOPROVISIONING, 'initiator',
+            version=version, params=params)
+        return initiator_dict_list.get('initiatorId', [])
+
+    def get_host(self, array, version, host_id):
+        """Get a VMax host from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param host_id: the host id
+        :returns: host dict
+        :raises: StorageHostNotFound
+        """
+        host_dict = self.get_resource(
+            array, SLOPROVISIONING, 'host',
+            resource_name=host_id,
+            version=version)
+        if not host_dict:
+            exception_message = (_("Host %(host_id)s not found.")
+                                 % {'host_id': host_id})
+            LOG.error(exception_message)
+            raise exception.StorageHostNotFound(host_id)
+        return host_dict
+
+    def get_host_list(self, array, version, params=None):
+        """Get a filtered list of VMax hosts from array.
+        Filter parameters are required as the unfiltered host list
+        could bevery large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: hostId -- list
+        """
+        host_dict_list = self.get_resource(
+            array, SLOPROVISIONING, 'host',
+            version=version, params=params)
+        return host_dict_list.get('hostId', [])
+
+    def get_host_group(self, array, version, host_group_id):
+        """Get a VMax host group from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param host_group_id: the host group id
+        :returns: host group dict
+        :raises: StorageHostGroupNotFound
+        """
+        host_group_dict = self.get_resource(
+            array, SLOPROVISIONING, 'hostgroup',
+            resource_name=host_group_id,
+            version=version)
+        if not host_group_dict:
+            exception_message = (_("HostGroup %(host_group_id)s not found.")
+                                 % {'host_group_id': host_group_id})
+            LOG.error(exception_message)
+            raise exception.StorageHostGroupNotFound(host_group_id)
+        return host_group_dict
+
+    def get_host_group_list(self, array, version, params=None):
+        """Get a filtered list of VMax host groups from array.
+        Filter parameters are required as the unfiltered host list
+        could bevery large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: hostGroupId -- list
+        """
+        host_group_dict_list = self.get_resource(
+            array, SLOPROVISIONING, 'hostgroup',
+            version=version, params=params)
+        return host_group_dict_list.get('hostGroupId', [])
+
+    def get_port_group(self, array, version, port_group_id):
+        """Get a VMax port group from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param port_group_id: the port group id
+        :returns: port group dict
+        :raises: PortGroupNotFound
+        """
+        port_group_dict = self.get_resource(
+            array, SLOPROVISIONING, 'portgroup',
+            resource_name=port_group_id,
+            version=version)
+        if not port_group_dict:
+            exception_message = (_("PortGroup %(port_group_id)s not found.")
+                                 % {'port_group_id': port_group_id})
+            LOG.error(exception_message)
+            raise exception.PortGroupNotFound(port_group_id)
+        return port_group_dict
+
+    def get_port_group_list(self, array, version, params=None):
+        """Get a filtered list of VMax port groups from array.
+        Filter parameters are required as the unfiltered host list
+        could bevery large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: portGroupId -- list
+        """
+        port_group_dict_list = self.get_resource(
+            array, SLOPROVISIONING, 'portgroup',
+            version=version, params=params)
+        return port_group_dict_list.get('portGroupId', [])
+
+    def get_volume_group(self, array, version, storage_group_id):
+        """Get a VMax storage/volume group from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param storage_group_id: the storage group id
+        :returns: volume group dict
+        :raises: VolumeGroupNotFound
+        """
+        storage_group_dict = self.get_resource(
+            array, SLOPROVISIONING, 'storagegroup',
+            resource_name=storage_group_id,
+            version=version)
+        if not storage_group_dict:
+            exception_message = (_("StorageGroup %(sid)s not found.")
+                                 % {'id': storage_group_id})
+            LOG.error(exception_message)
+            raise exception.VolumeGroupNotFound(storage_group_id)
+        return storage_group_dict
+
+    def get_volume_group_list(self, array, version, params=None):
+        """Get a filtered list of VMax storage groups from array.
+        Filter parameters are required as the unfiltered host list
+        could bevery large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: storageGroupId -- list
+        """
+        storage_group_dict_list = self.get_resource(
+            array, SLOPROVISIONING, 'storagegroup',
+            version=version, params=params)
+        return storage_group_dict_list.get('storageGroupId', [])
+
+    def get_masking_view(self, array, version, masking_view_id):
+        """Get a VMax masking view from array.
+        :param array: the array serial number
+        :param version: the unisphere version  -- int
+        :param masking_view_id: the masking view id
+        :returns: masking view dict
+        :raises: MaskingViewNotFound
+        """
+        masking_view_dict = self.get_resource(
+            array, SLOPROVISIONING, 'maskingview',
+            resource_name=masking_view_id,
+            version=version)
+        if not masking_view_dict:
+            exception_message = (_("Masking View %(id)s not found.")
+                                 % {'id': masking_view_id})
+            LOG.error(exception_message)
+            raise exception.MaskingViewNotFound(masking_view_id)
+        return masking_view_dict
+
+    def get_masking_view_list(self, array, version, params=None):
+        """Get a filtered list of VMax masking views from array.
+        Filter parameters are required as the unfiltered initiator list
+        could bevery large and could affect performance if called often.
+        :param array: the array serial number
+        :param version: the unisphere version
+        :param params: filter parameters
+        :returns: maskingViewId -- list
+        """
+        masking_view_dict_list = self.get_resource(
+            array, SLOPROVISIONING, 'maskingview',
+            version=version, params=params)
+        return masking_view_dict_list.get('maskingViewId', [])
+
     def post_request(self, target_uri, payload):
         """Generate  a POST request.
         :param target_uri: the uri to query from unipshere REST API
@@ -976,7 +1204,7 @@ class VMaxRest(object):
          """
         feport_metrics = []
         for k in metrics.keys():
-            vmax_key = constants.RDFDIRECTOR_METRICS.get(k)
+            vmax_key = constants.FEPORT_METRICS.get(k)
             if vmax_key:
                 feport_metrics.append(vmax_key)
 
@@ -1092,7 +1320,7 @@ class VMaxRest(object):
                 if metrics_res:
                     label = {
                         'resource_id': key_dict.get('portId'),
-                        'resource_name': 'BEPort_' +
+                        'resource_name': 'RDFPort_' +
                                          director_key_dict.get('directorId') +
                                          '_' + key_dict.get('portId'),
                         'resource_type': delfin_const.ResourceType.PORT,
@@ -1118,6 +1346,42 @@ class VMaxRest(object):
         rdf_metrics = self.get_rdfport_metrics(
             array, metrics, start_time, end_time)
         return be_metrics, fe_metrics, rdf_metrics
+
+    def get_disk_metrics(self, array, metrics, start_time, end_time):
+        """Get a disk performance metrics from VMAX unipshere REST API.
+        :param array: the array serial number
+        :param metrics: required metrics
+        :param start_time: start time for collection
+        :param end_time: end time for collection
+        :returns: message -- response from unipshere REST API
+         """
+        disk_metrics = []
+        for k in metrics.keys():
+            vmax_key = constants.DISK_METRICS.get(k)
+            if vmax_key:
+                disk_metrics.append(vmax_key)
+
+        keys = self.get_resource_keys(array, 'Disk')
+        keys_dict = None
+        if keys:
+            keys_dict = keys.get('diskInfo', None)
+
+        metrics_list = []
+        for key_dict in keys_dict:
+            payload = {'diskId': key_dict.get('diskId')}
+            metrics_res = self.get_resource_metrics(
+                array, start_time, end_time, 'Disk',
+                disk_metrics, payload=payload)
+            if metrics_res:
+                label = {
+                    'resource_id': key_dict.get('diskId'),
+                    'resource_name': 'Disk_' + key_dict.get('diskId'),
+                    'resource_type': delfin_const.ResourceType.DISK,
+                    'metrics': metrics_res
+                }
+                metrics_list.append(label)
+
+        return metrics_list
 
     def list_pagination(self, list_info):
         """Process lists under or over the maxPageSize

@@ -57,7 +57,6 @@ class RequestContext(context.RequestContext):
         super(RequestContext, self).__init__(
             auth_token=auth_token,
             user=user_id or user,
-            tenant=project_id or tenant,
             domain=kwargs.pop('domain', None),
             user_domain=kwargs.pop('user_domain', None),
             project_domain=kwargs.pop('project_domain', None),
@@ -70,6 +69,7 @@ class RequestContext(context.RequestContext):
             roles=roles)
 
         self.user_id = self.user
+        self.tenant = project_id or tenant
         self.project_id = self.tenant
 
         self.read_deleted = read_deleted

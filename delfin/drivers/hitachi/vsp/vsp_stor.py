@@ -64,7 +64,16 @@ class HitachiVspDriver(driver.StorageDriver):
                      "HNASS": constants.PortType.OTHER,
                      "HNASU": constants.PortType.OTHER
                      }
-
+    DISK_STATUS_TYPE = {"NML": constants.DiskStatus.NORMAL,
+                        "CPY": constants.DiskStatus.NORMAL,
+                        "CPI": constants.DiskStatus.NORMAL,
+                        "RSV": constants.DiskStatus.NORMAL,
+                        "FAI": constants.DiskStatus.ABNORMAL,
+                        "BLK": constants.DiskStatus.ABNORMAL,
+                        "WAR": constants.DiskStatus.ABNORMAL,
+                        "UNK": constants.DiskStatus.NORMAL,
+                        "Unknown": constants.DiskStatus.NORMAL
+                        }
     TIME_PATTERN = '%Y-%m-%dT%H:%M:%S'
     AUTO_PORT_SPEED = 8 * units.Gi
 
@@ -75,6 +84,9 @@ class HitachiVspDriver(driver.StorageDriver):
     TRAP_NICKNAME_OID = '1.3.6.1.4.1.116.5.11.4.2.2'
     OID_SEVERITY = '1.3.6.1.6.3.1.1.4.1.0'
     SECONDS_TO_MS = 1000
+    ALERT_START = 1
+    CTL_ALERT_COUNT = 255
+    DKC_ALERT_COUNT = 10239
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -356,13 +368,18 @@ class HitachiVspDriver(driver.StorageDriver):
             if disks is not None:
                 disk_entries = disks.get('data')
                 for disk in disk_entries:
-                    status = constants.DiskStatus.ABNORMAL
-                    if disk.get('status' == 'NML'):
-                        status = constants.DiskStatus.NORMAL
-                    physical_type = \
-                        HitachiVspDriver.DISK_PHYSICAL_TYPE_MAP.get(
-                            disk.get('driveTypeName'),
-                            constants.DiskPhysicalType.UNKNOWN)
+                    status = HitachiVspDriver.DISK_STATUS_TYPE.get(
+                        disk.get('status'), constants.DiskStatus.NORMAL)
+                    if disk.get('driveTypeName'):
+                        type_name = 'SSD' if 'SSD' in \
+                                             disk.get('driveTypeName').upper()\
+                            else disk.get('driveTypeName')
+                        physical_type = \
+                            HitachiVspDriver.DISK_PHYSICAL_TYPE_MAP.get(
+                                type_name,
+                                constants.DiskPhysicalType.UNKNOWN)
+                    else:
+                        physical_type = constants.DiskPhysicalType.UNKNOWN
                     logical_type = HitachiVspDriver.DISK_LOGIC_TYPE_MAP.get(
                         disk.get('usageType'),
                         constants.DiskLogicalType.UNKNOWN)
@@ -371,8 +388,9 @@ class HitachiVspDriver(driver.StorageDriver):
                         'storage_id': self.storage_id,
                         'native_disk_id': disk.get('driveLocationId'),
                         'serial_number': disk.get('serialNumber'),
-                        'speed': int(disk.get('driveSpeed')),
-                        'capacity': int(disk.get('totalCapacity') * units.Gi),
+                        'speed': int(disk.get('driveSpeed', 0)),
+                        'capacity':
+                            int(disk.get('totalCapacity', 0)) * units.Gi,
                         'status': status,
                         'physical_type': physical_type,
                         'logical_type': logical_type,
@@ -389,6 +407,8 @@ class HitachiVspDriver(driver.StorageDriver):
 
     @staticmethod
     def parse_queried_alerts(alerts, alert_list, query_para=None):
+        if not alerts:
+            return
         for alert in alerts:
             occur_time = int(time.mktime(time.strptime(
                 alert.get('occurenceTime'),
@@ -417,9 +437,15 @@ class HitachiVspDriver(driver.StorageDriver):
     def list_alerts(self, context, query_para=None):
         alert_list = []
         if self.rest_handler.device_model in consts.SUPPORTED_VSP_SERIES:
-            alerts_info_ctl1 = self.resthanlder.get_alerts('type=CTL1')
-            alerts_info_ctl2 = self.resthanlder.get_alerts('type=CTL2')
-            alerts_info_dkc = self.resthanlder.get_alerts('type=DKC')
+            alerts_info_ctl1 = self.rest_handler.get_alerts(
+                'type=CTL1', HitachiVspDriver.ALERT_START,
+                HitachiVspDriver.CTL_ALERT_COUNT)
+            alerts_info_ctl2 = self.rest_handler.get_alerts(
+                'type=CTL2', HitachiVspDriver.ALERT_START,
+                HitachiVspDriver.CTL_ALERT_COUNT)
+            alerts_info_dkc = self.rest_handler.get_alerts(
+                'type=DKC', HitachiVspDriver.ALERT_START,
+                HitachiVspDriver.DKC_ALERT_COUNT)
             HitachiVspDriver.parse_queried_alerts(alerts_info_ctl1,
                                                   alert_list, query_para)
             HitachiVspDriver.parse_queried_alerts(alerts_info_ctl2,

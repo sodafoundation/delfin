@@ -81,7 +81,25 @@ class VMAXStorageDriver(driver.StorageDriver):
         return self.client.list_ports(self.storage_id)
 
     def list_disks(self, context):
-        raise NotImplementedError
+        return self.client.list_disks(self.storage_id)
+
+    def list_storage_host_initiators(self, context):
+        return self.client.list_storage_host_initiators(self.storage_id)
+
+    def list_storage_hosts(self, context):
+        return self.client.list_storage_hosts(self.storage_id)
+
+    def list_storage_host_groups(self, context):
+        return self.client.list_storage_host_groups(self.storage_id)
+
+    def list_port_groups(self, context):
+        return self.client.list_port_groups(self.storage_id)
+
+    def list_volume_groups(self, context):
+        return self.client.list_volume_groups(self.storage_id)
+
+    def list_masking_views(self, context):
+        return self.client.list_masking_views(self.storage_id)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -139,6 +157,14 @@ class VMAXStorageDriver(driver.StorageDriver):
                     start_time, end_time)
                 metrics.extend(port_metrics)
 
+            # disk metrics
+            if resource_metrics.get(constants.ResourceType.DISK):
+                disk_metrics = self.client.get_disk_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.DISK),
+                    start_time, end_time)
+                metrics.extend(disk_metrics)
+
         except Exception:
             LOG.error("Failed to collect metrics from VMAX")
             raise
@@ -155,5 +181,6 @@ class VMAXStorageDriver(driver.StorageDriver):
                 constants.ResourceType.STORAGE_POOL: consts.POOL_CAP,
                 constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
                 constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP,
             }
         }

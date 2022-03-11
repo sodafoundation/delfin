@@ -254,3 +254,10 @@ class RestHandler(RestClient):
               (RestHandler.COMM_URL, self.storage_device_id, port_id)
         result_json = self.get_rest_info(url)
         return result_json
+
+    def get_alerts(self, param, start, end):
+        url = '%s/%s/alerts?%s&start=%s&count=%s' % (RestHandler.COMM_URL,
+                                                     self.storage_device_id,
+                                                     param, start, end)
+        result_json = self.get_rest_info(url)
+        return result_json

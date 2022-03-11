@@ -29,16 +29,19 @@ class StorageStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
+    UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED, UNKNOWN)
 
 
 class StoragePoolStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    UNKNOWN = 'unknown'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, UNKNOWN)
 
 
 class VolumeStatus(object):
@@ -141,9 +144,10 @@ class PortLogicalType(object):
 class DiskStatus(object):
     NORMAL = 'normal'
     ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
     OFFLINE = 'offline'
 
-    ALL = (NORMAL, ABNORMAL, OFFLINE)
+    ALL = (NORMAL, ABNORMAL, DEGRADED, OFFLINE)
 
 
 class DiskPhysicalType(object):
@@ -242,8 +246,9 @@ class HostStatus(object):
     NORMAL = 'normal'
     OFFLINE = 'offline'
     ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
 
-    ALL = (NORMAL, OFFLINE, ABNORMAL)
+    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED)
 
 
 class HostOSTypes(object):
@@ -258,9 +263,12 @@ class HostOSTypes(object):
     WINDOWS_SERVER_2012 = 'Windows Server 2012'
     ORACLE_VM = 'Oracle VM'
     OPEN_VMS = 'Open VMS'
+    MAC_OS = 'Mac OS'
+    UNKNOWN = 'Unknown'
 
     ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
-           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS)
+           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS, MAC_OS,
+           UNKNOWN)
 
 
 class InitiatorStatus(object):
@@ -269,6 +277,17 @@ class InitiatorStatus(object):
     UNKNOWN = 'unknown'
 
     ALL = (ONLINE, OFFLINE, UNKNOWN)
+
+
+class InitiatorType(object):
+    FC = 'fc'
+    ISCSI = 'iscsi'
+    NVME_OVER_ROCE = 'roce'
+    SAS = 'sas'
+    NVME_OVER_FABRIC = 'nvme-of'
+    UNKNOWN = 'unknown'
+
+    ALL = (FC, ISCSI, NVME_OVER_ROCE, SAS, NVME_OVER_FABRIC, UNKNOWN)
 
 
 # Enumerations for alert severity
@@ -404,6 +423,9 @@ class TelemetryCollection(object):
     """Default performance collection interval"""
     DEF_PERFORMANCE_COLLECTION_INTERVAL = 900
     DEF_PERFORMANCE_HISTORY_ON_RESCHEDULE = 1800
+    DEF_PERFORMANCE_TIMESTAMP_OVERLAP = 60
+    """Maximum failed task retry window in seconds"""
+    MAX_FAILED_TASK_RETRY_WINDOW = 7200
 
 
 class TelemetryTaskStatus(object):

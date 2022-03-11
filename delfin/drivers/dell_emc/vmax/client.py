@@ -296,7 +296,7 @@ class VMAXClient(object):
                     self.array_id, self.uni_version, director)
 
                 status = constants.ControllerStatus.NORMAL
-                if director_info.get('availability', '').upper() != 'ONLINE':
+                if "OFF" in director_info.get('availability', '').upper():
                     status = constants.ControllerStatus.OFFLINE
 
                 controller = {
@@ -401,6 +401,236 @@ class VMAXClient(object):
 
             return port_list
 
+    def list_disks(self, storage_id):
+        if int(self.uni_version) < 91:
+            return []
+        try:
+            # Get list of Disks
+            disks = self.rest.get_disk_list(self.array_id,
+                                            self.uni_version)
+            disk_list = []
+            for disk in disks:
+                disk_info = self.rest.get_disk(
+                    self.array_id, self.uni_version, disk)
+
+                disk_item = {
+                    'name': disk,
+                    'storage_id': storage_id,
+                    'native_disk_id': disk,
+                    'manufacturer': disk_info['vendor'],
+                    'capacity': int(disk_info['capacity']) * units.Gi,
+                }
+                disk_list.append(disk_item)
+            return disk_list
+
+        except Exception:
+            LOG.error("Failed to get disk details from VMAX")
+            raise
+
+    def list_storage_host_initiators(self, storage_id):
+        try:
+            # Get list of initiators
+            initiators = self.rest.get_initiator_list(self.array_id,
+                                                      self.uni_version)
+
+            initiator_list = []
+            for initiator in initiators:
+                initiator_info = self.rest.get_initiator(
+                    self.array_id, self.uni_version, initiator)
+                type_string = initiator_info.get('type', '').upper()
+                initiator_type = constants.InitiatorType.UNKNOWN
+                if 'FIBRE' in type_string:
+                    initiator_type = constants.InitiatorType.FC
+                if 'ISCSI' in type_string:
+                    initiator_type = constants.InitiatorType.ISCSI
+
+                initiator_status = constants.InitiatorStatus.ONLINE
+                if not initiator_info.get('on_fabric', False):
+                    initiator_status = constants.InitiatorStatus.OFFLINE
+
+                initiator_item = {
+                    'name': initiator,
+                    'storage_id': storage_id,
+                    'native_storage_host_initiator_id': initiator,
+                    'alias': initiator_info.get('alias'),
+                    'wwn': initiator_info.get('initiatorId'),
+                    'type': initiator_type,
+                    'status': initiator_status,
+                    'native_storage_host_id': initiator_info.get('host'),
+                }
+                initiator_list.append(initiator_item)
+            return initiator_list
+
+        except Exception:
+            LOG.error("Failed to get host initiator details from VMAX")
+            raise
+
+    def list_storage_hosts(self, storage_id):
+        try:
+            # Get list of storage hosts
+            hosts = self.rest.get_host_list(self.array_id,
+                                            self.uni_version)
+            host_list = []
+            for host in hosts:
+                host_info = self.rest.get_host(
+                    self.array_id, self.uni_version, host)
+
+                host_item = {
+                    'storage_id': storage_id,
+                    'native_storage_host_id': host_info.get('hostId'),
+                    'name': host_info.get('hostId'),
+                    'os_type': constants.HostOSTypes.UNKNOWN,
+                    'status': constants.HostStatus.NORMAL,
+                }
+                host_list.append(host_item)
+            return host_list
+
+        except Exception:
+            LOG.error("Failed to get storage host details from VMAX")
+            raise
+
+    def list_storage_host_groups(self, storage_id):
+        try:
+            # Get list of storage host groups
+            host_groups = self.rest.get_host_group_list(self.array_id,
+                                                        self.uni_version)
+            host_group_list = []
+            storage_host_grp_relation_list = []
+            for host_group in host_groups:
+                host_group_info = self.rest.get_host_group(
+                    self.array_id, self.uni_version, host_group)
+                host_group_item = {
+                    'name': host_group,
+                    'storage_id': storage_id,
+                    'native_storage_host_group_id': host_group,
+                }
+                host_group_list.append(host_group_item)
+
+                for storage_host in host_group_info['host']:
+                    storage_host_group_relation = {
+                        'storage_id': storage_id,
+                        'native_storage_host_group_id': host_group,
+                        'native_storage_host_id': storage_host.get('hostId')
+                    }
+                    storage_host_grp_relation_list \
+                        .append(storage_host_group_relation)
+
+            result = {
+                'storage_host_groups': host_group_list,
+                'storage_host_grp_host_rels': storage_host_grp_relation_list
+            }
+
+            return result
+
+        except Exception:
+            LOG.error("Failed to get storage host group details from VMAX")
+            raise
+
+    def list_port_groups(self, storage_id):
+        try:
+            # Get list of port groups
+            port_groups = self.rest.get_port_group_list(self.array_id,
+                                                        self.uni_version)
+            port_group_list = []
+            port_group_relation_list = []
+            for port_group in port_groups:
+                port_group_info = self.rest.get_port_group(
+                    self.array_id, self.uni_version, port_group)
+                port_group_item = {
+                    'name': port_group,
+                    'storage_id': storage_id,
+                    'native_port_group_id': port_group,
+                }
+                port_group_list.append(port_group_item)
+
+                for port in port_group_info['symmetrixPortKey']:
+                    port_name = port['directorId'] + ':' + port['portId']
+                    port_group_relation = {
+                        'storage_id': storage_id,
+                        'native_port_group_id': port_group,
+                        'native_port_id': port_name
+                    }
+                    port_group_relation_list.append(port_group_relation)
+            result = {
+                'port_groups': port_group_list,
+                'port_grp_port_rels': port_group_relation_list
+            }
+            return result
+
+        except Exception:
+            LOG.error("Failed to get port group details from VMAX")
+            raise
+
+    def list_volume_groups(self, storage_id):
+        try:
+            # Get list of volume groups
+            volume_groups = self.rest.get_volume_group_list(self.array_id,
+                                                            self.uni_version)
+            volume_group_list = []
+            volume_group_relation_list = []
+            for volume_group in volume_groups:
+                # volume_group_info = self.rest.get_volume_group(
+                #     self.array_id, self.uni_version, volume_group)
+
+                volume_group_item = {
+                    'name': volume_group,
+                    'storage_id': storage_id,
+                    'native_volume_group_id': volume_group,
+                }
+                volume_group_list.append(volume_group_item)
+
+                # List all volumes except data volumes
+                volumes = self.rest.get_volume_list(
+                    self.array_id, version=self.uni_version,
+                    params={'data_volume': 'false',
+                            'storageGroupId': volume_group})
+                if not volumes:
+                    continue
+                for volume in volumes:
+                    volume_group_relation = {
+                        'storage_id': storage_id,
+                        'native_volume_group_id': volume_group,
+                        'native_volume_id': volume
+                    }
+                    volume_group_relation_list.append(volume_group_relation)
+
+            result = {
+                'volume_groups': volume_group_list,
+                'vol_grp_vol_rels': volume_group_relation_list
+            }
+            return result
+
+        except Exception:
+            LOG.error("Failed to get volume group details from VMAX")
+            raise
+
+    def list_masking_views(self, storage_id):
+        try:
+            # Get list of masking_views
+            masking_views = self.rest.get_masking_view_list(self.array_id,
+                                                            self.uni_version)
+            masking_view_list = []
+            for masking_view in masking_views:
+                mv_info = self.rest.get_masking_view(
+                    self.array_id, self.uni_version, masking_view)
+
+                masking_view_item = {
+                    'name': masking_view,
+                    'storage_id': storage_id,
+                    'native_masking_view_id': mv_info['maskingViewId'],
+                    'native_storage_host_id': mv_info.get('hostId'),
+                    'native_storage_host_group_id': mv_info.get(
+                        'hostGroupId'),
+                    'native_volume_group_id': mv_info.get('storageGroupId'),
+                    'native_port_group_id': mv_info.get('portGroupId'),
+                }
+                masking_view_list.append(masking_view_item)
+            return masking_view_list
+
+        except Exception:
+            LOG.error("Failed to get masking views details from VMAX")
+            raise
+
     def list_alerts(self, query_para):
         """Get all alerts from an array."""
         return self.rest.get_alerts(query_para, version=self.uni_version,
@@ -493,4 +723,21 @@ class VMAXClient(object):
             return metrics_array
         except Exception:
             LOG.error("Failed to get CONTROLLER metrics for VMAX")
+            raise
+
+    def get_disk_metrics(self, storage_id, metrics, start_time, end_time):
+        """Get disk performance metrics."""
+        if int(self.uni_version) < 91:
+            return []
+
+        try:
+            perf_list = self.rest.get_disk_metrics(
+                self.array_id, metrics, start_time, end_time)
+
+            metrics_array = perf_utils.construct_metrics(
+                storage_id, consts.DISK_METRICS, consts.DISK_CAP, perf_list)
+
+            return metrics_array
+        except Exception:
+            LOG.error("Failed to get DISK metrics for VMAX")
             raise

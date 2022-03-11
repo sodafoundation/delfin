@@ -16,6 +16,7 @@ STORAGE_CAPABILITIES_SCHEMA = {
     'type': 'object',
     'properties': {
         'is_historic': {'type': 'boolean'},
+        'performance_metric_retention_window': {'type': 'integer'},
         'resource_metrics': {
             'type': 'object',
             'properties': {
@@ -559,6 +560,15 @@ STORAGE_CAPABILITIES_SCHEMA = {
                             'type': 'object',
                             'properties': {
                                 'unit': {'type': 'string', 'enum': ["ms"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        'ioSize': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["KB"]},
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
