@@ -104,9 +104,12 @@ HOST_OS_TYPES_MAP = {
     'aix': constants.HostOSTypes.AIX,
     'xenserver': constants.HostOSTypes.XEN_SERVER,
     'vmware esx': constants.HostOSTypes.VMWARE_ESX,
+    'esxi': constants.HostOSTypes.VMWARE_ESX,
     'linux_vis': constants.HostOSTypes.LINUX_VIS,
     'windows server 2012': constants.HostOSTypes.WINDOWS_SERVER_2012,
     'oracle vm': constants.HostOSTypes.ORACLE_VM,
+    'oracle-vm-server': constants.HostOSTypes.ORACLE_VM,
     'open vms': constants.HostOSTypes.OPEN_VMS,
+    'vms': constants.HostOSTypes.OPEN_VMS,
     'unknown': constants.HostOSTypes.UNKNOWN
 }
