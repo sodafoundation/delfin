@@ -565,6 +565,15 @@ STORAGE_CAPABILITIES_SCHEMA = {
                                                 'maxLength': 255}
                             },
                         },
+                        'ioSize': {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
                         'readIoSize': {
                             'type': 'object',
                             'properties': {
