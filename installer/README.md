@@ -189,3 +189,5 @@ The logs can be uniquely identified based upon the timestamp.
   4. [Optional] If prometheus is configured, monitor the performance metrics on prometheus server at default location
 
      http://localhost:9090/graph
+
+# Limitation
