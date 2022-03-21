@@ -24,8 +24,9 @@ Ubuntu 16.04, Ubuntu 18.04
     ```sh
     export PYTHONPATH=$(pwd)
     ```
--#### how to git clone steps to local installer Readme
- ```sh
+- #### how to git clone steps to local installer Readme
+ 
+    ```sh
     installer/README.md
     ```
 - #### [Optional] Setup Prometheus (for monitor performance metric through prometheus)
