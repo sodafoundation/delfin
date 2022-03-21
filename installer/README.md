@@ -24,7 +24,10 @@ Ubuntu 16.04, Ubuntu 18.04
     ```sh
     export PYTHONPATH=$(pwd)
     ```
-
+-#### how to git clone steps to local installer Readme
+ ```sh
+    installer/README.md
+    ```
 - #### [Optional] Setup Prometheus (for monitor performance metric through prometheus)
 
   Follow the below steps to setup delfin with prometheus. Once your setup is ready, you can register the storage devices for performance monitoring. Later, the performance metrics can be viewed on prometheus server. This example also guides you to configure and update the targets and interval for scraping the metrics.
