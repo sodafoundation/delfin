@@ -115,6 +115,8 @@ installer/install
 root@root1:~/delfin-demo/delfin$ installer/install
 ```
 
+#### Execute postcheck
+
 #### Configure multiple instances of delfin components
 Respective environment variable required to set for running multiple instances 
 of delfin component before executing install command
