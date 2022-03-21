@@ -191,3 +191,4 @@ The logs can be uniquely identified based upon the timestamp.
      http://localhost:9090/graph
 
 # Limitation
+Local installation, unlike Ansible installer, does not support SODA Dashboard integration.
