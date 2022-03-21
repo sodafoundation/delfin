@@ -62,6 +62,8 @@ Install: Installs and starts the delfin process
 Uninstall: Uninstalls the delfin. Doesn't uninstall the required components. You may need to uninstall it explicitly using the native approach.
 
 # How to install
+git clone https://github.com/sodafoundation/delfin.git
+cd delfin
 To get help, execute 'install -h'. It will show help information
 
 Install script can be executed with three different switches to:
