@@ -24,7 +24,7 @@ Ubuntu 16.04, Ubuntu 18.04
     ```sh
     export PYTHONPATH=$(pwd)
     ```
-- #### how to git clone steps to local installer Readme
+- #### how to git clone steps to local installer Readme-md
  
     ```sh
     installer/README.md
@@ -42,7 +42,7 @@ Ubuntu 16.04, Ubuntu 18.04
      2. cd prometheus-*
      3. Edit the prometheus.yml and set the appropriate target, interval and metrics_api path. 
         Below is sample example of prometheus.yml
-        ###### prometheus.yml
+        ###### prometheus.ymlinstaller
         ```
         global:
           scrape_interval: 10s
