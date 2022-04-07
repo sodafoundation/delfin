@@ -1,3 +1,9 @@
+#Install the required packages using pip
+
+```sh
+sudo pip install -r test-requirements.txt
+```
+
 coverage!=4.4,>=4.0 # Apache-2.0
 ddt>=1.0.1 # MIT
 fixtures>=3.0.0 # Apache-2.0/BSD
