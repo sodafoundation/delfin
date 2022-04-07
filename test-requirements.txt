@@ -1,4 +1,5 @@
-##Install the required packages using pip sudo pip install -r test-requirements.txt
+##Install the required packages using pip 
+command : sudo pip install -r test-requirements.txt
 
 
 coverage!=4.4,>=4.0 # Apache-2.0
