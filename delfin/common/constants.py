@@ -144,9 +144,10 @@ class PortLogicalType(object):
 class DiskStatus(object):
     NORMAL = 'normal'
     ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
     OFFLINE = 'offline'
 
-    ALL = (NORMAL, ABNORMAL, OFFLINE)
+    ALL = (NORMAL, ABNORMAL, DEGRADED, OFFLINE)
 
 
 class DiskPhysicalType(object):
