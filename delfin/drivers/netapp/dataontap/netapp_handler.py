@@ -173,7 +173,10 @@ class NetAppHandler(object):
                 system_info, storage_map_list, split=':')
             if len(storage_map_list) > 0:
                 storage_map = storage_map_list[-1]
-                controller_map = controller_map_list[1]
+                controller = {}
+                for controller_map in controller_map_list[1:]:
+                    if controller_map['Model'] != '--':
+                        controller = controller_map
                 for disk in disk_list:
                     raw_capacity += disk['capacity']
                 for pool in pool_list:
@@ -183,11 +186,11 @@ class NetAppHandler(object):
                 storage_model = {
                     "name": storage_map['ClusterName'],
                     "vendor": constant.STORAGE_VENDOR,
-                    "model": controller_map['Model'],
+                    "model": controller['Model'],
                     "status": status,
                     "serial_number": storage_map['ClusterSerialNumber'],
                     "firmware_version": storage_version[0],
-                    "location": controller_map['Location'],
+                    "location": controller['Location'],
                     "total_capacity": total_capacity,
                     "raw_capacity": raw_capacity,
                     "used_capacity": used_capacity,
