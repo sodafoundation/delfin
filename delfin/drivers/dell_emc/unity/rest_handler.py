@@ -112,6 +112,9 @@ class RestHandler(RestClient):
                 res = self.call(url, data, method, calltimeout)
                 if res.status_code == 200:
                     return res.json()
+                err_msg = "rest response abnormal,status_code:%s,res.json:%s" \
+                          % (res.status_code, res.json())
+                LOG.error(err_msg)
             except Exception as e:
                 LOG.error(e)
             retry_times -= 1
