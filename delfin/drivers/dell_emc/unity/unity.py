@@ -138,7 +138,7 @@ class UnityStorDriver(driver.StorageDriver):
         if not system_info or not capacity:
             err_msg = "unity get system or capacity info failed"
             LOG.error(err_msg)
-            raise err_msg
+            raise exception.StorageBackendException(err_msg)
         system_entries = system_info.get('entries')
         for system in system_entries:
             content = system.get('content', {})
