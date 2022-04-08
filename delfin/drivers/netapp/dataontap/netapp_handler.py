@@ -1019,7 +1019,8 @@ class NetAppHandler(object):
             elif res.status_code == constant.FORBIDDEN_RETURN_CODE:
                 raise exception.InvalidUsernameOrPassword()
             elif res.status_code == constant.NOT_FOUND_RETURN_CODE:
-                raise exception.NotFound()
+                LOG.error('Url did not get results url:%s' % url)
+                return []
             elif res.status_code == constant.METHOD_NOT_ALLOWED_CODE:
                 raise exception.Invalid()
             elif res.status_code == constant.CONFLICT_RETURN_CODE:
