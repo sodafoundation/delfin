@@ -106,11 +106,16 @@ class RestHandler(RestClient):
 
     def get_rest_info(self, url, data=None, method='GET',
                       calltimeout=consts.DEFAULT_TIMEOUT):
-        result_json = None
-        res = self.call(url, data, method, calltimeout)
-        if res.status_code == 200:
-            result_json = res.json()
-        return result_json
+        retry_times = consts.REST_RETRY_TIMES
+        while retry_times >= 0:
+            try:
+                res = self.call(url, data, method, calltimeout)
+                if res.status_code == 200:
+                    return res.json()
+            except Exception as e:
+                LOG.error(e)
+            retry_times -= 1
+        return None
 
     def call(self, url, data=None, method='GET',
              calltimeout=consts.DEFAULT_TIMEOUT):

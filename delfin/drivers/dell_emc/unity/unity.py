@@ -135,48 +135,51 @@ class UnityStorDriver(driver.StorageDriver):
         system_info = self.rest_handler.get_storage()
         capacity = self.rest_handler.get_capacity()
         version_info = self.rest_handler.get_soft_version()
-        if system_info is not None and capacity is not None:
-            system_entries = system_info.get('entries')
-            for system in system_entries:
-                content = system.get('content', {})
-                name = content.get('name')
-                model = content.get('model')
-                serial_number = content.get('serialNumber')
-                health_value = content.get('health', {}).get('value')
-                status = UnityStorDriver.STORAGE_STATUS_MAP.get(
-                    health_value, constants.StorageStatus.ABNORMAL)
-                break
-            capacity_info = capacity.get('entries')
-            for per_capacity in capacity_info:
-                content = per_capacity.get('content', {})
-                free = content.get('sizeFree')
-                total = content.get('sizeTotal')
-                used = content.get('sizeUsed')
-                subs = content.get('sizeSubscribed')
-                break
-            if version_info:
-                soft_version = version_info.get('entries')
-                for soft_info in soft_version:
-                    content = soft_info.get('content', {})
-                    if content:
-                        version = content.get('id')
-                        break
-            raw_capacity = self.get_disk_capacity(context)
-            raw_capacity = raw_capacity if raw_capacity else int(total)
-            system_result = {
-                'name': name,
-                'vendor': 'DELL EMC',
-                'model': model,
-                'status': status,
-                'serial_number': serial_number,
-                'firmware_version': version,
-                'location': '',
-                'subscribed_capacity': int(subs),
-                'total_capacity': int(total),
-                'raw_capacity': raw_capacity,
-                'used_capacity': int(used),
-                'free_capacity': int(free)
-            }
+        if not system_info or not capacity:
+            err_msg = "unity get system or capacity info failed"
+            LOG.error(err_msg)
+            raise err_msg
+        system_entries = system_info.get('entries')
+        for system in system_entries:
+            content = system.get('content', {})
+            name = content.get('name')
+            model = content.get('model')
+            serial_number = content.get('serialNumber')
+            health_value = content.get('health', {}).get('value')
+            status = UnityStorDriver.STORAGE_STATUS_MAP.get(
+                health_value, constants.StorageStatus.ABNORMAL)
+            break
+        capacity_info = capacity.get('entries')
+        for per_capacity in capacity_info:
+            content = per_capacity.get('content', {})
+            free = content.get('sizeFree')
+            total = content.get('sizeTotal')
+            used = content.get('sizeUsed')
+            subs = content.get('sizeSubscribed')
+            break
+        if version_info:
+            soft_version = version_info.get('entries')
+            for soft_info in soft_version:
+                content = soft_info.get('content', {})
+                if content:
+                    version = content.get('id')
+                    break
+        raw_capacity = self.get_disk_capacity(context)
+        raw_capacity = raw_capacity if raw_capacity else int(total)
+        system_result = {
+            'name': name,
+            'vendor': 'DELL EMC',
+            'model': model,
+            'status': status,
+            'serial_number': serial_number,
+            'firmware_version': version,
+            'location': '',
+            'subscribed_capacity': int(subs),
+            'total_capacity': int(total),
+            'raw_capacity': raw_capacity,
+            'used_capacity': int(used),
+            'free_capacity': int(free)
+        }
         return system_result
 
     def list_storage_pools(self, context):
