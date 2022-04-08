@@ -175,7 +175,7 @@ class NetAppHandler(object):
                 storage_map = storage_map_list[-1]
                 controller = {}
                 for controller_map in controller_map_list[1:]:
-                    if controller_map['Model'] != '--':
+                    if controller_map['Model'] != '-':
                         controller = controller_map
                 for disk in disk_list:
                     raw_capacity += disk['capacity']
