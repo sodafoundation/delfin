@@ -624,7 +624,6 @@ class TestVMAXStorageDriver(TestCase):
         self.assertEqual(driver.storage_id, "12345")
         self.assertEqual(driver.client.array_id, "00112233")
         ret = driver.list_disks(context)
-        print("return", ret)
         self.assertDictEqual(ret[0], expected[0])
         self.assertDictEqual(ret[1], expected[1])
 
@@ -640,6 +639,569 @@ class TestVMAXStorageDriver(TestCase):
         mock_disk.side_effect = [disks]
         with self.assertRaises(Exception) as exc:
             driver.list_disks(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_initiator')
+    @mock.patch.object(VMaxRest, 'get_initiator_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_storage_host_initiators(self, mock_unisphere_version,
+                                          mock_version, mock_array,
+                                          mock_initiators, mock_initiator):
+        expected = \
+            [
+                {
+                    'name': '1001',
+                    'storage_id': '12345',
+                    'native_storage_host_initiator_id': '1001',
+                    'alias': 'I1',
+                    'wwn': '1001',
+                    'type': 'fc',
+                    'status': 'online',
+                    'native_storage_host_id': 'host1',
+                },
+                {
+                    'name': '1002',
+                    'storage_id': '12345',
+                    'native_storage_host_initiator_id': '1002',
+                    'alias': 'I2',
+                    'wwn': '1002',
+                    'type': 'iscsi',
+                    'status': 'offline',
+                    'native_storage_host_id': 'host2',
+                },
+                {
+                    'name': '1003',
+                    'storage_id': '12345',
+                    'native_storage_host_initiator_id': '1003',
+                    'alias': 'I3',
+                    'wwn': '1003',
+                    'type': 'fc',
+                    'status': 'offline',
+                    'native_storage_host_id': 'host3',
+                }
+            ]
+        init_1 = {
+            'initiatorId': '1001',
+            'wwn': '1001',
+            'alias': 'I1',
+            'host': 'host1',
+            'on_fabric': True,
+            'type': 'FIBRE'
+        }
+        init_2 = {
+            'initiatorId': '1002',
+            'wwn': '1002',
+            'alias': 'I2',
+            'host': 'host2',
+            'type': 'ISCSI'
+        }
+        init_3 = {
+            'initiatorId': '1003',
+            'wwn': '1003',
+            'alias': 'I3',
+            'host': 'host3',
+            'type': 'FIBRE'
+        }
+
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.2.2.7', '92']
+        mock_unisphere_version.return_value = ['V9.2.2.7', '92']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_initiators.side_effect = [['1001', '1002', '1003']]
+        mock_initiator.side_effect = [init_1, init_2, init_3]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_storage_host_initiators(context)
+        self.assertDictEqual(ret[0], expected[0])
+        self.assertDictEqual(ret[1], expected[1])
+        self.assertDictEqual(ret[2], expected[2])
+
+        mock_initiators.side_effect = [['1001']]
+        mock_initiator.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_host_initiators(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        mock_initiators.side_effect = [exception.StorageBackendException]
+        mock_initiator.side_effect = [init_1]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_host_initiators(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_host')
+    @mock.patch.object(VMaxRest, 'get_host_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_storage_hosts(self, mock_unisphere_version,
+                                mock_version, mock_array,
+                                mock_hosts, mock_host):
+        expected = \
+            [
+                {
+                    'storage_id': '12345',
+                    'name': 'h1',
+                    'native_storage_host_id': 'h1',
+                    'os_type': 'Unknown',
+                    'status': 'normal',
+                },
+                {
+                    'storage_id': '12345',
+                    'name': 'h2',
+                    'native_storage_host_id': 'h2',
+                    'os_type': 'Unknown',
+                    'status': 'normal',
+                },
+                {
+                    'storage_id': '12345',
+                    'name': 'h3',
+                    'native_storage_host_id': 'h3',
+                    'os_type': 'Unknown',
+                    'status': 'normal',
+                }
+            ]
+        host_1 = {
+            'hostId': 'h1',
+        }
+        host_2 = {
+            'hostId': 'h2',
+        }
+        host_3 = {
+            'hostId': 'h3',
+        }
+
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.2.2.7', '92']
+        mock_unisphere_version.return_value = ['V9.2.2.7', '92']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_hosts.side_effect = [['h1', 'h2', 'h3']]
+        mock_host.side_effect = [host_1, host_2, host_3]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_storage_hosts(context)
+        self.assertDictEqual(ret[0], expected[0])
+        self.assertDictEqual(ret[1], expected[1])
+        self.assertDictEqual(ret[2], expected[2])
+
+        mock_hosts.side_effect = [['h1']]
+        mock_host.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_hosts(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        mock_hosts.side_effect = [exception.StorageBackendException]
+        mock_host.side_effect = [host_1]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_hosts(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_host_group')
+    @mock.patch.object(VMaxRest, 'get_host_group_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_storage_host_groups(self, mock_unisphere_version,
+                                      mock_version, mock_array,
+                                      mock_host_groups, mock_host_group):
+        expected = \
+            [
+                {
+                    'name': 'hg1',
+                    'storage_id': '12345',
+                    'native_storage_host_group_id': 'hg1',
+                },
+                {
+                    'name': 'hg2',
+                    'storage_id': '12345',
+                    'native_storage_host_group_id': 'hg2',
+                },
+                {
+                    'name': 'hg3',
+                    'storage_id': '12345',
+                    'native_storage_host_group_id': 'hg3',
+                }
+            ]
+        expected_rel = [
+            {
+                'storage_id': '12345',
+                'native_storage_host_group_id': 'hg1',
+                'native_storage_host_id': 'h1',
+            },
+            {
+                'storage_id': '12345',
+                'native_storage_host_group_id': 'hg1',
+                'native_storage_host_id': 'h2',
+            },
+            {
+                'storage_id': '12345',
+                'native_storage_host_group_id': 'hg2',
+                'native_storage_host_id': 'h2',
+            },
+            {
+                'storage_id': '12345',
+                'native_storage_host_group_id': 'hg3',
+                'native_storage_host_id': 'h1',
+            },
+        ]
+        hg_1 = {
+            'hostGroupId': 'hg1',
+            'host': [{'hostId': 'h1'}, {'hostId': 'h2'}],
+        }
+        hg_2 = {
+            'hostGroupId': 'hg2',
+            'host': [{'hostId': 'h2'}],
+        }
+        hg_3 = {
+            'hostGroupId': 'hg3',
+            'host': [{'hostId': 'h1'}],
+        }
+
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.2.2.7', '92']
+        mock_unisphere_version.return_value = ['V9.2.2.7', '92']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_host_groups.side_effect = [['hg1', 'hg2', 'hg3']]
+        mock_host_group.side_effect = [hg_1, hg_2, hg_3]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_storage_host_groups(context)
+        ret_hgs = ret['storage_host_groups']
+        ret_hg_rels = ret['storage_host_grp_host_rels']
+        self.assertDictEqual(ret_hgs[0], expected[0])
+        self.assertDictEqual(ret_hgs[1], expected[1])
+        self.assertDictEqual(ret_hgs[2], expected[2])
+        self.assertDictEqual(ret_hg_rels[0], expected_rel[0])
+        self.assertDictEqual(ret_hg_rels[1], expected_rel[1])
+        self.assertDictEqual(ret_hg_rels[2], expected_rel[2])
+        self.assertDictEqual(ret_hg_rels[3], expected_rel[3])
+
+        mock_host_groups.side_effect = [['hg1']]
+        mock_host_group.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_host_groups(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        mock_host_groups.side_effect = [exception.StorageBackendException]
+        mock_host_group.side_effect = [hg_1]
+        with self.assertRaises(Exception) as exc:
+            driver.list_storage_host_groups(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_port_group')
+    @mock.patch.object(VMaxRest, 'get_port_group_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_port_groups(self, mock_unisphere_version,
+                              mock_version, mock_array,
+                              mock_port_groups, mock_port_group):
+        expected = \
+            [
+                {
+                    'name': 'pg1',
+                    'storage_id': '12345',
+                    'native_port_group_id': 'pg1',
+                },
+                {
+                    'name': 'pg2',
+                    'storage_id': '12345',
+                    'native_port_group_id': 'pg2',
+                },
+                {
+                    'name': 'pg3',
+                    'storage_id': '12345',
+                    'native_port_group_id': 'pg3',
+                }
+            ]
+        expected_rel = [
+            {
+                'storage_id': '12345',
+                'native_port_group_id': 'pg1',
+                'native_port_id': 'FA-1D:1',
+            },
+            {
+                'storage_id': '12345',
+                'native_port_group_id': 'pg1',
+                'native_port_id': 'FA-1D:2',
+            },
+            {
+                'storage_id': '12345',
+                'native_port_group_id': 'pg2',
+                'native_port_id': 'FA-2D:2',
+            },
+            {
+                'storage_id': '12345',
+                'native_port_group_id': 'pg3',
+                'native_port_id': 'FA-3D:1',
+            },
+        ]
+        pg_1 = {
+            'hostGroupId': 'hg1',
+            'symmetrixPortKey': [
+                {
+                    "directorId": "FA-1D",
+                    "portId": "1"
+                },
+                {
+                    "directorId": "FA-1D",
+                    "portId": "2"
+                }
+            ],
+        }
+        pg_2 = {
+            'hostGroupId': 'hg2',
+            'symmetrixPortKey': [
+                {
+                    "directorId": "FA-2D",
+                    "portId": "2"
+                }
+            ],
+        }
+        pg_3 = {
+            'hostGroupId': 'hg3',
+            'symmetrixPortKey': [
+                {
+                    "directorId": "FA-3D",
+                    "portId": "1"
+                },
+            ],
+        }
+
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.2.2.7', '92']
+        mock_unisphere_version.return_value = ['V9.2.2.7', '92']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_port_groups.side_effect = [['pg1', 'pg2', 'pg3']]
+        mock_port_group.side_effect = [pg_1, pg_2, pg_3]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_port_groups(context)
+        ret_pgs = ret['port_groups']
+        ret_pg_rels = ret['port_grp_port_rels']
+        self.assertDictEqual(ret_pgs[0], expected[0])
+        self.assertDictEqual(ret_pgs[1], expected[1])
+        self.assertDictEqual(ret_pgs[2], expected[2])
+        self.assertDictEqual(ret_pg_rels[0], expected_rel[0])
+        self.assertDictEqual(ret_pg_rels[1], expected_rel[1])
+        self.assertDictEqual(ret_pg_rels[2], expected_rel[2])
+        self.assertDictEqual(ret_pg_rels[3], expected_rel[3])
+
+        mock_port_groups.side_effect = [['pg1']]
+        mock_port_group.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_port_groups(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        mock_port_groups.side_effect = [exception.StorageBackendException]
+        mock_port_group.side_effect = [pg_1]
+        with self.assertRaises(Exception) as exc:
+            driver.list_port_groups(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_volume_list')
+    @mock.patch.object(VMaxRest, 'get_volume_group_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_volume_groups(self, mock_unisphere_version,
+                                mock_version, mock_array,
+                                mock_volume_groups, mock_volumes):
+        expected = \
+            [
+                {
+                    'name': 'vg1',
+                    'storage_id': '12345',
+                    'native_volume_group_id': 'vg1',
+                },
+                {
+                    'name': 'vg2',
+                    'storage_id': '12345',
+                    'native_volume_group_id': 'vg2',
+                },
+                {
+                    'name': 'vg3',
+                    'storage_id': '12345',
+                    'native_volume_group_id': 'vg3',
+                }
+            ]
+        expected_rel = [
+            {
+                'storage_id': '12345',
+                'native_volume_group_id': 'vg1',
+                'native_volume_id': 'volume1',
+            },
+            {
+                'storage_id': '12345',
+                'native_volume_group_id': 'vg1',
+                'native_volume_id': 'volume2',
+            },
+            {
+                'storage_id': '12345',
+                'native_volume_group_id': 'vg2',
+                'native_volume_id': 'volume2',
+            },
+            {
+                'storage_id': '12345',
+                'native_volume_group_id': 'vg3',
+                'native_volume_id': 'volume1',
+            },
+        ]
+        v_1 = ['volume1', 'volume2']
+        v_2 = ['volume2']
+        v_3 = ['volume1']
+
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.2.2.7', '92']
+        mock_unisphere_version.return_value = ['V9.2.2.7', '92']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_volume_groups.side_effect = [['vg1', 'vg2', 'vg3']]
+        mock_volumes.side_effect = [v_1, v_2, v_3]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_volume_groups(context)
+        ret_vgs = ret['volume_groups']
+        ret_vg_rels = ret['vol_grp_vol_rels']
+        self.assertDictEqual(ret_vgs[0], expected[0])
+        self.assertDictEqual(ret_vgs[1], expected[1])
+        self.assertDictEqual(ret_vgs[2], expected[2])
+        self.assertDictEqual(ret_vg_rels[0], expected_rel[0])
+        self.assertDictEqual(ret_vg_rels[1], expected_rel[1])
+        self.assertDictEqual(ret_vg_rels[2], expected_rel[2])
+        self.assertDictEqual(ret_vg_rels[3], expected_rel[3])
+
+        mock_volume_groups.side_effect = [['vg1']]
+        mock_volumes.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_volume_groups(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        mock_volume_groups.side_effect = [exception.StorageBackendException]
+        mock_volumes.side_effect = [v_1]
+        with self.assertRaises(Exception) as exc:
+            driver.list_volume_groups(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+    @mock.patch.object(VMaxRest, 'get_masking_view')
+    @mock.patch.object(VMaxRest, 'get_masking_view_list')
+    @mock.patch.object(VMaxRest, 'get_array_detail')
+    @mock.patch.object(VMaxRest, 'get_uni_version')
+    @mock.patch.object(VMaxRest, 'get_unisphere_version')
+    def test_list_masking_views(self, mock_unisphere_version,
+                                mock_version, mock_array,
+                                mock_masking_views, mock_masking_view):
+        expected = \
+            [
+                {
+                    'storage_id': '12345',
+                    'native_storage_host_id': 'host1',
+                    'native_storage_host_group_id': 'hg1',
+                    'native_volume_group_id': 'sg1',
+                    'native_port_group_id': 'pg1',
+                    'native_masking_view_id': 'mv1',
+                    'name': 'mv1',
+                },
+                {
+                    'storage_id': '12345',
+                    'native_storage_host_id': 'host2',
+                    'native_storage_host_group_id': 'hg2',
+                    'native_volume_group_id': 'sg2',
+                    'native_port_group_id': 'pg2',
+                    'native_masking_view_id': 'mv2',
+                    'name': 'mv2',
+                },
+                {
+                    'storage_id': '12345',
+                    'native_storage_host_id': 'host3',
+                    'native_storage_host_group_id': 'hg3',
+                    'native_volume_group_id': 'sg3',
+                    'native_port_group_id': 'pg3',
+                    'native_masking_view_id': 'mv3',
+                    'name': 'mv3',
+                }
+            ]
+        mv_1 = {
+            'maskingViewId': 'mv1',
+            'hostId': 'host1',
+            'hostGroupId': 'hg1',
+            'storageGroupId': 'sg1',
+            'portGroupId': 'pg1',
+        }
+        mv_2 = {
+            'maskingViewId': 'mv2',
+            'hostId': 'host2',
+            'hostGroupId': 'hg2',
+            'storageGroupId': 'sg2',
+            'portGroupId': 'pg2',
+        }
+        mv_3 = {
+            'maskingViewId': 'mv3',
+            'hostId': 'host3',
+            'hostGroupId': 'hg3',
+            'storageGroupId': 'sg3',
+            'portGroupId': 'pg3',
+        }
+
+        kwargs = VMAX_STORAGE_CONF
+        mock_version.return_value = ['V9.2.2.7', '92']
+        mock_unisphere_version.return_value = ['V9.2.2.7', '92']
+        mock_array.return_value = {'symmetrixId': ['00112233']}
+        mock_masking_views.side_effect = [['mv1', 'mv2', 'mv3']]
+        mock_masking_view.side_effect = [mv_1, mv_2, mv_3]
+
+        driver = VMAXStorageDriver(**kwargs)
+        self.assertEqual(driver.storage_id, "12345")
+        self.assertEqual(driver.client.array_id, "00112233")
+        ret = driver.list_masking_views(context)
+        self.assertDictEqual(ret[0], expected[0])
+        self.assertDictEqual(ret[1], expected[1])
+        self.assertDictEqual(ret[2], expected[2])
+
+        mock_masking_views.side_effect = [['mv1']]
+        mock_masking_view.side_effect = [exception.StorageBackendException]
+        with self.assertRaises(Exception) as exc:
+            driver.list_masking_views(context)
+
+        self.assertIn('Exception from Storage Backend',
+                      str(exc.exception))
+
+        mock_masking_views.side_effect = [exception.StorageBackendException]
+        mock_masking_view.side_effect = [mv_1]
+        with self.assertRaises(Exception) as exc:
+            driver.list_masking_views(context)
 
         self.assertIn('Exception from Storage Backend',
                       str(exc.exception))
