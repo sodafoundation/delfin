@@ -759,57 +759,54 @@ class UnityStorDriver(driver.StorageDriver):
             entries = results.get('entries')
             for entry in entries:
                 content = entry.get('content')
-                if not content:
+                if not content or not content.get('values'):
+                    continue
+                occur_time = int(time.mktime(time.strptime(
+                    content.get('timestamp'),
+                    AlertHandler.TIME_PATTERN))
+                ) * AlertHandler.SECONDS_TO_MS
+                hour_offset = (time.mktime(time.localtime()) - time.mktime(
+                    time.gmtime())) / AlertHandler.SECONDS_PER_HOUR
+                occur_time = occur_time + (int(hour_offset) *
+                                           UnityStorDriver.MS_PER_HOUR)
+                if occur_time < start_time:
                     return True
-                if content.get('values'):
-                    occur_time = int(time.mktime(time.strptime(
-                        content.get('timestamp'),
-                        AlertHandler.TIME_PATTERN))
-                    ) * AlertHandler.SECONDS_TO_MS
-                    hour_offset = (time.mktime(time.localtime()) - time.mktime(
-                        time.gmtime())) / AlertHandler.SECONDS_PER_HOUR
-                    occur_time = occur_time + (int(hour_offset) *
-                                               UnityStorDriver.MS_PER_HOUR)
-                    if occur_time < start_time:
-                        return True
-                    if time_map.get('latest_time') <= occur_time \
-                            and time_map.get('latest_time') != 0:
-                        continue
-                    time_map['latest_time'] = occur_time
-                    if start_time <= occur_time <= end_time:
-                        for sp_value in content.get('values'):
-                            perf_value = content.get('values').get(sp_value)
-                            for key, value in perf_value.items():
-                                bfind = False
-                                value = float(value)
-                                for metric in metrics:
-                                    if metric.get('resource_id') == key and \
-                                            metric.get('type') == target:
-                                        if metric.get('values').get(
-                                                occur_time):
-                                            if target == 'responseTime':
-                                                metric.get(
-                                                    'values')[occur_time] = \
-                                                    max(value, metric.get(
-                                                        'values').get(
-                                                        occur_time))
-                                            else:
-                                                metric.get('values')[
-                                                    occur_time] += value
+                if time_map.get('latest_time') <= occur_time \
+                        and time_map.get('latest_time') != 0:
+                    continue
+                time_map['latest_time'] = occur_time
+                if start_time <= occur_time <= end_time:
+                    for sp_value in content.get('values'):
+                        perf_value = content.get('values').get(sp_value)
+                        for key, value in perf_value.items():
+                            bfind = False
+                            value = float(value)
+                            for metric in metrics:
+                                if metric.get('resource_id') == key and \
+                                        metric.get('type') == target:
+                                    if metric.get('values').get(
+                                            occur_time):
+                                        if target == 'responseTime':
+                                            metric.get(
+                                                'values')[occur_time] = \
+                                                max(value, metric.get(
+                                                    'values').get(
+                                                    occur_time))
                                         else:
-                                            metric.get('values')[occur_time] \
-                                                = value
-                                        bfind = True
-                                        break
-                                if bfind is False:
-                                    metric_value = {
-                                        'type': target,
-                                        'resource_id': key,
-                                        'values': {occur_time: value}
-                                    }
-                                    metrics.append(metric_value)
-                else:
-                    return True
+                                            metric.get('values')[
+                                                occur_time] += value
+                                    else:
+                                        metric.get('values')[occur_time] \
+                                            = value
+                                    bfind = True
+                                    break
+                            if bfind is False:
+                                metric_value = {
+                                    'type': target,
+                                    'resource_id': key,
+                                    'values': {occur_time: value}
+                                }
+                                metrics.append(metric_value)
         except Exception as err:
             err_msg = "Failed to collect history metrics from Unity: %s, " \
                       "target:%s" % (six.text_type(err), target)
