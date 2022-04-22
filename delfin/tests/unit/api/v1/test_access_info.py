@@ -73,7 +73,7 @@ class TestAccessInfoController(test.TestCase):
             db, 'access_info_get',
             fakes.fake_access_info_show)
 
-        fake_access_info = fakes.fake_update_access_info(None, None, None)
+        fake_access_info = fakes.fake_update_access_info(None, None)
         self.mock_object(
             self.controller.driver_api, 'update_access_info',
             mock.Mock(return_value=fake_access_info))
