@@ -329,7 +329,7 @@ def fake_access_infos_show_all(context):
     return [access_info]
 
 
-def fake_update_access_info(self, context, access_info):
+def fake_update_access_info(self, context):
     access_info = models.AccessInfo()
 
     access_info.updated_at = '2020-06-15T09:50:31.698956'
