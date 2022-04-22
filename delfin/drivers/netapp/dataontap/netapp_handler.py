@@ -190,7 +190,7 @@ class NetAppHandler(object):
                     "vendor": constant.STORAGE_VENDOR,
                     "model": controller['Model'],
                     "status": status,
-                    "serial_number": storage_map['ClusterSerialNumber'],
+                    "serial_number": storage_map['ClusterUUID'],
                     "firmware_version": storage_version[0],
                     "location": controller['Location'],
                     "total_capacity": total_capacity,
