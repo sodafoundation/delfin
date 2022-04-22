@@ -153,7 +153,7 @@ class TestCase(base_test.BaseTestCase):
             CONF.set_override(k, v)
 
     def start_service(self, name, host=None, **kwargs):
-        host = host and host or uuidutils.generate_uuid()
+        host = host or uuidutils.generate_uuid()
         kwargs.setdefault('host', host)
         kwargs.setdefault('binary', 'delfin-%s' % name)
         svc = service.Service.create(**kwargs)
