@@ -412,6 +412,70 @@ def fake_volume_show(context, volume_id):
     }
 
 
+def fake_filesystems_get_all(context, marker=None,
+                             limit=None, sort_keys=None, sort_dirs=None,
+                             filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "native_filesystem_id": "5f5c806d-2e65-473c",
+            "type": "type_d",
+            "status": "connected",
+            "storage_id": "5f5c806d-2e65-473c-b612",
+            "native_pool_id": "parent_d",
+            "security_mode": "SM",
+            "total_capacity": "200000",
+            "used_capacity": 100000,
+            "free_capacity": 100000,
+            "compressed": True,
+            "deduplicated": False,
+            "worm": "W",
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "native_filesystem_id": "5f5c806d-2e65-473c",
+            "type": "type_dD",
+            "status": "connected",
+            "storage_id": "5f5c806d-2e65-473c-b612",
+            "native_pool_id": "parent_d",
+            "security_mode": "SM",
+            "total_capacity": "200000",
+            "used_capacity": 100000,
+            "free_capacity": 100000,
+            "compressed": True,
+            "deduplicated": False,
+            "worm": "W",
+        }
+    ]
+
+
+def fake_filesystem_show(context, filesystem_id):
+    return {
+        "created_at": "2020-06-10T07:17:31.157079",
+        "updated_at": "2020-06-10T07:17:31.157079",
+        "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+        "name": "004DF",
+        "native_filesystem_id": "5f5c806d-2e65-473c",
+        "type": "type_d",
+        "status": "connected",
+        "storage_id": "5f5c806d-2e65-473c-b612",
+        "native_pool_id": "parent_d",
+        "security_mode": "SM",
+        "total_capacity": "200000",
+        "used_capacity": 100000,
+        "free_capacity": 100000,
+        "compressed": True,
+        "deduplicated": False,
+        "worm": "W",
+    }
+
+
 def fake_storage_pool_get_all(context, marker=None,
                               limit=None, sort_keys=None,
                               sort_dirs=None, filters=None, offset=None):
