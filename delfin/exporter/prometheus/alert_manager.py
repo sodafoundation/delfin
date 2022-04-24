@@ -51,7 +51,7 @@ class PrometheusAlertExporter(object):
 
             self.alerts.append(dict)
             try:
-                response = requests.post('http://' + host + ":" + port +
+                response = requests.post('https://' + host + ":" + port +
                                          '/api/v1/alerts',
                                          json=self.alerts)
                 if response.status_code != 200:
