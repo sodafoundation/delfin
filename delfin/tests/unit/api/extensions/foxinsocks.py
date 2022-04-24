@@ -28,7 +28,7 @@ class Foxinsocks(extensions.ExtensionDescriptor):
 
     name = "Fox In Socks"
     alias = "FOXNSOX"
-    namespace = "http://www.fox.in.socks/api/ext/pie/v1.0"
+    namespace = "https://www.fox.in.socks/api/ext/pie/v1.0"
     updated = "2011-01-22T13:25:27-06:00"
 
     def __init__(self, ext_mgr):
