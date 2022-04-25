@@ -192,7 +192,7 @@ class NetAppHandler(object):
                     "status": status,
                     "serial_number":
                         storage_map['ClusterUUID'] +
-                        '_' + storage_map['ClusterSerialNumber'],
+                        ':' + storage_map['ClusterSerialNumber'],
                     "firmware_version": storage_version[0],
                     "location": controller['Location'],
                     "total_capacity": total_capacity,
@@ -1101,7 +1101,7 @@ class NetAppHandler(object):
                 get_perf_value(metrics, storage_id,
                                start_time, end_time,
                                json_info,
-                               storage['ClusterUUID'] + '_'
+                               storage['ClusterUUID'] + :'
                                + storage['ClusterSerialNumber'],
                                storage['ClusterName'],
                                constants.ResourceType.STORAGE)
