@@ -4210,7 +4210,7 @@ components:
       description: Response for all snmp alert source configuration.
       type: object
       properties:
-        snmp_configs:
+        access_info:
           type: array
           description: the list of snmp configs
           items:
