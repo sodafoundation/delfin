@@ -197,5 +197,10 @@ The logs can be uniquely identified based upon the timestamp.
 
      http://localhost:9090/graph
 
-# Limitation
-Local installation, unlike Ansible installer, does not support SODA Dashboard integration.
+     
+# LIMITATION
+
+  1. Ansible Installer support integration with SODA Foundation
+
+  2. Delfin script Installer does not support integration with SODA Dashboard
+=======
