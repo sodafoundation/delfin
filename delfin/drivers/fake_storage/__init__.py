@@ -422,17 +422,17 @@ class FakeStorageDriver(driver.StorageDriver):
         return share_list
 
     def add_trap_config(self, context, trap_config):
-        pass # Fakedriver do not require to add trap config
+        pass  # Fakedriver do not require to add trap config
 
     def remove_trap_config(self, context, trap_config):
-        pass # Fakedriver do not require to remove trap config
+        pass  # Fakedriver do not require to remove trap config
 
     @staticmethod
     def parse_alert(context, alert):
-        pass # Fakedriver do not require to parse alert
+        pass  # Fakedriver do not require to parse alert
 
     def clear_alert(self, context, alert):
-        pass # Fakedriver do not require to clear alert
+        pass  # Fakedriver do not require to clear alert
 
     def list_alerts(self, context, query_para=None):
         alert_list = [{
