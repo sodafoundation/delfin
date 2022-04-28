@@ -34,9 +34,6 @@ class AlertHandler(object):
                     "NORMAL": constants.Severity.INFORMATIONAL,
                     "INFORMATION": constants.Severity.INFORMATIONAL}
 
-    def __init__(self):
-        pass
-
     def parse_queried_alerts(self, alert_list):
         """Parse queried alerts and convert to alert model."""
 
