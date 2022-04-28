@@ -958,7 +958,7 @@ class UnityStorDriver(driver.StorageDriver):
                 for entry in entries:
                     content = entry.get('content')
                     if not content:
-                        return latest_time
+                        continue
                     occur_time = int(time.mktime(time.strptime(
                         content.get('timestamp'),
                         AlertHandler.TIME_PATTERN))
