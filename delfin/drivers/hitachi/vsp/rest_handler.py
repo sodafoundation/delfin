@@ -177,14 +177,14 @@ class RestHandler(RestClient):
             system_info = storage_systems.get('data')
             for system in system_info:
                 succeed = True
-                if system.get('model') in consts.SUPPORTED_VSP_SERIES:
-                    if system.get('ctl1Ip') == self.rest_host or \
-                            system.get('ctl2Ip') == self.rest_host:
+                if system.get('svpIp'):
+                    if system.get('svpIp') == self.rest_host:
                         self.storage_device_id = system.get('storageDeviceId')
                         self.device_model = system.get('model')
                         self.serial_number = system.get('serialNumber')
                         break
-                elif system.get('svpIp') == self.rest_host:
+                elif system.get('ctl1Ip') == self.rest_host or \
+                        system.get('ctl2Ip') == self.rest_host:
                     self.storage_device_id = system.get('storageDeviceId')
                     self.device_model = system.get('model')
                     self.serial_number = system.get('serialNumber')
@@ -259,5 +259,39 @@ class RestHandler(RestClient):
         url = '%s/%s/alerts?%s&start=%s&count=%s' % (RestHandler.COMM_URL,
                                                      self.storage_device_id,
                                                      param, start, end)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_all_host_groups(self):
+        url = '%s/%s/host-groups' % \
+              (RestHandler.COMM_URL, self.storage_device_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_specific_host_group(self, port_id):
+        url = '%s/%s/host-groups?portId=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_host_wwn(self, port_id, group_number):
+        url = '%s/%s/host-wwns?portId=%s&hostGroupNumber=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id,
+               group_number)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_iscsi_name(self, port_id, group_number):
+        url = '%s/%s/host-iscsis?portId=%s&hostGroupNumber=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id,
+               group_number)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_lun_path(self, port_id, group_number):
+        url = '%s/%s/luns?portId=%s&hostGroupNumber=%s&' \
+              'isBasicLunInformation=true' % \
+              (RestHandler.COMM_URL, self.storage_device_id, port_id,
+               group_number)
         result_json = self.get_rest_info(url)
         return result_json
