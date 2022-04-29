@@ -344,6 +344,80 @@ trap_result = {
     'resource_type': 'Storage',
     'location': 'eeeeeeeee'
 }
+GET_INITORATORS = {
+    "data": {
+        "host_ports":
+        [
+            {
+                "wwpn": "50050763030813A2",
+                "state": "logged in",
+                "hosttype": "VMware",
+                "addrdiscovery": "lunpolling",
+                "lbs": "512",
+                "host": {
+                    "name": "myhost"
+                }
+            }
+        ]
+    }
+}
+INIT_RESULT = [
+    {
+        'name': '50050763030813A2',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': '50050763030813A2',
+        'wwn': '50050763030813A2',
+        'status': 'online',
+        'type': 'unknown',
+        'native_storage_host_id': 'myhost'
+    }
+]
+GET_ALL_HOSTS = {
+    "data": {
+        "hosts":
+        [
+            {
+                "name": "test_host",
+                "state": "online",
+                "hosttype": "VMware",
+                "addrmode": "SCSI mask",
+                "addrdiscovery": "lunpolling",
+                "lbs": "512"
+            }
+        ]
+    }
+}
+HOST_RESULT = [
+    {
+        'name': 'test_host',
+        'storage_id': '12345',
+        'native_storage_host_id': 'test_host',
+        'os_type': 'VMware ESX',
+        'status': 'normal'
+    }
+]
+GET_HOST_MAPPING = {
+    "data": {
+        "mappings":
+        [
+            {
+                "lunid": "00",
+                "volume": {
+                    "id": "0005"
+                }
+            }
+        ]
+    }
+}
+VIEW_RESULT = [
+    {
+        'name': '00_test_host',
+        'native_storage_host_id': 'test_host',
+        'storage_id': '12345',
+        'native_volume_id': '0005',
+        'native_masking_view_id': '00_test_host'
+    }
+]
 
 
 class TestDS8KDriver(TestCase):
@@ -401,3 +475,25 @@ class TestDS8KDriver(TestCase):
         mock_contrl.return_value = GET_ALL_CONTROLLERS
         controller = DS8KDriver(**ACCESS_INFO).list_controllers(context)
         self.assertEqual(controller, contrl_result)
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_host_initiators(self, mock_init):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_init.return_value = GET_INITORATORS
+        initiators = DS8KDriver(
+            **ACCESS_INFO).list_storage_host_initiators(context)
+        self.assertEqual(initiators, INIT_RESULT)
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_hosts(self, mock_host):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_host.return_value = GET_ALL_HOSTS
+        hosts = DS8KDriver(**ACCESS_INFO).list_storage_hosts(context)
+        self.assertEqual(hosts, HOST_RESULT)
+
+    @mock.patch.object(RestHandler, 'get_rest_info')
+    def test_masking_views(self, mock_view):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_view.side_effect = [GET_ALL_HOSTS, GET_HOST_MAPPING]
+        views = DS8KDriver(**ACCESS_INFO).list_masking_views(context)
+        self.assertEqual(views, VIEW_RESULT)
