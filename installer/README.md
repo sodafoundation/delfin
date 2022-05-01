@@ -134,6 +134,13 @@ $ installer/install
 
 Note: Multiple instances of exporter and api is not allowed currently.
 
+#### Post install verification
+After delfin installation use the following command to verify all process 
+of delfin are running.
+```sh
+ps -aux | grep delfin
+```
+
 # Uninstall
 Running the uninstall script will stop all delfin processes and do cleanup
 ```sh

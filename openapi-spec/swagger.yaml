@@ -3539,7 +3539,7 @@ components:
       description: Response for all access infos configuration.
       type: object
       properties:
-        snmp_configs:
+        access_infos:
           type: array
           description: the list of access info
           items:
