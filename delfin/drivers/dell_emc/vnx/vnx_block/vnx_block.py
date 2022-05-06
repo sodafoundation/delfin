@@ -77,3 +77,12 @@ class VnxBlockStorDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def list_storage_host_initiators(self, context):
+        return self.com_handler.list_storage_host_initiators(self.storage_id)
+
+    def list_storage_hosts(self, context):
+        return self.com_handler.list_storage_hosts(self.storage_id)
+
+    def list_masking_views(self, context):
+        return self.com_handler.list_masking_views(self.storage_id)
