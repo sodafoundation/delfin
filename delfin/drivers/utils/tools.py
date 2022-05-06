@@ -161,4 +161,4 @@ class Tools(object):
         finally:
             if os.path.exists(local_file):
                 Tools.remove_file_with_same_type(file, local_path)
-            return root_node
+        return root_node

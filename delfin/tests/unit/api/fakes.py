@@ -329,7 +329,7 @@ def fake_access_infos_show_all(context):
     return [access_info]
 
 
-def fake_update_access_info(self, context, access_info):
+def fake_update_access_info(self, context):
     access_info = models.AccessInfo()
 
     access_info.updated_at = '2020-06-15T09:50:31.698956'
@@ -741,6 +741,11 @@ def fake_get_capabilities(context, storage_id):
                         "unit": "IOPS",
                         "description": "Write operations per second"
                     },
+                    "ioSize": {
+                        "unit": "KB",
+                        "description": "The average size of IO requests "
+                                       "in KB."
+                    },
                     "readIoSize": {
                         "unit": "KB",
                         "description": "The average size of read IO requests "
@@ -748,7 +753,7 @@ def fake_get_capabilities(context, storage_id):
                     },
                     "writeIoSize": {
                         "unit": "KB",
-                        "description": "The average size of read IO requests"
+                        "description": "The average size of write IO requests"
                                        " in KB."
                     },
                 },

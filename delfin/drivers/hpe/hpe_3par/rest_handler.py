@@ -39,6 +39,8 @@ class RestHandler(object):
 
     REST_ALERTS_URL = '/api/v1/eventlog?query="category EQ 2"'
 
+    REST_HOSTS_URL = '/api/v1/hosts'
+
     REST_AUTH_KEY = 'X-HP3PAR-WSAPI-SessionKey'
 
     REST_CPGSTATISTICS_URL = '/api/v1/systemreporter' \
@@ -215,4 +217,8 @@ class RestHandler(object):
         url = RestHandler.REST_CPGSTATISTICS_URL % (
             start_time_str, end_time_str)
         rejson = self.get_resinfo_call(url, method='GET')
+
+    def list_storage_host(self):
+        rejson = self.get_resinfo_call(RestHandler.REST_HOSTS_URL,
+                                       method='GET')
         return rejson

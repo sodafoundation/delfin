@@ -83,6 +83,24 @@ class VMAXStorageDriver(driver.StorageDriver):
     def list_disks(self, context):
         return self.client.list_disks(self.storage_id)
 
+    def list_storage_host_initiators(self, context):
+        return self.client.list_storage_host_initiators(self.storage_id)
+
+    def list_storage_hosts(self, context):
+        return self.client.list_storage_hosts(self.storage_id)
+
+    def list_storage_host_groups(self, context):
+        return self.client.list_storage_host_groups(self.storage_id)
+
+    def list_port_groups(self, context):
+        return self.client.list_port_groups(self.storage_id)
+
+    def list_volume_groups(self, context):
+        return self.client.list_volume_groups(self.storage_id)
+
+    def list_masking_views(self, context):
+        return self.client.list_masking_views(self.storage_id)
+
     def add_trap_config(self, context, trap_config):
         pass
 

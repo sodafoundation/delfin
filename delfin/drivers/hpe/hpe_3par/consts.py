@@ -667,6 +667,11 @@ SRSTATVV_PATTERN = "^\\s*VVID\\s+VV_NAME\\s+Rd\\s+Wr\\s+" \
                    "Tot\\s+Rd\\s+Wr\\s+Tot\\s+Rd\\s+Wr\\s+Tot"
 
 IPV4_PATTERN = "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+
+HOST_OR_VV_SET_PATTERN = "^\\s*Id\\s+Name\\s+Members\\s+Comment"
+HOST_OR_VV_PATTERN = "^\\s*Id\\s+Name\\s+"
+VLUN_PATTERN = "^\\s*Lun\\s+VVName\\s+HostName"
+
 CONTROLLER_STATUS_MAP = {
     'OK': constants.ControllerStatus.NORMAL,
     'NORMAL': constants.ControllerStatus.NORMAL,
@@ -680,7 +685,7 @@ DISK_PHYSICAL_TYPE_MAP = {
 }
 DISK_STATUS_MAP = {
     'NORMAL': constants.DiskStatus.NORMAL,
-    'DEGRADED': constants.DiskStatus.ABNORMAL,
+    'DEGRADED': constants.DiskStatus.DEGRADED,
     'FAILED': constants.DiskStatus.ABNORMAL,
     'NEW': constants.DiskStatus.ABNORMAL
 }
@@ -823,3 +828,34 @@ DISK_CAP = {
     "responseTime": RESPONSE_TIME_DESCRIPTION
 }
 SECONDS_PER_HOUR = 3600
+HOST_OS_MAP = {
+    'AIX': constants.HostOSTypes.AIX,
+    'Citrix Xen Server 5.x/6.x': constants.HostOSTypes.XEN_SERVER,
+    'Citrix Xen Server 7.x': constants.HostOSTypes.XEN_SERVER,
+    'HP-UX': constants.HostOSTypes.HP_UX,
+    'HP-UX (11i v1,11i v2)': constants.HostOSTypes.HP_UX,
+    'HP-UX (11i v3)': constants.HostOSTypes.HP_UX,
+    'OpenVMS': constants.HostOSTypes.OPEN_VMS,
+    'Oracle VM x86': constants.HostOSTypes.ORACLE_VM,
+    'Solaris 11': constants.HostOSTypes.SOLARIS,
+    'Solaris 9/10': constants.HostOSTypes.SOLARIS,
+    'VMware (ESXi)': constants.HostOSTypes.VMWARE_ESX,
+    'ESXI6.0': constants.HostOSTypes.VMWARE_ESX,
+    'ESX 4.x/5.x': constants.HostOSTypes.VMWARE_ESX,
+    'Windows 2003': constants.HostOSTypes.WINDOWS,
+    'Windows 2008/2008 R2': constants.HostOSTypes.WINDOWS,
+    'Windows 2012': constants.HostOSTypes.WINDOWS_SERVER_2012,
+    'Windows 2012 / WS2012 R2': constants.HostOSTypes.WINDOWS_SERVER_2012,
+    'Windows Server 2016': constants.HostOSTypes.WINDOWS,
+    'Red Hat Enterprise Linux': constants.HostOSTypes.LINUX,
+    'OE Linux UEK (5.x, 6.x)': constants.HostOSTypes.LINUX,
+    'OE Linux UEK 7.x': constants.HostOSTypes.LINUX,
+    'RHE Linux (5.x, 6.x)': constants.HostOSTypes.LINUX,
+    'RHE Linux (Pre RHEL 5)': constants.HostOSTypes.LINUX,
+    'RHE Linux 7.x': constants.HostOSTypes.LINUX,
+    'SuSE (10.x, 11.x)': constants.HostOSTypes.LINUX,
+    'SuSE': constants.HostOSTypes.LINUX,
+    'SuSE 12.x': constants.HostOSTypes.LINUX,
+    'SuSE Linux (Pre SLES 10)': constants.HostOSTypes.LINUX,
+    'SuSE Virtualization': constants.HostOSTypes.LINUX
+}

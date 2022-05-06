@@ -20,11 +20,11 @@ This is one of the SODA Core Projects and is maintained by SODA Foundation direc
 
 ## Quick Start - To Use/Experience
 
-[https://docs.sodafoundation.io](https://docs.sodafoundation.io/)
+[https://docs.sodafoundation.io/guides/user-guides/delfin](https://docs.sodafoundation.io/guides/user-guides/delfin/)
 
 ## Quick Start - To Develop
 
-[https://docs.sodafoundation.io](https://docs.sodafoundation.io/)
+[https://docs.sodafoundation.io/guides/developer-guides/delfin](https://docs.sodafoundation.io/guides/developer-guides/delfin/)
 
 ## Latest Releases
 

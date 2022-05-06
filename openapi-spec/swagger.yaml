@@ -1041,16 +1041,16 @@ paths:
               - abnormal
       responses:
         '200':
-          description: List port query was success
+          description: List disk query was success
           content:
             application/json:
               schema:
                 type: object
                 required:
-                  - ports
+                  - disks
                 additionalProperties: true
                 properties:
-                  ports:
+                  disks:
                     type: array
                     title: the disk schema
                     items:
@@ -3539,7 +3539,7 @@ components:
       description: Response for all access infos configuration.
       type: object
       properties:
-        snmp_configs:
+        access_infos:
           type: array
           description: the list of access info
           items:
