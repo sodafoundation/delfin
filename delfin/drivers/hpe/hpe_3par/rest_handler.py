@@ -217,6 +217,7 @@ class RestHandler(object):
         url = RestHandler.REST_CPGSTATISTICS_URL % (
             start_time_str, end_time_str)
         rejson = self.get_resinfo_call(url, method='GET')
+        return rejson
 
     def list_storage_host(self):
         rejson = self.get_resinfo_call(RestHandler.REST_HOSTS_URL,

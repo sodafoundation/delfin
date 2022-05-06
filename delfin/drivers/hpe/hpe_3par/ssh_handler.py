@@ -322,6 +322,7 @@ class SSHHandler(object):
                                                                obj_list,
                                                                titles,
                                                                para_map)
+                        elif para_map and para_map.get('command', '') \
                                 == 'parse_set_groups_table':
                             if '---------------------------------' in str_line:
                                 break
