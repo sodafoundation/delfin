@@ -86,3 +86,12 @@ class StorwizeSVCDriver(driver.StorageDriver):
 
     def get_latest_perf_timestamp(self, context):
         return self.ssh_hanlder.get_latest_perf_timestamp()
+
+    def list_storage_hosts(self, context):
+        return self.ssh_hanlder.list_storage_hosts(self.storage_id)
+
+    def list_masking_views(self, context):
+        return self.ssh_hanlder.list_masking_views(self.storage_id)
+
+    def list_storage_host_initiators(self, context):
+        return self.ssh_hanlder.list_storage_host_initiators(self.storage_id)

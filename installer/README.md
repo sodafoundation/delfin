@@ -131,6 +131,13 @@ $ installer/install
 
 Note: Multiple instances of exporter and api is not allowed currently.
 
+#### Post install verification
+After delfin installation use the following command to verify all process 
+of delfin are running.
+```sh
+ps -aux | grep delfin
+```
+
 # Uninstall
 Running the uninstall script will stop all delfin processes and do cleanup
 ```sh
@@ -189,3 +196,6 @@ The logs can be uniquely identified based upon the timestamp.
   4. [Optional] If prometheus is configured, monitor the performance metrics on prometheus server at default location
 
      http://localhost:9090/graph
+
+# Limitation
+Local installation, unlike Ansible installer, does not support SODA Dashboard integration.

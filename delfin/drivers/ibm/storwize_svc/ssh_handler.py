@@ -120,6 +120,21 @@ class SSHHandler(object):
     ALERT_NOT_FOUND_CODE = 'CMMVC8275E'
     BLOCK_SIZE = 512
     BYTES_TO_BIT = 8
+    OS_TYPE_MAP = {'generic': constants.HostOSTypes.UNKNOWN,
+                   'hpux': constants.HostOSTypes.HP_UX,
+                   'openvms': constants.HostOSTypes.OPEN_VMS,
+                   'tpgs': constants.HostOSTypes.UNKNOWN,
+                   'vvol': constants.HostOSTypes.UNKNOWN
+                   }
+    INITIATOR_STATUS_MAP = {'active': constants.InitiatorStatus.ONLINE,
+                            'offline': constants.InitiatorStatus.OFFLINE,
+                            'inactive': constants.InitiatorStatus.ONLINE
+                            }
+    HOST_STATUS_MAP = {'online': constants.HostStatus.NORMAL,
+                       'offline': constants.HostStatus.OFFLINE,
+                       'degraded': constants.HostStatus.DEGRADED,
+                       'mask': constants.HostStatus.NORMAL,
+                       }
 
     def __init__(self, **kwargs):
         self.ssh_pool = SSHPool(**kwargs)
@@ -1044,3 +1059,110 @@ class SSHHandler(object):
                     if latest_time < occur_time:
                         latest_time = occur_time
         return latest_time
+
+    def list_storage_hosts(self, storage_id):
+        try:
+            host_list = []
+            hosts = self.exec_ssh_command('lshost')
+            host_res = hosts.split('\n')
+            for i in range(1, len(host_res)):
+                if host_res[i] is None or host_res[i] == '':
+                    continue
+                control_str = ' '.join(host_res[i].split())
+                str_info = control_str.split(' ')
+                host_id = str_info[0]
+                detail_command = 'lshost %s' % host_id
+                deltail_info = self.exec_ssh_command(detail_command)
+                host_map = {}
+                self.handle_detail(deltail_info, host_map, split=' ')
+                status = SSHHandler.HOST_STATUS_MAP.get(host_map.get('status'))
+                host_result = {
+                    "name": host_map.get('name'),
+                    "storage_id": storage_id,
+                    "native_storage_host_id": host_map.get('id'),
+                    "os_type": SSHHandler.OS_TYPE_MAP.get(
+                        host_map.get('type', '').lower()),
+                    "status": status
+                }
+                host_list.append(host_result)
+            return host_list
+        except Exception as e:
+            LOG.error("Failed to get host metrics from svc")
+            raise e
+
+    def list_masking_views(self, storage_id):
+        try:
+            view_list = []
+            hosts = self.exec_ssh_command('lshostvdiskmap')
+            host_res = hosts.split('\n')
+            for i in range(1, len(host_res)):
+                if host_res[i] is None or host_res[i] == '':
+                    continue
+                control_str = ' '.join(host_res[i].split())
+                str_info = control_str.split(' ')
+                if len(str_info) > 3:
+                    host_id = str_info[0]
+                    vdisk_id = str_info[3]
+                    view_id = '%s_%s' % (str_info[0], str_info[3])
+                    view_result = {
+                        "name": view_id,
+                        "native_storage_host_id": host_id,
+                        "storage_id": storage_id,
+                        "native_volume_id": vdisk_id,
+                        "native_masking_view_id": view_id,
+                    }
+                    view_list.append(view_result)
+            return view_list
+        except Exception as e:
+            LOG.error("Failed to get view metrics from svc")
+            raise e
+
+    def list_storage_host_initiators(self, storage_id):
+        try:
+            initiator_list = []
+            hosts = self.exec_ssh_command('lshost')
+            host_res = hosts.split('\n')
+            for i in range(1, len(host_res)):
+                if host_res[i] is None or host_res[i] == '':
+                    continue
+                control_str = ' '.join(host_res[i].split())
+                str_info = control_str.split(' ')
+                host_id = str_info[0]
+                detail_command = 'lshost %s' % host_id
+                deltail_info = self.exec_ssh_command(detail_command)
+                init_name = None
+                type = None
+                host_id = None
+                for host in deltail_info.split('\n'):
+                    if host:
+                        strinfo = host.split(' ', 1)
+                        key = strinfo[0]
+                        value = None
+                        if len(strinfo) > 1:
+                            value = strinfo[1]
+                        if key == 'WWPN':
+                            init_name = value
+                            type = 'fc'
+                        elif key == 'iscsi_name':
+                            init_name = value
+                            type = 'iscsi'
+                        elif key == 'id':
+                            host_id = value
+                        elif key == 'state' and init_name:
+                            status = SSHHandler.INITIATOR_STATUS_MAP.get(value)
+                            init_result = {
+                                "name": init_name,
+                                "storage_id": storage_id,
+                                "native_storage_host_initiator_id": init_name,
+                                "wwn": init_name,
+                                "status": status,
+                                "type": type,
+                                "native_storage_host_id": host_id
+                            }
+                            initiator_list.append(init_result)
+                            init_name = None
+                            type = None
+            return initiator_list
+        except Exception as e:
+            LOG.error("Failed to get initiators metrics from svc")
+            raise e
