@@ -354,6 +354,46 @@ I/O Module Slot :  Base Module
 I/O Module Type :  SAS
 """
 
+VIEW_DATAS = """
+Storage Group Name:    AIX_PowerHA_node2
+Storage Group UID:     0B:33:4A:6E:81:38:EC:11:90:2B:00:60:16:63
+HBA/SP Pairs:
+
+  HBA UID                                          SP Name     SPPort
+ -------                                          -------     ------
+  20:00:00:00:C9:76:5E:79:10:00:00:00:C9:76:5E:79   SP A         6
+Host name:             AIX_21
+  20:00:00:00:C9:75:80:4C:10:00:00:00:C9:75:80:4C   SP B         3
+Host name:             AIX_21
+
+HLU/ALU Pairs:
+
+  HLU Number     ALU Number
+  ----------     ----------
+    1               335
+Shareable:             YES
+"""
+HBA_DATAS = """
+Information about each HBA:
+
+HBA UID:                 20:00:00:00:C9:9B:57:79:10:00:00:00:C9:9B:57:79
+Server Name:             aix_ma
+Server IP Address:       8.44.129.26
+HBA Model Description:
+HBA Vendor Description:
+HBA Device Driver Name:   N/A
+Information about each port of this HBA:
+
+    SP Name:               SP A
+    SP Port ID:            6
+    HBA Devicename:        N/A
+    Trusted:               NO
+    Logged In:             NO
+    Defined:               YES
+    Initiator Type:          3
+    StorageGroup Name:     None
+"""
+
 AGENT_RESULT = {
     'agent_rev': '7.33.1 (0.38)',
     'name': 'K10',
@@ -519,6 +559,35 @@ PORT_RESULT = [
         'ipv4_mask': '255.255.255.0',
         'ipv6': None,
         'ipv6_mask': None
+    }]
+VIEW_RESULT = [
+    {
+        'native_masking_view_id': '0B:33:4A:6E:81:38:EC:11:90:2B:00:'
+                                  '60:16:63_AIX_21_335',
+        'name': 'AIX_PowerHA_node2',
+        'storage_id': '12345',
+        'native_storage_host_id': 'AIX_21',
+        'native_volume_id': '335'
+    }]
+INITIATOR_RESULT = [
+    {
+        'name': '20:00:00:00:C9:9B:57:79:10:00:00:00:C9:9B:57:79',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': '20:00:00:00:C9:9B:57:79:10:'
+                                            '00:00:00:C9:9B:57:79',
+        'wwn': '20:00:00:00:C9:9B:57:79:10:00:00:00:C9:9B:57:79',
+        'type': 'fc',
+        'status': 'online',
+        'native_storage_host_id': 'aix_ma'
+    }]
+HOST_RESULT = [
+    {
+        'name': 'aix_ma',
+        'storage_id': '12345',
+        'native_storage_host_id': 'aix_ma',
+        'os_type': 'Unknown',
+        'status': 'normal',
+        'ip_address': '8.44.129.26'
     }]
 
 
@@ -696,3 +765,22 @@ class TestVnxBlocktorageDriver(TestCase):
                          BUS_PORT_DATAS, BUS_PORT_STATE_DATAS])
         ports = self.driver.list_ports(context)
         self.assertDictEqual(ports[0], PORT_RESULT[0])
+
+    def test_get_masking_views(self):
+        NaviClient.exec = mock.Mock(side_effect=[VIEW_DATAS])
+        views = self.driver.list_masking_views(context)
+        self.assertDictEqual(views[0], VIEW_RESULT[0])
+
+    def test_get_initiators(self):
+        NaviClient.exec = mock.Mock(side_effect=[HBA_DATAS,
+                                                 IO_PORT_CONFIG_DATAS,
+                                                 ISCSI_PORT_DATAS, PORT_DATAS,
+                                                 BUS_PORT_DATAS,
+                                                 BUS_PORT_STATE_DATAS])
+        initiators = self.driver.list_storage_host_initiators(context)
+        self.assertDictEqual(initiators[0], INITIATOR_RESULT[0])
+
+    def test_get_hosts(self):
+        NaviClient.exec = mock.Mock(side_effect=[HBA_DATAS])
+        hosts = self.driver.list_storage_hosts(context)
+        self.assertDictEqual(hosts[0], HOST_RESULT[0])
