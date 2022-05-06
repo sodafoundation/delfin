@@ -18,7 +18,7 @@ from oslo_utils import units
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.ibm.ds8k import rest_handler, alert_handler
+from delfin.drivers.ibm.ds8k import rest_handler, alert_handler, consts
 
 LOG = log.getLogger(__name__)
 
@@ -35,6 +35,10 @@ class DS8KDriver(driver.StorageDriver):
         'fenced': constants.PortHealthStatus.UNKNOWN,
         'quiescing': constants.PortHealthStatus.UNKNOWN
     }
+    INITIATOR_STATUS_MAP = {'logged in': constants.InitiatorStatus.ONLINE,
+                            'logged out': constants.InitiatorStatus.OFFLINE,
+                            'unconfigured': constants.InitiatorStatus.UNKNOWN
+                            }
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -259,3 +263,83 @@ class DS8KDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}:{port}'
+
+    def list_storage_hosts(self, context):
+        try:
+            host_list = []
+            hosts = self.rest_handler.get_rest_info(consts.HOST_URL)
+            if not hosts:
+                return host_list
+            host_entries = hosts.get('data', {}).get('hosts', [])
+            for host in host_entries:
+                status = constants.HostStatus.NORMAL if \
+                    host.get('state') == 'online' else \
+                    constants.HostStatus.OFFLINE
+                os_type = constants.HostOSTypes.VMWARE_ESX if \
+                    host.get('hosttype') == 'VMware' else \
+                    constants.HostOSTypes.UNKNOWN
+                host_result = {
+                    "name": host.get('name'),
+                    "storage_id": self.storage_id,
+                    "native_storage_host_id": host.get('name'),
+                    "os_type": os_type,
+                    "status": status
+                }
+                host_list.append(host_result)
+            return host_list
+        except Exception as e:
+            LOG.error("Failed to get hosts from ds8k")
+            raise e
+
+    def list_masking_views(self, context):
+        try:
+            view_list = []
+            hosts = self.rest_handler.get_rest_info(consts.HOST_URL)
+            if not hosts:
+                return view_list
+            host_entries = hosts.get('data', {}).get('hosts', [])
+            for host in host_entries:
+                view_url = '%s/%s/mappings' % (consts.HOST_URL,
+                                               host.get('name'))
+                views = self.rest_handler.get_rest_info(view_url)
+                if not views:
+                    continue
+                view_entries = views.get('data', {}).get('mappings', [])
+                for view in view_entries:
+                    view_id = '%s_%s' % (view.get('lunid'), host.get('name'))
+                    view_result = {
+                        "name": view_id,
+                        "native_storage_host_id": host.get('name'),
+                        "storage_id": self.storage_id,
+                        "native_volume_id": view.get('volume', {}).get('id'),
+                        "native_masking_view_id": view_id,
+                    }
+                    view_list.append(view_result)
+            return view_list
+        except Exception as e:
+            LOG.error("Failed to get views from ds8k")
+            raise e
+
+    def list_storage_host_initiators(self, context):
+        try:
+            initiator_list = []
+            host_ports = self.rest_handler.get_rest_info(consts.HOST_PORT_URL)
+            if not host_ports:
+                return initiator_list
+            port_entries = host_ports.get('data', {}).get('host_ports', [])
+            for port in port_entries:
+                status = DS8KDriver.INITIATOR_STATUS_MAP.get(port.get('state'))
+                init_result = {
+                    "name": port.get('wwpn'),
+                    "storage_id": self.storage_id,
+                    "native_storage_host_initiator_id": port.get('wwpn'),
+                    "wwn": port.get('wwpn'),
+                    "status": status,
+                    "type": constants.InitiatorType.UNKNOWN,
+                    "native_storage_host_id": port.get('host', {}).get('name')
+                }
+                initiator_list.append(init_result)
+            return initiator_list
+        except Exception as e:
+            LOG.error("Failed to get initiators from ds8k")
+            raise e
