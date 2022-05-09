@@ -1101,7 +1101,7 @@ class NetAppHandler(object):
                 get_perf_value(metrics, storage_id,
                                start_time, end_time,
                                json_info,
-                               storage['ClusterUUID'] + :'
+                               storage['ClusterUUID'] + ':'
                                + storage['ClusterSerialNumber'],
                                storage['ClusterName'],
                                constants.ResourceType.STORAGE)
