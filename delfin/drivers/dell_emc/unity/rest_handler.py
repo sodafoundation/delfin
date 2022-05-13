@@ -47,6 +47,7 @@ class RestHandler(RestClient):
     REST_QTREE_URL = '/api/types/treeQuota/instances'
     REST_USERQUOTA_URL = '/api/types/userQuota/instances'
     REST_QUOTACONFIG_URL = '/api/types/quotaConfig/instances'
+    REST_VIRTUAL_DISK_URL = '/api/types/virtualDisk/instances'
     STATE_SOLVED = 2
 
     def __init__(self, **kwargs):
@@ -283,5 +284,11 @@ class RestHandler(RestClient):
     def get_history_metrics(self, path, page):
         url = '/api/types/metricValue/instances?filter=path EQ "%s"&page=%s'\
               % (path, page)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_virtual_disks(self):
+        url = '%s?%s' % (RestHandler.REST_VIRTUAL_DISK_URL,
+                         'fields=health,name,spaScsiId,tierType,sizeTotal,id')
         result_json = self.get_rest_info(url)
         return result_json
