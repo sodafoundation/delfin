@@ -437,7 +437,7 @@ class UnityStorDriver(driver.StorageDriver):
         try:
             disks = self.rest_handler.get_all_disks()
             disk_list = []
-            if disks is not None:
+            if disks and disks.get('entries'):
                 disk_entries = disks.get('entries')
                 for disk in disk_entries:
                     content = disk.get('content')
@@ -473,6 +473,8 @@ class UnityStorDriver(driver.StorageDriver):
                         'location': content.get('name')
                     }
                     disk_list.append(disk_result)
+            else:
+                disk_list = self.get_virtual_disk()
             return disk_list
 
         except Exception as err:
@@ -972,3 +974,39 @@ class UnityStorDriver(driver.StorageDriver):
                     latest_time = occur_time
                     break
         return latest_time
+
+    def get_virtual_disk(self):
+        try:
+            disks = self.rest_handler.get_virtual_disks()
+            disk_list = []
+            if disks is not None:
+                disk_entries = disks.get('entries')
+                for disk in disk_entries:
+                    content = disk.get('content')
+                    if not content:
+                        continue
+                    health_value = content.get('health', {}).get('value')
+                    slot_info = \
+                        content.get('health', {}).get('descriptionIds', [])
+                    if 'ALRT_DISK_SLOT_EMPTY' in slot_info:
+                        continue
+                    if health_value in UnityStorDriver.HEALTH_OK:
+                        status = constants.DiskStatus.NORMAL
+                    else:
+                        status = constants.DiskStatus.ABNORMAL
+                    disk_result = {
+                        'name': content.get('name'),
+                        'storage_id': self.storage_id,
+                        'native_disk_id': content.get('id'),
+                        'capacity': int(content.get('sizeTotal')),
+                        'status': status,
+                        'manufacturer': content.get('manufacturer'),
+                        'model': content.get('model'),
+                        'physical_type': constants.DiskPhysicalType.VMDISK
+                    }
+                    disk_list.append(disk_result)
+            return disk_list
+        except Exception as err:
+            err_msg = "Failed to get virtual disk from Unity: %s" % \
+                      (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
