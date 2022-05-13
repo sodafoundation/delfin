@@ -474,7 +474,7 @@ class UnityStorDriver(driver.StorageDriver):
                     }
                     disk_list.append(disk_result)
             else:
-                    disk_list = self.get_virtual_disk()
+                disk_list = self.get_virtual_disk()
             return disk_list
 
         except Exception as err:
@@ -1000,6 +1000,8 @@ class UnityStorDriver(driver.StorageDriver):
                         'native_disk_id': content.get('id'),
                         'capacity': int(content.get('sizeTotal')),
                         'status': status,
+                        'manufacturer': content.get('manufacturer'),
+                        'model': content.get('model'),
                         'physical_type': constants.DiskPhysicalType.VMDISK
                     }
                     disk_list.append(disk_result)

@@ -289,6 +289,7 @@ class RestHandler(RestClient):
 
     def get_virtual_disks(self):
         url = '%s?%s' % (RestHandler.REST_VIRTUAL_DISK_URL,
-                         'fields=health,name,spaScsiId,tierType,sizeTotal,id')
+                         'fields=health,name,spaScsiId,tierType,sizeTotal,'
+                         'id,model,manufacturer,wwn')
         result_json = self.get_rest_info(url)
         return result_json
