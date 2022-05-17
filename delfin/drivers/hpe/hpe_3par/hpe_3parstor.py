@@ -16,8 +16,9 @@ import six
 from oslo_log import log
 
 from delfin import context
+from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.hpe.hpe_3par import alert_handler
+from delfin.drivers.hpe.hpe_3par import alert_handler, consts
 from delfin.drivers.hpe.hpe_3par import component_handler
 from delfin.drivers.hpe.hpe_3par import rest_handler
 from delfin.drivers.hpe.hpe_3par import ssh_handler
@@ -101,6 +102,28 @@ class Hpe3parStorDriver(driver.StorageDriver):
 
     def list_storage_hosts(self, context):
         return self.comhandler.list_storage_hosts(self.storage_id)
+
+    def collect_perf_metrics(self, context, storage_id, resource_metrics,
+                             start_time, end_time):
+        return self.comhandler.collect_perf_metrics(storage_id,
+                                                    resource_metrics,
+                                                    start_time, end_time)
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.STORAGE_POOL: consts.POOL_CAP,
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP,
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        return self.comhandler.get_latest_perf_timestamp()
 
     def list_storage_host_groups(self, context):
         return self.comhandler.list_storage_host_groups(self.storage_id)

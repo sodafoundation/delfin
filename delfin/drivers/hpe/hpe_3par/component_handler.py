@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import copy
+import datetime
 import re
+import time
 
 import six
 from oslo_log import log
@@ -417,6 +420,328 @@ class ComponentHandler():
             err_msg = "analyse speed error: %s" % (six.text_type(err))
             LOG.error(err_msg)
         return speed
+
+    def collect_perf_metrics(self, storage_id, resource_metrics,
+                             start_time, end_time):
+        metrics = []
+        try:
+            # storage-pool metrics
+            if resource_metrics.get(constants.ResourceType.STORAGE_POOL):
+                pool_metrics = self.get_pool_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.STORAGE_POOL),
+                    start_time, end_time)
+                metrics.extend(pool_metrics)
+
+            # volume metrics
+            if resource_metrics.get(constants.ResourceType.VOLUME):
+                volume_metrics = self.get_volume_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.VOLUME),
+                    start_time, end_time)
+                metrics.extend(volume_metrics)
+
+            # port metrics
+            if resource_metrics.get(constants.ResourceType.PORT):
+                port_metrics = self.get_port_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.PORT),
+                    start_time, end_time)
+                metrics.extend(port_metrics)
+
+            # disk metrics
+            if resource_metrics.get(constants.ResourceType.DISK):
+                disk_metrics = self.get_disk_metrics(
+                    storage_id,
+                    resource_metrics.get(constants.ResourceType.DISK),
+                    start_time, end_time)
+                metrics.extend(disk_metrics)
+        except exception.DelfinException as err:
+            err_msg = "Failed to collect metrics from Hpe3parStor: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+        except Exception as err:
+            err_msg = "Failed to collect metrics from Hpe3parStor: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+        return metrics
+
+    def get_pool_metrics(self, storage_id, metric_list,
+                         start_time, end_time):
+        metrics = []
+        obj_metrics = {}
+        pool_maps = {}
+        pools = self.rest_handler.get_all_pools()
+        if pools:
+            pool_members = pools.get('members')
+            for pool in pool_members:
+                pool_maps[pool.get('name')] = str(pool.get('id'))
+            obj_metrics = self.rest_format_metrics_data(
+                start_time, end_time, self.rest_handler.get_pool_metrics,
+                constants.ResourceType.STORAGE_POOL)
+
+        if obj_metrics:
+            for obj_name in obj_metrics.keys():
+                if pool_maps.get(obj_name):
+                    labels = {
+                        'storage_id': storage_id,
+                        'resource_type': constants.ResourceType.STORAGE_POOL,
+                        'resource_id': pool_maps.get(obj_name),
+                        'type': 'RAW',
+                        'unit': ''
+                    }
+                    metric_model_list = self._get_metric_model(metric_list,
+                                                               labels,
+                                                               obj_metrics.get(
+                                                                   obj_name),
+                                                               consts.POOL_CAP)
+                    if metric_model_list:
+                        metrics.extend(metric_model_list)
+        return metrics
+
+    def _get_metric_model(self, metric_list, labels, metric_values, obj_cap):
+        metric_model_list = []
+        for metric_name in (metric_list or []):
+            values = {}
+            obj_labels = copy.deepcopy(labels)
+            obj_labels['unit'] = obj_cap.get(metric_name).get('unit')
+            for metric_value in metric_values:
+                if metric_value.get(metric_name) is not None:
+                    collect_timestamp = self.convert_to_system_time(
+                        metric_value.get('collect_timestamp'))
+                    values[collect_timestamp] = metric_value.get(
+                        metric_name)
+            if values:
+                metric_model = constants.metric_struct(name=metric_name,
+                                                       labels=obj_labels,
+                                                       values=values)
+                metric_model_list.append(metric_model)
+        return metric_model_list
+
+    def get_port_metrics(self, storage_id, metric_list,
+                         start_time, end_time):
+        metrics = []
+        obj_metrics = self.ssh_format_metrics_data(
+            start_time, end_time, self.ssh_handler.get_port_metrics,
+            constants.ResourceType.PORT)
+        if obj_metrics:
+            for obj_id in obj_metrics.keys():
+                labels = {
+                    'storage_id': storage_id,
+                    'resource_type': constants.ResourceType.PORT,
+                    'resource_id': obj_id,
+                    'type': 'RAW',
+                    'unit': ''
+                }
+                metric_model_list = self._get_metric_model(metric_list,
+                                                           labels,
+                                                           obj_metrics.get(
+                                                               obj_id),
+                                                           consts.PORT_CAP)
+                if metric_model_list:
+                    metrics.extend(metric_model_list)
+        return metrics
+
+    def get_disk_metrics(self, storage_id, metric_list,
+                         start_time, end_time):
+        metrics = []
+        obj_metrics = self.ssh_format_metrics_data(
+            start_time, end_time, self.ssh_handler.get_disk_metrics,
+            constants.ResourceType.DISK)
+        if obj_metrics:
+            for obj_id in obj_metrics.keys():
+                labels = {
+                    'storage_id': storage_id,
+                    'resource_type': constants.ResourceType.DISK,
+                    'resource_id': obj_id,
+                    'type': 'RAW',
+                    'unit': ''
+                }
+                metric_model_list = self._get_metric_model(metric_list,
+                                                           labels,
+                                                           obj_metrics.get(
+                                                               obj_id),
+                                                           consts.DISK_CAP)
+                if metric_model_list:
+                    metrics.extend(metric_model_list)
+        return metrics
+
+    def get_volume_metrics(self, storage_id, metric_list,
+                           start_time, end_time):
+        metrics = []
+        obj_metrics = {}
+        try:
+            obj_metrics = self.ssh_format_metrics_data(
+                start_time, end_time, self.ssh_handler.get_volume_metrics,
+                constants.ResourceType.VOLUME)
+        except Exception as err:
+            err_msg = "Failed to collect volume metrics: %s" \
+                      % (six.text_type(err))
+            LOG.warning(err_msg)
+        if obj_metrics:
+            for obj_id in obj_metrics.keys():
+                labels = {
+                    'storage_id': storage_id,
+                    'resource_type': constants.ResourceType.VOLUME,
+                    'resource_id': obj_id,
+                    'type': 'RAW',
+                    'unit': ''
+                }
+                metric_model_list = self._get_metric_model(metric_list,
+                                                           labels,
+                                                           obj_metrics.get(
+                                                               obj_id),
+                                                           consts.VOLUME_CAP)
+                if metric_model_list:
+                    metrics.extend(metric_model_list)
+        return metrics
+
+    def ssh_format_metrics_data(self, start_time, end_time, get_obj_metrics,
+                                obj_type):
+        collect_resuore_map = {}
+        obj_metrics = get_obj_metrics(start_time, end_time)
+        if obj_metrics:
+            metric_value = obj_metrics[0]
+            last_time = metric_value.get('collect_time', 0)
+            first_time = last_time
+            time_interval = consts.COLLECT_INTERVAL_HIRES
+            while (last_time - time_interval) > start_time:
+                next_obj_metrics = get_obj_metrics(
+                    start_time, (last_time - time_interval))
+                if next_obj_metrics:
+                    metric_value = next_obj_metrics[0]
+                    last_time = metric_value.get('collect_time', 0)
+                    if last_time > start_time:
+                        time_interval = first_time - last_time
+                        first_time = last_time
+                        obj_metrics.extend(next_obj_metrics)
+                    else:
+                        break
+                else:
+                    break
+
+        for obj_metric in (obj_metrics or []):
+            obj_id = ''
+            if obj_type == constants.ResourceType.DISK:
+                obj_id = obj_metric.get('pdid')
+            elif obj_type == constants.ResourceType.PORT:
+                obj_id = '%s:%s:%s' % (
+                    obj_metric.get('port_n'), obj_metric.get('port_s'),
+                    obj_metric.get('port_p'))
+            elif obj_type == constants.ResourceType.VOLUME:
+                obj_id = obj_metric.get('vvid')
+            if obj_id:
+                metric_list = []
+                if collect_resuore_map.get(obj_id):
+                    metric_list = collect_resuore_map.get(obj_id)
+                else:
+                    collect_resuore_map[obj_id] = metric_list
+                metric_map = {}
+                metric_map['iops'] = float(obj_metric.get('iotot'))
+                metric_map['readIops'] = float(obj_metric.get('iord'))
+                metric_map['writeIops'] = float(obj_metric.get('iowr'))
+                metric_map['throughput'] = round(
+                    float(obj_metric.get('kbytestot')) / units.k, 5)
+                metric_map['readThroughput'] = round(
+                    float(obj_metric.get('kbytesrd')) / units.k, 5)
+                metric_map['writeThroughput'] = round(
+                    float(obj_metric.get('kbyteswr')) / units.k, 5)
+                metric_map['responseTime'] = float(
+                    obj_metric.get('svcttot'))
+                metric_map['ioSize'] = float(obj_metric.get('iosztot'))
+                metric_map['readIoSize'] = float(obj_metric.get('ioszrd'))
+                metric_map['writeIoSize'] = float(obj_metric.get('ioszwr'))
+                metric_map['collect_timestamp'] = obj_metric.get(
+                    'collect_time')
+                metric_list.append(metric_map)
+        return collect_resuore_map
+
+    def rest_format_metrics_data(self, start_time, end_time, get_obj_metrics,
+                                 obj_type):
+        collect_resuore_map = {}
+        obj_metrics_list = []
+        obj_metrics = get_obj_metrics(start_time, end_time)
+        if obj_metrics:
+            last_time = obj_metrics.get('sampleTimeSec', 0) * units.k
+            first_time = last_time
+            time_interval = consts.COLLECT_INTERVAL_HIRES
+            metric_members = obj_metrics.get('members')
+            if metric_members:
+                for member in metric_members:
+                    member['collect_timestamp'] = last_time
+                obj_metrics_list.extend(metric_members)
+                while (last_time - time_interval) > start_time:
+                    next_obj_metrics = get_obj_metrics(
+                        start_time,
+                        (last_time - time_interval))
+                    metric_members = next_obj_metrics.get('members')
+                    if metric_members:
+                        last_time = next_obj_metrics.get(
+                            'sampleTimeSec', 0) * units.k
+                        if last_time > start_time:
+                            time_interval = first_time - last_time
+                            first_time = last_time
+                            for member in metric_members:
+                                member['collect_timestamp'] = last_time
+                            obj_metrics_list.extend(metric_members)
+                        else:
+                            break
+                    else:
+                        break
+        for obj_metric in (obj_metrics_list or []):
+            obj_id = ''
+            if obj_type == constants.ResourceType.STORAGE_POOL:
+                obj_id = obj_metric.get('name')
+            if obj_id:
+                metric_list = []
+                if collect_resuore_map.get(obj_id):
+                    metric_list = collect_resuore_map.get(obj_id)
+                else:
+                    collect_resuore_map[obj_id] = metric_list
+                metric_map = {}
+                metric_map['iops'] = obj_metric.get('IO').get('total')
+                metric_map['readIops'] = obj_metric.get('IO').get('read')
+                metric_map['writeIops'] = obj_metric.get('IO').get('write')
+                metric_map['throughput'] = round(
+                    obj_metric.get('KBytes').get('total') / units.k, 5)
+                metric_map['readThroughput'] = round(
+                    obj_metric.get('KBytes').get('read') / units.k, 5)
+                metric_map['writeThroughput'] = round(
+                    obj_metric.get('KBytes').get('write') / units.k, 5)
+                metric_map['responseTime'] = obj_metric.get(
+                    'serviceTimeMS').get('total')
+                metric_map['ioSize'] = obj_metric.get('IOSizeKB').get('total')
+                metric_map['readIoSize'] = obj_metric.get('IOSizeKB').get(
+                    'read')
+                metric_map['writeIoSize'] = obj_metric.get('IOSizeKB').get(
+                    'write')
+                metric_map['collect_timestamp'] = obj_metric.get(
+                    'collect_timestamp')
+                metric_list.append(metric_map)
+        return collect_resuore_map
+
+    def get_latest_perf_timestamp(self):
+        latest_time = 0
+        disks_metrics_datas = self.ssh_handler.get_disk_metrics(None, None)
+        for metrics_data in (disks_metrics_datas or []):
+            if metrics_data and metrics_data.get('collect_time'):
+                latest_time = metrics_data.get('collect_time')
+                break
+        return latest_time
+
+    def convert_to_system_time(self, occur_time):
+        dateArray = datetime.datetime.utcfromtimestamp(occur_time / units.k)
+        otherStyleTime = dateArray.strftime("%Y-%m-%d %H:%M:%SZ")
+        timeArray = time.strptime(otherStyleTime, "%Y-%m-%d %H:%M:%SZ")
+        timeStamp = int(time.mktime(timeArray))
+        hour_offset = (time.mktime(time.localtime()) - time.mktime(
+            time.gmtime())) / consts.SECONDS_PER_HOUR
+        occur_time = timeStamp * units.k + (int(hour_offset) *
+                                            consts.SECONDS_PER_HOUR) * units.k
+        return occur_time
 
     def list_storage_host_initiators(self, storage_id):
         initiators = self.ssh_handler.list_storage_host_initiators()
