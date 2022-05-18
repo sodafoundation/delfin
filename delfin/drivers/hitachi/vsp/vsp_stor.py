@@ -64,6 +64,18 @@ class HitachiVspDriver(driver.StorageDriver):
                      "HNASS": constants.PortType.OTHER,
                      "HNASU": constants.PortType.OTHER
                      }
+    OS_TYPE_MAP = {"HP-UX": constants.HostOSTypes.HP_UX,
+                   "SOLARIS": constants.HostOSTypes.SOLARIS,
+                   "AIX": constants.HostOSTypes.AIX,
+                   "WIN": constants.HostOSTypes.WINDOWS,
+                   "LINUX/IRIX": constants.HostOSTypes.LINUX,
+                   "TRU64": constants.HostOSTypes.UNKNOWN,
+                   "OVMS": constants.HostOSTypes.OPEN_VMS,
+                   "NETWARE": constants.HostOSTypes.UNKNOWN,
+                   "VMWARE": constants.HostOSTypes.VMWARE_ESX,
+                   "VMWARE_EX": constants.HostOSTypes.VMWARE_ESX,
+                   "WIN_EX": constants.HostOSTypes.WINDOWS
+                   }
     DISK_STATUS_TYPE = {"NML": constants.DiskStatus.NORMAL,
                         "CPY": constants.DiskStatus.NORMAL,
                         "CPI": constants.DiskStatus.NORMAL,
@@ -501,3 +513,258 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
+
+    @staticmethod
+    def handle_group_with_port(group_info):
+        group_list = {}
+        if not group_info:
+            return group_list
+        group_entries = group_info.get('data')
+        for group in group_entries:
+            if group_list.get(group.get('portId')):
+                group_list[group.get('portId')].append(
+                    group.get('hostGroupNumber'))
+            else:
+                group_list[group.get('portId')] = []
+                group_list[group.get('portId')].append(
+                    group.get('hostGroupNumber'))
+        return group_list
+
+    @staticmethod
+    def get_host_info(data, storage_id, host_list, type, os_type):
+        if data:
+            host_entries = data.get('data')
+            if not host_entries:
+                return True
+            for host in host_entries:
+                if type == 'iscsi':
+                    host_id = host.get('hostIscsiId')
+                    host_name = host.get('iscsiNickname') if \
+                        host.get('iscsiNickname') != '-' \
+                        else host.get('iscsiName')
+                else:
+                    host_id = host.get('hostWwnId')
+                    host_name = host.get('wwnNickname') if \
+                        host.get('wwnNickname') != '-' \
+                        else host.get('hostWwn')
+                host_result = {
+                    "name": host_name,
+                    "storage_id": storage_id,
+                    "native_storage_host_id": host_id.replace(",", "_"),
+                    "os_type": os_type,
+                    "status": constants.HostStatus.NORMAL
+                }
+                host_list.append(host_result)
+        return True
+
+    def list_storage_hosts(self, context):
+        try:
+            host_groups = self.rest_handler.get_all_host_groups()
+            host_list = []
+            if not host_groups:
+                return host_list
+            group_with_port = HitachiVspDriver.handle_group_with_port(
+                host_groups)
+            for port in group_with_port:
+                kwargs = {
+                    'method': 'host',
+                    'port': port,
+                    'result': host_list
+                }
+                self.handle_san_info(**kwargs)
+            return host_list
+        except Exception as e:
+            LOG.error("Failed to get host from vsp")
+            raise e
+
+    @staticmethod
+    def get_initiator_from_host(data, storage_id, initiator_list, type):
+        if data:
+            host_entries = data.get('data')
+            if not host_entries:
+                return True
+            for host in host_entries:
+                if type == 'iscsi':
+                    initiator_id = host.get('hostIscsiId')
+                    init_type = constants.InitiatorType.ISCSI
+                    init_name = host.get('iscsiName')
+                else:
+                    initiator_id = host.get('hostWwnId')
+                    init_type = constants.InitiatorType.FC
+                    init_name = host.get('hostWwn')
+                for initiator in initiator_list:
+                    if initiator.get('wwn') == init_name:
+                        continue
+                init_result = {
+                    "name": init_name,
+                    "storage_id": storage_id,
+                    "native_storage_host_initiator_id": init_name,
+                    "wwn": init_name,
+                    "status": constants.InitiatorStatus.ONLINE,
+                    "type": init_type,
+                    "alias": host.get('portId'),
+                    "native_storage_host_id": initiator_id.replace(",", "_")
+                }
+                initiator_list.append(init_result)
+        return True
+
+    def list_storage_host_initiators(self, context):
+        try:
+            initiator_list = []
+            host_groups = self.rest_handler.get_all_host_groups()
+            if not host_groups:
+                return initiator_list
+            group_with_port = HitachiVspDriver.handle_group_with_port(
+                host_groups)
+            for port in group_with_port:
+                kwargs = {
+                    'method': 'initator',
+                    'port': port,
+                    'result': initiator_list
+                }
+                self.handle_san_info(**kwargs)
+            return initiator_list
+        except Exception as e:
+            LOG.error("Failed to get initiators from vsp")
+            raise e
+
+    @staticmethod
+    def get_host_ids(data, target, host_ids, host_grp_relation_list,
+                     storage_id, group_id):
+        if data:
+            host_entries = data.get('data')
+            if not host_entries:
+                return True
+            for host in host_entries:
+                if host.get(target):
+                    host_ids.append(host.get(target).replace(",", "_"))
+                    relation = {
+                        'storage_id': storage_id,
+                        'native_storage_host_group_id': group_id,
+                        'native_storage_host_id':
+                            host.get(target).replace(",", "_")
+                    }
+                    host_grp_relation_list.append(relation)
+
+    def list_storage_host_groups(self, context):
+        try:
+            host_groups = self.rest_handler.get_all_host_groups()
+            host_group_list = []
+            host_grp_relation_list = []
+            if not host_groups:
+                return host_group_list
+            group_with_port = HitachiVspDriver.handle_group_with_port(
+                host_groups)
+            for port in group_with_port:
+                kwargs = {
+                    'method': 'group',
+                    'port': port,
+                    'result': host_grp_relation_list,
+                    'group_list': host_group_list
+                }
+                self.handle_san_info(**kwargs)
+            result = {
+                'storage_host_groups': host_group_list,
+                'storage_host_grp_host_rels': host_grp_relation_list
+            }
+            return result
+        except Exception:
+            LOG.error("Failed to get host_groups from vsp")
+            raise
+
+    def handle_lun_path(self, **kwargs):
+        view_list = []
+        views = self.rest_handler.get_lun_path(
+            kwargs.get('port'), kwargs.get('group'))
+        if not views:
+            return None
+        view_entries = views.get('data')
+        if not view_entries:
+            return None
+        for view in view_entries:
+            group_id = '%s_%s' % (view.get('portId'),
+                                  view.get('hostGroupNumber'))
+            view_result = {
+                "name": view.get('lunId'),
+                "native_storage_host_group_id": group_id,
+                "storage_id": self.storage_id,
+                "native_volume_id": HitachiVspDriver.to_vsp_lun_id_format(
+                    view.get('ldevId')),
+                "native_masking_view_id": view.get('lunId').replace(",", "_"),
+            }
+            kwargs.get('result').append(view_result)
+        return view_list
+
+    def list_masking_views(self, context):
+        try:
+            view_list = []
+            host_groups = self.rest_handler.get_all_host_groups()
+            if not host_groups:
+                return view_list
+            group_data = host_groups.get('data')
+            for group in group_data:
+                kwargs = {
+                    'group': group.get('hostGroupNumber'),
+                    'port': group.get('portId'),
+                    'result': view_list
+                }
+                self.handle_lun_path(**kwargs)
+            return view_list
+        except Exception as e:
+            LOG.error("Failed to get views from vsp")
+            raise e
+
+    def handle_san_info(self, **kwargs):
+        groups = self.rest_handler.get_specific_host_group(
+            kwargs.get('port'))
+        group_data = groups.get('data')
+        for specific_group in group_data:
+            iscsis = None
+            wwns = None
+            if specific_group.get('iscsiName'):
+                iscsis = self.rest_handler.get_iscsi_name(
+                    specific_group.get('portId'),
+                    specific_group.get('hostGroupNumber'))
+            else:
+                wwns = self.rest_handler.get_host_wwn(
+                    specific_group.get('portId'),
+                    specific_group.get('hostGroupNumber'))
+            if kwargs.get('method') == 'host':
+                os_type = HitachiVspDriver.OS_TYPE_MAP.get(
+                    specific_group.get('hostMode'),
+                    constants.HostOSTypes.UNKNOWN)
+                if specific_group.get('iscsiName'):
+                    HitachiVspDriver.get_host_info(
+                        iscsis, self.storage_id, kwargs.get('result'),
+                        'iscsi', os_type)
+                else:
+                    HitachiVspDriver.get_host_info(
+                        wwns, self.storage_id,
+                        kwargs.get('result'), 'fc', os_type)
+            elif kwargs.get('method') == 'group':
+                host_ids = []
+                group_id = specific_group.get('hostGroupId').replace(",", "_")
+                if specific_group.get('iscsiName'):
+                    HitachiVspDriver.get_host_ids(
+                        iscsis, 'hostIscsiId', host_ids,
+                        kwargs.get('result'), self.storage_id,
+                        group_id)
+                else:
+                    HitachiVspDriver.get_host_ids(
+                        wwns, 'hostWwnId', host_ids,
+                        kwargs.get('result'), self.storage_id,
+                        group_id)
+                group_result = {
+                    "name": specific_group.get('hostGroupName'),
+                    "storage_id": self.storage_id,
+                    "native_storage_host_group_id": group_id,
+                    "storage_hosts": ','.join(host_ids)
+                }
+                kwargs.get('group_list').append(group_result)
+            else:
+                if specific_group.get('iscsiName'):
+                    HitachiVspDriver.get_initiator_from_host(
+                        iscsis, self.storage_id, kwargs.get('result'), 'iscsi')
+                else:
+                    HitachiVspDriver.get_initiator_from_host(
+                        wwns, self.storage_id, kwargs.get('result'), 'fc')
