@@ -47,6 +47,7 @@ class RestHandler(RestClient):
     REST_QTREE_URL = '/api/types/treeQuota/instances'
     REST_USERQUOTA_URL = '/api/types/userQuota/instances'
     REST_QUOTACONFIG_URL = '/api/types/quotaConfig/instances'
+    REST_VIRTUAL_DISK_URL = '/api/types/virtualDisk/instances'
     STATE_SOLVED = 2
 
     def __init__(self, **kwargs):
@@ -106,11 +107,19 @@ class RestHandler(RestClient):
 
     def get_rest_info(self, url, data=None, method='GET',
                       calltimeout=consts.DEFAULT_TIMEOUT):
-        result_json = None
-        res = self.call(url, data, method, calltimeout)
-        if res.status_code == 200:
-            result_json = res.json()
-        return result_json
+        retry_times = consts.REST_RETRY_TIMES
+        while retry_times >= 0:
+            try:
+                res = self.call(url, data, method, calltimeout)
+                if res.status_code == 200:
+                    return res.json()
+                err_msg = "rest response abnormal,status_code:%s,res.json:%s" \
+                          % (res.status_code, res.json())
+                LOG.error(err_msg)
+            except Exception as e:
+                LOG.error(e)
+            retry_times -= 1
+        return None
 
     def call(self, url, data=None, method='GET',
              calltimeout=consts.DEFAULT_TIMEOUT):
@@ -269,5 +278,18 @@ class RestHandler(RestClient):
     def get_quota_configs(self):
         url = '%s?%s' % (RestHandler.REST_QUOTACONFIG_URL,
                          'fields=id,filesystem,treeQuota,quotaPolicy')
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_history_metrics(self, path, page):
+        url = '/api/types/metricValue/instances?filter=path EQ "%s"&page=%s'\
+              % (path, page)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_virtual_disks(self):
+        url = '%s?%s' % (RestHandler.REST_VIRTUAL_DISK_URL,
+                         'fields=health,name,spaScsiId,tierType,sizeTotal,'
+                         'id,model,manufacturer,wwn')
         result_json = self.get_rest_info(url)
         return result_json

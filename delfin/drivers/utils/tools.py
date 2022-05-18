@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 import os
+import re
 import time
 
 import six
@@ -51,6 +53,17 @@ class Tools(object):
         return time_str
 
     @staticmethod
+    def timestamp_to_utc_time_str(time_stamp, time_pattern):
+        """ Time stamp to time str conversion
+        """
+        time_str = ''
+        if time_stamp:
+            time_stamp = time_stamp / units.k
+            dateArray = datetime.datetime.utcfromtimestamp(time_stamp)
+            time_str = dateArray.strftime(time_pattern)
+        return time_str
+
+    @staticmethod
     def change_capacity_to_bytes(unit):
         unit = unit.upper()
         if unit == 'TB':
@@ -78,7 +91,8 @@ class Tools(object):
         return capacity
 
     @staticmethod
-    def split_value_map_list(value_info, map_list, is_alert=False, split=":"):
+    def split_value_map_list(value_info, map_list, is_mapping=False,
+                             is_alert=False, split=":"):
         detail_array = value_info.split('\r\n')
         value_map = {}
         temp_key = ''
@@ -87,7 +101,7 @@ class Tools(object):
                 string_info = detail.split(split + " ")
                 key = string_info[0].replace(' ', '')
                 value = ''
-                if len(string_info) > 1:
+                if len(string_info) > 1 or is_mapping:
                     for string in string_info[1:]:
                         value = string.replace('""', '')
                     value_map[key] = value
@@ -106,6 +120,18 @@ class Tools(object):
         if value_map != {}:
             map_list.append(value_map)
         return map_list
+
+    @staticmethod
+    def get_numbers_in_brackets(source_info, pattern_str):
+        """Get the contents in brackets through regular expressions.
+           source_info：Source data, example: "collect time (1583012100)"
+           pattern_str: regular expression. example："\\(\\d+\\)"
+        """
+        object_info = ''
+        object_infos = re.findall(pattern_str, source_info)
+        if object_infos:
+            object_info = object_infos[0].replace('(', '').replace(')', '')
+        return object_info
 
     @staticmethod
     def remove_file_with_same_type(file_name, file_path):
