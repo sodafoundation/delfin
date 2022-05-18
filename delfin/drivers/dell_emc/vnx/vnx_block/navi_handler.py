@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import re
 import threading
 
 import six
@@ -606,3 +607,96 @@ class NaviHandler(object):
             raise e
         finally:
             self.session_lock.release()
+
+    def list_masking_views(self):
+        return self.get_resources_info(consts.GET_SG_LIST_HOST_API,
+                                       self.cli_sg_to_list)
+
+    def cli_sg_to_list(self, resource_info):
+        obj_list = []
+        obj_model = {}
+        try:
+            obj_infos = resource_info.split('\n')
+            pattern = re.compile(consts.ALU_PAIRS_PATTERN)
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if ':' not in str_line:
+                        search_obj = pattern.search(str_line)
+                        if search_obj:
+                            str_info = str_line.split()
+                            lun_ids = obj_model.get('lun_ids')
+                            if lun_ids:
+                                lun_ids.add(str_info[1])
+                            else:
+                                lun_ids = set()
+                                lun_ids.add(str_info[1])
+                                obj_model['lun_ids'] = lun_ids
+                    else:
+                        str_info = self.split_str_by_colon(str_line)
+                        if 'Host name:' in str_line:
+                            host_names = obj_model.get('host_names')
+                            if host_names:
+                                host_names.add(str_info[1])
+                            else:
+                                host_names = set()
+                                host_names.add(str_info[1])
+                                obj_model['host_names'] = host_names
+                            continue
+
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+
+                        if str_line.startswith('Shareable:'):
+                            obj_list = self.add_model_to_list(obj_model,
+                                                              obj_list)
+                            obj_model = {}
+        except Exception as e:
+            err_msg = "arrange sg info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
+
+    def list_hbas(self):
+        return self.get_resources_info(consts.GET_PORT_LIST_HBA_API,
+                                       self.cli_hba_to_list)
+
+    def cli_hba_to_list(self, resource_info):
+        obj_list = []
+        obj_model = {}
+        sp_name = ''
+        port_ids = set()
+        try:
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    if 'Information about each HBA:' in obj_info:
+                        if obj_model:
+                            obj_model['port_ids'] = port_ids
+                        obj_list = self.add_model_to_list(obj_model,
+                                                          obj_list)
+                        obj_model = {}
+                        port_ids = set()
+                        sp_name = ''
+                    if ':' in obj_info:
+                        str_info = self.split_str_by_colon(str_line)
+                        obj_model = self.str_info_to_model(str_info, obj_model)
+                        if 'SP Name:' in obj_info:
+                            sp_name = obj_info.replace('SP Name:', '').replace(
+                                'SP', '').replace('\r', '').replace(' ', '')
+                        if 'SP Port ID:' in obj_info:
+                            port_id = obj_info.replace('SP Port ID:',
+                                                       '').replace('\r',
+                                                                   '').replace(
+                                ' ', '')
+                            port_id = '%s-%s' % (sp_name, port_id)
+                            port_ids.add(port_id)
+
+            if obj_model:
+                obj_model['port_ids'] = port_ids
+                obj_list.append(obj_model)
+        except Exception as e:
+            err_msg = "arrange host info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
