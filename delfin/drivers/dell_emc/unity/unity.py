@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import time
+
 import six
 from oslo_log import log
 from oslo_utils import units
@@ -18,7 +20,7 @@ from oslo_utils import units
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers import driver
-from delfin.drivers.dell_emc.unity import rest_handler, alert_handler
+from delfin.drivers.dell_emc.unity import rest_handler, alert_handler, consts
 from delfin.drivers.dell_emc.unity.alert_handler import AlertHandler
 
 LOG = log.getLogger(__name__)
@@ -53,6 +55,57 @@ class UnityStorDriver(driver.StorageDriver):
                      9: constants.DiskPhysicalType.FLASH,
                      99: constants.DiskPhysicalType.VMDISK
                      }
+    VOLUME_PERF_METRICS = {
+        'readIops': 'sp.*.storage.lun.*.readsRate',
+        'writeIops': 'sp.*.storage.lun.*.writesRate',
+        'readThroughput': 'sp.*.storage.lun.*.readBytesRate',
+        'writeThroughput': 'sp.*.storage.lun.*.writeBytesRate',
+        'responseTime': 'sp.*.storage.lun.*.responseTime',
+        'readIoSize': 'sp.*.storage.lun.*.avgReadSize',
+        'writeIoSize': 'sp.*.storage.lun.*.avgWriteSize'
+    }
+    DISK_PERF_METRICS = {
+        'readIops': 'sp.*.physical.disk.*.readsRate',
+        'writeIops': 'sp.*.physical.disk.*.writesRate',
+        'readThroughput': 'sp.*.physical.disk.*.readBytesRate',
+        'writeThroughput': 'sp.*.physical.disk.*.writeBytesRate',
+        'responseTime': 'sp.*.physical.disk.*.responseTime'
+    }
+    ETHERNET_PORT_METRICS = {
+        'readThroughput': 'sp.*.net.device.*.bytesInRate',
+        'writeThroughput': 'sp.*.net.device.*.bytesOutRate',
+        'readIops': 'sp.*.net.device.*.pktsInRate',
+        'writeIops': 'sp.*.net.device.*.pktsOutRate',
+    }
+    FC_PORT_METRICS = {
+        'readIops': 'sp.*.fibreChannel.fePort.*.readsRate',
+        'writeIops': 'sp.*.fibreChannel.fePort.*.writesRate',
+        'readThroughput': 'sp.*.fibreChannel.fePort.*.readBytesRate',
+        'writeThroughput': 'sp.*.fibreChannel.fePort.*.writeBytesRate'
+    }
+    ISCSI_PORT_METRICS = {
+        'readIops': 'sp.*.iscsi.fePort.*.readsRate',
+        'writeIops': 'sp.*.iscsi.fePort.*.writesRate',
+        'readThroughput': 'sp.*.iscsi.fePort.*.readBytesRate',
+        'writeThroughput': 'sp.*.iscsi.fePort.*.writeBytesRate'
+    }
+    FILESYSTEM_PERF_METRICS = {
+        'readIops': 'sp.*.storage.filesystem.*.readsRate',
+        'writeIops': 'sp.*.storage.filesystem.*.writesRate',
+        'readThroughput': 'sp.*.storage.filesystem.*.readBytesRate',
+        'writeThroughput': 'sp.*.storage.filesystem.*.writeBytesRate',
+        'readIoSize': 'sp.*.storage.filesystem.*.readSizeAvg',
+        'writeIoSize': 'sp.*.storage.filesystem.*.writeSizeAvg'
+    }
+    PERF_TYPE_MAP = {
+        'readIops': {'write': 'writeIops',
+                     'total': 'iops'},
+        'readThroughput': {'write': 'writeThroughput',
+                           'total': 'throughput'},
+        'readIoSize': {'write': 'writeIoSize',
+                       'total': 'ioSize'},
+    }
+    MS_PER_HOUR = 60 * 60 * 1000
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -82,48 +135,51 @@ class UnityStorDriver(driver.StorageDriver):
         system_info = self.rest_handler.get_storage()
         capacity = self.rest_handler.get_capacity()
         version_info = self.rest_handler.get_soft_version()
-        if system_info is not None and capacity is not None:
-            system_entries = system_info.get('entries')
-            for system in system_entries:
-                content = system.get('content', {})
-                name = content.get('name')
-                model = content.get('model')
-                serial_number = content.get('serialNumber')
-                health_value = content.get('health', {}).get('value')
-                status = UnityStorDriver.STORAGE_STATUS_MAP.get(
-                    health_value, constants.StorageStatus.ABNORMAL)
-                break
-            capacity_info = capacity.get('entries')
-            for per_capacity in capacity_info:
-                content = per_capacity.get('content', {})
-                free = content.get('sizeFree')
-                total = content.get('sizeTotal')
-                used = content.get('sizeUsed')
-                subs = content.get('sizeSubscribed')
-                break
-            if version_info:
-                soft_version = version_info.get('entries')
-                for soft_info in soft_version:
-                    content = soft_info.get('content', {})
-                    if content:
-                        version = content.get('id')
-                        break
-            raw_capacity = self.get_disk_capacity(context)
-            raw_capacity = raw_capacity if raw_capacity else int(total)
-            system_result = {
-                'name': name,
-                'vendor': 'DELL EMC',
-                'model': model,
-                'status': status,
-                'serial_number': serial_number,
-                'firmware_version': version,
-                'location': '',
-                'subscribed_capacity': int(subs),
-                'total_capacity': int(total),
-                'raw_capacity': raw_capacity,
-                'used_capacity': int(used),
-                'free_capacity': int(free)
-            }
+        if not system_info or not capacity:
+            err_msg = "unity get system or capacity info failed"
+            LOG.error(err_msg)
+            raise exception.StorageBackendException(err_msg)
+        system_entries = system_info.get('entries')
+        for system in system_entries:
+            content = system.get('content', {})
+            name = content.get('name')
+            model = content.get('model')
+            serial_number = content.get('serialNumber')
+            health_value = content.get('health', {}).get('value')
+            status = UnityStorDriver.STORAGE_STATUS_MAP.get(
+                health_value, constants.StorageStatus.ABNORMAL)
+            break
+        capacity_info = capacity.get('entries')
+        for per_capacity in capacity_info:
+            content = per_capacity.get('content', {})
+            free = content.get('sizeFree')
+            total = content.get('sizeTotal')
+            used = content.get('sizeUsed')
+            subs = content.get('sizeSubscribed')
+            break
+        if version_info:
+            soft_version = version_info.get('entries')
+            for soft_info in soft_version:
+                content = soft_info.get('content', {})
+                if content:
+                    version = content.get('id')
+                    break
+        raw_capacity = self.get_disk_capacity(context)
+        raw_capacity = raw_capacity if raw_capacity else int(total)
+        system_result = {
+            'name': name,
+            'vendor': 'DELL EMC',
+            'model': model,
+            'status': status,
+            'serial_number': serial_number,
+            'firmware_version': version,
+            'location': '',
+            'subscribed_capacity': int(subs),
+            'total_capacity': int(total),
+            'raw_capacity': raw_capacity,
+            'used_capacity': int(used),
+            'free_capacity': int(free)
+        }
         return system_result
 
     def list_storage_pools(self, context):
@@ -381,7 +437,7 @@ class UnityStorDriver(driver.StorageDriver):
         try:
             disks = self.rest_handler.get_all_disks()
             disk_list = []
-            if disks is not None:
+            if disks and disks.get('entries'):
                 disk_entries = disks.get('entries')
                 for disk in disk_entries:
                     content = disk.get('content')
@@ -417,6 +473,8 @@ class UnityStorDriver(driver.StorageDriver):
                         'location': content.get('name')
                     }
                     disk_list.append(disk_result)
+            else:
+                disk_list = self.get_virtual_disk()
             return disk_list
 
         except Exception as err:
@@ -650,3 +708,305 @@ class UnityStorDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def get_metrics_loop(self, target, start_time,
+                         end_time, metrics, path):
+        page = 1
+        bend = False
+        time_map = {'latest_time': 0}
+        if not path:
+            return
+        while True:
+            if bend is True:
+                break
+            results = self.rest_handler.get_history_metrics(path, page)
+            if not results:
+                break
+            if 'entries' not in results:
+                break
+            if len(results['entries']) < 1:
+                break
+            bend = UnityStorDriver.get_metric_value(
+                target, start_time, end_time, metrics, results, time_map)
+            page += 1
+
+    def get_history_metrics(self, resource_type, targets,
+                            start_time, end_time):
+        metrics = []
+        for target in targets:
+            path = None
+            if resource_type == constants.ResourceType.VOLUME:
+                path = self.VOLUME_PERF_METRICS.get(target)
+            elif resource_type == constants.ResourceType.DISK:
+                path = self.DISK_PERF_METRICS.get(target)
+            elif resource_type == constants.ResourceType.FILESYSTEM:
+                path = self.FILESYSTEM_PERF_METRICS.get(target)
+            elif resource_type == constants.ResourceType.PORT:
+                self.get_metrics_loop(target, start_time, end_time, metrics,
+                                      self.ETHERNET_PORT_METRICS.get(target))
+                self.get_metrics_loop(target, start_time, end_time, metrics,
+                                      self.FC_PORT_METRICS.get(target))
+                continue
+            if path:
+                self.get_metrics_loop(target, start_time, end_time,
+                                      metrics, path)
+        return metrics
+
+    @staticmethod
+    def get_metric_value(target, start_time, end_time, metrics,
+                         results, time_map):
+        try:
+            if results is None:
+                return True
+            entries = results.get('entries')
+            for entry in entries:
+                content = entry.get('content')
+                if not content or not content.get('values'):
+                    continue
+                occur_time = int(time.mktime(time.strptime(
+                    content.get('timestamp'),
+                    AlertHandler.TIME_PATTERN))
+                ) * AlertHandler.SECONDS_TO_MS
+                hour_offset = (time.mktime(time.localtime()) - time.mktime(
+                    time.gmtime())) / AlertHandler.SECONDS_PER_HOUR
+                occur_time = occur_time + (int(hour_offset) *
+                                           UnityStorDriver.MS_PER_HOUR)
+                if occur_time < start_time:
+                    return True
+                if time_map.get('latest_time') <= occur_time \
+                        and time_map.get('latest_time') != 0:
+                    continue
+                time_map['latest_time'] = occur_time
+                if start_time <= occur_time <= end_time:
+                    for sp_value in content.get('values'):
+                        perf_value = content.get('values').get(sp_value)
+                        for key, value in perf_value.items():
+                            bfind = False
+                            value = float(value)
+                            for metric in metrics:
+                                if metric.get('resource_id') == key and \
+                                        metric.get('type') == target:
+                                    if metric.get('values').get(
+                                            occur_time):
+                                        if target == 'responseTime':
+                                            metric.get(
+                                                'values')[occur_time] = \
+                                                max(value, metric.get(
+                                                    'values').get(
+                                                    occur_time))
+                                        else:
+                                            metric.get('values')[
+                                                occur_time] += value
+                                    else:
+                                        metric.get('values')[occur_time] \
+                                            = value
+                                    bfind = True
+                                    break
+                            if bfind is False:
+                                metric_value = {
+                                    'type': target,
+                                    'resource_id': key,
+                                    'values': {occur_time: value}
+                                }
+                                metrics.append(metric_value)
+        except Exception as err:
+            err_msg = "Failed to collect history metrics from Unity: %s, " \
+                      "target:%s" % (six.text_type(err), target)
+            LOG.error(err_msg)
+        return False
+
+    @staticmethod
+    def count_total_perf(metrics):
+        if metrics is None:
+            return
+        for metric in metrics:
+            write_tye = None
+            total_type = None
+            if UnityStorDriver.PERF_TYPE_MAP.get(metric.get('type')):
+                write_tye = UnityStorDriver.PERF_TYPE_MAP.get(
+                    metric.get('type')).get('write')
+                total_type = UnityStorDriver.PERF_TYPE_MAP.get(
+                    metric.get('type')).get('total')
+            else:
+                continue
+            for metric_write in metrics:
+                if metric_write.get('resource_id') == \
+                        metric.get('resource_id') \
+                        and metric_write.get('type') == write_tye:
+                    total = {
+                        'type': total_type,
+                        'resource_id': metric.get('resource_id')
+                    }
+                    bfind_total = False
+                    for tr, read in metric.get('values').items():
+                        for tw, write in metric_write.get(
+                                'values').items():
+                            if tr == tw:
+                                value = read + write
+                                if total.get('values'):
+                                    total['values'][tr] = value
+                                else:
+                                    total['values'] = {tr: value}
+                                bfind_total = True
+                                break
+                    if bfind_total:
+                        metrics.append(total)
+                    break
+
+    @staticmethod
+    def package_metrics(storage_id, resource_type, metrics, metrics_list):
+        for metric in metrics_list:
+            unit = None
+            if resource_type == constants.ResourceType.PORT:
+                unit = consts.PORT_CAP[metric.get('type')]['unit']
+            elif resource_type == constants.ResourceType.VOLUME:
+                unit = consts.VOLUME_CAP[metric.get('type')]['unit']
+            elif resource_type == constants.ResourceType.DISK:
+                unit = consts.DISK_CAP[metric.get('type')]['unit']
+            elif resource_type == constants.ResourceType.FILESYSTEM:
+                unit = consts.FILESYSTEM_CAP[metric.get('type')]['unit']
+            labels = {
+                'storage_id': storage_id,
+                'resource_type': resource_type,
+                'resource_id': metric.get('resource_id'),
+                'type': 'RAW',
+                'unit': unit
+            }
+            if 'THROUGHPUT' in metric.get('type').upper() or \
+                    'RESPONSETIME' in metric.get('type').upper():
+                for tm in metric.get('values'):
+                    metric['values'][tm] = metric['values'][tm] / units.k
+            value = constants.metric_struct(name=metric.get('type'),
+                                            labels=labels,
+                                            values=metric.get('values'))
+            metrics.append(value)
+
+    def collect_perf_metrics(self, context, storage_id,
+                             resource_metrics, start_time,
+                             end_time):
+        metrics = []
+        try:
+            if resource_metrics.get(constants.ResourceType.VOLUME):
+                volume_metrics = self.get_history_metrics(
+                    constants.ResourceType.VOLUME,
+                    resource_metrics.get(constants.ResourceType.VOLUME),
+                    start_time,
+                    end_time)
+                UnityStorDriver.count_total_perf(volume_metrics)
+                UnityStorDriver.package_metrics(storage_id,
+                                                constants.ResourceType.VOLUME,
+                                                metrics, volume_metrics)
+            if resource_metrics.get(constants.ResourceType.DISK):
+                disk_metrics = self.get_history_metrics(
+                    constants.ResourceType.DISK,
+                    resource_metrics.get(constants.ResourceType.DISK),
+                    start_time,
+                    end_time)
+                UnityStorDriver.count_total_perf(disk_metrics)
+                UnityStorDriver.package_metrics(storage_id,
+                                                constants.ResourceType.DISK,
+                                                metrics, disk_metrics)
+            if resource_metrics.get(constants.ResourceType.PORT):
+                port_metrics = self.get_history_metrics(
+                    constants.ResourceType.PORT,
+                    resource_metrics.get(constants.ResourceType.PORT),
+                    start_time,
+                    end_time)
+                UnityStorDriver.count_total_perf(port_metrics)
+                UnityStorDriver.package_metrics(storage_id,
+                                                constants.ResourceType.PORT,
+                                                metrics, port_metrics)
+            if resource_metrics.get(constants.ResourceType.FILESYSTEM):
+                file_metrics = self.get_history_metrics(
+                    constants.ResourceType.FILESYSTEM,
+                    resource_metrics.get(constants.ResourceType.FILESYSTEM),
+                    start_time,
+                    end_time)
+                UnityStorDriver.count_total_perf(file_metrics)
+                UnityStorDriver.package_metrics(
+                    storage_id, constants.ResourceType.FILESYSTEM,
+                    metrics, file_metrics)
+        except Exception as err:
+            err_msg = "Failed to collect metrics from Unity: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return metrics
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP,
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP,
+                constants.ResourceType.FILESYSTEM: consts.FILESYSTEM_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        latest_time = 0
+        page = 1
+        results = self.rest_handler.get_history_metrics(
+            UnityStorDriver.VOLUME_PERF_METRICS.get('readIops'), page)
+        if not results:
+            results = self.rest_handler.get_history_metrics(
+                UnityStorDriver.ETHERNET_PORT_METRICS.get('readIops'), page)
+        if results:
+            if 'entries' in results:
+                entries = results.get('entries')
+                for entry in entries:
+                    content = entry.get('content')
+                    if not content:
+                        continue
+                    occur_time = int(time.mktime(time.strptime(
+                        content.get('timestamp'),
+                        AlertHandler.TIME_PATTERN))
+                    ) * AlertHandler.SECONDS_TO_MS
+                    hour_offset = \
+                        (time.mktime(time.localtime()) -
+                         time.mktime(time.gmtime()))\
+                        / AlertHandler.SECONDS_PER_HOUR
+                    occur_time = occur_time + (int(hour_offset) *
+                                               UnityStorDriver.MS_PER_HOUR)
+                    latest_time = occur_time
+                    break
+        return latest_time
+
+    def get_virtual_disk(self):
+        try:
+            disks = self.rest_handler.get_virtual_disks()
+            disk_list = []
+            if disks is not None:
+                disk_entries = disks.get('entries')
+                for disk in disk_entries:
+                    content = disk.get('content')
+                    if not content:
+                        continue
+                    health_value = content.get('health', {}).get('value')
+                    slot_info = \
+                        content.get('health', {}).get('descriptionIds', [])
+                    if 'ALRT_DISK_SLOT_EMPTY' in slot_info:
+                        continue
+                    if health_value in UnityStorDriver.HEALTH_OK:
+                        status = constants.DiskStatus.NORMAL
+                    else:
+                        status = constants.DiskStatus.ABNORMAL
+                    disk_result = {
+                        'name': content.get('name'),
+                        'storage_id': self.storage_id,
+                        'native_disk_id': content.get('id'),
+                        'capacity': int(content.get('sizeTotal')),
+                        'status': status,
+                        'manufacturer': content.get('manufacturer'),
+                        'model': content.get('model'),
+                        'physical_type': constants.DiskPhysicalType.VMDISK
+                    }
+                    disk_list.append(disk_result)
+            return disk_list
+        except Exception as err:
+            err_msg = "Failed to get virtual disk from Unity: %s" % \
+                      (six.text_type(err))
+            raise exception.InvalidResults(err_msg)
