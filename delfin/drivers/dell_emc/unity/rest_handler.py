@@ -302,17 +302,6 @@ class RestHandler(RestClient):
     def get_host_lun(self, page):
         url = '/api/types/hostLUN/instances?%s&page=%s' % \
               ('fields=id,host,lun', page)
-
-    def get_history_metrics(self, path, page):
-        url = '/api/types/metricValue/instances?filter=path EQ "%s"&page=%s'\
-              % (path, page)
-        result_json = self.get_rest_info(url)
-        return result_json
-
-    def get_virtual_disks(self):
-        url = '%s?%s' % (RestHandler.REST_VIRTUAL_DISK_URL,
-                         'fields=health,name,spaScsiId,tierType,sizeTotal,'
-                         'id,model,manufacturer,wwn')
         result_json = self.get_rest_info(url)
         return result_json
 
