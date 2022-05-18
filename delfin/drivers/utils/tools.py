@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import datetime
 import os
+import re
 import time
 
 import six
@@ -48,6 +50,17 @@ class Tools(object):
             time_stamp = time_stamp / units.k
             time_array = time.localtime(time_stamp)
             time_str = time.strftime(time_pattern, time_array)
+        return time_str
+
+    @staticmethod
+    def timestamp_to_utc_time_str(time_stamp, time_pattern):
+        """ Time stamp to time str conversion
+        """
+        time_str = ''
+        if time_stamp:
+            time_stamp = time_stamp / units.k
+            dateArray = datetime.datetime.utcfromtimestamp(time_stamp)
+            time_str = dateArray.strftime(time_pattern)
         return time_str
 
     @staticmethod
@@ -109,6 +122,18 @@ class Tools(object):
         return map_list
 
     @staticmethod
+    def get_numbers_in_brackets(source_info, pattern_str):
+        """Get the contents in brackets through regular expressions.
+           source_info：Source data, example: "collect time (1583012100)"
+           pattern_str: regular expression. example："\\(\\d+\\)"
+        """
+        object_info = ''
+        object_infos = re.findall(pattern_str, source_info)
+        if object_infos:
+            object_info = object_infos[0].replace('(', '').replace(')', '')
+        return object_info
+
+    @staticmethod
     def remove_file_with_same_type(file_name, file_path):
         file_type = '%s_%s_%s' % (file_name.split('_')[0],
                                   file_name.split('_')[1],
@@ -137,4 +162,4 @@ class Tools(object):
         finally:
             if os.path.exists(local_file):
                 Tools.remove_file_with_same_type(file, local_path)
-            return root_node
+        return root_node
