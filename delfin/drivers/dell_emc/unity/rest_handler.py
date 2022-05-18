@@ -302,6 +302,8 @@ class RestHandler(RestClient):
     def get_host_lun(self, page):
         url = '/api/types/hostLUN/instances?%s&page=%s' % \
               ('fields=id,host,lun', page)
+        result_json = self.get_rest_info(url)
+        return result_json
 
     def get_history_metrics(self, path, page):
         url = '/api/types/metricValue/instances?filter=path EQ "%s"&page=%s'\
