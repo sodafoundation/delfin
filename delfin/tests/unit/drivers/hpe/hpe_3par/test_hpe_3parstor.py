@@ -16,6 +16,8 @@ from unittest import TestCase, mock
 
 import paramiko
 
+from delfin.common import constants
+
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import exception
 from delfin import context
@@ -146,6 +148,1832 @@ N:S:P      Mode Device Pos Config Topology   Rate Cls Mode_change
   108
 """
 
+POOL_DATAS = ret = {
+    "total": 12,
+    "members": [
+        {
+            "id": 0,
+            "uuid": "aa43f218-d3dd-4626-948f-8a160b0eac1d",
+            "name": "Lcltest333",
+            "numFPVVs": 21,
+            "numTPVVs": 25,
+            "UsrUsage": {
+                "totalMiB": 1381504,
+                "rawTotalMiB": 1842004,
+                "usedMiB": 1376128,
+                "rawUsedMiB": 712703
+            },
+            "SAUsage": {
+                "totalMiB": 140800,
+                "rawTotalMiB": 422400,
+                "usedMiB": 5120,
+                "rawUsedMiB": 15360
+            },
+            "SDUsage": {
+                "totalMiB": 388736,
+                "rawTotalMiB": 518315,
+                "usedMiB": 0,
+                "rawUsedMiB": 0
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 4,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 1,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_Migration1",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 2,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_Oracle",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 3,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_filesystem",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 4,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "cpg_test",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 5,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "fs_cpg",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 6,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "ljn2",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 7,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "ljn4_xiuGai",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 8,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "ljn_330",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 9,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "xulin_cpg1",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 10,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "zyz",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        },
+        {
+            "id": 11,
+            "uuid": "c392910e-7648-4972-b594-47dd3d28f3ec",
+            "name": "22",
+            "numFPVVs": 14,
+            "numTPVVs": 319,
+            "UsrUsage": {
+                "totalMiB": 1418752,
+                "rawTotalMiB": 1702500,
+                "usedMiB": 1417984,
+                "rawUsedMiB": 568934
+            },
+            "SAUsage": {
+                "totalMiB": 56832,
+                "rawTotalMiB": 170496,
+                "usedMiB": 42752,
+                "rawUsedMiB": 128256
+            },
+            "SDUsage": {
+                "totalMiB": 187648,
+                "rawTotalMiB": 225179,
+                "usedMiB": 157184,
+                "rawUsedMiB": 188620
+            },
+            "SAGrowth": {
+                "incrementMiB": 8192,
+                "LDLayout": {
+                    "HA": 3,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "SDGrowth": {
+                "incrementMiB": 32768,
+                "LDLayout": {
+                    "RAIDType": 3,
+                    "HA": 3,
+                    "setSize": 6,
+                    "chunkletPosPref": 1,
+                    "diskPatterns": [
+                        {
+                            "diskType": 1
+                        }
+                    ]
+                }
+            },
+            "state": 1,
+            "failedStates": [],
+            "degradedStates": [],
+            "additionalStates": []
+        }
+    ]
+}
+POOL_METRICS_DATAS = {
+    "sampleTime": "2020-03-01T03:50:00+08:00",
+    "sampleTimeSec": 1583005800,
+    "total": 2,
+    "members": [
+        {
+            "name": "22",
+            "IO": {
+                "read": 0,
+                "write": 0,
+                "total": 10
+            },
+            "KBytes": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "serviceTimeMS": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "IOSizeKB": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "queueLength": 0,
+            "busyPct": 0
+        },
+        {
+            "name": "Lcltest333",
+            "IO": {
+                "read": 0,
+                "write": 0,
+                "total": 20
+            },
+            "KBytes": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "serviceTimeMS": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "IOSizeKB": {
+                "read": 0,
+                "write": 0,
+                "total": 0
+            },
+            "queueLength": 0,
+            "busyPct": 0
+        }
+    ]
+}
+PORT_METRICS_DATAS = """
+Time: 2021-07-14 14:10:00 CST (1626243000)
+                 ----IO/s----- ---KBytes/s---- ----Svct ms----- -IOSz KBytes-
+PORT_N PORT_S PORT_P Rd Wr Tot Rd Wr Tot Rd Wr Tot Rd  Wr   Tot QLen AvgBusy%
+0 0 1 0.0  0.0  0.0 0.0   0.0   0.0 0.00  0.00  0.00 0.0 0.0   0.0    0 0.0
+0 1 1 0.0 14.3 14.3 0.0  86.4  86.4 0.00 11.52 11.52 0.0 6.1   6.1    1 11.9
+----------------------------------------------------------------------------
+      2 7.6 31.4 39.0 0.6 192.0 192.6 0.00 12.34  9.93 0.1 6.2   5.0    1 3.0
+"""
+DISK_METRICS_DATAS = """
+Time: 2021-07-14 15:35:00 CST (1626248100)
+     ----IO/s----- ---KBytes/s---- ----Svct ms----- -IOSz KBytes-
+PDID  Rd   Wr  Tot  Rd    Wr   Tot   Rd    Wr   Tot  Rd   Wr  Tot QLen AvgBusy%
+   0 0.0  0.5  0.5 0.0   4.9   4.9 0.00  3.04  3.04 0.0 10.0 10.0    0      0.1
+   1 0.0  1.6  1.6 0.0  10.2  10.2 0.00  0.89  0.89 0.0  6.3  6.3    0      0.1
+-------------------------------------------------------------------------------
+  2 0.0 31.4 31.4 0.0 191.4 191.4 0.00 11.98 11.98 0.0  6.2  6.2    0      1.5
+"""
+VOLUME_METRICS_DATAS = """
+Time: 2021-07-14 14:10:00 CST (1626243000)
+                 ----IO/s----- ---KBytes/s---- ----Svct ms----- -IOSz KBytes-
+VVID VV_NAME Rd Wr Tot Rd Wr Tot Rd Wr Tot Rd  Wr   Tot QLen AvgBusy%
+0 srdata 0.0  1.0  2.0 3.0 11.0 22.0 33.00 111.00  222.00 333.0 0.0 0.0 0 0.0
+1 admin 0.0 14.3 14.3 0.0  86.4  86.4 0.00 11.52 11.52 0.0 6.1 6.1 1 11.9
+----------------------------------------------------------------------------
+      2 7.6 31.4 39.0 0.6 192.0 192.6 0.00 12.34  9.93 0.1 6.2   5.0    1 3.0
+"""
+HOST_GROUP_DATAS = """
+ Id Name                    Members                 Comment
+194 HostSet_VMware          Host_ESXi6.5_125        --
+229 HostSet_Suse11_Oracle   Host_Suse11_8.44.75.122 --
+257 HostGroup_ESX6.0        ESX6.0_8.44.75.145      --
+                            ESX6.0_8.44.75.146
+264 HostSet_Win2016_WSFC    RH2288V5_Win2016_node2  --
+                            RH2288V5_Win2016_node1
+266 HostSet_Win2012_WSFC    RH2285_Win2012_wsfc1    --
+                            Rh2285_Win2012_wsfc2
+268 HostSet_AIX             Host_AIX_51.10.192.20   --
+270 HostSet_Suse11          Host_Suse11_8.44.75.123 --
+274 Suse11sp4_150           litng138.150            --
+-----------------------------------------------------------
+ 32 total                   28
+"""
+HOST_ID_DATAS = """
+  Id Name                      Persona        -WWN/iSCSI_Name- Port  IP_addr
+ 175 Host_ESXi6.5_125               Generic        2408244427906812 ---   n/a
+ 54 Doradov3_lm               Generic        2418244427906812 ---   n/a
+ 57 AIX_wenbin                AIX-legacy     10000000C9E74BCC ---   n/a
+ 65 SKY-ESXI60                Generic        2100001B321BE0FF ---   n/a
+ 65 SKY-ESXI60                Generic        2101001B323BE0FF ---   n/a
+ 67 zouming                   Generic        2012E4A8B6B0A1CC ---   n/a
+ 67 zouming                   Generic        2002E4A8B6B0A1CC ---   n/a
+ 68 powerpath                 Generic        21000024FF36D406 ---   n/a
+ 68 powerpath                 Generic        21000024FF36D407 ---   n/a
+ 69 power_v3                  Generic        20809CE37435D845 ---   n/a
+ 69 power_v3                  Generic        20909CE37435D845 ---   n/a
+ 89 vplex_meta_important      Generic        5000144280292012 0:1:2 n/a
+ 89 vplex_meta_important      Generic        5000144280292010 0:1:2 n/a
+ 89 vplex_meta_important      Generic        5000144290292012 1:1:2 n/a
+ 89 vplex_meta_important      Generic        500014429029E910 1:1:2 n/a
+ 89 vplex_meta_important      Generic        500014429029E912 1:1:2 n/a
+ 89 vplex_meta_important      Generic        500014428029E912 1:1:2 n/a
+ 89 vplex_meta_important      Generic        500014428029E910 1:1:2 n/a
+ 89 vplex_meta_important      Generic        5000144290292010 1:1:2 n/a
+ 89 vplex_meta_important      Generic        5000144290292012 0:1:2 n/a
+ 89 vplex_meta_important      Generic        5000144290292010 0:1:2 n/a
+ 89 vplex_meta_important      Generic        500014429029E912 0:1:2 n/a
+ 89 vplex_meta_important      Generic        500014429029E910 0:1:2 n/a
+ 89 vplex_meta_important      Generic        5000144280292012 1:1:2 n/a
+ 89 vplex_meta_important      Generic        5000144280292010 1:1:2 n/a
+ 89 vplex_meta_important      Generic        500014428029E912 0:1:2 n/a
+ 89 vplex_meta_important      Generic        500014428029E910 0:1:2 n/a
+ 91 Dorado5000_51.45          Generic        200080D4A58EA53A ---   n/a
+ 91 Dorado5000_51.45          Generic        201080D4A58EA53A ---   n/a
+ 98 AIX6.1_LN                 AIX-legacy     10000000C9781C57 ---   n/a
+ 98 AIX6.1_LN                 AIX-legacy     10000000C9781853 ---   n/a
+115 huhuihost                 Generic        2100000E1E1A9B30 ---   n/a
+121 Dorado5000V3_F3           Generic        201880D4A58EA53A ---   n/a
+160 host002                     Generic        21000024FF41DCF8 ---   n/a
+ -- --                        --             21000024FF41DCF7 1:0:2 n/a
+ -- --                        --             21000024FF41DCF6 1:0:2 n/a
+ -- --                        --             21000024FF0CC6CA 0:1:2 n/a
+ -- --                        --             21000024FF0CC6CA 1:1:2 n/a
+ -- --                        --             21000024FF0CBF47 0:1:2 n/a
+ -- --                        --             21000024FF0CBF47 1:1:2 n/a
+"""
+VOLUME_GROUP_DATAS = """
+Id Name              Members              Comment
+ 91 wcj_2             wcj_2.0              --
+                      wcj_2.1
+                      wcj_2.2
+                      wcj_2.3
+110 HP-Esxi-LUNSet    --                   --
+124 zhangjun          --                   --
+126 wcj_1             wcj_1.1              --
+127 wcj_3             wcj_3.0              --
+                      wcj_3.1
+128 IBM_SVC           --                   --
+129 zyz_3parF200_     zyz_3parF200.0       --
+                      zyz_3parF200.1
+                      zyz_3parF200.2
+                      zyz_3parF200.3
+130 zyz               zyz_2                --
+131 tx                --                   --
+132 tx9               --                   --
+133 wcj_hp_1          --                   --
+136 AIX_YG_WYK_LUN    AIX_YG_WYK_LUN.0     --
+                      AIX_YG_WYK_LUN.1
+                      AIX_YG_WYK_LUN.2
+                      AIX_YG_WYK_LUN.3
+140 st11              --                   --
+146 Solaris_lun_group Solaris_LUN1_13G     --
+                      solaris_LUN_2_33G
+147 wcj_vplex         wcj_vplex.0          --
+-----------------------------------------------------------
+ 32 total                   28
+"""
+VOLUME_ID_DATAS = """
+  Id Name        Prov Type CopyOf BsId Rd -Detailed_State-  Adm Snp Usr VSize
+4836 wcj_2.0    tpvv base ---    4836 RW normal        256 512 512  5120
+4798 zyz_2         tpvv base ---    4836 RW normal        256 512 512  5120
+4797 wcj_3.1         tpvv base ---    4836 RW normal        256 512 512  5120
+666 yytest_vv_001     tpvv base ---    4836 RW normal        256 512 512  5120
+------------------------------------------------------------------------
+ 409 total                             51072 158720 3279488 18186240
+"""
+HOST_DATAS = [
+    {
+        "total": 38,
+        "members": [
+            {
+                "id": 54,
+                "name": "Doradov3_lm",
+                "descriptors": {
+                    "location": "U9-3-B17R_B7",
+                    "IPAddr": "100.157.61.100",
+                    "os": "ESXI6.0",
+                    "model": "RH2288H V3"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "2408244427906812",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2418244427906812",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 57,
+                "name": "AIX_wenbin",
+                "FCPaths": [
+                    {
+                        "wwn": "10000000C9E74BCC",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 5,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 65,
+                "name": "SKY-ESXI60",
+                "descriptors": {
+                    "location": "U9-3-B17R_B7",
+                    "IPAddr": "100.157.61.100",
+                    "os": "ESXI6.0",
+                    "model": "RH2288H V3"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "2100001B321BE0FF",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2101001B323BE0FF",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 67,
+                "name": "zouming",
+                "FCPaths": [
+                    {
+                        "wwn": "2012E4A8B6B0A1CC",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2002E4A8B6B0A1CC",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 68,
+                "name": "powerpath",
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF36D406",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF36D407",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 69,
+                "name": "power_v3",
+                "FCPaths": [
+                    {
+                        "wwn": "20809CE37435D845",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "20909CE37435D845",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 89,
+                "name": "vplex_meta_important",
+                "FCPaths": [
+                    {
+                        "wwn": "5000144280292012",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "5000144280292010",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "5000144290292012",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014429029E910",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014429029E912",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014428029E912",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014428029E910",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "5000144290292010",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "5000144290292012",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "5000144290292010",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014429029E912",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014429029E910",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "5000144280292012",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "5000144280292010",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014428029E912",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500014428029E910",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 91,
+                "name": "Dorado5000_51.45",
+                "FCPaths": [
+                    {
+                        "wwn": "200080D4A58EA53A",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "201080D4A58EA53A",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 98,
+                "name": "AIX6.1_LN",
+                "descriptors": {
+                    "os": "AIX"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "10000000C9781C57",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "10000000C9781853",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 5,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 115,
+                "name": "huhuihost",
+                "descriptors": {
+                    "os": "SuSE"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "2100000E1E1A9B30",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 121,
+                "name": "Dorado5000V3_F3",
+                "descriptors": {
+                    "os": "Red Hat Enterprise Linux"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "201880D4A58EA53A",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "200380D4A58EA53A",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 122,
+                "name": "DYP_RHEL",
+                "descriptors": {
+                    "IPAddr": "100.157.18.22",
+                    "os": "Red Hat Enterprise Linux"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "10000090FA76D446",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "10000090FA76D447",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 123,
+                "name": "DYP_Dorado6000",
+                "FCPaths": [
+                    {
+                        "wwn": "2618346AC212FB94",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 124,
+                "name": "tool_rhel6.8",
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF543687",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF543686",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 125,
+                "name": "OceanStor6800",
+                "FCPaths": [
+                    {
+                        "wwn": "2430E0979656725A",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2208E0979656725A",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2218E0979656725A",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2428E0979656725A",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 126,
+                "name": "fyc_test",
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF41DE7E",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 127,
+                "name": "huhui",
+                "descriptors": {
+                    "os": "SuSE"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "500601610864241E",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 132,
+                "name": "ESX8.44.161.152",
+                "descriptors": {
+                    "os": "ESX 4.x/5.x"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF2F3266",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF2F3267",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 8,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 133,
+                "name": "ESX89PT_suse_8.44.190.111",
+                "descriptors": {
+                    "os": "SuSE"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF36F1ED",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 134,
+                "name": "SVC",
+                "descriptors": {
+                    "os": "Exanet"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "500507680110EF7C",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500507680120EF7C",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500507680120EF3E",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "500507680110EF3E",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 3,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 135,
+                "name": "NSS_8.44.162.50",
+                "descriptors": {
+                    "os": "Red Hat Enterprise Linux"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF0DC381",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 137,
+                "name": "D185_8.44.143.201",
+                "descriptors": {
+                    "os": "Red Hat Enterprise Linux"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "29A11603042D0306",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "28D01603042D0306",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2903010203040509",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2802010203040509",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 139,
+                "name": "Dorado3000V6",
+                "FCPaths": [
+                    {
+                        "wwn": "2019CC64A68314D3",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2009CC64A68314D3",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 141,
+                "name": "8.44.143.27T2",
+                "FCPaths": [
+                    {
+                        "wwn": "10000090FA50C4DF",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "10000090FA50C4DE",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 142,
+                "name": "8.44.143.27T1",
+                "FCPaths": [],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 144,
+                "name": "C61_51.10.58.190",
+                "descriptors": {
+                    "os": "Red Hat Enterprise Linux"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "2210112224901223",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2200112224901223",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2230112224901223",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2220112224901223",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 145,
+                "name": "8.44.43.19",
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF754606",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF1A99E1",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 146,
+                "name": "ZTY_win2012",
+                "descriptors": {
+                    "os": "Windows 2012"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF40272B",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF40272A",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 2,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 147,
+                "name": "DoradoV6_183",
+                "FCPaths": [
+                    {
+                        "wwn": "240B121314151617",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2409121314151617",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 148,
+                "name": "rhev_125",
+                "descriptors": {
+                    "os": "Windows 2012"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF4BC1B7",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF4BC1B6",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 2,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 150,
+                "name": "windows2012_68",
+                "descriptors": {
+                    "os": "Windows 2012"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "2101001B32B0667A",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2100001B3290667A",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 2,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 151,
+                "name": "Dorado5000V6_80",
+                "FCPaths": [
+                    {
+                        "wwn": "2001183D5E0F5131",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "2011183D5E0F5131",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 152,
+                "name": "windows2012_60",
+                "descriptors": {
+                    "os": "Windows 2012"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF53B4BC",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF53B4BD",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 2,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 153,
+                "name": "aix_8.44.134.204",
+                "descriptors": {
+                    "os": "AIX"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "10000000C975804C",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "10000000C9765E79",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 5,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 154,
+                "name": "Dorado5500_V6_109",
+                "descriptors": {
+                    "IPAddr": "8.44.133.82",
+                    "os": "Windows 2012"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "221818022D189653",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "220818022D189653",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 2,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 155,
+                "name": "aix134.205",
+                "descriptors": {
+                    "IPAddr": "8.44.134.205",
+                    "os": "AIX"
+                },
+                "FCPaths": [
+                    {
+                        "wwn": "20000000C9781C81",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "10000000C9781C0C",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 5,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "id": 158,
+                "name": "hsv6",
+                "FCPaths": [
+                    {
+                        "wwn": "28130A2B304438A8",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "28120A2B304438A8",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "28F20A2B304438A8",
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "28F30A2B304438A8",
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "persona": 1,
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            },
+            {
+                "FCPaths": [
+                    {
+                        "wwn": "21000024FF41DCF7",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF41DCF6",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 0,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF0CC6CA",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF0CC6CA",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF0CBF47",
+                        "portPos": {
+                            "node": 0,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    },
+                    {
+                        "wwn": "21000024FF0CBF47",
+                        "portPos": {
+                            "node": 1,
+                            "slot": 1,
+                            "cardPort": 2
+                        },
+                        "hostSpeed": 0
+                    }
+                ],
+                "iSCSIPaths": [],
+                "initiatorChapEnabled": False,
+                "targetChapEnabled": False
+            }
+        ]
+    }
+]
+VIEW_DATAS = """
+  Lun VVName        HostName       -Host_WWN/iSCSI_Name- Port     Type
+  2 yytest_vv_001 host002        ----------------       0:2:1     host
+  0 set:vvset001  set:hostset111 ----------------       1:2:1 host set
+--------------------------------------------------------------------
+  2 total
+"""
+
 CONTROLLER_RESULT = [
     {
         'name': '1307327-0',
@@ -168,7 +1996,7 @@ DISK_RESULT = [
         'firmware': 'FW_Rev111',
         'speed': 15000,
         'capacity': 599684808704,
-        'status': 'abnormal',
+        'status': 'degraded',
         'physical_type': 'fc',
         'logical_type': None,
         'health_score': None,
@@ -194,6 +2022,96 @@ PORT_RESULT = [
         'ipv4_mask': None,
         'ipv6': None,
         'ipv6_mask': None
+    }]
+METRICS_RESULT = [
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'storagePool',
+                                'resource_id': '11',
+                                'type': 'RAW',
+                                'unit': 'IOPS'},
+                            values={1583005800000: 10}
+                            ),
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'volume',
+                                'resource_id': '0',
+                                'type': 'RAW',
+                                'unit': 'IOPS'},
+                            values={1626243000000: 2.0}
+                            ),
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'port',
+                                'resource_id': '0:0:1',
+                                'type': 'RAW',
+                                'unit': 'IOPS'
+                            },
+                            values={1626243000000: 0.0}
+                            ),
+    constants.metric_struct(name='iops',
+                            labels={
+                                'storage_id': '12345',
+                                'resource_type': 'disk',
+                                'resource_id': '0',
+                                'type': 'RAW',
+                                'unit': 'IOPS'
+                            },
+                            values={1626248100000: 0.5}
+                            ),
+]
+HOST_GROUP_RESULT = [
+    {
+        'name': 'HostSet_VMware',
+        'description': '',
+        'storage_id': '12345',
+        'native_storage_host_group_id': '194'
+    }]
+VOLUME_GROUP_RESULT = [
+    {
+        'name': 'wcj_2',
+        'description': '',
+        'storage_id': '12345',
+        'native_volume_group_id': '91'
+    }]
+PORT_GROUP_RESULT = [
+    {
+        'name': 'port_group_0:2:1',
+        'description': 'port_group_0:2:1',
+        'storage_id': '12345',
+        'native_port_group_id': 'port_group_0:2:1'
+    }]
+HOST_RESULT = [
+    {
+        'name': 'Doradov3_lm',
+        'description': None,
+        'storage_id': '12345',
+        'native_storage_host_id': 54,
+        'os_type': 'VMware ESX',
+        'status': 'normal',
+        'ip_address': '100.157.61.100'
+    }]
+INITIATOR_RESULT = [
+    {
+        'name': '2408244427906812',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': '2408244427906812',
+        'wwn': '2408244427906812',
+        'type': 'fc',
+        'status': 'online',
+        'native_storage_host_id': '175'
+    }]
+VIEW_RESULT = [
+    {
+        'native_masking_view_id': '2_0:2:1_host002_yytest_vv_001',
+        'name': '2',
+        'storage_id': '12345',
+        'native_port_group_id': 'port_group_0:2:1',
+        'native_volume_id': '666',
+        'native_storage_host_id': '160'
     }]
 
 
@@ -605,3 +2523,103 @@ class TestHpe3parStorageDriver(TestCase):
                          PORT_RCIP_DATAS, PORT_RCIP_DATAS])
         ports = driver.list_ports(context)
         self.assertDictEqual(ports[0], PORT_RESULT[0])
+
+    @mock.patch.object(RestHandler, 'get_pool_metrics')
+    @mock.patch.object(SSHPool, 'do_exec')
+    def test_get_perf_metrics(self, mock_exec, mock_pool):
+        driver = create_driver()
+        resource_metrics = {
+            'storagePool': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'volume': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime',
+                'ioSize', 'readIoSize', 'writeIoSize',
+            ],
+            'port': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'disk': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'filesystem': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'readResponseTime', 'writeResponseTime',
+                'readIoSize', 'writeIoSize'
+            ]
+        }
+        start_time = 1628472280000
+        end_time = 1628472900000
+        RestHandler.get_all_pools = mock.Mock(return_value=POOL_DATAS)
+        mock_pool.return_value = POOL_METRICS_DATAS
+        mock_exec.side_effect = [VOLUME_METRICS_DATAS, PORT_METRICS_DATAS,
+                                 DISK_METRICS_DATAS]
+        metrics = driver.collect_perf_metrics(context, '12345',
+                                              resource_metrics, start_time,
+                                              end_time)
+        self.assertEqual(metrics[0], METRICS_RESULT[0])
+        self.assertEqual(metrics[14], METRICS_RESULT[1])
+        self.assertEqual(metrics[34], METRICS_RESULT[2])
+        self.assertEqual(metrics[48], METRICS_RESULT[3])
+
+    def test_get_capabilities(self):
+        driver = create_driver()
+        cap = driver.get_capabilities(context)
+        self.assertIsNotNone(cap.get('resource_metrics'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('storagePool'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('volume'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('port'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('disk'))
+
+    def test_get_storage_host_groups(self):
+        driver = create_driver()
+        SSHPool.do_exec = mock.Mock(side_effect=[HOST_GROUP_DATAS,
+                                                 HOST_ID_DATAS])
+        host_groups = driver.list_storage_host_groups(context)
+        self.assertDictEqual(host_groups.get('storage_host_groups')[0],
+                             HOST_GROUP_RESULT[0])
+
+    def test_get_volume_groups(self):
+        driver = create_driver()
+        SSHPool.do_exec = mock.Mock(side_effect=[VOLUME_GROUP_DATAS,
+                                                 VOLUME_ID_DATAS])
+        volume_groups = driver.list_volume_groups(context)
+        self.assertDictEqual(volume_groups.get('volume_groups')[0],
+                             VOLUME_GROUP_RESULT[0])
+
+    def test_storage_hosts(self):
+        driver = create_driver()
+        with mock.patch.object(RestHandler, 'get_resinfo_call',
+                               side_effect=HOST_DATAS):
+            storage_hosts = driver.list_storage_hosts(context)
+            self.assertDictEqual(storage_hosts[0], HOST_RESULT[0])
+
+    def test_get_storage_host_initiators(self):
+        driver = create_driver()
+        SSHPool.do_exec = mock.Mock(side_effect=[HOST_ID_DATAS])
+        initiators = driver.list_storage_host_initiators(context)
+        self.assertDictEqual(initiators[0], INITIATOR_RESULT[0])
+
+    def test_get_masking_views(self):
+        driver = create_driver()
+        SSHPool.do_exec = mock.Mock(
+            side_effect=[VIEW_DATAS, HOST_ID_DATAS, HOST_GROUP_DATAS,
+                         VOLUME_ID_DATAS, VOLUME_GROUP_DATAS])
+        views = driver.list_masking_views(context)
+        self.assertDictEqual(views[0], VIEW_RESULT[0])
+
+    def test_get_port_groups(self):
+        driver = create_driver()
+        SSHPool.do_exec = mock.Mock(side_effect=[VIEW_DATAS])
+        port_groups = driver.list_port_groups(context)
+        self.assertDictEqual(port_groups.get('port_groups')[0],
+                             PORT_GROUP_RESULT[0])
