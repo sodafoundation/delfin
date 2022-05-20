@@ -389,8 +389,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
     def get_metrics(self, storage_id, resource_metrics, start_time, end_time,
                     url, resource_type, resource_id=None, resource_name=None):
         metrics = []
-        localtime = time.mktime(time.localtime())
-        localtime_ms = localtime * units.k
+        local_time = time.mktime(time.localtime())
+        localtime_ms = local_time * units.k
         if start_time < localtime_ms - consts.ONE_YEAR_DIFFERENCE\
                 or end_time < start_time or start_time > localtime_ms:
             return metrics
@@ -398,7 +398,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
         list_metrics = self.rest_handler.rest_call(url.format(historical))
         for storage_metrics in (list_metrics or []):
             opened = storage_metrics.get('time')
-            time_difference = localtime - time.mktime(time.gmtime())
+            time_difference = local_time - time.mktime(time.gmtime())
             timestamp = (int(datetime.datetime.strptime
                              (opened, '%Y-%m-%dT%H:%M:%SZ').timestamp()
                              + time_difference) *
@@ -435,9 +435,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     'unit': resource_metrics[resource_key]['unit']
                 }
                 resource_value = {timestamp: metrics_data.get(resource_key)}
-                metrics_res = constants.metric_struct(name=resource_key,
-                                                      labels=labels,
-                                                      values=resource_value)
+                metrics_res = constants.metric_struct(
+                    name=resource_key, labels=labels, values=resource_value)
                 metrics.append(metrics_res)
         return metrics
 
@@ -453,19 +452,20 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
     @staticmethod
     def get_historical(localtime, start_time):
-        historical = consts.ONE_HOUR
-        if start_time < localtime - consts.ONE_HOUR_DIFFERENCE:
-            historical = consts.THREE_HOUR
-        if start_time < localtime - consts.THREE_HOUR_DIFFERENCE:
-            historical = consts.ONE_DAY
-        if start_time < localtime - consts.ONE_DAY_DIFFERENCE:
-            historical = consts.SEVEN_DAY
-        if start_time < localtime - consts.SEVEN_DAY_DIFFERENCE:
-            historical = consts.THIRTY_DAY
-        if start_time < localtime - consts.THIRTY_DAY_DIFFERENCE:
-            historical = consts.NINETY_DAY
         if start_time < localtime - consts.NINETY_DAY_DIFFERENCE:
             historical = consts.ONE_YEAR
+        elif start_time < localtime - consts.THIRTY_DAY_DIFFERENCE:
+            historical = consts.NINETY_DAY
+        elif start_time < localtime - consts.SEVEN_DAY_DIFFERENCE:
+            historical = consts.THIRTY_DAY
+        elif start_time < localtime - consts.ONE_DAY_DIFFERENCE:
+            historical = consts.SEVEN_DAY
+        elif start_time < localtime - consts.THREE_HOUR_DIFFERENCE:
+            historical = consts.ONE_DAY
+        elif start_time < localtime - consts.ONE_HOUR_DIFFERENCE:
+            historical = consts.THREE_HOUR
+        else:
+            historical = consts.ONE_HOUR
         return historical
 
     @staticmethod
