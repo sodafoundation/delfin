@@ -68,6 +68,8 @@ class API(object):
 
     def remove_storage(self, context, storage_id):
         """Clear driver instance from driver factory."""
+        driver = self.driver_manager.get_driver(context, storage_id=storage_id)
+        driver.delete_storage(context)
         self.driver_manager.remove_driver(storage_id)
 
     def get_storage(self, context, storage_id):
