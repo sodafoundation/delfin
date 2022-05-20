@@ -94,3 +94,22 @@ PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.40482.3.7'
 
 PARSE_ALERT_SEVERITY_MAP = {'1': constants.Severity.WARNING,
                             '2': constants.Severity.INFORMATIONAL}
+
+HOST_OS_TYPES_MAP = {
+    'linux': constants.HostOSTypes.LINUX,
+    'windows': constants.HostOSTypes.WINDOWS,
+    'solaris': constants.HostOSTypes.SOLARIS,
+    'hp-ux': constants.HostOSTypes.HP_UX,
+    'hpux': constants.HostOSTypes.HP_UX,
+    'aix': constants.HostOSTypes.AIX,
+    'xenserver': constants.HostOSTypes.XEN_SERVER,
+    'vmware esx': constants.HostOSTypes.VMWARE_ESX,
+    'esxi': constants.HostOSTypes.VMWARE_ESX,
+    'linux_vis': constants.HostOSTypes.LINUX_VIS,
+    'windows server 2012': constants.HostOSTypes.WINDOWS_SERVER_2012,
+    'oracle vm': constants.HostOSTypes.ORACLE_VM,
+    'oracle-vm-server': constants.HostOSTypes.ORACLE_VM,
+    'open vms': constants.HostOSTypes.OPEN_VMS,
+    'vms': constants.HostOSTypes.OPEN_VMS,
+    'unknown': constants.HostOSTypes.UNKNOWN
+}

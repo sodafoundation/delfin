@@ -81,7 +81,7 @@ check_install_rabbitmq(){
     else
         #TODO check erlang
         # Import rabbitMQ
-        ret=$(wget -O- https://dl.bintray.com/rabbitmq/Keys/rabbitmq-release-signing-key.asc | sudo apt-key add -)
+        ret=$(wget -O- https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc | sudo apt-key add -)
         if [ $? -eq 0 ]; then
             ret=$(wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -)
             if [ $? -ne 0 ]; then
