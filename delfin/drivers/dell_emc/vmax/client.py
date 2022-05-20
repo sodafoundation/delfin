@@ -30,7 +30,7 @@ class VMAXClient(object):
 
     def __init__(self, **kwargs):
         self.uni_version = None
-        self.array_id = None
+        self.array_id = {}
         rest_access = kwargs.get('rest')
         if rest_access is None:
             raise exception.InvalidInput('Input rest_access is missing')
@@ -67,8 +67,8 @@ class VMAXClient(object):
             msg = "Invalid input. Failed to get vmax unisphere version"
             raise exception.InvalidInput(msg)
 
-        self.array_id = access_info.get('extra_attributes', {}). \
-            get('array_id', None)
+    def add_storage(self, access_info):
+        storage_name = access_info.get('storage_name')
 
         try:
             # Get array details from unisphere
@@ -78,52 +78,43 @@ class VMAXClient(object):
                 raise exception.InvalidInput(msg)
 
             if len(array['symmetrixId']) == EMBEDDED_UNISPHERE_ARRAY_COUNT:
-                if not self.array_id:
-                    self.array_id = array['symmetrixId'][0]
-                elif self.array_id != array['symmetrixId'][0]:
-                    msg = "Invalid array_id. Expected id: {}". \
+                if not storage_name:
+                    storage_name = array['symmetrixId'][0]
+                elif storage_name != array['symmetrixId'][0]:
+                    msg = "Invalid storage_name. Expected: {}". \
                         format(array['symmetrixId'])
                     raise exception.InvalidInput(msg)
             else:
-                # Get first local array id
+                if not storage_name:
+                    msg = "Input storage_name is missing. Supported ids: {}". \
+                        format(array['symmetrixId'])
+                    raise exception.InvalidInput(msg)
+
                 array_ids = array.get('symmetrixId', list())
-                for array_id in array_ids:
-                    array_info = self.rest.get_array_detail(
-                        version=self.uni_version, array=array_id)
-                    if array_info.get('local'):
-                        LOG.info("Adding local VMAX array {}".
-                                 format(array_id))
-                        if not self.array_id:
-                            self.array_id = array_id
-                        break
-                    else:
-                        LOG.info("Skipping remote VMAX array {}".
-                                 format(array_id))
-            if not self.array_id:
-                msg = "Failed to get VMAX array id from Unisphere"
-                raise exception.InvalidInput(msg)
+                if storage_name not in array_ids:
+                    msg = "Failed to get VMAX array id from Unisphere"
+                    raise exception.InvalidInput(msg)
+
+            self.array_id[access_info['storage_id']] = storage_name
+
         except Exception:
-            LOG.error("Failed to init_connection to VMAX")
+            LOG.error("Failed to add storage from VMAX")
             raise
 
-        if not self.array_id:
-            msg = "Input array_id is missing. Supported ids: {}". \
-                format(array['symmetrixId'])
-            raise exception.InvalidInput(msg)
-
-    def get_array_details(self):
+    def get_array_details(self, storage_id):
         try:
+            array_id = self.array_id.get(storage_id)
             # Get the VMAX array properties
             return self.rest.get_vmax_array_details(version=self.uni_version,
-                                                    array=self.array_id)
+                                                    array=array_id)
         except Exception:
             LOG.error("Failed to get array details from VMAX")
             raise
 
-    def get_storage_capacity(self):
+    def get_storage_capacity(self, storage_id):
         try:
             storage_info = self.rest.get_system_capacity(
-                self.array_id, self.uni_version)
+                self.array_id[storage_id], self.uni_version)
 
             total_capacity = 0
             used_capacity = 0
@@ -170,12 +161,14 @@ class VMAXClient(object):
         try:
             # Get list of SRP pool names
             pools = self.rest.get_srp_by_name(
-                self.array_id, self.uni_version, srp='')['srpId']
+                self.array_id[storage_id],
+                self.uni_version, srp='')['srpId']
 
             pool_list = []
             for pool in pools:
                 pool_info = self.rest.get_srp_by_name(
-                    self.array_id, self.uni_version, srp=pool)
+                    self.array_id[storage_id],
+                    self.uni_version, srp=pool)
 
                 total_cap = 0
                 used_cap = 0
@@ -217,10 +210,10 @@ class VMAXClient(object):
         try:
             # Get default SRPs assigned for the array
             default_srps = self.rest.get_default_srps(
-                self.array_id, version=self.uni_version)
+                self.array_id[storage_id], version=self.uni_version)
             # List all volumes except data volumes
             volumes = self.rest.get_volume_list(
-                self.array_id, version=self.uni_version,
+                self.array_id[storage_id], version=self.uni_version,
                 params={'data_volume': 'false'})
 
             # TODO: Update constants.VolumeStatus to make mapping more precise
@@ -235,7 +228,7 @@ class VMAXClient(object):
             volume_list = []
             for volume in volumes:
                 # Get volume details
-                vol = self.rest.get_volume(self.array_id,
+                vol = self.rest.get_volume(self.array_id[storage_id],
                                            self.uni_version, volume)
 
                 emulation_type = vol['emulation']
@@ -270,7 +263,7 @@ class VMAXClient(object):
                 if vol['num_of_storage_groups'] == 1:
                     sg = vol['storageGroupId'][0]
                     sg_info = self.rest.get_storage_group(
-                        self.array_id, self.uni_version, sg)
+                        self.array_id[storage_id], self.uni_version, sg)
                     v['native_storage_pool_id'] = \
                         sg_info.get('srp', default_srps[emulation_type])
                     v['compressed'] = sg_info.get('compression', False)
@@ -288,12 +281,12 @@ class VMAXClient(object):
     def list_controllers(self, storage_id):
         try:
             # Get list of Directors
-            directors = self.rest.get_director_list(self.array_id,
+            directors = self.rest.get_director_list(self.array_id[storage_id],
                                                     self.uni_version)
             controller_list = []
             for director in directors:
                 director_info = self.rest.get_director(
-                    self.array_id, self.uni_version, director)
+                    self.array_id[storage_id], self.uni_version, director)
 
                 status = constants.ControllerStatus.NORMAL
                 if "OFF" in director_info.get('availability', '').upper():
@@ -323,7 +316,7 @@ class VMAXClient(object):
     def list_ports(self, storage_id):
         try:
             # Get list of Directors
-            directors = self.rest.get_director_list(self.array_id,
+            directors = self.rest.get_director_list(self.array_id[storage_id],
                                                     self.uni_version)
         except Exception:
             LOG.error("Failed to get director list,"
@@ -338,10 +331,10 @@ class VMAXClient(object):
         for director in directors:
             try:
                 port_keys = self.rest.get_port_list(
-                    self.array_id, self.uni_version, director)
+                    self.array_id[storage_id], self.uni_version, director)
                 for port_key in port_keys:
                     port_info = self.rest.get_port(
-                        self.array_id, self.uni_version,
+                        self.array_id[storage_id], self.uni_version,
                         director, port_key['portId'])['symmetrixPort']
 
                     connection_status = \
@@ -406,12 +399,12 @@ class VMAXClient(object):
             return []
         try:
             # Get list of Disks
-            disks = self.rest.get_disk_list(self.array_id,
+            disks = self.rest.get_disk_list(self.array_id[storage_id],
                                             self.uni_version)
             disk_list = []
             for disk in disks:
                 disk_info = self.rest.get_disk(
-                    self.array_id, self.uni_version, disk)
+                    self.array_id[storage_id], self.uni_version, disk)
 
                 disk_item = {
                     'name': disk,
@@ -430,13 +423,13 @@ class VMAXClient(object):
     def list_storage_host_initiators(self, storage_id):
         try:
             # Get list of initiators
-            initiators = self.rest.get_initiator_list(self.array_id,
-                                                      self.uni_version)
+            initiators = self.rest.get_initiator_list(
+                self.array_id[storage_id], self.uni_version)
 
             initiator_list = []
             for initiator in initiators:
                 initiator_info = self.rest.get_initiator(
-                    self.array_id, self.uni_version, initiator)
+                    self.array_id[storage_id], self.uni_version, initiator)
                 type_string = initiator_info.get('type', '').upper()
                 initiator_type = constants.InitiatorType.UNKNOWN
                 if 'FIBRE' in type_string:
@@ -468,12 +461,12 @@ class VMAXClient(object):
     def list_storage_hosts(self, storage_id):
         try:
             # Get list of storage hosts
-            hosts = self.rest.get_host_list(self.array_id,
+            hosts = self.rest.get_host_list(self.array_id[storage_id],
                                             self.uni_version)
             host_list = []
             for host in hosts:
                 host_info = self.rest.get_host(
-                    self.array_id, self.uni_version, host)
+                    self.array_id[storage_id], self.uni_version, host)
 
                 host_item = {
                     'storage_id': storage_id,
@@ -492,13 +485,13 @@ class VMAXClient(object):
     def list_storage_host_groups(self, storage_id):
         try:
             # Get list of storage host groups
-            host_groups = self.rest.get_host_group_list(self.array_id,
-                                                        self.uni_version)
+            host_groups = self.rest.get_host_group_list(
+                self.array_id[storage_id], self.uni_version)
             host_group_list = []
             storage_host_grp_relation_list = []
             for host_group in host_groups:
                 host_group_info = self.rest.get_host_group(
-                    self.array_id, self.uni_version, host_group)
+                    self.array_id[storage_id], self.uni_version, host_group)
                 host_group_item = {
                     'name': host_group,
                     'storage_id': storage_id,
@@ -529,13 +522,13 @@ class VMAXClient(object):
     def list_port_groups(self, storage_id):
         try:
             # Get list of port groups
-            port_groups = self.rest.get_port_group_list(self.array_id,
-                                                        self.uni_version)
+            port_groups = self.rest.get_port_group_list(
+                self.array_id[storage_id], self.uni_version)
             port_group_list = []
             port_group_relation_list = []
             for port_group in port_groups:
                 port_group_info = self.rest.get_port_group(
-                    self.array_id, self.uni_version, port_group)
+                    self.array_id[storage_id], self.uni_version, port_group)
                 port_group_item = {
                     'name': port_group,
                     'storage_id': storage_id,
@@ -564,8 +557,8 @@ class VMAXClient(object):
     def list_volume_groups(self, storage_id):
         try:
             # Get list of volume groups
-            volume_groups = self.rest.get_volume_group_list(self.array_id,
-                                                            self.uni_version)
+            volume_groups = self.rest.get_volume_group_list(
+                self.array_id[storage_id], self.uni_version)
             volume_group_list = []
             volume_group_relation_list = []
             for volume_group in volume_groups:
@@ -581,7 +574,7 @@ class VMAXClient(object):
 
                 # List all volumes except data volumes
                 volumes = self.rest.get_volume_list(
-                    self.array_id, version=self.uni_version,
+                    self.array_id[storage_id], version=self.uni_version,
                     params={'data_volume': 'false',
                             'storageGroupId': volume_group})
                 if not volumes:
@@ -607,12 +600,12 @@ class VMAXClient(object):
     def list_masking_views(self, storage_id):
         try:
             # Get list of masking_views
-            masking_views = self.rest.get_masking_view_list(self.array_id,
-                                                            self.uni_version)
+            masking_views = self.rest.get_masking_view_list(
+                self.array_id[storage_id], self.uni_version)
             masking_view_list = []
             for masking_view in masking_views:
                 mv_info = self.rest.get_masking_view(
-                    self.array_id, self.uni_version, masking_view)
+                    self.array_id[storage_id], self.uni_version, masking_view)
 
                 masking_view_item = {
                     'name': masking_view,
@@ -631,21 +624,22 @@ class VMAXClient(object):
             LOG.error("Failed to get masking views details from VMAX")
             raise
 
-    def list_alerts(self, query_para):
+    def list_alerts(self, storage_id, query_para):
         """Get all alerts from an array."""
         return self.rest.get_alerts(query_para, version=self.uni_version,
-                                    array=self.array_id)
+                                    array=self.array_id[storage_id])
 
-    def clear_alert(self, sequence_number):
+    def clear_alert(self, storage_id, sequence_number):
         """Clear alert for given sequence number."""
-        return self.rest.clear_alert(sequence_number, version=self.uni_version,
-                                     array=self.array_id)
+        return self.rest.clear_alert(sequence_number,
+                                     version=self.uni_version,
+                                     array=self.array_id[storage_id])
 
     def get_storage_metrics(self, storage_id, metrics, start_time, end_time):
         """Get performance metrics."""
         try:
             perf_list = self.rest.get_storage_metrics(
-                self.array_id, metrics, start_time, end_time)
+                self.array_id[storage_id], metrics, start_time, end_time)
 
             return perf_utils.construct_metrics(storage_id,
                                                 consts.STORAGE_METRICS,
@@ -659,7 +653,7 @@ class VMAXClient(object):
         """Get performance metrics."""
         try:
             perf_list = self.rest.get_pool_metrics(
-                self.array_id, metrics, start_time, end_time)
+                self.array_id[storage_id], metrics, start_time, end_time)
 
             metrics_array = perf_utils.construct_metrics(
                 storage_id, consts.POOL_METRICS, consts.POOL_CAP, perf_list)
@@ -673,7 +667,7 @@ class VMAXClient(object):
         """Get performance metrics."""
         try:
             be_perf_list, fe_perf_list, rdf_perf_list = \
-                self.rest.get_port_metrics(self.array_id,
+                self.rest.get_port_metrics(self.array_id[storage_id],
                                            metrics, start_time, end_time)
 
             metrics_array = []
@@ -701,7 +695,7 @@ class VMAXClient(object):
         """Get performance metrics."""
         try:
             be_perf_list, fe_perf_list, rdf_perf_list = self.rest.\
-                get_controller_metrics(self.array_id,
+                get_controller_metrics(self.array_id[storage_id],
                                        metrics, start_time, end_time)
 
             metrics_array = []
@@ -732,7 +726,7 @@ class VMAXClient(object):
 
         try:
             perf_list = self.rest.get_disk_metrics(
-                self.array_id, metrics, start_time, end_time)
+                self.array_id[storage_id], metrics, start_time, end_time)
 
             metrics_array = perf_utils.construct_metrics(
                 storage_id, consts.DISK_METRICS, consts.DISK_CAP, perf_list)
