@@ -289,6 +289,584 @@ LIST_ERROR = """
 </RESPONSE>
 """
 
+LIST_HOST_INITIATORS = """
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RESPONSE VERSION="L100" REQUEST="show host-groups">
+<COMP G="2" P="3"/>
+ <OBJECT basetype="initiator" name="initiator" oid="3" format="rows">
+    <PROPERTY name="durable-id">I2</PROPERTY>
+    <PROPERTY name="nickname">FC-port1</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">No</PROPERTY>
+    <PROPERTY name="profile">HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">21000024ff3dfed1</PROPERTY>
+    <PROPERTY name="host-id">NOHOST</PROPERTY>
+    <PROPERTY name="host-key" >HU</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+<COMP G="5" P="6"/>
+ <OBJECT basetype="initiator" name="initiator" oid="6" format="rows">
+    <PROPERTY name="durable-id">I1</PROPERTY>
+    <PROPERTY name="nickname">FC-port2</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">Yes</PROPERTY>
+    <PROPERTY name="profile">HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">10000090fa13870e</PROPERTY>
+    <PROPERTY name="host-id">00c0ff26c2360000e2399f6101010000</PROPERTY>
+    <PROPERTY name="host-key" >H1</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+<COMP G="5" P="7"/>
+<OBJECT basetype="initiator" name="initiator" oid="7" format="rows">
+    <PROPERTY name="durable-id">I0</PROPERTY>
+    <PROPERTY name="nickname">FC-port3</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">Yes</PROPERTY>
+    <PROPERTY name="profile">HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">10000090fa13870f</PROPERTY>
+    <PROPERTY name="host-id">00c0ff26c2360000e2399f6101010000</PROPERTY>
+    <PROPERTY name="host-key" >H1</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+<COMP G="9" P="10"/>
+<OBJECT basetype="initiator" name="initiator" oid="10" format="rows">
+    <PROPERTY name="durable-id">I6</PROPERTY>
+    <PROPERTY name="nickname">rac01_01</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">Yes</PROPERTY>
+    <PROPERTY name="profile">Standard</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">500143801875548e</PROPERTY>
+    <PROPERTY name="host-id">00c0ff26c4ea0000057f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H4</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+<COMP G="9" P="11"/>
+<OBJECT basetype="initiator" name="initiator" oid="11" format="rows">
+    <PROPERTY name="durable-id">I5</PROPERTY>
+    <PROPERTY name="nickname">rac01_02</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">Yes</PROPERTY>
+    <PROPERTY name="profile">Standard</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">5001438012097ed6</PROPERTY>
+    <PROPERTY name="host-id">00c0ff26c4ea0000057f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H4</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+<COMP G="12" P="13"/>
+<OBJECT basetype="initiator" name="initiator" oid="13" format="rows">
+    <PROPERTY name="durable-id">I3</PROPERTY>
+    <PROPERTY name="nickname">rac02_01</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">Yes</PROPERTY>
+    <PROPERTY name="profile">Standard</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">50014380029ceb58</PROPERTY>
+    <PROPERTY name="host-id">00c0ff26c4ea0000f77f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H3</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+<COMP G="12" P="14"/>
+ <OBJECT basetype="initiator" name="initiator" oid="14" format="rows">
+    <PROPERTY name="durable-id">I4</PROPERTY>
+    <PROPERTY name="nickname">rac02_02</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">No</PROPERTY>
+    <PROPERTY name="profile">Standard</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">500143801209031c</PROPERTY>
+    <PROPERTY name="host-id">00c0ff26c4ea0000f77f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H3</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+<COMP G="15" P="16"/>
+<OBJECT basetype="initiator" name="initiator" oid="16" format="rows">
+    <PROPERTY name="durable-id">I2</PROPERTY>
+    <PROPERTY name="nickname">FC-port1</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped">No</PROPERTY>
+    <PROPERTY name="profile">HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type">FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" key="true">21000024ff3dfed1</PROPERTY>
+    <PROPERTY name="host-id">NOHOST</PROPERTY>
+    <PROPERTY name="host-key" >HU</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b">0</PROPERTY>
+  </OBJECT>
+</RESPONSE>
+
+"""
+
+LIST_HOST_GROUPS = """
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RESPONSE VERSION="L100" REQUEST="show host-groups">
+<COMP G="0" P="1"/>
+ <OBJECT basetype="host-group" name="host-group" oid="1" format="rows">
+    <PROPERTY name="durable-id" >HGU</PROPERTY>
+    <PROPERTY name="name">-ungrouped-</PROPERTY>
+    <PROPERTY name="serial-number" >UNGROUPEDHOSTS</PROPERTY>
+    <PROPERTY name="member-count" >0</PROPERTY>
+  </OBJECT>
+<COMP G="1" P="2"/>  <OBJECT basetype="host" name="host" oid="2" format="rows">
+    <PROPERTY name="durable-id">HU</PROPERTY>
+    <PROPERTY name="name">-nohost-</PROPERTY>
+    <PROPERTY name="serial-number">NOHOST</PROPERTY>
+    <PROPERTY name="member-count" >0</PROPERTY>
+    <PROPERTY name="host-group">UNGROUPEDHOSTS</PROPERTY>
+    <PROPERTY name="group-key" >HGU</PROPERTY>
+  </OBJECT>
+<COMP G="2" P="3"/>
+<OBJECT basetype="initiator" name="initiator" oid="3" format="rows">
+    <PROPERTY name="durable-id" >I2</PROPERTY>
+    <PROPERTY name="nickname" >FC-port1</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >No</PROPERTY>
+    <PROPERTY name="profile" >HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >21000024ff3dfed1</PROPERTY>
+    <PROPERTY name="host-id" >NOHOST</PROPERTY>
+    <PROPERTY name="host-key" >HU</PROPERTY>
+    <PROPERTY name="host-port-bits-a" >0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+<COMP G="0" P="4"/>
+<OBJECT basetype="host-group" name="host-group" oid="4" format="rows">
+    <PROPERTY name="durable-id" >HG0</PROPERTY>
+    <PROPERTY name="name">HostGroup1</PROPERTY>
+    <PROPERTY name="serial-number" >00c0ff26c2360000223a9f6101010000</PROPERTY>
+    <PROPERTY name="member-count">1</PROPERTY>
+  </OBJECT>
+<COMP G="4" P="5"/>  <OBJECT basetype="host" name="host" oid="5" format="rows">
+    <PROPERTY name="durable-id" >H1</PROPERTY>
+    <PROPERTY name="name">Host1</PROPERTY>
+    <PROPERTY name="serial-number" >00c0ff26c2360000e2399f6101010000</PROPERTY>
+    <PROPERTY name="member-count">2</PROPERTY>
+    <PROPERTY name="host-group">00c0ff26c2360000223a9f6101010000</PROPERTY>
+    <PROPERTY name="group-key">HG0</PROPERTY>
+  </OBJECT>
+<COMP G="5" P="6"/>
+ <OBJECT basetype="initiator" name="initiator" oid="6" format="rows">
+    <PROPERTY name="durable-id" >I1</PROPERTY>
+    <PROPERTY name="nickname" >FC-port2</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >Yes</PROPERTY>
+    <PROPERTY name="profile" >HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >10000090fa13870e</PROPERTY>
+    <PROPERTY name="host-id" >00c0ff26c2360000e2399f6101010000</PROPERTY>
+    <PROPERTY name="host-key" >H1</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+<COMP G="5" P="7"/>
+<OBJECT basetype="initiator" name="initiator" oid="7" format="rows">
+    <PROPERTY name="durable-id" >I0</PROPERTY>
+    <PROPERTY name="nickname" >FC-port3</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >Yes</PROPERTY>
+    <PROPERTY name="profile" >HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >10000090fa13870f</PROPERTY>
+    <PROPERTY name="host-id" >00c0ff26c2360000e2399f6101010000</PROPERTY>
+    <PROPERTY name="host-key" >H1</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+<COMP G="0" P="8"/>
+<OBJECT basetype="host-group" name="host-group" oid="8" format="rows">
+    <PROPERTY name="durable-id" >HG2</PROPERTY>
+    <PROPERTY name="name" >rac</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c4ea00008c81245b01010000</PROPERTY>
+    <PROPERTY name="member-count" >2</PROPERTY>
+  </OBJECT>
+<COMP G="8" P="9"/>  <OBJECT basetype="host" name="host" oid="9" format="rows">
+    <PROPERTY name="durable-id" >H4</PROPERTY>
+    <PROPERTY name="name" >rac01</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c4ea0000057f245b01010000</PROPERTY>
+    <PROPERTY name="member-count" >2</PROPERTY>
+    <PROPERTY name="host-group" >00c0ff26c4ea00008c81245b01010000</PROPERTY>
+    <PROPERTY name="group-key">HG2</PROPERTY>
+  </OBJECT>
+<COMP G="9" P="10"/>
+ <OBJECT basetype="initiator" name="initiator" oid="10" format="rows">
+    <PROPERTY name="durable-id" >I6</PROPERTY>
+    <PROPERTY name="nickname" >rac01_01</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >Yes</PROPERTY>
+    <PROPERTY name="profile" >Standard</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >500143801875548e</PROPERTY>
+    <PROPERTY name="host-id" >00c0ff26c4ea0000057f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H4</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+<COMP G="9" P="11"/>
+ <OBJECT basetype="initiator" name="initiator" oid="11" format="rows">
+    <PROPERTY name="durable-id" >I5</PROPERTY>
+    <PROPERTY name="nickname" >rac01_02</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >Yes</PROPERTY>
+    <PROPERTY name="profile" >Standard</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >5001438012097ed6</PROPERTY>
+    <PROPERTY name="host-id" >00c0ff26c4ea0000057f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H4</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+<COMP G="8" P="12"/>
+<OBJECT basetype="host" name="host" oid="12" format="rows">
+    <PROPERTY name="durable-id" >H3</PROPERTY>
+    <PROPERTY name="name" >rac02</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c4ea0000f77f245b01010000</PROPERTY>
+    <PROPERTY name="member-count" >2</PROPERTY>
+    <PROPERTY name="host-group">00c0ff26c4ea00008c81245b01010000</PROPERTY>
+    <PROPERTY name="group-key">HG2</PROPERTY>
+  </OBJECT>
+<COMP G="12" P="13"/>
+<OBJECT basetype="initiator" name="initiator" oid="13" format="rows">
+    <PROPERTY name="durable-id" >I3</PROPERTY>
+    <PROPERTY name="nickname" >rac02_01</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >Yes</PROPERTY>
+    <PROPERTY name="profile" >Standard</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >50014380029ceb58</PROPERTY>
+    <PROPERTY name="host-id" >00c0ff26c4ea0000f77f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H3</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+<COMP G="12" P="14"/>
+<OBJECT basetype="initiator" name="initiator" oid="14" format="rows">
+    <PROPERTY name="durable-id" >I4</PROPERTY>
+    <PROPERTY name="nickname" >rac02_02</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >No</PROPERTY>
+    <PROPERTY name="profile" >Standard</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >500143801209031c</PROPERTY>
+    <PROPERTY name="host-id" >00c0ff26c4ea0000f77f245b01010000</PROPERTY>
+    <PROPERTY name="host-key" >H3</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+<COMP G="0" P="15"/>
+ <OBJECT basetype="host" name="host" oid="15" format="rows">
+    <PROPERTY name="durable-id" >HU</PROPERTY>
+    <PROPERTY name="name" >-nohost-</PROPERTY>
+    <PROPERTY name="serial-number">NOHOST</PROPERTY>
+    <PROPERTY name="member-count" >0</PROPERTY>
+    <PROPERTY name="host-group" >UNGROUPEDHOSTS</PROPERTY>
+    <PROPERTY name="group-key">HGU</PROPERTY>
+  </OBJECT>
+<COMP G="15" P="16"/>
+<OBJECT basetype="initiator" name="initiator" oid="16" format="rows">
+    <PROPERTY name="durable-id" >I2</PROPERTY>
+    <PROPERTY name="nickname" >FC-port1</PROPERTY>
+    <PROPERTY name="discovered">No</PROPERTY>
+    <PROPERTY name="mapped" >No</PROPERTY>
+    <PROPERTY name="profile" >HP-UX</PROPERTY>
+    <PROPERTY name="host-bus-type" >FC</PROPERTY>
+    <PROPERTY name="host-bus-type-numeric">6</PROPERTY>
+    <PROPERTY name="id" >21000024ff3dfed1</PROPERTY>
+    <PROPERTY name="host-id" >NOHOST</PROPERTY>
+    <PROPERTY name="host-key" >HU</PROPERTY>
+    <PROPERTY name="host-port-bits-a">0</PROPERTY>
+    <PROPERTY name="host-port-bits-b" >0</PROPERTY>
+  </OBJECT>
+</RESPONSE>
+"""
+LIST_HOST = """
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RESPONSE VERSION="L100" REQUEST="show host-groups">
+<COMP G="1" P="2"/>  <OBJECT basetype="host" name="host" oid="2" format="rows">
+    <PROPERTY name="durable-id">HU</PROPERTY>
+    <PROPERTY name="name">-nohost-</PROPERTY>
+    <PROPERTY name="serial-number">NOHOST</PROPERTY>
+    <PROPERTY name="member-count">0</PROPERTY>
+    <PROPERTY name="host-group">UNGROUPEDHOSTS</PROPERTY>
+    <PROPERTY name="group-key">HGU</PROPERTY>
+  </OBJECT>
+<COMP G="4" P="5"/>  <OBJECT basetype="host" name="host" oid="5" format="rows">
+    <PROPERTY name="durable-id">H1</PROPERTY>
+    <PROPERTY name="name">Host1</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c2360000e2399f6101010000</PROPERTY>
+    <PROPERTY name="member-count">2</PROPERTY>
+    <PROPERTY name="host-group">00c0ff26c2360000223a9f6101010000</PROPERTY>
+    <PROPERTY name="group-key">HG0</PROPERTY>
+  </OBJECT>
+<COMP G="8" P="9"/>  <OBJECT basetype="host" name="host" oid="9" format="rows">
+    <PROPERTY name="durable-id">H4</PROPERTY>
+    <PROPERTY name="name">rac01</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c4ea0000057f245b01010000</PROPERTY>
+    <PROPERTY name="member-count">2</PROPERTY>
+    <PROPERTY name="host-group">00c0ff26c4ea00008c81245b01010000</PROPERTY>
+    <PROPERTY name="group-key">HG2</PROPERTY>
+  </OBJECT>
+<COMP G="8" P="12"/>
+<OBJECT basetype="host" name="host" oid="12" format="rows">
+    <PROPERTY name="durable-id">H3</PROPERTY>
+    <PROPERTY name="name">rac02</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c4ea0000f77f245b01010000</PROPERTY>
+    <PROPERTY name="member-count">2</PROPERTY>
+    <PROPERTY name="host-group">00c0ff26c4ea00008c81245b01010000</PROPERTY>
+    <PROPERTY name="group-key">HG2</PROPERTY>
+  </OBJECT>
+<COMP G="0" P="15"/><OBJECT basetype="host" name="host" oid="15" format="rows">
+    <PROPERTY name="durable-id">HU</PROPERTY>
+    <PROPERTY name="name">-nohost-</PROPERTY>
+    <PROPERTY name="serial-number">NOHOST</PROPERTY>
+    <PROPERTY name="member-count">0</PROPERTY>
+    <PROPERTY name="host-group">UNGROUPEDHOSTS</PROPERTY>
+    <PROPERTY name="group-key">HGU</PROPERTY>
+  </OBJECT>
+</RESPONSE>
+"""
+LIST_VOLUME_GROUPS = """
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RESPONSE VERSION="L100" REQUEST="show volume-groups">
+<COMP G="0" P="4"/>
+<OBJECT basetype="volume-groups" name="volume-groups" oid="4" format="rows">
+    <PROPERTY name="durable-id">VG6</PROPERTY>
+    <PROPERTY name="group-name" >VGroup1</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c4ea0000ab2b9f6101000000</PROPERTY>
+    <PROPERTY name="type" >Volume</PROPERTY>
+    <PROPERTY name="type-numeric">3672</PROPERTY>
+    <PROPERTY name="member-count">2</PROPERTY>
+  </OBJECT>
+<COMP G="4" P="5"/>
+ <OBJECT basetype="volumes" name="volume" oid="5" format="rows">
+    <PROPERTY name="durable-id">V0</PROPERTY>
+    <PROPERTY name="virtual-disk-name" >A</PROPERTY>
+    <PROPERTY name="storage-pool-name">A</PROPERTY>
+    <PROPERTY name="volume-name">Vol0001</PROPERTY>
+    <PROPERTY name="size" >100.9GB</PROPERTY>
+    <PROPERTY name="size-numeric" >197255168</PROPERTY>
+    <PROPERTY name="total-size">100.9GB</PROPERTY>
+    <PROPERTY name="total-size-numeric" >197255168</PROPERTY>
+    <PROPERTY name="allocated-size">0B</PROPERTY>
+    <PROPERTY name="allocated-size-numeric">0</PROPERTY>
+    <PROPERTY name="storage-type" >Virtual</PROPERTY>
+    <PROPERTY name="storage-type-numeric" >1</PROPERTY>
+    <PROPERTY name="preferred-owner">A</PROPERTY>
+    <PROPERTY name="preferred-owner-numeric">1</PROPERTY>
+    <PROPERTY name="owner" >A</PROPERTY>
+    <PROPERTY name="owner-numeric">1</PROPERTY>
+    <PROPERTY name="serial-number" >00c0ff26c4ea0000fa80546101000000</PROPERTY>
+    <PROPERTY name="write-policy" >write-back</PROPERTY>
+    <PROPERTY name="write-policy-numeric">1</PROPERTY>
+    <PROPERTY name="cache-optimization" >standard</PROPERTY>
+    <PROPERTY name="cache-optimization-numeric" >0</PROPERTY>
+    <PROPERTY name="read-ahead-size" >Adaptive</PROPERTY>
+    <PROPERTY name="read-ahead-size-numeric" >-1</PROPERTY>
+    <PROPERTY name="volume-type" >base</PROPERTY>
+    <PROPERTY name="volume-type-numeric">15</PROPERTY>
+    <PROPERTY name="volume-class" >standard</PROPERTY>
+    <PROPERTY name="volume-class-numeric" >0</PROPERTY>
+    <PROPERTY name="profile-preference" >Standard</PROPERTY>
+    <PROPERTY name="profile-preference-numeric">0</PROPERTY>
+    <PROPERTY name="snapshot" >No</PROPERTY>
+    <PROPERTY name="volume-qualifier">N/A</PROPERTY>
+    <PROPERTY name="volume-qualifier-numeric" >0</PROPERTY>
+    <PROPERTY name="blocks" >197255168</PROPERTY>
+    <PROPERTY name="capabilities">dmse</PROPERTY>
+    <PROPERTY name="volume-parent"></PROPERTY>
+    <PROPERTY name="snap-pool"></PROPERTY>
+    <PROPERTY name="replication-set" ></PROPERTY>
+    <PROPERTY name="attributes" ></PROPERTY>
+    <PROPERTY name="wwn" >600C0FF00026C4EAFA80546101000000</PROPERTY>
+    <PROPERTY name="progress">0%</PROPERTY>
+    <PROPERTY name="progress-numeric">0</PROPERTY>
+    <PROPERTY name="container-name">A</PROPERTY>
+    <PROPERTY name="allowed-storage-tiers-numeric" >7</PROPERTY>
+    <PROPERTY name="threshold-percent-of-pool" >10.00 %</PROPERTY>
+    <PROPERTY name="reserved-size-in-pages" >0</PROPERTY>
+    <PROPERTY name="allocate-reserved-pages-first">Enabled</PROPERTY>
+    <PROPERTY name="health">OK</PROPERTY>
+    <PROPERTY name="health-numeric">0</PROPERTY>
+    <PROPERTY name="health-reason"></PROPERTY>
+    <PROPERTY name="health-recommendation" ></PROPERTY>
+    <PROPERTY name="volume-group">00c0ff26c4ea0000ab2b9f6101000000</PROPERTY>
+    <PROPERTY name="group-key" >VG6</PROPERTY>
+  </OBJECT>
+<COMP G="4" P="6"/>
+<OBJECT basetype="volumes" name="volume" oid="6" format="rows">
+    <PROPERTY name="durable-id">V1</PROPERTY>
+    <PROPERTY name="virtual-disk-name" >A</PROPERTY>
+    <PROPERTY name="storage-pool-name">A</PROPERTY>
+    <PROPERTY name="volume-name">Vol0002</PROPERTY>
+    <PROPERTY name="size" >99.9GB</PROPERTY>
+    <PROPERTY name="size-numeric" >195305472</PROPERTY>
+    <PROPERTY name="total-size">99.9GB</PROPERTY>
+    <PROPERTY name="total-size-numeric" >195305472</PROPERTY>
+    <PROPERTY name="allocated-size">0B</PROPERTY>
+    <PROPERTY name="allocated-size-numeric">0</PROPERTY>
+    <PROPERTY name="storage-type" >Virtual</PROPERTY>
+    <PROPERTY name="storage-type-numeric" >1</PROPERTY>
+    <PROPERTY name="preferred-owner">A</PROPERTY>
+    <PROPERTY name="preferred-owner-numeric">1</PROPERTY>
+    <PROPERTY name="owner" >A</PROPERTY>
+    <PROPERTY name="owner-numeric">1</PROPERTY>
+    <PROPERTY name="serial-number" >00c0ff26c4ea00000a81546101000000</PROPERTY>
+    <PROPERTY name="write-policy" >write-back</PROPERTY>
+    <PROPERTY name="write-policy-numeric">1</PROPERTY>
+    <PROPERTY name="cache-optimization" >standard</PROPERTY>
+    <PROPERTY name="cache-optimization-numeric" >0</PROPERTY>
+    <PROPERTY name="read-ahead-size" >Adaptive</PROPERTY>
+    <PROPERTY name="read-ahead-size-numeric" >-1</PROPERTY>
+    <PROPERTY name="volume-type" >base</PROPERTY>
+    <PROPERTY name="volume-type-numeric">15</PROPERTY>
+    <PROPERTY name="volume-class" >standard</PROPERTY>
+    <PROPERTY name="volume-class-numeric" >0</PROPERTY>
+    <PROPERTY name="profile-preference" >Standard</PROPERTY>
+    <PROPERTY name="profile-preference-numeric">0</PROPERTY>
+    <PROPERTY name="snapshot" >No</PROPERTY>
+    <PROPERTY name="volume-qualifier">N/A</PROPERTY>
+    <PROPERTY name="volume-qualifier-numeric" >0</PROPERTY>
+    <PROPERTY name="blocks" >195305472</PROPERTY>
+    <PROPERTY name="capabilities">dmse</PROPERTY>
+    <PROPERTY name="volume-parent"></PROPERTY>
+    <PROPERTY name="snap-pool"></PROPERTY>
+    <PROPERTY name="replication-set" ></PROPERTY>
+    <PROPERTY name="attributes" ></PROPERTY>
+    <PROPERTY name="wwn" >600C0FF00026C4EA0A81546101000000</PROPERTY>
+    <PROPERTY name="progress">0%</PROPERTY>
+    <PROPERTY name="progress-numeric">0</PROPERTY>
+    <PROPERTY name="container-name">A</PROPERTY>
+    <PROPERTY name="allowed-storage-tiers-numeric" >7</PROPERTY>
+    <PROPERTY name="threshold-percent-of-pool" >10.00 %</PROPERTY>
+    <PROPERTY name="reserved-size-in-pages" >0</PROPERTY>
+    <PROPERTY name="allocate-reserved-pages-first">Enabled</PROPERTY>
+    <PROPERTY name="health">OK</PROPERTY>
+    <PROPERTY name="health-numeric">0</PROPERTY>
+    <PROPERTY name="health-reason"></PROPERTY>
+    <PROPERTY name="health-recommendation" ></PROPERTY>
+    <PROPERTY name="volume-group">00c0ff26c4ea0000ab2b9f6101000000</PROPERTY>
+    <PROPERTY name="group-key" >VG6</PROPERTY>
+  </OBJECT>
+</RESPONSE>
+"""
+
+LIST_MAPS_ALL = """
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RESPONSE VERSION="L100" REQUEST="show maps">
+<COMP G="0" P="1"/>
+ <OBJECT basetype="volume-group-view">
+    <PROPERTY name="durable-id">VG5</PROPERTY>
+    <PROPERTY name="serial-number">00c0ff26c4ea0000e22b9f6101000000</PROPERTY>
+    <PROPERTY name="group-name">VGroup2.*</PROPERTY>
+  </OBJECT>
+<COMP G="1" P="2"/>
+<OBJECT basetype="volume-group-view-mappings" >
+    <PROPERTY name="durable-id" >VG5_I3</PROPERTY>
+    <PROPERTY name="parent-id">VG5</PROPERTY>
+    <PROPERTY name="mapped-id">I3</PROPERTY>
+    <PROPERTY name="ports">1,2</PROPERTY>
+    <PROPERTY name="access">read-write</PROPERTY>
+    <PROPERTY name="access-numeric">3</PROPERTY>
+    <PROPERTY name="initiator-id">50014380029ceb58</PROPERTY>
+    <PROPERTY name="nickname">rac02_01</PROPERTY>
+    <PROPERTY name="host-profile">Standard</PROPERTY>
+  </OBJECT>
+<COMP G="2" P="3"/>
+<OBJECT basetype="volume-group-view-mappings-luns">
+    <PROPERTY name="volume-name">Vol0003</PROPERTY>
+    <PROPERTY name="volume-serial">00c0ff26c4ea000082537a6101000000</PROPERTY>
+    <PROPERTY name="lun">0</PROPERTY>
+  </OBJECT>
+<COMP G="2" P="4"/>
+<OBJECT basetype="volume-group-view-mappings-luns">
+    <PROPERTY name="volume-name" >Vol0004</PROPERTY>
+    <PROPERTY name="volume-serial" >00c0ff26c4ea000085537a6101000000</PROPERTY>
+    <PROPERTY name="lun">2</PROPERTY>
+  </OBJECT>
+<COMP G="1" P="5"/>
+ <OBJECT basetype="volume-view">
+    <PROPERTY name="durable-id">V3</PROPERTY>
+    <PROPERTY name="volume-serial" >00c0ff26c4ea000085537a6101000000</PROPERTY>
+    <PROPERTY name="volume-name">Vol0004</PROPERTY>
+  </OBJECT>
+<COMP G="5" P="6"/>
+ <OBJECT basetype="volume-view-mappings" >
+    <PROPERTY name="durable-id" >V3_I0</PROPERTY>
+    <PROPERTY name="parent-id">V3</PROPERTY>
+    <PROPERTY name="mapped-id" >I0</PROPERTY>
+    <PROPERTY name="ports">3,4</PROPERTY>
+    <PROPERTY name="lun"  >0</PROPERTY>
+    <PROPERTY name="access">read-write</PROPERTY>
+    <PROPERTY name="access-numeric">3</PROPERTY>
+    <PROPERTY name="identifier" >10000090fa13870f</PROPERTY>
+    <PROPERTY name="nickname" >FC-port3</PROPERTY>
+    <PROPERTY name="host-profile">HPUX</PROPERTY>
+  </OBJECT>
+<COMP G="0" P="7"/>
+  <OBJECT basetype="volume-view">
+    <PROPERTY name="durable-id">V0</PROPERTY>
+    <PROPERTY name="volume-serial">00c0ff26c4ea0000fa80546101000000</PROPERTY>
+    <PROPERTY name="volume-name" >Vol0001</PROPERTY>
+  </OBJECT>
+<COMP G="7" P="8"/>
+<OBJECT basetype="volume-view-mappings">
+    <PROPERTY name="durable-id" key="true">V0_I1</PROPERTY>
+    <PROPERTY name="parent-id">V0</PROPERTY>
+    <PROPERTY name="mapped-id">I1</PROPERTY>
+    <PROPERTY name="ports">1,2</PROPERTY>
+    <PROPERTY name="lun">0</PROPERTY>
+    <PROPERTY name="access">read-write</PROPERTY>
+    <PROPERTY name="access-numeric">3</PROPERTY>
+    <PROPERTY name="identifier">10000090fa13870e</PROPERTY>
+    <PROPERTY name="nickname">FC-port2</PROPERTY>
+    <PROPERTY name="host-profile">HPUX</PROPERTY>
+  </OBJECT>
+<COMP G="0" P="9"/>
+<OBJECT basetype="volume-view">
+    <PROPERTY name="durable-id" >V1</PROPERTY>
+    <PROPERTY name="volume-serial">00c0ff26c4ea00000a81546101000000</PROPERTY>
+    <PROPERTY name="volume-name">Vol0002</PROPERTY>
+  </OBJECT>
+<COMP G="9" P="10"/>
+<OBJECT basetype="volume-view-mappings">
+    <PROPERTY name="durable-id">V1_H4</PROPERTY>
+    <PROPERTY name="parent-id" >V1</PROPERTY>
+    <PROPERTY name="mapped-id">H4</PROPERTY>
+    <PROPERTY name="ports">1,2</PROPERTY>
+    <PROPERTY name="lun">0</PROPERTY>
+    <PROPERTY name="access">read-write</PROPERTY>
+    <PROPERTY name="access-numeric">3</PROPERTY>
+    <PROPERTY name="identifier">00c0ff26c4ea0000057f245b01010000</PROPERTY>
+    <PROPERTY name="nickname">rac01.*</PROPERTY>
+    <PROPERTY name="host-profile">Standard</PROPERTY>
+  </OBJECT>
+</RESPONSE>
+"""
 error_result = [
     {
         'alert_id': 'A891',
@@ -547,5 +1125,216 @@ controller_result = [
         'soft_version': 'GLS210R04-01',
         'cpu_info': 'Gladden',
         'memory_size': 6442450944
+    }
+]
+
+list_storage_host_initiators = [
+    {
+        'name': 'FC-port1',
+        'type': 'fc',
+        'alias': 'I2',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I2',
+        'wwn': '21000024ff3dfed1',
+        'status': 'online',
+        'native_storage_host_id': 'NOHOST'
+    },
+    {
+        'name': 'FC-port2',
+        'type': 'fc',
+        'alias': 'I1',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I1',
+        'wwn': '10000090fa13870e',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+    },
+    {
+        'name': 'FC-port3',
+        'type': 'fc',
+        'alias': 'I0',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I0',
+        'wwn': '10000090fa13870f',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+    },
+    {
+        'name': 'rac01_01',
+        'type': 'fc',
+        'alias': 'I6',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I6',
+        'wwn': '500143801875548e',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000'
+    },
+    {
+        'name': 'rac01_02',
+        'type': 'fc',
+        'alias': 'I5',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I5',
+        'wwn': '5001438012097ed6',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000'
+    },
+    {
+        'name': 'rac02_01',
+        'type': 'fc',
+        'alias': 'I3',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I3',
+        'wwn': '50014380029ceb58',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000'
+    },
+    {
+        'name': 'rac02_02',
+        'type': 'fc',
+        'alias': 'I4',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I4',
+        'wwn': '500143801209031c',
+        'status': 'online',
+        'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000'
+    },
+    {
+        'name': 'FC-port1',
+        'type': 'fc',
+        'alias': 'I2',
+        'storage_id': 'kkk',
+        'native_storage_host_initiator_id': 'I2',
+        'wwn': '21000024ff3dfed1',
+        'status': 'online',
+        'native_storage_host_id': 'NOHOST'
+    }
+]
+
+list_storage_hosts = [
+    {
+        'name': 'Host1',
+        'description': 'H1',
+        'storage_id': 'kkk',
+        'native_storage_host_id': '00c0ff26c2360000e2399f6101010000',
+        'os_type': 'HP-UX',
+        'status': 'normal'
+    },
+    {
+        'name': 'rac01',
+        'description': 'H4',
+        'storage_id': 'kkk',
+        'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000',
+        'os_type': 'HP-UX',
+        'status': 'normal'
+    },
+    {
+        'name': 'rac02',
+        'description': 'H3',
+        'storage_id': 'kkk',
+        'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000',
+        'os_type': 'HP-UX',
+        'status': 'normal'
+    }
+]
+
+
+list_storage_host_groups = {
+    'storage_host_groups': [
+        {
+            'name': 'HostGroup1',
+            'description': 'HG0',
+            'storage_id': 'kkk',
+            'native_storage_host_group_id': '00c0ff26c2360000223a9f6101010000',
+            'storage_hosts': '00c0ff26c2360000e2399f6101010000'
+        }, {
+            'name': 'rac',
+            'description': 'HG2',
+            'storage_id': 'kkk',
+            'native_storage_host_group_id': '00c0ff26c4ea00008c81245b01010000',
+            'storage_hosts': '00c0ff26c4ea0000057f245b01010000,'
+                             '00c0ff26c4ea0000f77f245b01010000'
+        }
+    ],
+    'storage_host_grp_host_rels': [
+        {'storage_id': 'kkk',
+         'native_storage_host_group_id': '00c0ff26c2360000223a9f6101010000',
+         'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+         },
+        {
+            'storage_id': 'kkk',
+            'native_storage_host_group_id': '00c0ff26c4ea00008c81245b01010000',
+            'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000'
+        },
+        {
+            'storage_id': 'kkk',
+            'native_storage_host_group_id': '00c0ff26c4ea00008c81245b01010000',
+            'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000'
+        }
+    ]
+}
+
+list_volume_groups = {
+    'volume_groups':
+        [
+            {
+                'name': 'VGroup1',
+                'description': 'VG6',
+                'storage_id': 'kkk',
+                'native_volume_group_id': 'VG6',
+                'volumes': 'V0,V1'
+            }
+        ],
+    'vol_grp_vol_rels':
+        [
+            {
+                'storage_id': 'kkk',
+                'native_volume_group_id': 'VG6',
+                'native_volume_id': 'V0'
+            },
+            {
+                'storage_id': 'kkk',
+                'native_volume_group_id': 'VG6',
+                'native_volume_id': 'V1'
+            }
+        ]
+}
+
+list_masking_views = [
+    {
+        'name': 'FC-port3',
+        'description': 'FC-port3',
+        'storage_id': 'kkk',
+        'native_masking_view_id': 'V3_I0V3',
+        'native_port_group_id': 'port_group_A3B3A4B4',
+        'native_volume_id': 'V3',
+        'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+    },
+    {
+        'name': 'FC-port2',
+        'description': 'FC-port2',
+        'storage_id': 'kkk',
+        'native_masking_view_id': 'V0_I1V0',
+        'native_port_group_id': 'port_group_A1B1A2B2',
+        'native_volume_id': 'V0',
+        'native_storage_host_id': '00c0ff26c2360000e2399f6101010000'
+    },
+    {
+        'name': 'rac01.*',
+        'description': 'rac01.*',
+        'storage_id': 'kkk',
+        'native_masking_view_id': 'V1_H4V1',
+        'native_port_group_id': 'port_group_A1B1A2B2',
+        'native_volume_id': 'V1',
+        'native_storage_host_id': '00c0ff26c4ea0000057f245b01010000'
+    },
+    {
+        'name': 'rac02_01',
+        'description': 'rac02_01',
+        'storage_id': 'kkk',
+        'native_masking_view_id': 'VG5_I3VG5',
+        'native_port_group_id': 'port_group_A1B1A2B2',
+        'native_volume_group_id': 'VG5',
+        'native_storage_host_id': '00c0ff26c4ea0000f77f245b01010000'
     }
 ]
