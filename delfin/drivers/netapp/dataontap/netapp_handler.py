@@ -174,7 +174,12 @@ class NetAppHandler(object):
                 system_info, storage_map_list, split=':')
             if len(storage_map_list) > 0:
                 storage_map = storage_map_list[-1]
-                controller_map = controller_map_list[1]
+                controller = None
+                for controller_map in controller_map_list[1:]:
+                    if controller_map['Model'] != '-':
+                        controller = controller_map
+                        continue
+                    controller = controller_map_list[1]
                 for disk in disk_list:
                     raw_capacity += disk['capacity']
                 for pool in pool_list:
@@ -184,11 +189,13 @@ class NetAppHandler(object):
                 storage_model = {
                     "name": storage_map['ClusterName'],
                     "vendor": constant.STORAGE_VENDOR,
-                    "model": controller_map['Model'],
+                    "model": controller['Model'],
                     "status": status,
-                    "serial_number": storage_map['ClusterSerialNumber'],
+                    "serial_number":
+                        storage_map['ClusterUUID'] +
+                        ':' + storage_map['ClusterSerialNumber'],
                     "firmware_version": storage_version[0],
-                    "location": controller_map['Location'],
+                    "location": controller['Location'],
                     "total_capacity": total_capacity,
                     "raw_capacity": raw_capacity,
                     "used_capacity": used_capacity,
@@ -1015,7 +1022,8 @@ class NetAppHandler(object):
             elif res.status_code == constant.FORBIDDEN_RETURN_CODE:
                 raise exception.InvalidUsernameOrPassword()
             elif res.status_code == constant.NOT_FOUND_RETURN_CODE:
-                raise exception.NotFound()
+                LOG.error('Url did not get results url:%s' % url)
+                return []
             elif res.status_code == constant.METHOD_NOT_ALLOWED_CODE:
                 raise exception.Invalid()
             elif res.status_code == constant.CONFLICT_RETURN_CODE:
@@ -1094,7 +1102,8 @@ class NetAppHandler(object):
                 get_perf_value(metrics, storage_id,
                                start_time, end_time,
                                json_info,
-                               storage['ClusterSerialNumber'],
+                               storage['ClusterUUID'] + ':'
+                               + storage['ClusterSerialNumber'],
                                storage['ClusterName'],
                                constants.ResourceType.STORAGE)
             return storage_metrics

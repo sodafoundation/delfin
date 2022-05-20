@@ -2245,6 +2245,291 @@ resource_metrics = {
         'readIoSize', 'writeIoSize'
     ]
 }
+GET_ALL_INIT = {
+    "entries": [
+        {
+            "content": {
+                "id": "init1",
+                "type": 1,
+                "initiatorId": "fs1",
+                "path": "/",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "init14",
+                "type": 1,
+                "initiatorId": "boga",
+                "path": "/",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_16"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "init11",
+                "type": 2,
+                "initiatorId": "fs2",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "host_20"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_INIT_NULL = {
+    "entries": [
+    ]
+}
+INIT_RESULT = [
+    {
+        'name': 'fs1',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': 'init1',
+        'wwn': 'fs1',
+        'status': 'online',
+        'type': 'fc',
+        'native_storage_host_id': 'fs_1'
+    }, {
+        'name': 'boga',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': 'init14',
+        'wwn': 'boga',
+        'status': 'online',
+        'type': 'fc',
+        'native_storage_host_id': 'fs_16'
+    }, {
+        'name': 'fs2',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': 'init11',
+        'wwn': 'fs2',
+        'status': 'online',
+        'type': 'iscsi',
+        'native_storage_host_id': 'host_20'
+    }
+]
+GET_ALL_HOST = {
+    "entries": [
+        {
+            "content": {
+                "id": "host1",
+                "type": 1,
+                "name": "fs1",
+                "description": "test",
+                "osType": "AIX",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "host2",
+                "type": 1,
+                "name": "boga",
+                "description": "test",
+                "osType": "Citrix XenServer",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_16"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "host3",
+                "type": 2,
+                "name": "fs2",
+                "description": "test",
+                "osType": "VMware ESXi 6.5",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "host_20"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_HOST_NULL = {
+    "entries": [
+    ]
+}
+GET_HOST_IP = {
+    "entries": [
+        {
+            "content": {
+                "id": "ip1",
+                "address": "1.1.1.1",
+                "host": {
+                    "id": "host1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "ip1",
+                "address": "1.1.1.2",
+                "host": {
+                    "id": "host2"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "ip1",
+                "address": "1.1.1.1",
+                "host": {
+                    "id": "host3"
+                }
+            }
+        }
+    ]
+}
+HOST_RESULT = [
+    {
+        'name': 'fs1',
+        'description': 'test',
+        'storage_id': '12345',
+        'native_storage_host_id': 'host1',
+        'os_type': 'AIX',
+        'status': 'normal',
+        'ip_address': '1.1.1.1'
+    }, {
+        'name': 'boga',
+        'description': 'test',
+        'storage_id': '12345',
+        'native_storage_host_id': 'host2',
+        'os_type': 'XenServer',
+        'status': 'normal',
+        'ip_address': '1.1.1.2'
+    }, {
+        'name': 'fs2',
+        'description': 'test',
+        'storage_id': '12345',
+        'native_storage_host_id': 'host3',
+        'os_type': 'VMware ESX',
+        'status': 'normal',
+        'ip_address': '1.1.1.1'
+    }
+]
+GET_HOST_LUN = {
+    "entries": [
+        {
+            "content": {
+                "id": "1",
+                "lun": {
+                    "id": "lun1"
+                },
+                "host": {
+                    "id": "host1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "2",
+                "lun": {
+                    "id": "lun2"
+                },
+                "host": {
+                    "id": "host2"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "3",
+                "lun": {
+                    "id": "lun3"
+                },
+                "host": {
+                    "id": "host3"
+                }
+            }
+        }
+    ]
+}
+GET_HOST_LUN_NULL = {
+    "entries": [
+    ]
+}
+VIEW_RESULT = [
+    {
+        'name': '1',
+        'native_storage_host_id': 'host1',
+        'storage_id': '12345',
+        'native_volume_id': 'lun1',
+        'native_masking_view_id': '1'
+    }, {
+        'name': '2',
+        'native_storage_host_id': 'host2',
+        'storage_id': '12345',
+        'native_volume_id': 'lun2',
+        'native_masking_view_id': '2'
+    }, {
+        'name': '3',
+        'native_storage_host_id': 'host3',
+        'storage_id': '12345',
+        'native_volume_id': 'lun3',
+        'native_masking_view_id': '3'
+    }
+]
 
 
 class TestUNITYStorDriver(TestCase):
@@ -2465,3 +2750,27 @@ class TestUNITYStorDriver(TestCase):
         last_time = UnityStorDriver(**ACCESS_INFO).get_latest_perf_timestamp(
             context)
         self.assertEqual(last_time, 1625726830000)
+
+    @mock.patch.object(RestHandler, 'get_host_initiators')
+    def test_host_initiators(self, mock_init):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_init.side_effect = [GET_ALL_INIT, GET_ALL_INIT_NULL]
+        initiators = UnityStorDriver(
+            **ACCESS_INFO).list_storage_host_initiators(context)
+        self.assertEqual(initiators, INIT_RESULT)
+
+    @mock.patch.object(RestHandler, 'get_all_hosts')
+    @mock.patch.object(RestHandler, 'get_host_ip')
+    def test_hosts(self, mock_ip, mock_host):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_host.side_effect = [GET_ALL_HOST, GET_ALL_HOST_NULL]
+        mock_ip.return_value = GET_HOST_IP
+        hosts = UnityStorDriver(**ACCESS_INFO).list_storage_hosts(context)
+        self.assertEqual(hosts, HOST_RESULT)
+
+    @mock.patch.object(RestHandler, 'get_host_lun')
+    def test_masking_views(self, mock_view):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_view.side_effect = [GET_HOST_LUN, GET_HOST_LUN_NULL]
+        views = UnityStorDriver(**ACCESS_INFO).list_masking_views(context)
+        self.assertEqual(views, VIEW_RESULT)
