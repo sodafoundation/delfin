@@ -16,6 +16,7 @@ import hashlib
 import time
 
 from oslo_log import log
+from oslo_utils import units
 
 from delfin import exception, utils
 from delfin.common import constants
@@ -362,6 +363,134 @@ class PureFlashArrayDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def collect_perf_metrics(self, context, storage_id, resource_metrics,
+                             start_time, end_time):
+        metrics = []
+        if resource_metrics.get(constants.ResourceType.STORAGE):
+            arrays_id, arrays_name = self.get_array()
+            storage_metrics = self.get_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.STORAGE),
+                start_time, end_time,
+                self.rest_handler.REST_ARRAY_HISTORICAL_URL,
+                constants.ResourceType.STORAGE, arrays_id, arrays_name)
+            metrics.extend(storage_metrics)
+        if resource_metrics.get(constants.ResourceType.VOLUME):
+            storage_metrics = self.get_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.VOLUME),
+                start_time, end_time,
+                self.rest_handler.REST_VOLUME_HISTORICAL_URL,
+                constants.ResourceType.VOLUME)
+            metrics.extend(storage_metrics)
+        return metrics
+
+    def get_metrics(self, storage_id, resource_metrics, start_time, end_time,
+                    url, resource_type, resource_id=None, resource_name=None):
+        metrics = []
+        local_time = time.mktime(time.localtime())
+        localtime_ms = local_time * units.k
+        if start_time < localtime_ms - consts.ONE_YEAR_DIFFERENCE\
+                or end_time < start_time or start_time > localtime_ms:
+            return metrics
+        historical = self.get_historical(localtime_ms, start_time)
+        list_metrics = self.rest_handler.rest_call(url.format(historical))
+        for storage_metrics in (list_metrics or []):
+            opened = storage_metrics.get('time')
+            time_difference = local_time - time.mktime(time.gmtime())
+            timestamp = (int(datetime.datetime.strptime
+                             (opened, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+                             + time_difference) *
+                         consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if\
+                opened is not None else None
+            if timestamp < start_time or timestamp > end_time:
+                continue
+            read_iop = storage_metrics.get('reads_per_sec')
+            write_iop = storage_metrics.get('writes_per_sec')
+            read_throughput = storage_metrics.get('output_per_sec') / units.Mi
+            write_throughput = storage_metrics.get('input_per_sec') / units.Mi
+            response_time = \
+                (storage_metrics.get('usec_per_read_op')
+                 + storage_metrics.get('usec_per_write_op'))\
+                / units.k / consts.AVERAGE_TWO
+            metrics_data = {
+                'iops': read_iop + write_iop,
+                "readIops": read_iop,
+                "writeIops": write_iop,
+                "throughput": read_throughput + write_throughput,
+                "readThroughput": read_throughput,
+                "writeThroughput": write_throughput,
+                "responseTime": response_time,
+            }
+            for resource_key in resource_metrics.keys():
+                if resource_type == constants.ResourceType.VOLUME:
+                    resource_name = resource_id = storage_metrics.get('name')
+                labels = {
+                    'storage_id': storage_id,
+                    'resource_type': resource_type,
+                    'resource_id': resource_id,
+                    'resource_name': resource_name,
+                    'type': 'RAW',
+                    'unit': resource_metrics[resource_key]['unit']
+                }
+                resource_value = {timestamp: metrics_data.get(resource_key)}
+                metrics_res = constants.metric_struct(
+                    name=resource_key, labels=labels, values=resource_value)
+                metrics.append(metrics_res)
+        return metrics
+
+    def get_array(self):
+        arrays_id = None
+        arrays_name = None
+        arrays = self.rest_handler.rest_call(
+            self.rest_handler.REST_ARRAY_URL)
+        if arrays:
+            arrays_id = arrays.get('id')
+            arrays_name = arrays.get('array_name')
+        return arrays_id, arrays_name
+
+    @staticmethod
+    def get_historical(localtime, start_time):
+        if start_time < localtime - consts.NINETY_DAY_DIFFERENCE:
+            historical = consts.ONE_YEAR
+        elif start_time < localtime - consts.THIRTY_DAY_DIFFERENCE:
+            historical = consts.NINETY_DAY
+        elif start_time < localtime - consts.SEVEN_DAY_DIFFERENCE:
+            historical = consts.THIRTY_DAY
+        elif start_time < localtime - consts.ONE_DAY_DIFFERENCE:
+            historical = consts.SEVEN_DAY
+        elif start_time < localtime - consts.THREE_HOUR_DIFFERENCE:
+            historical = consts.ONE_DAY
+        elif start_time < localtime - consts.ONE_HOUR_DIFFERENCE:
+            historical = consts.THREE_HOUR
+        else:
+            historical = consts.ONE_HOUR
+        return historical
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        return {
+            'is_historic': False,
+            'resource_metrics': {
+                constants.ResourceType.STORAGE: consts.STORAGE_CAP,
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        list_metrics = self.rest_handler.rest_call(
+            self.rest_handler.REST_ARRAY_HISTORICAL_URL.format(
+                consts.ONE_HOUR))
+        opened = list_metrics[consts.LIST_METRICS].get('time')
+        time_difference = time.mktime(
+            time.localtime()) - time.mktime(time.gmtime())
+        timestamp = (int(datetime.datetime.strptime
+                         (opened, '%Y-%m-%dT%H:%M:%SZ').timestamp()
+                         + time_difference) *
+                     consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if \
+            opened is not None else None
+        return timestamp
 
     def list_storage_host_initiators(self, context):
         list_initiators = []
