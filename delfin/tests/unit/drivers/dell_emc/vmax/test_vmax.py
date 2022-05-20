@@ -17,7 +17,7 @@ from unittest import TestCase, mock
 
 from requests.sessions import Session
 
-from delfin import context
+from delfin import context as ctxt
 from delfin import exception
 from delfin.common import constants, config  # noqa
 from delfin.drivers.dell_emc.vmax.rest import VMaxRest
@@ -26,7 +26,7 @@ from delfin.drivers.dell_emc.vmax.vmax import VMAXStorageDriver
 
 class Request:
     def __init__(self):
-        self.environ = {'delfin.context': context.RequestContext()}
+        self.environ = {'delfin.context': ctxt.RequestContext()}
         pass
 
 
@@ -62,7 +62,7 @@ class TestVMAXStorageDriver(TestCase):
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.client.uni_version, '90')
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
 
         with self.assertRaises(Exception) as exc:
             mock_version.side_effect = exception.InvalidIpOrPort
@@ -130,8 +130,10 @@ class TestVMAXStorageDriver(TestCase):
         driver = VMAXStorageDriver(**kwargs)
 
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
 
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.get_storage(context)
         self.assertDictEqual(ret, expected)
 
@@ -194,8 +196,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
 
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_storage_pools(context)
         self.assertDictEqual(ret[0], expected[0])
 
@@ -307,7 +311,9 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_volumes(context)
         self.assertDictEqual(ret[0], expected[0])
         self.assertDictEqual(ret[1], expected[1])
@@ -399,7 +405,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
 
         ret = driver.list_controllers(context)
         self.assertDictEqual(ret[0], expected[0])
@@ -551,7 +560,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
 
         ret = driver.list_ports(context)
         self.assertDictEqual(ret[0], expected[0])
@@ -622,7 +634,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_disks(context)
         self.assertDictEqual(ret[0], expected[0])
         self.assertDictEqual(ret[1], expected[1])
@@ -716,7 +731,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_storage_host_initiators(context)
         self.assertDictEqual(ret[0], expected[0])
         self.assertDictEqual(ret[1], expected[1])
@@ -789,7 +807,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_storage_hosts(context)
         self.assertDictEqual(ret[0], expected[0])
         self.assertDictEqual(ret[1], expected[1])
@@ -881,7 +902,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_storage_host_groups(context)
         ret_hgs = ret['storage_host_groups']
         ret_hg_rels = ret['storage_host_grp_host_rels']
@@ -998,7 +1022,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_port_groups(context)
         ret_pgs = ret['port_groups']
         ret_pg_rels = ret['port_grp_port_rels']
@@ -1087,7 +1114,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_volume_groups(context)
         ret_vgs = ret['volume_groups']
         ret_vg_rels = ret['vol_grp_vol_rels']
@@ -1184,7 +1214,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.list_masking_views(context)
         self.assertDictEqual(ret[0], expected[0])
         self.assertDictEqual(ret[1], expected[1])
@@ -1222,8 +1255,10 @@ class TestVMAXStorageDriver(TestCase):
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.client.uni_version, '90')
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
 
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         mock_request.return_value = mock.Mock()
         mock_request.return_value.json = mock.Mock(return_value={})
         driver.reset_connection(context, **kwargs)
@@ -1244,8 +1279,10 @@ class TestVMAXStorageDriver(TestCase):
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.client.uni_version, '90')
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
 
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         capabilities = driver.get_capabilities(context)
         self.assertIsNotNone(capabilities)
         self.assertIsInstance(capabilities, dict)
@@ -1315,7 +1352,10 @@ class TestVMAXStorageDriver(TestCase):
 
         driver = VMAXStorageDriver(**kwargs)
         self.assertEqual(driver.storage_id, "12345")
-        self.assertEqual(driver.client.array_id, "00112233")
+        self.assertEqual(driver.client.array_id["12345"], "00112233")
+
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret_array_key = {
             "arrayInfo": [{
                 "symmetrixId": "00112233",
@@ -1496,6 +1536,8 @@ class TestVMAXStorageDriver(TestCase):
             'controller': {'iops': {'unit': 'IOPS'}},
             'port': {'iops': {'unit': 'IOPS'}},
         }
+        context = ctxt.get_admin_context()
+        context.storage_id = "12345"
         ret = driver.collect_perf_metrics(context,
                                           driver.storage_id,
                                           resource_metrics,
