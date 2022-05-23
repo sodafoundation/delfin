@@ -32,13 +32,21 @@ class VMAXStorageDriver(driver.StorageDriver):
         super().__init__(**kwargs)
         self.client = client.VMAXClient(**kwargs)
         self.client.init_connection(kwargs)
+        self.add_storage(kwargs)
+
+    def delete_storage(self, context):
+        self.client.array_id.pop(context.storage_id)
+
+    def add_storage(self, kwargs):
+        self.client.add_storage(kwargs)
 
     def reset_connection(self, context, **kwargs):
         self.client.reset_connection(**kwargs)
 
     def get_storage(self, context):
+        storage_id = context.storage_id
         # Get the VMAX model
-        array_details = self.client.get_array_details()
+        array_details = self.client.get_array_details(storage_id)
         model = array_details['model']
         ucode = array_details['ucode']
         display_name = array_details['display_name']
@@ -46,7 +54,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         # Get Storage details for capacity info
         total_capacity, used_capacity, free_capacity,\
             raw_capacity, subscribed_capacity = \
-            self.client.get_storage_capacity()
+            self.client.get_storage_capacity(storage_id)
 
         storage = {
             # Unisphere Rest API do not provide Array name .
@@ -57,7 +65,7 @@ class VMAXStorageDriver(driver.StorageDriver):
             'model': model,
             'firmware_version': ucode,
             'status': constants.StorageStatus.NORMAL,
-            'serial_number': self.client.array_id,
+            'serial_number': self.client.array_id[storage_id],
             'location': '',
             'total_capacity': total_capacity,
             'used_capacity': used_capacity,
@@ -69,37 +77,37 @@ class VMAXStorageDriver(driver.StorageDriver):
         return storage
 
     def list_storage_pools(self, context):
-        return self.client.list_storage_pools(self.storage_id)
+        return self.client.list_storage_pools(context.storage_id)
 
     def list_volumes(self, context):
-        return self.client.list_volumes(self.storage_id)
+        return self.client.list_volumes(context.storage_id)
 
     def list_controllers(self, context):
-        return self.client.list_controllers(self.storage_id)
+        return self.client.list_controllers(context.storage_id)
 
     def list_ports(self, context):
-        return self.client.list_ports(self.storage_id)
+        return self.client.list_ports(context.storage_id)
 
     def list_disks(self, context):
-        return self.client.list_disks(self.storage_id)
+        return self.client.list_disks(context.storage_id)
 
     def list_storage_host_initiators(self, context):
-        return self.client.list_storage_host_initiators(self.storage_id)
+        return self.client.list_storage_host_initiators(context.storage_id)
 
     def list_storage_hosts(self, context):
-        return self.client.list_storage_hosts(self.storage_id)
+        return self.client.list_storage_hosts(context.storage_id)
 
     def list_storage_host_groups(self, context):
-        return self.client.list_storage_host_groups(self.storage_id)
+        return self.client.list_storage_host_groups(context.storage_id)
 
     def list_port_groups(self, context):
-        return self.client.list_port_groups(self.storage_id)
+        return self.client.list_port_groups(context.storage_id)
 
     def list_volume_groups(self, context):
-        return self.client.list_volume_groups(self.storage_id)
+        return self.client.list_volume_groups(context.storage_id)
 
     def list_masking_views(self, context):
-        return self.client.list_masking_views(self.storage_id)
+        return self.client.list_masking_views(context.storage_id)
 
     def add_trap_config(self, context, trap_config):
         pass
@@ -112,10 +120,12 @@ class VMAXStorageDriver(driver.StorageDriver):
         return snmp_alerts.AlertHandler().parse_alert(context, alert)
 
     def clear_alert(self, context, sequence_number):
-        return self.client.clear_alert(sequence_number)
+        return self.client.clear_alert(context.storage_id, sequence_number)
 
     def list_alerts(self, context, query_para):
-        alert_list = self.client.list_alerts(query_para)
+        # 1. CM generated snmp_alerts
+        # 2. SNMP Trap forwarder (specific 3rd IP)
+        alert_list = self.client.list_alerts(context.storage_id, query_para)
         alert_model_list = unisphere_alerts.AlertHandler()\
             .parse_queried_alerts(alert_list)
         return alert_model_list
