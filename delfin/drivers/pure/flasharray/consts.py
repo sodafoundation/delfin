@@ -95,6 +95,79 @@ PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.40482.3.7'
 PARSE_ALERT_SEVERITY_MAP = {'1': constants.Severity.WARNING,
                             '2': constants.Severity.INFORMATIONAL}
 
+# collect_perf_metrics method
+ONE_YEAR_DIFFERENCE = 1000 * 60 * 60 * 24 * 365
+NINETY_DAY_DIFFERENCE = 1000 * 60 * 60 * 24 * 90
+THIRTY_DAY_DIFFERENCE = 1000 * 60 * 60 * 24 * 30
+SEVEN_DAY_DIFFERENCE = 1000 * 60 * 60 * 24 * 7
+ONE_DAY_DIFFERENCE = 1000 * 60 * 60 * 24
+THREE_HOUR_DIFFERENCE = 1000 * 60 * 60 * 3
+ONE_HOUR_DIFFERENCE = 1000 * 60 * 60
+
+ONE_HOUR = '1h'
+THREE_HOUR = '3h'
+ONE_DAY = '24h'
+SEVEN_DAY = '7d'
+THIRTY_DAY = '30d'
+NINETY_DAY = '90d'
+ONE_YEAR = '1y'
+AVERAGE_TWO = 2
+LIST_METRICS = -1
+
+IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read input/output operations per second"
+}
+WRITE_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write input/output operations per second"
+}
+THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data is "
+                   "successfully transferred in MB/s"
+}
+READ_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data read is "
+                   "successfully transferred in MB/s"
+}
+WRITE_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data write is "
+                   "successfully transferred in MB/s"
+}
+RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for an IO "
+                   "operation in ms"
+}
+STORAGE_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}
+VOLUME_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+}
+
+# Timestamp format conversion
+PURE_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
 HOST_OS_TYPES_MAP = {
     'linux': constants.HostOSTypes.LINUX,
     'windows': constants.HostOSTypes.WINDOWS,

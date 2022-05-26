@@ -16,6 +16,7 @@ import hashlib
 import time
 
 from oslo_log import log
+from oslo_utils import units
 
 from delfin import exception, utils
 from delfin.common import constants
@@ -124,13 +125,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
             for alert in alerts:
                 alerts_model = dict()
                 opened = alert.get('opened')
-                time_difference = time.mktime(
-                    time.localtime()) - time.mktime(time.gmtime())
-                timestamp = (int(datetime.datetime.strptime
-                                 (opened, '%Y-%m-%dT%H:%M:%SZ').timestamp()
-                                 + time_difference) *
-                             consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if \
-                    opened is not None else None
+                time_difference = self.get_time_difference()
+                timestamp = (int(datetime.datetime.strptime(
+                    opened, consts.PURE_TIME_FORMAT).timestamp()
+                    + time_difference) * consts.
+                    DEFAULT_LIST_ALERTS_TIME_CONVERSION)\
+                    if opened is not None else None
                 if query_para is not None:
                     try:
                         if timestamp is None or timestamp \
@@ -157,6 +157,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     format(alert.get('component_type'), component_name, event)
                 alerts_list.append(alerts_model)
         return alerts_list
+
+    @staticmethod
+    def get_time_difference():
+        time_difference = time.mktime(
+            time.localtime()) - time.mktime(time.gmtime())
+        return time_difference
 
     @staticmethod
     def parse_alert(context, alert):
@@ -363,6 +369,127 @@ class PureFlashArrayDriver(driver.StorageDriver):
     def get_access_url():
         return 'https://{ip}'
 
+    def collect_perf_metrics(self, context, storage_id, resource_metrics,
+                             start_time, end_time):
+        LOG.info('The system(storage_id: %s) starts to collect storage and'
+                 ' volume performance, start_time: %s, end_time: %s',
+                 storage_id, start_time, end_time)
+        metrics = []
+        arrays_id, arrays_name = self.get_array()
+        if not arrays_id or not arrays_name:
+            return metrics
+        if resource_metrics.get(constants.ResourceType.STORAGE):
+            storage_metrics = self.get_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.STORAGE),
+                start_time, end_time,
+                self.rest_handler.REST_ARRAY_HISTORICAL_URL,
+                constants.ResourceType.STORAGE, arrays_id, arrays_name)
+            metrics.extend(storage_metrics)
+            LOG.info('The system(storage_id: %s) stop to collect storage'
+                     ' performance, The length is: %s',
+                     storage_id, len(storage_metrics))
+        if resource_metrics.get(constants.ResourceType.VOLUME):
+            volume_metrics = self.get_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.VOLUME),
+                start_time, end_time,
+                self.rest_handler.REST_VOLUME_HISTORICAL_URL,
+                constants.ResourceType.VOLUME)
+            metrics.extend(volume_metrics)
+            LOG.info('The system(storage_id: %s) stop to collect volume'
+                     ' performance, The length is: %s',
+                     storage_id, len(volume_metrics))
+        return metrics
+
+    def get_metrics(self, storage_id, resource_metrics, start_time, end_time,
+                    url, resource_type, resource_id=None, resource_name=None):
+        metrics = []
+        if end_time < start_time:
+            return metrics
+        list_metrics = self.rest_handler.rest_call(url)
+        for storage_metrics in (list_metrics or []):
+            opened = storage_metrics.get('time')
+            if opened is None:
+                continue
+            time_difference = self.get_time_difference()
+            timestamp = (int(
+                datetime.datetime.strptime(opened, consts.PURE_TIME_FORMAT)
+                .timestamp() + time_difference)
+                * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION)
+            if timestamp < start_time or timestamp > end_time:
+                continue
+            metrics_data = self.get_metrics_data(storage_metrics)
+            for resource_key in resource_metrics.keys():
+                if resource_type == constants.ResourceType.VOLUME:
+                    resource_name = resource_id = storage_metrics.get('name')
+                labels = {
+                    'storage_id': storage_id,
+                    'resource_type': resource_type,
+                    'resource_id': resource_id,
+                    'resource_name': resource_name,
+                    'type': 'RAW',
+                    'unit': resource_metrics[resource_key]['unit']
+                }
+                resource_value = {timestamp: metrics_data.get(resource_key)}
+                metrics_res = constants.metric_struct(
+                    name=resource_key, labels=labels, values=resource_value)
+                metrics.append(metrics_res)
+        return metrics
+
+    @staticmethod
+    def get_metrics_data(storage_metrics):
+        read_iop = storage_metrics.get('reads_per_sec')
+        write_iop = storage_metrics.get('writes_per_sec')
+        read_throughput = storage_metrics.get('output_per_sec') / units.Mi
+        write_throughput = storage_metrics.get('input_per_sec') / units.Mi
+        response_time = \
+            (storage_metrics.get('usec_per_read_op')
+             + storage_metrics.get('usec_per_write_op')) \
+            / units.k / consts.AVERAGE_TWO
+        metrics_data = {
+            'iops': read_iop + write_iop,
+            "readIops": read_iop,
+            "writeIops": write_iop,
+            "throughput": read_throughput + write_throughput,
+            "readThroughput": read_throughput,
+            "writeThroughput": write_throughput,
+            "responseTime": response_time,
+        }
+        return metrics_data
+
+    def get_array(self):
+        arrays_id = None
+        arrays_name = None
+        arrays = self.rest_handler.rest_call(
+            self.rest_handler.REST_ARRAY_URL)
+        if arrays:
+            arrays_id = arrays.get('id')
+            arrays_name = arrays.get('array_name')
+        return arrays_id, arrays_name
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.STORAGE: consts.STORAGE_CAP,
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        list_metrics = self.rest_handler.rest_call(
+            self.rest_handler.REST_ARRAY_HISTORICAL_URL.format(
+                consts.ONE_HOUR))
+        opened = list_metrics[consts.LIST_METRICS].get('time')
+        time_difference = self.get_time_difference()
+        timestamp = (int(datetime.datetime.strptime(
+            opened, consts.PURE_TIME_FORMAT).timestamp() + time_difference) *
+            consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if \
+            opened is not None else None
+        return timestamp
+
     def list_storage_host_initiators(self, context):
         list_initiators = []
         initiators = self.rest_handler.rest_call(
@@ -402,7 +529,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_HOST_PERSONALITY_URL)
         for host in (hosts or []):
             name = host.get('name')
-            personality = host.get('personality').lower()\
+            personality = host.get('personality').lower() \
                 if host.get('personality') else None
             h = {
                 "name": name,
@@ -496,7 +623,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             host_id = masking_view.get('name')
             native_volume_id = masking_view.get('vol')
             hgroup_name = '{}{}'.format(hgroup, native_volume_id)
-            if view_id_dict.get(hgroup_name) is not None and\
+            if view_id_dict.get(hgroup_name) is not None and \
                     view_id_dict.get(hgroup_name) in hgroup:
                 continue
             native_masking_view_id = '{}{}{}'.format(
