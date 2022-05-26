@@ -1775,7 +1775,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1650853486000: 0}
+                values={1650853440000: 0}
             ),
             constants.metric_struct(
                 name='readIops',
@@ -1786,7 +1786,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1650853486000: 0}
+                values={1650853440000: 0}
             ),
             constants.metric_struct(
                 name='writeIops',
@@ -1797,7 +1797,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1650853486000: 0}
+                values={1650853440000: 0}
             ),
             constants.metric_struct(
                 name='throughput',
@@ -1808,7 +1808,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1650853486000: 0}
+                values={1650853440000: 0}
             ),
             constants.metric_struct(
                 name='readThroughput',
@@ -1819,7 +1819,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1650853486000: 0}
+                values={1650853440000: 0}
             ),
             constants.metric_struct(
                 name='writeThroughput',
@@ -1830,19 +1830,8 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1650853486000: 0}
-            ),
-            constants.metric_struct(
-                name='responseTime',
-                labels={
-                    'storage_id': 12345,
-                    'resource_type': 'storage',
-                    'resource_id': 'dlmkk15xcfdf4v5',
-                    'resource_name': 'pure01',
-                    'type': 'RAW',
-                    'unit': 'ms'},
-                values={1650853486000: 0}
-            ),
+                values={1650853440000: 0}
+            )
         ]
         self.assertListEqual(metrics, storage_metrics)
         volume_metrics = [
@@ -1855,7 +1844,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1649729536000: 0}
+                values={1649729520000: 0}
             ),
             constants.metric_struct(
                 name='readIops',
@@ -1866,7 +1855,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1649729536000: 0}
+                values={1649729520000: 0}
             ),
             constants.metric_struct(
                 name='writeIops',
@@ -1877,7 +1866,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1649729536000: 0}
+                values={1649729520000: 0}
             ),
             constants.metric_struct(
                 name='throughput',
@@ -1888,7 +1877,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1649729536000: 0}
+                values={1649729520000: 0}
             ),
             constants.metric_struct(
                 name='readThroughput',
@@ -1899,7 +1888,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1649729536000: 0}
+                values={1649729520000: 0.0}
             ),
             constants.metric_struct(
                 name='writeThroughput',
@@ -1910,19 +1899,8 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1649729536000: 0}
-            ),
-            constants.metric_struct(
-                name='responseTime',
-                labels={
-                    'storage_id': 12345,
-                    'resource_type': 'volume',
-                    'resource_id': '136_connect',
-                    'resource_name': '136_connect',
-                    'type': 'RAW',
-                    'unit': 'ms'},
-                values={1649729536000: 0}
-            ),
+                values={1649729520000: 0.0}
+            )
         ]
         RestHandler.rest_call = mock.Mock(
             side_effect=[storage_id_info, volume_metrics_info])

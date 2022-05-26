@@ -407,18 +407,25 @@ class PureFlashArrayDriver(driver.StorageDriver):
         metrics = []
         if end_time < start_time:
             return metrics
+        duplicate = set()
         list_metrics = self.rest_handler.rest_call(url)
         for storage_metrics in (list_metrics or []):
             opened = storage_metrics.get('time')
             if opened is None:
                 continue
-            time_difference = self.get_time_difference()
-            timestamp = (int(
-                datetime.datetime.strptime(opened, consts.PURE_TIME_FORMAT)
-                .timestamp() + time_difference)
-                * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION)
-            if timestamp < start_time or timestamp > end_time:
+            timestamp_s = self.get_timestamp_s(opened)
+            timestamp_ms =\
+                timestamp_s * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION
+            if timestamp_ms < start_time or timestamp_ms > end_time:
                 continue
+            about_timestamp =\
+                int(timestamp_s / consts.SIXTY) * consts.SIXTY\
+                * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION
+            duplicate_value = self.get_duplicate_value(
+                about_timestamp, resource_type, storage_metrics)
+            if duplicate_value in duplicate:
+                continue
+            duplicate.add(duplicate_value)
             metrics_data = self.get_metrics_data(storage_metrics)
             for resource_key in resource_metrics.keys():
                 if resource_type == constants.ResourceType.VOLUME:
@@ -431,11 +438,29 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     'type': 'RAW',
                     'unit': resource_metrics[resource_key]['unit']
                 }
-                resource_value = {timestamp: metrics_data.get(resource_key)}
+                resource_value =\
+                    {about_timestamp: metrics_data.get(resource_key)}
                 metrics_res = constants.metric_struct(
                     name=resource_key, labels=labels, values=resource_value)
                 metrics.append(metrics_res)
         return metrics
+
+    def get_timestamp_s(self, opened):
+        time_difference = self.get_time_difference()
+        timestamp_s = int(
+            datetime.datetime.strptime(opened, consts.PURE_TIME_FORMAT)
+            .timestamp() + time_difference)
+        return timestamp_s
+
+    @staticmethod
+    def get_duplicate_value(about_timestamp, resource_type, storage_metrics):
+        duplicate_value = None
+        if resource_type == constants.ResourceType.VOLUME:
+            duplicate_value = '{}{}'.format(
+                storage_metrics.get('name'), about_timestamp)
+        if resource_type == constants.ResourceType.STORAGE:
+            duplicate_value = about_timestamp
+        return duplicate_value
 
     @staticmethod
     def get_metrics_data(storage_metrics):
@@ -443,18 +468,13 @@ class PureFlashArrayDriver(driver.StorageDriver):
         write_iop = storage_metrics.get('writes_per_sec')
         read_throughput = storage_metrics.get('output_per_sec') / units.Mi
         write_throughput = storage_metrics.get('input_per_sec') / units.Mi
-        response_time = \
-            (storage_metrics.get('usec_per_read_op')
-             + storage_metrics.get('usec_per_write_op')) \
-            / units.k / consts.AVERAGE_TWO
         metrics_data = {
             'iops': read_iop + write_iop,
             "readIops": read_iop,
             "writeIops": write_iop,
             "throughput": read_throughput + write_throughput,
             "readThroughput": read_throughput,
-            "writeThroughput": write_throughput,
-            "responseTime": response_time,
+            "writeThroughput": write_throughput
         }
         return metrics_data
 
