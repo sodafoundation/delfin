@@ -1,0 +1,78 @@
+# Copyright 2021 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+
+from delfin import context
+from unittest import TestCase, mock
+
+
+from delfin.drivers.dell_emc.scaleio.scaleio_stor import ScaleioStorageDriver
+from delfin.drivers.dell_emc.scaleio.rest_handler import RestHandler
+from delfin.tests.unit.drivers.dell_emc.scaleio import test_constans
+
+
+sys.modules['delfin.cryptor'] = mock.Mock()
+ACCESS_INFO = {
+    "storage_id": "12345",
+    "vendor": "dell_emc",
+    "model": "scaleio",
+    "rest": {
+        "host": "8.44.162.250",
+        "port": 443,
+        "username": "admin",
+        "password": "Pbu4@123"
+    }
+}
+
+
+class TestScaleIOStorDriver(TestCase):
+    RestHandler.login = mock.Mock(return_value=None)
+
+    def test_get_storage(self):
+        RestHandler.get_rest_info = mock.Mock(side_effect=[
+            test_constans.SYSTEM_INFO, test_constans.SYSTEM_DETAIL])
+        system_storage = ScaleioStorageDriver(**ACCESS_INFO).get_storage()
+        self.assertEqual(system_storage, test_constans.SYSTEM_STORAGE)
+
+    def test_list_storage_pool(self):
+        RestHandler.get_rest_info = mock.Mock(side_effect=[
+            test_constans.SYSTEM_STORAGE_POOL_INFO,
+            test_constans.SYSTEM_POOL_DETAIL])
+        storage_pool = ScaleioStorageDriver(**ACCESS_INFO)\
+            .list_storage_pools(context)
+        self.assertEqual(storage_pool, test_constans.SYSTEM_STORAGE_POOL)
+
+    def test_list_volume(self):
+        RestHandler.get_rest_info = mock.Mock(side_effect=[
+            test_constans.SYSTEM_STORAGE_VOLUME_INFO,
+            test_constans.SYSTEM_VOLUME_DETAIL])
+        storage_volumes = ScaleioStorageDriver(**ACCESS_INFO)\
+            .list_volumes(context)
+        self.assertEqual(storage_volumes, test_constans.SYSTEM_STORAGE_VOLUME)
+
+    def test_list_disks(self):
+        RestHandler.get_rest_info = mock.Mock(side_effect=[
+            test_constans.SYSTEM_STORAGE_DISK_INFO,
+            test_constans.SYSTEM_DISK_DETAIL])
+        storage_disks = ScaleioStorageDriver(**ACCESS_INFO) \
+            .list_disks(context)
+        self.assertEqual(storage_disks, test_constans.SYSTEM_STORAGE_DISK)
+
+    def test_list_alert(self):
+        RestHandler.get_rest_info = mock.Mock(
+            side_effect=[test_constans.SYSTEM_ALERT_INFO])
+        storage_alert = ScaleioStorageDriver(**ACCESS_INFO).\
+            list_alerts(context)
+        self.assertEqual(storage_alert, test_constans.SYSTEM_ALERT)
