@@ -186,17 +186,9 @@ class StorageController(wsgi.Controller):
 
     def _storage_exist(self, context, access_info):
         access_info_dict = copy.deepcopy(access_info)
+        access_info_list = access_info_filter(
+            context, access_info_dict)
 
-        # Remove unrelated query fields
-        unrelated_fields = ['username', 'password']
-        for access in constants.ACCESS_TYPE:
-            if access_info_dict.get(access):
-                for key in unrelated_fields:
-                    access_info_dict[access].pop(key)
-
-        # Check if storage is registered
-        access_info_list = db.access_info_get_all(context,
-                                                  filters=access_info_dict)
         for _access_info in access_info_list:
             try:
                 storage = db.storage_get(context, _access_info['storage_id'])
@@ -260,3 +252,31 @@ def _set_synced_if_ok(context, storage_id, resource_count):
         storage['sync_status'] = resource_count * constants.ResourceSync.START
         storage['updated_at'] = current_time
         db.storage_update(context, storage['id'], storage)
+
+
+def access_info_filter(context, access_info):
+    access_info_dict = copy.deepcopy(access_info)
+
+    for access in constants.ACCESS_TYPE:
+        if access_info_dict.get(access):
+            access_info_dict.pop(access)
+
+    # Check if storage is registered
+    access_info_list = db.access_info_get_all(context,
+                                              filters=access_info_dict)
+    filtered_list = []
+    for access_info_db in access_info_list:
+        match = True
+        for access in constants.ACCESS_TYPE:
+            access_filter = access_info.get(access)
+            access_db = access_info_db.get(access)
+            if match and access_filter:
+                if not access_db or\
+                        access_filter['host'] != access_db['host'] or\
+                        access_filter['port'] != access_db['port']:
+                    match = False
+                    break
+        if match:
+            filtered_list.append(access_info_db)
+
+    return filtered_list

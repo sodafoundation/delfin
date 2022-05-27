@@ -26,6 +26,7 @@ from delfin import cryptor
 from delfin.drivers.netapp.dataontap import constants as constant
 from delfin import exception, utils
 from delfin.common import constants
+from delfin.drivers.netapp.dataontap.mapping_handler import MappingHandler
 from delfin.drivers.netapp.dataontap.performance_handler \
     import PerformanceHandler
 from delfin.drivers.utils.rest_client import RestClient
@@ -173,7 +174,12 @@ class NetAppHandler(object):
                 system_info, storage_map_list, split=':')
             if len(storage_map_list) > 0:
                 storage_map = storage_map_list[-1]
-                controller_map = controller_map_list[1]
+                controller = None
+                for controller_map in controller_map_list[1:]:
+                    if controller_map['Model'] != '-':
+                        controller = controller_map
+                        continue
+                    controller = controller_map_list[1]
                 for disk in disk_list:
                     raw_capacity += disk['capacity']
                 for pool in pool_list:
@@ -183,11 +189,13 @@ class NetAppHandler(object):
                 storage_model = {
                     "name": storage_map['ClusterName'],
                     "vendor": constant.STORAGE_VENDOR,
-                    "model": controller_map['Model'],
+                    "model": controller['Model'],
                     "status": status,
-                    "serial_number": storage_map['ClusterSerialNumber'],
+                    "serial_number":
+                        storage_map['ClusterUUID'] +
+                        ':' + storage_map['ClusterSerialNumber'],
                     "firmware_version": storage_version[0],
-                    "location": controller_map['Location'],
+                    "location": controller['Location'],
                     "total_capacity": total_capacity,
                     "raw_capacity": raw_capacity,
                     "used_capacity": used_capacity,
@@ -1014,7 +1022,8 @@ class NetAppHandler(object):
             elif res.status_code == constant.FORBIDDEN_RETURN_CODE:
                 raise exception.InvalidUsernameOrPassword()
             elif res.status_code == constant.NOT_FOUND_RETURN_CODE:
-                raise exception.NotFound()
+                LOG.error('Url did not get results url:%s' % url)
+                return []
             elif res.status_code == constant.METHOD_NOT_ALLOWED_CODE:
                 raise exception.Invalid()
             elif res.status_code == constant.CONFLICT_RETURN_CODE:
@@ -1093,7 +1102,8 @@ class NetAppHandler(object):
                 get_perf_value(metrics, storage_id,
                                start_time, end_time,
                                json_info,
-                               storage['ClusterSerialNumber'],
+                               storage['ClusterUUID'] + ':'
+                               + storage['ClusterSerialNumber'],
                                storage['ClusterName'],
                                constants.ResourceType.STORAGE)
             return storage_metrics
@@ -1276,6 +1286,93 @@ class NetAppHandler(object):
             raise e
         except Exception as err:
             err_msg = "Failed to get storage perf timestamp from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_storage_host_initiators(self, storage_id):
+        try:
+            initiator_list = []
+            iscsi_initiator_info = self.ssh_pool.do_exec(
+                constant.ISCSI_INITIATOR_COMMAND)
+            fc_initiator_info = self.ssh_pool.do_exec(
+                constant.FC_INITIATOR_COMMAND)
+            new_initiator_info = self.ssh_pool.do_exec(
+                constant.HOST_COMMAND)
+            MappingHandler.format_initiators(
+                initiator_list, new_initiator_info,
+                storage_id, '', is_default=True)
+            MappingHandler.format_initiators(
+                initiator_list, iscsi_initiator_info,
+                storage_id, constants.InitiatorType.ISCSI)
+            MappingHandler.format_initiators(
+                initiator_list, fc_initiator_info,
+                storage_id, constants.InitiatorType.FC)
+            return initiator_list
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage initiators from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage initiators from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_storage_hosts(self, storage_id):
+        try:
+            host_info = self.ssh_pool.do_exec(constant.HOST_COMMAND)
+            return MappingHandler.format_host(host_info, storage_id)
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage port groups from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage por groups from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_port_groups(self, storage_id):
+        try:
+            port_set_info = self.ssh_pool.do_exec(
+                constant.PORT_GROUP_COMMAND)
+            lif_info = self.ssh_pool.do_exec(
+                constant.LIF_COMMAND)
+            return MappingHandler.format_port_group(port_set_info,
+                                                    lif_info,
+                                                    storage_id)
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage port groups from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage por groups from " \
+                      "netapp cmode: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+
+    def list_masking_views(self, storage_id):
+        try:
+            mapping_info = self.ssh_pool.do_exec(
+                constant.LUN_MAPPING_COMMAND)
+            volume_info = self.ssh_pool.do_exec(
+                constant.LUN_SHOW_DETAIL_COMMAND)
+            host_list = self.list_storage_hosts(None)
+            return MappingHandler.format_mapping_view(mapping_info,
+                                                      volume_info,
+                                                      storage_id,
+                                                      host_list)
+        except exception.DelfinException as e:
+            err_msg = "Failed to get storage masking views from " \
+                      "netapp cmode: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise e
+        except Exception as err:
+            err_msg = "Failed to get storage masking views from " \
                       "netapp cmode: %s" % (six.text_type(err))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
