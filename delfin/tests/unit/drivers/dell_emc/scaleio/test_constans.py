@@ -1061,14 +1061,15 @@ SYSTEM_STORAGE_DISK = [
 
 SYSTEM_ALERT = [
     {
-        "alert_id": "31d682d5-e696-466e-990a-57d0f9616b21",
-        "alert_name": "31d682d5-e696-466e-990a-57d0f9616b21",
-        "severity": "ALERT_LOW",
-        "category": "Fault",
-        "type": "TRIAL_LICENSE_USED",
-        "sequence_number": "31d682d5-e696-466e-990a-57d0f9616b21",
-        "description": "TRIAL_LICENSE_USED",
-        "occur_time": 1653559213336,
-        "match_key": "10648e5e11b1d6daf4f5cf989349967d"
+        'alert_id': '31d682d5-e696-466e-990a-57d0f9616b21',
+        'alert_name': '31d682d5-e696-466e-990a-57d0f9616b21',
+        'severity': 'ALERT_LOW',
+        'category': 'Fault',
+        'type': 'TRIAL_LICENSE_USED',
+        'sequence_number': '31d682d5-e696-466e-990a-57d0f9616b21',
+        'description': 'TRIAL_LICENSE_USED',
+        'occur_time': 1653559213336,
+        'match_key': '10648e5e11b1d6daf4f5cf989349967d'
     }
 ]
+
