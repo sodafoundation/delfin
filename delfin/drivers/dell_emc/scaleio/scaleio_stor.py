@@ -36,7 +36,7 @@ class ScaleioStorageDriver(driver.StorageDriver):
         return self.rest_handler.login()
 
     def get_storage(self, context):
-        return self.rest_handler.get_storage()
+        return self.rest_handler.get_storage
 
     def list_storage_pools(self, context):
         return self.rest_handler.list_storage_pools(self.storage_id)
