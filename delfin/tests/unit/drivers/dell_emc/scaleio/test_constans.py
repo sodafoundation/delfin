@@ -1041,7 +1041,6 @@ SYSTEM_STORAGE_VOLUME = [
         "total_capacity": 214748364800,
         "free_capacit": 0,
         "used_capacity": 0,
-        "blocks": 0,
         "compressed": True,
         "deduplicated": True
     }
