@@ -13,25 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 StorageVendor = 'DELL EMC'
-
 DEFAULT_TIMEOUT = 10
-
 REST_AUTH_LOGIN = '/api/login'
-
 REST_AUTH_LOGOUT = '/api/logout'
-
 REST_SCALEIO_SYSTEM = '/api/types/System/instances'
-
 REST_SCALEIO_STORAGE_POOL = '/api/types/StoragePool/instances'
-
 REST_SCALEIO_VOLUMES = '/api/types/Volume/instances'
-
 REST_SCALEIO_DISKS = '/api/types/Device/instances'
-
 REST_SCALIO_INITIIATORS = '/api/types/Sdc/instances'
-
 REST_SCALIO_HOSTS = '/api/types/Sds/instances'
-
 REST_SCALEIO_ALERT = '/api/types/Alert/instances'
 DEFAULT_ALERTS_TIME_CONVERSION = 1000
 DEFAULT_VOLUME_USERD_CAPACITY = 0
