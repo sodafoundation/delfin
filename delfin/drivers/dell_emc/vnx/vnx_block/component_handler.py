@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import copy
+import csv
+import os
 import re
+import time
+from io import StringIO
 
 import six
 from oslo_log import log
@@ -21,6 +25,7 @@ from oslo_utils import units
 from delfin import exception
 from delfin.common import constants
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
+from delfin.drivers.utils.tools import Tools
 
 LOG = log.getLogger(__name__)
 
@@ -565,3 +570,376 @@ class ComponentHandler(object):
                 }
                 host_list.append(host_model)
         return host_list
+
+    def collect_perf_metrics(self, storage_id, resource_metrics,
+                             start_time, end_time):
+        metrics = []
+        archive_file_list = []
+        try:
+            if (end_time - start_time) < consts.EXEC_TIME_INTERVAL:
+                LOG.warn("not exe collert, end_time-start_time={}".format(
+                    (end_time - start_time)))
+                return metrics
+            archive_file_list = self._get__archive_file(start_time, end_time)
+            LOG.info("Get archive files: {}".format(archive_file_list))
+            if not archive_file_list:
+                LOG.warn("The required performance file was not found!")
+                return metrics
+            resources_map, resources_type_map = self._get_resources_map(
+                resource_metrics)
+            if not resources_map or not resources_type_map:
+                LOG.warn("Resource object not found!")
+                return metrics
+            performance_lines_map = self._filter_performance_data(
+                archive_file_list, resources_map, start_time, end_time)
+            if not performance_lines_map:
+                LOG.warn("The required performance data was not found!")
+                return metrics
+            metrics = self.create_metrics(storage_id, resource_metrics,
+                                          resources_map, resources_type_map,
+                                          performance_lines_map)
+            metrics = self._handle_replenish_point(metrics, start_time)
+        except exception.DelfinException as err:
+            err_msg = "Failed to collect metrics from VnxBlockStor: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+        except Exception as err:
+            err_msg = "Failed to collect metrics from VnxBlockStor: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        finally:
+            self._remove_archive_file(archive_file_list)
+        return metrics
+
+    def create_metrics(self, storage_id, resource_metrics, resources_map,
+                       resources_type_map, performance_lines_map):
+        metrics = []
+        for resource_obj in resources_type_map.keys():
+            if not resources_map.get(resource_obj) \
+                    or not resources_type_map.get(resource_obj):
+                continue
+            resources_type = resources_type_map.get(resource_obj)
+            labels = {
+                'storage_id': storage_id,
+                'resource_type': resources_type,
+                'resource_id': resources_map.get(resource_obj),
+                'type': 'RAW',
+                'unit': ''
+            }
+            if not performance_lines_map.get(resource_obj):
+                continue
+            metric_model_list = self._get_metric_model(
+                resource_metrics.get(resources_type), labels,
+                performance_lines_map.get(resource_obj),
+                consts.RESOURCES_TYPE_TO_METRIC_CAP.get(
+                    resources_type), resources_type)
+            if metric_model_list:
+                metrics.extend(metric_model_list)
+        return metrics
+
+    def _handle_replenish_point(self, metrics, start_time):
+        if not metrics:
+            return metrics
+        nar_interval = self.navi_handler.get_nar_interval()
+        LOG.info("Get nar_interval:{}".format(nar_interval))
+        replenish_point_interval = nar_interval * units.k
+        check_nar_interval = nar_interval * units.k * 1.5
+        for metric in metrics:
+            new_values_map = {}
+            previous_time = ''
+            previous_value = ''
+            for collection_time in metric.values.keys():
+                if previous_time == '':
+                    previous_time = collection_time
+                    previous_value = metric.values.get(collection_time)
+                    if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
+                            < previous_time:
+                        new_values_map[previous_time] = \
+                            float('%.6f' % previous_value)
+                    continue
+                next_time = collection_time
+                replenish_point_value = 0
+                if previous_value and metric.values.get(next_time):
+                    replenish_point_value = \
+                        (previous_value + metric.values.get(next_time)) / 2
+                while (next_time - previous_time) > check_nar_interval:
+                    replenish_point_time = next_time - replenish_point_interval
+                    if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
+                            < replenish_point_time:
+                        new_values_map[replenish_point_time] = \
+                            float('%.6f' % replenish_point_value)
+                    next_time = replenish_point_time
+                if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
+                        < collection_time:
+                    new_values_map[collection_time] = \
+                        float('%.6f' % metric.values.get(collection_time))
+                previous_time = collection_time
+                previous_value = metric.values.get(collection_time)
+            sorted_map = sorted(new_values_map.items(), key=lambda x: x[0])
+            metric.values.clear()
+            metric.values.update(sorted_map)
+        return metrics
+
+    def _get__archive_file(self, start_time, end_time):
+        archive_file_list = []
+        archives = self.navi_handler.get_archives()
+        tools = Tools()
+        for archive_info in (archives or []):
+            collection_timestamp = tools.time_str_to_timestamp(
+                archive_info.get('collection_time'), consts.TIME_PATTERN)
+            if collection_timestamp > start_time:
+                archive_file_list.append(archive_info.get('archive_name'))
+            if collection_timestamp > end_time:
+                break
+        return archive_file_list
+
+    def _get_metric_model(self, metric_list, labels, metric_values, obj_cap,
+                          resources_type):
+        metric_model_list = []
+        if not metric_values:
+            return metric_model_list
+        tools = Tools()
+        for metric_name in (metric_list or []):
+            values = {}
+            obj_labels = copy.deepcopy(labels)
+            obj_labels['unit'] = obj_cap.get(metric_name).get('unit')
+            for metric_value in metric_values:
+                metric_value_infos = metric_value
+                if not consts.METRIC_MAP.get(resources_type):
+                    continue
+                if not consts.METRIC_MAP.get(resources_type).get(metric_name):
+                    continue
+                value = metric_value_infos[
+                    consts.METRIC_MAP.get(resources_type).get(metric_name)]
+                if not value:
+                    value = '0'
+                collection_timestamp = tools.time_str_to_timestamp(
+                    metric_value_infos[1], consts.TIME_PATTERN)
+                values[collection_timestamp] = float('%.6f' % float(value))
+            if values:
+                metric_model = constants.metric_struct(name=metric_name,
+                                                       labels=obj_labels,
+                                                       values=values)
+                metric_model_list.append(metric_model)
+        return metric_model_list
+
+    def _get_resources_map(self, resource_metrics):
+        resources_map = {}
+        resources_type_map = {}
+        for resource_type_key in resource_metrics.keys():
+            sub_resources_map = {}
+            sub_resources_type_map = {}
+            if resource_type_key == constants.ResourceType.CONTROLLER:
+                sub_resources_map, sub_resources_type_map = \
+                    self._get_controllers_map()
+            elif resource_type_key == constants.ResourceType.PORT:
+                sub_resources_map, sub_resources_type_map = \
+                    self._get_ports_map()
+            elif resource_type_key == constants.ResourceType.DISK:
+                sub_resources_map, sub_resources_type_map = \
+                    self._get_disks_map()
+            elif resource_type_key == constants.ResourceType.VOLUME:
+                sub_resources_map, sub_resources_type_map = \
+                    self._get_volumes_map()
+            if sub_resources_map and sub_resources_type_map:
+                resources_map.update(sub_resources_map)
+                resources_type_map.update(sub_resources_type_map)
+        return resources_map, resources_type_map
+
+    def _get_controllers_map(self):
+        resources_map = {}
+        resources_type_map = {}
+        controllers = self.navi_handler.get_controllers()
+        for controller in (controllers or []):
+            resources_map[controller.get('sp_name')] = controller.get(
+                'signature_for_the_sp')
+            resources_type_map[controller.get('sp_name')] = \
+                constants.ResourceType.CONTROLLER
+        return resources_map, resources_type_map
+
+    def _get_ports_map(self):
+        resources_map = {}
+        resources_type_map = {}
+        ports = self.navi_handler.get_ports()
+        for port in (ports or []):
+            port_id = port.get('sp_port_id')
+            sp_name = port.get('sp_name').replace('SP ', '')
+            name = '%s-%s' % (sp_name, port_id)
+            port_id = 'Port %s [ %s ]' % (port_id, port.get('sp_uid'))
+            resources_map[port_id] = name
+            resources_type_map[port_id] = constants.ResourceType.PORT
+        return resources_map, resources_type_map
+
+    def _get_disks_map(self):
+        resources_map = {}
+        resources_type_map = {}
+        disks = self.navi_handler.get_disks()
+        for disk in (disks or []):
+            disk_name = disk.get('disk_name')
+            disk_name = disk_name.replace('  Disk', ' Disk')
+            resources_map[disk_name] = disk.get('disk_id')
+            resources_type_map[disk_name] = constants.ResourceType.DISK
+        return resources_map, resources_type_map
+
+    def _get_volumes_map(self):
+        resources_map = {}
+        resources_type_map = {}
+        volumes = self.navi_handler.get_all_lun()
+        for volume in (volumes or []):
+            if not volume.get('name'):
+                continue
+            volume_name = '%s [%s]' % (
+                volume.get('name'), volume.get('logical_unit_number'))
+            resources_map[volume_name] = str(volume.get('logical_unit_number'))
+            resources_type_map[volume_name] = constants.ResourceType.VOLUME
+        return resources_map, resources_type_map
+
+    def _filter_performance_data(self, archive_file_list, resources_map,
+                                 start_time, end_time):
+        performance_lines_map = {}
+        try:
+            if not resources_map:
+                return performance_lines_map
+            tools = Tools()
+            for archive_file in (archive_file_list or []):
+                self.navi_handler.download_archives(archive_file)
+                archive_name_infos = archive_file.split('.')
+                file_path = '%s%s.csv' % (
+                    self.navi_handler.get_local_file_path(),
+                    archive_name_infos[0])
+                with open(file_path) as file:
+                    f_csv = csv.reader(StringIO(file.read()))
+                    next(f_csv)
+                    for row in f_csv:
+                        self._package_performance_data(row, resources_map,
+                                                       start_time, end_time,
+                                                       tools,
+                                                       performance_lines_map)
+        except Exception as err:
+            err_msg = "Failed to filter performance data: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.StorageBackendException(err_msg)
+        return performance_lines_map
+
+    def _package_performance_data(self, row, resources_map, start_time,
+                                  end_time, tools, performance_lines_map):
+        resource_obj_name = row[0]
+        resource_obj_name = self._package_resource_obj_name(resource_obj_name)
+        if resource_obj_name in resources_map.keys():
+            obj_collection_timestamp = tools.time_str_to_timestamp(
+                row[1], consts.TIME_PATTERN)
+            if (start_time - consts.TIME_INTERVAL_FLUCTUATION) \
+                    <= obj_collection_timestamp \
+                    and obj_collection_timestamp \
+                    <= (end_time + consts.TIME_INTERVAL_FLUCTUATION):
+                if performance_lines_map.get(resource_obj_name):
+                    performance_lines_map.get(resource_obj_name).append(row)
+                else:
+                    obj_performance_list = []
+                    obj_performance_list.append(row)
+                    performance_lines_map[
+                        resource_obj_name] = obj_performance_list
+
+    def _package_resource_obj_name(self, source_name):
+        target_name = source_name
+        if 'Port ' in target_name:
+            target_name = re.sub('(\\[.*;)', '[', target_name)
+        elif '; ' in target_name:
+            target_name = re.sub('(; .*])', ']', target_name)
+        return target_name
+
+    def _remove_archive_file(self, archive_file_list):
+        try:
+            for archive_file in archive_file_list:
+                nar_file_path = '%s%s' % (
+                    self.navi_handler.get_local_file_path(), archive_file)
+                archive_name_infos = archive_file.split('.')
+                csv_file_path = '%s%s.csv' % (
+                    self.navi_handler.get_local_file_path(),
+                    archive_name_infos[0])
+                for file_path in [nar_file_path, csv_file_path]:
+                    LOG.info("Delete file :{}".format(file_path))
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    else:
+                        err_msg = 'no such file:%s' % file_path
+                        LOG.error(err_msg)
+                        raise exception.StorageBackendException(err_msg)
+        except Exception as err:
+            err_msg = "Failed to remove archive file: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.StorageBackendException(err_msg)
+
+    def get_latest_perf_timestamp(self, storage_id):
+        latest_time = 0
+        num = 0
+        tools = Tools()
+        while latest_time <= 0:
+            num += 1
+            latest_time, file_latest_time = self.check_latest_timestamp(
+                storage_id)
+            if num > consts.EXEC_MAX_NUM:
+                latest_time = file_latest_time
+                LOG.warn("Storage：{}，Exit after {} executions.".format(
+                    storage_id, consts.EXEC_MAX_NUM))
+                break
+            if latest_time <= 0:
+                wait_time = tools.timestamp_to_time_str(
+                    time.time() * units.k,
+                    consts.ARCHIVE_FILE_NAME_TIME_PATTERN)
+                LOG.warn("Storage：{} No new file found, "
+                         "wait for next execution：{}".format(storage_id,
+                                                             wait_time))
+                time.sleep(consts.SLEEP_TIME_SECONDS)
+        return latest_time
+
+    def get_data_latest_timestamp(self, storage_id):
+        archive_file_list = []
+        try:
+            tools = Tools()
+            archive_name = self.navi_handler.create_archives(storage_id)
+            LOG.info("Create archive_name: {}".format(archive_name))
+            archive_file_list.append(archive_name)
+            archive_name_infos = archive_name.split('.')
+            file_path = '%s%s.csv' % (
+                self.navi_handler.get_local_file_path(), archive_name_infos[0])
+            resource_obj_name = ''
+            collection_time = ''
+            with open(file_path) as file:
+                f_csv = csv.reader(file)
+                next(f_csv)
+                for row in f_csv:
+                    if not resource_obj_name or resource_obj_name == row[0]:
+                        resource_obj_name = row[0]
+                        collection_time = row[1]
+                    else:
+                        break
+                latest_time = tools.time_str_to_timestamp(collection_time,
+                                                          consts.TIME_PATTERN)
+        except Exception as err:
+            err_msg = "Failed to get latest perf timestamp " \
+                      "from VnxBlockStor: %s" % (six.text_type(err))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        finally:
+            self._remove_archive_file(archive_file_list)
+        return latest_time
+
+    def check_latest_timestamp(self, storage_id):
+        latest_time = 0
+        file_latest_time = self.get_data_latest_timestamp(storage_id)
+        sys_time = self.navi_handler.get_sp_time()
+        LOG.info("Get sys_time=={},file_latest_time=={}".format(
+            sys_time, file_latest_time))
+        if sys_time > 0 and file_latest_time > 0:
+            LOG.info("(sys_time - file_latest_time)={}".format(
+                (sys_time - file_latest_time)))
+            if (sys_time - file_latest_time) < \
+                    consts.CREATE_FILE_TIME_INTERVAL:
+                latest_time = file_latest_time
+                time.sleep(consts.CHECK_WAITE_TIME_SECONDS)
+        return latest_time, file_latest_time

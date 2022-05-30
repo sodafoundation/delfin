@@ -154,3 +154,173 @@ INITIATOR_TYPE_MAP = {
 }
 ALU_PAIRS_PATTERN = '^[0-9]+\\s+[0-9]+$'
 HBA_UID_PATTERN = "^\\s*HBA UID\\s+SP Name\\s+SPPort"
+
+IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Input/output operations per second"
+}
+READ_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Read input/output operations per second"
+}
+WRITE_IOPS_DESCRIPTION = {
+    "unit": "IOPS",
+    "description": "Write input/output operations per second"
+}
+THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data is "
+                   "successfully transferred in MB/s"
+}
+READ_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data read is "
+                   "successfully transferred in MB/s"
+}
+WRITE_THROUGHPUT_DESCRIPTION = {
+    "unit": "MB/s",
+    "description": "Represents how much data write is "
+                   "successfully transferred in MB/s"
+}
+RESPONSE_TIME_DESCRIPTION = {
+    "unit": "ms",
+    "description": "Average time taken for an IO "
+                   "operation in ms"
+}
+CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of io that are cache hits"
+}
+READ_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of read ops that are cache hits"
+}
+WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
+    "unit": "%",
+    "description": "Percentage of write ops that are cache hits"
+}
+IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of IO requests in KB"
+}
+READ_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of read IO requests in KB"
+}
+WRITE_IO_SIZE_DESCRIPTION = {
+    "unit": "KB",
+    "description": "The average size of write IO requests in KB"
+}
+CONTROLLER_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION
+}
+VOLUME_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION,
+    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
+    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
+    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
+    "ioSize": IO_SIZE_DESCRIPTION,
+    "readIoSize": READ_IO_SIZE_DESCRIPTION,
+    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION
+}
+PORT_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION
+}
+DISK_CAP = {
+    "iops": IOPS_DESCRIPTION,
+    "readIops": READ_IOPS_DESCRIPTION,
+    "writeIops": WRITE_IOPS_DESCRIPTION,
+    "throughput": THROUGHPUT_DESCRIPTION,
+    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
+    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
+    "responseTime": RESPONSE_TIME_DESCRIPTION
+}
+RESOURCES_TYPE_TO_METRIC_CAP = {
+    constants.ResourceType.CONTROLLER: CONTROLLER_CAP,
+    constants.ResourceType.PORT: PORT_CAP,
+    constants.ResourceType.DISK: DISK_CAP,
+    constants.ResourceType.VOLUME: VOLUME_CAP,
+}
+METRIC_MAP = {
+    constants.ResourceType.CONTROLLER: {
+        "iops": 16,
+        "readIops": 25,
+        "writeIops": 34,
+        "throughput": 13,
+        "readThroughput": 19,
+        "writeThroughput": 28,
+        "responseTime": 10
+    },
+    constants.ResourceType.PORT: {
+        "iops": 16,
+        "readIops": 25,
+        "writeIops": 34,
+        "throughput": 13,
+        "readThroughput": 19,
+        "writeThroughput": 28
+    },
+    constants.ResourceType.DISK: {
+        "iops": 16,
+        "readIops": 25,
+        "writeIops": 34,
+        "throughput": 13,
+        "readThroughput": 19,
+        "writeThroughput": 28,
+        "responseTime": 10
+    },
+    constants.ResourceType.VOLUME: {
+        "iops": 16,
+        "readIops": 25,
+        "writeIops": 34,
+        "throughput": 13,
+        "readThroughput": 19,
+        "writeThroughput": 28,
+        "responseTime": 10,
+        "readCacheHitRatio": 42,
+        "writeCacheHitRatio": 45,
+        "readIoSize": 22,
+        "writeIoSize": 31
+    }
+}
+
+ARCHIVE_FILE_NAME = '%s_SPA_%s.nar'
+GET_SP_TIME = 'getsptime'
+GET_NAR_INTERVAL_API = 'analyzer -get -narinterval'
+GET_ARCHIVE_API = 'analyzer -archive -list'
+CREATE_ARCHIVE_API = 'analyzer -archiveretrieve -file %s -location %s ' \
+                     '-overwrite y -retry 3'
+DOWNLOAD_ARCHIVE_API = 'analyzer -archive -file %s -path %s -o'
+ARCHIVEDUMP_API = 'analyzer -archivedump -data %s%s -out %s%s.csv'
+ARCHIVE_FILE_DIR = "/delfin/drivers/utils/performance_file/vnx_block/"
+GET_SP_TIME_PATTERN = '%m/%d/%y %H:%M:%S'
+ARCHIVE_FILE_NAME_TIME_PATTERN = '%Y_%m_%d_%H_%M_%S'
+# Unit: s
+SLEEP_TIME_SECONDS = 60
+# Unit: ms
+CREATE_FILE_TIME_INTERVAL = 150000
+# Unit: ms
+EXEC_TIME_INTERVAL = 240000
+EXEC_MAX_NUM = 50
+# Unit: ms
+TIME_INTERVAL_FLUCTUATION = 3000
+REPLACE_PATH = "/delfin/drivers/dell_emc/vnx/vnx_block"
+# Unit: s
+CHECK_WAITE_TIME_SECONDS = 15
