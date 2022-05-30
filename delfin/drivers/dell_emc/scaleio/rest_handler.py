@@ -129,22 +129,22 @@ class RestHandler(RestClient):
             storage_pool_json = self.get_rest_info(
                 consts.REST_SCALEIO_STORAGE_POOL)
             for pool_json in (storage_pool_json or []):
-                name = pool_json.get('name')
+                pool_name = pool_json.get('name')
                 native_storage_pool_id = pool_json.get('id')
-                links = pool_json.get('links')
+                pool_links = pool_json.get('links')
                 used_capacity = 0
                 total_size = 0
-                for link in links:
-                    if 'Statistics' in link.get('rel'):
+                for pool_link in pool_links:
+                    if 'Statistics' in pool_link.get('rel'):
                         storage_pool_statics = self.get_rest_info(
-                            link.get('href'))
+                            pool_link.get('href'))
                         json.dumps(storage_pool_statics)
                         used_capacity = storage_pool_statics.\
                             get('capacityInUseInKb')
                         total_size = storage_pool_statics.\
                             get('maxCapacityInKb')
                 pool_map = {
-                    'name': name,
+                    'name': pool_name,
                     'storage_id': storage_id,
                     'native_storage_pool_id': native_storage_pool_id,
                     'status': constants.StorageStatus.NORMAL,
