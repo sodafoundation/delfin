@@ -577,7 +577,7 @@ class ComponentHandler(object):
         archive_file_list = []
         try:
             if (end_time - start_time) < consts.EXEC_TIME_INTERVAL:
-                LOG.warn("not exe collert, start_time-end_time={}".format(
+                LOG.warn("not exe collert, end_time-start_time={}".format(
                     (end_time - start_time)))
                 return metrics
             archive_file_list = self._get__archive_file(start_time, end_time)

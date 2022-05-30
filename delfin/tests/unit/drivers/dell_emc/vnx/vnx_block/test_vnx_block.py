@@ -11,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import sys
 import time
 from unittest import TestCase, mock
-from unittest.mock import patch, mock_open
 
 from delfin.common import constants
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
 from delfin.drivers.dell_emc.vnx.vnx_block.alert_handler import AlertHandler
+from delfin.drivers.dell_emc.vnx.vnx_block.component_handler import \
+    ComponentHandler
 from delfin.drivers.utils.tools import Tools
 
 sys.modules['delfin.cryptor'] = mock.Mock()
@@ -407,33 +407,38 @@ Index Size in KB     Last Modified            Filename
 7 48 07/08/2021 14:20:28  CETV2135000041_SPA_2021-07-08_06-20-26-GMT_P08-00.nar
 8 34 07/08/2021 16:31:13  CETV2135000041_SPA_2021-07-08_08-31-11-GMT_P08-00.nar
 """
-PERFORMANCE_FILE = """
-SP A,07/08/2021 12:15:56,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
-SP A,07/08/2021 12:16:56,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
-SP A,07/08/2021 12:17:55,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
-SP A,07/08/2021 12:18:56,,,,,,,,,0,,,0.28,,,0.73,,,0,,,0,,,0,,,0.28,,,,,,0.73
-SP A,07/08/2021 12:19:56,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
-SP B,07/08/2021 12:15:56,,,,,,,,,0,,,0.9,,,2.6,,,0.9,,,2.4,,,1,,,0.7,,,,,,0.2
-SP B,07/08/2021 12:16:56,,,,,,,,,0,,,0.1,,,5.6,,,0.2,,,6.7,,,2,,,1.6,,,,,,1.4
-SP B,07/08/2021 12:17:55,,,,,,,,,0,,,0.2,,,4.6,,,0.3,,,1.7,,,3,,,2.6,,,,,,2.4
-SP B,07/08/2021 12:18:56,,,,,,,,,0,,,0.3,,,6.6,,,0.4,,,2.7,,,4,,,3.6,,,,,,3.4
-SP B,07/08/2021 12:19:56,,,,,,,,,0,,,0.4,,,7.6,,,0.5,,,3.7,,,5,,,4.6,,,,,,4.4
-L1 [230],07/08/2021 12:15:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-L1 [230],07/08/2021 12:16:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-L1 [230],07/08/2021 12:17:55,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-L1 [230],07/08/2021 12:18:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-L1 [230],07/08/2021 12:19:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-Bus 0 Enclosur 0 Disk 0,07/08/2021 12:15:56,,,,,,,,,,,,,,,3,,,,,,,,,,,,,,,,,,,
-Bus 0 Enclosur 0 Disk 0,07/08/2021 12:16:56,,,,,,,,,,,,,,,4,,,,,,,,,,,,,,,,,,
-Bus 0 Enclosur 0 Disk 0,07/08/2021 12:17:55,,,,,,,,,,,,,,,5,,,,,,,,,,,,,,,,,,
-Bus 0 Enclosur 0 Disk 0,07/08/2021 12:18:56,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,
-Bus 0 Enclosur 0 Disk 0,07/08/2021 12:19:56,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,
-Port 6 [FC; 50:08:1E ],07/08/2021 12:15:56,,,,,,,,,,,,,,,2,,,,,,,,,,,,,,,,,,,
-Port 6 [FC; 50:08:1E ],07/08/2021 12:16:56,,,,,,,,,,,,,,,3,,,,,,,,,,,,,,,,,,
-Port 6 [FC; 50:08:1E ],07/08/2021 12:17:55,,,,,,,,,,,,,,,4,,,,,,,,,,,,,,,,,,
-Port 6 [FC; 50:08:1E ],07/08/2021 12:18:56,,,,,,,,,,,,,,,5,,,,,,,,,,,,,,,,,,
-Port 6 [FC; 50:08:1E ],07/08/2021 12:19:56,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,
-"""
+PERFORMANCE_LINES_MAP = {
+    'SP A': [['SP A', '07/08/2021 12:15:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0', '', '', '0', '', '', '0', '', '', '0', '',
+              '', '0', '', '', '0', '', '', '0', '', '', '0'],
+             ['SP A', '07/08/2021 12:16:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0', '', '', '0', '', '', '0', '', '', '0', '', '',
+              '0', '', '', '0', '', '', '0', '', '', '0'],
+             ['SP A', '07/08/2021 12:17:55', '', '', '', '', '', '', '',
+              '', '0', '', '', '0', '', '', '0', '', '', '0', '', '', '0',
+              '', '', '0', '', '', '0', '', '', '0', '', '', '0'],
+             ['SP A', '07/08/2021 12:18:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0.28', '', '', '0.73', '', '', '0', '', '',
+              '0', '', '', '0', '', '', '0.28', '', '', '', '', '', '0.73'],
+             ['SP A', '07/08/2021 12:19:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0', '', '', '0', '', '', '0', '', '', '0', '',
+              '', '0', '', '', '0', '', '', '0', '', '', '0']],
+    'SP B': [['SP B', '07/08/2021 12:15:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0.9', '', '', '2.6', '', '', '0.9', '', '',
+              '2.4', '', '', '1', '', '', '0.7', '', '', '', '', '', '0.2'],
+             ['SP B', '07/08/2021 12:16:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0.1', '', '', '5.6', '', '', '0.2', '', '', '6.7',
+              '', '', '2', '', '', '1.6', '', '', '', '', '', '1.4'],
+             ['SP B', '07/08/2021 12:17:55', '', '', '', '', '', '', '',
+              '', '0', '', '', '0.2', '', '', '4.6', '', '', '0.3', '', '',
+              '1.7', '', '', '3', '', '', '2.6', '', '', '', '', '', '2.4'],
+             ['SP B', '07/08/2021 12:18:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0.3', '', '', '6.6', '', '', '0.4', '', '',
+              '2.7', '', '', '4', '', '', '3.6', '', '', '', '', '', '3.4'],
+             ['SP B', '07/08/2021 12:19:56', '', '', '', '', '', '', '', '',
+              '0', '', '', '0.4', '', '', '7.6', '', '', '0.5', '', '',
+              '3.7', '', '', '5', '', '', '4.6', '', '', '', '', '', '4.4']]
+}
 NAR_INTERVAL_DATAS = """
 Archive Poll Interval (sec):  60
 """
@@ -879,8 +884,7 @@ class TestVnxBlocktorageDriver(TestCase):
         hosts = self.driver.list_storage_hosts(context)
         self.assertDictEqual(hosts[0], HOST_RESULT[0])
 
-    @patch("builtins.open", new_callable=mock_open, read_data=PERFORMANCE_FILE)
-    def test_get_perf_metrics(self, mock_file):
+    def test_get_perf_metrics(self):
         driver = create_driver()
         resource_metrics = {
             'controller': [
@@ -908,11 +912,12 @@ class TestVnxBlocktorageDriver(TestCase):
         }
         start_time = 1625717756000
         end_time = 1625717996000
+        ComponentHandler._filter_performance_data = mock.Mock(
+            side_effect=[PERFORMANCE_LINES_MAP])
         NaviClient.exec = mock.Mock(
             side_effect=[ARCHIVE_DATAS, SP_DATAS, PORT_DATAS, DISK_DATAS,
-                         GET_ALL_LUN_INFOS, '', '', NAR_INTERVAL_DATAS])
-        os.path.exists = mock.Mock(return_value=True)
-        os.remove = mock.Mock(return_value=True)
+                         GET_ALL_LUN_INFOS, NAR_INTERVAL_DATAS])
+        ComponentHandler._remove_archive_file = mock.Mock(return_value="")
         metrics = driver.collect_perf_metrics(context, '12345',
                                               resource_metrics, start_time,
                                               end_time)
