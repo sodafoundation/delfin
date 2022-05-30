@@ -646,14 +646,14 @@ class ComponentHandler(object):
         LOG.info("Get nar_interval:{}".format(nar_interval))
         replenish_point_interval = nar_interval * units.k
         check_nar_interval = nar_interval * units.k * 1.5
-        for m in metrics:
+        for metric in metrics:
             new_values_map = {}
             previous_time = ''
             previous_value = ''
-            for collection_time in m.values.keys():
+            for collection_time in metric.values.keys():
                 if previous_time == '':
                     previous_time = collection_time
-                    previous_value = m.values.get(collection_time)
+                    previous_value = metric.values.get(collection_time)
                     if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
                             < previous_time:
                         new_values_map[previous_time] = \
@@ -661,9 +661,9 @@ class ComponentHandler(object):
                     continue
                 next_time = collection_time
                 replenish_point_value = 0
-                if previous_value and m.values.get(next_time):
+                if previous_value and metric.values.get(next_time):
                     replenish_point_value = \
-                        (previous_value + m.values.get(next_time)) / 2
+                        (previous_value + metric.values.get(next_time)) / 2
                 while (next_time - previous_time) > check_nar_interval:
                     replenish_point_time = next_time - replenish_point_interval
                     if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
@@ -674,12 +674,12 @@ class ComponentHandler(object):
                 if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
                         < collection_time:
                     new_values_map[collection_time] = \
-                        float('%.6f' % m.values.get(collection_time))
+                        float('%.6f' % metric.values.get(collection_time))
                 previous_time = collection_time
-                previous_value = m.values.get(collection_time)
+                previous_value = metric.values.get(collection_time)
             sorted_map = sorted(new_values_map.items(), key=lambda x: x[0])
-            m.values.clear()
-            m.values.update(sorted_map)
+            metric.values.clear()
+            metric.values.update(sorted_map)
         return metrics
 
     def _get__archive_file(self, start_time, end_time):
