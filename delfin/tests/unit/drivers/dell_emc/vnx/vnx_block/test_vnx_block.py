@@ -11,10 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import sys
 import time
 from unittest import TestCase, mock
+from unittest.mock import patch, mock_open
 
+from delfin.common import constants
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
 from delfin.drivers.dell_emc.vnx.vnx_block.alert_handler import AlertHandler
 from delfin.drivers.utils.tools import Tools
@@ -394,6 +397,47 @@ Information about each port of this HBA:
     StorageGroup Name:     None
 """
 
+ARCHIVE_DATAS = """
+Index Size in KB     Last Modified            Filename
+2 46 07/08/2021 01:20:29  CETV2135000041_SPA_2021-07-07_17-20-26-GMT_P08-00.nar
+3 40 07/08/2021 03:56:28  CETV2135000041_SPA_2021-07-07_19-56-25-GMT_P08-00.nar
+4 31 07/08/2021 06:32:29  CETV2135000041_SPA_2021-07-07_22-32-26-GMT_P08-00.nar
+5 02 07/08/2021 09:08:29  CETV2135000041_SPA_2021-07-08_01-08-26-GMT_P08-00.nar
+6 76 07/08/2021 11:44:29  CETV2135000041_SPA_2021-07-08_03-44-26-GMT_P08-00.nar
+7 48 07/08/2021 14:20:28  CETV2135000041_SPA_2021-07-08_06-20-26-GMT_P08-00.nar
+8 34 07/08/2021 16:31:13  CETV2135000041_SPA_2021-07-08_08-31-11-GMT_P08-00.nar
+"""
+PERFORMANCE_FILE = """
+SP A,07/08/2021 12:15:56,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
+SP A,07/08/2021 12:16:56,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
+SP A,07/08/2021 12:17:55,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
+SP A,07/08/2021 12:18:56,,,,,,,,,0,,,0.28,,,0.73,,,0,,,0,,,0,,,0.28,,,,,,0.73
+SP A,07/08/2021 12:19:56,,,,,,,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0,,,0
+SP B,07/08/2021 12:15:56,,,,,,,,,0,,,0.9,,,2.6,,,0.9,,,2.4,,,1,,,0.7,,,,,,0.2
+SP B,07/08/2021 12:16:56,,,,,,,,,0,,,0.1,,,5.6,,,0.2,,,6.7,,,2,,,1.6,,,,,,1.4
+SP B,07/08/2021 12:17:55,,,,,,,,,0,,,0.2,,,4.6,,,0.3,,,1.7,,,3,,,2.6,,,,,,2.4
+SP B,07/08/2021 12:18:56,,,,,,,,,0,,,0.3,,,6.6,,,0.4,,,2.7,,,4,,,3.6,,,,,,3.4
+SP B,07/08/2021 12:19:56,,,,,,,,,0,,,0.4,,,7.6,,,0.5,,,3.7,,,5,,,4.6,,,,,,4.4
+L1 [230],07/08/2021 12:15:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+L1 [230],07/08/2021 12:16:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+L1 [230],07/08/2021 12:17:55,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+L1 [230],07/08/2021 12:18:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+L1 [230],07/08/2021 12:19:56,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Bus 0 Enclosur 0 Disk 0,07/08/2021 12:15:56,,,,,,,,,,,,,,,3,,,,,,,,,,,,,,,,,,,
+Bus 0 Enclosur 0 Disk 0,07/08/2021 12:16:56,,,,,,,,,,,,,,,4,,,,,,,,,,,,,,,,,,
+Bus 0 Enclosur 0 Disk 0,07/08/2021 12:17:55,,,,,,,,,,,,,,,5,,,,,,,,,,,,,,,,,,
+Bus 0 Enclosur 0 Disk 0,07/08/2021 12:18:56,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,
+Bus 0 Enclosur 0 Disk 0,07/08/2021 12:19:56,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,
+Port 6 [FC; 50:08:1E ],07/08/2021 12:15:56,,,,,,,,,,,,,,,2,,,,,,,,,,,,,,,,,,,
+Port 6 [FC; 50:08:1E ],07/08/2021 12:16:56,,,,,,,,,,,,,,,3,,,,,,,,,,,,,,,,,,
+Port 6 [FC; 50:08:1E ],07/08/2021 12:17:55,,,,,,,,,,,,,,,4,,,,,,,,,,,,,,,,,,
+Port 6 [FC; 50:08:1E ],07/08/2021 12:18:56,,,,,,,,,,,,,,,5,,,,,,,,,,,,,,,,,,
+Port 6 [FC; 50:08:1E ],07/08/2021 12:19:56,,,,,,,,,,,,,,,6,,,,,,,,,,,,,,,,,,
+"""
+NAR_INTERVAL_DATAS = """
+Archive Poll Interval (sec):  60
+"""
+
 AGENT_RESULT = {
     'agent_rev': '7.33.1 (0.38)',
     'name': 'K10',
@@ -589,6 +633,56 @@ HOST_RESULT = [
         'status': 'normal',
         'ip_address': '8.44.129.26'
     }]
+METRICS_RESULT = [
+    constants.metric_struct(name='iops', labels={
+        'storage_id': '12345',
+        'resource_type': 'controller',
+        'resource_id': '3600485',
+        'type': 'RAW',
+        'unit': 'IOPS'
+    }, values={
+        1625717816000: 0.0,
+        1625717875000: 0.0,
+        1625717936000: 0.73,
+        1625717996000: 0.0
+    }),
+    constants.metric_struct(name='iops', labels={
+        'storage_id': '12345',
+        'resource_type': 'port',
+        'resource_id': 'A-6',
+        'type': 'RAW',
+        'unit': 'IOPS'
+    }, values={
+        1625717816000: 3.0,
+        1625717875000: 4.0,
+        1625717936000: 5.0,
+        1625717996000: 6.0
+    }),
+    constants.metric_struct(name='iops', labels={
+        'storage_id': '12345',
+        'resource_type': 'disk',
+        'resource_id': 'Bus0Enclosur0Disk0',
+        'type': 'RAW',
+        'unit': 'IOPS'
+    }, values={
+        1625717816000: 4.0,
+        1625717875000: 5.0,
+        1625717936000: 6.0,
+        1625717996000: 6.0
+    }),
+    constants.metric_struct(name='iops', labels={
+        'storage_id': '12345',
+        'resource_type': 'volume',
+        'resource_id': '230',
+        'type': 'RAW',
+        'unit': 'IOPS'
+    }, values={
+        1625717816000: 0.0,
+        1625717875000: 0.0,
+        1625717936000: 0.0,
+        1625717996000: 0.0
+    })
+]
 
 
 def create_driver():
@@ -784,3 +878,50 @@ class TestVnxBlocktorageDriver(TestCase):
         NaviClient.exec = mock.Mock(side_effect=[HBA_DATAS])
         hosts = self.driver.list_storage_hosts(context)
         self.assertDictEqual(hosts[0], HOST_RESULT[0])
+
+    @patch("builtins.open", new_callable=mock_open, read_data=PERFORMANCE_FILE)
+    def test_get_perf_metrics(self, mock_file):
+        driver = create_driver()
+        resource_metrics = {
+            'controller': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'port': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'disk': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime'
+            ],
+            'volume': [
+                'iops', 'readIops', 'writeIops',
+                'throughput', 'readThroughput', 'writeThroughput',
+                'responseTime',
+                'cacheHitRatio', 'readCacheHitRatio', 'writeCacheHitRatio',
+                'ioSize', 'readIoSize', 'writeIoSize',
+            ]
+        }
+        start_time = 1625717756000
+        end_time = 1625717996000
+        NaviClient.exec = mock.Mock(
+            side_effect=[ARCHIVE_DATAS, SP_DATAS, PORT_DATAS, DISK_DATAS,
+                         GET_ALL_LUN_INFOS, '', '', NAR_INTERVAL_DATAS])
+        os.path.exists = mock.Mock(return_value=True)
+        os.remove = mock.Mock(return_value=True)
+        metrics = driver.collect_perf_metrics(context, '12345',
+                                              resource_metrics, start_time,
+                                              end_time)
+        self.assertEqual(metrics[0][1]["resource_id"], '3600485')
+
+    def test_get_capabilities(self):
+        cap = VnxBlockStorDriver.get_capabilities(context)
+        self.assertIsNotNone(cap.get('resource_metrics'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('controller'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('volume'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('port'))
+        self.assertIsNotNone(cap.get('resource_metrics').get('disk'))
