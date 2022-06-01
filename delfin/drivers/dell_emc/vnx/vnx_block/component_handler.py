@@ -598,7 +598,6 @@ class ComponentHandler(object):
             metrics = self.create_metrics(storage_id, resource_metrics,
                                           resources_map, resources_type_map,
                                           performance_lines_map)
-            metrics = self._handle_replenish_point(metrics, start_time)
         except exception.DelfinException as err:
             err_msg = "Failed to collect metrics from VnxBlockStor: %s" % \
                       (six.text_type(err))
@@ -639,49 +638,6 @@ class ComponentHandler(object):
                 metrics.extend(metric_model_list)
         return metrics
 
-    def _handle_replenish_point(self, metrics, start_time):
-        if not metrics:
-            return metrics
-        nar_interval = self.navi_handler.get_nar_interval()
-        LOG.info("Get nar_interval:{}".format(nar_interval))
-        replenish_point_interval = nar_interval * units.k
-        check_nar_interval = nar_interval * units.k * 1.5
-        for metric in metrics:
-            new_values_map = {}
-            previous_time = ''
-            previous_value = ''
-            for collection_time in metric.values.keys():
-                if previous_time == '':
-                    previous_time = collection_time
-                    previous_value = metric.values.get(collection_time)
-                    if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
-                            < previous_time:
-                        new_values_map[previous_time] = \
-                            float('%.6f' % previous_value)
-                    continue
-                next_time = collection_time
-                replenish_point_value = 0
-                if previous_value and metric.values.get(next_time):
-                    replenish_point_value = \
-                        (previous_value + metric.values.get(next_time)) / 2
-                while (next_time - previous_time) > check_nar_interval:
-                    replenish_point_time = next_time - replenish_point_interval
-                    if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
-                            < replenish_point_time:
-                        new_values_map[replenish_point_time] = \
-                            float('%.6f' % replenish_point_value)
-                    next_time = replenish_point_time
-                if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
-                        < collection_time:
-                    new_values_map[collection_time] = \
-                        float('%.6f' % metric.values.get(collection_time))
-                previous_time = collection_time
-                previous_value = metric.values.get(collection_time)
-            sorted_map = sorted(new_values_map.items(), key=lambda x: x[0])
-            metric.values.clear()
-            metric.values.update(sorted_map)
-        return metrics
-
     def _get__archive_file(self, start_time, end_time):
         archive_file_list = []
         archives = self.navi_handler.get_archives()
@@ -717,7 +673,11 @@ class ComponentHandler(object):
                     value = '0'
                 collection_timestamp = tools.time_str_to_timestamp(
                     metric_value_infos[1], consts.TIME_PATTERN)
-                values[collection_timestamp] = float('%.6f' % float(value))
+                collection_time_str = tools.timestamp_to_time_str(
+                    collection_timestamp, consts.COLLECTION_TIME_PATTERN)
+                collection_timestamp = tools.time_str_to_timestamp(
+                    collection_time_str, consts.COLLECTION_TIME_PATTERN)
+                values[collection_timestamp] = float('%.6f' % (float(value)))
             if values:
                 metric_model = constants.metric_struct(name=metric_name,
                                                        labels=obj_labels,
@@ -831,7 +791,7 @@ class ComponentHandler(object):
         if resource_obj_name in resources_map.keys():
             obj_collection_timestamp = tools.time_str_to_timestamp(
                 row[1], consts.TIME_PATTERN)
-            if (start_time - consts.TIME_INTERVAL_FLUCTUATION) \
+            if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
                     <= obj_collection_timestamp \
                     and obj_collection_timestamp \
                     <= (end_time + consts.TIME_INTERVAL_FLUCTUATION):
