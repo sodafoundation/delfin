@@ -48,11 +48,17 @@ class AlertProcessor(object):
                                                           alert)
             # Fill storage specific info
             if alert_model:
+                storage = self.get_storage_from_parsed_alert(
+                    ctxt, storage, alert_model)
                 alert_util.fill_storage_attributes(alert_model, storage)
         except exception.IncompleteTrapInformation as e:
             LOG.warn(e)
             threading.Thread(target=self.sync_storage_alert,
                              args=(ctxt, alert['storage_id'])).start()
+        except exception.AlertSourceNotFound:
+            LOG.info("Could not identify alert source from parsed alert. "
+                     "Skipping the dispatch of alert")
+            return
         except Exception as e:
             LOG.error(e)
             raise exception.InvalidResults(
@@ -60,7 +66,43 @@ class AlertProcessor(object):
 
         # Export to base exporter which handles dispatch for all exporters
         if alert_model:
-            self.exporter_manager.dispatch(ctxt, alert_model)
+            LOG.info("Dispatching one SNMP Trap to {} with sn {}".format(
+                alert_model['storage_id'], alert_model['serial_number']))
+            self.exporter_manager.dispatch(ctxt, [alert_model])
+
+    def get_storage_from_parsed_alert(self, ctxt, storage, alert_model):
+        # If parse_alert sets 'serial_number' or 'storage_name' in the
+        # alert_model, we need to get corresponding storage details
+        # from the db and fill that in alert_model
+        storage_sn = alert_model.get('serial_number')
+        storage_name = alert_model.get('storage_name')
+        filters = {
+            "vendor": storage['vendor'],
+            "model": storage['model'],
+        }
+        try:
+            if storage_sn and storage_sn != storage['serial_number']:
+                filters['serial_number'] = storage_sn
+            elif storage_name and storage_name != storage['name']:
+                filters['name'] = storage_name
+            else:
+                return storage
+
+            storage_list = db.storage_get_all(ctxt, filters=filters)
+            if not storage_list:
+                msg = "Failed to get destination storage for SNMP Trap. " \
+                      "Storage with serial number {} or storage name {} " \
+                      "not found in DB".format(storage_sn, storage_name)
+                raise exception.AlertSourceNotFound(msg)
+            db.alert_source_get(ctxt, storage_list[0]['id'])
+            storage = storage_list[0]
+        except exception.AlertSourceNotFound:
+            LOG.info("Storage with serial number {} or name {} "
+                     "is not registered for receiving "
+                     "SNMP Trap".format(storage_sn, storage_name))
+            raise
+
+        return storage
 
     @coordination.synchronized('sync-trap-{storage_id}', blocking=False)
     def sync_storage_alert(self, context, storage_id):

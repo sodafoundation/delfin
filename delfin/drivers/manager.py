@@ -23,6 +23,7 @@ from delfin import db
 from delfin import exception
 from delfin import utils
 from delfin import ssl_utils
+from delfin.common import constants
 
 LOG = log.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class DriverManager(stevedore.ExtensionManager):
         :type cache_on_load: bool
         :param kwargs: Parameters from access_info.
         """
+        context.storage_id = kwargs.get('storage_id')
         kwargs = copy.deepcopy(kwargs)
         kwargs['verify'] = False
         ca_path = ssl_utils.get_storage_ca_path()
@@ -89,6 +91,7 @@ class DriverManager(stevedore.ExtensionManager):
 
             if kwargs['verify']:
                 ssl_utils.reload_certificate(kwargs['verify'])
+
             access_info = copy.deepcopy(kwargs)
             storage_id = access_info.pop('storage_id')
             access_info.pop('verify')
@@ -98,6 +101,28 @@ class DriverManager(stevedore.ExtensionManager):
             else:
                 access_info = db.access_info_get(
                     context, storage_id).to_dict()
+
+                access_info_dict = copy.deepcopy(access_info)
+                remove_fields = ['created_at', 'updated_at',
+                                 'storage_id', 'storage_name',
+                                 'extra_attributes']
+                # Remove unrelated query fields
+                for field in remove_fields:
+                    if access_info_dict.get(field):
+                        access_info_dict.pop(field)
+                for access in constants.ACCESS_TYPE:
+                    if access_info_dict.get(access):
+                        access_info_dict.pop(access)
+
+                access_info_list = db.access_info_get_all(
+                    context, filters=access_info_dict)
+                for _access_info in access_info_list:
+                    if _access_info['storage_id'] in self.driver_factory:
+                        driver = self.driver_factory[
+                            _access_info['storage_id']]
+                        driver.add_storage(access_info)
+                        self.driver_factory[storage_id] = driver
+                        return driver
                 access_info['verify'] = kwargs.get('verify')
                 cls = self._get_driver_cls(**access_info)
                 driver = cls(**access_info)

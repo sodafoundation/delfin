@@ -71,6 +71,7 @@ class RequestContext(context.RequestContext):
         self.user_id = self.user
         self.tenant = project_id or tenant
         self.project_id = self.tenant
+        self.storage_id = None
 
         self.read_deleted = read_deleted
         self.remote_address = remote_address
@@ -107,6 +108,7 @@ class RequestContext(context.RequestContext):
         values.update({
             'user_id': getattr(self, 'user_id', None),
             'project_id': getattr(self, 'project_id', None),
+            'storage_id': getattr(self, 'storage_id', None),
             'read_deleted': getattr(self, 'read_deleted', None),
             'remote_address': getattr(self, 'remote_address', None),
             'timestamp': self.timestamp.isoformat() if hasattr(

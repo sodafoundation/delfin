@@ -19,6 +19,7 @@ create = {
     'properties': {
         'vendor': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'model': {'type': 'string', 'minLength': 1, 'maxLength': 255},
+        'storage_name': {'type': 'string', 'minLength': 1, 'maxLength': 255},
         'rest': {
             'type': 'object',
             'properties': {

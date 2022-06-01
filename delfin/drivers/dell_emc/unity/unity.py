@@ -107,6 +107,34 @@ class UnityStorDriver(driver.StorageDriver):
     }
     MS_PER_HOUR = 60 * 60 * 1000
 
+    OS_TYPE_MAP = {'AIX': constants.HostOSTypes.AIX,
+                   'Citrix XenServer': constants.HostOSTypes.XEN_SERVER,
+                   'HP-UX': constants.HostOSTypes.HP_UX,
+                   'IBM VIOS': constants.HostOSTypes.UNKNOWN,
+                   'Linux': constants.HostOSTypes.LINUX,
+                   'Mac OS': constants.HostOSTypes.MAC_OS,
+                   'Solaris': constants.HostOSTypes.SOLARIS,
+                   'VMware ESXi': constants.HostOSTypes.VMWARE_ESX,
+                   'Windows Client': constants.HostOSTypes.WINDOWS,
+                   'Windows Server': constants.HostOSTypes.WINDOWS
+                   }
+    INITIATOR_STATUS_MAP = {5: constants.InitiatorStatus.ONLINE,
+                            7: constants.InitiatorStatus.ONLINE,
+                            15: constants.InitiatorStatus.ONLINE,
+                            20: constants.InitiatorStatus.ONLINE,
+                            10: constants.InitiatorStatus.OFFLINE
+                            }
+    HOST_STATUS_MAP = {5: constants.HostStatus.NORMAL,
+                       7: constants.HostStatus.NORMAL,
+                       15: constants.HostStatus.NORMAL,
+                       20: constants.HostStatus.NORMAL,
+                       10: constants.HostStatus.DEGRADED
+                       }
+    INITIATOR_TYPE_MAP = {0: constants.InitiatorType.UNKNOWN,
+                          1: constants.InitiatorType.FC,
+                          2: constants.InitiatorType.ISCSI
+                          }
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rest_handler = rest_handler.RestHandler(**kwargs)
@@ -708,6 +736,131 @@ class UnityStorDriver(driver.StorageDriver):
     @staticmethod
     def get_access_url():
         return 'https://{ip}'
+
+    def list_storage_host_initiators(self, context):
+        try:
+            initiator_list = []
+            page = 1
+            while True:
+                initiators = self.rest_handler.get_host_initiators(page)
+                if not initiators:
+                    return initiator_list
+                if 'entries' not in initiators or \
+                        len(initiators['entries']) < 1:
+                    break
+                init_entries = initiators.get('entries')
+                for initiator in init_entries:
+                    content = initiator.get('content')
+                    if not content:
+                        continue
+                    health_value = content.get('health', {}).get('value')
+                    status = UnityStorDriver.INITIATOR_STATUS_MAP.get(
+                        health_value,
+                        constants.InitiatorStatus.UNKNOWN
+                    )
+                    init_result = {
+                        "name": content.get('initiatorId'),
+                        "storage_id": self.storage_id,
+                        "native_storage_host_initiator_id": content.get('id'),
+                        "wwn": content.get('initiatorId'),
+                        "status": status,
+                        "type": UnityStorDriver.INITIATOR_TYPE_MAP.get(
+                            content.get('type')),
+                        "native_storage_host_id": content.get(
+                            'parentHost', {}).get('id')
+                    }
+                    initiator_list.append(init_result)
+                page += 1
+            return initiator_list
+        except Exception as e:
+            LOG.error("Failed to get initiators from unity")
+            raise e
+
+    def list_storage_hosts(self, context):
+        try:
+            host_list = []
+            page = 1
+            while True:
+                hosts = self.rest_handler.get_all_hosts(page)
+                if not hosts:
+                    return host_list
+                if 'entries' not in hosts or len(hosts['entries']) < 1:
+                    break
+                ips = self.rest_handler.get_host_ip()
+                host_entries = hosts.get('entries')
+                for host in host_entries:
+                    host_ip = None
+                    content = host.get('content')
+                    if not content:
+                        continue
+                    health_value = content.get('health', {}).get('value')
+                    status = UnityStorDriver.HOST_STATUS_MAP.get(
+                        health_value,
+                        constants.HostStatus.OFFLINE
+                    )
+                    if ips:
+                        ip_entries = ips.get('entries')
+                        for ip in ip_entries:
+                            ip_content = ip.get('content')
+                            if not ip_content:
+                                continue
+                            if ip_content.get('host', {}).get('id') \
+                                    == content.get('id'):
+                                host_ip = ip_content.get('address')
+                                break
+                    if content.get('osType'):
+                        if 'VMware ESXi' in content.get('osType'):
+                            os_type = constants.HostOSTypes.VMWARE_ESX
+                        else:
+                            os_type = UnityStorDriver.OS_TYPE_MAP.get(
+                                content.get('osType'),
+                                constants.HostOSTypes.UNKNOWN)
+                    else:
+                        os_type = None
+                    host_result = {
+                        "name": content.get('name'),
+                        "description": content.get('description'),
+                        "storage_id": self.storage_id,
+                        "native_storage_host_id": content.get('id'),
+                        "os_type": os_type,
+                        "status": status,
+                        "ip_address": host_ip
+                    }
+                    host_list.append(host_result)
+                page += 1
+            return host_list
+        except Exception as e:
+            LOG.error("Failed to get host metrics from unity")
+            raise e
+
+    def list_masking_views(self, context):
+        try:
+            view_list = []
+            page = 1
+            while True:
+                views = self.rest_handler.get_host_lun(page)
+                if not views:
+                    return view_list
+                if 'entries' not in views or len(views['entries']) < 1:
+                    break
+                view_entries = views.get('entries')
+                for view in view_entries:
+                    content = view.get('content')
+                    view_result = {
+                        "name": content.get('id'),
+                        "native_storage_host_id":
+                            content.get('host', {}).get('id'),
+                        "storage_id": self.storage_id,
+                        "native_volume_id": content.get('lun', {}).get('id'),
+                        "native_masking_view_id": content.get('id'),
+                    }
+                    view_list.append(view_result)
+                page += 1
+            return view_list
+
+        except Exception as e:
+            LOG.error("Failed to get view metrics from unity")
+            raise e
 
     def get_metrics_loop(self, target, start_time,
                          end_time, metrics, path):

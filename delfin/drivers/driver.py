@@ -28,6 +28,14 @@ class StorageDriver(object):
         """
         self.storage_id = kwargs.get('storage_id', None)
 
+    def delete_storage(self, context):
+        """Cleanup storage device information from driver"""
+        pass
+
+    def add_storage(self, kwargs):
+        """Add storage device information to driver"""
+        pass
+
     @abc.abstractmethod
     def reset_connection(self, context, **kwargs):
         """ Reset connection with backend with new args """

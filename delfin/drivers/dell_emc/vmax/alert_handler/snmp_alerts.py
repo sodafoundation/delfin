@@ -100,7 +100,8 @@ class AlertHandler(object):
                                   + alert['emcAsyncEventComponentName'] \
                                   + ',Event source=' \
                                   + alert['emcAsyncEventSource']
-
+        if alert['connUnitName']:
+            alert_model['serial_number'] = alert['connUnitName']
         return alert_model
 
     def add_trap_config(self, context, storage_id, trap_config):

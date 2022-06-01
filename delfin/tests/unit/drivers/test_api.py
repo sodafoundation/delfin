@@ -190,12 +190,14 @@ class TestDriverAPI(TestCase):
         msg = "Storage backend could not be found"
         self.assertIn(msg, str(exc.exception))
 
+    @mock.patch('delfin.drivers.manager.DriverManager.get_driver')
     @mock.patch('delfin.db.storage_get')
     @mock.patch('delfin.db.storage_create')
     @mock.patch('delfin.db.access_info_create')
     @mock.patch('delfin.db.storage_get_all')
     def test_remove_storage(self, mock_storage, mock_access_info,
-                            mock_storage_create, mock_get_storage):
+                            mock_storage_create, mock_get_storage,
+                            mock_dm):
         storage = copy.deepcopy(STORAGE)
         storage['id'] = '12345'
         mock_storage.return_value = None
@@ -204,6 +206,7 @@ class TestDriverAPI(TestCase):
         api = API()
         api.discover_storage(context, ACCESS_INFO)
         mock_get_storage.return_value = None
+        mock_dm.return_value = FakeStorageDriver()
 
         storage_id = '12345'
 
