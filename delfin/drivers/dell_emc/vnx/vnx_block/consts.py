@@ -324,3 +324,4 @@ TIME_INTERVAL_FLUCTUATION = 3000
 REPLACE_PATH = "/delfin/drivers/dell_emc/vnx/vnx_block"
 # Unit: s
 CHECK_WAITE_TIME_SECONDS = 15
+COLLECTION_TIME_PATTERN = '%m/%d/%Y %H:%M:00'
