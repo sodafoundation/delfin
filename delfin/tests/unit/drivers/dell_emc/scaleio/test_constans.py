@@ -1062,7 +1062,7 @@ SYSTEM_STORAGE_DISK = [
 SYSTEM_ALERT = [
     {
         'alert_id': '31d682d5-e696-466e-990a-57d0f9616b21',
-        'alert_name': '31d682d5-e696-466e-990a-57d0f9616b21',
+        'alert_name': 'TRIAL_LICENSE_USED31d682d5-e696-466e-990a-57d0f9616b21',
         'severity': 'ALERT_LOW',
         'category': 'Fault',
         'type': 'TRIAL_LICENSE_USED',
