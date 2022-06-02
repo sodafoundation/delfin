@@ -248,12 +248,13 @@ class RestHandler(RestClient):
                 if not alert_util.is_alert_in_time_range(query_para,
                                                          alert_time):
                     continue
+                alert_type = json_alert.get('alertType')
                 alert_model = {
                     'alert_id': json_alert.get('id'),
-                    'alert_name': json_alert.get('name'),
+                    'alert_name': alert_type + json_alert.get('name'),
                     'severity': json_alert.get('severity'),
                     'category': constants.Category.FAULT,
-                    'type': json_alert.get('alertType'),
+                    'type': alert_type,
                     'sequence_number': json_alert.get('uuid'),
                     'description': json_alert.get('alertType'),
                     'occur_time': alert_time,
@@ -277,7 +278,10 @@ class RestHandler(RestClient):
                 consts.REST_SCALIO_INITIIATORS)
             for initiators_json in (storage_initiators or []):
                 status = initiators_json.get('mdmConnectionState')
-                initiators_id = initiators_json['id']
+                initiators_id = initiators_json.get('id')
+                description = constants.InitiatorType.UNKNOWN
+                if 'iscsi' in initiators_json.get('perfProfile'):
+                    description = constants.InitiatorType.ISCSI
                 if 'Connected' == status:
                     status = constants.HostStatus.NORMAL
                 elif 'Disconnected' == status:
@@ -287,6 +291,7 @@ class RestHandler(RestClient):
                     "storage_id": storage_id,
                     "native_storage_host_initiator_id": initiators_id,
                     "wwn": initiators_id,
+                    'description': description,
                     "status": status,
                     "native_storage_host_id": initiators_json.get(
                         'protectionDomainId'),
