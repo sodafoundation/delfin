@@ -279,9 +279,9 @@ class RestHandler(RestClient):
             for initiators_json in (storage_initiators or []):
                 status = initiators_json.get('mdmConnectionState')
                 initiators_id = initiators_json.get('id')
-                description = constants.InitiatorType.UNKNOWN
+                initiators_type = constants.InitiatorType.UNKNOWN
                 if 'iscsi' in initiators_json.get('perfProfile'):
-                    description = constants.InitiatorType.ISCSI
+                    initiators_type = constants.InitiatorType.ISCSI
                 if 'Connected' == status:
                     status = constants.HostStatus.NORMAL
                 elif 'Disconnected' == status:
@@ -291,7 +291,7 @@ class RestHandler(RestClient):
                     "storage_id": storage_id,
                     "native_storage_host_initiator_id": initiators_id,
                     "wwn": initiators_id,
-                    'description': description,
+                    "type": initiators_type,
                     "status": status,
                     "native_storage_host_id": initiators_json.get(
                         'protectionDomainId'),
