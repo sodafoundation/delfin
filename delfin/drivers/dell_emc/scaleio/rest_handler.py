@@ -277,12 +277,12 @@ class RestHandler(RestClient):
             storage_initiators = self.get_rest_info(
                 consts.REST_SCALIO_INITIIATORS)
             for initiators_json in (storage_initiators or []):
-                status = initiators_json.get('mdmConnectionState')
+                status = initiators_json.get('sdsState')
                 initiators_id = initiators_json.get('id')
                 initiators_type = constants.InitiatorType.UNKNOWN
                 if 'iscsi' in initiators_json.get('perfProfile'):
                     initiators_type = constants.InitiatorType.ISCSI
-                if 'Connected' == status:
+                if 'Normal' == status:
                     status = constants.HostStatus.NORMAL
                 elif 'Disconnected' == status:
                     status = constants.HostStatus.OFFLINE
@@ -316,13 +316,11 @@ class RestHandler(RestClient):
                     status = constants.HostStatus.NORMAL
                 elif 'Disconnected' == status:
                     status = constants.HostStatus.OFFLINE
-                ip_list = host_json.get('ipList')
-                ip_address = ''
-                for ip in ip_list:
-                    ip_address = ip.get('ip')
+                ip_address = host_json.get('sdcIp')
+                soft_version = host_json.get('softwareVersionInfo')
                 host_dict = {
-                    "name": host_json.get('name'),
-                    "description": host_json.get('sdcGuid'),
+                    "name": host_json.get('sdcGuid'),
+                    "description": ip_address + soft_version,
                     "storage_id": storage_id,
                     "native_storage_host_id":
                         host_json.get('id'),
@@ -395,3 +393,19 @@ class RestHandler(RestClient):
                           ' Error: %(err)s', {'url': url, 'err': err})
             raise exception.InvalidResults(err)
         return result_json
+
+ACCESS_INFO = {
+    "storage_id": "12345",
+    "vendor": "dell_emc",
+    "model": "scaleio",
+    "rest": {
+        "host": "192.168.3.240",
+        "port": 443,
+        "username": "admin",
+        "password": "Pbu4@123"
+    }
+}
+
+if __name__ == '__main__':
+    restHandle = RestHandler(**ACCESS_INFO)
+    print(json.dumps(restHandle.list_storage_host_initiators('1')))
