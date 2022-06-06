@@ -276,6 +276,7 @@ class RestHandler(RestClient):
         try:
             storage_initiators = self.get_rest_info(
                 consts.REST_SCALIO_INITIIATORS)
+            list_host = self.list_storage_hosts(storage_id)
             for initiators_json in (storage_initiators or []):
                 status = initiators_json.get('sdsState')
                 initiators_id = initiators_json.get('id')
@@ -283,9 +284,18 @@ class RestHandler(RestClient):
                 if 'iscsi' in initiators_json.get('perfProfile'):
                     initiators_type = constants.InitiatorType.ISCSI
                 if 'Normal' == status:
-                    status = constants.HostStatus.NORMAL
+                    status = constants.InitiatorStatus.ONLINE
                 elif 'Disconnected' == status:
-                    status = constants.HostStatus.OFFLINE
+                    status = constants.InitiatorStatus.OFFLINE
+                ip_list = initiators_json.get('ipList')
+                native_storage_host_id = None
+                for ip_data in ip_list:
+                    sds_ip = ip_data.get('ip')
+                    for host_json in list_host:
+                        ip_address = host_json.get('ip_address')
+                        if sds_ip == ip_address:
+                            native_storage_host_id = \
+                                host_json.get('native_storage_host_id')
                 initiators_dict = {
                     "name": initiators_json.get('name'),
                     "storage_id": storage_id,
@@ -293,8 +303,7 @@ class RestHandler(RestClient):
                     "wwn": initiators_id,
                     "type": initiators_type,
                     "status": status,
-                    "native_storage_host_id": initiators_json.get(
-                        'protectionDomainId'),
+                    "native_storage_host_id": native_storage_host_id,
                 }
                 initiators_list.append(initiators_dict)
             return initiators_list
@@ -393,19 +402,3 @@ class RestHandler(RestClient):
                           ' Error: %(err)s', {'url': url, 'err': err})
             raise exception.InvalidResults(err)
         return result_json
-
-ACCESS_INFO = {
-    "storage_id": "12345",
-    "vendor": "dell_emc",
-    "model": "scaleio",
-    "rest": {
-        "host": "192.168.3.240",
-        "port": 443,
-        "username": "admin",
-        "password": "Pbu4@123"
-    }
-}
-
-if __name__ == '__main__':
-    restHandle = RestHandler(**ACCESS_INFO)
-    print(json.dumps(restHandle.list_storage_host_initiators('1')))
