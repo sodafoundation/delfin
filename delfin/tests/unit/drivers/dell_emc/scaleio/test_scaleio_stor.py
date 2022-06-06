@@ -93,10 +93,3 @@ class TestScaleIOStorDriver(TestCase):
         storage_mapping = ScaleioStorageDriver(**ACCESS_INFO). \
             list_masking_views(context)
         self.assertEqual(storage_mapping, test_constans.SYSTEM_VIEW_MAPPING)
-
-    def test_list_storage_hosts(self):
-        RestHandler.get_rest_info = mock.Mock(
-            side_effect=[test_constans.SYSTEM_HOST_INFO])
-        storage_host = ScaleioStorageDriver(**ACCESS_INFO).\
-            list_storage_hosts(context)
-        self.assertEqual(storage_host, test_constans.SYSTEM_HOST)
