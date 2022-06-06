@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import hashlib
-import uuid
 import six
 import json
 
@@ -248,11 +247,18 @@ class RestHandler(RestClient):
                 if not alert_util.is_alert_in_time_range(query_para,
                                                          alert_time):
                     continue
+                alert_severity = json_alert.get('severity')
+                if 'LOW' in alert_severity:
+                    alert_severity = constants.Severity.MINOR
+                elif 'MEDIUM' in alert_severity:
+                    alert_severity = constants.Severity.CRITICAL
+                elif 'HIGH' in alert_severity:
+                    alert_severity = constants.Severity.FATAL
                 alert_type = json_alert.get('alertType')
                 alert_model = {
                     'alert_id': json_alert.get('id'),
                     'alert_name': alert_type + json_alert.get('name'),
-                    'severity': json_alert.get('severity'),
+                    'severity': alert_severity,
                     'category': constants.Category.FAULT,
                     'type': alert_type,
                     'sequence_number': json_alert.get('uuid'),
@@ -358,12 +364,12 @@ class RestHandler(RestClient):
                 if map_sdc_list:
                     for map_sdc in map_sdc_list:
                         sdc_id = map_sdc.get('sdcId')
-                        uid = uuid.uuid4()
                         view_map = {
                             "name": view_name + sdc_id + volume_id,
                             "description": view_name,
                             "storage_id": storage_id,
-                            "native_masking_view_id": str(uid) + volume_id,
+                            "native_masking_view_id":
+                                view_name + sdc_id + volume_id,
                             'native_volume_id': volume_id,
                             'native_storage_host_id': sdc_id
                         }

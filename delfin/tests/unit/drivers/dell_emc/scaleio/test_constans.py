@@ -985,6 +985,179 @@ SYSTEM_DISK_DETAIL = {
     "primaryVacInKb": 160137216
 }
 
+SYSTEM_HOST_INFO = [
+    {
+        "sdcApproved": True,
+        "osType": "Linux",
+        "mdmConnectionState": "Connected",
+        "memoryAllocationFailure": None,
+        "socketAllocationFailure": None,
+        "softwareVersionInfo": "R2_5.0.0",
+        "sdcGuid": "ADEF3BC8-693F-4FCF-A423-6890508731C8",
+        "installedSoftwareVersionInfo": "R2_5.0.0",
+        "kernelVersion": "3.10.0",
+        "kernelBuildNumber": None,
+        "sdcIp": "192.168.3.240",
+        "sdcApprovedIps": None,
+        "versionInfo": "R2_5.0.0",
+        "perfProfile": "Default",
+        "systemId": "6fb451ea51a99758",
+        "name": None,
+        "id": "7bec302f00000000",
+    },
+    {
+        "sdcApproved": True,
+        "osType": "Linux",
+        "mdmConnectionState": "Connected",
+        "memoryAllocationFailure": None,
+        "socketAllocationFailure": None,
+        "softwareVersionInfo": "R2_5.0.0",
+        "sdcGuid": "FBAD6944-6F2D-442C-9AA1-9FF0403B7235",
+        "installedSoftwareVersionInfo": "R2_5.0.0",
+        "kernelVersion": "3.10.0",
+        "kernelBuildNumber": None,
+        "sdcIp": "192.168.3.241",
+        "sdcApprovedIps": None,
+        "versionInfo": "R2_5.0.0",
+        "perfProfile": "Default",
+        "systemId": "6fb451ea51a99758",
+        "name": None,
+        "id": "7bec303000000001",
+    },
+    {
+        "sdcApproved": True,
+        "osType": "Linux",
+        "mdmConnectionState": "Connected",
+        "memoryAllocationFailure": None,
+        "socketAllocationFailure": None,
+        "softwareVersionInfo": "R2_5.0.0",
+        "sdcGuid": "FFA0F6C3-E2CD-45F5-AF7E-0C1DDF570303",
+        "installedSoftwareVersionInfo": "R2_5.0.0",
+        "kernelVersion": "3.10.0",
+        "kernelBuildNumber": None,
+        "sdcIp": "192.168.3.239",
+        "sdcApprovedIps": None,
+        "versionInfo": "R2_5.0.0",
+        "perfProfile": "Default",
+        "systemId": "6fb451ea51a99758",
+        "name": None,
+        "id": "7bec303100000002",
+    }
+]
+
+SYSTEM_INITIATORS_INFO = [
+    {
+        "protectionDomainId": "4389836100000000",
+        "faultSetId": None,
+        "sdsState": "Normal",
+        "membershipState": "Joined",
+        "mdmConnectionState": "Connected",
+        "drlMode": "Volatile",
+        "rmcacheEnabled": True,
+        "rmcacheSizeInKb": 131072,
+        "rmcacheFrozen": False,
+        "rmcacheMemoryAllocationState": "AllocationPending",
+        "rfcacheEnabled": True,
+        "maintenanceState": "NoMaintenance",
+        "sdsDecoupled": None,
+        "sdsConfigurationFailure": None,
+        "sdsReceiveBufferAllocationFailures": None,
+        "rfcacheErrorLowResources": False,
+        "rfcacheErrorApiVersionMismatch": False,
+        "rfcacheErrorInconsistentCacheConfiguration": False,
+        "rfcacheErrorInconsistentSourceConfiguration": False,
+        "rfcacheErrorInvalidDriverPath": False,
+        "authenticationError": "None",
+        "softwareVersionInfo": "R2_5.0.0",
+        "rfcacheErrorDeviceDoesNotExist": False,
+        "numOfIoBuffers": None,
+        "perfProfile": "Default",
+        "ipList": [
+            {
+                "ip": "192.168.3.241",
+                "role": "all"
+            }
+        ],
+        "onVmWare": True,
+        "name": "SDS_192.168.3.241",
+        "port": 7072,
+        "id": "29ab911800000002",
+    },
+    {
+        "protectionDomainId": "4389836100000000",
+        "faultSetId": None,
+        "sdsState": "Normal",
+        "membershipState": "Joined",
+        "mdmConnectionState": "Connected",
+        "drlMode": "Volatile",
+        "rmcacheEnabled": True,
+        "rmcacheSizeInKb": 131072,
+        "rmcacheFrozen": False,
+        "rmcacheMemoryAllocationState": "AllocationPending",
+        "rfcacheEnabled": True,
+        "maintenanceState": "NoMaintenance",
+        "sdsDecoupled": None,
+        "sdsConfigurationFailure": None,
+        "sdsReceiveBufferAllocationFailures": None,
+        "rfcacheErrorLowResources": False,
+        "rfcacheErrorApiVersionMismatch": False,
+        "rfcacheErrorInconsistentCacheConfiguration": False,
+        "rfcacheErrorInconsistentSourceConfiguration": False,
+        "rfcacheErrorInvalidDriverPath": False,
+        "authenticationError": "None",
+        "softwareVersionInfo": "R2_5.0.0",
+        "rfcacheErrorDeviceDoesNotExist": False,
+        "numOfIoBuffers": None,
+        "perfProfile": "Default",
+        "ipList": [
+            {
+                "ip": "192.168.3.239",
+                "role": "all"
+            }
+        ],
+        "onVmWare": True,
+        "name": "SDS_192.168.3.239",
+        "port": 7072,
+        "id": "29ab6a0a00000000",
+    },
+    {
+        "protectionDomainId": "4389836100000000",
+        "faultSetId": None,
+        "sdsState": "Normal",
+        "membershipState": "Joined",
+        "mdmConnectionState": "Connected",
+        "drlMode": "Volatile",
+        "rmcacheEnabled": True,
+        "rmcacheSizeInKb": 131072,
+        "rmcacheFrozen": False,
+        "rmcacheMemoryAllocationState": "AllocationPending",
+        "rfcacheEnabled": True,
+        "maintenanceState": "NoMaintenance",
+        "sdsDecoupled": None,
+        "sdsConfigurationFailure": None,
+        "sdsReceiveBufferAllocationFailures": None,
+        "rfcacheErrorLowResources": False,
+        "rfcacheErrorApiVersionMismatch": False,
+        "rfcacheErrorInconsistentCacheConfiguration": False,
+        "rfcacheErrorInconsistentSourceConfiguration": False,
+        "rfcacheErrorInvalidDriverPath": False,
+        "authenticationError": "None",
+        "softwareVersionInfo": "R2_5.0.0",
+        "rfcacheErrorDeviceDoesNotExist": False,
+        "numOfIoBuffers": None,
+        "perfProfile": "Default",
+        "ipList": [
+            {
+                "ip": "192.168.3.240",
+                "role": "all"
+            }
+        ],
+        "onVmWare": True,
+        "name": "SDS_192.168.3.240",
+        "port": 7072,
+        "id": "29ab6a0800000001",
+    }
+]
 SYSTEM_STORAGE = {
     "name": "ScaleIO",
     "vendor": "DELL EMC",
@@ -1063,12 +1236,92 @@ SYSTEM_ALERT = [
     {
         'alert_id': '31d682d5-e696-466e-990a-57d0f9616b21',
         'alert_name': 'TRIAL_LICENSE_USED31d682d5-e696-466e-990a-57d0f9616b21',
-        'severity': 'ALERT_LOW',
+        'severity': 'Minor',
         'category': 'Fault',
         'type': 'TRIAL_LICENSE_USED',
         'sequence_number': '31d682d5-e696-466e-990a-57d0f9616b21',
         'description': 'TRIAL_LICENSE_USED',
-        'occur_time': 1653588013336,
+        'occur_time': 1653559213336,
         'match_key': '10648e5e11b1d6daf4f5cf989349967d'
+    }
+]
+
+SYSTEM_HOST = [
+    {
+        "name": "ADEF3BC8-693F-4FCF-A423-6890508731C8",
+        "description": "192.168.3.240R2_5.0.0",
+        "storage_id": "12345",
+        "native_storage_host_id": "7bec302f00000000",
+        "os_type": "Linux",
+        "status": "normal",
+        "ip_address": "192.168.3.240"
+    }, {
+        "name": "FBAD6944-6F2D-442C-9AA1-9FF0403B7235",
+        "description": "192.168.3.241R2_5.0.0",
+        "storage_id": "12345",
+        "native_storage_host_id": "7bec303000000001",
+        "os_type": "Linux",
+        "status": "normal",
+        "ip_address": "192.168.3.241"
+    }, {
+        "name": "FFA0F6C3-E2CD-45F5-AF7E-0C1DDF570303",
+        "description": "192.168.3.239R2_5.0.0",
+        "storage_id": "12345",
+        "native_storage_host_id": "7bec303100000002",
+        "os_type": "Linux",
+        "status": "normal",
+        "ip_address": "192.168.3.239"
+    }
+]
+
+SYSTEM_VIEW_MAPPING = [
+    {'name': 'volume0237bec302f00000000851005ab00000004',
+     'description': 'volume023',
+     'storage_id': '12345',
+     'native_masking_view_id': 'volume0237bec302f00000000851005ab00000004',
+     'native_volume_id': '851005ab00000004',
+     'native_storage_host_id': '7bec302f00000000'
+     }, {
+        'name': 'volume0237bec303100000002851005ab00000004',
+        'description': 'volume023',
+        'storage_id': '12345',
+        'native_masking_view_id': 'volume0237bec303100000002851005ab00000004',
+        'native_volume_id': '851005ab00000004',
+        'native_storage_host_id': '7bec303100000002'
+    }, {
+        'name': 'volume0237bec303000000001851005ab00000004',
+        'description': 'volume023',
+        'storage_id': '12345',
+        'native_masking_view_id': 'volume0237bec303000000001851005ab00000004',
+        'native_volume_id': '851005ab00000004',
+        'native_storage_host_id': '7bec303000000001'
+    }
+]
+
+
+SYSTEM_INITIATORS = [
+    {"name": "SDS_192.168.3.241",
+     "storage_id": "12345",
+     "native_storage_host_initiator_id": "29ab911800000002",
+     "wwn": "29ab911800000002",
+     "type": "unknown",
+     "status": "online",
+     "native_storage_host_id": "7bec303000000001"
+     }, {
+        "name": "SDS_192.168.3.239",
+        "storage_id": "12345",
+        "native_storage_host_initiator_id": "29ab6a0a00000000",
+        "wwn": "29ab6a0a00000000",
+        "type": "unknown",
+        "status": "online",
+        "native_storage_host_id": "7bec303100000002"
+    }, {
+        "name": "SDS_192.168.3.240",
+        "storage_id": "12345",
+        "native_storage_host_initiator_id": "29ab6a0800000001",
+        "wwn": "29ab6a0800000001",
+        "type": "unknown",
+        "status": "online",
+        "native_storage_host_id": "7bec302f00000000"
     }
 ]
