@@ -418,8 +418,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             if timestamp_ms < start_time or timestamp_ms >= end_time:
                 continue
             about_timestamp =\
-                int(timestamp_s / consts.SIXTY) * consts.SIXTY\
-                * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION
+                int(timestamp_s / consts.SIXTY) * consts.SIXTY * units.k
             duplicate_value = self.get_duplicate_value(
                 about_timestamp, resource_type, storage_metrics)
             if duplicate_value in duplicate:
