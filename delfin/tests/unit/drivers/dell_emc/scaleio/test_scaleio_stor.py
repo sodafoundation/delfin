@@ -76,7 +76,9 @@ class TestScaleIOStorDriver(TestCase):
             side_effect=[test_constans.SYSTEM_ALERT_INFO])
         storage_alert = ScaleioStorageDriver(**ACCESS_INFO).\
             list_alerts(context)
-        self.assertEqual(storage_alert, test_constans.SYSTEM_ALERT)
+        alert_result = test_constans.SYSTEM_ALERT
+        alert_result[0]['occur_time'] = storage_alert[0]['occur_time']
+        self.assertEqual(storage_alert, alert_result)
 
     def test_list_storage_host_initiators(self):
         RestHandler.get_rest_info = mock.Mock(
