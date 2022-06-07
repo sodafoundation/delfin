@@ -414,9 +414,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
             if opened is None:
                 continue
             timestamp_s = self.get_timestamp_s(opened)
-            timestamp_ms =\
-                timestamp_s * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION
-            if timestamp_ms < start_time or timestamp_ms > end_time:
+            timestamp_ms = timestamp_s * units.k
+            if timestamp_ms < start_time or timestamp_ms >= end_time:
                 continue
             about_timestamp =\
                 int(timestamp_s / consts.SIXTY) * consts.SIXTY\
@@ -469,12 +468,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
         read_throughput = storage_metrics.get('output_per_sec') / units.Mi
         write_throughput = storage_metrics.get('input_per_sec') / units.Mi
         metrics_data = {
-            'iops': read_iop + write_iop,
-            "readIops": read_iop,
-            "writeIops": write_iop,
-            "throughput": read_throughput + write_throughput,
-            "readThroughput": read_throughput,
-            "writeThroughput": write_throughput
+            'iops': round(read_iop + write_iop, 3),
+            "readIops": round(read_iop, 3),
+            "writeIops": round(write_iop, 3),
+            "throughput": round(read_throughput + write_throughput, 3),
+            "readThroughput": round(read_throughput, 3),
+            "writeThroughput": round(write_throughput, 3)
         }
         return metrics_data
 
@@ -503,12 +502,10 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_ARRAY_HISTORICAL_URL.format(
                 consts.ONE_HOUR))
         opened = list_metrics[consts.LIST_METRICS].get('time')
-        time_difference = self.get_time_difference()
-        timestamp = (int(datetime.datetime.strptime(
-            opened, consts.PURE_TIME_FORMAT).timestamp() + time_difference) *
-            consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if \
-            opened is not None else None
-        return timestamp
+        timestamp_s = self.get_timestamp_s(opened)
+        timestamp_ms = \
+            int(timestamp_s / consts.SIXTY) * consts.SIXTY * units.k
+        return timestamp_ms
 
     def list_storage_host_initiators(self, context):
         list_initiators = []
