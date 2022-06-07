@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import hashlib
-import uuid
 import six
 import json
 
@@ -248,11 +247,18 @@ class RestHandler(RestClient):
                 if not alert_util.is_alert_in_time_range(query_para,
                                                          alert_time):
                     continue
+                alert_severity = json_alert.get('severity')
+                if 'LOW' in alert_severity:
+                    alert_severity = constants.Severity.MINOR
+                elif 'MEDIUM' in alert_severity:
+                    alert_severity = constants.Severity.CRITICAL
+                elif 'HIGH' in alert_severity:
+                    alert_severity = constants.Severity.FATAL
                 alert_type = json_alert.get('alertType')
                 alert_model = {
                     'alert_id': json_alert.get('id'),
                     'alert_name': alert_type + json_alert.get('name'),
-                    'severity': json_alert.get('severity'),
+                    'severity': alert_severity,
                     'category': constants.Category.FAULT,
                     'type': alert_type,
                     'sequence_number': json_alert.get('uuid'),
@@ -276,16 +282,26 @@ class RestHandler(RestClient):
         try:
             storage_initiators = self.get_rest_info(
                 consts.REST_SCALIO_INITIIATORS)
+            list_host = self.list_storage_hosts(storage_id)
             for initiators_json in (storage_initiators or []):
-                status = initiators_json.get('mdmConnectionState')
+                status = initiators_json.get('sdsState')
                 initiators_id = initiators_json.get('id')
                 initiators_type = constants.InitiatorType.UNKNOWN
                 if 'iscsi' in initiators_json.get('perfProfile'):
                     initiators_type = constants.InitiatorType.ISCSI
-                if 'Connected' == status:
-                    status = constants.HostStatus.NORMAL
+                if 'Normal' == status:
+                    status = constants.InitiatorStatus.ONLINE
                 elif 'Disconnected' == status:
-                    status = constants.HostStatus.OFFLINE
+                    status = constants.InitiatorStatus.OFFLINE
+                ip_list = initiators_json.get('ipList')
+                native_storage_host_id = None
+                for ip_data in ip_list:
+                    sds_ip = ip_data.get('ip')
+                    for host_json in list_host:
+                        ip_address = host_json.get('ip_address')
+                        if sds_ip == ip_address:
+                            native_storage_host_id = \
+                                host_json.get('native_storage_host_id')
                 initiators_dict = {
                     "name": initiators_json.get('name'),
                     "storage_id": storage_id,
@@ -293,8 +309,7 @@ class RestHandler(RestClient):
                     "wwn": initiators_id,
                     "type": initiators_type,
                     "status": status,
-                    "native_storage_host_id": initiators_json.get(
-                        'protectionDomainId'),
+                    "native_storage_host_id": native_storage_host_id,
                 }
                 initiators_list.append(initiators_dict)
             return initiators_list
@@ -316,13 +331,11 @@ class RestHandler(RestClient):
                     status = constants.HostStatus.NORMAL
                 elif 'Disconnected' == status:
                     status = constants.HostStatus.OFFLINE
-                ip_list = host_json.get('ipList')
-                ip_address = ''
-                for ip in ip_list:
-                    ip_address = ip.get('ip')
+                ip_address = host_json.get('sdcIp')
+                soft_version = host_json.get('softwareVersionInfo')
                 host_dict = {
-                    "name": host_json.get('name'),
-                    "description": host_json.get('sdcGuid'),
+                    "name": host_json.get('sdcGuid'),
+                    "description": ip_address + soft_version,
                     "storage_id": storage_id,
                     "native_storage_host_id":
                         host_json.get('id'),
@@ -351,12 +364,12 @@ class RestHandler(RestClient):
                 if map_sdc_list:
                     for map_sdc in map_sdc_list:
                         sdc_id = map_sdc.get('sdcId')
-                        uid = uuid.uuid4()
                         view_map = {
                             "name": view_name + sdc_id + volume_id,
                             "description": view_name,
                             "storage_id": storage_id,
-                            "native_masking_view_id": str(uid) + volume_id,
+                            "native_masking_view_id":
+                                view_name + sdc_id + volume_id,
                             'native_volume_id': volume_id,
                             'native_storage_host_id': sdc_id
                         }
