@@ -414,8 +414,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             if opened is None:
                 continue
             timestamp_s = self.get_timestamp_s(opened)
-            timestamp_ms =\
-                timestamp_s * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION
+            timestamp_ms = timestamp_s * units.k
             if timestamp_ms < start_time or timestamp_ms >= end_time:
                 continue
             about_timestamp =\
@@ -505,8 +504,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
         opened = list_metrics[consts.LIST_METRICS].get('time')
         timestamp_s = self.get_timestamp_s(opened)
         timestamp_ms = \
-            int(timestamp_s / consts.SIXTY) * consts.SIXTY \
-            * consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION
+            int(timestamp_s / consts.SIXTY) * consts.SIXTY * units.k
         return timestamp_ms
 
     def list_storage_host_initiators(self, context):
