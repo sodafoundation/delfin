@@ -1922,5 +1922,5 @@ class test_PureFlashArrayDriver(TestCase):
         RestHandler.rest_call = mock.Mock(
             side_effect=[drive_metrics])
         timestamp = self.driver.get_latest_perf_timestamp(context)
-        times = 1650853486000
+        times = 1650853440000
         self.assertEqual(timestamp, times)
