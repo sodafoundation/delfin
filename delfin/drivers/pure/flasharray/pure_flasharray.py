@@ -498,8 +498,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
 
     def get_latest_perf_timestamp(self, context):
         list_metrics = self.rest_handler.rest_call(
-            self.rest_handler.REST_ARRAY_HISTORICAL_URL.format(
-                consts.ONE_HOUR))
+            self.rest_handler.REST_ARRAY_HISTORICAL_URL)
         opened = list_metrics[consts.LIST_METRICS].get('time')
         timestamp_s = self.get_timestamp_s(opened)
         timestamp_ms = \
