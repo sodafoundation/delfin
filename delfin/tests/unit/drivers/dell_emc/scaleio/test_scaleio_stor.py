@@ -100,6 +100,5 @@ class TestScaleIOStorDriver(TestCase):
     @mock.patch.object(RestHandler, 'get_rest_info')
     def test_list_disks(self, mock_disks):
         mock_disks.return_value = test_constans.SYSTEM_STORAGE_DISK_INFO
-        storage_disks = ScaleioStorageDriver(**ACCESS_INFO) \
-            .list_disks(context)
+        storage_disks = ScaleioStorageDriver(**ACCESS_INFO).list_disks(context)
         self.assertEqual(storage_disks, test_constans.SYSTEM_STORAGE_DISK)
