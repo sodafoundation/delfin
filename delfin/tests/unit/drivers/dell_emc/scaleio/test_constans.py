@@ -1221,16 +1221,17 @@ SYSTEM_STORAGE_VOLUME = [
 
 SYSTEM_STORAGE_DISK = [
     {
-        "native_disk_id": "6afe3b9d00000002",
-        "name": "sd09",
-        "status": "normal",
-        "storage_id": "12345",
-        "native_disk_group_id": "29ab6a0a00000000",
-        "serial_number": "6afe3b9d00000002",
-        "capacity": 965292851200,
-        "health_score": "normal"
+        'native_disk_id': '6afe3b9d00000002',
+        'name': 'sd09',
+        'status': 'normal',
+        'storage_id': '12345',
+        'native_disk_group_id': '29ab6a0a00000000',
+        'serial_number': '6afe3b9d00000002',
+        'capacity': 965292851200,
+        'health_score': 'normal'
     }
 ]
+
 
 SYSTEM_ALERT = [
     {
