@@ -96,9 +96,3 @@ class TestScaleIOStorDriver(TestCase):
         storage_host = ScaleioStorageDriver(**ACCESS_INFO)\
             .list_storage_hosts(context)
         self.assertEqual(storage_host, test_constans.SYSTEM_HOST)
-
-    @mock.patch.object(RestHandler, 'get_rest_info')
-    def test_list_disks(self, mock_disks):
-        mock_disks.return_value = test_constans.SYSTEM_STORAGE_DISK_INFO
-        storage_disks = ScaleioStorageDriver(**ACCESS_INFO).list_disks(context)
-        self.assertEqual(storage_disks, test_constans.SYSTEM_STORAGE_DISK)
