@@ -50,9 +50,6 @@ class ScaleioStorageDriver(driver.StorageDriver):
     def list_alerts(self, context, query_para=None):
         return self.rest_handler.list_alerts(query_para)
 
-    def parse_alert(self, context, alert):
-        return self.rest_handler.parse_alert(alert)
-
     def add_trap_config(self, context, trap_config):
         pass
 
