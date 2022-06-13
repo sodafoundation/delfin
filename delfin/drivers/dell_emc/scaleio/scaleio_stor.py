@@ -36,7 +36,7 @@ class ScaleioStorageDriver(driver.StorageDriver):
         return self.rest_handler.login()
 
     def get_storage(self, context):
-        return self.rest_handler.get_storage
+        return self.rest_handler.get_storage(self.storage_id)
 
     def list_storage_pools(self, context):
         return self.rest_handler.list_storage_pools(self.storage_id)
@@ -49,6 +49,9 @@ class ScaleioStorageDriver(driver.StorageDriver):
 
     def list_alerts(self, context, query_para=None):
         return self.rest_handler.list_alerts(query_para)
+
+    def parse_alert(self, context, alert):
+        return self.rest_handler.parse_alert(alert)
 
     def add_trap_config(self, context, trap_config):
         pass

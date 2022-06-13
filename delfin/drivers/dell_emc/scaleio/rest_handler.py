@@ -25,6 +25,7 @@ from delfin import cryptor
 from delfin.common import alert_util
 from delfin.drivers.utils.rest_client import RestClient
 from delfin.drivers.dell_emc.scaleio import consts
+from delfin.drivers.dell_emc.scaleio import alert_consts
 from delfin.common import constants
 
 LOG = log.getLogger(__name__)
@@ -64,8 +65,7 @@ class RestHandler(RestClient):
             LOG.error(err_msg)
             raise exception.InvalidResults(e)
 
-    @property
-    def get_storage(self):
+    def get_storage(self, storage_id):
         try:
             storage_json = self.get_rest_info(consts.REST_SCALEIO_SYSTEM)
             for system_json in (storage_json or []):
@@ -77,6 +77,9 @@ class RestHandler(RestClient):
                 raw_capacity = 0
                 if not system_links:
                     continue
+                storage_disk_list = self.list_disks(storage_id)
+                for storage_disk in storage_disk_list:
+                    raw_capacity += storage_disk.get('capacity')
                 mdm_cluster = json.loads(json.dumps(
                     system_json.get('mdmCluster')))
                 version_info = json.dumps(
@@ -98,8 +101,6 @@ class RestHandler(RestClient):
                             get('maxCapacityInKb')
                         used_capacity = storage_detail. \
                             get('capacityInUseInKb')
-                        raw_capacity = storage_detail. \
-                            get('unreachableUnusedCapacityInKb')
                 storage_map = {
                     'name': 'ScaleIO',
                     'vendor': consts.StorageVendor,
@@ -107,7 +108,7 @@ class RestHandler(RestClient):
                     'status': status,
                     'serial_number': system_id,
                     'firmware_version': version_id,
-                    'raw_capacity': int(raw_capacity) * units.Ki,
+                    'raw_capacity': raw_capacity,
                     'total_capacity': int(total_capacity) * units.Ki,
                     'used_capacity': int(used_capacity) * units.Ki,
                     'free_capacity': int(total_capacity
@@ -235,6 +236,7 @@ class RestHandler(RestClient):
         alert_list = []
         try:
             storage_alert = self.get_rest_info(consts.REST_SCALEIO_ALERT)
+            alert_description_map = alert_consts.ALERT_MAP
             for json_alert in (storage_alert or []):
                 match_key = json_alert.get('id') + json_alert.get('name')
                 occur_time = json_alert.get('startTime')
@@ -244,6 +246,8 @@ class RestHandler(RestClient):
                                  consts.DEFAULT_ALERTS_TIME_CONVERSION
                                  + datetime_obj.microsecond /
                                  consts.DEFAULT_ALERTS_TIME_CONVERSION)
+                alert_type_desc = json_alert.get('alertType')
+                alert_type_desc = alert_type_desc.lower().replace('_', ' ')
                 if not alert_util.is_alert_in_time_range(query_para,
                                                          alert_time):
                     continue
@@ -262,7 +266,8 @@ class RestHandler(RestClient):
                     'category': constants.Category.FAULT,
                     'type': alert_type,
                     'sequence_number': json_alert.get('uuid'),
-                    'description': json_alert.get('alertType'),
+                    'description': alert_description_map.get(
+                        json_alert.get('alertType'), alert_type_desc),
                     'occur_time': alert_time,
                     'match_key': hashlib.md5(
                         match_key.encode()).hexdigest()

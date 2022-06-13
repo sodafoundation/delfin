@@ -43,6 +43,8 @@ class TestScaleIOStorDriver(TestCase):
     def test_get_storage(self):
         RestHandler.get_rest_info = mock.Mock(side_effect=[
             test_constans.SYSTEM_INFO, test_constans.SYSTEM_DETAIL])
+        RestHandler.list_disks = mock.Mock(side_effect=[test_constans.
+                                           SYSTEM_STORAGE_DISK])
         system_storage = ScaleioStorageDriver(**ACCESS_INFO).\
             get_storage(context)
         self.assertEqual(system_storage, test_constans.SYSTEM_STORAGE)

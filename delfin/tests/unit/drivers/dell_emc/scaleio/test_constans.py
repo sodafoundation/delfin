@@ -1165,7 +1165,7 @@ SYSTEM_STORAGE = {
     "status": "normal",
     "serial_number": "6fb451ea51a99758",
     "firmware_version": "R2_5.0.254",
-    "raw_capacity": 0,
+    "raw_capacity": 965292851200,
     "total_capacity": 18363122188288,
     "used_capacity": 3917014368256,
     "free_capacity": 14446107820032
