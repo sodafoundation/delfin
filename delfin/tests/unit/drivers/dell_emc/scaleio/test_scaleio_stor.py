@@ -97,12 +97,13 @@ class TestScaleIOStorDriver(TestCase):
             .list_storage_hosts(context)
         self.assertEqual(storage_host, test_constans.SYSTEM_HOST)
 
-    @mock.patch.object(RestHandler, 'get_rest_info')
-    def test_list_disks(self, mock_disk):
-        mock_disk.return_value = test_constans.SYSTEM_STORAGE_DISK_INFO
-        storage_disks = ScaleioStorageDriver(**ACCESS_INFO).list_disks(context)
-        self.assertEqual(storage_disks[0],
-                         test_constans.SYSTEM_STORAGE_DISK[0])
+    def test_list_disks(self):
+        RestHandler.get_rest_info = mock.Mock(side_effect=[
+            test_constans.SYSTEM_STORAGE_DISK_INFO,
+            test_constans.SYSTEM_DISK_DETAIL])
+        storage_disks = ScaleioStorageDriver(**ACCESS_INFO) \
+            .list_disks(context)
+        self.assertEqual(storage_disks, test_constans.SYSTEM_STORAGE_DISK)
 
     def test_parse_alert(self):
         trap_alert = test_constans.SYSTEM_TRAP_ALERT
