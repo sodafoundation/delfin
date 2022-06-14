@@ -1186,7 +1186,8 @@ SYSTEM_ALERT_INFO = [
 SYSTEM_TRAP_ALERT = 'system.sysUpTime.0=6132004 S:1.1.4.1.0=E:1139.101.1 ' \
                     'E:1139.101.1.1=5 ' \
                     'E:1139.101.1.2="MDM.MDM_Cluster.MDM_CONNECTION_LOST" ' \
-                    'E:1139.101.1.3="NA" E:1139.101.1.4="SIO02.01.0000008"'
+                    'E:1139.101.1.3="hjfadsfa42524533" ' \
+                    'E:1139.101.1.4="SIO02.01.0000008"'
 
 SYSTEM_STORAGE_POOL = [
     {
@@ -1334,6 +1335,6 @@ SYSTEM_TRAP = {
     'severity': 'Critical',
     'description': 'mdm connection lost"',
     'location': 'mdm connection lost"',
-    'alert_id': 'NA',
+    'alert_id': 'hjfadsfa42524533',
     'alert_name': 'SIO02.01.0000008'
 }
