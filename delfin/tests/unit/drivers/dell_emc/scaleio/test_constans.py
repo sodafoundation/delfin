@@ -807,16 +807,10 @@ SYSTEM_STORAGE_DISK_INFO = [
         "rfcacheErrorDeviceDoesNotExist": False,
         "errorState": "None",
         "name": "sd09",
-        "id": "6afe3b9d00000002",
-        "links": [
-            {
-                "rel": "/api/Device/relationship/Statistics",
-                "href": "/api/instances/Device::6afe3b9d00000002/"
-                        "relationships/Statistics"
-            }
-        ]
+        "id": "6afe3b9d00000002"
     }
 ]
+
 SYSTEM_DISK_DETAIL = {
     "rfcacheReadsSkippedInternalError": 0,
     "pendingMovingInBckRebuildJobs": 0,
