@@ -16,7 +16,7 @@
 from oslo_log import log
 from delfin.drivers import driver
 from delfin.drivers.dell_emc.scaleio import rest_handler
-
+from delfin.drivers.dell_emc.scaleio.rest_handler import RestHandler
 
 LOG = log.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class ScaleioStorageDriver(driver.StorageDriver):
         return self.rest_handler.login()
 
     def get_storage(self, context):
-        return self.rest_handler.get_storage
+        return self.rest_handler.get_storage(self.storage_id)
 
     def list_storage_pools(self, context):
         return self.rest_handler.list_storage_pools(self.storage_id)
@@ -49,6 +49,10 @@ class ScaleioStorageDriver(driver.StorageDriver):
 
     def list_alerts(self, context, query_para=None):
         return self.rest_handler.list_alerts(query_para)
+
+    @staticmethod
+    def parse_alert(context, alert):
+        return RestHandler.parse_alert(alert)
 
     def add_trap_config(self, context, trap_config):
         pass

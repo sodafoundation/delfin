@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from delfin.common import constants
+
 StorageVendor = 'DELL EMC'
 DEFAULT_TIMEOUT = 10
 REST_AUTH_LOGIN = '/api/login'
@@ -26,3 +28,12 @@ REST_SCALEIO_ALERT = '/api/types/Alert/instances'
 DEFAULT_ALERTS_TIME_CONVERSION = 1000
 DEFAULT_VOLUME_USERD_CAPACITY = 0
 DATETIME_UTC_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
+OID_SEVERITY = '1139.101.1.1'
+OID_EVENT_TYPE = '1139.101.1.2'
+OID_ERR_ID = '1139.101.1.3'
+OID_EVENT_ID = '1139.101.1.4'
+
+TRAP_ALERT_MAP = {
+    '5': constants.Severity.CRITICAL,
+    '2': constants.Severity.WARNING,
+}

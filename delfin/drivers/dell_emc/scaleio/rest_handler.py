@@ -25,6 +25,7 @@ from delfin import cryptor
 from delfin.common import alert_util
 from delfin.drivers.utils.rest_client import RestClient
 from delfin.drivers.dell_emc.scaleio import consts
+from delfin.drivers.dell_emc.scaleio import alert_consts
 from delfin.common import constants
 
 LOG = log.getLogger(__name__)
@@ -64,8 +65,7 @@ class RestHandler(RestClient):
             LOG.error(err_msg)
             raise exception.InvalidResults(e)
 
-    @property
-    def get_storage(self):
+    def get_storage(self, storage_id):
         try:
             storage_json = self.get_rest_info(consts.REST_SCALEIO_SYSTEM)
             for system_json in (storage_json or []):
@@ -77,6 +77,9 @@ class RestHandler(RestClient):
                 raw_capacity = 0
                 if not system_links:
                     continue
+                storage_disk_list = self.list_disks(storage_id)
+                for storage_disk in storage_disk_list:
+                    raw_capacity += storage_disk.get('capacity')
                 mdm_cluster = json.loads(json.dumps(
                     system_json.get('mdmCluster')))
                 version_info = json.dumps(
@@ -98,8 +101,6 @@ class RestHandler(RestClient):
                             get('maxCapacityInKb')
                         used_capacity = storage_detail. \
                             get('capacityInUseInKb')
-                        raw_capacity = storage_detail. \
-                            get('unreachableUnusedCapacityInKb')
                 storage_map = {
                     'name': 'ScaleIO',
                     'vendor': consts.StorageVendor,
@@ -107,7 +108,7 @@ class RestHandler(RestClient):
                     'status': status,
                     'serial_number': system_id,
                     'firmware_version': version_id,
-                    'raw_capacity': int(raw_capacity) * units.Ki,
+                    'raw_capacity': raw_capacity,
                     'total_capacity': int(total_capacity) * units.Ki,
                     'used_capacity': int(used_capacity) * units.Ki,
                     'free_capacity': int(total_capacity
@@ -204,14 +205,14 @@ class RestHandler(RestClient):
     def list_disks(self, storage_id):
         disks_list = []
         try:
-            disks_json = self.get_rest_info(consts.REST_SCALEIO_DISKS)
-            for json_disk in (disks_json or []):
+            storage_disks_json = self.get_rest_info(consts.REST_SCALEIO_DISKS)
+            for json_disk in (storage_disks_json or []):
                 device_status = json_disk.get('deviceState')
                 capacity = json_disk.get('maxCapacityInKb')
                 status = constants.DiskStatus.NORMAL
                 if device_status != 'Normal':
                     status = constants.DiskStatus.OFFLINE
-                data_map = {
+                disk_map = {
                     'native_disk_id': json_disk.get('id'),
                     'name': json_disk.get('name'),
                     'status': status,
@@ -221,7 +222,7 @@ class RestHandler(RestClient):
                     'capacity': int(capacity) * units.Ki,
                     'health_score': status
                 }
-                disks_list.append(data_map)
+                disks_list.append(disk_map)
             return disks_list
         except exception.DelfinException as err:
             err_msg = "Get Storage disk error: %s" % err.msg
@@ -235,6 +236,7 @@ class RestHandler(RestClient):
         alert_list = []
         try:
             storage_alert = self.get_rest_info(consts.REST_SCALEIO_ALERT)
+            alert_description_map = alert_consts.ALERT_MAP
             for json_alert in (storage_alert or []):
                 match_key = json_alert.get('id') + json_alert.get('name')
                 occur_time = json_alert.get('startTime')
@@ -244,6 +246,8 @@ class RestHandler(RestClient):
                                  consts.DEFAULT_ALERTS_TIME_CONVERSION
                                  + datetime_obj.microsecond /
                                  consts.DEFAULT_ALERTS_TIME_CONVERSION)
+                alert_type_desc = json_alert.get('alertType')
+                alert_type_desc = alert_type_desc.lower().replace('_', ' ')
                 if not alert_util.is_alert_in_time_range(query_para,
                                                          alert_time):
                     continue
@@ -262,7 +266,8 @@ class RestHandler(RestClient):
                     'category': constants.Category.FAULT,
                     'type': alert_type,
                     'sequence_number': json_alert.get('uuid'),
-                    'description': json_alert.get('alertType'),
+                    'description': alert_description_map.get(
+                        json_alert.get('alertType'), alert_type_desc),
                     'occur_time': alert_time,
                     'match_key': hashlib.md5(
                         match_key.encode()).hexdigest()
@@ -382,6 +387,38 @@ class RestHandler(RestClient):
         except Exception as e:
             LOG.error("Get Storage Views Error: %s", six.text_type(e))
             raise exception.InvalidResults(e)
+
+    @staticmethod
+    def parse_alert(alert):
+        alert_model = dict()
+        try:
+            alert_dict = alert.split(' ')
+            for alert_json in alert_dict:
+                alert_detail = alert_json.split('=')[1]
+                if consts.OID_SEVERITY in alert_json:
+                    severity = consts.TRAP_ALERT_MAP.get(
+                        alert_detail, constants.Severity.INFORMATIONAL)
+                    alert_model['severity'] = severity
+                elif consts.OID_EVENT_ID in alert_json:
+                    alert_model['alert_name'] = alert_detail.replace('\"', '')
+                elif consts.OID_EVENT_TYPE in alert_json:
+                    alert_desc = alert_detail.split('.')[2].lower().replace(
+                        '_', ' ')
+                    alert_model['description'] = alert_desc
+                    alert_model['location'] = alert_desc
+                elif consts.OID_ERR_ID in alert_json:
+                    alert_model['alert_id'] = str(
+                        alert_detail.replace('\"', ''))
+                alert_model['category'] = constants.Category.FAULT
+                alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
+                now = time.time()
+                alert_model['occur_time'] = \
+                    int(round(now * consts.DEFAULT_ALERTS_TIME_CONVERSION))
+            return alert_model
+        except Exception as e:
+            LOG.error(e)
+            msg = "Failed to build alert model: %s." % (six.text_type(e))
+            raise exception.InvalidResults(msg)
 
     def get_rest_info(self, url, data=None, method='GET'):
         if 'login' == data:

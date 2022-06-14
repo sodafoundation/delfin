@@ -789,34 +789,17 @@ SYSTEM_VOLUME_DETAIL = {
 SYSTEM_STORAGE_DISK_INFO = [
     {
         "sdsId": "29ab6a0a00000000",
-        "aggregatedState": "NeverFailed",
-        "temperatureState": "NeverFailed",
-        "ssdEndOfLifeState": "NeverFailed",
         "deviceState": "Normal",
         "capacityLimitInKb": 942668800,
         "maxCapacityInKb": 942668800,
         "ledSetting": "Off",
-        "longSuccessfulIos": {
-            "shortWindow": None,
-            "mediumWindow": None,
-            "longWindow": None
-        },
         "storagePoolId": "b1566d0f00000000",
-        "deviceCurrentPathName": "/dev/sdd",
-        "deviceOriginalPathName": "/dev/sdd",
-        "rfcacheErrorDeviceDoesNotExist": False,
         "errorState": "None",
         "name": "sd09",
-        "id": "6afe3b9d00000002",
-        "links": [
-            {
-                "rel": "/api/Device/relationship/Statistics",
-                "href": "/api/instances/Device::6afe3b9d00000002/"
-                        "relationships/Statistics"
-            }
-        ]
+        "id": "6afe3b9d00000002"
     }
 ]
+
 SYSTEM_DISK_DETAIL = {
     "rfcacheReadsSkippedInternalError": 0,
     "pendingMovingInBckRebuildJobs": 0,
@@ -1165,7 +1148,7 @@ SYSTEM_STORAGE = {
     "status": "normal",
     "serial_number": "6fb451ea51a99758",
     "firmware_version": "R2_5.0.254",
-    "raw_capacity": 0,
+    "raw_capacity": 965292851200,
     "total_capacity": 18363122188288,
     "used_capacity": 3917014368256,
     "free_capacity": 14446107820032
@@ -1188,6 +1171,13 @@ SYSTEM_ALERT_INFO = [
         "id": "31d682d5-e696-466e-990a-57d0f9616b21",
     }
 ]
+
+SYSTEM_TRAP_ALERT = 'system.sysUpTime.0=6132004 S:1.1.4.1.0=E:1139.101.1 ' \
+                    'E:1139.101.1.1=5 ' \
+                    'E:1139.101.1.2="MDM.MDM_Cluster.MDM_CONNECTION_LOST" ' \
+                    'E:1139.101.1.3="hjfadsfa42524533" ' \
+                    'E:1139.101.1.4="SIO02.01.0000008"'
+
 SYSTEM_STORAGE_POOL = [
     {
         "name": "StoragePool",
@@ -1221,16 +1211,17 @@ SYSTEM_STORAGE_VOLUME = [
 
 SYSTEM_STORAGE_DISK = [
     {
-        "native_disk_id": "6afe3b9d00000002",
-        "name": "sd09",
-        "status": "normal",
-        "storage_id": "12345",
-        "native_disk_group_id": "29ab6a0a00000000",
-        "serial_number": "6afe3b9d00000002",
-        "capacity": 965292851200,
-        "health_score": "normal"
+        'native_disk_id': '6afe3b9d00000002',
+        'name': 'sd09',
+        'status': 'normal',
+        'storage_id': '12345',
+        'native_disk_group_id': '29ab6a0a00000000',
+        'serial_number': '6afe3b9d00000002',
+        'capacity': 965292851200,
+        'health_score': 'normal'
     }
 ]
+
 
 SYSTEM_ALERT = [
     {
@@ -1240,7 +1231,7 @@ SYSTEM_ALERT = [
         'category': 'Fault',
         'type': 'TRIAL_LICENSE_USED',
         'sequence_number': '31d682d5-e696-466e-990a-57d0f9616b21',
-        'description': 'TRIAL_LICENSE_USED',
+        'description': 'trial license used',
         'occur_time': 1653588013336,
         'match_key': '10648e5e11b1d6daf4f5cf989349967d'
     }
@@ -1325,3 +1316,14 @@ SYSTEM_INITIATORS = [
         "native_storage_host_id": "7bec302f00000000"
     }
 ]
+
+SYSTEM_TRAP = {
+    'category': 'Fault',
+    'type': 'EquipmentAlarm',
+    'occur_time': 1655171867749,
+    'severity': 'Critical',
+    'description': 'mdm connection lost"',
+    'location': 'mdm connection lost"',
+    'alert_id': 'hjfadsfa42524533',
+    'alert_name': 'SIO02.01.0000008'
+}
