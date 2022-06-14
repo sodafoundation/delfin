@@ -789,22 +789,11 @@ SYSTEM_VOLUME_DETAIL = {
 SYSTEM_STORAGE_DISK_INFO = [
     {
         "sdsId": "29ab6a0a00000000",
-        "aggregatedState": "NeverFailed",
-        "temperatureState": "NeverFailed",
-        "ssdEndOfLifeState": "NeverFailed",
         "deviceState": "Normal",
         "capacityLimitInKb": 942668800,
         "maxCapacityInKb": 942668800,
         "ledSetting": "Off",
-        "longSuccessfulIos": {
-            "shortWindow": None,
-            "mediumWindow": None,
-            "longWindow": None
-        },
         "storagePoolId": "b1566d0f00000000",
-        "deviceCurrentPathName": "/dev/sdd",
-        "deviceOriginalPathName": "/dev/sdd",
-        "rfcacheErrorDeviceDoesNotExist": False,
         "errorState": "None",
         "name": "sd09",
         "id": "6afe3b9d00000002"
