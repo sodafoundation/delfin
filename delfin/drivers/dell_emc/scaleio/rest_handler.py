@@ -388,6 +388,38 @@ class RestHandler(RestClient):
             LOG.error("Get Storage Views Error: %s", six.text_type(e))
             raise exception.InvalidResults(e)
 
+    @staticmethod
+    def parse_alert(alert):
+        alert_model = dict()
+        try:
+            alert_dict = alert.split(' ')
+            for alert_json in alert_dict:
+                alert_detail = alert_json.split('=')[1]
+                if consts.OID_SEVERITY in alert_json:
+                    severity = consts.TRAP_ALERT_MAP.get(
+                        alert_detail, constants.Severity.INFORMATIONAL)
+                    alert_model['severity'] = severity
+                elif consts.OID_EVENT_ID in alert_json:
+                    alert_model['alert_name'] = alert_detail.replace('\"', '')
+                elif consts.OID_EVENT_TYPE in alert_json:
+                    alert_desc = alert_detail.split('.')[2].lower().replace(
+                        '_', ' ')
+                    alert_model['description'] = alert_desc
+                    alert_model['location'] = alert_desc
+                elif consts.OID_ERR_ID in alert_json:
+                    alert_model['alert_id'] = str(
+                        alert_detail.replace('\"', ''))
+                alert_model['category'] = constants.Category.FAULT
+                alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
+                now = time.time()
+                alert_model['occur_time'] = \
+                    int(round(now * consts.DEFAULT_ALERTS_TIME_CONVERSION))
+            return alert_model
+        except Exception as e:
+            LOG.error(e)
+            msg = "Failed to build alert model: %s." % (six.text_type(e))
+            raise exception.InvalidResults(msg)
+
     def get_rest_info(self, url, data=None, method='GET'):
         if 'login' == data:
             self.session.auth = requests.auth.HTTPBasicAuth(

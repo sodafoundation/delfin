@@ -103,3 +103,11 @@ class TestScaleIOStorDriver(TestCase):
         storage_disks = ScaleioStorageDriver(**ACCESS_INFO).list_disks(context)
         self.assertEqual(storage_disks[0],
                          test_constans.SYSTEM_STORAGE_DISK[0])
+
+    def test_parse_alert(self):
+        trap_alert = test_constans.SYSTEM_TRAP_ALERT
+        storage_trap_alert = ScaleioStorageDriver(**ACCESS_INFO).\
+            parse_alert(context, trap_alert)
+        trap_alert_result = test_constans.SYSTEM_TRAP
+        trap_alert_result['occur_time'] = storage_trap_alert['occur_time']
+        self.assertEqual(storage_trap_alert, trap_alert_result)

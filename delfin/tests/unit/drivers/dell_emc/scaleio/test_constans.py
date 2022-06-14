@@ -1188,6 +1188,12 @@ SYSTEM_ALERT_INFO = [
         "id": "31d682d5-e696-466e-990a-57d0f9616b21",
     }
 ]
+
+SYSTEM_TRAP_ALERT = 'system.sysUpTime.0=6132004 S:1.1.4.1.0=E:1139.101.1 ' \
+                    'E:1139.101.1.1=5 ' \
+                    'E:1139.101.1.2="MDM.MDM_Cluster.MDM_CONNECTION_LOST" ' \
+                    'E:1139.101.1.3="NA" E:1139.101.1.4="SIO02.01.0000008"'
+
 SYSTEM_STORAGE_POOL = [
     {
         "name": "StoragePool",
@@ -1326,3 +1332,14 @@ SYSTEM_INITIATORS = [
         "native_storage_host_id": "7bec302f00000000"
     }
 ]
+
+SYSTEM_TRAP = {
+    'category': 'Fault',
+    'type': 'EquipmentAlarm',
+    'occur_time': 1655171867749,
+    'severity': 'Critical',
+    'description': 'mdm connection lost"',
+    'location': 'mdm connection lost"',
+    'alert_id': 'NA',
+    'alert_name': 'SIO02.01.0000008'
+}
