@@ -478,6 +478,16 @@ def fake_get_capabilities(context, storage_id):
                         "description": "Average time taken for an IO "
                                        "operation in ms"
                     },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Read average time taken for an IO "
+                                       "operation in ms"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Write average time taken for an IO "
+                                       "operation in ms"
+                    },
                     "iops": {
                         "unit": "IOPS",
                         "description": "Input/output operations per second"
@@ -543,6 +553,16 @@ def fake_get_capabilities(context, storage_id):
                     "responseTime": {
                         "unit": "ms",
                         "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Read average time taken for an IO "
+                                       "operation"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Write average time taken for an IO "
                                        "operation"
                     },
                     "iops": {
