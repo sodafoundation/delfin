@@ -187,18 +187,19 @@ class Service(service.Service):
         """Destroy the service object in the datastore."""
         self.stop()
 
-    def stop(self):
+    def stop(self, graceful=False):
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         try:
-            self.rpcserver.stop()
-        except Exception:
-            pass
+            if hasattr(self, 'rpcserver'):
+                self.rpcserver.stop()
+        except Exception as e:
+            LOG.error('Stop the rpc server failed, the reason is %s.', e)
         for x in self.timers:
             try:
                 x.stop()
-            except Exception:
-                pass
+            except Exception as e:
+                LOG.error('Stop the timers failed, the reason is %s.', e)
         if self.coordinator:
             try:
                 coordination.LOCK_COORDINATOR.stop()
@@ -208,7 +209,7 @@ class Service(service.Service):
 
         self.timers = []
 
-        super(Service, self).stop()
+        super(Service, self).stop(graceful)
 
     def wait(self):
         for x in self.timers:
