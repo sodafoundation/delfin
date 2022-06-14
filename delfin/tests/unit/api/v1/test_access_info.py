@@ -42,6 +42,7 @@ class TestAccessInfoController(test.TestCase):
             "model": "fake_driver",
             "vendor": "fake_storage",
             "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
+            "storage_name": None,
             "rest": {
                 "host": "10.0.0.0",
                 "port": 1234,
@@ -73,7 +74,7 @@ class TestAccessInfoController(test.TestCase):
             db, 'access_info_get',
             fakes.fake_access_info_show)
 
-        fake_access_info = fakes.fake_update_access_info(None, None, None)
+        fake_access_info = fakes.fake_update_access_info(None, None)
         self.mock_object(
             self.controller.driver_api, 'update_access_info',
             mock.Mock(return_value=fake_access_info))
@@ -95,6 +96,7 @@ class TestAccessInfoController(test.TestCase):
             "model": "fake_driver",
             "vendor": "fake_storage",
             "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
+            "storage_name": None,
             "rest": {
                 "username": "admin_modified",
                 "host": "10.0.0.0",
@@ -124,6 +126,7 @@ class TestAccessInfoController(test.TestCase):
                 "model": "fake_driver",
                 "vendor": "fake_storage",
                 "storage_id": "865ffd4d-f1f7-47de-abc3-5541ef44d0c1",
+                "storage_name": None,
                 "rest": {
                     "host": "10.0.0.0",
                     "port": 1234,

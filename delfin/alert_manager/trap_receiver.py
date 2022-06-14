@@ -182,12 +182,7 @@ class TrapReceiver(manager.Manager):
         if not alert_source:
             raise exception.AlertSourceNotFoundWithHost(source_ip)
 
-        # This is to make sure unique host is configured each alert source
-        if len(alert_source) > 1:
-            msg = (_("Failed to get unique alert source with host %s.")
-                   % source_ip)
-            raise exception.InvalidResults(msg)
-
+        # Return first configured source that can handle the trap
         return alert_source[0]
 
     def _cb_fun(self, state_reference, context_engine_id, context_name,

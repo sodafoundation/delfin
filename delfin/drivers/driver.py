@@ -28,6 +28,14 @@ class StorageDriver(object):
         """
         self.storage_id = kwargs.get('storage_id', None)
 
+    def delete_storage(self, context):
+        """Cleanup storage device information from driver"""
+        pass
+
+    def add_storage(self, kwargs):
+        """Add storage device information to driver"""
+        pass
+
     @abc.abstractmethod
     def reset_connection(self, context, **kwargs):
         """ Reset connection with backend with new args """
@@ -176,7 +184,9 @@ class StorageDriver(object):
 
     @staticmethod
     def get_capabilities(context, filters=None):
-        """Get capability of driver"""
+        """Get capability of driver, please refer to
+        STORAGE_CAPABILITIES_SCHEMA
+        in api/schemas/storage_capabilities_schema.py."""
         pass
 
     def list_storage_host_initiators(self, context):
