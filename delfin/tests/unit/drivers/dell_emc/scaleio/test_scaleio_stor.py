@@ -24,6 +24,7 @@ from delfin.tests.unit.drivers.dell_emc.scaleio import test_constans
 
 
 sys.modules['delfin.cryptor'] = mock.Mock()
+
 ACCESS_INFO = {
     "storage_id": "12345",
     "vendor": "dell_emc",
@@ -107,6 +108,7 @@ class TestScaleIOStorDriver(TestCase):
 
     def test_list_disks(self):
         RestHandler.get_rest_info = mock.Mock(
-            return_value=test_constans.SYSTEM_STORAGE_DISK_INFO)
+            side_effect=[test_constans.SYSTEM_STORAGE_DISK_INFO,
+                         test_constans.SYSTEM_DISK_DETAIL])
         storage_disks = ScaleioStorageDriver(**ACCESS_INFO).list_disks(context)
         self.assertEqual(storage_disks, test_constans.SYSTEM_STORAGE_DISK)
