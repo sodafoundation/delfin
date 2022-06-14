@@ -1641,15 +1641,34 @@ drive_metrics = [
         "input_per_sec": 0,
         "usec_per_read_op": 0,
         "queue_depth": 0
+    }, {
+        "writes_per_sec": 1856,
+        "output_per_sec": 0,
+        "usec_per_write_op": 653021,
+        "local_queue_usec_per_op": 43158,
+        "time": "2022-04-25T02:25:46Z",
+        "reads_per_sec": 0,
+        "input_per_sec": 0,
+        "usec_per_read_op": 5360,
+        "queue_depth": 0
     }]
 volume_metrics_info = [{
-    "writes_per_sec": 0,
+    "writes_per_sec": 1864,
     "name": "136_connect",
-    "usec_per_write_op": 0,
+    "usec_per_write_op": 46200000,
     "output_per_sec": 0,
     "reads_per_sec": 0,
-    "input_per_sec": 0,
+    "input_per_sec": 5620302,
     "time": "2022-04-12T02:12:16Z",
+    "usec_per_read_op": 0
+}, {
+    "writes_per_sec": 1864,
+    "name": "136_connect",
+    "usec_per_write_op": 46200000,
+    "output_per_sec": 0,
+    "reads_per_sec": 0,
+    "input_per_sec": 5620302,
+    "time": "2022-04-12T02:13:16Z",
     "usec_per_read_op": 0
 }]
 
@@ -1775,7 +1794,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1650853440000: 0}
+                values={1650853440000: 0, 1650853500000: 1856}
             ),
             constants.metric_struct(
                 name='readIops',
@@ -1786,7 +1805,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1650853440000: 0}
+                values={1650853440000: 0, 1650853500000: 0}
             ),
             constants.metric_struct(
                 name='writeIops',
@@ -1797,7 +1816,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1650853440000: 0}
+                values={1650853440000: 0, 1650853500000: 1856}
             ),
             constants.metric_struct(
                 name='throughput',
@@ -1808,7 +1827,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1650853440000: 0}
+                values={1650853440000: 0.0, 1650853500000: 0.0}
             ),
             constants.metric_struct(
                 name='readThroughput',
@@ -1819,7 +1838,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1650853440000: 0}
+                values={1650853440000: 0.0, 1650853500000: 0.0}
             ),
             constants.metric_struct(
                 name='writeThroughput',
@@ -1830,7 +1849,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1650853440000: 0}
+                values={1650853440000: 0.0, 1650853500000: 0.0}
             )
         ]
         self.assertListEqual(metrics, storage_metrics)
@@ -1844,7 +1863,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1649729520000: 0}
+                values={1649729520000: 1864, 1649729580000: 1864}
             ),
             constants.metric_struct(
                 name='readIops',
@@ -1855,7 +1874,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1649729520000: 0}
+                values={1649729520000: 0, 1649729580000: 0}
             ),
             constants.metric_struct(
                 name='writeIops',
@@ -1866,7 +1885,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'IOPS'},
-                values={1649729520000: 0}
+                values={1649729520000: 1864, 1649729580000: 1864}
             ),
             constants.metric_struct(
                 name='throughput',
@@ -1877,7 +1896,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1649729520000: 0}
+                values={1649729520000: 5.36, 1649729580000: 5.36}
             ),
             constants.metric_struct(
                 name='readThroughput',
@@ -1888,7 +1907,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1649729520000: 0.0}
+                values={1649729520000: 0.0, 1649729580000: 0.0}
             ),
             constants.metric_struct(
                 name='writeThroughput',
@@ -1899,11 +1918,11 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'MB/s'},
-                values={1649729520000: 0.0}
+                values={1649729520000: 5.36, 1649729580000: 5.36}
             )
         ]
         RestHandler.rest_call = mock.Mock(
-            side_effect=[storage_id_info, volume_metrics_info])
+            side_effect=[volume_metrics_info])
         metrics = self.driver.collect_perf_metrics(
             context, storage_id, volume_resource_metrics, start_time,
             end_time)
@@ -1922,5 +1941,5 @@ class test_PureFlashArrayDriver(TestCase):
         RestHandler.rest_call = mock.Mock(
             side_effect=[drive_metrics])
         timestamp = self.driver.get_latest_perf_timestamp(context)
-        times = 1650853440000
+        times = 1650853500000
         self.assertEqual(timestamp, times)
