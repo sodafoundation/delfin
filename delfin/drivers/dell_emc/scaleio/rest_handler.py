@@ -205,14 +205,14 @@ class RestHandler(RestClient):
     def list_disks(self, storage_id):
         disks_list = []
         try:
-            disks_json = self.get_rest_info(consts.REST_SCALEIO_DISKS)
-            for json_disk in (disks_json or []):
+            storage_disks_json = self.get_rest_info(consts.REST_SCALEIO_DISKS)
+            for json_disk in (storage_disks_json or []):
                 device_status = json_disk.get('deviceState')
                 capacity = json_disk.get('maxCapacityInKb')
                 status = constants.DiskStatus.NORMAL
                 if device_status != 'Normal':
                     status = constants.DiskStatus.OFFLINE
-                data_map = {
+                disk_map = {
                     'native_disk_id': json_disk.get('id'),
                     'name': json_disk.get('name'),
                     'status': status,
@@ -222,7 +222,7 @@ class RestHandler(RestClient):
                     'capacity': int(capacity) * units.Ki,
                     'health_score': status
                 }
-                disks_list.append(data_map)
+                disks_list.append(disk_map)
             return disks_list
         except exception.DelfinException as err:
             err_msg = "Get Storage disk error: %s" % err.msg
