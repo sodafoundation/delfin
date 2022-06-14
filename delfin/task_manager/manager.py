@@ -21,6 +21,7 @@ from oslo_utils import importutils
 
 from delfin import manager
 from delfin.drivers import manager as driver_manager
+from delfin.drivers import api as driver_api
 from delfin.task_manager.tasks import alerts, telemetry
 
 LOG = log.getLogger(__name__)
@@ -51,6 +52,7 @@ class TaskManager(manager.Manager):
     def remove_storage_in_cache(self, context, storage_id):
         LOG.info('Remove storage device in memory for storage id:{0}'
                  .format(storage_id))
+        driver_api.API().remove_storage(context, storage_id)
         drivers = driver_manager.DriverManager()
         drivers.remove_driver(storage_id)
 
