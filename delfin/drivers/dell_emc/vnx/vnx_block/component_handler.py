@@ -256,8 +256,10 @@ class ComponentHandler(object):
                 hot_spare = disk.get('hot_spare', '')
                 if hot_spare and hot_spare != 'N/A':
                     logical_type = constants.DiskLogicalType.HOTSPARE
+                disk_name = disk.get('disk_name')
+                disk_name = disk_name.replace('  Disk', ' Disk')
                 disk_model = {
-                    'name': disk.get('disk_name'),
+                    'name': disk_name,
                     'storage_id': storage_id,
                     'native_disk_id': disk.get('disk_id'),
                     'serial_number': disk.get('serial_number'),
@@ -273,7 +275,7 @@ class ComponentHandler(object):
                     'logical_type': logical_type,
                     'health_score': None,
                     'native_disk_group_id': None,
-                    'location': disk.get('disk_name')
+                    'location': disk_name
                 }
                 disk_list.append(disk_model)
         return disk_list
