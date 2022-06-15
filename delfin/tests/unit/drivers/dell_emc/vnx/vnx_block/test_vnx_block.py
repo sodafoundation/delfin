@@ -552,7 +552,7 @@ ALERT_RESULT = {
 }
 DISK_RESULT = [
     {
-        'name': 'Bus 0 Enclosure 0  Disk 0',
+        'name': 'Bus 0 Enclosure 0 Disk 0',
         'storage_id': '12345',
         'native_disk_id': 'Bus0Enclosure0Disk0',
         'serial_number': 'KSJEX35J',
@@ -566,7 +566,7 @@ DISK_RESULT = [
         'logical_type': 'unknown',
         'health_score': None,
         'native_disk_group_id': None,
-        'location': 'Bus 0 Enclosure 0  Disk 0'
+        'location': 'Bus 0 Enclosure 0 Disk 0'
     }]
 SP_RESULT = [
     {
