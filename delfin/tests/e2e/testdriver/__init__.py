@@ -20,6 +20,7 @@ from oslo_log import log
 
 from delfin import exception
 from delfin.common import constants
+from delfin.common.constants import ResourceType, StorageMetric
 from delfin.drivers import driver
 from delfin import cryptor
 
@@ -230,38 +231,46 @@ class TestDriver(driver.StorageDriver):
         return {
             'is_historic': False,
             'resource_metrics': {
-                "storage": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data is "
-                                       "successfully transferred in MB/s"
+                ResourceType.STORAGE: {
+                    StorageMetric.THROUGHPUT.name: {
+                        "unit": StorageMetric.THROUGHPUT.unit,
+                        "description": StorageMetric.THROUGHPUT.description
                     },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation in ms"
+                    StorageMetric.RESPONSE_TIME.name: {
+                        "unit": StorageMetric.RESPONSE_TIME.unit,
+                        "description": StorageMetric.RESPONSE_TIME.description
                     },
-                    "requests": {
-                        "unit": "IOPS",
-                        "description": "Input/output operations per second"
+                    StorageMetric.READ_RESPONSE_TIME.name: {
+                        "unit": StorageMetric.READ_RESPONSE_TIME.unit,
+                        "description":
+                            StorageMetric.READ_RESPONSE_TIME.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data read is "
-                                       "successfully transferred in MB/s"
+                    StorageMetric.WRITE_RESPONSE_TIME.name: {
+                        "unit": StorageMetric.WRITE_RESPONSE_TIME.unit,
+                        "description":
+                            StorageMetric.WRITE_RESPONSE_TIME.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data write is "
-                                       "successfully transferred in MB/s"
+                    StorageMetric.IOPS.name: {
+                        "unit": StorageMetric.IOPS.unit,
+                        "description": StorageMetric.IOPS.description
                     },
-                    "readRequests": {
-                        "unit": "IOPS",
-                        "description": "Read requests per second"
+                    StorageMetric.READ_THROUGHPUT.name: {
+                        "unit": StorageMetric.READ_THROUGHPUT.unit,
+                        "description":
+                            StorageMetric.READ_THROUGHPUT.description
                     },
-                    "writeRequests": {
-                        "unit": "IOPS",
-                        "description": "Write requests per second"
+                    StorageMetric.WRITE_THROUGHPUT.name: {
+                        "unit": StorageMetric.WRITE_THROUGHPUT.unit,
+                        "description":
+                            StorageMetric.WRITE_THROUGHPUT.description
+                    },
+                    StorageMetric.READ_IOPS.name: {
+                        "unit": StorageMetric.READ_IOPS.unit,
+                        "description": StorageMetric.READ_IOPS.description
+                    },
+                    StorageMetric.WRITE_IOPS.name: {
+                        "unit": StorageMetric.WRITE_IOPS.unit,
+                        "description": StorageMetric.WRITE_IOPS.description
                     },
                 }
             }
