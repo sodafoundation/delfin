@@ -679,7 +679,11 @@ class ComponentHandler(object):
                     collection_timestamp, consts.COLLECTION_TIME_PATTERN)
                 collection_timestamp = tools.time_str_to_timestamp(
                     collection_time_str, consts.COLLECTION_TIME_PATTERN)
-                values[collection_timestamp] = float('%.6f' % (float(value)))
+                if "iops" in metric_name.lower():
+                    value = int(float(value))
+                else:
+                    value = float('%.6f' % (float(value)))
+                values[collection_timestamp] = value
             if values:
                 metric_model = constants.metric_struct(name=metric_name,
                                                        labels=obj_labels,
