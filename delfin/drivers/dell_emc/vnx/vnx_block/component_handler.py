@@ -257,7 +257,7 @@ class ComponentHandler(object):
                 if hot_spare and hot_spare != 'N/A':
                     logical_type = constants.DiskLogicalType.HOTSPARE
                 disk_name = disk.get('disk_name')
-                disk_name = disk_name.replace('  Disk', ' Disk')
+                disk_name = ' '.join(disk_name.strip().split())
                 disk_model = {
                     'name': disk_name,
                     'storage_id': storage_id,
@@ -740,7 +740,7 @@ class ComponentHandler(object):
         disks = self.navi_handler.get_disks()
         for disk in (disks or []):
             disk_name = disk.get('disk_name')
-            disk_name = disk_name.replace('  Disk', ' Disk')
+            disk_name = ' '.join(disk_name.strip().split())
             resources_map[disk_name] = disk.get('disk_id')
             resources_type_map[disk_name] = constants.ResourceType.DISK
         return resources_map, resources_type_map
