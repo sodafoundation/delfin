@@ -13,6 +13,8 @@
 # limitations under the License.
 from delfin import exception
 from delfin.common import constants
+from delfin.common.constants import ControllerMetric, DiskMetric, PortMetric, \
+    VolumeMetric
 
 SOCKET_TIMEOUT = 30
 LOGIN_SOCKET_TIMEOUT = 10
@@ -155,103 +157,137 @@ INITIATOR_TYPE_MAP = {
 ALU_PAIRS_PATTERN = '^[0-9]+\\s+[0-9]+$'
 HBA_UID_PATTERN = "^\\s*HBA UID\\s+SP Name\\s+SPPort"
 
-IOPS_DESCRIPTION = {
-    "unit": "IOPS",
-    "description": "Input/output operations per second"
-}
-READ_IOPS_DESCRIPTION = {
-    "unit": "IOPS",
-    "description": "Read input/output operations per second"
-}
-WRITE_IOPS_DESCRIPTION = {
-    "unit": "IOPS",
-    "description": "Write input/output operations per second"
-}
-THROUGHPUT_DESCRIPTION = {
-    "unit": "MB/s",
-    "description": "Represents how much data is "
-                   "successfully transferred in MB/s"
-}
-READ_THROUGHPUT_DESCRIPTION = {
-    "unit": "MB/s",
-    "description": "Represents how much data read is "
-                   "successfully transferred in MB/s"
-}
-WRITE_THROUGHPUT_DESCRIPTION = {
-    "unit": "MB/s",
-    "description": "Represents how much data write is "
-                   "successfully transferred in MB/s"
-}
-RESPONSE_TIME_DESCRIPTION = {
-    "unit": "ms",
-    "description": "Average time taken for an IO "
-                   "operation in ms"
-}
-CACHE_HIT_RATIO_DESCRIPTION = {
-    "unit": "%",
-    "description": "Percentage of io that are cache hits"
-}
-READ_CACHE_HIT_RATIO_DESCRIPTION = {
-    "unit": "%",
-    "description": "Percentage of read ops that are cache hits"
-}
-WRITE_CACHE_HIT_RATIO_DESCRIPTION = {
-    "unit": "%",
-    "description": "Percentage of write ops that are cache hits"
-}
-IO_SIZE_DESCRIPTION = {
-    "unit": "KB",
-    "description": "The average size of IO requests in KB"
-}
-READ_IO_SIZE_DESCRIPTION = {
-    "unit": "KB",
-    "description": "The average size of read IO requests in KB"
-}
-WRITE_IO_SIZE_DESCRIPTION = {
-    "unit": "KB",
-    "description": "The average size of write IO requests in KB"
-}
 CONTROLLER_CAP = {
-    "iops": IOPS_DESCRIPTION,
-    "readIops": READ_IOPS_DESCRIPTION,
-    "writeIops": WRITE_IOPS_DESCRIPTION,
-    "throughput": THROUGHPUT_DESCRIPTION,
-    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-    "responseTime": RESPONSE_TIME_DESCRIPTION
+    ControllerMetric.IOPS.name: {
+        "unit": ControllerMetric.IOPS.unit,
+        "description": ControllerMetric.IOPS.description
+    },
+    ControllerMetric.READ_IOPS.name: {
+        "unit": ControllerMetric.READ_IOPS.unit,
+        "description": ControllerMetric.READ_IOPS.description
+    },
+    ControllerMetric.WRITE_IOPS.name: {
+        "unit": ControllerMetric.WRITE_IOPS.unit,
+        "description": ControllerMetric.WRITE_IOPS.description
+    },
+    ControllerMetric.THROUGHPUT.name: {
+        "unit": ControllerMetric.THROUGHPUT.unit,
+        "description": ControllerMetric.THROUGHPUT.description
+    },
+    ControllerMetric.READ_THROUGHPUT.name: {
+        "unit": ControllerMetric.READ_THROUGHPUT.unit,
+        "description": ControllerMetric.READ_THROUGHPUT.description
+    },
+    ControllerMetric.WRITE_THROUGHPUT.name: {
+        "unit": ControllerMetric.WRITE_THROUGHPUT.unit,
+        "description": ControllerMetric.WRITE_THROUGHPUT.description
+    },
+    ControllerMetric.RESPONSE_TIME.name: {
+        "unit": ControllerMetric.RESPONSE_TIME.unit,
+        "description": ControllerMetric.RESPONSE_TIME.description
+    }
 }
 VOLUME_CAP = {
-    "iops": IOPS_DESCRIPTION,
-    "readIops": READ_IOPS_DESCRIPTION,
-    "writeIops": WRITE_IOPS_DESCRIPTION,
-    "throughput": THROUGHPUT_DESCRIPTION,
-    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-    "responseTime": RESPONSE_TIME_DESCRIPTION,
-    "cacheHitRatio": CACHE_HIT_RATIO_DESCRIPTION,
-    "readCacheHitRatio": READ_CACHE_HIT_RATIO_DESCRIPTION,
-    "writeCacheHitRatio": WRITE_CACHE_HIT_RATIO_DESCRIPTION,
-    "ioSize": IO_SIZE_DESCRIPTION,
-    "readIoSize": READ_IO_SIZE_DESCRIPTION,
-    "writeIoSize": WRITE_IO_SIZE_DESCRIPTION
+    VolumeMetric.IOPS.name: {
+        "unit": VolumeMetric.IOPS.unit,
+        "description": VolumeMetric.IOPS.description
+    },
+    VolumeMetric.READ_IOPS.name: {
+        "unit": VolumeMetric.READ_IOPS.unit,
+        "description": VolumeMetric.READ_IOPS.description
+    },
+    VolumeMetric.WRITE_IOPS.name: {
+        "unit": VolumeMetric.WRITE_IOPS.unit,
+        "description": VolumeMetric.WRITE_IOPS.description
+    },
+    VolumeMetric.THROUGHPUT.name: {
+        "unit": VolumeMetric.THROUGHPUT.unit,
+        "description": VolumeMetric.THROUGHPUT.description
+    },
+    VolumeMetric.READ_THROUGHPUT.name: {
+        "unit": VolumeMetric.READ_THROUGHPUT.unit,
+        "description": VolumeMetric.READ_THROUGHPUT.description
+    },
+    VolumeMetric.WRITE_THROUGHPUT.name: {
+        "unit": VolumeMetric.WRITE_THROUGHPUT.unit,
+        "description": VolumeMetric.WRITE_THROUGHPUT.description
+    },
+    VolumeMetric.RESPONSE_TIME.name: {
+        "unit": VolumeMetric.RESPONSE_TIME.unit,
+        "description": VolumeMetric.RESPONSE_TIME.description
+    },
+    VolumeMetric.READ_CACHE_HIT_RATIO.name: {
+        "unit": VolumeMetric.READ_CACHE_HIT_RATIO.unit,
+        "description": VolumeMetric.READ_CACHE_HIT_RATIO.description
+    },
+    VolumeMetric.WRITE_CACHE_HIT_RATIO.name: {
+        "unit": VolumeMetric.WRITE_CACHE_HIT_RATIO.unit,
+        "description": VolumeMetric.WRITE_CACHE_HIT_RATIO.description
+    },
+    VolumeMetric.READ_IO_SIZE.name: {
+        "unit": VolumeMetric.READ_IO_SIZE.unit,
+        "description": VolumeMetric.READ_IO_SIZE.description
+    },
+    VolumeMetric.WRITE_IO_SIZE.name: {
+        "unit": VolumeMetric.WRITE_IO_SIZE.unit,
+        "description": VolumeMetric.WRITE_IO_SIZE.description
+    }
 }
 PORT_CAP = {
-    "iops": IOPS_DESCRIPTION,
-    "readIops": READ_IOPS_DESCRIPTION,
-    "writeIops": WRITE_IOPS_DESCRIPTION,
-    "throughput": THROUGHPUT_DESCRIPTION,
-    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-    "responseTime": RESPONSE_TIME_DESCRIPTION
+    PortMetric.IOPS.name: {
+        "unit": PortMetric.IOPS.unit,
+        "description": PortMetric.IOPS.description
+    },
+    PortMetric.READ_IOPS.name: {
+        "unit": PortMetric.READ_IOPS.unit,
+        "description": PortMetric.READ_IOPS.description
+    },
+    PortMetric.WRITE_IOPS.name: {
+        "unit": PortMetric.WRITE_IOPS.unit,
+        "description": PortMetric.WRITE_IOPS.description
+    },
+    PortMetric.THROUGHPUT.name: {
+        "unit": PortMetric.THROUGHPUT.unit,
+        "description": PortMetric.THROUGHPUT.description
+    },
+    PortMetric.READ_THROUGHPUT.name: {
+        "unit": PortMetric.READ_THROUGHPUT.unit,
+        "description": PortMetric.READ_THROUGHPUT.description
+    },
+    PortMetric.WRITE_THROUGHPUT.name: {
+        "unit": PortMetric.WRITE_THROUGHPUT.unit,
+        "description": PortMetric.WRITE_THROUGHPUT.description
+    }
 }
 DISK_CAP = {
-    "iops": IOPS_DESCRIPTION,
-    "readIops": READ_IOPS_DESCRIPTION,
-    "writeIops": WRITE_IOPS_DESCRIPTION,
-    "throughput": THROUGHPUT_DESCRIPTION,
-    "readThroughput": READ_THROUGHPUT_DESCRIPTION,
-    "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
-    "responseTime": RESPONSE_TIME_DESCRIPTION
+    DiskMetric.IOPS.name: {
+        "unit": DiskMetric.IOPS.unit,
+        "description": DiskMetric.IOPS.description
+    },
+    DiskMetric.READ_IOPS.name: {
+        "unit": DiskMetric.READ_IOPS.unit,
+        "description": DiskMetric.READ_IOPS.description
+    },
+    DiskMetric.WRITE_IOPS.name: {
+        "unit": DiskMetric.WRITE_IOPS.unit,
+        "description": DiskMetric.WRITE_IOPS.description
+    },
+    DiskMetric.THROUGHPUT.name: {
+        "unit": DiskMetric.THROUGHPUT.unit,
+        "description": DiskMetric.THROUGHPUT.description
+    },
+    DiskMetric.READ_THROUGHPUT.name: {
+        "unit": DiskMetric.READ_THROUGHPUT.unit,
+        "description": DiskMetric.READ_THROUGHPUT.description
+    },
+    DiskMetric.WRITE_THROUGHPUT.name: {
+        "unit": DiskMetric.WRITE_THROUGHPUT.unit,
+        "description": DiskMetric.WRITE_THROUGHPUT.description
+    },
+    DiskMetric.RESPONSE_TIME.name: {
+        "unit": DiskMetric.RESPONSE_TIME.unit,
+        "description": DiskMetric.RESPONSE_TIME.description
+    }
 }
 RESOURCES_TYPE_TO_METRIC_CAP = {
     constants.ResourceType.CONTROLLER: CONTROLLER_CAP,
@@ -261,43 +297,43 @@ RESOURCES_TYPE_TO_METRIC_CAP = {
 }
 METRIC_MAP = {
     constants.ResourceType.CONTROLLER: {
-        "iops": 16,
-        "readIops": 25,
-        "writeIops": 34,
-        "throughput": 13,
-        "readThroughput": 19,
-        "writeThroughput": 28,
-        "responseTime": 10
+        ControllerMetric.IOPS.name: 16,
+        ControllerMetric.READ_IOPS.name: 25,
+        ControllerMetric.WRITE_IOPS.name: 34,
+        ControllerMetric.THROUGHPUT.name: 13,
+        ControllerMetric.READ_THROUGHPUT.name: 19,
+        ControllerMetric.WRITE_THROUGHPUT.name: 28,
+        ControllerMetric.RESPONSE_TIME.name: 10
     },
     constants.ResourceType.PORT: {
-        "iops": 16,
-        "readIops": 25,
-        "writeIops": 34,
-        "throughput": 13,
-        "readThroughput": 19,
-        "writeThroughput": 28
+        PortMetric.IOPS.name: 16,
+        PortMetric.READ_IOPS.name: 25,
+        PortMetric.WRITE_IOPS.name: 34,
+        PortMetric.THROUGHPUT.name: 13,
+        PortMetric.READ_THROUGHPUT.name: 19,
+        PortMetric.WRITE_THROUGHPUT.name: 28
     },
     constants.ResourceType.DISK: {
-        "iops": 16,
-        "readIops": 25,
-        "writeIops": 34,
-        "throughput": 13,
-        "readThroughput": 19,
-        "writeThroughput": 28,
-        "responseTime": 10
+        DiskMetric.IOPS.name: 16,
+        DiskMetric.READ_IOPS.name: 25,
+        DiskMetric.WRITE_IOPS.name: 34,
+        DiskMetric.THROUGHPUT.name: 13,
+        DiskMetric.READ_THROUGHPUT.name: 19,
+        DiskMetric.WRITE_THROUGHPUT.name: 28,
+        DiskMetric.RESPONSE_TIME.name: 10
     },
     constants.ResourceType.VOLUME: {
-        "iops": 16,
-        "readIops": 25,
-        "writeIops": 34,
-        "throughput": 13,
-        "readThroughput": 19,
-        "writeThroughput": 28,
-        "responseTime": 10,
-        "readCacheHitRatio": 42,
-        "writeCacheHitRatio": 45,
-        "readIoSize": 22,
-        "writeIoSize": 31
+        VolumeMetric.IOPS.name: 16,
+        VolumeMetric.READ_IOPS.name: 25,
+        VolumeMetric.WRITE_IOPS.name: 34,
+        VolumeMetric.THROUGHPUT.name: 13,
+        VolumeMetric.READ_THROUGHPUT.name: 19,
+        VolumeMetric.WRITE_THROUGHPUT.name: 28,
+        VolumeMetric.RESPONSE_TIME.name: 10,
+        VolumeMetric.READ_CACHE_HIT_RATIO.name: 42,
+        VolumeMetric.WRITE_CACHE_HIT_RATIO.name: 45,
+        VolumeMetric.READ_IO_SIZE.name: 22,
+        VolumeMetric.WRITE_IO_SIZE.name: 31
     }
 }
 
