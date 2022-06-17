@@ -577,27 +577,27 @@ class ComponentHandler(object):
         metrics = []
         archive_file_list = []
         try:
-            LOG.warn("Start collection, storage:%s, start time:%s, end time:%s"
+            LOG.info("Start collection, storage:%s, start time:%s, end time:%s"
                      % (storage_id, start_time, end_time))
             archive_file_list = self._get__archive_file(start_time, end_time)
             LOG.info("Get archive files: {}".format(archive_file_list))
             if not archive_file_list:
-                LOG.warn("The required performance file was not found!")
+                LOG.warning("The required performance file was not found!")
                 return metrics
             resources_map, resources_type_map = self._get_resources_map(
                 resource_metrics)
             if not resources_map or not resources_type_map:
-                LOG.warn("Resource object not found!")
+                LOG.warning("Resource object not found!")
                 return metrics
             performance_lines_map = self._filter_performance_data(
                 archive_file_list, resources_map, start_time, end_time)
             if not performance_lines_map:
-                LOG.warn("The required performance data was not found!")
+                LOG.warning("The required performance data was not found!")
                 return metrics
             metrics = self.create_metrics(storage_id, resource_metrics,
                                           resources_map, resources_type_map,
                                           performance_lines_map)
-            LOG.warn("Collection complete, storage:%s, start time:%s, "
+            LOG.info("Collection complete, storage:%s, start time:%s, "
                      "end time:%s, length of metrics:%s "
                      % (storage_id, start_time, end_time, len(metrics)))
         except exception.DelfinException as err:
@@ -839,16 +839,16 @@ class ComponentHandler(object):
                 storage_id)
             if num > consts.EXEC_MAX_NUM:
                 latest_time = file_latest_time
-                LOG.warn("Storage:{}, Exit after {} executions.".format(
+                LOG.warning("Storage:{}, Exit after {} executions.".format(
                     storage_id, consts.EXEC_MAX_NUM))
                 break
             if latest_time <= 0:
                 wait_time = tools.timestamp_to_time_str(
                     time.time() * units.k,
                     consts.ARCHIVE_FILE_NAME_TIME_PATTERN)
-                LOG.warn("Storage:{} No new file found, "
-                         "wait for next execution:{}".format(storage_id,
-                                                             wait_time))
+                LOG.warning("Storage:{} No new file found, "
+                            "wait for next execution:{}".format(storage_id,
+                                                                wait_time))
                 time.sleep(consts.SLEEP_TIME_SECONDS)
         return latest_time
 
