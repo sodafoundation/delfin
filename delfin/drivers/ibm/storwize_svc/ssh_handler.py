@@ -826,12 +826,7 @@ class SSHHandler(object):
 
     @staticmethod
     def count_difference(now_value, last_value):
-        value = 0
-        if now_value >= last_value:
-            value = now_value - last_value
-        else:
-            value = now_value
-        return value
+        return now_value if now_value < last_value else now_value - last_value
 
     @staticmethod
     def handle_volume_cach_hit(now_data, last_data):
