@@ -46,3 +46,25 @@ class HpeMsaStorDriver(driver.StorageDriver):
 
     def clear_alert(self, context, alert):
         pass
+
+    def list_storage_host_initiators(self, context):
+        return self.ssh_handler.list_storage_host_initiators(self.storage_id)
+
+    def list_storage_hosts(self, context):
+        return self.ssh_handler.list_storage_hosts(self.storage_id)
+
+    def list_storage_host_groups(self, context):
+        return self.ssh_handler.list_storage_host_groups(self.storage_id)
+
+    def list_port_groups(self, context):
+        return self.ssh_handler.list_port_groups(self.storage_id)
+
+    def list_volume_groups(self, context):
+        return self.ssh_handler.list_volume_groups(self.storage_id)
+
+    def list_masking_views(self, context):
+        return self.ssh_handler.list_masking_views(self.storage_id)
+
+    @staticmethod
+    def get_access_url():
+        return 'https://{ip}'

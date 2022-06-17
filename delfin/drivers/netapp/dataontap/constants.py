@@ -67,6 +67,9 @@ PATTERN = re.compile('^[-]{3,}')
 FLOAT_PATTERN = r"\d\.\d"
 IP_PATTERN = re.compile(r'(([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])\.){3}'
                         r'([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])$')
+IQN_PATTERN = re.compile('^[i][q][n].')
+WWN_PATTERN = re.compile('^(([a-z|0-9]){2}:){7}(([a-z|0-9]){2})')
+INITIATOR_KEY = 'loggedin'
 CLUSTER_SHOW_COMMAND = "cluster identity show"
 VERSION_SHOW_COMMAND = "version"
 STORAGE_STATUS_COMMAND = "system health status show"
@@ -117,6 +120,17 @@ NODE_IP_COMMAND = "network interface show -fields address -role node-mgmt"
 
 CONTROLLER_IP_COMMAND = "network interface show -fields " \
                         "curr-node,address -role node-mgmt"
+
+HOST_COMMAND = "igroup show -instance"
+
+PORT_GROUP_COMMAND = "portset show -instance"
+LIF_COMMAND = "network interface show -instance"
+
+FC_INITIATOR_COMMAND = "fcp initiator show -instance"
+
+ISCSI_INITIATOR_COMMAND = "iscsi initiator show -instance"
+
+LUN_MAPPING_COMMAND = 'lun mapping show -instance'
 
 SECURITY_STYLE = {
     'mixed': constants.NASSecurityMode.MIXED,
@@ -639,4 +653,17 @@ FS_CAPABILITIES = {
     "writeThroughput": WRITE_THROUGHPUT_DESCRIPTION,
     "readIops": READ_IOPS_DESCRIPTION,
     "writeIops": WRITE_IOPS_DESCRIPTION,
+}
+
+HOST_OS_TYPE_MAP = {
+    'solaris': constants.HostOSTypes.SOLARIS,
+    'windows': constants.HostOSTypes.WINDOWS,
+    'hpux': constants.HostOSTypes.HP_UX,
+    'aix': constants.HostOSTypes.AIX,
+    'linux': constants.HostOSTypes.LINUX,
+    'netware': constants.HostOSTypes.UNKNOWN,
+    'vmware': constants.HostOSTypes.VMWARE_ESX,
+    'openvms': constants.HostOSTypes.OPEN_VMS,
+    'xen': constants.HostOSTypes.XEN_SERVER,
+    'hyper_v': constants.HostOSTypes.UNKNOWN
 }

@@ -23,6 +23,9 @@ from delfin import context
 from delfin import exception
 from delfin.api.common import wsgi as os_wsgi
 from delfin.common import config, constants  # noqa
+from delfin.common.constants import ResourceType, StorageMetric, \
+    StoragePoolMetric, VolumeMetric, ControllerMetric, PortMetric, \
+    DiskMetric, FileSystemMetric
 from delfin.db.sqlalchemy import models
 
 
@@ -155,7 +158,7 @@ def fake_access_info_get_all(context, marker=None, limit=None, sort_keys=None,
             'vendor': 'fake_storage',
             'rest': {
                 'host': '10.0.0.76',
-                'port': '1234',
+                'port': 1234,
                 'username': 'admin',
                 'password': b'YWJjZA=='
             },
@@ -467,294 +470,295 @@ def fake_getcmd_success(auth_data, transport_target, *var_names, **kwargs):
 def fake_get_capabilities(context, storage_id):
     return {'is_historic': False,
             'resource_metrics': {
-                "storage": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data is "
-                                       "successfully transferred in MB/s"
+                ResourceType.STORAGE: {
+                    StorageMetric.THROUGHPUT.name: {
+                        "unit": StorageMetric.THROUGHPUT.unit,
+                        "description": StorageMetric.THROUGHPUT.description
                     },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation in ms"
+                    StorageMetric.RESPONSE_TIME.name: {
+                        "unit": StorageMetric.RESPONSE_TIME.unit,
+                        "description": StorageMetric.RESPONSE_TIME.description
                     },
-                    "iops": {
-                        "unit": "IOPS",
-                        "description": "Input/output operations per second"
+                    StorageMetric.READ_RESPONSE_TIME.name: {
+                        "unit": StorageMetric.READ_RESPONSE_TIME.unit,
+                        "description":
+                            StorageMetric.READ_RESPONSE_TIME.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data read is "
-                                       "successfully transferred in MB/s"
+                    StorageMetric.WRITE_RESPONSE_TIME.name: {
+                        "unit": StorageMetric.WRITE_RESPONSE_TIME.unit,
+                        "description":
+                            StorageMetric.WRITE_RESPONSE_TIME.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Represents how much data write is "
-                                       "successfully transferred in MB/s"
+                    StorageMetric.IOPS.name: {
+                        "unit": StorageMetric.IOPS.unit,
+                        "description": StorageMetric.IOPS.description
                     },
-                    "readIops": {
-                        "unit": "IOPS",
-                        "description": "Read requests per second"
+                    StorageMetric.READ_THROUGHPUT.name: {
+                        "unit": StorageMetric.READ_THROUGHPUT.unit,
+                        "description":
+                            StorageMetric.READ_THROUGHPUT.description
                     },
-                    "writeIops": {
-                        "unit": "IOPS",
-                        "description": "Write requests per second"
+                    StorageMetric.WRITE_THROUGHPUT.name: {
+                        "unit": StorageMetric.WRITE_THROUGHPUT.unit,
+                        "description":
+                            StorageMetric.WRITE_THROUGHPUT.description
+                    },
+                    StorageMetric.READ_IOPS.name: {
+                        "unit": StorageMetric.READ_IOPS.unit,
+                        "description": StorageMetric.READ_IOPS.description
+                    },
+                    StorageMetric.WRITE_IOPS.name: {
+                        "unit": StorageMetric.WRITE_IOPS.unit,
+                        "description": StorageMetric.WRITE_IOPS.description
                     },
                 },
-                "storagePool": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Total data transferred per second "
+                ResourceType.STORAGE_POOL: {
+                    StoragePoolMetric.THROUGHPUT.name: {
+                        "unit": StoragePoolMetric.THROUGHPUT.unit,
+                        "description": StoragePoolMetric.THROUGHPUT.description
                     },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation"
+                    StoragePoolMetric.RESPONSE_TIME.name: {
+                        "unit": StoragePoolMetric.RESPONSE_TIME.unit,
+                        "description":
+                            StoragePoolMetric.RESPONSE_TIME.description
                     },
-                    "iops": {
-                        "unit": "IOPS",
-                        "description": "Read and write operations per second"
+                    StoragePoolMetric.IOPS.name: {
+                        "unit": StoragePoolMetric.IOPS.unit,
+                        "description": StoragePoolMetric.IOPS.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total read data transferred per"
-                                       " second"
+                    StoragePoolMetric.READ_THROUGHPUT.name: {
+                        "unit": StoragePoolMetric.READ_THROUGHPUT.unit,
+                        "description":
+                            StoragePoolMetric.READ_THROUGHPUT.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total write data transferred per"
-                                       " second "
+                    StoragePoolMetric.WRITE_THROUGHPUT.name: {
+                        "unit": StoragePoolMetric.WRITE_THROUGHPUT.unit,
+                        "description":
+                            StoragePoolMetric.WRITE_THROUGHPUT.description
                     },
-                    "readIops": {
-                        "unit": "IOPS",
-                        "description": "Read operations per second"
+                    StoragePoolMetric.READ_IOPS.name: {
+                        "unit": StoragePoolMetric.READ_IOPS.unit,
+                        "description": StoragePoolMetric.READ_IOPS.description
                     },
-                    "writeIops": {
-                        "unit": "IOPS",
-                        "description": "Write operations per second"
+                    StoragePoolMetric.WRITE_IOPS.name: {
+                        "unit": StoragePoolMetric.WRITE_IOPS.unit,
+                        "description": StoragePoolMetric.WRITE_IOPS.description
                     },
 
                 },
-                "volume": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Total data transferred per second "
+                ResourceType.VOLUME: {
+                    VolumeMetric.THROUGHPUT.name: {
+                        "unit": VolumeMetric.THROUGHPUT.unit,
+                        "description": VolumeMetric.THROUGHPUT.description
                     },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation"
+                    VolumeMetric.RESPONSE_TIME.name: {
+                        "unit": VolumeMetric.RESPONSE_TIME.unit,
+                        "description": VolumeMetric.RESPONSE_TIME.description
                     },
-                    "iops": {
-                        "unit": "IOPS",
-                        "description": "Read and write  operations per"
-                                       " second"
+                    VolumeMetric.READ_RESPONSE_TIME.name: {
+                        "unit": VolumeMetric.READ_RESPONSE_TIME.unit,
+                        "description":
+                            VolumeMetric.READ_RESPONSE_TIME.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total read data transferred per "
-                                       "second "
+                    VolumeMetric.WRITE_RESPONSE_TIME.name: {
+                        "unit": VolumeMetric.WRITE_RESPONSE_TIME.unit,
+                        "description":
+                            VolumeMetric.WRITE_RESPONSE_TIME.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total write data transferred per"
-                                       " second "
+                    VolumeMetric.IOPS.name: {
+                        "unit": VolumeMetric.IOPS.unit,
+                        "description": VolumeMetric.IOPS.description
                     },
-                    "readIops": {
-                        "unit": "IOPS",
-                        "description": "Read operations per second"
+                    VolumeMetric.READ_THROUGHPUT.name: {
+                        "unit": VolumeMetric.READ_THROUGHPUT.unit,
+                        "description": VolumeMetric.READ_THROUGHPUT.description
                     },
-                    "writeIops": {
-                        "unit": "IOPS",
-                        "description": "Write operations per second"
+                    VolumeMetric.WRITE_THROUGHPUT.name: {
+                        "unit": VolumeMetric.WRITE_THROUGHPUT.unit,
+                        "description":
+                            VolumeMetric.WRITE_THROUGHPUT.description
                     },
-                    "cacheHitRatio": {
-                        "unit": "%",
-                        "description": "Percentage of io that are cache "
-                                       "hits"
+                    VolumeMetric.READ_IOPS.name: {
+                        "unit": VolumeMetric.READ_IOPS.unit,
+                        "description": VolumeMetric.READ_IOPS.description
                     },
-                    "readCacheHitRatio": {
-                        "unit": "%",
-                        "description": "Percentage of read ops that are cache"
-                                       " hits"
+                    VolumeMetric.WRITE_IOPS.name: {
+                        "unit": VolumeMetric.WRITE_IOPS.unit,
+                        "description": VolumeMetric.WRITE_IOPS.description
                     },
-                    "writeCacheHitRatio": {
-                        "unit": "%",
-                        "description": "Percentage of write ops that are cache"
-                                       " hits"
+                    VolumeMetric.CACHE_HIT_RATIO.name: {
+                        "unit": VolumeMetric.CACHE_HIT_RATIO.unit,
+                        "description": VolumeMetric.CACHE_HIT_RATIO.description
                     },
-                    "ioSize": {
-                        "unit": "KB",
-                        "description": "The average size of IO requests in KB"
+                    VolumeMetric.READ_CACHE_HIT_RATIO.name: {
+                        "unit": VolumeMetric.READ_CACHE_HIT_RATIO.unit,
+                        "description":
+                            VolumeMetric.READ_CACHE_HIT_RATIO.description
                     },
-                    "readIoSize": {
-                        "unit": "KB",
-                        "description": "The average size of read IO requests "
-                                       "in KB."
+                    VolumeMetric.WRITE_CACHE_HIT_RATIO.name: {
+                        "unit": VolumeMetric.WRITE_CACHE_HIT_RATIO.unit,
+                        "description":
+                            VolumeMetric.WRITE_CACHE_HIT_RATIO.description
                     },
-                    "writeIoSize": {
-                        "unit": "KB",
-                        "description": "The average size of read IO requests"
-                                       " in KB."
+                    VolumeMetric.IO_SIZE.name: {
+                        "unit": VolumeMetric.IO_SIZE.unit,
+                        "description": VolumeMetric.IO_SIZE.description
+                    },
+                    VolumeMetric.READ_IO_SIZE.name: {
+                        "unit": VolumeMetric.READ_IO_SIZE.unit,
+                        "description": VolumeMetric.READ_IO_SIZE.description
+                    },
+                    VolumeMetric.WRITE_IO_SIZE.name: {
+                        "unit": VolumeMetric.WRITE_IO_SIZE.unit,
+                        "description": VolumeMetric.WRITE_IO_SIZE.description
                     },
                 },
-                "controller": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Total data transferred per second "
+                ResourceType.CONTROLLER: {
+                    ControllerMetric.THROUGHPUT.name: {
+                        "unit": ControllerMetric.THROUGHPUT.unit,
+                        "description": ControllerMetric.THROUGHPUT.description
                     },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation"
+                    ControllerMetric.RESPONSE_TIME.name: {
+                        "unit": ControllerMetric.RESPONSE_TIME.unit,
+                        "description":
+                            ControllerMetric.RESPONSE_TIME.description
                     },
-                    "iops": {
-                        "unit": "IOPS",
-                        "description": "Read and write  operations per "
-                                       "second"
+                    ControllerMetric.IOPS.name: {
+                        "unit": ControllerMetric.IOPS.unit,
+                        "description": ControllerMetric.IOPS.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total read data transferred per "
-                                       "second "
+                    ControllerMetric.READ_THROUGHPUT.name: {
+                        "unit": ControllerMetric.READ_THROUGHPUT.unit,
+                        "description":
+                            ControllerMetric.READ_THROUGHPUT.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total write data transferred per "
-                                       "second "
+                    ControllerMetric.WRITE_THROUGHPUT.name: {
+                        "unit": ControllerMetric.WRITE_THROUGHPUT.unit,
+                        "description":
+                            ControllerMetric.WRITE_THROUGHPUT.description
                     },
-                    "readIops": {
-                        "unit": "IOPS",
-                        "description": "Read operations per second"
+                    ControllerMetric.READ_IOPS.name: {
+                        "unit": ControllerMetric.READ_IOPS.unit,
+                        "description": ControllerMetric.READ_IOPS.description
                     },
-                    "writeIops": {
-                        "unit": "IOPS",
-                        "description": "Write operations per second"
+                    ControllerMetric.WRITE_IOPS.name: {
+                        "unit": ControllerMetric.WRITE_IOPS.unit,
+                        "description": ControllerMetric.WRITE_IOPS.description
                     },
 
                 },
-                "port": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Total data transferred per second "
+                ResourceType.PORT: {
+                    PortMetric.THROUGHPUT.name: {
+                        "unit": PortMetric.THROUGHPUT.unit,
+                        "description": PortMetric.THROUGHPUT.description
                     },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation"
+                    PortMetric.RESPONSE_TIME.name: {
+                        "unit": PortMetric.RESPONSE_TIME.unit,
+                        "description": PortMetric.RESPONSE_TIME.description
                     },
-                    "iops": {
-                        "unit": "IOPS",
-                        "description": "Read and write  operations per "
-                                       "second"
+                    PortMetric.IOPS.name: {
+                        "unit": PortMetric.IOPS.unit,
+                        "description": PortMetric.IOPS.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total read data transferred per "
-                                       "second "
+                    PortMetric.READ_THROUGHPUT.name: {
+                        "unit": PortMetric.READ_THROUGHPUT.unit,
+                        "description": PortMetric.READ_THROUGHPUT.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total write data transferred per "
-                                       "second "
+                    PortMetric.WRITE_THROUGHPUT.name: {
+                        "unit": PortMetric.WRITE_THROUGHPUT.unit,
+                        "description": PortMetric.WRITE_THROUGHPUT.description
                     },
-                    "readIops": {
-                        "unit": "IOPS",
-                        "description": "Read operations per second"
+                    PortMetric.READ_IOPS.name: {
+                        "unit": PortMetric.READ_IOPS.unit,
+                        "description": PortMetric.READ_IOPS.description
                     },
-                    "writeIops": {
-                        "unit": "IOPS",
-                        "description": "Write operations per second"
+                    PortMetric.WRITE_IOPS.name: {
+                        "unit": PortMetric.WRITE_IOPS.unit,
+                        "description": PortMetric.WRITE_IOPS.description
                     },
 
                 },
-                "disk": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Total data transferred per second "
+                ResourceType.DISK: {
+                    DiskMetric.THROUGHPUT.name: {
+                        "unit": DiskMetric.THROUGHPUT.unit,
+                        "description": DiskMetric.THROUGHPUT.description
                     },
-                    "responseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for an IO "
-                                       "operation"
+                    DiskMetric.RESPONSE_TIME.name: {
+                        "unit": DiskMetric.RESPONSE_TIME.unit,
+                        "description": DiskMetric.RESPONSE_TIME.description
                     },
-                    "iops": {
-                        "unit": "IOPS",
-                        "description": "Read and write  operations per"
-                                       " second"
+                    DiskMetric.IOPS.name: {
+                        "unit": DiskMetric.IOPS.unit,
+                        "description": DiskMetric.IOPS.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total read data transferred per"
-                                       " second "
+                    DiskMetric.READ_THROUGHPUT.name: {
+                        "unit": DiskMetric.READ_THROUGHPUT.unit,
+                        "description": DiskMetric.READ_THROUGHPUT.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total write data transferred per"
-                                       " second "
+                    DiskMetric.WRITE_THROUGHPUT.name: {
+                        "unit": DiskMetric.WRITE_THROUGHPUT.unit,
+                        "description": DiskMetric.WRITE_THROUGHPUT.description
                     },
-                    "readIops": {
-                        "unit": "IOPS",
-                        "description": "Read operations per second"
+                    DiskMetric.READ_IOPS.name: {
+                        "unit": DiskMetric.READ_IOPS.unit,
+                        "description": DiskMetric.READ_IOPS.description
                     },
-                    "writeIops": {
-                        "unit": "IOPS",
-                        "description": "Write operations per second"
+                    DiskMetric.WRITE_IOPS.name: {
+                        "unit": DiskMetric.WRITE_IOPS.unit,
+                        "description": DiskMetric.WRITE_IOPS.description
                     },
 
                 },
-                "filesystem": {
-                    "throughput": {
-                        "unit": "MB/s",
-                        "description": "Total data transferred per second "
+                ResourceType.FILESYSTEM: {
+                    FileSystemMetric.THROUGHPUT.name: {
+                        "unit": FileSystemMetric.THROUGHPUT.unit,
+                        "description": FileSystemMetric.THROUGHPUT.description
                     },
-                    "readResponseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for a read"
-                                       "operation"
+                    FileSystemMetric.READ_RESPONSE_TIME.name: {
+                        "unit": FileSystemMetric.READ_RESPONSE_TIME.unit,
+                        "description":
+                            FileSystemMetric.READ_RESPONSE_TIME.description
                     },
-                    "writeResponseTime": {
-                        "unit": "ms",
-                        "description": "Average time taken for a write "
-                                       "operation"
+                    FileSystemMetric.WRITE_RESPONSE_TIME.name: {
+                        "unit": FileSystemMetric.WRITE_RESPONSE_TIME.unit,
+                        "description":
+                            FileSystemMetric.WRITE_RESPONSE_TIME.description
                     },
-                    "iops": {
-                        "unit": "IOPS",
-                        "description": "Read and write  operations per"
-                                       " second"
+                    FileSystemMetric.IOPS.name: {
+                        "unit": FileSystemMetric.IOPS.unit,
+                        "description": FileSystemMetric.IOPS.description
                     },
-                    "readThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total read data transferred per "
-                                       "second "
+                    FileSystemMetric.READ_THROUGHPUT.name: {
+                        "unit": FileSystemMetric.READ_THROUGHPUT.unit,
+                        "description":
+                            FileSystemMetric.READ_THROUGHPUT.description
                     },
-                    "writeThroughput": {
-                        "unit": "MB/s",
-                        "description": "Total write data transferred per"
-                                       " second "
+                    FileSystemMetric.WRITE_THROUGHPUT.name: {
+                        "unit": FileSystemMetric.WRITE_THROUGHPUT.unit,
+                        "description":
+                            FileSystemMetric.WRITE_THROUGHPUT.description
                     },
-                    "readIops": {
-                        "unit": "IOPS",
-                        "description": "Read operations per second"
+                    FileSystemMetric.READ_IOPS.name: {
+                        "unit": FileSystemMetric.READ_IOPS.unit,
+                        "description": FileSystemMetric.READ_IOPS.description
                     },
-                    "writeIops": {
-                        "unit": "IOPS",
-                        "description": "Write operations per second"
+                    FileSystemMetric.WRITE_IOPS.name: {
+                        "unit": FileSystemMetric.WRITE_IOPS.unit,
+                        "description": FileSystemMetric.WRITE_IOPS.description
                     },
-                    "ioSize": {
-                        "unit": "KB",
-                        "description": "The average size of IO requests "
-                                       "in KB."
+                    FileSystemMetric.IO_SIZE.name: {
+                        "unit": FileSystemMetric.IO_SIZE.unit,
+                        "description": FileSystemMetric.IO_SIZE.description
                     },
-                    "readIoSize": {
-                        "unit": "KB",
-                        "description": "The average size of read IO requests "
-                                       "in KB."
+                    FileSystemMetric.READ_IO_SIZE.name: {
+                        "unit": FileSystemMetric.READ_IO_SIZE.unit,
+                        "description":
+                            FileSystemMetric.READ_IO_SIZE.description
                     },
-                    "writeIoSize": {
-                        "unit": "KB",
-                        "description": "The average size of write IO requests"
-                                       " in KB."
+                    FileSystemMetric.WRITE_IO_SIZE.name: {
+                        "unit": FileSystemMetric.WRITE_IO_SIZE.unit,
+                        "description":
+                            FileSystemMetric.WRITE_IO_SIZE.description
                     },
                 },
 

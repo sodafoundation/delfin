@@ -147,3 +147,13 @@ class RestHandler(RestClient):
         url = '%s/engines/*/directors/*/hardware/ports/*' % consts.BASE_CONTEXT
         response = self.get_rest_info(url)
         return response
+
+    def get_initiators_resp(self):
+        url = '%s/clusters/*/exports/initiator-ports/*' % consts.BASE_CONTEXT
+        response = self.get_rest_info(url)
+        return response
+
+    def get_storage_views(self):
+        url = '%s/clusters/*/exports/storage-views/*' % consts.BASE_CONTEXT
+        response = self.get_rest_info(url)
+        return response

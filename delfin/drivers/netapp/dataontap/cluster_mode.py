@@ -91,3 +91,16 @@ class NetAppCmodeDriver(driver.StorageDriver):
 
     def get_latest_perf_timestamp(self, context):
         return self.netapp_handler.get_latest_perf_timestamp()
+
+    def list_storage_host_initiators(self, context):
+        return self.netapp_handler.\
+            list_storage_host_initiators(self.storage_id)
+
+    def list_port_groups(self, context):
+        return self.netapp_handler.list_port_groups(self.storage_id)
+
+    def list_masking_views(self, context):
+        return self.netapp_handler.list_masking_views(self.storage_id)
+
+    def list_storage_hosts(self, context):
+        return self.netapp_handler.list_storage_hosts(self.storage_id)

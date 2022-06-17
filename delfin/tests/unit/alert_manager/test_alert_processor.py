@@ -88,7 +88,7 @@ class AlertProcessorTestCase(unittest.TestCase):
 
         # Verify that model returned by driver is exported
         mock_export_model.assert_called_once_with(expected_ctxt,
-                                                  expected_alert_model)
+                                                  [expected_alert_model])
 
     @mock.patch('delfin.db.storage_get')
     @mock.patch('delfin.drivers.api.API.parse_alert',

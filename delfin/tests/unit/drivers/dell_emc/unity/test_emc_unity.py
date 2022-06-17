@@ -1323,6 +1323,1213 @@ quota_result = [
         'user_group_name': '22222'
     }
 ]
+GET_ETH_PORT_READ_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_eth0": "10000",
+                        "spa_eth1": "20000",
+                        "spa_eth2": "30000",
+                        "spa_eth3": "40000"
+                    },
+                    "spb": {
+                        "spa_eth0": "10000",
+                        "spa_eth1": "20000",
+                        "spa_eth2": "30000",
+                        "spa_eth3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_eth0": "40000",
+                        "spa_eth1": "30000",
+                        "spa_eth2": "20000",
+                        "spa_eth3": "10000"
+                    },
+                    "spb": {
+                        "spa_eth0": "40000",
+                        "spa_eth1": "30000",
+                        "spa_eth2": "20000",
+                        "spa_eth3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_ETH_PORT_READ_THR_PERF_NULL = {
+    "entries": []
+}
+GET_ETH_PORT_WRITE_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_eth0": "90000",
+                        "spa_eth1": "80000",
+                        "spa_eth2": "70000",
+                        "spa_eth3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_eth0": "60000",
+                        "spa_eth1": "70000",
+                        "spa_eth2": "80000",
+                        "spa_eth3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_ETH_PORT_WRITE_THR_PERF_NULL = {
+    "entries": []
+}
+GET_FC_PORT_READ_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_fc0": "10000",
+                        "spa_fc1": "20000",
+                        "spa_fc2": "30000",
+                        "spa_fc3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_fc0": "40000",
+                        "spa_fc1": "30000",
+                        "spa_fc2": "20000",
+                        "spa_fc3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FC_PORT_READ_THR_PERF_NULL = {
+    "entries": []
+}
+GET_FC_PORT_WRITE_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_fc0": "90000",
+                        "spa_fc1": "80000",
+                        "spa_fc2": "70000",
+                        "spa_fc3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_fc0": "60000",
+                        "spa_fc1": "70000",
+                        "spa_fc2": "80000",
+                        "spa_fc3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FC_PORT_WRITE_THR_PERF_NULL = {
+    "entries": []
+}
+GET_FC_PORT_READ_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_fc0": "10000",
+                        "spa_fc1": "20000",
+                        "spa_fc2": "30000",
+                        "spa_fc3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_fc0": "40000",
+                        "spa_fc1": "30000",
+                        "spa_fc2": "20000",
+                        "spa_fc3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FC_PORT_READ_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_FC_PORT_WRITE_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "spa_fc0": "90000",
+                        "spa_fc1": "80000",
+                        "spa_fc2": "70000",
+                        "spa_fc3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "spa_fc0": "60000",
+                        "spa_fc1": "70000",
+                        "spa_fc2": "80000",
+                        "spa_fc3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FC_PORT_WRITE_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_VOLUME_READ_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "volume0": "10000",
+                        "volume1": "20000",
+                        "volume2": "30000",
+                        "volume3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "volume0": "40000",
+                        "volume1": "30000",
+                        "volume2": "20000",
+                        "volume3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_VOLUME_READ_THR_PERF_NULL = {
+    "entries": []
+}
+GET_VOLUME_WRITE_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "volume0": "90000",
+                        "volume1": "80000",
+                        "volume2": "70000",
+                        "volume3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "volume0": "60000",
+                        "volume1": "70000",
+                        "volume2": "80000",
+                        "volume3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_VOLUME_WRITE_THR_PERF_NULL = {
+    "entries": []
+}
+GET_VOLUME_READ_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "volume0": "10000",
+                        "volume1": "20000",
+                        "volume2": "30000",
+                        "volume3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "volume0": "40000",
+                        "volume1": "30000",
+                        "volume2": "20000",
+                        "volume3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_VOLUME_READ_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_VOLUME_WRITE_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "volume0": "90000",
+                        "volume1": "80000",
+                        "volume2": "70000",
+                        "volume3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "volume0": "60000",
+                        "volume1": "70000",
+                        "volume2": "80000",
+                        "volume3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_VOLUME_WRITE_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_VOLUME_READ_IO_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "volume0": "10000",
+                        "volume1": "20000",
+                        "volume2": "30000",
+                        "volume3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "volume0": "40000",
+                        "volume1": "30000",
+                        "volume2": "20000",
+                        "volume3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_VOLUME_READ_IO_PERF_NULL = {
+    "entries": []
+}
+GET_VOLUME_WRITE_IO_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "volume0": "90000",
+                        "volume1": "80000",
+                        "volume2": "70000",
+                        "volume3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "volume0": "60000",
+                        "volume1": "70000",
+                        "volume2": "80000",
+                        "volume3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_VOLUME_WRITE_IO_PERF_NULL = {
+    "entries": []
+}
+GET_VOLUME_RESPONSE_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "volume0": "90000",
+                        "volume1": "80000",
+                        "volume2": "70000",
+                        "volume3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "volume0": "60000",
+                        "volume1": "70000",
+                        "volume2": "80000",
+                        "volume3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_VOLUME_RESPONSE_PERF_NULL = {
+    "entries": []
+}
+GET_DISK_READ_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "DISK0": "10000",
+                        "DISK1": "20000",
+                        "DISK2": "30000",
+                        "DISK3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "DISK0": "40000",
+                        "DISK1": "30000",
+                        "DISK2": "20000",
+                        "DISK3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_DISK_READ_THR_PERF_NULL = {
+    "entries": []
+}
+GET_DISK_WRITE_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "DISK0": "90000",
+                        "DISK1": "80000",
+                        "DISK2": "70000",
+                        "DISK3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "DISK0": "60000",
+                        "DISK1": "70000",
+                        "DISK2": "80000",
+                        "DISK3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_DISK_WRITE_THR_PERF_NULL = {
+    "entries": []
+}
+GET_DISK_READ_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "DISK0": "10000",
+                        "DISK1": "20000",
+                        "DISK2": "30000",
+                        "DISK3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "DISK0": "40000",
+                        "DISK1": "30000",
+                        "DISK2": "20000",
+                        "DISK3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_DISK_READ_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_DISK_WRITE_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "DISK0": "90000",
+                        "DISK1": "80000",
+                        "DISK2": "70000",
+                        "DISK3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "DISK0": "60000",
+                        "DISK1": "70000",
+                        "DISK2": "80000",
+                        "DISK3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_DISK_WRITE_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_DISK_RESPONSE_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "DISK0": "90000",
+                        "DISK1": "80000",
+                        "DISK2": "70000",
+                        "DISK3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "DISK0": "60000",
+                        "DISK1": "70000",
+                        "DISK2": "80000",
+                        "DISK3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_DISK_RESPONSE_PERF_NULL = {
+    "entries": []
+}
+GET_FILE_READ_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "FILE0": "10000",
+                        "FILE1": "20000",
+                        "FILE2": "30000",
+                        "FILE3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "FILE0": "40000",
+                        "FILE1": "30000",
+                        "FILE2": "20000",
+                        "FILE3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FILE_READ_THR_PERF_NULL = {
+    "entries": []
+}
+GET_FILE_WRITE_THR_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "FILE0": "90000",
+                        "FILE1": "80000",
+                        "FILE2": "70000",
+                        "FILE3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "FILE0": "60000",
+                        "FILE1": "70000",
+                        "FILE2": "80000",
+                        "FILE3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FILE_WRITE_THR_PERF_NULL = {
+    "entries": []
+}
+GET_FILE_READ_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "FILE0": "10000",
+                        "FILE1": "20000",
+                        "FILE2": "30000",
+                        "FILE3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "FILE0": "40000",
+                        "FILE1": "30000",
+                        "FILE2": "20000",
+                        "FILE3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FILE_READ_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_FILE_WRITE_IOPS_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "FILE0": "90000",
+                        "FILE1": "80000",
+                        "FILE2": "70000",
+                        "FILE3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "FILE0": "60000",
+                        "FILE1": "70000",
+                        "FILE2": "80000",
+                        "FILE3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FILE_WRITE_IOPS_PERF_NULL = {
+    "entries": []
+}
+GET_FILE_READ_IO_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "FILE0": "10000",
+                        "FILE1": "20000",
+                        "FILE2": "30000",
+                        "FILE3": "40000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "FILE0": "40000",
+                        "FILE1": "30000",
+                        "FILE2": "20000",
+                        "FILE3": "10000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FILE_READ_IO_PERF_NULL = {
+    "entries": []
+}
+GET_FILE_WRITE_IO_PERF = {
+    "entries": [
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:47:10.000Z",
+                "values": {
+                    "spa": {
+                        "FILE0": "90000",
+                        "FILE1": "80000",
+                        "FILE2": "70000",
+                        "FILE3": "60000"
+                    }
+                }
+            }
+        },
+        {
+            "content": {
+                "queryId": 46,
+                "path": "sp.*.net.device.*.bytesOut",
+                "timestamp": "2021-07-08T06:46:10.000Z",
+                "values": {
+                    "spb": {
+                        "FILE0": "60000",
+                        "FILE1": "70000",
+                        "FILE2": "80000",
+                        "FILE3": "90000"
+                    }
+                }
+            }
+        }
+    ]
+}
+GET_FILE_WRITE_IO_PERF_NULL = {
+    "entries": []
+}
+resource_metrics = {
+    'volume': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime',
+        'ioSize', 'readIoSize', 'writeIoSize',
+    ],
+    'port': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput'
+    ],
+    'disk': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'responseTime'
+    ],
+    'filesystem': [
+        'iops', 'readIops', 'writeIops',
+        'throughput', 'readThroughput', 'writeThroughput',
+        'readIoSize', 'writeIoSize'
+    ]
+}
+GET_ALL_INIT = {
+    "entries": [
+        {
+            "content": {
+                "id": "init1",
+                "type": 1,
+                "initiatorId": "fs1",
+                "path": "/",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "init14",
+                "type": 1,
+                "initiatorId": "boga",
+                "path": "/",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_16"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "init11",
+                "type": 2,
+                "initiatorId": "fs2",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "host_20"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_INIT_NULL = {
+    "entries": [
+    ]
+}
+INIT_RESULT = [
+    {
+        'name': 'fs1',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': 'init1',
+        'wwn': 'fs1',
+        'status': 'online',
+        'type': 'fc',
+        'native_storage_host_id': 'fs_1'
+    }, {
+        'name': 'boga',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': 'init14',
+        'wwn': 'boga',
+        'status': 'online',
+        'type': 'fc',
+        'native_storage_host_id': 'fs_16'
+    }, {
+        'name': 'fs2',
+        'storage_id': '12345',
+        'native_storage_host_initiator_id': 'init11',
+        'wwn': 'fs2',
+        'status': 'online',
+        'type': 'iscsi',
+        'native_storage_host_id': 'host_20'
+    }
+]
+GET_ALL_HOST = {
+    "entries": [
+        {
+            "content": {
+                "id": "host1",
+                "type": 1,
+                "name": "fs1",
+                "description": "test",
+                "osType": "AIX",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "host2",
+                "type": 1,
+                "name": "boga",
+                "description": "test",
+                "osType": "Citrix XenServer",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "fs_16"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "host3",
+                "type": 2,
+                "name": "fs2",
+                "description": "test",
+                "osType": "VMware ESXi 6.5",
+                "health": {
+                    "value": 5,
+                    "descriptionIds": [
+                        "ALRT_COMPONENT_OK"
+                    ],
+                    "descriptions": [
+                        "The component is operating normally."
+                    ]
+                },
+                "parentHost": {
+                    "id": "host_20"
+                }
+            }
+        }
+    ]
+}
+GET_ALL_HOST_NULL = {
+    "entries": [
+    ]
+}
+GET_HOST_IP = {
+    "entries": [
+        {
+            "content": {
+                "id": "ip1",
+                "address": "1.1.1.1",
+                "host": {
+                    "id": "host1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "ip1",
+                "address": "1.1.1.2",
+                "host": {
+                    "id": "host2"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "ip1",
+                "address": "1.1.1.1",
+                "host": {
+                    "id": "host3"
+                }
+            }
+        }
+    ]
+}
+HOST_RESULT = [
+    {
+        'name': 'fs1',
+        'description': 'test',
+        'storage_id': '12345',
+        'native_storage_host_id': 'host1',
+        'os_type': 'AIX',
+        'status': 'normal',
+        'ip_address': '1.1.1.1'
+    }, {
+        'name': 'boga',
+        'description': 'test',
+        'storage_id': '12345',
+        'native_storage_host_id': 'host2',
+        'os_type': 'XenServer',
+        'status': 'normal',
+        'ip_address': '1.1.1.2'
+    }, {
+        'name': 'fs2',
+        'description': 'test',
+        'storage_id': '12345',
+        'native_storage_host_id': 'host3',
+        'os_type': 'VMware ESX',
+        'status': 'normal',
+        'ip_address': '1.1.1.1'
+    }
+]
+GET_HOST_LUN = {
+    "entries": [
+        {
+            "content": {
+                "id": "1",
+                "lun": {
+                    "id": "lun1"
+                },
+                "host": {
+                    "id": "host1"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "2",
+                "lun": {
+                    "id": "lun2"
+                },
+                "host": {
+                    "id": "host2"
+                }
+            }
+        },
+        {
+            "content": {
+                "id": "3",
+                "lun": {
+                    "id": "lun3"
+                },
+                "host": {
+                    "id": "host3"
+                }
+            }
+        }
+    ]
+}
+GET_HOST_LUN_NULL = {
+    "entries": [
+    ]
+}
+VIEW_RESULT = [
+    {
+        'name': '1',
+        'native_storage_host_id': 'host1',
+        'storage_id': '12345',
+        'native_volume_id': 'lun1',
+        'native_masking_view_id': '1'
+    }, {
+        'name': '2',
+        'native_storage_host_id': 'host2',
+        'storage_id': '12345',
+        'native_volume_id': 'lun2',
+        'native_masking_view_id': '2'
+    }, {
+        'name': '3',
+        'native_storage_host_id': 'host3',
+        'storage_id': '12345',
+        'native_volume_id': 'lun3',
+        'native_masking_view_id': '3'
+    }
+]
 
 
 class TestUNITYStorDriver(TestCase):
@@ -1472,3 +2679,98 @@ class TestUNITYStorDriver(TestCase):
         mock_qtree.return_value = GET_ALL_QTREE
         quota = UnityStorDriver(**ACCESS_INFO).list_quotas(context)
         self.assertEqual(quota, quota_result)
+
+    @mock.patch.object(RestHandler, 'get_history_metrics')
+    def test_collect_perf_metrics(self, mock_history):
+        RestHandler.login = mock.Mock(return_value=None)
+        start_time = 1625726770000
+        end_time = 1625726830000
+        storage_id = '12345'
+        mock_history.side_effect = [GET_VOLUME_READ_THR_PERF,
+                                    GET_VOLUME_READ_THR_PERF_NULL,
+                                    GET_VOLUME_WRITE_THR_PERF,
+                                    GET_VOLUME_WRITE_THR_PERF_NULL,
+                                    GET_VOLUME_READ_IOPS_PERF,
+                                    GET_VOLUME_READ_IOPS_PERF_NULL,
+                                    GET_VOLUME_WRITE_IOPS_PERF,
+                                    GET_VOLUME_WRITE_IOPS_PERF_NULL,
+                                    GET_VOLUME_READ_IO_PERF,
+                                    GET_VOLUME_READ_IO_PERF_NULL,
+                                    GET_VOLUME_WRITE_IO_PERF,
+                                    GET_VOLUME_WRITE_IO_PERF_NULL,
+                                    GET_VOLUME_RESPONSE_PERF,
+                                    GET_VOLUME_RESPONSE_PERF_NULL,
+                                    GET_DISK_READ_THR_PERF,
+                                    GET_DISK_READ_THR_PERF_NULL,
+                                    GET_DISK_WRITE_THR_PERF,
+                                    GET_DISK_WRITE_THR_PERF_NULL,
+                                    GET_DISK_READ_IOPS_PERF,
+                                    GET_DISK_READ_IOPS_PERF_NULL,
+                                    GET_DISK_WRITE_IOPS_PERF,
+                                    GET_DISK_WRITE_IOPS_PERF_NULL,
+                                    GET_DISK_RESPONSE_PERF,
+                                    GET_DISK_RESPONSE_PERF_NULL,
+                                    GET_ETH_PORT_READ_THR_PERF,
+                                    GET_ETH_PORT_READ_THR_PERF_NULL,
+                                    GET_ETH_PORT_WRITE_THR_PERF,
+                                    GET_ETH_PORT_WRITE_THR_PERF_NULL,
+                                    GET_FC_PORT_READ_THR_PERF,
+                                    GET_ETH_PORT_READ_THR_PERF,
+                                    GET_ETH_PORT_READ_THR_PERF_NULL,
+                                    GET_ETH_PORT_WRITE_THR_PERF,
+                                    GET_ETH_PORT_WRITE_THR_PERF_NULL,
+                                    GET_FC_PORT_READ_THR_PERF,
+                                    GET_FC_PORT_READ_THR_PERF_NULL,
+                                    GET_FC_PORT_WRITE_THR_PERF,
+                                    GET_FC_PORT_WRITE_THR_PERF_NULL,
+                                    GET_FC_PORT_READ_IOPS_PERF,
+                                    GET_FC_PORT_READ_IOPS_PERF_NULL,
+                                    GET_FC_PORT_WRITE_IOPS_PERF,
+                                    GET_FC_PORT_WRITE_IOPS_PERF_NULL,
+                                    GET_FILE_READ_THR_PERF,
+                                    GET_FILE_READ_THR_PERF_NULL,
+                                    GET_FILE_WRITE_THR_PERF,
+                                    GET_FILE_WRITE_THR_PERF_NULL,
+                                    GET_FILE_READ_IOPS_PERF,
+                                    GET_FILE_READ_IOPS_PERF_NULL,
+                                    GET_FILE_WRITE_IOPS_PERF,
+                                    GET_FILE_WRITE_IOPS_PERF_NULL,
+                                    GET_FILE_READ_IO_PERF,
+                                    GET_FILE_READ_IO_PERF_NULL,
+                                    GET_FILE_WRITE_IO_PERF,
+                                    GET_FILE_WRITE_IO_PERF_NULL]
+        metrics = UnityStorDriver(**ACCESS_INFO).collect_perf_metrics(
+            context, storage_id, resource_metrics, start_time, end_time)
+        self.assertEqual(metrics[0][1]['resource_id'], 'volume0')
+
+    @mock.patch.object(RestHandler, 'get_history_metrics')
+    def test_latest_perf_timestamp(self, mock_history):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_history.return_value = GET_VOLUME_READ_THR_PERF
+        last_time = UnityStorDriver(**ACCESS_INFO).get_latest_perf_timestamp(
+            context)
+        self.assertEqual(last_time, 1625726830000)
+
+    @mock.patch.object(RestHandler, 'get_host_initiators')
+    def test_host_initiators(self, mock_init):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_init.side_effect = [GET_ALL_INIT, GET_ALL_INIT_NULL]
+        initiators = UnityStorDriver(
+            **ACCESS_INFO).list_storage_host_initiators(context)
+        self.assertEqual(initiators, INIT_RESULT)
+
+    @mock.patch.object(RestHandler, 'get_all_hosts')
+    @mock.patch.object(RestHandler, 'get_host_ip')
+    def test_hosts(self, mock_ip, mock_host):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_host.side_effect = [GET_ALL_HOST, GET_ALL_HOST_NULL]
+        mock_ip.return_value = GET_HOST_IP
+        hosts = UnityStorDriver(**ACCESS_INFO).list_storage_hosts(context)
+        self.assertEqual(hosts, HOST_RESULT)
+
+    @mock.patch.object(RestHandler, 'get_host_lun')
+    def test_masking_views(self, mock_view):
+        RestHandler.login = mock.Mock(return_value=None)
+        mock_view.side_effect = [GET_HOST_LUN, GET_HOST_LUN_NULL]
+        views = UnityStorDriver(**ACCESS_INFO).list_masking_views(context)
+        self.assertEqual(views, VIEW_RESULT)
