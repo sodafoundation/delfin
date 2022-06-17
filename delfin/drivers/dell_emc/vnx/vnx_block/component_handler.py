@@ -16,7 +16,6 @@ import csv
 import os
 import re
 import time
-from io import StringIO
 
 import six
 from oslo_log import log
@@ -578,10 +577,8 @@ class ComponentHandler(object):
         metrics = []
         archive_file_list = []
         try:
-            if (end_time - start_time) < consts.EXEC_TIME_INTERVAL:
-                LOG.warn("not exe collert, end_time-start_time={}".format(
-                    (end_time - start_time)))
-                return metrics
+            LOG.warn("Start collection, storage:%s, start time:%s, end time:%s"
+                     % (storage_id, start_time, end_time))
             archive_file_list = self._get__archive_file(start_time, end_time)
             LOG.info("Get archive files: {}".format(archive_file_list))
             if not archive_file_list:
@@ -600,6 +597,9 @@ class ComponentHandler(object):
             metrics = self.create_metrics(storage_id, resource_metrics,
                                           resources_map, resources_type_map,
                                           performance_lines_map)
+            LOG.warn("Collection complete, storage:%s, start time:%s, "
+                     "end time:%s, length of metrics:%s "
+                     % (storage_id, start_time, end_time, len(metrics)))
         except exception.DelfinException as err:
             err_msg = "Failed to collect metrics from VnxBlockStor: %s" % \
                       (six.text_type(err))
@@ -617,25 +617,24 @@ class ComponentHandler(object):
     def create_metrics(self, storage_id, resource_metrics, resources_map,
                        resources_type_map, performance_lines_map):
         metrics = []
-        for resource_obj in resources_type_map.keys():
+        for resource_obj, resource_type in resources_type_map.items():
             if not resources_map.get(resource_obj) \
-                    or not resources_type_map.get(resource_obj):
+                    or not resource_type:
                 continue
-            resources_type = resources_type_map.get(resource_obj)
+            if not performance_lines_map.get(resource_obj):
+                continue
             labels = {
                 'storage_id': storage_id,
-                'resource_type': resources_type,
+                'resource_type': resource_type,
                 'resource_id': resources_map.get(resource_obj),
                 'type': 'RAW',
                 'unit': ''
             }
-            if not performance_lines_map.get(resource_obj):
-                continue
             metric_model_list = self._get_metric_model(
-                resource_metrics.get(resources_type), labels,
+                resource_metrics.get(resource_type), labels,
                 performance_lines_map.get(resource_obj),
-                consts.RESOURCES_TYPE_TO_METRIC_CAP.get(
-                    resources_type), resources_type)
+                consts.RESOURCES_TYPE_TO_METRIC_CAP.get(resource_type),
+                resource_type)
             if metric_model_list:
                 metrics.extend(metric_model_list)
         return metrics
@@ -656,18 +655,15 @@ class ComponentHandler(object):
     def _get_metric_model(self, metric_list, labels, metric_values, obj_cap,
                           resources_type):
         metric_model_list = []
-        if not metric_values:
-            return metric_model_list
         tools = Tools()
         for metric_name in (metric_list or []):
             values = {}
-            obj_labels = copy.deepcopy(labels)
+            obj_labels = copy.copy(labels)
             obj_labels['unit'] = obj_cap.get(metric_name).get('unit')
             for metric_value in metric_values:
                 metric_value_infos = metric_value
-                if not consts.METRIC_MAP.get(resources_type):
-                    continue
-                if not consts.METRIC_MAP.get(resources_type).get(metric_name):
+                if not consts.METRIC_MAP.get(resources_type, {}).get(
+                        metric_name):
                     continue
                 value = metric_value_infos[
                     consts.METRIC_MAP.get(resources_type).get(metric_name)]
@@ -679,7 +675,7 @@ class ComponentHandler(object):
                     collection_timestamp, consts.COLLECTION_TIME_PATTERN)
                 collection_timestamp = tools.time_str_to_timestamp(
                     collection_time_str, consts.COLLECTION_TIME_PATTERN)
-                if "iops" in metric_name.lower():
+                if "iops" == obj_cap.get(metric_name).get('unit').lower():
                     value = int(float(value))
                 else:
                     value = float('%.6f' % (float(value)))
@@ -766,17 +762,15 @@ class ComponentHandler(object):
                                  start_time, end_time):
         performance_lines_map = {}
         try:
-            if not resources_map:
-                return performance_lines_map
             tools = Tools()
-            for archive_file in (archive_file_list or []):
+            for archive_file in archive_file_list:
                 self.navi_handler.download_archives(archive_file)
                 archive_name_infos = archive_file.split('.')
                 file_path = '%s%s.csv' % (
                     self.navi_handler.get_local_file_path(),
                     archive_name_infos[0])
                 with open(file_path) as file:
-                    f_csv = csv.reader(StringIO(file.read()))
+                    f_csv = csv.reader(file)
                     next(f_csv)
                     for row in f_csv:
                         self._package_performance_data(row, resources_map,
@@ -794,27 +788,22 @@ class ComponentHandler(object):
                                   end_time, tools, performance_lines_map):
         resource_obj_name = row[0]
         resource_obj_name = self._package_resource_obj_name(resource_obj_name)
-        if resource_obj_name in resources_map.keys():
+        if resource_obj_name in resources_map:
             obj_collection_timestamp = tools.time_str_to_timestamp(
                 row[1], consts.TIME_PATTERN)
             if (start_time + consts.TIME_INTERVAL_FLUCTUATION) \
                     <= obj_collection_timestamp \
                     and obj_collection_timestamp \
                     <= (end_time + consts.TIME_INTERVAL_FLUCTUATION):
-                if performance_lines_map.get(resource_obj_name):
-                    performance_lines_map.get(resource_obj_name).append(row)
-                else:
-                    obj_performance_list = []
-                    obj_performance_list.append(row)
-                    performance_lines_map[
-                        resource_obj_name] = obj_performance_list
+                performance_lines_map.setdefault(resource_obj_name, []).append(
+                    row)
 
     def _package_resource_obj_name(self, source_name):
         target_name = source_name
         if 'Port ' in target_name:
-            target_name = re.sub('(\\[.*;)', '[', target_name)
+            return re.sub(r'(\[.*;)', '[', target_name)
         elif '; ' in target_name:
-            target_name = re.sub('(; .*])', ']', target_name)
+            return re.sub(r'(; .*])', ']', target_name)
         return target_name
 
     def _remove_archive_file(self, archive_file_list):
@@ -850,15 +839,15 @@ class ComponentHandler(object):
                 storage_id)
             if num > consts.EXEC_MAX_NUM:
                 latest_time = file_latest_time
-                LOG.warn("Storage：{}，Exit after {} executions.".format(
+                LOG.warn("Storage:{}, Exit after {} executions.".format(
                     storage_id, consts.EXEC_MAX_NUM))
                 break
             if latest_time <= 0:
                 wait_time = tools.timestamp_to_time_str(
                     time.time() * units.k,
                     consts.ARCHIVE_FILE_NAME_TIME_PATTERN)
-                LOG.warn("Storage：{} No new file found, "
-                         "wait for next execution：{}".format(storage_id,
+                LOG.warn("Storage:{} No new file found, "
+                         "wait for next execution:{}".format(storage_id,
                                                              wait_time))
                 time.sleep(consts.SLEEP_TIME_SECONDS)
         return latest_time
