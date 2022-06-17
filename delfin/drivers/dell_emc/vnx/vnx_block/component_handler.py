@@ -16,7 +16,6 @@ import csv
 import os
 import re
 import time
-from io import StringIO
 
 import six
 from oslo_log import log
@@ -578,10 +577,8 @@ class ComponentHandler(object):
         metrics = []
         archive_file_list = []
         try:
-            if (end_time - start_time) < consts.EXEC_TIME_INTERVAL:
-                LOG.warn("not exe collert, end_time-start_time={}".format(
-                    (end_time - start_time)))
-                return metrics
+            LOG.warn("开始采集, storage:%s, start time:%s, end time:%s"
+                     % (storage_id, start_time, end_time))
             archive_file_list = self._get__archive_file(start_time, end_time)
             LOG.info("Get archive files: {}".format(archive_file_list))
             if not archive_file_list:
@@ -600,6 +597,8 @@ class ComponentHandler(object):
             metrics = self.create_metrics(storage_id, resource_metrics,
                                           resources_map, resources_type_map,
                                           performance_lines_map)
+            LOG.warn("采集完成, storage:%s, start time:%s, end time:%s, length of metrics:%s "
+                     % (storage_id, start_time, end_time, len(metrics)))
         except exception.DelfinException as err:
             err_msg = "Failed to collect metrics from VnxBlockStor: %s" % \
                       (six.text_type(err))
@@ -661,13 +660,11 @@ class ComponentHandler(object):
         tools = Tools()
         for metric_name in (metric_list or []):
             values = {}
-            obj_labels = copy.deepcopy(labels)
+            obj_labels = copy.copy(labels)
             obj_labels['unit'] = obj_cap.get(metric_name).get('unit')
             for metric_value in metric_values:
                 metric_value_infos = metric_value
-                if not consts.METRIC_MAP.get(resources_type):
-                    continue
-                if not consts.METRIC_MAP.get(resources_type).get(metric_name):
+                if not consts.METRIC_MAP.get(resources_type, {}).get(metric_name):
                     continue
                 value = metric_value_infos[
                     consts.METRIC_MAP.get(resources_type).get(metric_name)]
@@ -679,7 +676,7 @@ class ComponentHandler(object):
                     collection_timestamp, consts.COLLECTION_TIME_PATTERN)
                 collection_timestamp = tools.time_str_to_timestamp(
                     collection_time_str, consts.COLLECTION_TIME_PATTERN)
-                if "iops" in metric_name.lower():
+                if "iops" == obj_cap.get(metric_name).get('unit').lower():
                     value = int(float(value))
                 else:
                     value = float('%.6f' % (float(value)))
@@ -766,17 +763,15 @@ class ComponentHandler(object):
                                  start_time, end_time):
         performance_lines_map = {}
         try:
-            if not resources_map:
-                return performance_lines_map
             tools = Tools()
-            for archive_file in (archive_file_list or []):
+            for archive_file in archive_file_list:
                 self.navi_handler.download_archives(archive_file)
                 archive_name_infos = archive_file.split('.')
                 file_path = '%s%s.csv' % (
                     self.navi_handler.get_local_file_path(),
                     archive_name_infos[0])
                 with open(file_path) as file:
-                    f_csv = csv.reader(StringIO(file.read()))
+                    f_csv = csv.reader(file)
                     next(f_csv)
                     for row in f_csv:
                         self._package_performance_data(row, resources_map,
@@ -850,15 +845,15 @@ class ComponentHandler(object):
                 storage_id)
             if num > consts.EXEC_MAX_NUM:
                 latest_time = file_latest_time
-                LOG.warn("Storage：{}，Exit after {} executions.".format(
+                LOG.warn("Storage:{}, Exit after {} executions.".format(
                     storage_id, consts.EXEC_MAX_NUM))
                 break
             if latest_time <= 0:
                 wait_time = tools.timestamp_to_time_str(
                     time.time() * units.k,
                     consts.ARCHIVE_FILE_NAME_TIME_PATTERN)
-                LOG.warn("Storage：{} No new file found, "
-                         "wait for next execution：{}".format(storage_id,
+                LOG.warn("Storage:{} No new file found, "
+                         "wait for next execution:{}".format(storage_id,
                                                              wait_time))
                 time.sleep(consts.SLEEP_TIME_SECONDS)
         return latest_time
