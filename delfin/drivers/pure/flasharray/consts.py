@@ -135,9 +135,9 @@ STORAGE_CAP = {
 }
 VOLUME_CAP = {
     constants.VolumeMetric.IOPS.name: {
-            "unit": constants.VolumeMetric.IOPS.unit,
-            "description": constants.VolumeMetric.IOPS.description
-        },
+        "unit": constants.VolumeMetric.IOPS.unit,
+        "description": constants.VolumeMetric.IOPS.description
+    },
     constants.VolumeMetric.READ_IOPS.name: {
         "unit": constants.VolumeMetric.READ_IOPS.unit,
         "description": constants.VolumeMetric.READ_IOPS.description
