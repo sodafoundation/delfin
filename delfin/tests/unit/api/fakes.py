@@ -155,7 +155,7 @@ def fake_access_info_get_all(context, marker=None, limit=None, sort_keys=None,
             'vendor': 'fake_storage',
             'rest': {
                 'host': '10.0.0.76',
-                'port': '1234',
+                'port': 1234,
                 'username': 'admin',
                 'password': b'YWJjZA=='
             },
@@ -478,6 +478,16 @@ def fake_get_capabilities(context, storage_id):
                         "description": "Average time taken for an IO "
                                        "operation in ms"
                     },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Read average time taken for an IO "
+                                       "operation in ms"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Write average time taken for an IO "
+                                       "operation in ms"
+                    },
                     "iops": {
                         "unit": "IOPS",
                         "description": "Input/output operations per second"
@@ -543,6 +553,16 @@ def fake_get_capabilities(context, storage_id):
                     "responseTime": {
                         "unit": "ms",
                         "description": "Average time taken for an IO "
+                                       "operation"
+                    },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Read average time taken for an IO "
+                                       "operation"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Write average time taken for an IO "
                                        "operation"
                     },
                     "iops": {

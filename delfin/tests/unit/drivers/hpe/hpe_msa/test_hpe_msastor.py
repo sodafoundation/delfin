@@ -93,3 +93,60 @@ class TestHpeMsaStorageDriver(TestCase):
         mock_control.side_effect = [test_constans.LIST_ERROR]
         alerts = HpeMsaStorDriver(**ACCESS_INFO).list_alerts(query_para)
         self.assertEqual(alerts, test_constans.error_result)
+
+    @mock.patch.object(SSHPool, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_storage_host_initiators(self, mock_ssh_get, mock_control):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_control.side_effect = [test_constans.LIST_HOST_INITIATORS]
+        list_storage_host_initiators = HpeMsaStorDriver(**ACCESS_INFO)\
+            .list_storage_host_initiators(context)
+        self.assertEqual(list_storage_host_initiators[0], test_constans
+                         .list_storage_host_initiators[0])
+
+    @mock.patch.object(SSHPool, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_storage_hosts(self, mock_ssh_get, mock_control):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_control.side_effect = [test_constans.LIST_HOST]
+        list_storage_hosts = HpeMsaStorDriver(**ACCESS_INFO) \
+            .list_storage_hosts(context)
+        self.assertEqual(list_storage_hosts, test_constans
+                         .list_storage_hosts)
+
+    @mock.patch.object(SSHPool, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_storage_host_groups(self, mock_ssh_get, mock_control):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_control.side_effect = [test_constans.LIST_HOST_GROUPS]
+        list_storage_host_groups = HpeMsaStorDriver(**ACCESS_INFO) \
+            .list_storage_host_groups(context)
+        self.assertEqual(list_storage_host_groups, test_constans
+                         .list_storage_host_groups)
+
+    @mock.patch.object(SSHPool, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    def test_list_volume_groups(self, mock_ssh_get, mock_control):
+        mock_ssh_get.return_value = {paramiko.SSHClient()}
+        mock_control.side_effect = [test_constans.LIST_VOLUME_GROUPS]
+        list_volume_groups = HpeMsaStorDriver(**ACCESS_INFO) \
+            .list_volume_groups(context)
+        self.assertEqual(list_volume_groups, test_constans
+                         .list_volume_groups)
+
+    @mock.patch.object(SSHPool, 'do_exec')
+    @mock.patch.object(SSHPool, 'get')
+    @mock.patch.object(SSHHandler, 'list_storage_ports')
+    @mock.patch.object(SSHHandler, 'list_storage_hosts')
+    @mock.patch.object(SSHHandler, 'list_storage_host_initiators')
+    def test_list_masking_view(self, mock_ssh_get, mock_control,
+                               mock_port, mock_hosts, mock_initiators):
+        mock_ssh_get.side_effect = [test_constans.list_storage_host_initiators]
+        mock_control.side_effect = [test_constans.list_storage_hosts]
+        mock_port.side_effect = [test_constans.ports_result]
+        mock_hosts.return_value = {paramiko.SSHClient()}
+        mock_initiators.return_value = test_constans.LIST_MAPS_ALL
+        list_masking_views = HpeMsaStorDriver(**ACCESS_INFO) \
+            .list_masking_views(context)
+        self.assertEqual(list_masking_views, test_constans
+                         .list_masking_views)

@@ -577,6 +577,16 @@ class FakeStorageDriver(driver.StorageDriver):
                         "description": "Average time taken for an IO "
                                        "operation in ms"
                     },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Read average time taken for an IO "
+                                       "operation in ms"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Write average time taken for an IO "
+                                       "operation in ms"
+                    },
                     "iops": {
                         "unit": "IOPS",
                         "description": "Input/output operations per second"
@@ -644,6 +654,16 @@ class FakeStorageDriver(driver.StorageDriver):
                         "description": "Average time taken for an IO "
                                        "operation"
                     },
+                    "readResponseTime": {
+                        "unit": "ms",
+                        "description": "Read average time taken for an IO "
+                                       "operation"
+                    },
+                    "writeResponseTime": {
+                        "unit": "ms",
+                        "description": "Write average time taken for an IO "
+                                       "operation"
+                    },
                     "iops": {
                         "unit": "IOPS",
                         "description": "Read and write  operations per"
@@ -693,7 +713,7 @@ class FakeStorageDriver(driver.StorageDriver):
                     },
                     "writeIoSize": {
                         "unit": "KB",
-                        "description": "The average size of read IO requests"
+                        "description": "The average size of write IO requests"
                                        " in KB."
                     },
                 },

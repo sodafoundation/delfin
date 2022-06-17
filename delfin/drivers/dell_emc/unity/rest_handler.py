@@ -281,6 +281,30 @@ class RestHandler(RestClient):
         result_json = self.get_rest_info(url)
         return result_json
 
+    def get_host_initiators(self, page):
+        url = '/api/types/hostInitiator/instances?%s&page=%s' % \
+              ('fields=id,health,type,parentHost,initiatorId', page)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_all_hosts(self, page):
+        url = '/api/types/host/instances?%s&page=%s' \
+              % ('fields=id,health,name,description,osType', page)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_host_ip(self):
+        url = '/api/types/hostIPPort/instances?%s' % \
+              ('fields=id,name,address,netmask,host')
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_host_lun(self, page):
+        url = '/api/types/hostLUN/instances?%s&page=%s' % \
+              ('fields=id,host,lun', page)
+        result_json = self.get_rest_info(url)
+        return result_json
+
     def get_history_metrics(self, path, page):
         url = '/api/types/metricValue/instances?filter=path EQ "%s"&page=%s'\
               % (path, page)

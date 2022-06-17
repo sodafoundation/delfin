@@ -59,6 +59,7 @@ class AlertHandlerTestCase(unittest.TestCase):
             'category': constants.Category.NOT_SPECIFIED,
             'type': constants.EventType.EQUIPMENT_ALARM,
             'sequence_number': alert['1.3.6.1.3.94.1.11.1.3.0'],
+            'serial_number': '000192601409',
             'description': alert['1.3.6.1.3.94.1.11.1.9.0'],
             'recovery_advice': 'None',
             'resource_type': alert['1.3.6.1.3.94.1.6.1.3.0'],
