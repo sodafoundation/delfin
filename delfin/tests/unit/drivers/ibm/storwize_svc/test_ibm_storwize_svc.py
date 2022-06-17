@@ -486,6 +486,39 @@ code_level 7.8.1.11 (build 135.9.1912100725000)
 serial_number 75PVZNA
 machine_signature 0214-784E-C029-0147
 """
+
+get_controller_cpu = """id,2
+name,node_165084
+status,online
+IO_group_id,0
+IO_group_name,io_grp0
+hardware,CG8
+actual_different,no
+actual_valid,yes
+memory_configured,24
+memory_actual,24
+memory_valid,yes
+cpu_count,1
+cpu_socket,1
+cpu_configured,6 core Intel(R) Xeon(R) CPU E5645 @ 2.40GHz
+cpu_actual,6 core Intel(R) Xeon(R) CPU E5645 @ 2.40GHz
+cpu_valid,yes
+adapter_count,3
+adapter_location,1
+adapter_configured,Four port 8Gb/s FC adapter
+adapter_actual,Four port 8Gb/s FC adapter
+adapter_valid,yes
+adapter_location,0
+adapter_configured,Two port 1Gb/s Ethernet adapter
+adapter_actual,Two port 1Gb/s Ethernet adapter
+adapter_valid,yes
+adapter_location,2
+adapter_configured,none
+adapter_actual,none
+adapter_valid,yes
+ports_different,no
+"""
+
 controller_result = [
     {
         'name': 'node_165084',
@@ -493,7 +526,8 @@ controller_result = [
         'native_controller_id': '2',
         'status': 'normal',
         'soft_version': '7.8.1.11',
-        'location': 'node_165084'
+        'location': 'node_165084',
+        'cpu_info': '6 core Intel(R) Xeon(R) CPU E5645 @ 2.40GHz'
     }
 ]
 
@@ -1553,7 +1587,8 @@ class TestStorwizeSvcStorageDriver(TestCase):
     @mock.patch.object(SSHPool, 'get')
     def test_list_controllers(self, mock_ssh_get, mock_control):
         mock_ssh_get.return_value = {paramiko.SSHClient()}
-        mock_control.side_effect = [get_all_controllers, get_single_controller]
+        mock_control.side_effect = [get_all_controllers, get_single_controller,
+                                    get_controller_cpu]
         controller = self.driver.list_controllers(context)
         self.assertEqual(controller, controller_result)
 
