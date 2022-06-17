@@ -847,8 +847,8 @@ class ComponentHandler(object):
                     time.time() * units.k,
                     consts.ARCHIVE_FILE_NAME_TIME_PATTERN)
                 LOG.warning("Storage:{} No new file found, "
-                         "wait for next execution:{}".format(storage_id,
-                                                             wait_time))
+                            "wait for next execution:{}".format(storage_id,
+                                                                wait_time))
                 time.sleep(consts.SLEEP_TIME_SECONDS)
         return latest_time
 
