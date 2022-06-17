@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from delfin.common.constants import ResourceType, StorageMetric, \
+    StoragePoolMetric, VolumeMetric, ControllerMetric, PortMetric, \
+    DiskMetric, FileSystemMetric
+
 STORAGE_CAPABILITIES_SCHEMA = {
     'type': 'object',
     'properties': {
@@ -20,67 +24,110 @@ STORAGE_CAPABILITIES_SCHEMA = {
         'resource_metrics': {
             'type': 'object',
             'properties': {
-                'storage': {
+                ResourceType.STORAGE: {
                     'type': 'object',
                     'properties': {
-                        'throughput': {
+                        StorageMetric.THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric.THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'responseTime': {
+                        StorageMetric.RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric.RESPONSE_TIME
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'iops': {
+                        StorageMetric.READ_RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric
+                                                  .READ_RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readThroughput': {
+                        StorageMetric.WRITE_RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric
+                                                  .WRITE_RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeThroughput': {
+                        StorageMetric.IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric.IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIops': {
+                        StorageMetric.READ_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric
+                                                  .READ_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIops': {
+                        StorageMetric.WRITE_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric
+                                                  .WRITE_THROUGHPUT.unit]
+                                         },
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        StorageMetric.READ_IOPS.name: {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric.READ_IOPS.unit]
+                                         },
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        StorageMetric.WRITE_IOPS.name: {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string',
+                                         'enum': [StorageMetric.WRITE_IOPS
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
@@ -90,67 +137,87 @@ STORAGE_CAPABILITIES_SCHEMA = {
                     },
                     'additionalProperties': False
                 },
-                'storagePool': {
+                ResourceType.STORAGE_POOL: {
                     'type': 'object',
                     'properties': {
-                        'throughput': {
+                        StoragePoolMetric.THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StoragePoolMetric
+                                                  .THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'responseTime': {
+                        StoragePoolMetric.RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StoragePoolMetric
+                                                  .RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'iops': {
+                        StoragePoolMetric.IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StoragePoolMetric.IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readThroughput': {
+                        StoragePoolMetric.READ_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StoragePoolMetric
+                                                  .READ_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeThroughput': {
+                        StoragePoolMetric.WRITE_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StoragePoolMetric
+                                                  .WRITE_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIops': {
+                        StoragePoolMetric.READ_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StoragePoolMetric.READ_IOPS
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIops': {
+                        StoragePoolMetric.WRITE_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [StoragePoolMetric.WRITE_IOPS
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
@@ -159,121 +226,179 @@ STORAGE_CAPABILITIES_SCHEMA = {
                     },
                     'additionalProperties': False
                 },
-                'volume': {
+                ResourceType.VOLUME: {
                     'type': 'object',
                     'properties': {
-                        'throughput': {
+                        VolumeMetric.THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'responseTime': {
+                        VolumeMetric.RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.RESPONSE_TIME
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'iops': {
+                        VolumeMetric.READ_RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric
+                                                  .READ_RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readThroughput': {
+                        VolumeMetric.WRITE_RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric
+                                                  .WRITE_RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeThroughput': {
+                        VolumeMetric.IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIops': {
+                        VolumeMetric.READ_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.READ_THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIops': {
+                        VolumeMetric.WRITE_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric
+                                                  .WRITE_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'cacheHitRatio': {
+                        VolumeMetric.READ_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["%"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.READ_IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readCacheHitRatio': {
+                        VolumeMetric.WRITE_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["%"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.WRITE_IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeCacheHitRatio': {
+                        VolumeMetric.CACHE_HIT_RATIO.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["%"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.CACHE_HIT_RATIO
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'ioSize': {
+                        VolumeMetric.READ_CACHE_HIT_RATIO.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric
+                                                  .READ_CACHE_HIT_RATIO.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIoSize': {
+                        VolumeMetric.WRITE_CACHE_HIT_RATIO.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric
+                                                  .WRITE_CACHE_HIT_RATIO.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIoSize': {
+                        VolumeMetric.IO_SIZE.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.IO_SIZE.unit]
+                                         },
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        VolumeMetric.READ_IO_SIZE.name: {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.READ_IO_SIZE
+                                                  .unit]
+                                         },
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        },
+                        VolumeMetric.WRITE_IO_SIZE.name: {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string',
+                                         'enum': [VolumeMetric.WRITE_IO_SIZE
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
@@ -283,67 +408,87 @@ STORAGE_CAPABILITIES_SCHEMA = {
                     },
                     'additionalProperties': False
                 },
-                'controller': {
+                ResourceType.CONTROLLER: {
                     'type': 'object',
                     'properties': {
-                        'throughput': {
+                        ControllerMetric.THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric.THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'responseTime': {
+                        ControllerMetric.RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric
+                                                  .RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'iops': {
+                        ControllerMetric.IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric.IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readThroughput': {
+                        ControllerMetric.READ_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric
+                                                  .READ_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeThroughput': {
+                        ControllerMetric.WRITE_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric
+                                                  .WRITE_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIops': {
+                        ControllerMetric.READ_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric.READ_IOPS
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIops': {
+                        ControllerMetric.WRITE_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric.WRITE_IOPS
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
@@ -352,67 +497,84 @@ STORAGE_CAPABILITIES_SCHEMA = {
                     },
                     'additionalProperties': False
                 },
-                'port': {
+                ResourceType.PORT: {
                     'type': 'object',
                     'properties': {
-                        'throughput': {
+                        PortMetric.THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [PortMetric.THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'responseTime': {
+                        PortMetric.RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [PortMetric.RESPONSE_TIME
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'iops': {
+                        PortMetric.IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [PortMetric.IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readThroughput': {
+                        PortMetric.READ_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [PortMetric.READ_THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeThroughput': {
+                        PortMetric.WRITE_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [PortMetric.WRITE_THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIops': {
+                        PortMetric.READ_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [PortMetric.READ_IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIops': {
+                        PortMetric.WRITE_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [PortMetric.WRITE_IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
@@ -421,67 +583,84 @@ STORAGE_CAPABILITIES_SCHEMA = {
                     },
                     'additionalProperties': False
                 },
-                'disk': {
+                ResourceType.DISK: {
                     'type': 'object',
                     'properties': {
-                        'throughput': {
+                        DiskMetric.THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [DiskMetric.THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'responseTime': {
+                        DiskMetric.RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [DiskMetric.RESPONSE_TIME
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'iops': {
+                        DiskMetric.IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [DiskMetric.IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIops': {
+                        DiskMetric.READ_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [DiskMetric.READ_IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIops': {
+                        DiskMetric.WRITE_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [DiskMetric.WRITE_IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readThroughput': {
+                        DiskMetric.READ_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [DiskMetric.READ_THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeThroughput': {
+                        DiskMetric.WRITE_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [DiskMetric.WRITE_THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
@@ -490,103 +669,135 @@ STORAGE_CAPABILITIES_SCHEMA = {
                     },
                     'additionalProperties': False
                 },
-                'filesystem': {
+                ResourceType.FILESYSTEM: {
                     'type': 'object',
                     'properties': {
-                        'throughput': {
+                        FileSystemMetric.THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric.THROUGHPUT
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'iops': {
+                        FileSystemMetric.IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric.IOPS.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readThroughput': {
+                        FileSystemMetric.READ_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric
+                                                  .READ_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeThroughput': {
+                        FileSystemMetric.WRITE_THROUGHPUT.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["MB/s"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric
+                                                  .WRITE_THROUGHPUT.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIops': {
+                        FileSystemMetric.READ_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric.READ_IOPS
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIops': {
+                        FileSystemMetric.WRITE_IOPS.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["IOPS"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric.WRITE_IOPS
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readResponseTime': {
+                        FileSystemMetric.READ_RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric
+                                                  .READ_RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeResponseTime': {
+                        FileSystemMetric.WRITE_RESPONSE_TIME.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["ms"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric
+                                                  .WRITE_RESPONSE_TIME.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'ioSize': {
+                        FileSystemMetric.IO_SIZE.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric.IO_SIZE
+                                                  .unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'readIoSize': {
+                        FileSystemMetric.READ_IO_SIZE.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric
+                                                  .READ_IO_SIZE.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
                             },
                         },
-                        'writeIoSize': {
+                        FileSystemMetric.WRITE_IO_SIZE.name: {
                             'type': 'object',
                             'properties': {
-                                'unit': {'type': 'string', 'enum': ["KB"]},
+                                'unit': {'type': 'string',
+                                         'enum': [FileSystemMetric
+                                                  .WRITE_IO_SIZE.unit]
+                                         },
                                 'description': {'type': 'string',
                                                 'minLength': 1,
                                                 'maxLength': 255}
