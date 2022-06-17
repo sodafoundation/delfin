@@ -500,6 +500,14 @@ class SSHHandler(object):
                 deltail_info = self.exec_ssh_command(detail_command)
                 control_map = {}
                 self.handle_detail(deltail_info, control_map, split=' ')
+                cpu_map = {}
+                cpu_cmd = 'lsnodehw -delim , %s' % control_id
+                cpu_info = self.exec_ssh_command(cpu_cmd)
+                if 'command not found' in cpu_info:
+                    cpu_cmd = 'lsnodecanisterhw -delim , %s' % control_id
+                    cpu_info = self.exec_ssh_command(cpu_cmd)
+                self.handle_detail(cpu_info, cpu_map, split=',')
+                cpu_actual = cpu_map.get('cpu_actual')
                 status = SSHHandler.CONTRL_STATUS_MAP.get(
                     control_map.get('status'),
                     constants.ControllerStatus.UNKNOWN)
@@ -510,7 +518,8 @@ class SSHHandler(object):
                     'status': status,
                     'soft_version':
                         control_map.get('code_level', '').split(' ')[0],
-                    'location': control_map.get('name')
+                    'location': control_map.get('name'),
+                    'cpu_info': cpu_actual
                 }
                 controller_list.append(controller_result)
             return controller_list
