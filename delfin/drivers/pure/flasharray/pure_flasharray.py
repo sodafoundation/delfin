@@ -478,7 +478,6 @@ class PureFlashArrayDriver(driver.StorageDriver):
                 }
                 resource_value = {}
                 for volume_metrics in (packaging_data.get(volume_name) or []):
-                    volume_metrics.get(resource_key)
                     resource_value[volume_metrics.get('time')] = \
                         volume_metrics.get(resource_key)
                 metrics_res = constants.metric_struct(
