@@ -358,7 +358,7 @@ class ComponentHandler(object):
                     ipv4 = iscsi_port.get('ip_address')
                     ipv4_mask = iscsi_port.get('subnet_mask')
             port_model = {
-                'name': name,
+                'name': location,
                 'storage_id': storage_id,
                 'native_port_id': name,
                 'location': location,
@@ -401,7 +401,7 @@ class ComponentHandler(object):
                     location = '%s %s,Port %s' % (
                         bus_port.get('i/o_module_slot'), sp_name,
                         bus_port.get('physical_port_id'))
-                    native_port_id = location.replace(' ', '')
+                    native_port_id = name.replace(' ', '')
                     native_port_id = native_port_id.replace(',', '')
                     module_key = '%s_%s' % (
                         sp_name, bus_port.get('i/o_module_slot'))
@@ -415,7 +415,7 @@ class ComponentHandler(object):
                         state = bus_port_state_map.get(port_state_key,
                                                        '')
                     port_model = {
-                        'name': name,
+                        'name': location,
                         'storage_id': storage_id,
                         'native_port_id': native_port_id,
                         'location': location,

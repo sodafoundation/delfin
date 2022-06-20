@@ -591,7 +591,7 @@ SP_RESULT = [
     }]
 PORT_RESULT = [
     {
-        'name': 'A-6',
+        'name': 'Slot A3,Port 0',
         'storage_id': '12345',
         'native_port_id': 'A-6',
         'location': 'Slot A3,Port 0',
@@ -625,7 +625,7 @@ INITIATOR_RESULT = [
         'native_storage_host_initiator_id': '20:00:00:00:C9:9B:57:79:10:'
                                             '00:00:00:C9:9B:57:79',
         'wwn': '20:00:00:00:C9:9B:57:79:10:00:00:00:C9:9B:57:79',
-        'type': 'fc',
+        'type': 'unknown',
         'status': 'online',
         'native_storage_host_id': 'aix_ma'
     }]
