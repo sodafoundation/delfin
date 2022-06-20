@@ -530,8 +530,8 @@ class PureFlashArrayDriver(driver.StorageDriver):
         write_iop = metrics.get('writes_per_sec')
         read_throughput = metrics.get('output_per_sec') / units.Mi
         write_throughput = metrics.get('input_per_sec') / units.Mi
-        read_response_time = metrics.get('usec_per_read_op') / units.M
-        write_response_time = metrics.get('usec_per_write_op') / units.M
+        read_response_time = metrics.get('usec_per_read_op') / units.k
+        write_response_time = metrics.get('usec_per_write_op') / units.k
         metrics_data = {
             'iops': round(read_iop + write_iop, 3),
             "readIops": round(read_iop, 3),
