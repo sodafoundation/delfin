@@ -1860,7 +1860,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'ms'},
-                values={1650853440000: 0.0, 1650853500000: 0.005}
+                values={1650853440000: 0.0, 1650853500000: 5.36}
             ),
             constants.metric_struct(
                 name='writeResponseTime',
@@ -1871,7 +1871,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': 'pure01',
                     'type': 'RAW',
                     'unit': 'ms'},
-                values={1650853440000: 0.0, 1650853500000: 0.653}
+                values={1650853440000: 0.0, 1650853500000: 653.022}
             )
         ]
         self.assertListEqual(metrics, storage_metrics)
@@ -1962,7 +1962,7 @@ class test_PureFlashArrayDriver(TestCase):
                     'resource_name': '136_connect',
                     'type': 'RAW',
                     'unit': 'ms'},
-                values={1649729520000: 46.2, 1649729580000: 46.2}
+                values={1649729520000: 46200.0, 1649729580000: 46200.0}
             )
         ]
         RestHandler.rest_call = mock.Mock(
