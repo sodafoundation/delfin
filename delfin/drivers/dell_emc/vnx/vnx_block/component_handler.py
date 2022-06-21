@@ -396,12 +396,10 @@ class ComponentHandler(object):
                 sps = bus_port.get('sps')
                 for sp in (sps or []):
                     sp_name = sp.replace('sp', '').upper()
-                    name = '%s-%s' % (sp_name,
-                                      bus_port.get('bus_name'))
                     location = '%s %s,Port %s' % (
                         bus_port.get('i/o_module_slot'), sp_name,
                         bus_port.get('physical_port_id'))
-                    native_port_id = name.replace(' ', '')
+                    native_port_id = location.replace(' ', '')
                     native_port_id = native_port_id.replace(',', '')
                     module_key = '%s_%s' % (
                         sp_name, bus_port.get('i/o_module_slot'))
