@@ -95,6 +95,82 @@ PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.40482.3.7'
 PARSE_ALERT_SEVERITY_MAP = {'1': constants.Severity.WARNING,
                             '2': constants.Severity.INFORMATIONAL}
 
+# collect_perf_metrics method
+SIXTY = 60
+LIST_METRICS = -1
+
+STORAGE_CAP = {
+    constants.StorageMetric.IOPS.name: {
+        "unit": constants.StorageMetric.IOPS.unit,
+        "description": constants.StorageMetric.IOPS.description
+    },
+    constants.StorageMetric.READ_IOPS.name: {
+        "unit": constants.StorageMetric.READ_IOPS.unit,
+        "description": constants.StorageMetric.READ_IOPS.description
+    },
+    constants.StorageMetric.WRITE_IOPS.name: {
+        "unit": constants.StorageMetric.WRITE_IOPS.unit,
+        "description": constants.StorageMetric.WRITE_IOPS.description
+    },
+    constants.StorageMetric.THROUGHPUT.name: {
+        "unit": constants.StorageMetric.THROUGHPUT.unit,
+        "description": constants.StorageMetric.THROUGHPUT.description
+    },
+    constants.StorageMetric.READ_THROUGHPUT.name: {
+        "unit": constants.StorageMetric.READ_THROUGHPUT.unit,
+        "description": constants.StorageMetric.READ_THROUGHPUT.description
+    },
+    constants.StorageMetric.WRITE_THROUGHPUT.name: {
+        "unit": constants.StorageMetric.WRITE_THROUGHPUT.unit,
+        "description": constants.StorageMetric.WRITE_THROUGHPUT.description
+    },
+    constants.StorageMetric.READ_RESPONSE_TIME.name: {
+        "unit": constants.StorageMetric.READ_RESPONSE_TIME.unit,
+        "description": constants.StorageMetric.READ_RESPONSE_TIME.description
+    },
+    constants.StorageMetric.WRITE_RESPONSE_TIME.name: {
+        "unit": constants.StorageMetric.WRITE_RESPONSE_TIME.unit,
+        "description": constants.StorageMetric.WRITE_RESPONSE_TIME.description
+    }
+}
+VOLUME_CAP = {
+    constants.VolumeMetric.IOPS.name: {
+        "unit": constants.VolumeMetric.IOPS.unit,
+        "description": constants.VolumeMetric.IOPS.description
+    },
+    constants.VolumeMetric.READ_IOPS.name: {
+        "unit": constants.VolumeMetric.READ_IOPS.unit,
+        "description": constants.VolumeMetric.READ_IOPS.description
+    },
+    constants.VolumeMetric.WRITE_IOPS.name: {
+        "unit": constants.VolumeMetric.WRITE_IOPS.unit,
+        "description": constants.VolumeMetric.WRITE_IOPS.description
+    },
+    constants.VolumeMetric.THROUGHPUT.name: {
+        "unit": constants.VolumeMetric.THROUGHPUT.unit,
+        "description": constants.VolumeMetric.THROUGHPUT.description
+    },
+    constants.VolumeMetric.READ_THROUGHPUT.name: {
+        "unit": constants.VolumeMetric.READ_THROUGHPUT.unit,
+        "description": constants.VolumeMetric.READ_THROUGHPUT.description
+    },
+    constants.VolumeMetric.WRITE_THROUGHPUT.name: {
+        "unit": constants.VolumeMetric.WRITE_THROUGHPUT.unit,
+        "description": constants.VolumeMetric.WRITE_THROUGHPUT.description
+    },
+    constants.VolumeMetric.READ_RESPONSE_TIME.name: {
+        "unit": constants.VolumeMetric.READ_RESPONSE_TIME.unit,
+        "description": constants.VolumeMetric.READ_RESPONSE_TIME.description
+    },
+    constants.VolumeMetric.WRITE_RESPONSE_TIME.name: {
+        "unit": constants.VolumeMetric.WRITE_RESPONSE_TIME.unit,
+        "description": constants.VolumeMetric.WRITE_RESPONSE_TIME.description
+    }
+}
+
+# Timestamp format conversion
+PURE_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
+
 HOST_OS_TYPES_MAP = {
     'linux': constants.HostOSTypes.LINUX,
     'windows': constants.HostOSTypes.WINDOWS,

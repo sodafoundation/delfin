@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+import time
 from unittest import TestCase, mock
 
 import six
 from oslo_log import log
+from oslo_utils import units
+
+from delfin.common import constants
+from delfin.drivers.pure.flasharray import consts
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 from delfin import context
@@ -1619,6 +1624,53 @@ views_data = [
      'name': 'hosttestNonenc::136_connect',
      'native_storage_host_id': 'hosttest',
      'native_volume_id': 'nc::136_connect', 'storage_id': '12345'}]
+storage_resource_metrics = {
+    constants.ResourceType.STORAGE: consts.STORAGE_CAP,
+}
+volume_resource_metrics = {
+    constants.ResourceType.VOLUME: consts.VOLUME_CAP
+}
+drive_metrics = [
+    {
+        "writes_per_sec": 0,
+        "output_per_sec": 0,
+        "usec_per_write_op": 0,
+        "local_queue_usec_per_op": 0,
+        "time": "2022-04-25T02:24:46Z",
+        "reads_per_sec": 0,
+        "input_per_sec": 0,
+        "usec_per_read_op": 0,
+        "queue_depth": 0
+    }, {
+        "writes_per_sec": 1856,
+        "output_per_sec": 0,
+        "usec_per_write_op": 653021.569741,
+        "local_queue_usec_per_op": 43158,
+        "time": "2022-04-25T02:25:46Z",
+        "reads_per_sec": 0,
+        "input_per_sec": 0,
+        "usec_per_read_op": 5360,
+        "queue_depth": 0
+    }]
+volume_metrics_info = [{
+    "writes_per_sec": 1864,
+    "name": "136_connect",
+    "usec_per_write_op": 46200000,
+    "output_per_sec": 0,
+    "reads_per_sec": 0,
+    "input_per_sec": 5620302,
+    "time": "2022-04-12T02:12:16Z",
+    "usec_per_read_op": 0
+}, {
+    "writes_per_sec": 1864,
+    "name": "136_connect",
+    "usec_per_write_op": 46200000,
+    "output_per_sec": 0,
+    "reads_per_sec": 0,
+    "input_per_sec": 5620302,
+    "time": "2022-04-12T02:13:16Z",
+    "usec_per_read_op": 0
+}]
 
 
 def create_driver():
@@ -1721,3 +1773,217 @@ class test_PureFlashArrayDriver(TestCase):
             side_effect=[HGROUP_CONNECT_INFO, HOSTS_CONNECT_INFO])
         views = self.driver.list_masking_views(context)
         self.assertListEqual(views, views_data)
+
+    def test_collect_perf_metrics(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[storage_id_info, drive_metrics])
+        localtime = time.mktime(time.localtime()) * units.k
+        storage_id = 12345
+        start_time = localtime - 1000 * 60 * 60 * 24 * 364
+        end_time = localtime
+        metrics = self.driver.collect_perf_metrics(
+            context, storage_id, storage_resource_metrics, start_time,
+            end_time)
+        storage_metrics = [
+            constants.metric_struct(
+                name='iops',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'IOPS'},
+                values={1650853440000: 0, 1650853500000: 1856}
+            ),
+            constants.metric_struct(
+                name='readIops',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'IOPS'},
+                values={1650853440000: 0, 1650853500000: 0}
+            ),
+            constants.metric_struct(
+                name='writeIops',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'IOPS'},
+                values={1650853440000: 0, 1650853500000: 1856}
+            ),
+            constants.metric_struct(
+                name='throughput',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'MB/s'},
+                values={1650853440000: 0.0, 1650853500000: 0.0}
+            ),
+            constants.metric_struct(
+                name='readThroughput',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'MB/s'},
+                values={1650853440000: 0.0, 1650853500000: 0.0}
+            ),
+            constants.metric_struct(
+                name='writeThroughput',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'MB/s'},
+                values={1650853440000: 0.0, 1650853500000: 0.0}
+            ),
+            constants.metric_struct(
+                name='readResponseTime',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'ms'},
+                values={1650853440000: 0.0, 1650853500000: 5.36}
+            ),
+            constants.metric_struct(
+                name='writeResponseTime',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'storage',
+                    'resource_id': 'dlmkk15xcfdf4v5',
+                    'resource_name': 'pure01',
+                    'type': 'RAW',
+                    'unit': 'ms'},
+                values={1650853440000: 0.0, 1650853500000: 653.022}
+            )
+        ]
+        self.assertListEqual(metrics, storage_metrics)
+        volume_metrics = [
+            constants.metric_struct(
+                name='iops',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'IOPS'},
+                values={1649729520000: 1864, 1649729580000: 1864}
+            ),
+            constants.metric_struct(
+                name='readIops',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'IOPS'},
+                values={1649729520000: 0, 1649729580000: 0}
+            ),
+            constants.metric_struct(
+                name='writeIops',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'IOPS'},
+                values={1649729520000: 1864, 1649729580000: 1864}
+            ),
+            constants.metric_struct(
+                name='throughput',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'MB/s'},
+                values={1649729520000: 5.36, 1649729580000: 5.36}
+            ),
+            constants.metric_struct(
+                name='readThroughput',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'MB/s'},
+                values={1649729520000: 0.0, 1649729580000: 0.0}
+            ),
+            constants.metric_struct(
+                name='writeThroughput',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'MB/s'},
+                values={1649729520000: 5.36, 1649729580000: 5.36}
+            ),
+            constants.metric_struct(
+                name='readResponseTime',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'ms'},
+                values={1649729520000: 0.0, 1649729580000: 0.0}
+            ),
+            constants.metric_struct(
+                name='writeResponseTime',
+                labels={
+                    'storage_id': 12345,
+                    'resource_type': 'volume',
+                    'resource_id': '136_connect',
+                    'resource_name': '136_connect',
+                    'type': 'RAW',
+                    'unit': 'ms'},
+                values={1649729520000: 46200.0, 1649729580000: 46200.0}
+            )
+        ]
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[volume_metrics_info])
+        metrics = self.driver.collect_perf_metrics(
+            context, storage_id, volume_resource_metrics, start_time,
+            end_time)
+        self.assertListEqual(metrics, volume_metrics)
+
+    def test_get_capabilities(self):
+        err = None
+        try:
+            self.driver.get_capabilities(context)
+        except Exception as e:
+            err = six.text_type(e)
+            LOG.error("test_get_capabilities error: %s", err)
+        self.assertEqual(err, None)
+
+    def test_get_latest_perf_timestamp(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[drive_metrics])
+        timestamp = self.driver.get_latest_perf_timestamp(context)
+        times = 1650853500000
+        self.assertEqual(timestamp, times)
