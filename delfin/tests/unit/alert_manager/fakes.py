@@ -51,7 +51,8 @@ def fake_v3_alert_source():
             'auth_key': 'YWJjZDEyMzQ1Njc=',
             'auth_protocol': 'HMACMD5',
             'privacy_key': 'YWJjZDEyMzQ1Njc=',
-            'privacy_protocol': 'DES'
+            'privacy_protocol': 'DES',
+            'host': '127.0.0.1'
             }
 
 

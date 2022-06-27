@@ -52,7 +52,7 @@ class AlertProcessor(object):
                     ctxt, storage, alert_model)
                 alert_util.fill_storage_attributes(alert_model, storage)
         except exception.IncompleteTrapInformation as e:
-            LOG.warn(e)
+            LOG.warning(e)
             threading.Thread(target=self.sync_storage_alert,
                              args=(ctxt, alert['storage_id'])).start()
         except exception.AlertSourceNotFound:

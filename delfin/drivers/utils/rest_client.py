@@ -85,25 +85,27 @@ class RestClient(object):
         try:
             res = func(url, **kwargs)
         except requests.exceptions.ConnectTimeout as ct:
-            LOG.error('Connect Timeout err: {}'.format(ct))
+            LOG.error('Connect Timeout error for url([{}]{}): {}'.format(
+                method, url, ct))
             raise exception.InvalidIpOrPort()
         except requests.exceptions.ReadTimeout as rt:
-            LOG.error('Read timed out err: {}'.format(rt))
+            LOG.error('Read timed out error for url([{}]{}): {}'.format(
+                method, url, rt))
             raise exception.StorageBackendException(six.text_type(rt))
         except requests.exceptions.SSLError as e:
-            LOG.error('SSLError for %s %s' % (method, url))
             err_str = six.text_type(e)
+            LOG.error('SSLError for url([{}]{}): {}'.format(
+                method, url, err_str))
             if 'certificate verify failed' in err_str:
                 raise exception.SSLCertificateFailed()
             else:
                 raise exception.SSLHandshakeFailed()
         except Exception as err:
-            LOG.exception('Bad response from server: %(url)s.'
-                          ' Error: %(err)s', {'url': url, 'err': err})
+            LOG.error('Bad response from server for url([{}]{}): {}'.format(
+                method, url, err))
             if 'WSAETIMEDOUT' in str(err):
                 raise exception.ConnectTimeout()
             elif 'Failed to establish a new connection' in str(err):
-                LOG.error('Failed to establish: {}'.format(err))
                 raise exception.InvalidIpOrPort()
             elif 'Read timed out' in str(err):
                 raise exception.StorageBackendException(six.text_type(err))
