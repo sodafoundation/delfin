@@ -13,7 +13,9 @@
 # limitations under the License.
 from oslo_log import log
 
+from delfin.common import constants
 from delfin.drivers import driver
+from delfin.drivers.dell_emc.vnx.vnx_block import consts
 from delfin.drivers.dell_emc.vnx.vnx_block.alert_handler import AlertHandler
 from delfin.drivers.dell_emc.vnx.vnx_block.component_handler import \
     ComponentHandler
@@ -86,3 +88,25 @@ class VnxBlockStorDriver(driver.StorageDriver):
 
     def list_masking_views(self, context):
         return self.com_handler.list_masking_views(self.storage_id)
+
+    def collect_perf_metrics(self, context, storage_id, resource_metrics,
+                             start_time, end_time):
+        return self.com_handler.collect_perf_metrics(storage_id,
+                                                     resource_metrics,
+                                                     start_time, end_time)
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        """Get capability of supported driver"""
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP,
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.DISK: consts.DISK_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        return self.com_handler.get_latest_perf_timestamp(self.storage_id)

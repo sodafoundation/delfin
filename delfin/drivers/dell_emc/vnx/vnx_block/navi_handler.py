@@ -11,16 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 import re
 import threading
+import time
 
 import six
 from oslo_log import log as logging
 
 from delfin import cryptor
+from oslo_utils import units
+
 from delfin import exception
 from delfin.drivers.dell_emc.vnx.vnx_block import consts
 from delfin.drivers.dell_emc.vnx.vnx_block.navicli_client import NaviClient
+from delfin.drivers.utils.tools import Tools
 
 LOG = logging.getLogger(__name__)
 
@@ -700,3 +705,102 @@ class NaviHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
         return obj_list
+
+    def get_archives(self):
+        return self.get_resources_info(consts.GET_ARCHIVE_API,
+                                       self.cli_archives_to_list)
+
+    def cli_archives_to_list(self, resource_info):
+        obj_list = []
+        try:
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if str_line:
+                    archive_infos = str_line.split()
+                    if archive_infos and len(archive_infos) == 5:
+                        obj_model = {}
+                        obj_model['collection_time'] = \
+                            "%s %s" % (archive_infos[2], archive_infos[3])
+                        obj_model['archive_name'] = archive_infos[4]
+                        obj_list.append(obj_model)
+        except Exception as e:
+            err_msg = "arrange archives info error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return obj_list
+
+    def download_archives(self, archive_name):
+        download_archive_api = consts.DOWNLOAD_ARCHIVE_API % (
+            archive_name, self.get_local_file_path())
+        self.get_resources_info(download_archive_api, self.cli_res_to_list)
+        archive_name_infos = archive_name.split('.')
+        archivedump_api = consts.ARCHIVEDUMP_API % (
+            self.get_local_file_path(), archive_name,
+            self.get_local_file_path(), archive_name_infos[0])
+        self.get_resources_info(archivedump_api, self.cli_res_to_list)
+
+    def get_local_file_path(self):
+        driver_path = os.path.abspath(os.path.join(os.getcwd()))
+        driver_path = driver_path.replace("\\", "/")
+        driver_path = driver_path.replace(consts.REPLACE_PATH, "")
+        local_path = '%s%s' % (driver_path, consts.ARCHIVE_FILE_DIR)
+        return local_path
+
+    def get_sp_time(self):
+        return self.get_resources_info(consts.GET_SP_TIME,
+                                       self.analysis_sp_time)
+
+    def analysis_sp_time(self, resource_info):
+        system_time = 0
+        try:
+            tools = Tools()
+            obj_infos = resource_info.split('\n')
+            for obj_info in obj_infos:
+                str_line = obj_info.strip()
+                if "Time on SP A:" in str_line:
+                    time_str = str_line.replace("Time on SP A:", "").strip()
+                    system_time = tools.time_str_to_timestamp(
+                        time_str, consts.GET_SP_TIME_PATTERN)
+        except Exception as e:
+            err_msg = "analysis sp time error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return system_time
+
+    def get_nar_interval(self):
+        return self.get_resources_info(consts.GET_NAR_INTERVAL_API,
+                                       self.analysis_nar_interval)
+
+    def analysis_nar_interval(self, resource_info):
+        nar_interval = 60
+        try:
+            if resource_info and ":" in resource_info:
+                nar_interval_str = resource_info.split(":")[1].strip()
+                nar_interval = int(nar_interval_str)
+        except Exception as e:
+            err_msg = "analysis sp time error: %s", six.text_type(e)
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
+        return nar_interval
+
+    def get_archive_file_name(self, storage_id):
+        tools = Tools()
+        create_time = tools.timestamp_to_time_str(
+            time.time() * units.k, consts.ARCHIVE_FILE_NAME_TIME_PATTERN)
+        archive_file_name = consts.ARCHIVE_FILE_NAME % (storage_id,
+                                                        create_time)
+        return archive_file_name
+
+    def create_archives(self, storage_id):
+        archive_name = self.get_archive_file_name(storage_id)
+        create_archive_api = consts.CREATE_ARCHIVE_API % (
+            archive_name, self.get_local_file_path())
+        self.get_resources_info(create_archive_api, self.cli_res_to_list)
+
+        archive_name_infos = archive_name.split('.')
+        archivedump_api = consts.ARCHIVEDUMP_API % (
+            self.get_local_file_path(), archive_name,
+            self.get_local_file_path(), archive_name_infos[0])
+        self.get_resources_info(archivedump_api, self.cli_res_to_list)
+        return archive_name
