@@ -16,6 +16,7 @@ import hashlib
 import time
 
 from oslo_log import log
+from oslo_utils import units
 
 from delfin import exception, utils
 from delfin.common import constants
@@ -124,13 +125,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
             for alert in alerts:
                 alerts_model = dict()
                 opened = alert.get('opened')
-                time_difference = time.mktime(
-                    time.localtime()) - time.mktime(time.gmtime())
-                timestamp = (int(datetime.datetime.strptime
-                                 (opened, '%Y-%m-%dT%H:%M:%SZ').timestamp()
-                                 + time_difference) *
-                             consts.DEFAULT_LIST_ALERTS_TIME_CONVERSION) if \
-                    opened is not None else None
+                time_difference = self.get_time_difference()
+                timestamp = (int(datetime.datetime.strptime(
+                    opened, consts.PURE_TIME_FORMAT).timestamp()
+                    + time_difference) * consts.
+                    DEFAULT_LIST_ALERTS_TIME_CONVERSION)\
+                    if opened is not None else None
                 if query_para is not None:
                     try:
                         if timestamp is None or timestamp \
@@ -157,6 +157,12 @@ class PureFlashArrayDriver(driver.StorageDriver):
                     format(alert.get('component_type'), component_name, event)
                 alerts_list.append(alerts_model)
         return alerts_list
+
+    @staticmethod
+    def get_time_difference():
+        time_difference = time.mktime(
+            time.localtime()) - time.mktime(time.gmtime())
+        return time_difference
 
     @staticmethod
     def parse_alert(context, alert):
@@ -363,6 +369,210 @@ class PureFlashArrayDriver(driver.StorageDriver):
     def get_access_url():
         return 'https://{ip}'
 
+    def collect_perf_metrics(self, context, storage_id, resource_metrics,
+                             start_time, end_time):
+        LOG.info('The system(storage_id: %s) starts to collect storage and'
+                 ' volume performance, start_time: %s, end_time: %s',
+                 storage_id, start_time, end_time)
+        metrics = []
+        if resource_metrics.get(constants.ResourceType.STORAGE):
+            storage_metrics = self.get_storage_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.STORAGE),
+                start_time, end_time,
+                constants.ResourceType.STORAGE)
+            metrics.extend(storage_metrics)
+            LOG.info('The system(storage_id: %s) stop to collect storage'
+                     ' performance, The length is: %s',
+                     storage_id, len(storage_metrics))
+        if resource_metrics.get(constants.ResourceType.VOLUME):
+            volume_metrics = self.get_volume_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.VOLUME),
+                start_time, end_time,
+                constants.ResourceType.VOLUME)
+            metrics.extend(volume_metrics)
+            LOG.info('The system(storage_id: %s) stop to collect volume'
+                     ' performance, The length is: %s',
+                     storage_id, len(volume_metrics))
+        return metrics
+
+    def get_storage_metrics(self, storage_id, resource_metrics, start_time,
+                            end_time, resource_type):
+        metrics = []
+        arrays_id, arrays_name = self.get_array()
+        packaging_data = self.get_packaging_storage_data(
+            end_time, start_time, resource_type)
+        if not arrays_id or not arrays_name or not packaging_data or\
+                end_time < start_time:
+            return metrics
+        for resource_key in resource_metrics.keys():
+            labels = {
+                'storage_id': storage_id,
+                'resource_type': resource_type,
+                'resource_id': arrays_id,
+                'resource_name': arrays_name,
+                'type': 'RAW',
+                'unit': resource_metrics[resource_key]['unit']
+            }
+            resource_value = {}
+            for about_timestamp in packaging_data.keys():
+                metrics_data = packaging_data.get(about_timestamp)
+                resource_value[about_timestamp] = \
+                    metrics_data.get(resource_key)
+            metrics_res = constants.metric_struct(
+                name=resource_key, labels=labels, values=resource_value)
+            metrics.append(metrics_res)
+        return metrics
+
+    def get_packaging_storage_data(self, end_time, start_time, resource_type):
+        duplicate = set()
+        packaging_data = {}
+        list_metrics = self.rest_handler.rest_call(
+            self.rest_handler.REST_ARRAY_HISTORICAL_URL)
+        for storage_metrics in (list_metrics or []):
+            about_timestamp = self.checkout_data(
+                storage_metrics, start_time, end_time, resource_type,
+                duplicate)
+            if about_timestamp is None:
+                continue
+            metrics_data = self.get_metrics_data(
+                storage_metrics, about_timestamp)
+            packaging_data[about_timestamp] = metrics_data
+        return packaging_data
+
+    def checkout_data(self, storage_metrics, start_time, end_time,
+                      resource_type, duplicate):
+        opened = storage_metrics.get('time')
+        if opened is None:
+            return None
+        timestamp_s = self.get_timestamp_s(opened)
+        timestamp_ms = timestamp_s * units.k
+        if timestamp_ms < start_time or timestamp_ms >= end_time:
+            return None
+        about_timestamp = \
+            int(timestamp_s / consts.SIXTY) * consts.SIXTY * units.k
+        duplicate_value = self.get_duplicate_value(
+            about_timestamp, resource_type, storage_metrics)
+        if duplicate_value in duplicate:
+            return None
+        duplicate.add(duplicate_value)
+        return about_timestamp
+
+    def get_volume_metrics(self, storage_id, resource_metrics, start_time,
+                           end_time, resource_type):
+        metrics = []
+        packaging_data = self.get_packaging_volume_data(
+            end_time, resource_type, start_time)
+        if end_time < start_time or not packaging_data:
+            return metrics
+        for volume_name in packaging_data.keys():
+            for resource_key in resource_metrics.keys():
+                labels = {
+                    'storage_id': storage_id,
+                    'resource_type': resource_type,
+                    'resource_id': volume_name,
+                    'resource_name': volume_name,
+                    'type': 'RAW',
+                    'unit': resource_metrics[resource_key]['unit']
+                }
+                resource_value = {}
+                for volume_metrics in (packaging_data.get(volume_name) or []):
+                    resource_value[volume_metrics.get('time')] = \
+                        volume_metrics.get(resource_key)
+                metrics_res = constants.metric_struct(
+                    name=resource_key, labels=labels, values=resource_value)
+                metrics.append(metrics_res)
+        return metrics
+
+    def get_packaging_volume_data(self, end_time, resource_type, start_time):
+        duplicate = set()
+        packaging_data = {}
+        list_metrics = self.rest_handler.rest_call(
+            self.rest_handler.REST_VOLUME_HISTORICAL_URL)
+        for volume_metrics in (list_metrics or []):
+            about_timestamp = self.checkout_data(
+                volume_metrics, start_time, end_time, resource_type,
+                duplicate)
+            if about_timestamp is None:
+                continue
+            volume_metrics_data = self.get_metrics_data(
+                volume_metrics, about_timestamp)
+            volume_metrics_list = packaging_data.get(
+                volume_metrics.get('name'))
+            if not volume_metrics_list:
+                volume_metrics_list = []
+            volume_metrics_list.append(volume_metrics_data)
+            packaging_data[volume_metrics.get('name')] = volume_metrics_list
+        return packaging_data
+
+    def get_timestamp_s(self, opened):
+        time_difference = self.get_time_difference()
+        timestamp_s = int(
+            datetime.datetime.strptime(opened, consts.PURE_TIME_FORMAT)
+            .timestamp() + time_difference)
+        return timestamp_s
+
+    @staticmethod
+    def get_duplicate_value(about_timestamp, resource_type, storage_metrics):
+        duplicate_value = None
+        if resource_type == constants.ResourceType.VOLUME:
+            duplicate_value = '{}{}'.format(
+                storage_metrics.get('name'), about_timestamp)
+        if resource_type == constants.ResourceType.STORAGE:
+            duplicate_value = about_timestamp
+        return duplicate_value
+
+    @staticmethod
+    def get_metrics_data(metrics, about_timestamp):
+        read_iop = metrics.get('reads_per_sec')
+        write_iop = metrics.get('writes_per_sec')
+        read_throughput = metrics.get('output_per_sec') / units.Mi
+        write_throughput = metrics.get('input_per_sec') / units.Mi
+        read_response_time = metrics.get('usec_per_read_op') / units.k
+        write_response_time = metrics.get('usec_per_write_op') / units.k
+        metrics_data = {
+            'iops': round(read_iop + write_iop, 3),
+            "readIops": round(read_iop, 3),
+            "writeIops": round(write_iop, 3),
+            "throughput": round(read_throughput + write_throughput, 3),
+            "readThroughput": round(read_throughput, 3),
+            "writeThroughput": round(write_throughput, 3),
+            "readResponseTime": round(read_response_time, 3),
+            "writeResponseTime": round(write_response_time, 3),
+            'time': about_timestamp
+        }
+        return metrics_data
+
+    def get_array(self):
+        arrays_id = None
+        arrays_name = None
+        arrays = self.rest_handler.rest_call(
+            self.rest_handler.REST_ARRAY_URL)
+        if arrays:
+            arrays_id = arrays.get('id')
+            arrays_name = arrays.get('array_name')
+        return arrays_id, arrays_name
+
+    @staticmethod
+    def get_capabilities(context, filters=None):
+        return {
+            'is_historic': True,
+            'resource_metrics': {
+                constants.ResourceType.STORAGE: consts.STORAGE_CAP,
+                constants.ResourceType.VOLUME: consts.VOLUME_CAP
+            }
+        }
+
+    def get_latest_perf_timestamp(self, context):
+        list_metrics = self.rest_handler.rest_call(
+            self.rest_handler.REST_ARRAY_HISTORICAL_URL)
+        opened = list_metrics[consts.LIST_METRICS].get('time')
+        timestamp_s = self.get_timestamp_s(opened)
+        timestamp_ms = \
+            int(timestamp_s / consts.SIXTY) * consts.SIXTY * units.k
+        return timestamp_ms
+
     def list_storage_host_initiators(self, context):
         list_initiators = []
         initiators = self.rest_handler.rest_call(
@@ -402,7 +612,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             self.rest_handler.REST_HOST_PERSONALITY_URL)
         for host in (hosts or []):
             name = host.get('name')
-            personality = host.get('personality').lower()\
+            personality = host.get('personality').lower() \
                 if host.get('personality') else None
             h = {
                 "name": name,
@@ -496,7 +706,7 @@ class PureFlashArrayDriver(driver.StorageDriver):
             host_id = masking_view.get('name')
             native_volume_id = masking_view.get('vol')
             hgroup_name = '{}{}'.format(hgroup, native_volume_id)
-            if view_id_dict.get(hgroup_name) is not None and\
+            if view_id_dict.get(hgroup_name) is not None and \
                     view_id_dict.get(hgroup_name) in hgroup:
                 continue
             native_masking_view_id = '{}{}{}'.format(

@@ -439,3 +439,257 @@ class TelemetryJobStatus(object):
     FAILED_JOB_STATUS_SUCCESS = "Success"
     FAILED_JOB_STATUS_RETRYING = "Retrying"
     FAILED_JOB_STATUS_INIT = "Initialized"
+
+
+Metric = namedtuple('Metric', 'name unit description')
+
+
+class StorageMetric:
+    """Storage metrics"""
+    IOPS = Metric(name='iops',
+                  unit='IOPS',
+                  description='Read/write operations per second')
+    READ_IOPS = Metric(name='readIops',
+                       unit='IOPS',
+                       description='Read operations per second')
+    WRITE_IOPS = Metric(name='writeIops',
+                        unit='IOPS',
+                        description='Write operations per second')
+    THROUGHPUT = Metric(name='throughput',
+                        unit='MB/s',
+                        description='Represents how much data is successfully '
+                                    'transferred in MB/s')
+    READ_THROUGHPUT = Metric(name='readThroughput',
+                             unit='MB/s',
+                             description='Represents how much data read is '
+                                         'successfully transferred in MB/s')
+    WRITE_THROUGHPUT = Metric(name='writeThroughput',
+                              unit='MB/s',
+                              description='Represents how much data write is '
+                                          'successfully transferred in MB/s')
+    RESPONSE_TIME = Metric(name='responseTime',
+                           unit='ms',
+                           description='Average time taken for an IO '
+                                       'operation in ms')
+    READ_RESPONSE_TIME = Metric(name='readResponseTime',
+                                unit='ms',
+                                description='Read average time taken for an '
+                                            'IO operation in ms')
+    WRITE_RESPONSE_TIME = Metric(name='writeResponseTime',
+                                 unit='ms',
+                                 description='Write average time taken for an '
+                                             'IO operation in ms')
+
+
+class StoragePoolMetric:
+    """Storage pool metrics"""
+    IOPS = Metric(name='iops',
+                  unit='IOPS',
+                  description='Read and write operations per second')
+    READ_IOPS = Metric(name='readIops',
+                       unit='IOPS',
+                       description='Read operations per second')
+    WRITE_IOPS = Metric(name='writeIops',
+                        unit='IOPS',
+                        description='Write operations per second')
+    THROUGHPUT = Metric(name='throughput',
+                        unit='MB/s',
+                        description='Total data transferred per second')
+    READ_THROUGHPUT = Metric(name='readThroughput',
+                             unit='MB/s',
+                             description='Total read data transferred per '
+                                         'second')
+    WRITE_THROUGHPUT = Metric(name='writeThroughput',
+                              unit='MB/s',
+                              description='Total write data transferred per '
+                                          'second')
+    RESPONSE_TIME = Metric(name='responseTime',
+                           unit='ms',
+                           description='Average time taken for an IO '
+                                       'operation')
+
+
+class VolumeMetric:
+    """Volume metrics"""
+    IOPS = Metric(name='iops',
+                  unit='IOPS',
+                  description='Read and write operations per second')
+    READ_IOPS = Metric(name='readIops',
+                       unit='IOPS',
+                       description='Read operations per second')
+    WRITE_IOPS = Metric(name='writeIops',
+                        unit='IOPS',
+                        description='Write operations per second')
+    THROUGHPUT = Metric(name='throughput',
+                        unit='MB/s',
+                        description='Total data transferred per second')
+    READ_THROUGHPUT = Metric(name='readThroughput',
+                             unit='MB/s',
+                             description='Total read data transferred per '
+                                         'second')
+    WRITE_THROUGHPUT = Metric(name='writeThroughput',
+                              unit='MB/s',
+                              description='Total write data transferred per '
+                                          'second')
+    RESPONSE_TIME = Metric(name='responseTime',
+                           unit='ms',
+                           description='Average time taken for an IO '
+                                       'operation')
+    READ_RESPONSE_TIME = Metric(name='readResponseTime',
+                                unit='ms',
+                                description='Read average time taken for an '
+                                            'IO operation')
+    WRITE_RESPONSE_TIME = Metric(name='writeResponseTime',
+                                 unit='ms',
+                                 description='Write average time taken for an '
+                                             'IO operation')
+    IO_SIZE = Metric(name='ioSize',
+                     unit='KB',
+                     description='The average size of IO requests in KB')
+    READ_IO_SIZE = Metric(name='readIoSize',
+                          unit='KB',
+                          description='The average size of read IO requests '
+                                      'in KB')
+    WRITE_IO_SIZE = Metric(name='writeIoSize',
+                           unit='KB',
+                           description='The average size of write IO requests '
+                                       'in KB')
+    CACHE_HIT_RATIO = Metric(name='cacheHitRatio',
+                             unit='%',
+                             description='Percentage of ops that are cache '
+                                         'hits')
+    READ_CACHE_HIT_RATIO = Metric(name='readCacheHitRatio',
+                                  unit='%',
+                                  description='Percentage of read ops that '
+                                              'are cache hits')
+    WRITE_CACHE_HIT_RATIO = Metric(name='writeCacheHitRatio',
+                                   unit='%',
+                                   description='Percentage of write ops that '
+                                               'are cache hits')
+
+
+class ControllerMetric:
+    """Controller metrics"""
+    IOPS = Metric(name='iops',
+                  unit='IOPS',
+                  description='Read and write operations per second')
+    READ_IOPS = Metric(name='readIops',
+                       unit='IOPS',
+                       description='Read operations per second')
+    WRITE_IOPS = Metric(name='writeIops',
+                        unit='IOPS',
+                        description='Write operations per second')
+    THROUGHPUT = Metric(name='throughput',
+                        unit='MB/s',
+                        description='Total data transferred per second')
+    READ_THROUGHPUT = Metric(name='readThroughput',
+                             unit='MB/s',
+                             description='Total read data transferred per '
+                                         'second')
+    WRITE_THROUGHPUT = Metric(name='writeThroughput',
+                              unit='MB/s',
+                              description='Total write data transferred per '
+                                          'second')
+    RESPONSE_TIME = Metric(name='responseTime',
+                           unit='ms',
+                           description='Average time taken for an IO '
+                                       'operation')
+
+
+class PortMetric:
+    """Port metrics"""
+    IOPS = Metric(name='iops',
+                  unit='IOPS',
+                  description='Read and write operations per second')
+    READ_IOPS = Metric(name='readIops',
+                       unit='IOPS',
+                       description='Read operations per second')
+    WRITE_IOPS = Metric(name='writeIops',
+                        unit='IOPS',
+                        description='Write operations per second')
+    THROUGHPUT = Metric(name='throughput',
+                        unit='MB/s',
+                        description='Total data transferred per second')
+    READ_THROUGHPUT = Metric(name='readThroughput',
+                             unit='MB/s',
+                             description='Total read data transferred per '
+                                         'second')
+    WRITE_THROUGHPUT = Metric(name='writeThroughput',
+                              unit='MB/s',
+                              description='Total write data transferred per '
+                                          'second')
+    RESPONSE_TIME = Metric(name='responseTime',
+                           unit='ms',
+                           description='Average time taken for an IO '
+                                       'operation')
+
+
+class DiskMetric:
+    """Disk metrics"""
+    IOPS = Metric(name='iops',
+                  unit='IOPS',
+                  description='Read and write operations per second')
+    READ_IOPS = Metric(name='readIops',
+                       unit='IOPS',
+                       description='Read operations per second')
+    WRITE_IOPS = Metric(name='writeIops',
+                        unit='IOPS',
+                        description='Write operations per second')
+    THROUGHPUT = Metric(name='throughput',
+                        unit='MB/s',
+                        description='Total data transferred per second')
+    READ_THROUGHPUT = Metric(name='readThroughput',
+                             unit='MB/s',
+                             description='Total read data transferred per '
+                                         'second')
+    WRITE_THROUGHPUT = Metric(name='writeThroughput',
+                              unit='MB/s',
+                              description='Total write data transferred per '
+                                          'second')
+    RESPONSE_TIME = Metric(name='responseTime',
+                           unit='ms',
+                           description='Average time taken for an IO '
+                                       'operation')
+
+
+class FileSystemMetric:
+    """File system metrics"""
+    IOPS = Metric(name='iops',
+                  unit='IOPS',
+                  description='Read and write operations per second')
+    READ_IOPS = Metric(name='readIops',
+                       unit='IOPS',
+                       description='Read operations per second')
+    WRITE_IOPS = Metric(name='writeIops',
+                        unit='IOPS',
+                        description='Write operations per second')
+    THROUGHPUT = Metric(name='throughput',
+                        unit='MB/s',
+                        description='Total data transferred per second')
+    READ_THROUGHPUT = Metric(name='readThroughput',
+                             unit='MB/s',
+                             description='Total read data transferred per '
+                                         'second')
+    WRITE_THROUGHPUT = Metric(name='writeThroughput',
+                              unit='MB/s',
+                              description='Total write data transferred per '
+                                          'second')
+    READ_RESPONSE_TIME = Metric(name='readResponseTime',
+                                unit='ms',
+                                description='Average time taken for a read '
+                                            'operation')
+    WRITE_RESPONSE_TIME = Metric(name='writeResponseTime',
+                                 unit='ms',
+                                 description='Average time taken for a write '
+                                             'operation')
+    IO_SIZE = Metric(name='ioSize',
+                     unit='KB',
+                     description='The average size of IO requests in KB')
+    READ_IO_SIZE = Metric(name='readIoSize',
+                          unit='KB',
+                          description='The average size of read IO requests '
+                                      'in KB')
+    WRITE_IO_SIZE = Metric(name='writeIoSize',
+                           unit='KB',
+                           description='The average size of write IO requests '
+                                       'in KB')
