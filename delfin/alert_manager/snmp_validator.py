@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import binascii
+import copy
 
 import six
 from oslo_config import cfg
 from oslo_log import log
+from oslo_utils import encodeutils
 from pyasn1.type.univ import OctetString
 from pysnmp.entity.rfc3413.oneliner import cmdgen
 
@@ -39,8 +41,21 @@ class SNMPValidator(object):
     def validate(self, ctxt, alert_source):
         engine_id = alert_source.get('engine_id')
         try:
-            alert_source = self.validate_connectivity(alert_source)
-
+            hosts = alert_source['host'].split(',')
+            temp_alert_source = copy.deepcopy(alert_source)
+            # Sets a value to raise a SNMPConnectionFailed when multiple
+            # alarm sources fail to be verified
+            connection_times = 0
+            for host in hosts:
+                temp_alert_source['host'] = host
+                try:
+                    connection_times += 1
+                    alert_source = \
+                        self.validate_connectivity(ctxt, temp_alert_source)
+                    break
+                except Exception as e:
+                    if connection_times == len(hosts):
+                        raise e
             # If protocol is snmpv3, the snmp_validator will update
             # engine id if engine id is empty. Therefore, engine id
             # should be saved in database.
@@ -61,7 +76,7 @@ class SNMPValidator(object):
             LOG.error("Failed to check snmp config. Reason: %s", msg)
 
     @staticmethod
-    def validate_connectivity(alert_source):
+    def validate_connectivity(ctxt, alert_source):
         # Fill optional parameters with default values if not set in input
         if not alert_source.get('port'):
             alert_source['port'] = constants.DEFAULT_SNMP_CONNECT_PORT
@@ -76,6 +91,12 @@ class SNMPValidator(object):
             alert_source['expiration'] = constants.DEFAULT_SNMP_EXPIRATION_TIME
 
         if CONF.snmp_validation_enabled is False:
+            return alert_source
+
+        storage_id = alert_source.get('storage_id')
+        access_info = db.access_info_get(ctxt, storage_id)
+        access_info = dict(access_info)
+        if access_info.get('model') not in constants.SNMP_SUPPORTED_MODELS:
             return alert_source
 
         cmd_gen = cmdgen.CommandGenerator()
@@ -103,10 +124,12 @@ class SNMPValidator(object):
                 )
                 auth_key = None
                 if alert_source['auth_key']:
-                    auth_key = cryptor.decode(alert_source['auth_key'])
+                    auth_key = encodeutils.to_utf8(
+                        cryptor.decode(alert_source['auth_key']))
                 privacy_key = None
                 if alert_source['privacy_key']:
-                    privacy_key = cryptor.decode(alert_source['privacy_key'])
+                    privacy_key = encodeutils.to_utf8(
+                        cryptor.decode(alert_source['privacy_key']))
                 auth_protocol = None
                 privacy_protocol = None
                 if alert_source['auth_protocol']:
@@ -135,8 +158,8 @@ class SNMPValidator(object):
                     alert_source['engine_id'] = binascii.hexlify(
                         engine_id.asOctets()).decode()
             else:
-                community_string = cryptor.decode(
-                    alert_source['community_string'])
+                community_string = encodeutils.to_utf8(
+                    cryptor.decode(alert_source['community_string']))
                 error_indication, __, __, __ = cmd_gen.getCmd(
                     cmdgen.CommunityData(
                         community_string,

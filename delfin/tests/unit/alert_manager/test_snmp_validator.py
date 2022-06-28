@@ -50,11 +50,13 @@ class TestSNMPValidator(test.TestCase):
                        mock.Mock())
     @mock.patch.object(cmdgen.CommandGenerator, 'getCmd',
                        fakes.mock_cmdgen_get_cmd)
+    @mock.patch('delfin.db.access_info_get')
     @mock.patch('pysnmp.entity.observer.MetaObserver.registerObserver')
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
                 '.closeDispatcher')
     def test_validate_connectivity(self, mock_close_dispatcher,
-                                   mock_register_observer):
+                                   mock_register_observer,
+                                   mock_access_info_get):
         # Get a random host
         a = random.randint(0, 255)
         b = random.randint(0, 255)
@@ -67,8 +69,9 @@ class TestSNMPValidator(test.TestCase):
         v3_alert_source = fakes.fake_v3_alert_source()
         v3_alert_source['host'] = host
         v3_alert_source['port'] = port
+        mock_access_info_get.return_value = {'model': 'vsp'}
         snmp_validator.SNMPValidator.validate_connectivity(
-            v3_alert_source)
+            context.RequestContext(), v3_alert_source)
         self.assertEqual(mock_close_dispatcher.call_count, 1)
         self.assertEqual(mock_register_observer.call_count, 1)
         # snmpv2c
@@ -76,7 +79,7 @@ class TestSNMPValidator(test.TestCase):
         v2_alert_source['host'] = host
         v2_alert_source['port'] = port
         snmp_validator.SNMPValidator.validate_connectivity(
-            v2_alert_source)
+            context.RequestContext(), v2_alert_source)
         self.assertEqual(mock_close_dispatcher.call_count, 2)
         self.assertEqual(mock_register_observer.call_count, 1)
 

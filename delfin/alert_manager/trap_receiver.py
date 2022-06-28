@@ -15,11 +15,13 @@
 import six
 from oslo_log import log
 from oslo_service import periodic_task
+from oslo_utils import encodeutils
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
 from pysnmp.entity.rfc3413 import ntfrcv
 from pysnmp.proto.api import v2c
 from pysnmp.smi import builder, view
+from retrying import retry
 
 from delfin import context, cryptor
 from delfin import db
@@ -61,41 +63,53 @@ class TrapReceiver(manager.Manager):
             self._add_snmp_config(ctxt, snmp_config_to_add)
 
     def _add_snmp_config(self, ctxt, new_config):
-        LOG.info("Start to add snmp trap config.")
         storage_id = new_config.get("storage_id")
-        version_int = self._get_snmp_version_int(ctxt,
-                                                 new_config.get("version"))
-        if version_int == constants.SNMP_V2_INT or \
-                version_int == constants.SNMP_V1_INT:
-            community_string = cryptor.decode(
-                new_config.get("community_string"))
-            community_index = self._get_community_index(storage_id)
-            config.addV1System(self.snmp_engine, community_index,
-                               community_string, contextName=community_string)
-        else:
-            username = new_config.get("username")
-            engine_id = new_config.get("engine_id")
-            if engine_id:
-                engine_id = v2c.OctetString(hexValue=engine_id)
+        LOG.info("Start to add snmp trap config for storage: %s",
+                 storage_id)
+        try:
+            version_int = self._get_snmp_version_int(ctxt,
+                                                     new_config.get("version"))
+            if version_int == constants.SNMP_V2_INT or \
+                    version_int == constants.SNMP_V1_INT:
+                community_string = cryptor.decode(
+                    new_config.get("community_string"))
+                community_string = encodeutils.to_utf8(community_string)
+                community_index = self._get_community_index(storage_id)
+                config.addV1System(self.snmp_engine, community_index,
+                                   community_string,
+                                   contextName=community_string)
+            else:
+                username = new_config.get("username")
+                engine_id = new_config.get("engine_id")
+                if engine_id:
+                    engine_id = v2c.OctetString(hexValue=engine_id)
 
-            auth_key = new_config.get("auth_key")
-            auth_protocol = new_config.get("auth_protocol")
-            privacy_key = new_config.get("privacy_key")
-            privacy_protocol = new_config.get("privacy_protocol")
-            if auth_key:
-                auth_key = cryptor.decode(auth_key)
-            if privacy_key:
-                privacy_key = cryptor.decode(privacy_key)
-            config.addV3User(
-                self.snmp_engine,
-                userName=username,
-                authKey=auth_key,
-                privKey=privacy_key,
-                authProtocol=self._get_usm_auth_protocol(ctxt,
-                                                         auth_protocol),
-                privProtocol=self._get_usm_priv_protocol(ctxt,
-                                                         privacy_protocol),
-                securityEngineId=engine_id)
+                auth_key = new_config.get("auth_key")
+                auth_protocol = new_config.get("auth_protocol")
+                privacy_key = new_config.get("privacy_key")
+                privacy_protocol = new_config.get("privacy_protocol")
+                if auth_key:
+                    auth_key = encodeutils.to_utf8(cryptor.decode(auth_key))
+                if privacy_key:
+                    privacy_key = encodeutils.to_utf8(
+                        cryptor.decode(privacy_key))
+                config.addV3User(
+                    self.snmp_engine,
+                    userName=username,
+                    authKey=auth_key,
+                    privKey=privacy_key,
+                    authProtocol=self._get_usm_auth_protocol(ctxt,
+                                                             auth_protocol),
+                    privProtocol=self._get_usm_priv_protocol(ctxt,
+                                                             privacy_protocol),
+                    securityEngineId=engine_id)
+            LOG.info("Add snmp trap config for storage: %s successfully.",
+                     storage_id)
+        except Exception as e:
+            msg = six.text_type(e)
+            LOG.error("Failed to add snmp trap config for storage: %s. "
+                      "Reason: %s", storage_id, msg)
+            raise e
 
     def _delete_snmp_config(self, ctxt, snmp_config):
         LOG.info("Start to remove snmp trap config.")
@@ -168,22 +182,49 @@ class TrapReceiver(manager.Manager):
                 udp.UdpTransport().openServerMode(
                     (self.trap_receiver_address, int(self.trap_receiver_port)))
             )
-        except Exception:
-            raise ValueError("Port binding failed: Port is in use.")
+        except Exception as e:
+            LOG.error('Failed to add transport, error is %s'
+                      % six.text_type(e))
+            raise exception.DelfinException(message=six.text_type(e))
 
     @staticmethod
     def _get_alert_source_by_host(source_ip):
         """Gets alert source for given source ip address."""
-        filters = {'host': source_ip}
+        filters = {'host~': source_ip}
         ctxt = context.RequestContext()
 
         # Using the known filter and db exceptions are handled by api
-        alert_source = db.alert_source_get_all(ctxt, filters=filters)
-        if not alert_source:
+        alert_sources = db.alert_source_get_all(ctxt, filters=filters)
+        if not alert_sources:
             raise exception.AlertSourceNotFoundWithHost(source_ip)
 
-        # Return first configured source that can handle the trap
-        return alert_source[0]
+        # This is to make sure unique host is configured each alert source
+        unique_alert_source = None
+        if len(alert_sources) > 1:
+            # Clear invalid alert_source
+            for alert_source in alert_sources:
+                try:
+                    db.storage_get(ctxt, alert_source['storage_id'])
+                except exception.StorageNotFound:
+                    LOG.warning('Found redundancy alert source for storage %s'
+                                % alert_source['storage_id'])
+                    try:
+                        db.alert_source_delete(
+                            ctxt, alert_source['storage_id'])
+                    except Exception as e:
+                        LOG.warning('Delete the invalid alert source failed, '
+                                    'reason is %s' % six.text_type(e))
+                else:
+                    unique_alert_source = alert_source
+        else:
+            unique_alert_source = alert_sources[0]
+
+        if unique_alert_source is None:
+            msg = (_("Failed to get unique alert source with host %s.")
+                   % source_ip)
+            raise exception.InvalidResults(msg)
+
+        return unique_alert_source
 
     def _cb_fun(self, state_reference, context_engine_id, context_name,
                 var_binds, cb_ctx):
@@ -256,6 +297,8 @@ class TrapReceiver(manager.Manager):
             if len(alert_sources) < limit:
                 finished = True
 
+    @retry(stop_max_attempt_number=180, wait_random_min=4000,
+           wait_random_max=6000)
     def start(self):
         """Starts the snmp trap receiver with necessary prerequisites."""
         snmp_engine = engine.SnmpEngine()

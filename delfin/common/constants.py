@@ -51,16 +51,6 @@ class VolumeStatus(object):
     ALL = (AVAILABLE, ERROR)
 
 
-class ControllerStatus(object):
-    NORMAL = 'normal'
-    OFFLINE = 'offline'
-    FAULT = 'fault'
-    DEGRADED = 'degraded'
-    UNKNOWN = 'unknown'
-
-    ALL = (NORMAL, OFFLINE, FAULT, DEGRADED, UNKNOWN)
-
-
 class StorageType(object):
     BLOCK = 'block'
     FILE = 'file'
@@ -242,54 +232,6 @@ class ShareProtocol(object):
     ALL = (CIFS, NFS, FTP, HDFS)
 
 
-class HostStatus(object):
-    NORMAL = 'normal'
-    OFFLINE = 'offline'
-    ABNORMAL = 'abnormal'
-    DEGRADED = 'degraded'
-
-    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED)
-
-
-class HostOSTypes(object):
-    LINUX = 'Linux'
-    WINDOWS = 'Windows'
-    SOLARIS = 'Solaris'
-    HP_UX = 'HP-UX'
-    AIX = 'AIX'
-    XEN_SERVER = 'XenServer'
-    VMWARE_ESX = 'VMware ESX'
-    LINUX_VIS = 'LINUX_VIS'
-    WINDOWS_SERVER_2012 = 'Windows Server 2012'
-    ORACLE_VM = 'Oracle VM'
-    OPEN_VMS = 'Open VMS'
-    MAC_OS = 'Mac OS'
-    UNKNOWN = 'Unknown'
-
-    ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
-           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS, MAC_OS,
-           UNKNOWN)
-
-
-class InitiatorStatus(object):
-    ONLINE = 'online'
-    OFFLINE = 'offline'
-    UNKNOWN = 'unknown'
-
-    ALL = (ONLINE, OFFLINE, UNKNOWN)
-
-
-class InitiatorType(object):
-    FC = 'fc'
-    ISCSI = 'iscsi'
-    NVME_OVER_ROCE = 'roce'
-    SAS = 'sas'
-    NVME_OVER_FABRIC = 'nvme-of'
-    UNKNOWN = 'unknown'
-
-    ALL = (FC, ISCSI, NVME_OVER_ROCE, SAS, NVME_OVER_FABRIC, UNKNOWN)
-
-
 # Enumerations for alert severity
 class Severity(object):
     FATAL = 'Fatal'
@@ -313,6 +255,27 @@ class Category(object):
 class ClearType(object):
     AUTOMATIC = 'Automatic'
     MANUAL = 'Manual'
+
+
+class ControllerStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    FAULT = 'fault'
+    DEGRADED = 'degraded'
+    UNKNOWN = 'unknown'
+
+    ALL = (NORMAL, OFFLINE, FAULT, DEGRADED, UNKNOWN)
+
+
+class InitiatorType(object):
+    FC = 'fc'
+    ISCSI = 'iscsi'
+    NVME_OVER_ROCE = 'roce'
+    SAS = 'sas'
+    NVME_OVER_FABRIC = 'nvme-of'
+    UNKNOWN = 'unknown'
+
+    ALL = (FC, ISCSI, NVME_OVER_ROCE, SAS, NVME_OVER_FABRIC, UNKNOWN)
 
 
 # Enumerations for alert type based on X.733 Specification
@@ -693,3 +656,43 @@ class FileSystemMetric:
                            unit='KB',
                            description='The average size of write IO requests '
                                        'in KB')
+
+
+SNMP_SUPPORTED_MODELS = ('vsp', '3par', 'cmode', 'msa', 'hnas')
+
+
+class HostStatus(object):
+    NORMAL = 'normal'
+    OFFLINE = 'offline'
+    ABNORMAL = 'abnormal'
+    DEGRADED = 'degraded'
+
+    ALL = (NORMAL, OFFLINE, ABNORMAL, DEGRADED)
+
+
+class HostOSTypes(object):
+    LINUX = 'Linux'
+    WINDOWS = 'Windows'
+    SOLARIS = 'Solaris'
+    HP_UX = 'HP-UX'
+    AIX = 'AIX'
+    XEN_SERVER = 'XenServer'
+    VMWARE_ESX = 'VMware ESX'
+    LINUX_VIS = 'LINUX_VIS'
+    WINDOWS_SERVER_2012 = 'Windows Server 2012'
+    ORACLE_VM = 'Oracle VM'
+    OPEN_VMS = 'Open VMS'
+    MAC_OS = 'Mac OS'
+    UNKNOWN = 'Unknown'
+
+    ALL = (LINUX, WINDOWS, SOLARIS, HP_UX, AIX, XEN_SERVER, VMWARE_ESX,
+           LINUX_VIS, WINDOWS_SERVER_2012, ORACLE_VM, OPEN_VMS, MAC_OS,
+           UNKNOWN)
+
+
+class InitiatorStatus(object):
+    ONLINE = 'online'
+    OFFLINE = 'offline'
+    UNKNOWN = 'unknown'
+
+    ALL = (ONLINE, OFFLINE, UNKNOWN)
