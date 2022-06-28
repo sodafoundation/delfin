@@ -750,21 +750,13 @@ class TestStorageShareTask(test.TestCase):
 class TestStorageHostInitiatorTask(test.TestCase):
     @mock.patch.object(coordination.LOCK_COORDINATOR, 'get_lock')
     @mock.patch('delfin.drivers.api.API.list_storage_host_initiators')
-    @mock.patch('delfin.db.storage_host_initiators_get_all')
-    @mock.patch('delfin.db.storage_host_initiators_delete')
-    @mock.patch('delfin.db.storage_host_initiators_update')
+    @mock.patch('delfin.db.storage_host_initiators_delete_by_storage')
     @mock.patch('delfin.db.storage_host_initiators_create')
     def test_sync_successful(self, mock_storage_host_initiator_create,
-                             mock_storage_host_initiator_update,
-                             mock_storage_host_initiator_del,
-                             mock_storage_host_initiators_get_all,
+                             mock_storage_host_initiator_delete_by_storage,
                              mock_list_storage_host_initiators, get_lock):
         storage_host_initiator_obj = resources.StorageHostInitiatorTask(
             context, 'c5c91c98-91aa-40e6-85ac-37a1d3b32bda')
-        storage_host_initiator_obj.sync()
-        self.assertTrue(mock_list_storage_host_initiators.called)
-        self.assertTrue(mock_storage_host_initiators_get_all.called)
-        self.assertTrue(get_lock.called)
 
         # Collect the storage host initiators from fake_storage
         fake_storage_obj = fake_storage.FakeStorageDriver()
@@ -772,24 +764,9 @@ class TestStorageHostInitiatorTask(test.TestCase):
         # Add the storage host initiators to DB
         mock_list_storage_host_initiators.return_value \
             = fake_storage_obj.list_storage_host_initiators(context)
-        mock_storage_host_initiators_get_all.return_value = list()
         storage_host_initiator_obj.sync()
+        self.assertTrue(mock_storage_host_initiator_delete_by_storage.called)
         self.assertTrue(mock_storage_host_initiator_create.called)
-
-        # Update the storage host initiators to DB
-        mock_list_storage_host_initiators.return_value \
-            = storage_host_initiators_list
-        mock_storage_host_initiators_get_all.return_value \
-            = storage_host_initiators_list
-        storage_host_initiator_obj.sync()
-        self.assertTrue(mock_storage_host_initiator_update.called)
-
-        # Delete the storage host initiators to DB
-        mock_list_storage_host_initiators.return_value = list()
-        mock_storage_host_initiators_get_all.return_value \
-            = storage_host_initiators_list
-        storage_host_initiator_obj.sync()
-        self.assertTrue(mock_storage_host_initiator_del.called)
 
     @mock.patch('delfin.db.storage_host_initiators_delete_by_storage')
     def test_remove(self, mock_storage_host_initiators_del):

@@ -41,6 +41,9 @@ class RestHandler(RestClient):
     REST_HGROUP_CONNECT_URL = '/api/1.17/hgroup?connect=true'
     REST_HGROUP_URL = '/api/1.17/hgroup'
     REST_VOLUME_GROUP_URL = '/api/1.17/vgroup'
+    REST_ARRAY_HISTORICAL_URL = '/api/1.17/array?action=monitor&historical=1h'
+    REST_VOLUME_HISTORICAL_URL =\
+        '/api/1.17/volume?action=monitor&historical=1h'
 
     def __init__(self, **kwargs):
         super(RestHandler, self).__init__(**kwargs)
