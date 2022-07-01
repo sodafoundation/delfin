@@ -56,18 +56,18 @@ Ubuntu 16.04, Ubuntu 18.04
          root@root:/prometheus/prometheus-2.20.0.linux-amd64$ ./prometheus
         ```
 # Structure of the installer
-This installer comes with options of pre-check, install and uninstall
-pre-check: This script checks for the components required by delfin to function. If they are not present, precheck will install them.
-Install: Installs and starts the delfin process
-Uninstall: Uninstalls the delfin. Doesn't uninstall the required components. You may need to uninstall it explicitly using the native approach.
+This installer comes with the following options:  
+  - `pre-check`: This script checks for the components required by delfin to function. If they are not present, precheck will install them.
+  - `install`: Installs and starts the delfin process
+  - `uninstall`: Uninstalls delfin processes only. Does not uninstall the required components. You may need to uninstall it explicitly using the native approach.
 
 # How to install
 To get help, execute 'install -h'. It will show help information
 
 Install script can be executed with three different switches to:
-- either do a pre-check [./install -p]
-- only run the installer without doing pre-check (if pre-check has been executed explicitly) [./install -s]
-- execute pre-check as well the install [./install]
+- either do a pre-check: `./install -p`
+- only run the installer without doing pre-check (if pre-check has been executed explicitly): `./install -s`
+- execute pre-check as well the install: `./install`
 
 #### For the available options for install, you can execute 'install -h'
 ```sh
