@@ -39,9 +39,10 @@ def create_perf_job(context, storage_id, capabilities):
     task = dict()
     task.update(storage_id=storage_id)
     task.update(args=capabilities.get('resource_metrics'))
-    task.update(interval=CONF.telemetry.performance_collection_interval)
-    task.update(
-        method=constants.TelemetryCollection.PERFORMANCE_TASK_METHOD)
+    task.update(interval=capabilities.get('collect_interval')
+                if capabilities.get('collect_interval')
+                else CONF.telemetry.performance_collection_interval)
+    task.update(method=constants.TelemetryCollection.PERFORMANCE_TASK_METHOD)
     db.task_create(context=context, values=task)
     # Add it to RabbitMQ
     filters = {'storage_id': storage_id}

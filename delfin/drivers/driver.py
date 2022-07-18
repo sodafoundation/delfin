@@ -184,9 +184,37 @@ class StorageDriver(object):
 
     @staticmethod
     def get_capabilities(context, filters=None):
-        """Get capability of driver, please refer to
-        STORAGE_CAPABILITIES_SCHEMA
-        in api/schemas/storage_capabilities_schema.py."""
+        """Get capability of driver:
+        is_historic (bool): required
+        performance_metric_retention_window (int): optional, default is None
+        collect_interval (int): optional, default is
+            TelemetryCollection.DEF_PERFORMANCE_COLLECTION_INTERVAL
+            in common/constants.py
+        failed_job_collect_interval (int): optional, default is
+            TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL
+            in common/constants.py
+        resource_metrics (dict): required, please refer to
+            STORAGE_CAPABILITIES_SCHEMA
+            in api/schemas/storage_capabilities_schema.py.
+
+        For example:
+        {
+            'is_historic': True,
+            'performance_metric_retention_window': 4500,
+            'collect_interval': 900
+            'failed_job_collect_interval': 900,
+            'resource_metrics': {
+                'storage': {
+                    'iops': {
+                        'unit': 'IOPS',
+                        'description': 'Read/write operations per second'
+                    },
+                    ...
+                },
+                ...
+            }
+        }
+        """
         pass
 
     def list_storage_host_initiators(self, context):

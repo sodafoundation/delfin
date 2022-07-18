@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from unittest import mock
 
+import retrying
 from oslo_utils import importutils
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
@@ -21,6 +21,8 @@ from pysnmp.entity import engine, config
 from delfin import exception
 from delfin import test
 from delfin.tests.unit.alert_manager import fakes
+
+retrying.retry = fakes.fake_retry
 
 
 class TrapReceiverTestCase(test.TestCase):

@@ -51,12 +51,12 @@ global_opts = [
                        default=netutils.get_my_ipv4(),
                        sample_default='<your_ip>',
                        help='IP address of this host.'),
-    cfg.HostAddressOpt('host',
-                       default=socket.gethostname(),
-                       sample_default='<your_hostname>',
-                       help='Name of this node.  This can be an opaque '
-                            'identifier. It is not necessarily a hostname, '
-                            'FQDN, or IP address.'),
+    cfg.HostnameOpt('host',
+                    default=socket.gethostname(),
+                    sample_default='<your_hostname>',
+                    help='Name of this node.  This can be an opaque '
+                         'identifier. It is not necessarily a hostname, '
+                         'FQDN, or IP address.'),
     cfg.ListOpt('delfin_api_ext_list',
                 default=[],
                 help='Specify list of extensions to load when using '
