@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import six
 
+from retrying import Retrying
 from pysnmp.carrier.asyncore.dispatch import AsyncoreDispatcher
 
 from delfin import exception
@@ -123,6 +125,39 @@ def fake_v2_alert_source():
             'version': 'snmpv2c',
             'community_string': 'YWJjZDEyMzQ1Njc=',
             }
+
+
+def fake_retry(*dargs, **dkw):
+    """
+    Decorator function that instantiates the Retrying object
+    @param *dargs: positional arguments passed to Retrying object
+    @param **dkw: keyword arguments passed to the Retrying object
+    """
+    if dkw.get('stop_max_attempt_number'):
+        dkw['stop_max_attempt_number'] = 1
+
+    # support both @retry and @retry() as valid syntax
+    if len(dargs) == 1 and callable(dargs[0]):
+        def wrap_simple(f):
+
+            @six.wraps(f)
+            def wrapped_f(*args, **kw):
+                return Retrying().call(f, *args, **kw)
+
+            return wrapped_f
+
+        return wrap_simple(dargs[0])
+
+    else:
+        def wrap(f):
+
+            @six.wraps(f)
+            def wrapped_f(*args, **kw):
+                return Retrying(*dargs, **dkw).call(f, *args, **kw)
+
+            return wrapped_f
+
+        return wrap
 
 
 FAKE_STOTRAGE = {
