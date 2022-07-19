@@ -116,6 +116,10 @@ class PerformanceCollectionHandler(object):
             performance_metric_retention_window \
                 = capabilities.get('performance_metric_retention_window')
 
+            if capabilities.get('failed_job_collect_interval'):
+                failed_task_interval = \
+                    TelemetryCollection.FAILED_JOB_SCHEDULE_INTERVAL
+
             if performance_metric_retention_window:
                 collection_window = performance_metric_retention_window \
                     if performance_metric_retention_window <= CONF.telemetry \

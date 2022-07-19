@@ -156,8 +156,8 @@ class StorageController(wsgi.Controller):
             try:
                 _set_synced_if_ok(ctxt, storage['id'], resource_count)
             except exception.InvalidInput as e:
-                LOG.warn('Can not start new sync task for %s, reason is %s'
-                         % (storage['id'], e.msg))
+                LOG.warning('Can not start new sync task for %s, reason is %s'
+                            % (storage['id'], e.msg))
                 continue
             else:
                 for subclass in \

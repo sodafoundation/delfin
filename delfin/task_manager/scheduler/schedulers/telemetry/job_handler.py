@@ -101,11 +101,9 @@ class JobHandler(object):
             self.scheduler.add_job(
                 instance, 'interval', seconds=job['interval'],
                 next_run_time=next_collection_time, id=job_id,
-                misfire_grace_time=int(
-                    CONF.telemetry.performance_collection_interval / 2))
+                misfire_grace_time=int(job['interval'] / 2))
 
-            update_task_dict = {'job_id': job_id
-                                }
+            update_task_dict = {'job_id': job_id}
             db.task_update(self.ctx, self.task_id, update_task_dict)
             self.job_ids.add(job_id)
             LOG.info('Periodic collection tasks scheduled for for job id: '
@@ -219,9 +217,7 @@ class FailedJobHandler(object):
                     instance, 'interval',
                     seconds=job['interval'],
                     next_run_time=datetime.now(), id=job_id,
-                    misfire_grace_time=int(
-                        CONF.telemetry.performance_collection_interval / 2)
-                )
+                    misfire_grace_time=int(job['interval'] / 2))
                 self.job_ids.add(job_id)
 
         except Exception as e:

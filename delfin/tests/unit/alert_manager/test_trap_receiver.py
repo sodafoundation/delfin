@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from unittest import mock
 
+import retrying
 from oslo_utils import importutils
 from pysnmp.carrier.asyncore.dgram import udp
 from pysnmp.entity import engine, config
@@ -21,6 +21,8 @@ from pysnmp.entity import engine, config
 from delfin import exception
 from delfin import test
 from delfin.tests.unit.alert_manager import fakes
+
+retrying.retry = fakes.fake_retry
 
 
 class TrapReceiverTestCase(test.TestCase):
@@ -87,10 +89,11 @@ class TrapReceiverTestCase(test.TestCase):
 
     def test_add_transport_exception(self):
         trap_receiver_inst = self._get_trap_receiver()
-
+        exception_msg = r"int\(\) argument must be a string, " \
+                        "a bytes-like object or a number, not 'NoneType'"
         # Mock exception by not initialising snmp engine
-        self.assertRaisesRegex(ValueError,
-                               "Port binding failed: Port is in use",
+        self.assertRaisesRegex(exception.DelfinException,
+                               exception_msg,
                                trap_receiver_inst._add_transport)
 
     @mock.patch('pysnmp.carrier.asyncore.dispatch.AbstractTransportDispatcher'
@@ -133,7 +136,7 @@ class TrapReceiverTestCase(test.TestCase):
         ctxt = {}
         alert_config = {'storage_id': 'abcd-1234-5678',
                         'version': 'snmpv2c',
-                        'community_string': 'public'}
+                        'community_string': b'public'}
         trap_receiver_inst = self._get_trap_receiver()
         trap_receiver_inst.snmp_engine = engine.SnmpEngine()
         trap_receiver_inst.sync_snmp_config(ctxt,
@@ -169,7 +172,7 @@ class TrapReceiverTestCase(test.TestCase):
         ctxt = {}
         alert_source_config = {'storage_id': 'abcd-1234-5678',
                                'version': 'snmpv4',
-                               'community_string': 'public'}
+                               'community_string': b'public'}
         trap_receiver_inst = self._get_trap_receiver()
         trap_receiver_inst.snmp_engine = engine.SnmpEngine()
         self.assertRaisesRegex(exception.InvalidSNMPConfig, "Invalid snmp "
