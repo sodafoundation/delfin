@@ -412,6 +412,76 @@ def fake_volume_show(context, volume_id):
     }
 
 
+def fake_disk_get_all(context, marker=None,
+                      limit=None, sort_keys=None,
+                      sort_dirs=None, filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "Nam",
+            "native_disk_id": "5f5c806d-2e65-473c-b612",
+            "physical_type": "P",
+            "logical_type": "L",
+            "status": "Connected",
+            "location": "Lo",
+            "storage_id": "3b-3f-4f-5f-5f",
+            "native_disk_group_id": "NDG",
+            "serial_number": "234-fgh",
+            "manufacturer": "Man",
+            "model": "GA4",
+            "firmware": "Firm",
+            "speed": 5000,
+            "capacity": 2000000,
+            "health_score": 89,
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "Nam",
+            "native_disk_id": "5f5c806d-2e65-473c-b612",
+            "physical_type": "P2",
+            "logical_type": "L2",
+            "status": "Connected2",
+            "location": "Lo2",
+            "storage_id": "3b-3f-4f-5f-5f2",
+            "native_disk_group_id": "NDG2",
+            "serial_number": "234-fgh2",
+            "manufacturer": "Man2",
+            "model": "GA42",
+            "firmware": "Firm2",
+            "speed": 50003,
+            "capacity": 20000003,
+            "health_score": 893,
+        }
+    ]
+
+
+def fake_disk_show(context, disk_id):
+    return {
+        "created_at": "2020-06-10T07:17:31.157079",
+        "updated_at": "2020-06-10T07:17:31.157079",
+        "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+        "name": "Nam",
+        "native_disk_id": "5f5c806d-2e65-473c-b612",
+        "physical_type": "P",
+        "logical_type": "L",
+        "status": "Connected",
+        "location": "Lo",
+        "storage_id": "3b-3f-4f-5f-5f",
+        "native_disk_group_id": "NDG",
+        "serial_number": "234-fgh",
+        "manufacturer": "Man",
+        "model": "GA4",
+        "firmware": "Firm",
+        "speed": 5000,
+        "capacity": 2000000,
+        "health_score": 89,
+    }
+
+
 def fake_storage_pool_get_all(context, marker=None,
                               limit=None, sort_keys=None,
                               sort_dirs=None, filters=None, offset=None):
