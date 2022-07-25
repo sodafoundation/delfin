@@ -412,6 +412,82 @@ def fake_volume_show(context, volume_id):
     }
 
 
+def fake_ports_get_all(context, marker=None,
+                       limit=None, sort_keys=None, sort_dirs=None,
+                       filters=None, offset=None):
+    return [
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "native_port_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "location": "localhost",
+            "type": "p_type_1",
+            "logical_type": "logical_p_type_1",
+            "connection_status": "connected",
+            "health_status": "hs1",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "native_parent_id": "NP_ID_1",
+            "speed": 100000,
+            "max_speed": 1000000,
+            "wwn": "wwn1",
+            "mac_address": "2c-54-91-88-c9-e3",
+            "ipv4": "127.0.0.1",
+            "ipv4_mask": "255.255.255.0",
+            "ipv6": "192.168.159.130",
+            "ipv6_mask": "255.255.255.255.255.0",
+        },
+        {
+            "created_at": "2020-06-10T07:17:31.157079",
+            "updated_at": "2020-06-10T07:17:31.157079",
+            "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+            "name": "004DF",
+            "native_port_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "location": "localhost:80",
+            "type": "p_type_2",
+            "logical_type": "logical_p_type_2",
+            "connection_status": "not_connected",
+            "health_status": "hs2",
+            "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+            "native_parent_id": "NP_ID_2",
+            "speed": 110000,
+            "max_speed": 1100000,
+            "wwn": "wwn2",
+            "mac_address": "2c-54-91-88-c9-e4",
+            "ipv4": "127.0.0.2",
+            "ipv4_mask": "255.255.255.0",
+            "ipv6": "192.168.159.131",
+            "ipv6_mask": "255.255.255.255.255.0",
+        }
+    ]
+
+
+def fake_port_show(context, port_id):
+    return {
+        "created_at": "2020-06-10T07:17:31.157079",
+        "updated_at": "2020-06-10T07:17:31.157079",
+        "id": "d7fe425b-fddc-4ba4-accb-4343c142dc47",
+        "name": "004DF",
+        "native_port_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+        "location": "localhost",
+        "type": "p_type_1",
+        "logical_type": "logical_p_type_1",
+        "connection_status": "connected",
+        "health_status": "hs1",
+        "storage_id": "5f5c806d-2e65-473c-b612-345ef43f0642",
+        "native_parent_id": "NP_ID_1",
+        "speed": 100000,
+        "max_speed": 1000000,
+        "wwn": "wwn1",
+        "mac_address": "2c-54-91-88-c9-e3",
+        "ipv4": "127.0.0.1",
+        "ipv4_mask": "255.255.255.0",
+        "ipv6": "192.168.159.130",
+        "ipv6_mask": "255.255.255.255.255.0",
+    }
+
+
 def fake_storage_pool_get_all(context, marker=None,
                               limit=None, sort_keys=None,
                               sort_dirs=None, filters=None, offset=None):
