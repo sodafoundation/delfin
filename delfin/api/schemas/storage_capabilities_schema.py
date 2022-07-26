@@ -494,6 +494,18 @@ STORAGE_CAPABILITIES_SCHEMA = {
                                                 'maxLength': 255}
                             },
                         },
+                        ControllerMetric.CPU_USAGE.name: {
+                            'type': 'object',
+                            'properties': {
+                                'unit': {'type': 'string',
+                                         'enum': [ControllerMetric.CPU_USAGE
+                                                  .unit]
+                                         },
+                                'description': {'type': 'string',
+                                                'minLength': 1,
+                                                'maxLength': 255}
+                            },
+                        }
                     },
                     'additionalProperties': False
                 },
