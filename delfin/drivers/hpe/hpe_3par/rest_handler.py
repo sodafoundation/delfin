@@ -52,7 +52,6 @@ class RestHandler(object):
     def __init__(self, rest_client):
         self.rest_client = rest_client
         self.session_lock = threading.Lock()
-        self.session_len = 50
 
     def call(self, url, data=None, method=None):
         """Send requests to server.
@@ -152,7 +151,6 @@ class RestHandler(object):
                     self.rest_client.session.headers[
                         RestHandler.REST_AUTH_KEY] = cryptor.encode(
                         access_session)
-                    self.session_len = len(access_session)
                 else:
                     LOG.error("Login error. URL: %(url)s\n"
                               "Reason: %(reason)s.",
@@ -194,17 +192,18 @@ class RestHandler(object):
 
     def call_with_token(self, url, data=None, method='GET',
                         calltimeout=consts.SOCKET_TIMEOUT):
-        auth_key = None
-        if self.rest_client.session:
-            auth_key = self.rest_client.session.headers.get(
-                RestHandler.REST_AUTH_KEY, None)
-            if auth_key and len(auth_key) > self.session_len:
+        with self.session_lock:
+            auth_key = None
+            if self.rest_client.session:
+                auth_key = self.rest_client.session.headers.get(
+                    RestHandler.REST_AUTH_KEY, None)
+                if auth_key:
+                    self.rest_client.session.headers[
+                        RestHandler.REST_AUTH_KEY] = cryptor.decode(auth_key)
+            res = self.rest_client.do_call(url, data, method, calltimeout)
+            if auth_key:
                 self.rest_client.session.headers[
-                    RestHandler.REST_AUTH_KEY] = cryptor.decode(auth_key)
-        res = self.rest_client.do_call(url, data, method, calltimeout)
-        if auth_key and len(auth_key) > self.session_len:
-            self.rest_client.session.headers[
-                RestHandler.REST_AUTH_KEY] = auth_key
+                    RestHandler.REST_AUTH_KEY] = auth_key
         return res
 
     def get_storage(self):
