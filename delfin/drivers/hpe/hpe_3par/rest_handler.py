@@ -177,7 +177,7 @@ class RestHandler(object):
             url = RestHandler.REST_LOGOUT_URL
             if self.rest_client.rest_auth_token is not None:
                 url = '%s%s' % (
-                url, cryptor.decode(self.rest_client.rest_auth_token))
+                    url, cryptor.decode(self.rest_client.rest_auth_token))
             self.rest_client.rest_auth_token = None
             if self.rest_client.san_address:
                 self.call(url, method='DELETE')
