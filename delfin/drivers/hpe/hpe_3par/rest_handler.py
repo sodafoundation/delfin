@@ -147,7 +147,8 @@ class RestHandler(object):
                     result = res.json()
 
                     access_session = result.get('key')
-                    self.rest_client.rest_auth_token = access_session
+                    self.rest_client.rest_auth_token = cryptor.encode(
+                        access_session)
                     self.rest_client.session.headers[
                         RestHandler.REST_AUTH_KEY] = cryptor.encode(
                         access_session)
@@ -175,7 +176,8 @@ class RestHandler(object):
         try:
             url = RestHandler.REST_LOGOUT_URL
             if self.rest_client.rest_auth_token is not None:
-                url = '%s%s' % (url, self.rest_client.rest_auth_token)
+                url = '%s%s' % (
+                url, cryptor.decode(self.rest_client.rest_auth_token))
             self.rest_client.rest_auth_token = None
             if self.rest_client.san_address:
                 self.call(url, method='DELETE')
