@@ -645,7 +645,10 @@ def fake_get_capabilities(context, storage_id):
                         "unit": ControllerMetric.WRITE_IOPS.unit,
                         "description": ControllerMetric.WRITE_IOPS.description
                     },
-
+                    ControllerMetric.CPU_USAGE.name: {
+                        "unit": ControllerMetric.CPU_USAGE.unit,
+                        "description": ControllerMetric.CPU_USAGE.description
+                    }
                 },
                 ResourceType.PORT: {
                     PortMetric.THROUGHPUT.name: {
