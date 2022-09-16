@@ -2,8 +2,8 @@
 This is a standalone/non-containerized installer for SODA Infrastructure Manager (delfin) project.
 It contains a script and options to check the environment feasible for installing delfin. Installs required dependent software/binaries.
 
-# Supported OS
-Ubuntu 16.04, Ubuntu 18.04
+# Supported OS version
+Ubuntu 16.04, Ubuntu 18.04, Ubuntu 22.04
 
 # Prerequisite
 

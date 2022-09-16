@@ -6,8 +6,8 @@ These tests are using [Robot Framework](https://robotframework.org/) for automat
 The end-to-end tests are run against a test driver provided in the path `delfin/tests/e2e/testdriver`.
 This test driver uses, included storage details in file `delfin/tests/e2e/testdriver/storage.json` for storage simulation when testing.
 
-# Supported OS
-Ubuntu 18.04
+# Supported OS version
+Ubuntu 16.04, Ubuntu 18.04, Ubuntu 22.04
 
 # Prerequisite
 Prerequisite for [standalone installer](https://github.com/sodafoundation/delfin/blob/master/installer/README.md) is applicable here too.
