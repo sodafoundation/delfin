@@ -280,8 +280,9 @@ class SSHHandler(object):
                 'total_mdisk_capacity'))
             subscribed_capacity = self.parse_string(storage_map.get(
                 'virtual_capacity'))
-            if int(free_capacity + used_capacity) > raw_capacity:
-                raw_capacity = int(free_capacity + used_capacity)
+            total_capacity = int(free_capacity + used_capacity)
+            if total_capacity > raw_capacity:
+                raw_capacity = total_capacity
             firmware_version = ''
             if storage_map.get('code_level') is not None:
                 firmware_version = storage_map.get('code_level').split(' ')[0]
@@ -293,7 +294,7 @@ class SSHHandler(object):
                 'serial_number': serial_number,
                 'firmware_version': firmware_version,
                 'location': location,
-                'total_capacity': int(free_capacity + used_capacity),
+                'total_capacity': total_capacity,
                 'raw_capacity': int(raw_capacity),
                 'subscribed_capacity': int(subscribed_capacity),
                 'used_capacity': int(used_capacity),
