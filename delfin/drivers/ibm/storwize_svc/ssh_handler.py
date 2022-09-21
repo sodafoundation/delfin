@@ -809,12 +809,11 @@ class SSHHandler(object):
             value = value / interval / units.Mi
         elif 'IOSIZE' in metric_type.upper():
             value = value / units.Ki
-        elif 'IOPS' in metric_type.upper() or 'RESPONSETIME' \
-                in metric_type.upper():
+        elif 'IOPS' in metric_type.upper():
+            value = int(value / interval)
+        elif 'RESPONSETIME' in metric_type.upper():
             value = value / interval
         value = round(value, 3)
-        if 'IOPS' in metric_type.upper():
-            value = int(value)
         if metric_map.get(res_id):
             if metric_map.get(res_id).get(metric_type):
                 if metric_map.get(res_id).get(metric_type).get(
