@@ -257,7 +257,7 @@ class MsHandler(object):
                 volume.get('DeviceID') else volume.get('WWN'),
                 'total_capacity': total_capacity,
                 'used_capacity': used_capacity,
-                'free_capacity': digital_constant.ZERO_INT
+                'free_capacity': total_capacity - used_capacity
             }
             volume_list.append(volume_model)
         return volume_list

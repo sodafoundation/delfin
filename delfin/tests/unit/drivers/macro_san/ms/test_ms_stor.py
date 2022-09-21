@@ -185,28 +185,43 @@ Command completed successfully.\r
 (null)@(null) ODSP CLI> """
 VOLUME_TWO_NEW = """(null)@(null) ODSP CLI> lun mgt query -n SYS-LUN-Log\r
 Name: SYS-LUN-Log\r
-WWN: 600B342EF209582D8D07D1EE4D0000DA\r
+WWN: 600B3423899AC1EDB125DCAE6D4E00D0\r
+NGUID: 040F09004EE6CA2500B342B11EAC9938\r
 Type: Standard-LUN\r
 Is RDV LUN: No\r
-Total Logical Size: 4GB (209715200sector)\r
-Total Physical Size: 4GB (209715200sector)\r
-Thin-Provisioning: Disable\r
+Total Logical Size: 1GB (2097152sector)\r
+Total Physical Size: 1GB (2097152sector)\r
+Thin-Provisioning: Enable\r
+Thin-LUN Extent Size: 16KB\r
+Thin-LUN Private-area Allocate Mode: SSD RAID First\r
+Thin-LUN Data-area Allocate Mode: HDD RAID First\r
+Thin-LUN Expand Threshold: 30GB\r
+Thin-LUN Expand Step Size: 50GB\r
+Thin-LUN Allocated Physical Capacity: 1GB\r
+Thin-LUN Allocated Physical Capacity Percentage: 100.0%\r
+Thin-LUN Used Capacity: 3956KB\r
+Thin-LUN Used Capacity Percentage: 0.0%\r
+Thin-LUN Unused Capacity: 1,048,576KB\r
+Thin-LUN Unused Capacity Percentage: 100.0%\r
+Thin-LUN Distribute Mode: Single\r
+Thin-LUN Dedup Switch: Disable\r
+Thin-LUN Compress Switch: Disable\r
 Default Owner(SP): SP1\r
 Current Owner(SP): SP1\r
 Owner(Group): N/A\r
-Owner(Pool): SYS-Pool\r
+Owner(Pool): Pool-1\r
 Health Status: Normal\r
 Ua_type: ALUA\r
 Is Reserved: No\r
 Is Foreign: No\r
-Write Zero Status: Disable\r
-Created Time: 2020/03/02 17:49:15\r
+Created Time: 2022/08/29 17:36:37\r
 Read Cache: Enable\r
 Read Cache Status: Enable\r
 Write Cache: Enable\r
 Write Cache Status: Enable\r
 Mapped to Client: No\r
-LUN UUID: 0x50b34200-154800ee-a8746477-234b74a7\r
+LUN UUID: 0x00b34204-0f09004e-e6ca25b1-1eac9938\r
+Thin-LUN private UUID: 0x00b34204-0f09006f-6c27276c-a6d3f14b\r
 \r
 Command completed successfully.\r
 (null)@(null) ODSP CLI> """
@@ -218,15 +233,25 @@ Command completed successfully.\r
 VOLUMES_DATA = [
     {'name': 'SYS-LUN-Config', 'storage_id': '12345', 'status': 'normal',
      'native_volume_id': 'SYS-LUN-Config',
-     'native_storage_pool_id': 'SYS-Pool',
-     'type': 'thick', 'wwn': '600B342F1B0F9ABD7BABD272BD0000DA',
-     'total_capacity': 4294967296.0, 'used_capacity': 4294967296.0,
-     'free_capacity': 0},
+     'native_storage_pool_id': 'SYS-Pool', 'type': 'thick',
+     'wwn': '600B342F1B0F9ABD7BABD272BD0000DA', 'total_capacity': 4294967296.0,
+     'used_capacity': 4294967296.0, 'free_capacity': 0.0},
+    {'name': 'SYS-LUN-Log', 'storage_id': '12345', 'status': 'normal',
+     'native_volume_id': 'SYS-LUN-Log', 'native_storage_pool_id': 'Pool-1',
+     'type': 'thin', 'wwn': '600B3423899AC1EDB125DCAE6D4E00D0',
+     'total_capacity': 1073741824.0, 'used_capacity': 4050944.0,
+     'free_capacity': 1069690880.0}]
+THICK_VOLUMES_DATA = [
+    {'name': 'SYS-LUN-Config', 'storage_id': '12345', 'status': 'normal',
+     'native_volume_id': 'SYS-LUN-Config',
+     'native_storage_pool_id': 'SYS-Pool', 'type': 'thick',
+     'wwn': '600B342F1B0F9ABD7BABD272BD0000DA', 'total_capacity': 4294967296.0,
+     'used_capacity': 4294967296.0, 'free_capacity': 0.0},
     {'name': 'SYS-LUN-Log', 'storage_id': '12345', 'status': 'normal',
      'native_volume_id': 'SYS-LUN-Log', 'native_storage_pool_id': 'SYS-Pool',
      'type': 'thick', 'wwn': '600B342EF209582D8D07D1EE4D0000DA',
      'total_capacity': 4294967296.0, 'used_capacity': 4294967296.0,
-     'free_capacity': 0}]
+     'free_capacity': 0.0}]
 VERSION_INFO = """(null)@(null) ODSP CLI> system mgt getversion\r
 [SP1 Version]\r
 SP1 ODSP_MSC Version: V2.0.14T04\r
@@ -961,7 +986,7 @@ class test_macro_san_driver(TestCase):
                          VOLUME_INFO, VOLUME_QUERY_ONE, VOLUME_QUERY_TWO,
                          VOLUME_TWO_INFO])
         volumes = self.driver.list_volumes(context)
-        self.assertListEqual(volumes, VOLUMES_DATA)
+        self.assertListEqual(volumes, THICK_VOLUMES_DATA)
 
     def test_list_volumes_new(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
