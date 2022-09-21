@@ -280,6 +280,8 @@ class SSHHandler(object):
                 'total_mdisk_capacity'))
             subscribed_capacity = self.parse_string(storage_map.get(
                 'virtual_capacity'))
+            if int(free_capacity + used_capacity) > raw_capacity:
+                raw_capacity = int(free_capacity + used_capacity)
             firmware_version = ''
             if storage_map.get('code_level') is not None:
                 firmware_version = storage_map.get('code_level').split(' ')[0]
@@ -810,6 +812,8 @@ class SSHHandler(object):
                 in metric_type.upper():
             value = value / interval
         value = round(value, 3)
+        if 'IOPS' in metric_type.upper():
+            value = int(value)
         if metric_map.get(res_id):
             if metric_map.get(res_id).get(metric_type):
                 if metric_map.get(res_id).get(metric_type).get(
@@ -929,12 +933,12 @@ class SSHHandler(object):
         rht = 0
         wht = 0
         if resource_type == constants.ResourceType.PORT:
-            rb = int(file_data.get('cbr')) + int(file_data.get('hbr')) + int(
+            rb = (int(file_data.get('cbr')) + int(file_data.get('hbr')) + int(
                 file_data.get('lnbr')) + int(
-                file_data.get('rmbr')) * SSHHandler.BYTES_TO_BIT
-            wb = int(file_data.get('cbt')) + int(file_data.get('hbt')) + int(
+                file_data.get('rmbr'))) * SSHHandler.BYTES_TO_BIT
+            wb = (int(file_data.get('cbt')) + int(file_data.get('hbt')) + int(
                 file_data.get('lnbt')) + int(
-                file_data.get('rmbt')) * SSHHandler.BYTES_TO_BIT
+                file_data.get('rmbt'))) * SSHHandler.BYTES_TO_BIT
             ro = int(file_data.get('cer')) + int(file_data.get('her')) + int(
                 file_data.get('lner')) + int(file_data.get('rmer'))
             wo = int(file_data.get('cet')) + int(file_data.get('het')) + int(
