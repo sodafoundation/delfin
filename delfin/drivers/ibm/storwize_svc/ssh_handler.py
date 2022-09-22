@@ -62,10 +62,13 @@ class SSHHandler(object):
         'fc': constants.DiskPhysicalType.FC,
         'sas_direct': constants.DiskPhysicalType.SAS
     }
-    DISK_TYPEMAP = {
+    DISK_STATUS_MAP = {
         'online': constants.DiskStatus.NORMAL,
         'offline': constants.DiskStatus.OFFLINE,
-        'excluded': constants.DiskStatus.ABNORMAL
+        'excluded': constants.DiskStatus.ABNORMAL,
+        'degraded_paths': constants.DiskStatus.DEGRADED,
+        'degraded_ports': constants.DiskStatus.DEGRADED,
+        'degraded': constants.DiskStatus.DEGRADED
     }
     VOLUME_PERF_METRICS = {
         'readIops': 'ro',
@@ -552,8 +555,8 @@ class SSHHandler(object):
                 deltail_info = self.exec_ssh_command(detail_command)
                 disk_map = {}
                 self.handle_detail(deltail_info, disk_map, split=' ')
-                status = SSHHandler.DISK_TYPEMAP.get(
-                    disk_map.get('status'), constants.DiskStatus.DEGRADED)
+                status = SSHHandler.DISK_STATUS_MAP.get(
+                    disk_map.get('status'), constants.DiskStatus.ABNORMAL)
                 physical_type = SSHHandler.DISK_PHYSICAL_TYPE.get(
                     disk_map.get('fabric_type'),
                     constants.DiskPhysicalType.UNKNOWN)
