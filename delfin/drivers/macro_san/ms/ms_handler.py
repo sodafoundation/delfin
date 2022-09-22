@@ -1162,7 +1162,9 @@ class MsHandler(object):
             sftp = ssh.open_sftp()
             file_name_list = sftp.listdir(consts.FTP_PERF_PATH)
             ms_path = os.getcwd()
-            local_path = consts.ADD_FOLDER.format(ms_path, folder, storage_id)
+            localtime = int(time.mktime(time.localtime())) * units.k
+            local_path = consts.ADD_FOLDER.format(
+                ms_path, folder, storage_id, localtime)
             os.mkdir(local_path)
             for file_name in file_name_list:
                 title_pattern = re.compile(pattern)
