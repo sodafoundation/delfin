@@ -342,8 +342,8 @@ class MsHandler(object):
                     timestamp = \
                         int(datetime.datetime.strptime(
                             time_str, consts.MACRO_SAN_TIME_FORMAT).timestamp()
-                            ) * units.k if time_str is not None else None
-                    if query_para is not None:
+                            ) * units.k if time_str else None
+                    if query_para:
                         if timestamp is None or timestamp \
                                 < int(query_para.get('begin_time')) or \
                                 timestamp > int(query_para.get('end_time')):
