@@ -48,7 +48,8 @@ class MacroSanDriver(driver.StorageDriver):
         return self.ms_handler.list_ports(self.storage_id)
 
     def list_alerts(self, context, query_para=None):
-        return self.ms_handler.list_alert(query_para, self.storage_id)
+        raise NotImplementedError(
+            "Macro_SAN Driver SSH list_alerts() is not Implemented")
 
     @staticmethod
     def parse_alert(context, alert):

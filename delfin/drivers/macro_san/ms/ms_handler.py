@@ -111,14 +111,9 @@ class MsHandler(object):
 
     @staticmethod
     def analysis_model_file(local_path, storage_model):
-        list_dir = os.listdir(consts.TMP_PATH.format(local_path))
+        list_dir = os.listdir(local_path)
         for dir_name in list_dir:
-            title_pattern = re.compile(consts.STORAGE_INFO_REGULAR)
-            title_search_obj = title_pattern.search(dir_name)
-            if not title_search_obj:
-                continue
-            excel = xlrd.open_workbook(
-                consts.TMP_FILE_PATH.format(local_path, dir_name))
+            excel = xlrd.open_workbook('{}/{}'.format(local_path, dir_name))
             sheet = excel[consts.digital_constant.ZERO_INT]
             rows_data_list = sheet.row_values(consts.digital_constant.ONE_INT)
             for rows_data in rows_data_list:
@@ -130,38 +125,30 @@ class MsHandler(object):
         return storage_model
 
     def download_model_file(self, storage_id):
-        sp = self.get_controller()
         sftp = None
-        tar = None
         local_path = ''
         try:
             ssh = self.ssh_pool.create()
             sftp = ssh.open_sftp()
-            file_name_list = sftp.listdir(consts.FTP_PATH_DIAGINFO)
+            file_name_list = sftp.listdir(consts.FTP_PATH_TMP)
             for file_name in file_name_list:
-                title_pattern = re.compile(consts.MODEL_REGULAR)
+                title_pattern = re.compile(consts.STORAGE_INFO_REGULAR)
                 title_search_obj = title_pattern.search(file_name)
-                if title_search_obj and sp in file_name:
-                    full_name_list = file_name.split('.')
-                    single_name = \
-                        full_name_list[consts.digital_constant.ZERO_INT]
+                if title_search_obj:
                     os_path = os.getcwd()
+                    localtime = int(time.mktime(time.localtime())) * units.k
                     local_path = consts.MODEL_PATH.format(
-                        os_path, storage_id, single_name)
+                        os_path, storage_id, localtime)
                     os.mkdir(local_path)
                     local_path_file = '{}/{}'.format(local_path, file_name)
-                    sftp.get(consts.FTP_MODEL_FILE_NAME.format(file_name),
+                    sftp.get(consts.FTP_PATH_FILE.format(file_name),
                              local_path_file)
-                    tar = tarfile.open(local_path_file)
-                    tar.extractall(local_path)
                     break
         except Exception as e:
             LOG.error('Failed to down storage model file macro_san %s' %
                       (six.text_type(e)))
         if sftp:
             sftp.close()
-        if tar:
-            tar.close()
         return local_path
 
     def get_firmware_version(self):
@@ -285,94 +272,6 @@ class MsHandler(object):
         total_capacity = Tools.get_capacity_size(total_size)
         return total_capacity
 
-    @staticmethod
-    def get_time_difference():
-        time_difference = time.mktime(
-            time.localtime()) - time.mktime(time.gmtime())
-        return time_difference
-
-    def list_alert(self, query_para, storage_id):
-        alerts_list = []
-        if not self.down_lock:
-            return alerts_list
-        sftp = None
-        local_path = ''
-        try:
-            ssh = self.ssh_pool.create()
-            sftp = ssh.open_sftp()
-            file_name_list = sftp.listdir(consts.FTP_ALERT_PATH)
-            os_path = os.getcwd()
-            local_path = consts.OS_PATH.format(os_path, storage_id)
-            os.mkdir(local_path)
-            for file_name in file_name_list:
-                if consts.ALERT_FILE_NAME in file_name:
-                    local_path_file = '{}/{}'.format(
-                        local_path, file_name)
-                    alert_ftp_path = '{}/{}'.format(
-                        consts.FTP_ALERT_PATH, file_name)
-                    sftp.get(alert_ftp_path, local_path_file)
-        except Exception as e:
-            LOG.error('Failed to list_alert macro_san %s' %
-                      (six.text_type(e)))
-            if os.path.exists(local_path):
-                shutil.rmtree(local_path)
-        if sftp:
-            sftp.close()
-        try:
-            self.get_alert_data(alerts_list, local_path, query_para)
-        except Exception as e:
-            LOG.error('Failed to get_alert_data macro_san %s' %
-                      (six.text_type(e)))
-        if os.path.exists(local_path):
-            shutil.rmtree(local_path)
-        return alerts_list
-
-    def get_alert_data(self, alerts_list, path, query_para):
-        file_name_list = os.listdir(path)
-        for file_name in file_name_list:
-            with codecs.open('{}/{}'.format(path, file_name),
-                             encoding='gbk') as file:
-                for row in file:
-                    list_row = row.split(';')
-                    if len(list_row) < consts.digital_constant.SIXTEEN_INT \
-                            or consts.YES_FIELDS == \
-                            list_row[consts.digital_constant.TWELVE_INT]:
-                        continue
-                    time_str = list_row[consts.digital_constant.ONE_INT]
-                    timestamp = \
-                        int(datetime.datetime.strptime(
-                            time_str, consts.MACRO_SAN_TIME_FORMAT).timestamp()
-                            ) * units.k if time_str else None
-                    if query_para:
-                        if timestamp is None or timestamp \
-                                < int(query_para.get('begin_time')) or \
-                                timestamp > int(query_para.get('end_time')):
-                            continue
-                    self.packaging_alerts(alerts_list, list_row, timestamp)
-
-    @staticmethod
-    def packaging_alerts(alerts_list, list_row, timestamp):
-        alerts_model = dict()
-        alerts_model['occur_time'] = timestamp
-        alert_id = list_row[consts.digital_constant.ZERO_INT]
-        alerts_model['alert_id'] = alert_id
-        alerts_model['severity'] = consts.SEVERITY_MAP.get(
-            list_row[consts.digital_constant.FOUR_INT],
-            constants.Severity.NOT_SPECIFIED)
-        alerts_model['category'] = constants.Category.FAULT
-        alerts_model['location'] = '{}:{}'.format(
-            list_row[consts.digital_constant.TWO_INT],
-            list_row[consts.digital_constant.THREE_INT])
-        alerts_model['type'] = constants.EventType.EQUIPMENT_ALARM
-        alerts_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-        alerts_model['alert_name'] = \
-            list_row[consts.digital_constant.FIVE_INT]
-        alerts_model['match_key'] = hashlib.md5(str(alert_id).
-                                                encode()).hexdigest()
-        alerts_model['description'] = \
-            list_row[consts.digital_constant.SIX_INT].replace('"', '')
-        alerts_list.append(alerts_model)
-
     def list_controllers(self, storage_id):
         controllers_list = []
         sp_map = self.get_storage_version()
@@ -440,7 +339,8 @@ class MsHandler(object):
         disks = self.get_disks()
         for disk in disks:
             disk_name = disk.get('Name')
-            disk_type = disk.get('Type').lower() if disk.get('Type') else None
+            physical = disk.get('Type').lower() if disk.get('Type') else None
+            logical = disk.get('Role').lower() if disk.get('Role') else None
             status = disk.get('HealthStatus').lower() if \
                 disk.get('HealthStatus') else None
             disk_model = {
@@ -457,8 +357,9 @@ class MsHandler(object):
                 'status': consts.DISK_STATUS_MAP.get(
                     status, constants.DiskStatus.NORMAL),
                 'physical_type': consts.DISK_PHYSICAL_TYPE_MAP.get(
-                    disk_type, constants.DiskPhysicalType.UNKNOWN),
-                'logical_type': constants.DiskLogicalType.UNKNOWN
+                    physical, constants.DiskPhysicalType.UNKNOWN),
+                'logical_type': consts.DISK_LOGICAL_TYPE_MAP.get(
+                    logical, constants.DiskLogicalType.UNKNOWN)
             }
             disk_list.append(disk_model)
         return disk_list
@@ -500,12 +401,17 @@ class MsHandler(object):
         try:
             if consts.PARSE_ALERT_DESCRIPTION in alert.keys():
                 alert_name = alert.get(consts.PARSE_ALERT_NAME)
+                alert_name_e = alert_name.lower()
+                alert_name_c = consts.ALERT_NAME_CONFIG.get(
+                    alert_name_e, alert_name)
                 alert_model = dict()
-                description = alert.get(consts.PARSE_ALERT_DESCRIPTION)
+                description = alert.get(consts.PARSE_ALERT_DESCRIPTION)\
+                    .encode('iso-8859-1').decode('gbk')
                 alert_model['alert_id'] = alert.get(
                     consts.PARSE_ALERT_ALERT_ID)
-                alert_model['severity'] = consts.ALERT_SEVERITY_MAP.get(
-                    alert_name, constants.Severity.NOT_SPECIFIED)
+                alert_model['severity'] = consts.PARSE_ALERT_SEVERITY_MAP.get(
+                    alert.get(consts.PARSE_ALERT_SEVERITY),
+                    constants.Severity.NOT_SPECIFIED)
                 alert_model['category'] = constants.Category.FAULT
                 alert_model['occur_time'] = Tools().time_str_to_timestamp(
                     alert.get(consts.PARSE_ALERT_TIME), consts.TIME_PATTERN)
@@ -515,9 +421,8 @@ class MsHandler(object):
                     alert.get(consts.PARSE_ALERT_LOCATION))
                 alert_model['type'] = constants.EventType.EQUIPMENT_ALARM
                 alert_model['resource_type'] = constants.DEFAULT_RESOURCE_TYPE
-                alert_model['alert_name'] = alert.get(
-                    consts.PARSE_ALERT_NAME)
-                match_key = '{}{}'.format(alert_name, description)
+                alert_model['alert_name'] = alert_name_c
+                match_key = '{}{}'.format(alert_name_c, description)
                 alert_model['match_key'] = hashlib.md5(
                     match_key.encode()).hexdigest()
                 return alert_model

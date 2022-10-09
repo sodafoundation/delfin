@@ -15,6 +15,7 @@ import sys
 from unittest import TestCase, mock
 
 import paramiko
+import six
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 import time
@@ -368,7 +369,7 @@ Command completed successfully.\r
 (null)@(null) ODSP CLI> """
 DISK_ONE = """(null)@(null) ODSP CLI> disk mgt query -d 7:1:1:1\r
 Name: Disk-7:1:1:1\r
-Type: SSD\r
+Type: HDD\r
 Capacity: 893GB\r
 Vendor: ATA\r
 Model: Micron_5200_MTFDDAK960TDD\r
@@ -426,14 +427,14 @@ DISKS_DATA = [{'name': 'Disk-7:1:1:1', 'storage_id': '12345',
                'model': 'Micron_5200_MTFDDAK960TDD', 'firmware': 'U004',
                'location': 'Disk-7:1:1:1', 'speed': 0,
                'capacity': 958851448832.0, 'status': 'normal',
-               'physical_type': 'ssd', 'logical_type': 'unknown'},
+               'physical_type': 'hdd', 'logical_type': 'data'},
               {'name': 'Disk-7:1:1:2', 'storage_id': '12345',
                'native_disk_id': 'Disk-7:1:1:2',
                'serial_number': '18311E8D2C03', 'manufacturer': 'ATA',
                'model': 'Micron_5200_MTFDDAK960TDD', 'firmware': 'U004',
                'location': 'Disk-7:1:1:2', 'speed': 0,
                'capacity': 958851448832.0, 'status': 'normal',
-               'physical_type': 'ssd', 'logical_type': 'unknown'}]
+               'physical_type': 'ssd', 'logical_type': 'data'}]
 FC_INFO = """(null)@(null) ODSP CLI> client target queryportlist\r
 fc port-1:4:1\r
 wwn                 : 50:0b:34:20:02:fe:b5:0d\r
@@ -570,10 +571,10 @@ PARSE_ALERT_INFO = {
     'transport_address': '192.168.3.235',
     'storage_id': '05e007e4-62ef-4e24-a14e-57a8ee8e5bf3'}
 PARSE_ALERT_DATA = {
-    'alert_id': '2995472', 'severity': 'Warning',
+    'alert_id': '2995472', 'severity': 'Major',
     'category': 'Fault', 'occur_time': 1657619020000,
-    'description': "SSU-7:1:1's battery '2' becomes expired, please prepare a"
-                   " new module and replace it as soon as possible.",
+    'description': "SSU-7:1:1's battery '2' becomes expired, please prepare"
+                   " a new module and replace it as soon as possible.",
     'location': 'Storage-1:SP1', 'type': 'EquipmentAlarm',
     'resource_type': 'Storage',
     'alert_name': 'Battery_expired',
@@ -1077,8 +1078,13 @@ class test_macro_san_driver(TestCase):
         self.assertListEqual(views, VIEWS_NEW_DATA)
 
     def test_list_alert(self):
-        alerts = self.driver.list_alerts(context)
-        self.assertListEqual(alerts, [])
+        block = False
+        try:
+            self.driver.list_alerts(context)
+        except Exception as e:
+            LOG.error(six.text_type(e))
+            block = True
+        self.assertEqual(block, True)
 
     def test_get_latest_perf_timestamp(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})

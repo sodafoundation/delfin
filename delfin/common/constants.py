@@ -154,11 +154,12 @@ class DiskPhysicalType(object):
     NL_SAS = 'nl-sas'
     SSD_CARD = 'ssd-card'
     SAS_FLASH_VP = 'sas-flash-vp'
+    HDD = 'hdd'
     UNKNOWN = 'unknown'
 
     ALL = (
         SATA, SAS, SSD, NL_SSD, FC, LUN, ATA, FLASH, VMDISK,
-        NL_SAS, SSD_CARD, SAS_FLASH_VP, UNKNOWN)
+        NL_SAS, SSD_CARD, SAS_FLASH_VP, HDD, UNKNOWN)
 
 
 class DiskLogicalType(object):
@@ -177,11 +178,12 @@ class DiskLogicalType(object):
     UNSUPPORTED = 'unsupported'
     REMOTE = 'remote'
     MEDIATOR = 'mediator'
+    DATA = 'data'
     UNKNOWN = 'unknown'
 
     ALL = (FREE, MEMBER, HOTSPARE, CACHE, AGGREGATE, BROKEN, FOREIGN,
            LABELMAINT, MAINTENANCE, SHARED, SPARE, UNASSIGNED, UNSUPPORTED,
-           REMOTE, MEDIATOR, UNKNOWN)
+           REMOTE, MEDIATOR, DATA, UNKNOWN)
 
 
 class FilesystemStatus(object):

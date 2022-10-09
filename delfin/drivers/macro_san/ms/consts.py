@@ -85,14 +85,11 @@ TARGET_PORT_REGULAR = 'port\\-\\d\\:\\d\\:\\d$'
 TIME_LIMIT = 8
 
 # model
-MODEL_REGULAR = '^DiagInfo.*\\.gz$'
 MODEL_PATH = '{}/delfin/drivers/macro_san/ms/file/{}{}'
-FTP_MODEL_FILE_NAME = '/odsp/ftp/diaginfo/{}'
 STORAGE_INFO_REGULAR = '^storage_info.*\\.xls$'
 STORAGE_INFO_MODEL_REGULAR = '^MS'
-TMP_PATH = '{}/tmp'
-TMP_FILE_PATH = '{}/tmp/{}'
-FTP_PATH_DIAGINFO = '/odsp/ftp/diaginfo'
+FTP_PATH_TMP = '/tmp'
+FTP_PATH_FILE = '/tmp/{}'
 
 # alert
 MACRO_SAN_TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -193,7 +190,29 @@ DISK_PHYSICAL_TYPE_MAP = {
     'nl-sas': constants.DiskPhysicalType.NL_SAS,
     'ssd-card': constants.DiskPhysicalType.SSD_CARD,
     'sas-flash-vp': constants.DiskPhysicalType.SAS_FLASH_VP,
+    'hdd': constants.DiskPhysicalType.HDD,
     'unknown': constants.DiskPhysicalType.UNKNOWN
+}
+
+DISK_LOGICAL_TYPE_MAP = {
+    'free': constants.DiskLogicalType.FREE,
+    'member': constants.DiskLogicalType.MEMBER,
+    'hotspare': constants.DiskLogicalType.HOTSPARE,
+    'cache': constants.DiskLogicalType.CACHE,
+    'aggregate': constants.DiskLogicalType.AGGREGATE,
+    'broken': constants.DiskLogicalType.BROKEN,
+    'foreign': constants.DiskLogicalType.FOREIGN,
+    'labelmaint': constants.DiskLogicalType.LABELMAINT,
+    'maintenance': constants.DiskLogicalType.MAINTENANCE,
+    'shared': constants.DiskLogicalType.SHARED,
+    'spare': constants.DiskLogicalType.SPARE,
+    'unassigned': constants.DiskLogicalType.UNASSIGNED,
+    'unsupported': constants.DiskLogicalType.UNSUPPORTED,
+    'remote': constants.DiskLogicalType.REMOTE,
+    'mediator': constants.DiskLogicalType.MEDIATOR,
+    'data': constants.DiskLogicalType.DATA,
+    'datadisk': constants.DiskLogicalType.DATA,
+    'unknown': constants.DiskLogicalType.UNKNOWN
 }
 
 DISK_STATUS_MAP = {
@@ -270,123 +289,116 @@ HOST_OS_TYPES_MAP = {
     'unknown': constants.HostOSTypes.UNKNOWN
 }
 
-
-class NORMAL_ALERT(object):
-    BATTERY_NORMAL = 'Battery_normal'
-    CMOS_BATTERY_NORMAL = 'CMOS_battery_normal'
-    EP_XP_ONLINE = 'EP_XP_online'
-    FAN_NORMAL = 'FAN_normal'
-    HA_RECOVER_SUCCESSFULLY = 'HA_recover_successfully'
-    HA_TAKEOVER_SUCCESSFULLY = 'HA_takeover_successfully'
-    LUN_NORMAL = 'LUN_normal'
-    POWER_SUPPLY_NORMAL = 'Power_supply_normal'
-    RAID_NORMAL = 'RAID_normal'
-    RAID_REBUILD_START = 'RAID_rebuild_start'
-    RAID_REBUILD_SUCCESSFULLY = 'RAID_rebuild_successfully'
-    REPLICATION_START = 'Replication_start'
-    REPLICATION_SUCCESSFULLY = 'Replication_successfully'
-    SNAPSHOT_RESOURCE_EXPAND_SUCCESSFULLY = \
-        'Snapshot_resource_expand_successfully'
-    TEMPERATURE_NORMAL = 'Temperature_normal'
-    VOLTAGE_NORMAL = 'Voltage_normal'
-    WRITE_CACHE_DISABLED = 'Write_cache_disabled'
-    WRITE_CACHE_FROZEN = 'Write_cache_frozen'
-    VOLTAGE_CACHE_FROZEN = 'Voltage_cache_frozen'
-    VOLTAGE_CACHE_DISABLED = 'Voltage_cache_disabled'
-    SP_POWER_ON = 'SP_power_on'
-    SP_POWER_OFF = 'SP_power_off'
-    SP_ENGINE_POWER_OFF = 'SP_Engine_power_off'
-    EP_XP_OFFLINE = 'EP_XP_offline'
-    DISK_PULLOUT_ELECTRIFIED = 'Disk_pullout_electrified'
-    ALL = (BATTERY_NORMAL, CMOS_BATTERY_NORMAL, EP_XP_ONLINE, FAN_NORMAL,
-           HA_RECOVER_SUCCESSFULLY, HA_TAKEOVER_SUCCESSFULLY, LUN_NORMAL,
-           POWER_SUPPLY_NORMAL, RAID_NORMAL, RAID_REBUILD_START,
-           RAID_REBUILD_SUCCESSFULLY, REPLICATION_START,
-           REPLICATION_SUCCESSFULLY, SNAPSHOT_RESOURCE_EXPAND_SUCCESSFULLY,
-           TEMPERATURE_NORMAL, VOLTAGE_NORMAL, WRITE_CACHE_DISABLED,
-           WRITE_CACHE_FROZEN, VOLTAGE_CACHE_FROZEN, VOLTAGE_CACHE_DISABLED,
-           SP_POWER_ON, SP_POWER_OFF, SP_ENGINE_POWER_OFF, EP_XP_OFFLINE,
-           DISK_PULLOUT_ELECTRIFIED)
-
-
-NORMAL_FIELD = '_normal'
-SUCCESSFULLY_FIELD = '_successfully'
-START_FIELD = '_start'
-
-ALERT_SEVERITY_MAP = {
-    'Battery_absent': constants.Severity.WARNING,
-    'Battery_absent_reissue': constants.Severity.WARNING,
-    'Battery_expired': constants.Severity.WARNING,
-    'Battery_expired_reissue': constants.Severity.WARNING,
-    'Battery_failed': constants.Severity.FATAL,
-    'Battery_failed_reissue': constants.Severity.FATAL,
-    'Battery_will_expire': constants.Severity.WARNING,
-    'CMOS_battery_low': constants.Severity.FATAL,
-    'CMOS_battery_low_reissue': constants.Severity.FATAL,
-    'Disk_failed': constants.Severity.FATAL,
-    'Disk_single_link': constants.Severity.MAJOR,
-    'Disk_warning': constants.Severity.WARNING,
-    'DSU_SSU_inconsistent_link': constants.Severity.MAJOR,
-    'EP_XP_disordered_link': constants.Severity.MAJOR,
-    'EP_XP_install_unproperly': constants.Severity.FATAL,
-    'FAN_absent': constants.Severity.FATAL,
-    'FAN_absent_reissue': constants.Severity.FATAL,
-    'FAN_failed': constants.Severity.FATAL,
-    'FAN_failed_reissue': constants.Severity.FATAL,
-    'FC_link_error': constants.Severity.FATAL,
-    'HA_heartbeat_lost': constants.Severity.FATAL,
-    'HA_recover_failed': constants.Severity.FATAL,
-    'HA_self_detect_failure': constants.Severity.FATAL,
-    'HA_takeover_failed': constants.Severity.FATAL,
-    'HA_takeover': constants.Severity.MAJOR,
-    'LUN_faulty': constants.Severity.FATAL,
-    'Peer_SP_abnormally': constants.Severity.FATAL,
-    'Pool_capacity_has_useup': constants.Severity.WARNING,
-    'Pool_capacity_has_warning': constants.Severity.WARNING,
-    'Pool_capacity_will_useup': constants.Severity.WARNING,
-    'Power_supply_abnormal': constants.Severity.FATAL,
-    'Power_supply_abnormal_reissue': constants.Severity.FATAL,
-    'Power_supply_absent': constants.Severity.FATAL,
-    'Power_supply_absent_reissue': constants.Severity.FATAL,
-    'RAID_cannot_rebuild': constants.Severity.WARNING,
-    'RAID_degraded': constants.Severity.WARNING,
-    'RAID_failed': constants.Severity.FATAL,
-    'RAID_faulty': constants.Severity.FATAL,
-    'RAID_rebuild_paused_abnormally': constants.Severity.FATAL,
-    'Replication_failed': constants.Severity.CRITICAL,
-    'SAS_PHY_disabled': constants.Severity.MINOR,
-    'Snapshot_point_create_failed': constants.Severity.CRITICAL,
-    'Snapshot_point_delete_automatically': constants.Severity.WARNING,
-    'Snapshot_resource_expand_failed': constants.Severity.CRITICAL,
-    'Snapshot_resource_full': constants.Severity.WARNING,
-    'Snapshot_resource_invalid': constants.Severity.WARNING,
-    'SP_memory_shrink': constants.Severity.MAJOR,
-    'SP_reboot_for_memory_insufficient': constants.Severity.CRITICAL,
-    'SSD_life_remaining_warning': constants.Severity.WARNING,
-    'SSD_time_remaining_warning': constants.Severity.WARNING,
-    'SYS_LUN_Cache_capacity_insufficient': constants.Severity.WARNING,
-    'Temperature_critical': constants.Severity.CRITICAL,
-    'Temperature_critical_reissue': constants.Severity.CRITICAL,
-    'Temperature_warning': constants.Severity.WARNING,
-    'Temperature_warning_reissue': constants.Severity.WARNING,
-    'ThinLUN_expand_failed': constants.Severity.WARNING,
-    'ThinLUN_physical_capacity_usedup': constants.Severity.WARNING,
-    'Voltage_critical': constants.Severity.CRITICAL,
-    'Voltage_critical_reissue': constants.Severity.CRITICAL,
-    'Voltage_warning': constants.Severity.WARNING,
-    'Voltage_warning_reissue': constants.Severity.WARNING,
-    'SP_power_off': constants.Severity.MAJOR,
-    'EP_XP_OFFLINE': constants.Severity.MAJOR,
-    'LUN_write_cache_frozen': constants.Severity.MAJOR,
-    'Global_write_cache_disabled_automatically': constants.Severity.MAJOR,
-}
-
 PARSE_ALERT_ALERT_ID = '1.3.6.1.2.1.1.3.0'
 PARSE_ALERT_TIME = '1.3.6.1.2.1.25.1.2'
 PARSE_ALERT_STORAGE = '1.3.6.1.4.1.35904.1.2.1.1'
 PARSE_ALERT_NAME = '1.3.6.1.4.1.35904.1.2.1.4.1'
 PARSE_ALERT_LOCATION = '1.3.6.1.4.1.35904.1.2.1.4.2'
 PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.35904.1.2.1.4.3'
+PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.35904.1.2.1.4.4'
+
+PARSE_ALERT_SEVERITY_MAP = {
+    '0': constants.Severity.INFORMATIONAL,
+    '1': constants.Severity.WARNING,
+    '2': constants.Severity.MAJOR,
+    '3': constants.Severity.FATAL,
+    '4': constants.Severity.FATAL,
+}
+
+ALERT_NAME_CONFIG = {
+    'sp_temperature_normal': 'SP温度恢复正常',
+    'sp_temperature_warning': 'SP温度一般告警',
+    'sp_temperature_warning_reissue': 'SP温度一般告警重发',
+    'sp_temperature_critical': 'SP温度严重告警',
+    'sp_temperature_critical_reissue': 'SP温度严重告警重发',
+    'sp_voltage_normal': 'SP电压恢复正常',
+    'sp_voltage_warning': 'SP电压一般告警',
+    'sp_voltage_warning_reissue': 'SP电压一般告警重发',
+    'sp_voltage_critical': 'SP电压严重告警',
+    'sp_voltage_critical_reissue': 'SP电压严重告警重发',
+    'ep_temperature_normal': 'EP温度恢复正常',
+    'ep_temperature_warning': 'EP温度一般告警',
+    'ep_temperature_warning_reissue': 'EP温度一般告警重发',
+    'ep_temperature_critical': 'EP温度严重告警',
+    'ep_temperature_critical_reissue': 'EP温度严重告警重发',
+    'power_supply_normal': '设备供电恢复正常',
+    'power_supply_failed': '设备供电异常',
+    'power_supply_failed_reissue': '设备供电异常重发',
+    'power_supply_absent': '电源模块不在位',
+    'power_supply_absent_reissue': '电源模块不在位重发',
+    'fan_normal': '风扇模块恢复正常',
+    'fan_failed': '风扇模块变为故障',
+    'fan_failed_reissue': '风扇模块故障重发',
+    'fan_absent': '风扇模块不在位',
+    'fan_absent_reissue': '风扇模块不在位重发',
+    'spu_bat_normal': 'SPU电池模块恢复正常',
+    'spu_bat_failed': 'SPU电池模块变为故障',
+    'spu_bat_failed_reissue': 'SPU电池模块故障重发',
+    'spu_bat_absent': 'SPU电池模块不在位',
+    'spu_bat_absent_reissue': 'SPU电池模块不在位重发',
+    'spu_bat_will_expire': 'SPU电池模块即将超期',
+    'spu_bat_expired': 'SPU电池模块超期',
+    'spu_bat_expired_reissue': 'SPU电池模块超期重发',
+    'cmos_bat_normal': 'CMOS电池恢复正常',
+    'cmos_bat_failed': 'CMOS电池电力不足',
+    'cmos_bat_failed_reissue': 'CMOS电池电力不足重发',
+    'sp_power_on': 'SP开机',
+    'sp_power_off': 'SP关机',
+    'fc_link_error': 'FC链路错误',
+    'sp_unexpected_power_down': 'SP异常掉电',
+    'ha_hearbeat_lost': 'HA心跳丢失',
+    'ha_self_detect_failure': 'HA自检发现故障',
+    'ha_takeover_successfully': 'HA接管成功',
+    'ha_takeover_failed': 'HA接管失败',
+    'ha_recover_successfully': 'HA恢复成功',
+    'write_cache_frozen': '写缓存被冻结',
+    'write_cache_disabled': '写缓存被自动禁用',
+    'ep_online': 'EP开机',
+    'ep_offline': 'EP关机',
+    'ep_disordered_link': 'EP拓扑乱序',
+    'dsu_inconsistent_link': 'DSU拓扑不一致',
+    'sas_phy_disabled': 'SAS_PHY被禁用',
+    'sas_phy_speed_warning': 'SAS_PHY速率告警',
+    'disk_pullout_electrified': '磁盘带电拔出',
+    'disk_warning': '磁盘告警',
+    'disk_failed': '磁盘故障',
+    'raid_normal': 'RAID恢复正常',
+    'raid_degraded': 'RAID降级',
+    'raid_faulty': 'RAID错误',
+    'raid_failed': 'RAID故障',
+    'raid_rebuild_start': 'RAID开始重建',
+    'raid_rebuild_successfully': 'RAID完成重建',
+    'raid_cannot_rebuild': 'RAID无法重建',
+    'raid_rebuild_paused_abnormally': 'RAID重建异常终止',
+    'sys_raid_warning': 'SYS_RAID告警',
+    'lun_normal': 'LUN恢复正常',
+    'lun_faulty': 'LUN错误',
+    'snapshot_resource_full': '快照资源即将满',
+    'snapshot_resource_invalid': '快照资源数据无效',
+    'snapshot_resource_expand_successfully': '快照资源自动扩容成功',
+    'snapshot_resource_expand_failed': '快照资源自动扩容失败',
+    'snapshot_point_delete_automatically': '自动删除快照时间点',
+    'snapshot_point_create_failed': '自动创建快照时间点失败',
+    'replication_start': '开始复制',
+    'replication_successfully': '复制成功',
+    'replication_failed': '复制失败',
+    'sp_memory_shrink': 'SP内存变小',
+    'sp_reboot_for_memory_insufficient': 'SP内存不足自动重启',
+    'ep_install_unproperly': 'EP未安装到位',
+    'sys_lun_cache_capacity_insufficient': 'SYS-LUN-Cache空间不足',
+    'thinlun_expand_failed': 'Thin-LUN自动扩容失败',
+    'thinlun_physical_capacity_usedup': 'Thin-LUN物理空间已经用光',
+    'pool_capacity_warning': '存储池空间告警',
+    'pool_capacity_will_useup': '存储池空间即将用光',
+    'pool_capacity_has_usedup': '存储池空间已经用光',
+    'sdas_link_unreachable': 'SDAS链路不可达',
+    'sdas_link_recovery': 'SDAS链路恢复',
+    'sdas_auto_swap_successfully': 'SDAS自动反转成功',
+    'sdas_auto_swap_failed': 'SDAS自动反转失败',
+    'mirror_unsynchronized': '镜像对变成未同步',
+    'mirror_synchronized': '镜像对变成已同步',
+    'mirror_negotiating': '镜像对变成协商'
+}
 
 STORAGE_CAP = {
     constants.StorageMetric.IOPS.name: {
