@@ -1067,7 +1067,7 @@ class MsHandler(object):
             sftp = ssh.open_sftp()
             file_name_list = sftp.listdir(consts.FTP_PERF_PATH)
             ms_path = os.getcwd()
-            localtime = int(time.mktime(time.localtime())) * units.k
+            localtime = int(round(time.time() * 1000))
             local_path = consts.ADD_FOLDER.format(
                 ms_path, folder, storage_id, localtime)
             os.mkdir(local_path)
