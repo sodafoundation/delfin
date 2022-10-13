@@ -298,11 +298,11 @@ PARSE_ALERT_DESCRIPTION = '1.3.6.1.4.1.35904.1.2.1.4.3'
 PARSE_ALERT_SEVERITY = '1.3.6.1.4.1.35904.1.2.1.4.4'
 
 PARSE_ALERT_SEVERITY_MAP = {
-    '0': constants.Severity.INFORMATIONAL,
-    '1': constants.Severity.WARNING,
+    '0': constants.Severity.NOT_SPECIFIED,
+    '1': constants.Severity.FATAL,
     '2': constants.Severity.MAJOR,
-    '3': constants.Severity.FATAL,
-    '4': constants.Severity.FATAL,
+    '3': constants.Severity.WARNING,
+    '4': constants.Severity.INFORMATIONAL,
 }
 
 ALERT_NAME_CONFIG = {
