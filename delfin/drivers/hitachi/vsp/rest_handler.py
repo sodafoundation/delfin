@@ -138,9 +138,7 @@ class RestHandler(RestClient):
 
     def login(self):
         try:
-            succeed = False
-            succeed = self.get_device_id()
-            return succeed
+            self.get_device_id()
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
@@ -170,13 +168,14 @@ class RestHandler(RestClient):
 
     def get_device_id(self):
         try:
-            succeed = False
             if self.session is None:
                 self.init_http_head()
             storage_systems = self.get_system_info()
             system_info = storage_systems.get('data')
             for system in system_info:
-                succeed = True
+                self.storage_device_id = system.get('storageDeviceId')
+                self.device_model = system.get('model')
+                self.serial_number = system.get('serialNumber')
                 if system.get('svpIp'):
                     if system.get('svpIp') == self.rest_host:
                         self.storage_device_id = system.get('storageDeviceId')
@@ -190,8 +189,10 @@ class RestHandler(RestClient):
                     self.serial_number = system.get('serialNumber')
                     break
             if self.storage_device_id is None:
-                LOG.error("Get device id fail,model or something is wrong")
-            return succeed
+                error_msg = f'Get device id fail,' \
+                    f'system info:{storage_systems}'
+                LOG.error(error_msg)
+                raise exception.StorageBackendException(error_msg)
         except Exception as e:
             LOG.error("Get device id error: %s", six.text_type(e))
             raise e
