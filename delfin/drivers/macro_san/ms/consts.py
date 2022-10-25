@@ -399,7 +399,8 @@ ALERT_NAME_CONFIG = {
     'mirror_unsynchronized': '镜像对变成未同步',
     'mirror_synchronized': '镜像对变成已同步',
     'mirror_negotiating': '镜像对变成协商',
-    'system_failure_reboot': '系统异常重启'
+    'system_failure_reboot': '系统异常重启',
+    'memory_utilization_warning': '内存利用率告警'
 }
 
 STORAGE_CAP = {
