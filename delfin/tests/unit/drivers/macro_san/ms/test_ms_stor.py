@@ -577,8 +577,8 @@ PARSE_ALERT_DATA = {
                    " a new module and replace it as soon as possible.",
     'location': 'Storage-1:SP1', 'type': 'EquipmentAlarm',
     'resource_type': 'Storage',
-    'alert_name': 'Battery_expired',
-    'match_key': '11f908bb7f05102a2d04c946b5a43cd7'}
+    'alert_name': '电池模块超期',
+    'match_key': 'ec62c3cdd862da9b0f8da6d03d97d76e'}
 INITIATOR_INFO = """(null)@(null) ODSP CLI> client initiator getlist -t all\r
 Initiators Sum: 3\r
 
