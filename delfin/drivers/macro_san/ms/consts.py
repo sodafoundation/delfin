@@ -346,11 +346,12 @@ ALERT_NAME_CONFIG = {
     'sp_power_off': 'SP关机',
     'fc_link_error': 'FC链路错误',
     'sp_unexpected_power_down': 'SP异常掉电',
-    'ha_hearbeat_lost': 'HA心跳丢失',
+    'ha_heartbeat_lost': 'HA心跳丢失',
     'ha_self_detect_failure': 'HA自检发现故障',
     'ha_takeover_successfully': 'HA接管成功',
     'ha_takeover_failed': 'HA接管失败',
     'ha_recover_successfully': 'HA恢复成功',
+    'ha_takeover': 'SP被接管',
     'write_cache_frozen': '写缓存被冻结',
     'write_cache_disabled': '写缓存被自动禁用',
     'ep_online': 'EP开机',
@@ -397,7 +398,8 @@ ALERT_NAME_CONFIG = {
     'sdas_auto_swap_failed': 'SDAS自动反转失败',
     'mirror_unsynchronized': '镜像对变成未同步',
     'mirror_synchronized': '镜像对变成已同步',
-    'mirror_negotiating': '镜像对变成协商'
+    'mirror_negotiating': '镜像对变成协商',
+    'system_failure_reboot': '系统异常重启'
 }
 
 STORAGE_CAP = {
