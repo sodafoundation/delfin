@@ -41,10 +41,10 @@ class MacroSanSSHPool(SSHPool):
             ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                         username=self.ssh_username,
                         password=cryptor.decode(self.ssh_password),
-                        timeout=self.ssh_conn_timeout)
-            if self.conn_timeout:
-                transport = ssh.get_transport()
-                transport.set_keepalive(self.SOCKET_TIMEOUT)
+                        timeout=self.ssh_conn_timeout,
+                        banner_timeout=self.ssh_conn_timeout)
+            transport = ssh.get_transport()
+            transport.set_keepalive(self.ssh_conn_timeout)
             return ssh
         except Exception as e:
             err = six.text_type(e)
