@@ -133,7 +133,7 @@ class SSHClient(object):
 
 
 class SSHPool(pools.Pool):
-    SOCKET_TIMEOUT = 10
+    CONN_TIMEOUT = 60
 
     def __init__(self, **kwargs):
         ssh_access = kwargs.get('ssh')
@@ -146,9 +146,8 @@ class SSHPool(pools.Pool):
         self.ssh_pub_key_type = ssh_access.get('pub_key_type')
         self.ssh_pub_key = ssh_access.get('pub_key')
         self.ssh_conn_timeout = ssh_access.get('conn_timeout')
-        self.conn_timeout = self.SOCKET_TIMEOUT
         if self.ssh_conn_timeout is None:
-            self.ssh_conn_timeout = SSHPool.SOCKET_TIMEOUT
+            self.ssh_conn_timeout = SSHPool.CONN_TIMEOUT
         super(SSHPool, self).__init__(min_size=0, max_size=3)
 
     def set_host_key(self, host_key, ssh):
@@ -187,9 +186,8 @@ class SSHPool(pools.Pool):
                         username=self.ssh_username,
                         password=cryptor.decode(self.ssh_password),
                         timeout=self.ssh_conn_timeout)
-            if self.conn_timeout:
-                transport = ssh.get_transport()
-                transport.set_keepalive(self.SOCKET_TIMEOUT)
+            transport = ssh.get_transport()
+            transport.set_keepalive(self.ssh_conn_timeout)
             return ssh
         except Exception as e:
             err = six.text_type(e)

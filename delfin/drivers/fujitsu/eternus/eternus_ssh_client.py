@@ -57,19 +57,20 @@ class EternusSSHPool(SSHPool):
                 ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                             username=self.ssh_username,
                             password=cryptor.decode(self.ssh_password),
-                            timeout=self.ssh_conn_timeout)
+                            timeout=self.ssh_conn_timeout,
+                            banner_timeout=self.ssh_conn_timeout)
             except Exception as e:
                 if 'Authentication failed' in six.text_type(e):
                     ssh.connect(hostname=self.ssh_host, port=self.ssh_port,
                                 username=self.ssh_username,
                                 password=cryptor.decode(self.ssh_password),
                                 timeout=self.ssh_conn_timeout,
+                                banner_timeout=self.ssh_conn_timeout,
                                 look_for_keys=False)
                 else:
                     raise e
-            if self.conn_timeout:
-                transport = ssh.get_transport()
-                transport.set_keepalive(self.SOCKET_TIMEOUT)
+            transport = ssh.get_transport()
+            transport.set_keepalive(self.ssh_conn_timeout)
             return ssh
         except Exception as e:
             err = six.text_type(e)
