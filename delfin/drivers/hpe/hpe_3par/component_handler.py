@@ -287,7 +287,7 @@ class ComponentHandler():
                         model = inventory_map.get('disk_model')
                         firmware = inventory_map.get('disk_fw_rev')
                 speed = None
-                if disk.get('rpm'):
+                if str(disk.get('rpm')).isdigit():
                     speed = int(disk.get('rpm')) * units.k
                 disk_model = {
                     'name': disk.get('cagepos'),
