@@ -44,3 +44,4 @@ tenacity==6.3.1
 tzlocal<3.0
 scp>=0.13.0
 defusedxml==0.6.0
+xlrd>=2.0.1
