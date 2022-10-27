@@ -59,8 +59,8 @@ class RestHandler(object):
         Increase the judgment of token invalidation
         """
         try:
-            res = self.rest_client.do_call(url, data, method,
-                                           calltimeout=consts.SOCKET_TIMEOUT)
+            res = self.call_with_token(url, data, method,
+                                       calltimeout=consts.SOCKET_TIMEOUT)
             # Judge whether the access failure is caused by
             # the token invalidation.
             # If the token fails, it will be retrieved again,
@@ -84,9 +84,9 @@ class RestHandler(object):
                     access_session = self.login()
                     # if get token，Revisit url
                     if access_session is not None:
-                        res = self.rest_client. \
-                            do_call(url, data, method,
-                                    calltimeout=consts.SOCKET_TIMEOUT)
+                        res = self.call_with_token(
+                            url, data, method,
+                            calltimeout=consts.SOCKET_TIMEOUT)
                     else:
                         LOG.error('Login res is None')
                 elif res.status_code == 503:
@@ -147,9 +147,11 @@ class RestHandler(object):
                     result = res.json()
 
                     access_session = result.get('key')
-                    self.rest_client.rest_auth_token = access_session
+                    self.rest_client.rest_auth_token = cryptor.encode(
+                        access_session)
                     self.rest_client.session.headers[
-                        RestHandler.REST_AUTH_KEY] = access_session
+                        RestHandler.REST_AUTH_KEY] = cryptor.encode(
+                        access_session)
                 else:
                     LOG.error("Login error. URL: %(url)s\n"
                               "Reason: %(reason)s.",
@@ -174,7 +176,8 @@ class RestHandler(object):
         try:
             url = RestHandler.REST_LOGOUT_URL
             if self.rest_client.rest_auth_token is not None:
-                url = '%s%s' % (url, self.rest_client.rest_auth_token)
+                url = '%s%s' % (
+                    url, cryptor.decode(self.rest_client.rest_auth_token))
             self.rest_client.rest_auth_token = None
             if self.rest_client.san_address:
                 self.call(url, method='DELETE')
@@ -188,6 +191,22 @@ class RestHandler(object):
             err_msg = "Logout error: %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
+
+    def call_with_token(self, url, data=None, method='GET',
+                        calltimeout=consts.SOCKET_TIMEOUT):
+        with self.session_lock:
+            auth_key = None
+            if self.rest_client.session:
+                auth_key = self.rest_client.session.headers.get(
+                    RestHandler.REST_AUTH_KEY, None)
+                if auth_key:
+                    self.rest_client.session.headers[
+                        RestHandler.REST_AUTH_KEY] = cryptor.decode(auth_key)
+            res = self.rest_client.do_call(url, data, method, calltimeout)
+            if auth_key:
+                self.rest_client.session.headers[
+                    RestHandler.REST_AUTH_KEY] = auth_key
+        return res
 
     def get_storage(self):
         rejson = self.get_resinfo_call(RestHandler.REST_STORAGE_URL,
