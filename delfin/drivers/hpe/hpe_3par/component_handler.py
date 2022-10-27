@@ -63,7 +63,7 @@ class ComponentHandler():
                 # Check the hardware and software health
                 # status of the storage system
                 re_str = self.ssh_handler.get_health_state()
-                if 'degraded' in re_str or 'failed' in re_str:
+                if 'degraded' in re_str.lower() or 'failed' in re_str.lower():
                     status = constants.StorageStatus.ABNORMAL
             except Exception:
                 status = constants.StorageStatus.ABNORMAL
