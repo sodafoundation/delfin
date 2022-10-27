@@ -9,7 +9,7 @@ jobs:
       matrix:
         platform:
           - ubuntu-18.04
-        python-version: [ 3.6, 3.7, 3.8 ]
+        python-version: [ 3.6 ]
 
     steps:
       - name: Checkout delfin code
