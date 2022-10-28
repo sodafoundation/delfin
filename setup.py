@@ -51,6 +51,7 @@ setup(
             'ibm ds8k = delfin.drivers.ibm.ds8k.ds8k:DS8KDriver',
             'netapp cmode = delfin.drivers.netapp.dataontap.cluster_mode:NetAppCmodeDriver',
             'hitachi hnas = delfin.drivers.hitachi.hnas.hds_nas:HitachiHNasDriver',
+            'MacroSAN MacroSAN = delfin.drivers.macro_san.ms.ms_stor:MacroSanDriver',
             'pure flasharray = delfin.drivers.pure.flasharray.pure_flasharray:PureFlashArrayDriver'
         ]
     },

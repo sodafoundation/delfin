@@ -281,7 +281,7 @@ class SSHPool(pools.Pool):
             raise exception.StorageBackendException(result)
         return result
 
-    def do_exec_shell(self, command_list):
+    def do_exec_shell(self, command_list, sleep_time=0.5):
         result = ''
         try:
             with self.item() as ssh:
@@ -290,7 +290,7 @@ class SSHPool(pools.Pool):
                     for command in command_list:
                         utils.check_ssh_injection(command)
                         channel.send(command + '\n')
-                        time.sleep(0.5)
+                        time.sleep(sleep_time)
                     channel.send("exit" + "\n")
                     channel.close()
                     while True:
