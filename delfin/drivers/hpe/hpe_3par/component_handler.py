@@ -63,7 +63,7 @@ class ComponentHandler():
                 # Check the hardware and software health
                 # status of the storage system
                 re_str = self.ssh_handler.get_health_state()
-                if 'degraded' in re_str or 'failed' in re_str:
+                if 'degraded' in re_str.lower() or 'failed' in re_str.lower():
                     status = constants.StorageStatus.ABNORMAL
             except Exception:
                 status = constants.StorageStatus.ABNORMAL
@@ -287,7 +287,7 @@ class ComponentHandler():
                         model = inventory_map.get('disk_model')
                         firmware = inventory_map.get('disk_fw_rev')
                 speed = None
-                if disk.get('rpm'):
+                if str(disk.get('rpm')).isdigit():
                     speed = int(disk.get('rpm')) * units.k
                 disk_model = {
                     'name': disk.get('cagepos'),
