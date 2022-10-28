@@ -62,6 +62,14 @@ class SSHHandler(object):
         'fc': constants.DiskPhysicalType.FC,
         'sas_direct': constants.DiskPhysicalType.SAS
     }
+    DISK_STATUS_MAP = {
+        'online': constants.DiskStatus.NORMAL,
+        'offline': constants.DiskStatus.OFFLINE,
+        'excluded': constants.DiskStatus.ABNORMAL,
+        'degraded_paths': constants.DiskStatus.DEGRADED,
+        'degraded_ports': constants.DiskStatus.DEGRADED,
+        'degraded': constants.DiskStatus.DEGRADED
+    }
     VOLUME_PERF_METRICS = {
         'readIops': 'ro',
         'writeIops': 'wo',
@@ -280,6 +288,9 @@ class SSHHandler(object):
                 'total_mdisk_capacity'))
             subscribed_capacity = self.parse_string(storage_map.get(
                 'virtual_capacity'))
+            total_capacity = int(free_capacity + used_capacity)
+            if total_capacity > raw_capacity:
+                raw_capacity = total_capacity
             firmware_version = ''
             if storage_map.get('code_level') is not None:
                 firmware_version = storage_map.get('code_level').split(' ')[0]
@@ -291,7 +302,7 @@ class SSHHandler(object):
                 'serial_number': serial_number,
                 'firmware_version': firmware_version,
                 'location': location,
-                'total_capacity': int(free_capacity + used_capacity),
+                'total_capacity': total_capacity,
                 'raw_capacity': int(raw_capacity),
                 'subscribed_capacity': int(subscribed_capacity),
                 'used_capacity': int(used_capacity),
@@ -544,9 +555,8 @@ class SSHHandler(object):
                 deltail_info = self.exec_ssh_command(detail_command)
                 disk_map = {}
                 self.handle_detail(deltail_info, disk_map, split=' ')
-                status = constants.DiskStatus.NORMAL
-                if disk_map.get('status') == 'offline':
-                    status = constants.DiskStatus.OFFLINE
+                status = SSHHandler.DISK_STATUS_MAP.get(
+                    disk_map.get('status'), constants.DiskStatus.ABNORMAL)
                 physical_type = SSHHandler.DISK_PHYSICAL_TYPE.get(
                     disk_map.get('fabric_type'),
                     constants.DiskPhysicalType.UNKNOWN)
@@ -806,8 +816,9 @@ class SSHHandler(object):
             value = value / interval / units.Mi
         elif 'IOSIZE' in metric_type.upper():
             value = value / units.Ki
-        elif 'IOPS' in metric_type.upper() or 'RESPONSETIME' \
-                in metric_type.upper():
+        elif 'IOPS' in metric_type.upper():
+            value = int(value / interval)
+        elif 'RESPONSETIME' in metric_type.upper():
             value = value / interval
         value = round(value, 3)
         if metric_map.get(res_id):
@@ -929,12 +940,12 @@ class SSHHandler(object):
         rht = 0
         wht = 0
         if resource_type == constants.ResourceType.PORT:
-            rb = int(file_data.get('cbr')) + int(file_data.get('hbr')) + int(
+            rb = (int(file_data.get('cbr')) + int(file_data.get('hbr')) + int(
                 file_data.get('lnbr')) + int(
-                file_data.get('rmbr')) * SSHHandler.BYTES_TO_BIT
-            wb = int(file_data.get('cbt')) + int(file_data.get('hbt')) + int(
+                file_data.get('rmbr'))) * SSHHandler.BYTES_TO_BIT
+            wb = (int(file_data.get('cbt')) + int(file_data.get('hbt')) + int(
                 file_data.get('lnbt')) + int(
-                file_data.get('rmbt')) * SSHHandler.BYTES_TO_BIT
+                file_data.get('rmbt'))) * SSHHandler.BYTES_TO_BIT
             ro = int(file_data.get('cer')) + int(file_data.get('her')) + int(
                 file_data.get('lner')) + int(file_data.get('rmer'))
             wo = int(file_data.get('cet')) + int(file_data.get('het')) + int(
