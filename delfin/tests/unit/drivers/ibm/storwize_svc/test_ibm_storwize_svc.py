@@ -364,7 +364,7 @@ storage_result = {
     'firmware_version': '7.4.0.11',
     'location': 'local',
     'total_capacity': 8961019766374,
-    'raw_capacity': 8906044184985,
+    'raw_capacity': 8961019766374,
     'subscribed_capacity': 0,
     'used_capacity': 5552533720268,
     'free_capacity': 3408486046105
