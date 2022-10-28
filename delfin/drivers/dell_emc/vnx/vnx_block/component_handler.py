@@ -40,7 +40,7 @@ class ComponentHandler(object):
         status = constants.StorageStatus.NORMAL
         raw_cap = self.handle_disk_capacity()
         pool_capacity = self.handle_pool_capacity()
-        if domain and agent:
+        if domain and agent and pool_capacity:
             result = {
                 'name': domain[0].get('node'),
                 'vendor': consts.EMCVNX_VENDOR,
@@ -54,8 +54,10 @@ class ComponentHandler(object):
                 'free_capacity': pool_capacity.get('free_capacity')
             }
         else:
-            err_msg = "domain or agent error: %s, %s" %\
-                      (six.text_type(domain), six.text_type(agent))
+            err_msg = "Get vnx storage info failed, domain: %s, agent: %s," \
+                      " pool_capacity: %s" % (six.text_type(domain),
+                                              six.text_type(agent),
+                                              six.text_type(pool_capacity))
             LOG.error(err_msg)
             raise exception.StorageBackendException(err_msg)
         return result
