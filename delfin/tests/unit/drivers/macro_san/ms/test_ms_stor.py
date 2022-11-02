@@ -1101,7 +1101,6 @@ class test_macro_san_driver(TestCase):
             'resource_metrics': {
                 constants.ResourceType.STORAGE: consts.STORAGE_CAP,
                 constants.ResourceType.VOLUME: consts.VOLUME_CAP,
-                constants.ResourceType.STORAGE_POOL: consts.POOL_CAP,
                 constants.ResourceType.PORT: consts.PORT_CAP,
                 constants.ResourceType.DISK: consts.DISK_CAP,
             }
