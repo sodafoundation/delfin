@@ -912,13 +912,6 @@ class MsHandler(object):
             LOG.info('The system(storage_id: %s) stop to collect sas port'
                      ' performance, The length is: %s',
                      storage_id, len(sas_port_metrics))
-            iscsi_port_metrics = self.get_port_metrics(
-                end_time, resource_port, start_time, storage_id,
-                consts.ISCSI_PORT, consts.ISCSIPORT_REGULAR)
-            metrics.extend(iscsi_port_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect iscsi port'
-                     ' performance, The length is: %s',
-                     storage_id, len(iscsi_port_metrics))
             if file_name_map:
                 fc_port_metrics = self.get_fc_port_metrics(
                     end_time, resource_port, start_time, storage_id,
@@ -927,15 +920,6 @@ class MsHandler(object):
                 LOG.info('The system(storage_id: %s) stop to collect fc port'
                          ' performance, The length is: %s', storage_id,
                          len(fc_port_metrics))
-        resource_pool = resource_metrics.get(
-            constants.ResourceType.STORAGE_POOL)
-        if resource_pool and file_name_map:
-            pool_metrics = self.get_pool_metrics(
-                end_time, resource_pool, start_time, storage_id, file_name_map)
-            metrics.extend(pool_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect pool'
-                     ' performance, The length is: %s',
-                     storage_id, len(pool_metrics))
         resource_disk = resource_metrics.get(constants.ResourceType.DISK)
         if resource_disk and file_name_map:
             disk_metrics = self.get_disk_metrics(
@@ -952,15 +936,20 @@ class MsHandler(object):
                                          consts.FCPORT_REGULAR)
         disk_metrics = []
         if local_path:
+            metrics_data = None
             try:
                 metrics_data = self.analysis_per_file(
                     local_path, start_time, end_time,
                     consts.FC_PORT, file_name_map)
+            except Exception as e:
+                LOG.error('Failed to fc port analysis per file %s' % (
+                    six.text_type(e)))
             finally:
                 shutil.rmtree(local_path)
-            disk_metrics = self.packaging_metrics(
-                storage_id, metrics_data, resource_disk,
-                constants.ResourceType.PORT)
+            if metrics_data:
+                disk_metrics = self.packaging_metrics(
+                    storage_id, metrics_data, resource_disk,
+                    constants.ResourceType.PORT)
         return disk_metrics
 
     def get_disk_metrics(self, end_time, resource_disk, start_time,
@@ -970,48 +959,40 @@ class MsHandler(object):
             consts.DISK_REGULAR)
         disk_metrics = []
         if local_path:
+            metrics_data = None
             try:
                 metrics_data = self.analysis_per_file(
                     local_path, start_time, end_time,
                     constants.ResourceType.DISK, file_name_map)
+            except Exception as e:
+                LOG.error('Failed to disk analysis per file %s' % (
+                    six.text_type(e)))
             finally:
                 shutil.rmtree(local_path)
-            disk_metrics = self.packaging_metrics(
-                storage_id, metrics_data, resource_disk,
-                constants.ResourceType.DISK)
+            if metrics_data:
+                disk_metrics = self.packaging_metrics(
+                    storage_id, metrics_data, resource_disk,
+                    constants.ResourceType.DISK)
         return disk_metrics
-
-    def get_pool_metrics(self, end_time, resource_pool, start_time,
-                         storage_id, file_name_map):
-        local_path = self.down_perf_file(
-            constants.ResourceType.STORAGE_POOL, storage_id,
-            consts.POOL_REGULAR)
-        pool_metrics = []
-        if local_path:
-            try:
-                metrics_data = self.analysis_per_file(
-                    local_path, start_time, end_time,
-                    constants.ResourceType.STORAGE_POOL, file_name_map)
-            finally:
-                shutil.rmtree(local_path)
-            pool_metrics = self.packaging_metrics(
-                storage_id, metrics_data, resource_pool,
-                constants.ResourceType.STORAGE_POOL)
-        return pool_metrics
 
     def get_port_metrics(self, end_time, resource_port, start_time,
                          storage_id, folder, pattern):
         local_path = self.down_perf_file(folder, storage_id, pattern)
         sas_port_metrics = []
         if local_path:
+            metrics_data = None
             try:
                 metrics_data = self.analysis_per_file(
                     local_path, start_time, end_time, folder)
+            except Exception as e:
+                LOG.error('Failed to sas port analysis per file %s' % (
+                    six.text_type(e)))
             finally:
                 shutil.rmtree(local_path)
-            sas_port_metrics = self.packaging_metrics(
-                storage_id, metrics_data, resource_port,
-                constants.ResourceType.PORT)
+            if metrics_data:
+                sas_port_metrics = self.packaging_metrics(
+                    storage_id, metrics_data, resource_port,
+                    constants.ResourceType.PORT)
         return sas_port_metrics
 
     def get_volume_metrics(self, end_time, resource_volume, start_time,
@@ -1020,16 +1001,21 @@ class MsHandler(object):
             constants.ResourceType.VOLUME, storage_id, consts.LUN_REGULAR)
         volume_metrics = []
         if local_path:
+            metrics_data = None
             try:
                 uuid_map = self.get_volume_uuid()
                 metrics_data = self.analysis_per_file(
                     local_path, start_time, end_time,
                     constants.ResourceType.VOLUME, uuid_map)
+            except Exception as e:
+                LOG.error('Failed to volume analysis per file %s' % (
+                    six.text_type(e)))
             finally:
                 shutil.rmtree(local_path)
-            volume_metrics = self.packaging_metrics(
-                storage_id, metrics_data, resource_volume,
-                constants.ResourceType.VOLUME)
+            if metrics_data:
+                volume_metrics = self.packaging_metrics(
+                    storage_id, metrics_data, resource_volume,
+                    constants.ResourceType.VOLUME)
         return volume_metrics
 
     def get_storage_metrics(self, end_time, resource_storage, start_time,
@@ -1038,16 +1024,21 @@ class MsHandler(object):
                                          storage_id, consts.STRAGE_REGULAR)
         storage_metrics = []
         if local_path:
+            metrics_data = None
             try:
                 metrics_data = self.analysis_per_file(
                     local_path, start_time, end_time,
                     constants.ResourceType.STORAGE)
+            except Exception as e:
+                LOG.error('Failed to storage analysis per file %s' % (
+                    six.text_type(e)))
             finally:
                 shutil.rmtree(local_path)
-            resource_id, resource_name = self.get_storages()
-            storage_metrics = self.storage_packaging_data(
-                storage_id, metrics_data, resource_storage,
-                resource_id, resource_name)
+            if metrics_data:
+                resource_id, resource_name = self.get_storages()
+                storage_metrics = self.storage_packaging_data(
+                    storage_id, metrics_data, resource_storage,
+                    resource_id, resource_name)
         return storage_metrics
 
     def get_storages(self):
@@ -1153,7 +1144,8 @@ class MsHandler(object):
                 data = resource_data
             with codecs.open('{}/{}'.format(local_path, dir_name),
                              encoding='utf-8-sig') as f:
-                for row in csv.DictReader(f, skipinitialspace=True):
+                for row in csv.DictReader(
+                        line.replace('\0', '') for line in f):
                     time_str = row.get('')
                     timestamp_s = self.get_timestamp_s(time_str)
                     timestamp_ms = timestamp_s * units.k
@@ -1176,13 +1168,7 @@ class MsHandler(object):
                 consts.PERF_SP)
             resource_key = uuid_list[consts.digital_constant.ZERO_INT] \
                 .replace('_', ':')
-        if consts.ISCSI_PORT == resource_type:
-            uuid_list = dir_name.replace(consts.PERF_ISCSI_PORT, '').split(
-                consts.PERF_SP)
-            resource_key = uuid_list[consts.digital_constant.ZERO_INT] \
-                .replace('_', ':')
-        if constants.ResourceType.STORAGE_POOL == resource_type or \
-                constants.ResourceType.DISK == resource_type or \
+        if constants.ResourceType.DISK == resource_type or \
                 consts.FC_PORT == resource_type:
             resource_key = uuid_map.get(dir_name) if \
                 uuid_map.get(dir_name) else \
@@ -1199,11 +1185,11 @@ class MsHandler(object):
         w_throughput = round(
             (int(row.get('w/throughput(B)')) / units.Mi), 3)
         response = round(
-            int(row.get('r&w/avg_rsp_time(us)')) * units.k, 3)
+            int(row.get('r&w/avg_rsp_time(us)')) / units.k, 3)
         r_response = round(
-            int(row.get('r/avg_rsp_time(us)')) * units.k, 3)
+            int(row.get('r/avg_rsp_time(us)')) / units.k, 3)
         w_response = round(
-            int(row.get('w/avg_rsp_time(us)')) * units.k, 3)
+            int(row.get('w/avg_rsp_time(us)')) / units.k, 3)
         cache_hit_ratio = round(
             int(row.get('r&w/cacherate(%*100)')), 3)
         r_cache_hit_ratio = round(

@@ -282,8 +282,8 @@ HOST_OS_TYPES_MAP = {
     'windows2012': constants.HostOSTypes.WINDOWS_SERVER_2012,
     'oracle vm': constants.HostOSTypes.ORACLE_VM,
     'open vms': constants.HostOSTypes.OPEN_VMS,
-    'vms': constants.HostOSTypes.OPEN_VMS,
-    'mac os': constants.HostOSTypes.OPEN_VMS,
+    'mac os': constants.HostOSTypes.MAC_OS,
+    'svc': constants.HostOSTypes.UNKNOWN,
     'other': constants.HostOSTypes.UNKNOWN,
     'suse': constants.HostOSTypes.UNKNOWN,
     'unknown': constants.HostOSTypes.UNKNOWN
@@ -640,61 +640,6 @@ VOLUME_CAP = {
     }
 }
 
-POOL_CAP = {
-    constants.StoragePoolMetric.IOPS.name: {
-        "unit": constants.StoragePoolMetric.IOPS.unit,
-        "description": constants.StoragePoolMetric.IOPS.description
-    },
-    constants.StoragePoolMetric.READ_IOPS.name: {
-        "unit": constants.StoragePoolMetric.READ_IOPS.unit,
-        "description": constants.StoragePoolMetric.READ_IOPS.description
-    },
-    constants.StoragePoolMetric.WRITE_IOPS.name: {
-        "unit": constants.StoragePoolMetric.WRITE_IOPS.unit,
-        "description": constants.StoragePoolMetric.WRITE_IOPS.description
-    },
-    constants.StoragePoolMetric.THROUGHPUT.name: {
-        "unit": constants.StoragePoolMetric.THROUGHPUT.unit,
-        "description": constants.StoragePoolMetric.THROUGHPUT.description
-    },
-    constants.StoragePoolMetric.READ_THROUGHPUT.name: {
-        "unit": constants.StoragePoolMetric.READ_THROUGHPUT.unit,
-        "description": constants.StoragePoolMetric.READ_THROUGHPUT.description
-    },
-    constants.StoragePoolMetric.WRITE_THROUGHPUT.name: {
-        "unit": constants.StoragePoolMetric.WRITE_THROUGHPUT.unit,
-        "description": constants.StoragePoolMetric.WRITE_THROUGHPUT.description
-    },
-    constants.StoragePoolMetric.RESPONSE_TIME.name: {
-        "unit": constants.StoragePoolMetric.RESPONSE_TIME.unit,
-        "description": constants.StoragePoolMetric.RESPONSE_TIME.description
-    },
-    constants.StoragePoolMetric.READ_RESPONSE_TIME.name: {
-        "unit": constants.StoragePoolMetric.READ_RESPONSE_TIME.unit,
-        "description":
-            constants.StoragePoolMetric.READ_RESPONSE_TIME.description
-    },
-    constants.StoragePoolMetric.WRITE_RESPONSE_TIME.name: {
-        "unit": constants.StoragePoolMetric.WRITE_RESPONSE_TIME.unit,
-        "description":
-            constants.StoragePoolMetric.WRITE_RESPONSE_TIME.description
-    },
-    constants.StoragePoolMetric.CACHE_HIT_RATIO.name: {
-        "unit": constants.StoragePoolMetric.CACHE_HIT_RATIO.unit,
-        "description": constants.StoragePoolMetric.CACHE_HIT_RATIO.description
-    },
-    constants.StoragePoolMetric.READ_CACHE_HIT_RATIO.name: {
-        "unit": constants.StoragePoolMetric.READ_CACHE_HIT_RATIO.unit,
-        "description":
-            constants.StoragePoolMetric.READ_CACHE_HIT_RATIO.description
-    },
-    constants.StoragePoolMetric.WRITE_CACHE_HIT_RATIO.name: {
-        "unit": constants.StoragePoolMetric.WRITE_CACHE_HIT_RATIO.unit,
-        "description":
-            constants.StoragePoolMetric.WRITE_CACHE_HIT_RATIO.description
-    }
-}
-
 DISK_CAP = {
     constants.DiskMetric.IOPS.name: {
         "unit": constants.DiskMetric.IOPS.unit,
@@ -802,7 +747,6 @@ LUN_REGULAR = '^perf_lun'
 SASPORT_REGULAR = '^perf_sasport'
 ISCSIPORT_REGULAR = '^perf_iscsiport'
 FCPORT_REGULAR = '^perf_fciport'
-POOL_REGULAR = '^perf_raid'
 DISK_REGULAR = '^perf_disk'
 SYSTEM_PERFORMANCE_FILE = 'system performance getfilelist'
 VERSION_SHOW = 'versionshow'
