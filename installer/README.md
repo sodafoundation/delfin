@@ -8,6 +8,14 @@ Ubuntu 16.04, Ubuntu 18.04
 # Prerequisite
 
 - #### Ensure the logged-in user has root privileges.
+- #### Clone the delfin repository
+    ```sh
+    git clone https://github.com/sodafoundation/delfin.git
+    ```
+    Change the directory to `delfin`
+    ```sh
+    cd delfin
+    ```
 
 - #### Setup Python3
     Python3 and Pip3 should be installed on the system.
@@ -18,7 +26,12 @@ Ubuntu 16.04, Ubuntu 18.04
     apt-get install python3
     apt-get install python3-pip
     ```
-
+- #### Setup `virtualenv`
+    To install `virtualenv`
+    
+    ```sh
+    apt-get install virtualenv
+    ```
 - #### Set PYTHONPATH to working directory
 
     ```sh
