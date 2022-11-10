@@ -8,7 +8,8 @@ Ubuntu 16.04, Ubuntu 18.04
 # Prerequisite
 
 - #### Ensure the logged-in user has root privileges.
-
+git clone https://github.com/sodafoundation/delfin.git
+cd delfin
 - #### Setup Python3
     Python3 and Pip3 should be installed on the system.
 
