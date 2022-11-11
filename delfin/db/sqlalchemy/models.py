@@ -150,6 +150,7 @@ class Controller(BASE, DelfinBase):
     location = Column(String(255))
     soft_version = Column(String(255))
     cpu_info = Column(String(255))
+    cpu_count = Column(Integer)
     memory_size = Column(BigInteger)
     storage_id = Column(String(36))
     mgmt_ip = Column(String(255))
