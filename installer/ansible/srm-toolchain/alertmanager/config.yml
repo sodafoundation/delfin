@@ -1,0 +1,6 @@
+route:
+ receiver: 'delfin'
+ group_by: [severity]
+
+receivers:
+- name: 'delfin'

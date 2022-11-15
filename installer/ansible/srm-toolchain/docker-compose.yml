@@ -1,0 +1,56 @@
+version: '3.1'
+
+volumes:
+    prometheus_data: {}
+    grafana_data: {}
+
+services:
+  prometheus:
+    image: prom/prometheus: { prometheus_docker_version }
+    container_name: monitoring_prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+      - ./prometheus/alerts.rules:/alertmanager/alerts.rules
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - SODA_PROMETHEUS_PORT:SODA_PROMETHEUS_PORT
+    links:
+      - alertmanager:alertmanager
+    restart: always
+    deploy:
+      mode: global
+    environment:
+     - HOST_IP="HOST_IP"
+
+  alertmanager:
+    image: prom/alertmanager: { alertmanager_docker_version }
+    container_name: monitoring_alertmanager
+    ports:
+      - SODA_ALERTMANAGER_PORT:SODA_ALERTMANAGER_PORT
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+    restart: always
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    deploy:
+      mode: global
+
+  grafana:
+    image: grafana/grafana: { grafana_docker_version }
+    container_name: monitoring_grafana
+    depends_on:
+      - prometheus
+    ports:
+      - SODA_GRAFANA_PORT:SODA_GRAFANA_PORT
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    restart: always
+    env_file:
+      - config.grafana
+

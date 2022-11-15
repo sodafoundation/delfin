@@ -1,0 +1,63 @@
+# Copyright 2018 The OpenSDS Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: install docker-py package with pip when enabling containerized deployment
+  pip:
+    name: docker-py
+
+- name: run dashboard containerized service
+  docker_container:
+    name: dashboard
+    image: "{{ dashboard_docker_image }}"
+    state: started
+    network_mode: host
+    restart_policy: always
+    env:
+      OPENSDS_AUTH_URL: "http://{{ host_ip }}/identity"
+      OPENSDS_HOTPOT_URL: "http://{{ host_ip }}:50040"
+      OPENSDS_GELATO_URL: "http://{{ host_ip }}:8089"
+      SODA_DELFIN_URL: "{{ soda_delfin_url }}"
+      OPENSDS_ORCHESTRATION_URL: "http://{{ host_ip }}:5000"
+      OPENSDS_S3_URL: "http://{{ host_ip }}:8090"
+      OPENSDS_S3_HOST: "{{ host_ip }}" 
+      OPENSDS_S3_PORT: "8090"
+      SODA_PROMETHEUS_PORT: "{{ prometheus_port | quote }}"
+      SODA_ALERTMANAGER_PORT: "{{ alertmanager_port | quote }}"
+      SODA_GRAFANA_PORT: "{{ grafana_port | quote }}"
+      STORAGE_SERVICE_PLAN_ENABLED: "{{ enable_storage_service_plans | string }}"
+      SODA_ALERTMANAGER_URL: "http://{{ host_ip }}:{{ alertmanager_port }}"
+  
+# - name: run dashboard containerized service for mulit-cloud HA
+#   docker_container:
+#     name: dashboard
+#     image: "{{ dashboard_docker_image }}"
+#     state: started
+#     network_mode: host
+#     restart_policy: always
+#     env:
+#       OPENSDS_AUTH_URL: "http://{{ host_ip }}/identity"
+#       OPENSDS_HOTPOT_URL: "http://{{ host_ip }}:50040"
+#       OPENSDS_GELATO_URL: "http://{{ gelato_ha_api_ip }}:{{ gelato_ha_api_port }}"
+#       SODA_DELFIN_URL: "{{ soda_delfin_url }}"
+#       OPENSDS_ORCHESTRATION_URL: "http://{{ host_ip }}:5000"
+#       OPENSDS_S3_URL: "http://{{ gelato_ha_s3_ip }}:{{ gelato_ha_s3_port }}"
+#       OPENSDS_S3_HOST: "{{ gelato_ha_s3_ip }}"
+#       OPENSDS_S3_PORT: "{{ gelato_ha_s3_port }}"
+#       SODA_PROMETHEUS_PORT: "{{ prometheus_port }}"
+#       SODA_ALERTMANAGER_PORT: "{{ alertmanager_port }}"
+#       SODA_GRAFANA_PORT: "{{ grafana_port }}"
+#       STORAGE_SERVICE_PLAN_ENABLED: "{{ enable_storage_service_plans }}"
+#       SODA_ALERTMANAGER_URL: "http://{{ host_ip }}:{{ alertmanager_port }}"      
+#   when: gelato_ha == true

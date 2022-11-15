@@ -1,0 +1,68 @@
+# Copyright 2020 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: include scenarios/install-srm-toolchain.yml
+  tags:
+    - srm_toolchain
+  include: scenarios/install-srm-toolchain.yml
+
+- name: replace image tags and ports for prometheus, alertmanager and grafana in docker-compose configuration of SRM Toolchain
+  replace:
+    path: "{{ srm_toolchain_work_dir }}/docker-compose.yml"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  with_items:
+    - { regexp: '\"HOST_IP\"', replace: '{{ host_ip }}'}
+    - { regexp: 'prom/prometheus.*$', replace: 'prom/prometheus:{{ prometheus_image_tag }}'}
+    - { regexp: 'prom/alertmanager.*$', replace: 'prom/alertmanager:{{ alertmanager_image_tag }}'}
+    - { regexp: 'grafana/grafana.*$', replace: 'grafana/grafana:{{ grafana_image_tag }}'}
+    - { regexp: 'SODA_PROMETHEUS_PORT', replace: '{{ prometheus_port }}'}
+    - { regexp: 'SODA_ALERTMANAGER_PORT', replace: '{{ alertmanager_port }}'}
+    - { regexp: 'SODA_GRAFANA_PORT', replace: '{{ grafana_port }}'}
+  when: install_srm_toolchain == true
+
+- name: replace host_ip and Alertmanager Port in prometheus configuration
+  replace:
+    path: "{{ srm_toolchain_work_dir }}/prometheus/prometheus.yml"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  with_items:
+    - { regexp: 'HOST_IP', replace: '{{ host_ip }}'}
+    - { regexp: 'SODA_ALERTMANAGER_PORT', replace: '{{ alertmanager_port }}'}
+  when: install_srm_toolchain == true
+
+- name: replace host_ip and prometheus port in datasource configuration for grafana
+  replace:
+    path: "{{ srm_toolchain_work_dir }}/grafana/provisioning/datasources/all.yml"
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  with_items:
+    - { regexp: 'HOST_IP', replace: '{{ host_ip }}'}
+    - { regexp: 'SODA_PROMETHEUS_PORT', replace: '{{ prometheus_port }}'}
+  when: install_srm_toolchain == true
+
+- name: set PROMETHEUS as the default exporter
+  shell: export PROMETHEUS=True
+
+- name: Stop and remove Prometheus, Alertmanager, Grafana containers, keeping images
+  shell: docker-compose rm -fs
+  args:
+    chdir: "{{ srm_toolchain_work_dir }}/"
+
+- name: start service
+  shell: docker-compose up -d
+  args:
+    chdir: "{{ srm_toolchain_work_dir }}/"
+

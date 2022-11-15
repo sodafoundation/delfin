@@ -1,0 +1,46 @@
+# Copyright 2020 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# Dummy variable to avoid error because ansible does not recognize the
+# file as a good configuration file when no variable in it.
+dummy:
+
+#########################
+# INSTALL SRM TOOLCHAIN #
+#########################
+# The SRM Toolchain is required if you wish to use the SODA Dashboard to view the metrics and visualization. 
+# If you set this to true then the installer will install Prometheus:<version>, AlertManager<version> and Grafana<version>. 
+# Please note that this installer will install the above as docker containers. 
+# If you already have any of the above running then please make the appropriate 
+# changes to the docker container name and ports at {srm_toolchain_dir}/docker-compose.yml
+# If you set this to false then you will not be able to view the visualization using SODA Dashboard. 
+# You can however configure your own dashboard or receiver to connect with Delfin.
+
+install_srm_toolchain: true
+
+# The source directory where the SRM Toolchain installer files reside
+srm_toolchain_dir: srm-toolchain
+
+# The working directory where the SRM Toolchain installer files are copied.
+srm_toolchain_work_dir: /opt/srm-toolchain
+
+prometheus_image_tag: v2.23.0
+prometheus_port: 9090
+
+alertmanager_image_tag: v0.21.0
+alertmanager_port: 9093
+
+grafana_image_tag: 7.3.5
+grafana_port: 3000

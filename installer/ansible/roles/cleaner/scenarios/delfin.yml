@@ -1,0 +1,68 @@
+# Copyright 2020 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+- name: Stop delfin containers, if started
+  shell: "{{ item }}"
+  with_items:
+    - docker-compose down
+  become: yes
+  ignore_errors: yes
+  args:
+    chdir: "{{ delfin_work_dir }}"
+
+- name: Get running delfin processes
+  shell: "ps -ef | grep -v grep | grep -i 'python3 /opt/delfin-linux-amd64/delfin/' | awk '{print $2}'"
+  register: running_processes
+
+- name: Kill running delfin processes
+  shell: "kill {{ item }}"
+  with_items: "{{ running_processes.stdout_lines }}"
+  ignore_errors: yes
+
+- wait_for:
+    path: "/proc/{{ item }}/status"
+    state: absent
+  with_items: "{{ running_processes.stdout_lines }}"
+  ignore_errors: yes
+  register: killed_processes
+
+- name: Force kill stuck processes
+  shell: "kill -9 {{ item }}"
+  with_items: "{{ killed_processes.results | select('failed') | map(attribute='item') | list }}"
+
+- name: Stop service of delfin, if started
+  service:
+    name: "{{ item }}"
+    state: stopped
+  with_items:
+    - rabbitmq-server
+    - redis-server
+  become: yes
+  ignore_errors: yes
+
+- name: clean up all delfin directories
+  file:
+    path: "{{ item }}"
+    state: absent
+    force: yes
+  with_items:
+    - "{{ delfin_work_dir }}"
+    - "{{ delfin_tarball_dir }}"
+  ignore_errors: yes
+  tags:
+    - delfin
+    - clean
+  when:
+    - source_purge is undefined or source_purge != false
