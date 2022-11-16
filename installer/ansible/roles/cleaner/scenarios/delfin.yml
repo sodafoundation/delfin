@@ -16,7 +16,7 @@
 - name: Stop delfin containers, if started
   shell: "{{ item }}"
   with_items:
-    - docker-compose down
+    - docker compose down
   become: yes
   ignore_errors: yes
   args:

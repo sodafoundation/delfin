@@ -20,20 +20,6 @@
   any_errors_fatal: true
   become: True
   
-# Defines deployment design and assigns role to server groups
-- name: Install keystone services
-  hosts: controllers
-  remote_user: root
-  vars_files:
-    - group_vars/common.yml
-    - group_vars/auth.yml
-  gather_facts: false
-  become: True
-  tasks:
-    - import_role:
-        name: auth-installer
-  tags: keystone
-
 - name: Install delfin
   hosts: controllers
   remote_user: root
@@ -62,6 +48,23 @@
       when:
         - install_srm_toolchain == true
   tags: srm_toolchain
+
+# Defines deployment design and assigns role to server groups
+- name: Install keystone services
+  hosts: controllers
+  remote_user: root
+  vars_files:
+    - group_vars/common.yml
+    - group_vars/auth.yml
+    - group_vars/dashboard.yml
+  gather_facts: false
+  become: True
+  tasks:
+    - import_role:
+        name: auth-installer
+      when:
+        - enable_dashboard == true
+  tags: keystone
 
 - name: deploy dashboard
   hosts: controllers

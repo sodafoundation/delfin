@@ -1,29 +1,71 @@
-# Introduction
+# Delfin Installation Guide
+
+The SODA Delfin supports two types of installation
+* Installation using Ansible for user experiance with Dashboard
+* Installation using scripts
+
+## Ansible installer
+
+* Supported OS: **Ubuntu 20.04, Ubuntu 18.04**
+* Prerequisite: **Python 3.6 or above** should be installed
+
+### Install steps
+
+```bash
+sudo apt-get update && sudo apt-get install -y git make curl wget libltdl7 libseccomp2 libffi-dev gawk
+git clone https://github.com/sodafoundation/delfin.git
+# git checkout <delfin-release-version>
+cd delfin/installer
+chmod +x install_dependencies.sh && ./install_dependencies.sh
+cd ansible
+export PATH=$PATH:/home/$USER/.local/bin
+sudo -E env "PATH=$PATH" ansible-playbook site.yml -i local.hosts -v
+```
+### Uninstall
+```bash
+sudo -E env "PATH=$PATH" ansible-playbook clean.yml -i local.hosts -v
+```
+
+
+### Logs
+Delfin processes execution logs can be found in /tmp/ folder
+* /tmp/api.log
+* /tmp/alert.log
+* /tmp/task.log
+* /tmp/exporter.log
+* /tmp/create_db.log
+
+### How to use Delfin
+Delfin can be used either through dashboard or REST APIs.
+
+Please refer [user guides](https://docs.sodafoundation.io/guides/user-guides/delfin/dashboard/)
+
+
+
+## Bash installer
 This is a standalone/non-containerized installer for SODA Infrastructure Manager (delfin) project.
 It contains a script and options to check the environment feasible for installing delfin. Installs required dependent software/binaries.
 
-# Supported OS
-Ubuntu 16.04, Ubuntu 18.04
+* Supported OS: **Ubuntu 20.04, Ubuntu 18.04**
+* Prerequisite:
+  * **Python 3.6 or above** should be installed
+  * Ensure the logged-in user has **root privileges**.
 
-# Prerequisite
+#### Installation steps
+```bash
+sudo -i
+apt-get install python3 python3-pip
+git clone https://github.com/sodafoundation/delfin.git && git checkout <delfin-release-version>
+cd delfin
+export PYTHONPATH=$(pwd)
+./installer/install
+```
+Refer below for installer options
 
-- #### Ensure the logged-in user has root privileges.
-
-- #### Setup Python3
-    Python3 and Pip3 should be installed on the system.
-
-    Note: If you don't have python3 in your system, you may follow below steps to setup python3 environment.
-
-    ```sh
-    apt-get install python3
-    apt-get install python3-pip
-    ```
-
-- #### Set PYTHONPATH to working directory
-
-    ```sh
-    export PYTHONPATH=$(pwd)
-    ```
+#### Uninstall
+```bash
+./installer/uninstall
+```
 
 - #### [Optional] Setup Prometheus (for monitor performance metric through prometheus)
 
@@ -55,13 +97,13 @@ Ubuntu 16.04, Ubuntu 18.04
         ```sh
          root@root:/prometheus/prometheus-2.20.0.linux-amd64$ ./prometheus
         ```
-# Structure of the installer
+### Structure of the installer
 This installer comes with options of pre-check, install and uninstall
 pre-check: This script checks for the components required by delfin to function. If they are not present, precheck will install them.
 Install: Installs and starts the delfin process
 Uninstall: Uninstalls the delfin. Doesn't uninstall the required components. You may need to uninstall it explicitly using the native approach.
 
-# How to install
+### How to install
 To get help, execute 'install -h'. It will show help information
 
 Install script can be executed with three different switches to:
@@ -131,28 +173,12 @@ $ installer/install
 
 Note: Multiple instances of exporter and api is not allowed currently.
 
-#### Post install verification
-After delfin installation use the following command to verify all process 
-of delfin are running.
-```sh
-ps -aux | grep delfin
-```
-
-# Uninstall
-Running the uninstall script will stop all delfin processes and do cleanup
-```sh
-installer/uninstall
-
-# Example
-root@root1:~/delfin-demo/delfin$ installer/uninstall
-```
-
-# Logs
+### Logs
 All the installer logs are stored in the /var/log/sodafoundation directory.
 The logs can be uniquely identified based upon the timestamp.
 
 
-# Test the running delfin setup/process
+## Test the running delfin setup/process
   1. Make sure all delfin process are up and running
      ```
      ps -ef|grep delfin
@@ -197,5 +223,5 @@ The logs can be uniquely identified based upon the timestamp.
 
      http://localhost:9090/graph
 
-# Limitation
+## Limitation
 Local installation, unlike Ansible installer, does not support SODA Dashboard integration.

@@ -57,12 +57,12 @@
   shell: export PROMETHEUS=True
 
 - name: Stop and remove Prometheus, Alertmanager, Grafana containers, keeping images
-  shell: docker-compose rm -fs
+  shell: docker compose rm -fs
   args:
     chdir: "{{ srm_toolchain_work_dir }}/"
 
 - name: start service
-  shell: docker-compose up -d
+  shell: docker compose up -d
   args:
     chdir: "{{ srm_toolchain_work_dir }}/"
 

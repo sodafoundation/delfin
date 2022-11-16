@@ -19,22 +19,23 @@ import os
 import requests
 import json
 
+
 def token_issue():
     body = {
         'auth': {
-            'identity': { 'methods': ['password'],
-                          'password': {
-                              'user': {
-                                  'name': OS_USERNAME,
-                                  'domain': { 'name': OS_USER_DOMAIN_NAME },
-                                  'password':  OS_PASSWORD
-                              }
-                          }
-                      },
+            'identity': {'methods': ['password'],
+                         'password': {
+                'user': {
+                    'name': OS_USERNAME,
+                    'domain': {'name': OS_USER_DOMAIN_NAME},
+                    'password': OS_PASSWORD
+                }
+            }
+            },
             'scope': {
                 'project': {
-                    'name':  OS_PROJECT_NAME,
-                    'domain': { 'name':  OS_USER_DOMAIN_NAME }
+                    'name': OS_PROJECT_NAME,
+                    'domain': {'name': OS_USER_DOMAIN_NAME}
                 }
             }
         }
@@ -45,8 +46,9 @@ def token_issue():
     try:
         r_post = requests.post(OS_AUTH_URL + '/v3/auth/tokens',
                                headers=headers, data=json.dumps(body))
-    except:
+    except Exception as ex:
         print('ERROR: %s' % (body))
+        print('Execption: %s' % (ex))
         return None
 
     if debug:
@@ -57,6 +59,7 @@ def token_issue():
         return r_post.headers['X-Subject-Token']
     else:
         return None
+
 
 def service_list(token):
     headers = {
@@ -75,11 +78,13 @@ def service_list(token):
         result_list = json.loads(r_get.text)['services']
 
         for s in result_list:
-            result_dict[s['name']] =  s['id']
-    except:
+            result_dict[s['name']] = s['id']
+    except Exception as ex:
+        print("Got exception %s", ex)
         return None
 
     return result_dict
+
 
 def endpoint_list(token, service):
 
@@ -93,8 +98,9 @@ def endpoint_list(token, service):
         if debug:
             print('DEBUG: GET /v3/endpoints - status_code = %s' %
                   (r_get.status_code))
-    except:
-       return None
+    except Exception as ex:
+        print("Got exception %s", ex)
+        return None
 
     if r_get.status_code != 200:
         return None
@@ -104,13 +110,15 @@ def endpoint_list(token, service):
 
     ep_list = []
     for ep in json.loads(response)['endpoints']:
-        if service in service_dict.keys() and (ep['service_id'] == service_dict[service]):
+        if service in service_dict.keys() and (ep['service_id'] ==
+                                               service_dict[service]):
             if debug:
                 print('DEBUG: %s %s' % (ep['id'], ep['interface']))
                 print('DEBUG:   url %s' % (ep['url']))
             ep_list.append([ep['id'], ep['interface']])
 
     return ep_list
+
 
 def endpoint_bulk_update(token, service, url):
     headers = {
@@ -126,7 +134,7 @@ def endpoint_bulk_update(token, service, url):
         print("DEBUG: ep_list: %s %s" % (ep_list, url))
 
     for ep in ep_list:
-        body = {"endpoint": { "url": url }}
+        body = {"endpoint": {"url": url}}
         endpoint_id = ep[0]
         if debug:
             print("DEBUG: %s / %s" %
@@ -136,8 +144,9 @@ def endpoint_bulk_update(token, service, url):
             r_patch = requests.patch(OS_AUTH_URL + '/v3/endpoints/' +
                                      endpoint_id,
                                      headers=headers, data=json.dumps(body))
-        except:
-            print('ERROR: endpoint update for id: %s failed.' % (endpoint_id))
+        except Exception as ex:
+            print('ERROR: endpoint update for id: %s failed. %s'
+                  % (endpoint_id), ex)
             # continue for all the given endpoints
         if r_patch.status_code != 200:
             print('ERROR: endpoint update for id: %s failed. HTTP %s' %
@@ -159,17 +168,19 @@ def endpoint_bulk_update(token, service, url):
 #      Updates URL portion of keystone endpoints of given SERVICE_NAME
 #      in one action.
 #
+
+
 if __name__ == '__main__':
 
     debug = False
 
-    OS_AUTH_URL=os.environ['OS_AUTH_URL']
-    OS_PASSWORD=os.environ['OS_PASSWORD']
-    OS_PROJECT_DOMAIN_NAME=os.environ['OS_PROJECT_DOMAIN_NAME']
-    OS_PROJECT_NAME=os.environ['OS_PROJECT_NAME']
-    OS_USERNAME=os.environ['OS_USERNAME']
-    OS_USER_DOMAIN_NAME=os.environ['OS_USER_DOMAIN_NAME']
-    #OS_USER_DOMAIN_ID=os.environ['OS_USER_DOMAIN_ID']
+    OS_AUTH_URL = os.environ['OS_AUTH_URL']
+    OS_PASSWORD = os.environ['OS_PASSWORD']
+    OS_PROJECT_DOMAIN_NAME = os.environ['OS_PROJECT_DOMAIN_NAME']
+    OS_PROJECT_NAME = os.environ['OS_PROJECT_NAME']
+    OS_USERNAME = os.environ['OS_USERNAME']
+    OS_USER_DOMAIN_NAME = os.environ['OS_USER_DOMAIN_NAME']
+    # OS_USER_DOMAIN_ID=os.environ['OS_USER_DOMAIN_ID']
 
     # token_issue
     #   used for keystone process start up check.
@@ -177,18 +188,17 @@ if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == 'token_issue':
         token = token_issue()
         if not token:
-           sys.exit(1)
+            sys.exit(1)
         else:
-           sys.exit(0)
+            sys.exit(0)
 
     # endpoint_bulk_update
     #   used for overwriting keystone endpoints
     if not ((len(sys.argv) == 4) and (sys.argv[1] == 'endpoint_bulk_update')):
         print('Specify service_name and url for bulk update. Exiting...')
-	sys.exit(1)
+        sys.exit(1)
 
     token = token_issue()
     if not token:
         sys.exit(1)
     endpoint_bulk_update(token, sys.argv[2], sys.argv[3])
-

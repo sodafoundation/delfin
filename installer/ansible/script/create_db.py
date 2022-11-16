@@ -28,10 +28,14 @@ from oslo_db import options as db_options
 CONF = cfg.CONF
 db_options.set_defaults(cfg.CONF,
                         connection='sqlite:////var/lib/delfin/delfin.sqlite')
+
+
 def remove_prefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]
     return text
+
+
 def main():
     CONF(sys.argv[1:], project='delfin',
          version=version.version_string())
@@ -41,6 +45,7 @@ def main():
     if not os.path.exists(path):
         os.makedirs(path)
     db.register_db()
+
+
 if __name__ == '__main__':
     main()
-

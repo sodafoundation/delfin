@@ -82,14 +82,11 @@
 
 - name: Install RabbitMQ package
   apt: 
-    name: "{{ item }}"
+    name: rabbitmq-server
     update_cache: yes
     install_recommends: yes
     allow_unauthenticated: yes
     state: present
-  with_items:
-    - apt-transport-https 
-    - rabbitmq-server
   become: yes
   when:
     - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false

@@ -16,11 +16,8 @@
 # Start delfin
 - name: Install sqlite3 package
   apt: 
-    name: "{{ item }}"
+    name: sqlite3
     state: present
-  with_items:
-    - sqlite3
-    - python3-pip
   become: yes
 
 - name: Install python virtual environment

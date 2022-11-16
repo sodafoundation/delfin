@@ -19,7 +19,7 @@
   register: srmtoolchainexisted
 
 - name: Stop and remove Prometheus, Alertmanager, Grafana containers but don't delete the images
-  shell: docker-compose rm -fs
+  shell: docker compose rm -fs
   args:
     chdir: "{{ srm_toolchain_work_dir }}/"
   when:
@@ -27,7 +27,7 @@
     - srmtoolchainexisted.stat.isdir is defined and srmtoolchainexisted.stat.isdir
 
 - name: Stop and remove Prometheus, Alertmanager, Grafana containers & delete the images
-  shell: docker-compose down --rmi all
+  shell: docker compose down --rmi all
   args:
     chdir: "{{ srm_toolchain_work_dir }}/"
   when:
