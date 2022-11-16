@@ -631,8 +631,8 @@ HPE3PAR_ALERT_CODE = {
     '0x0a50001': 'File Access Auditing Alerts'
 }
 NODE_PATTERN = "^\\s*Node\\s+[-]*Name[-]*\\s+[-]*State[-]*\\s+"
-CPU_PATTERN = "^\\s*Node\\s+CPU\\s+[-]*Manufacturer[-]*\\s+[-]*Serial[-]*" \
-              "\\s+CPUSpeed"
+CPU_PATTERN = "^\\s*Node\\s+CPU"
+
 DISK_PATTERN = "^\\s*Id\\s+[-]*CagePos[-]*\\s+[-]*Type[-]*\\s+RPM\\s+State\\s+"
 DISK_I_PATTERN = "^\\s*Id\\s+[-]*CagePos[-]*\\s+[-]*State[-]*\\s+" \
                  "[-]*Node_WWN[-]*\\s+[-]*MFR[-]*\\s+[-]*Model[-]*\\s+" \
