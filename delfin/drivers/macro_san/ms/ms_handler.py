@@ -300,6 +300,8 @@ class MsHandler(object):
                 'soft_version': soft_version,
                 'cpu_info': cpu_info
             }
+            if cpu_info:
+                controller_model['cpu_count'] = consts.digital_constant.ONE_INT
             controllers_list.append(controller_model)
         return controllers_list
 

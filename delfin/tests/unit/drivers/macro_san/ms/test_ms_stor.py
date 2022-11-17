@@ -321,10 +321,10 @@ Command completed successfully.\r
 CONTROLLERS_DATA = [
     {'name': 'SP1', 'storage_id': '12345', 'native_controller_id': 'SP1',
      'status': 'normal', 'location': 'SP1', 'soft_version': 'V2.0.14T04',
-     'cpu_info': 'GenuineIntel@2200.000MHz'},
+     'cpu_info': 'GenuineIntel@2200.000MHz', 'cpu_count': 1},
     {'name': 'SP2', 'storage_id': '12345', 'native_controller_id': 'SP2',
      'status': 'normal', 'location': 'SP2', 'soft_version': 'V2.0.14T04',
-     'cpu_info': 'GenuineIntel@2200.000MHz'},
+     'cpu_info': 'GenuineIntel@2200.000MHz', 'cpu_count': 1},
     {'name': 'SP3', 'storage_id': '12345', 'native_controller_id': 'SP3',
      'status': 'offline', 'location': 'SP3', 'soft_version': 'N/A',
      'cpu_info': ''},
