@@ -306,12 +306,12 @@ class ComponentHandler(object):
             memory_size = int(controller.get('memory_size_for_the_sp',
                                              '0')) * units.Mi
             cpu_info = ''
-            cpu_count = 1
+            cpu_count = None
             if cpus:
                 cpu_info = cpus.get(
                     controller.get('serial_number_for_the_sp', ''), '')
-            if not cpu_info:
-                cpu_count = None
+            if cpu_info:
+                cpu_count = 1
             controller_model = {
                 'name': controller.get('sp_name'),
                 'storage_id': storage_id,
