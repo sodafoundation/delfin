@@ -428,10 +428,8 @@ class SSHHandler(object):
             if 'Cores' in titles:
                 node_id = str_info[0]
                 cpu_info = ' '.join(str_info[5:])
-                if obj_map.get(node_id):
-                    obj_map[node_id][cpu_info] = int(str_info[2])
-                else:
-                    obj_map[node_id] = {cpu_info: int(str_info[2])}
+                cpu_map = obj_map.setdefault(node_id, {})
+                cpu_map[cpu_info] = int(str_info[2])
             else:
                 node_id = str_info[0]
                 cpu_info = str_info[4]
@@ -439,9 +437,7 @@ class SSHHandler(object):
                     obj_map[node_id][cpu_info] = obj_map.get(node_id).get(
                         cpu_info, 0) + 1
                 else:
-                    cpu_info_map = {}
-                    cpu_info_map[cpu_info] = 1
-                    obj_map[node_id] = cpu_info_map
+                    obj_map[node_id] = {cpu_info: 1}
         return obj_map
 
     def parse_metric_table(self, cols_size, titles_size, str_info,
