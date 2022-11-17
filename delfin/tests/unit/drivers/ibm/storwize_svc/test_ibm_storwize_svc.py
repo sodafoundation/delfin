@@ -527,7 +527,8 @@ controller_result = [
         'status': 'normal',
         'soft_version': '7.8.1.11',
         'location': 'node_165084',
-        'cpu_info': '6 core Intel(R) Xeon(R) CPU E5645 @ 2.40GHz'
+        'cpu_info': '6 core Intel(R) Xeon(R) CPU E5645 @ 2.40GHz',
+        'cpu_count': 1
     }
 ]
 
