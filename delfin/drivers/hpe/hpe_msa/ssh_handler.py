@@ -213,6 +213,7 @@ class SSHHandler(object):
                     'location': data.get('position'),
                     'soft_version': data.get('sc-fw'),
                     'cpu_info': cpu_info,
+                    'cpu_count': 1,
                     'memory_size': int(system_memory_size)
                 }
                 controller_arr.append(data_map)
