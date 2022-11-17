@@ -200,6 +200,9 @@ class SSHHandler(object):
                 if health == 'OK':
                     status = constants.StoragePoolStatus.NORMAL
                 cpu_info = data.get('sc-cpu-type')
+                cpu_count = None
+                if cpu_info:
+                    cpu_count = 1
                 memory_size = data.get('system-memory-size')
                 if memory_size is not None:
                     memory_size += "MB"
@@ -213,7 +216,7 @@ class SSHHandler(object):
                     'location': data.get('position'),
                     'soft_version': data.get('sc-fw'),
                     'cpu_info': cpu_info,
-                    'cpu_count': 1,
+                    'cpu_count': cpu_count,
                     'memory_size': int(system_memory_size)
                 }
                 controller_arr.append(data_map)
