@@ -510,6 +510,7 @@ CONTROLLER_RESULT = [
         'location': 'CM#0',
         'soft_version': 'AA',
         'cpu_info': '1.40GHz',
+        'cpu_count': 1,
         'memory_size': '4294967296'
     }]
 POOL_RESULT = [
