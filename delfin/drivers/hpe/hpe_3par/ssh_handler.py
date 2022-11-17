@@ -57,7 +57,6 @@ class SSHHandler(object):
     HPE3PAR_COMMAND_SHOWVV = 'showvv'
     HPE3PAR_COMMAND_SHOWVLUN_T = 'showvlun -t'
 
-    HPE3PAR_COMMAND_SHOWVV = 'showvv'
     HPE3PAR_COMMAND_SRSTATPORT = 'srstatport -attime -groupby ' \
                                  'PORT_N,PORT_S,PORT_P -btsecs %d -etsecs %d'
     HPE3PAR_COMMAND_SRSTATPD = 'srstatpd -attime -btsecs %d -etsecs %d'
@@ -355,6 +354,7 @@ class SSHHandler(object):
 
     def parse_datas_to_map(self, resource_info, pattern_str, para_map=None):
         obj_model = {}
+        titles = []
         titles_size = 9999
         try:
             pattern = re.compile(pattern_str)
@@ -374,7 +374,8 @@ class SSHHandler(object):
                             obj_model = self.parse_node_cpu(cols_size,
                                                             titles_size,
                                                             str_info,
-                                                            obj_model)
+                                                            obj_model,
+                                                            titles)
                         else:
                             if cols_size >= titles_size:
                                 key_position = para_map.get('key_position')
@@ -421,17 +422,26 @@ class SSHHandler(object):
                 obj_list.append(obj_model)
         return obj_list
 
-    def parse_node_cpu(self, cols_size, titles_size, str_info, obj_map):
+    def parse_node_cpu(self, cols_size, titles_size, str_info, obj_map,
+                       titles):
         if cols_size >= titles_size:
-            node_id = str_info[0]
-            cpu_info = str_info[4]
-            if obj_map.get(node_id):
-                obj_map[node_id][cpu_info] = obj_map.get(node_id).get(
-                    cpu_info, 0) + 1
+            if 'Cores' in titles:
+                node_id = str_info[0]
+                cpu_info = ' '.join(str_info[5:])
+                if obj_map.get(node_id):
+                    obj_map[node_id][cpu_info] = int(str_info[2])
+                else:
+                    obj_map[node_id] = {cpu_info: int(str_info[2])}
             else:
-                cpu_info_map = {}
-                cpu_info_map[cpu_info] = 1
-                obj_map[node_id] = cpu_info_map
+                node_id = str_info[0]
+                cpu_info = str_info[4]
+                if obj_map.get(node_id):
+                    obj_map[node_id][cpu_info] = obj_map.get(node_id).get(
+                        cpu_info, 0) + 1
+                else:
+                    cpu_info_map = {}
+                    cpu_info_map[cpu_info] = 1
+                    obj_map[node_id] = cpu_info_map
         return obj_map
 
     def parse_metric_table(self, cols_size, titles_size, str_info,

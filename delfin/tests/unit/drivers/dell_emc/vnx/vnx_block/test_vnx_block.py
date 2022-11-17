@@ -577,6 +577,7 @@ SP_RESULT = [
         'location': None,
         'soft_version': '05.33.000.5.038',
         'cpu_info': 'JFSP 1.8GHZ 4C CPU GEN3',
+        'cpu_count': 1,
         'memory_size': '17179869184'
     },
     {
