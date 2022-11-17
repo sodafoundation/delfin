@@ -10,6 +10,7 @@ LIST_CONTROLLERS = """
     <PROPERTY name="system-memory-size">6144</PROPERTY>
     <PROPERTY name="sc-fw">GLS210R04-01</PROPERTY>
     <PROPERTY name="sc-cpu-type">Gladden</PROPERTY>
+    <PROPERTY name="cpu_count">1</PROPERTY>
     <PROPERTY name="health">OK</PROPERTY>
     <PROPERTY name="position">Top</PROPERTY>
     </OBJECT>
@@ -22,6 +23,7 @@ LIST_CONTROLLERS = """
     <PROPERTY name="system-memory-size">6144</PROPERTY>
     <PROPERTY name="sc-fw">GLS210R04-01</PROPERTY>
     <PROPERTY name="sc-cpu-type">Gladden</PROPERTY>
+    <PROPERTY name="cpu_count">1</PROPERTY>
     <PROPERTY name="health">OK</PROPERTY>
     <PROPERTY name="position">Bottom</PROPERTY>
     </OBJECT>
@@ -1114,6 +1116,7 @@ controller_result = [
         'location': 'Top',
         'soft_version': 'GLS210R04-01',
         'cpu_info': 'Gladden',
+        'cpu_count': 1,
         'memory_size': 6442450944
     },
     {
@@ -1124,6 +1127,7 @@ controller_result = [
         'location': 'Bottom',
         'soft_version': 'GLS210R04-01',
         'cpu_info': 'Gladden',
+        'cpu_count': 1,
         'memory_size': 6442450944
     }
 ]
