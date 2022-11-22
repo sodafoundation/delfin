@@ -55,6 +55,7 @@ setup(
             'hitachi hnas = delfin.drivers.hitachi.hnas.hds_nas:HitachiHNasDriver',
             'pure flasharray = delfin.drivers.pure.flasharray.pure_flasharray:PureFlashArrayDriver',
             'h3c unistor_cf = delfin.drivers.h3c.unistor_cf.unistor_cf:H3cUniStorCfDriver',
+            'macrosan macrosan = delfin.drivers.macro_san.ms.ms_stor:MacroSanDriver',
             # AS5500/AS5300/AS2600/AS2200 use the same driver
             'inspur as5500 = delfin.drivers.inspur.as5500.as5500:As5500Driver'
         ]
