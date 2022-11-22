@@ -16,6 +16,7 @@ from unittest import TestCase, mock
 
 import paramiko
 import six
+from paramiko import SSHClient
 
 sys.modules['delfin.cryptor'] = mock.Mock()
 import time
@@ -959,6 +960,8 @@ class test_macro_san_driver(TestCase):
                          DSU_INFO, DISKS_INFO, DISK_ONE, DISKS_TWO,
                          HA_STATUS, VERSION_INFO, CPU_INFO, HA_STATUS,
                          VERSION_SHOW])
+        MacroSanSSHPool.create = mock.Mock(__class__)
+        SSHClient.open_sftp = mock.Mock(__class__)
         storage_object = self.driver.get_storage(context)
         self.assertDictEqual(storage_object, STORAGE_DATA)
 
@@ -970,6 +973,8 @@ class test_macro_san_driver(TestCase):
                          DSU_INFO, DISKS_INFO, DISK_ONE, DISKS_TWO,
                          HA_STATUS_NEW, VERSION_INFO, CPU_INFO, HA_STATUS_NEW,
                          VERSION_SHOW])
+        MacroSanSSHPool.create = mock.Mock(__class__)
+        SSHClient.open_sftp = mock.Mock(__class__)
         storage_object = self.driver.get_storage(context)
         self.assertDictEqual(storage_object, STORAGE_TWO_DATA)
 
@@ -1111,6 +1116,7 @@ class test_macro_san_driver(TestCase):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         MacroSanSSHPool.do_exec_shell = mock.Mock(
             side_effect=[VERSION_SHOW, GET_FILE_LIST])
+        MsHandler.down_perf_file = mock.Mock(return_value='')
         localtime = time.mktime(time.localtime()) * units.k
         storage_id = 12345
         start_time = localtime - 1000 * 60 * 5
