@@ -41,17 +41,24 @@ setup(
             'fujitsu eternus = delfin.drivers.fujitsu.eternus.eternus_stor:EternusDriver',
             'dellemc unity = delfin.drivers.dell_emc.unity.unity:UnityStorDriver',
             'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
+            'dellemc pmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
+            'dellemc scaleio = delfin.drivers.dell_emc.scaleio.scaleio_stor:ScaleioStorageDriver',
             'dellemc vnx_block = delfin.drivers.dell_emc.vnx.vnx_block.vnx_block:VnxBlockStorDriver',
             'dellemc vplex = delfin.drivers.dell_emc.vplex.vplex_stor:VplexStorageDriver',
             'hitachi vsp = delfin.drivers.hitachi.vsp.vsp_stor:HitachiVspDriver',
             'hpe 3par = delfin.drivers.hpe.hpe_3par.hpe_3parstor:Hpe3parStorDriver',
+            'hpe primera = delfin.drivers.hpe.hpe_3par.hpe_3parstor:Hpe3parStorDriver',
             'hpe msa = delfin.drivers.hpe.hpe_msa.hpe_msastor:HpeMsaStorDriver',
             'huawei oceanstor = delfin.drivers.huawei.oceanstor.oceanstor:OceanStorDriver',
             'ibm storwize_svc = delfin.drivers.ibm.storwize_svc.storwize_svc:StorwizeSVCDriver',
             'ibm ds8k = delfin.drivers.ibm.ds8k.ds8k:DS8KDriver',
             'netapp cmode = delfin.drivers.netapp.dataontap.cluster_mode:NetAppCmodeDriver',
             'hitachi hnas = delfin.drivers.hitachi.hnas.hds_nas:HitachiHNasDriver',
-            'pure flasharray = delfin.drivers.pure.flasharray.pure_flasharray:PureFlashArrayDriver'
+            'pure flasharray = delfin.drivers.pure.flasharray.pure_flasharray:PureFlashArrayDriver',
+            'h3c unistor_cf = delfin.drivers.h3c.unistor_cf.unistor_cf:H3cUniStorCfDriver',
+            'macrosan macrosan = delfin.drivers.macro_san.ms.ms_stor:MacroSanDriver',
+            # AS5500/AS5300/AS2600/AS2200 use the same driver
+            'inspur as5500 = delfin.drivers.inspur.as5500.as5500:As5500Driver'
         ]
     },
 )
