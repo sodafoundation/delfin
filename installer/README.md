@@ -19,12 +19,6 @@ Ubuntu 16.04, Ubuntu 18.04
     apt-get install python3-pip
     ```
 
-- #### Set PYTHONPATH to working directory
-
-    ```sh
-    export PYTHONPATH=$(pwd)
-    ```
-
 - #### [Optional] Setup Prometheus (for monitor performance metric through prometheus)
 
   Follow the below steps to setup delfin with prometheus. Once your setup is ready, you can register the storage devices for performance monitoring. Later, the performance metrics can be viewed on prometheus server. This example also guides you to configure and update the targets and interval for scraping the metrics.
@@ -61,6 +55,26 @@ pre-check: This script checks for the components required by delfin to function.
 Install: Installs and starts the delfin process
 Uninstall: Uninstalls the delfin. Doesn't uninstall the required components. You may need to uninstall it explicitly using the native approach.
 
+# Steps for installation of delfin project
+Follow the steps in order below to get delfin on your local machine. Ensure you have the required permissions to run the installation correctly on your device.
+
+- Step 1 : Clone the delin repository in your desired filepath. 
+```sh
+    git clone https://github.com/sodafoundation/delfin
+```
+- Step 2 : move into the newly created delfin folder
+```sh
+    cd delfin
+```
+- Step 3 : Set PYTHONPATH to working directory
+```sh
+    export PYTHONPATH=$(pwd)
+```
+- Step 4 : Execute pre-check as well as the install
+```sh
+    installer/install
+```
+   
 # How to install
 To get help, execute 'install -h'. It will show help information
 
