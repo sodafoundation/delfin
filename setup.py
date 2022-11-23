@@ -42,6 +42,7 @@ setup(
             'dellemc unity = delfin.drivers.dell_emc.unity.unity:UnityStorDriver',
             'dellemc vmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
             'dellemc pmax = delfin.drivers.dell_emc.vmax.vmax:VMAXStorageDriver',
+            'dellemc scaleio = delfin.drivers.dell_emc.scaleio.scaleio_stor:ScaleioStorageDriver',
             'dellemc vnx_block = delfin.drivers.dell_emc.vnx.vnx_block.vnx_block:VnxBlockStorDriver',
             'dellemc vplex = delfin.drivers.dell_emc.vplex.vplex_stor:VplexStorageDriver',
             'hitachi vsp = delfin.drivers.hitachi.vsp.vsp_stor:HitachiVspDriver',
