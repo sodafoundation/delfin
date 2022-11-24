@@ -1,4 +1,4 @@
-# Copyright 2019 The OpenSDS Authors.
+# Copyright 2022 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,33 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: stop container where dashboard is located
-  docker_container:
-    name: dashboard
-    image: "{{ dashboard_docker_image }}"
-    state: absent
-  when: dashboard_installation_type == "container" and enable_dashboard == true
-  ignore_errors: true
-  tags: dashboard
-
-- name: include scenarios/auth-keystone.yml when keystone specified
-  include_tasks: scenarios/auth-keystone.yml
-  when: opensds_auth_strategy == "keystone" and enable_dashboard == true
-  tags: keystone
 
 - name: include scenarios/release.yml if installed from release
   include_tasks: scenarios/release.yml
-  when: install_from == "release"
+  when: delfin_installation_type == "release"
 
 - name: include scenarios/delfin.yml for cleaning up delfin service
   include_tasks: scenarios/delfin.yml
-#  when: enable_delfin == true
   tags: delfin
-
-- name: include scenarios/srm-toolchain.yml for cleaning up SRM Toolchain
-  include_tasks: scenarios/srm-toolchain.yml
-  when: install_srm_toolchain == true
-  tags: srm_toolchain
 
 - name: clean all configuration and log files
   file:
@@ -48,14 +29,3 @@
   with_items:
     - "{{ delfin_config_dir }}"
   ignore_errors: yes
-
-- name: clean all created work directories
-  file:
-    path: "{{ item }}"
-    state: absent
-    force: yes
-  with_items:
-    - "{{ dashboard_work_dir }}"
-  ignore_errors: yes
-  when: source_purge is undefined or source_purge != false
-  tags: clean

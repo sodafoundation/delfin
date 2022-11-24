@@ -1,4 +1,4 @@
-# Copyright 2019 The OpenSDS Authors.
+# Copyright 2022 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,17 @@
 # limitations under the License.
 
 ---
-# Defines deployment design and assigns role to server groups
+# Defines deployment design and assigns role to node groups
 - hosts:
-  - controllers
+  - delfin-nodes
   gather_facts: true
   any_errors_fatal: true
   become: True
   
 - name: Install delfin
-  hosts: controllers
+  hosts: delfin-nodes
   remote_user: root
   vars_files:
-    - group_vars/common.yml
     - group_vars/delfin.yml
   gather_facts: false
   become: True
@@ -32,53 +31,3 @@
     - import_role:
         name: delfin-installer
   tags: delfin
-
-- name: Install SRM Toolchain
-  hosts: controllers
-  remote_user: root
-  vars_files: 
-    - group_vars/common.yml
-    - group_vars/delfin.yml
-    - group_vars/srm-toolchain.yml
-  gather_facts: false
-  become: True
-  tasks:
-    - import_role:
-        name: srm-toolchain-installer
-      when:
-        - install_srm_toolchain == true
-  tags: srm_toolchain
-
-# Defines deployment design and assigns role to server groups
-- name: Install keystone services
-  hosts: controllers
-  remote_user: root
-  vars_files:
-    - group_vars/common.yml
-    - group_vars/auth.yml
-    - group_vars/dashboard.yml
-  gather_facts: false
-  become: True
-  tasks:
-    - import_role:
-        name: auth-installer
-      when:
-        - enable_dashboard == true
-  tags: keystone
-
-- name: deploy dashboard
-  hosts: controllers
-  remote_user: root
-  vars_files:
-    - group_vars/common.yml
-    - group_vars/auth.yml
-    - group_vars/srm-toolchain.yml
-    - group_vars/dashboard.yml
-  gather_facts: false
-  become: True
-  tasks:
-    - include_role:
-        name: dashboard-installer
-      when:
-        - enable_dashboard == true
-  tags: dashboard

@@ -1,8 +1,8 @@
 # Delfin Installation Guide
 
 The SODA Delfin supports two types of installation
-* Installation using Ansible for user experiance with Dashboard
-* Installation using scripts
+* Installation using Ansible
+* Installation using Bash scripts
 
 ## Ansible installer
 
@@ -42,7 +42,7 @@ Please refer [user guides](https://docs.sodafoundation.io/guides/user-guides/del
 
 
 
-## Bash installer
+## Bash script installer
 This is a standalone/non-containerized installer for SODA Infrastructure Manager (delfin) project.
 It contains a script and options to check the environment feasible for installing delfin. Installs required dependent software/binaries.
 

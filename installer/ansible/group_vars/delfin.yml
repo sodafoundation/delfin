@@ -1,4 +1,4 @@
-# Copyright 2020 The SODA Authors.
+# Copyright 2022 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,8 +22,34 @@ dummy:
 # GENERAL #
 ###########
 
+# This field indicates local machine host ip
+host_ip: 127.0.0.1
+
 # delfin installation types are: 'repository', 'release' and 'container''
-delfin_installation_type: "{{ install_from }}"
+delfin_installation_type: release
+
+# These fields below will specify the tag based on install_from type
+repo_branch: master
+release_version: v1.7.0
+
+# This field indicates which os family the system will be running, currently
+# support 'Debian' and 'RedHat'
+ansible_os_family: Debian
+
+# delete all source packages
+source_purge: true
+
+# delete database
+database_purge: true
+
+# Delfin  projects release versions
+delfin_release_version: v1.6.0
+
+# Depended  projects release versions
+dashboard_release_version: v1.7.0
+
+# URLs, Environment Variables, IP addresses and Ports list
+soda_delfin_url: "http://{{ host_ip }}:8190"
 
 # These fields are NOT suggested to be modified
 delfin_work_dir: /opt/delfin-linux-amd64
