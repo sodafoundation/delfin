@@ -29,7 +29,7 @@ LOGGING_FORMAT = "[%(asctime)s] [%(levelname)s] [%(filename)s] " \
 LOGGING_LEVEL = "INFO"
 logger = None
 logfile = ''
-delfin_log_dir = '/var/log/sodafoundation/'
+delfin_log_dir = '/var/log/soda/'
 
 
 def init_logging():

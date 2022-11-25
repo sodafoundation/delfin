@@ -4,7 +4,7 @@ The SODA Delfin supports two types of installation
 * Installation using Ansible
 * Installation using Bash scripts
 
-## Ansible installer
+## Installation using Ansible
 
 * Supported OS: **Ubuntu 20.04, Ubuntu 18.04**
 * Prerequisite: **Python 3.6 or above** should be installed
@@ -42,7 +42,7 @@ Please refer [user guides](https://docs.sodafoundation.io/guides/user-guides/del
 
 
 
-## Bash script installer
+## Installation using Bash Scripts
 This is a standalone/non-containerized installer for SODA Infrastructure Manager (delfin) project.
 It contains a script and options to check the environment feasible for installing delfin. Installs required dependent software/binaries.
 
@@ -174,7 +174,7 @@ $ installer/install
 Note: Multiple instances of exporter and api is not allowed currently.
 
 ### Logs
-All the installer logs are stored in the /var/log/sodafoundation directory.
+All the installer logs are stored in the /var/log/soda directory.
 The logs can be uniquely identified based upon the timestamp.
 
 

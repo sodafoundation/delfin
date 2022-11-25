@@ -16,8 +16,8 @@
 # Script to hold the utilities required
 
 PROJECT_NAME='delfin'
-LOG_DIR=/var/log/sodafoundation
-LOGFILE=${LOGFILE:-/var/log/sodafoundation/delfin_pre_installer.log}
+LOG_DIR=/var/log/soda
+LOGFILE=${LOGFILE:-/var/log/soda/delfin_pre_installer.log}
 
 if [ ! -d ${LOG_DIR} ]; then
     mkdir -p $LOG_DIR
