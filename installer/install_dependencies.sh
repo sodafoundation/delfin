@@ -20,6 +20,7 @@ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg gnupg-age
 echo Installing Python dependencies
 sudo apt-get install -y python3-distutils
 sudo apt-get install -y python3-pip
+sudo python3 -m pip install -U pip setuptools
 
 # Install ansible if not present
 if [ "`which ansible`" != ""  ]; then

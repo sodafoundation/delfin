@@ -26,27 +26,19 @@ dummy:
 host_ip: 127.0.0.1
 
 # delfin installation types are: 'repository', 'release' and 'container''
-delfin_installation_type: release
+delfin_installation_type: repository
 
-# These fields below will specify the tag based on install_from type
-repo_branch: master
-release_version: v1.7.0
+# These fields below will specify the tag based on install from type
+delfin_branch: master
 
-# This field indicates which os family the system will be running, currently
-# support 'Debian' and 'RedHat'
-ansible_os_family: Debian
+# Delfin  projects release versions
+delfin_release_version: v1.6.1
 
 # delete all source packages
 source_purge: true
 
 # delete database
 database_purge: true
-
-# Delfin  projects release versions
-delfin_release_version: v1.6.0
-
-# Depended  projects release versions
-dashboard_release_version: v1.7.0
 
 # URLs, Environment Variables, IP addresses and Ports list
 soda_delfin_url: "http://{{ host_ip }}:8190"
@@ -93,7 +85,7 @@ delfin_exporter_alertmanager_port: 9093
 
 # If user specifies intalling from repository, then he can choose the specific
 # repository branch
-delfin_repo_branch: "{{ repo_branch }}"
+delfin_repo_branch: "{{ delfin_branch }}"
 
 # These fields are NOT suggested to be modified
 delfin_remote_url: https://github.com/sodafoundation/delfin.git
