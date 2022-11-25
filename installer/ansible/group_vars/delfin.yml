@@ -1,0 +1,110 @@
+# Copyright 2022 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# Dummy variable to avoid error because ansible does not recognize the
+# file as a good configuration file when no variable in it.
+dummy:
+
+
+###########
+# GENERAL #
+###########
+
+# This field indicates local machine host ip
+host_ip: 127.0.0.1
+
+# delfin installation types are: 'repository', 'release' and 'container''
+delfin_installation_type: release
+
+# These fields below will specify the tag based on install_from type
+repo_branch: master
+release_version: v1.7.0
+
+# This field indicates which os family the system will be running, currently
+# support 'Debian' and 'RedHat'
+ansible_os_family: Debian
+
+# delete all source packages
+source_purge: true
+
+# delete database
+database_purge: true
+
+# Delfin  projects release versions
+delfin_release_version: v1.6.0
+
+# Depended  projects release versions
+dashboard_release_version: v1.7.0
+
+# URLs, Environment Variables, IP addresses and Ports list
+soda_delfin_url: "http://{{ host_ip }}:8190"
+
+# These fields are NOT suggested to be modified
+delfin_work_dir: /opt/delfin-linux-amd64
+delfin_config_dir: /etc/delfin
+venv: "{{ delfin_work_dir }}/venv"
+
+delfin_redis_ip: 127.0.0.1
+delfin_redis_port: 6379
+
+delfin_rabbitmq_user: delfinuser
+delfin_rabbitmq_pass: delfinpass
+
+# Configurable Perf collection interval in seconds
+performance_collection_interval: 900
+
+# Enable dynamic subprocess optimization for Perf collection
+enable_dynamic_subprocess: false
+
+# Exporter configurations for Kafka, Prometheus & Alert Manager
+# Uncomment exporters to enable
+performance_exporters: #PerformanceExporterPrometheus, PerformanceExporterKafka
+alert_exporters: #AlertExporterPrometheus
+
+# Exporter configurations for Kafka
+delfin_exporter_kafka_ip: 'localhost'
+delfin_exporter_kafka_port: 9092
+delfin_exporter_kafka_topic: 'delfin-kafka'
+
+# Exporter configurations for Prometheus
+delfin_exporter_prometheus_ip: 0.0.0.0
+delfin_exporter_prometheus_port: 8195
+delfin_exporter_prometheus_metrics_dir: '/var/lib/delfin/metrics'
+
+# Exporter configurations for Alert Manager
+delfin_exporter_alertmanager_host: 'localhost'
+delfin_exporter_alertmanager_port: 9093
+
+##############
+# REPOSITORY #
+##############
+
+# If user specifies intalling from repository, then he can choose the specific
+# repository branch
+delfin_repo_branch: "{{ repo_branch }}"
+
+# These fields are NOT suggested to be modified
+delfin_remote_url: https://github.com/sodafoundation/delfin.git
+
+###########
+# RELEASE #
+###########
+
+# If user specifies intalling from release,then he can choose the specific version
+delfin_release: "{{ delfin_release_version }}"
+
+# These fields are NOT suggested to be modified
+delfin_download_url: https://github.com/sodafoundation/delfin/archive/{{ delfin_release }}.tar.gz
+delfin_tarball_dir: /tmp/sodafoundation-delfin-{{ delfin_release }}-linux-amd64

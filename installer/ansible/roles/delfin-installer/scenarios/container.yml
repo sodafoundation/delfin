@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2020 The SODA Authors.
+# Copyright 2022 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Script to hold the utilities required
-
-PROJECT_NAME='delfin'
-LOG_DIR=/var/log/soda
-LOGFILE=${LOGFILE:-/var/log/soda/delfin_pre_installer.log}
-
-if [ ! -d ${LOG_DIR} ]; then
-    mkdir -p $LOG_DIR
-fi
-
-# Log function
-delfin::log(){
-    DATE=`date "+%Y-%m-%d %H:%M:%S"`
-    USER=$(whoami)
-    echo "${DATE} ${USER} execute $0 [INFO] $@ 2>&1" >> $LOGFILE
-}
-
+---
+- name: build and install delfin using containerized deployment
+  shell: "{{ item }}"
+  with_items:
+    - docker build -t sodafoundation/delfin .
+    - DELFIN_METRICS_DIR={{ delfin_exporter_prometheus_metrics_dir }} DELFIN_HOST_IP={{ host_ip }} DELFIN_RABBITMQ_USER={{ delfin_rabbitmq_user }} DELFIN_RABBITMQ_PASS={{ delfin_rabbitmq_pass }} docker compose up -d
+  become: yes
+  args:
+    chdir: "{{ delfin_work_dir }}"

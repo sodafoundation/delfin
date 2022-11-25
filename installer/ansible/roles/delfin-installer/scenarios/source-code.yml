@@ -1,0 +1,205 @@
+# Copyright 2022 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# Install and start delfin
+- name: Check for delfin source code existed
+  stat:
+    path: "{{ delfin_work_dir }}/setup.py"
+  register: delfinexisted
+
+- name: Download delfin source code if not exists
+  git:
+    repo: "{{ delfin_remote_url }}"
+    dest: "{{ delfin_work_dir }}"
+    version: "{{ delfin_repo_branch }}"
+  when:
+    - delfin_installation_type != "release"
+    - delfinexisted.stat.exists is undefined or delfinexisted.stat.exists == false
+
+- name: ensure delfin directory exists
+  file:
+    path: "{{ delfin_tarball_dir }}"
+    state: directory
+  when:
+    - delfin_installation_type == "release"
+    - delfinexisted.stat.exists is undefined or delfinexisted.stat.exists == false
+
+- name: download and extract the delfin release tarball if not exists
+  unarchive:
+    src: "{{ delfin_download_url }}"
+    dest: "{{ delfin_tarball_dir }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+  when:
+    - delfin_installation_type == "release"
+    - delfinexisted.stat.exists is undefined or delfinexisted.stat.exists == false
+
+- name: copy delfin tarball into delfin work directory
+  copy:
+    src: "{{ delfin_tarball_dir }}/"
+    dest: "{{ delfin_work_dir }}"
+    mode: 0755
+  become: yes
+  when:
+    - delfin_installation_type == "release"
+    - delfinexisted.stat.exists is undefined or delfinexisted.stat.exists == false
+
+- name: Update redis ip & port configuration
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: coordination
+    option: backend_server
+    value: "{{ delfin_redis_ip }}:{{ delfin_redis_port }}"
+  become: yes
+  when: delfin_installation_type != "container"
+
+# Telemetry option for perf collection interval
+- name: Update Performance collection interval
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: TELEMETRY
+    option: performance_collection_interval
+    value: "{{ performance_collection_interval }}"
+  become: yes
+
+# Telemetry option for enabling dynamic processes
+- name: Enable dynamic sub-processes for performance collection
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: TELEMETRY
+    option: enable_dynamic_subprocess
+    value: "{{ enable_dynamic_subprocess }}"
+  become: yes
+
+# Performance Export Configurations
+- name: Check and remove performance exporters configs
+  ini_file:
+    create: no
+    state: absent
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: DEFAULT
+    option: performance_exporters
+    value: ""
+  become: yes
+  when:
+    - performance_exporters == None
+
+- name: Enable Performance Exporter configuration
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: DEFAULT
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: performance_exporters, value: "{{ performance_exporters }}" }
+  become: yes
+  when:
+    - performance_exporters != None
+
+# Performance exporter - Kafka configuration
+- name: Update Kafka Exporter configuration
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: KAFKA_EXPORTER
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: kafka_ip, value: "{{ delfin_exporter_kafka_ip }}" }
+    - { option: kafka_port, value: "{{ delfin_exporter_kafka_port }}" }
+    - { option: kafka_topic_name, value: "{{ delfin_exporter_kafka_topic }}" }
+  become: yes
+  when:
+    - performance_exporters != None
+    - "'PerformanceExporterKafka' in performance_exporters"
+
+# Performance exporter - Prometheus configuration
+- name: Update Prometheus Exporter configuration
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: PROMETHEUS_EXPORTER
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: metric_server_ip, value: "{{ delfin_exporter_prometheus_ip }}" }
+    - { option: metric_server_port, value: "{{ delfin_exporter_prometheus_port }}" }
+    - { option: metrics_dir, value: "{{ delfin_exporter_prometheus_metrics_dir }}" }
+  become: yes
+  when:
+    - performance_exporters != None
+    - "'PerformanceExporterPrometheus' in performance_exporters"
+
+# Alert Exporter Configurations
+- name: Check and remove alert exporters configs
+  ini_file:
+    create: no
+    state: absent
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: DEFAULT
+    option: alert_exporters
+    value: ""
+  become: yes
+  when:
+    - alert_exporters == None
+
+- name: Enable AlertManager Exporter configuration
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: DEFAULT
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+        - { option: alert_exporters, value: "{{ alert_exporters }}" }
+  become: yes
+  when:
+    - alert_exporters != None
+
+- name: Update AlertManager Exporter configuration
+  ini_file:
+    create: no
+    path: "{{ delfin_work_dir }}/etc/delfin/delfin.conf"
+    section: PROMETHEUS_ALERT_MANAGER_EXPORTER
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+        - { option: alert_manager_host, value: "{{ delfin_exporter_alertmanager_host }}" }
+        - { option: alert_manager_port, value: "{{ delfin_exporter_alertmanager_port }}" }
+  become: yes
+  when:
+    - alert_exporters != None
+    - "'AlertExporterPrometheus' in alert_exporters"
+
+- name: Create delfin config dir in host
+  file:
+    path: "{{ delfin_config_dir }}"
+    state: directory
+    mode: 0755
+  become: yes
+
+- name: copy delfin configs to host
+  copy:
+    src: "{{ delfin_work_dir }}/etc/delfin/{{ item }}"
+    dest: "{{ delfin_config_dir }}/{{ item }}"
+    mode: 0755
+  become: yes
+  with_items:
+    - delfin.conf
+    - api-paste.ini

@@ -1,0 +1,79 @@
+# Copyright 2022 The SODA Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+# Start delfin
+- name: Install sqlite3 package
+  apt: 
+    name: sqlite3
+    state: present
+  become: yes
+
+- name: Install python virtual environment
+  pip:
+    name: virtualenv
+    state: latest
+    executable: pip3
+  become: yes
+
+- name: Install python requirements
+  pip:
+    requirements: '{{ delfin_work_dir }}/requirements.txt'
+    virtualenv: '{{ delfin_work_dir }}/venv'
+  become: yes
+
+- name: Install python virtual environment activate script
+  template:
+    src: ./script/virtualenv3_exec.j2
+    dest: '{{ venv }}/exec'
+    mode: 755
+  become: yes
+
+- name: Copy delfin db register script
+  copy:
+    src: ./script/create_db.py
+    dest: '{{ delfin_work_dir }}/delfin/cmd/create_db.py'
+  become: yes
+
+- name: Get previously running delfin processes
+  shell: "ps -ef | grep -v grep | grep {{ delfin_work_dir }}/delfin/cmd/ | awk '{print $2}'"
+  register: running_processes
+
+- name: Kill running delfin processes
+  shell: "kill {{ item }}"
+  with_items: "{{ running_processes.stdout_lines }}"
+
+- wait_for:
+    path: "/proc/{{ item }}/status"
+    state: absent
+  with_items: "{{ running_processes.stdout_lines }}"
+  ignore_errors: yes
+  register: killed_processes
+
+- name: Force kill stuck processes
+  shell: "kill -9 {{ item }}"
+  with_items: "{{ killed_processes.results | select('failed') | map(attribute='item') | list }}"
+
+- name: Execute delfin manager
+  shell: "{{ item }}"
+  become: yes
+  with_items:
+    - '{{ venv }}/exec {{ delfin_work_dir }}/setup.py install'
+    - '{{ venv }}/exec {{ delfin_work_dir }}/delfin/cmd/create_db.py --config-file {{ delfin_config_dir }}/delfin.conf  >/tmp/create_db.log 2>&1 &'
+    - '{{ venv }}/exec {{ delfin_work_dir }}/delfin/cmd/api.py --config-file {{ delfin_config_dir }}/delfin.conf  >/tmp/api.log 2>&1 &'
+    - '{{ venv }}/exec {{ delfin_work_dir }}/delfin/cmd/task.py --config-file {{ delfin_config_dir }}/delfin.conf  >/tmp/task.log 2>&1 &'
+    - '{{ venv }}/exec {{ delfin_work_dir }}/delfin/cmd/alert.py --config-file {{ delfin_config_dir }}/delfin.conf  >/tmp/alert.log 2>&1 &'
+    - '{{ venv }}/exec {{ delfin_work_dir }}/delfin/exporter/prometheus/exporter_server.py --config-file {{ delfin_config_dir }}/delfin.conf  >/tmp/exporter.log 2>&1 &'
+  args:
+    chdir: "{{ delfin_work_dir }}"

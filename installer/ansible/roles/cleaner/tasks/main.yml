@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2020 The SODA Authors.
+# Copyright 2022 The SODA Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Script to hold the utilities required
 
-PROJECT_NAME='delfin'
-LOG_DIR=/var/log/soda
-LOGFILE=${LOGFILE:-/var/log/soda/delfin_pre_installer.log}
+- name: include scenarios/release.yml if installed from release
+  include_tasks: scenarios/release.yml
+  when: delfin_installation_type == "release"
 
-if [ ! -d ${LOG_DIR} ]; then
-    mkdir -p $LOG_DIR
-fi
+- name: include scenarios/delfin.yml for cleaning up delfin service
+  include_tasks: scenarios/delfin.yml
+  tags: delfin
 
-# Log function
-delfin::log(){
-    DATE=`date "+%Y-%m-%d %H:%M:%S"`
-    USER=$(whoami)
-    echo "${DATE} ${USER} execute $0 [INFO] $@ 2>&1" >> $LOGFILE
-}
-
+- name: clean all configuration and log files
+  file:
+    path: "{{ item }}"
+    state: absent
+    force: yes
+  with_items:
+    - "{{ delfin_config_dir }}"
+  ignore_errors: yes
