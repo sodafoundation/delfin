@@ -11,16 +11,24 @@ The SODA Delfin supports two types of installation
 
 ### Install steps
 
+Ensure no ansible & docker installed, OR Lastest ansible and docker tools are installed with versions listed below or later. If ansible & docker is not installed in the OS, script `install_dependencies.sh` will install it.
+
 ```bash
-sudo apt-get update && sudo apt-get install -y git make curl wget libltdl7 libseccomp2 libffi-dev gawk
+sudo apt-get update && sudo apt-get install -y git
 git clone https://github.com/sodafoundation/delfin.git
-# git checkout <delfin-release-version>
+# git checkout <delfin-release-version v1.6.1+>
 cd delfin/installer
-chmod +x install_dependencies.sh && ./install_dependencies.sh
+chmod +x install_dependencies.sh && source install_dependencies.sh
 cd ansible
 export PATH=$PATH:/home/$USER/.local/bin
 sudo -E env "PATH=$PATH" ansible-playbook site.yml -i local.hosts -v
 ```
+
+**NOTE:** *Tools version used for verification of Delfin under Ubuntu 20.04*
+* ansible version: 5.10.0
+* docker version: 20.10.21
+* docker compose version: 2.12.2
+
 ### Uninstall
 ```bash
 sudo -E env "PATH=$PATH" ansible-playbook clean.yml -i local.hosts -v

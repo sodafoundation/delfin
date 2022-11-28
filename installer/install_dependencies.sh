@@ -14,13 +14,13 @@ sudo apt-get update
 
 # Install dependencies
 echo Installing dependencies
-sudo apt-get install -y apt-transport-https ca-certificates curl gnupg gnupg-agent lsb-release software-properties-common sshpass pv gawk
+sudo apt-get install -y make curl wget libltdl7 libseccomp2 libffi-dev gawk apt-transport-https ca-certificates curl gnupg gnupg-agent lsb-release software-properties-common sshpass pv
 
 # Install python dependencies
 echo Installing Python dependencies
 sudo apt-get install -y python3-distutils
 sudo apt-get install -y python3-pip
-sudo python3 -m pip install -U pip setuptools
+python3 -m pip install -U pip setuptools
 
 # Install ansible if not present
 if [ "`which ansible`" != ""  ]; then
