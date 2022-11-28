@@ -1,4 +1,3 @@
-
 from delfin.common import constants
 from delfin.drivers import driver
 from oslo_log import log
@@ -30,8 +29,12 @@ class PowerStoreDriver(driver.StorageDriver):
     def clear_alert(self, context, alert):
         pass
 
-    def parse_alert(self, context, alert):
-        return self.rest_handler.get_parse_alerts(alert)
+    @staticmethod
+    def parse_alert(context, alert):
+        return rest_handler.RestHandler.get_parse_alerts(alert)
+
+    def get_alert_sources(self, context):
+        return self.rest_handler.get_alert_sources(self.storage_id)
 
     def list_controllers(self, context):
         return self.rest_handler.get_controllers(self.storage_id)

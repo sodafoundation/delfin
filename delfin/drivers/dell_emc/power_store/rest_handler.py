@@ -21,7 +21,7 @@ import six
 from oslo_log import log as logging
 from oslo_utils import units
 
-from delfin import exception, cryptor
+from delfin import exception, utils, cryptor
 from delfin.common import constants
 from delfin.drivers.dell_emc.power_store import consts
 from delfin.drivers.utils.rest_client import RestClient
@@ -79,6 +79,9 @@ class RestHandler(RestClient):
     REST_HOST_VOLUME_MAPPING_URL = \
         '/api/rest/host_volume_mapping?select=host_group_id,host_id,id,' \
         'volume_id&limit=2000&offset={}'
+    REST_IP_POOL_ADDRESS_URL = \
+        '/api/rest/ip_pool_address?select=id,name,address,appliance_id,' \
+        'node_id,purposes&limit=2000&offset={}'
     REST_METRICS_ARCHIVE_URL = '/api/rest/metrics_archive'
     REST_FILE_SYSTEM_URL = '/api/rest/file_system'
     REST_FILE_TREE_QUOTA_URL = '/api/rest/file_tree_quota'
@@ -99,6 +102,7 @@ class RestHandler(RestClient):
                 if self.session is None:
                     self.init_http_head()
                 self.session.auth = requests.auth.HTTPBasicAuth(
+                    # self.rest_username, (self.rest_password))
                     self.rest_username, cryptor.decode(self.rest_password))
                 res = self.do_call(RestHandler.REST_LOGIN_SESSION_URL,
                                    None, 'GET')
@@ -313,6 +317,8 @@ class RestHandler(RestClient):
 
     def get_controllers(self, storage_id):
         list_controllers = []
+        nodes = self.get_node()
+        ips = self.get_ip()
         hardware_list = self.rest_call(self.REST_HARDWARE_URL)
         for hardware in hardware_list:
             lifecycle_state = hardware.get('lifecycle_state')
@@ -320,6 +326,11 @@ class RestHandler(RestClient):
                     lifecycle_state == consts.CHARACTER_EMPTY:
                 continue
             slot = hardware.get('slot')
+            appliance_id = hardware.get('appliance_id')
+            node_id = nodes.get('{}{}'.format(appliance_id, slot), {})
+            address = ips.get('{}{}'.format(appliance_id, node_id))
+            if not address:
+                LOG.error('mgmt_ip is empty, Exceptions may occur in snmptrap')
             extra_details = hardware.get('extra_details')
             memory_size = ''
             cpu_info = ''
@@ -341,10 +352,34 @@ class RestHandler(RestClient):
                 'location': slot,
                 'cpu_info': cpu_info,
                 'cpu_count': consts.DIGITAL_CONSTANT.ONE_INT,
-                'memory_size': memory_size
+                'memory_size': memory_size,
+                'mgmt_ip': address
             }
             list_controllers.append(controller_result)
         return list_controllers
+
+    def get_node(self):
+        node_d = {}
+        nodes = self.rest_call(self.REST_NODE_URL)
+        for node in nodes:
+            appliance_id = node.get('appliance_id')
+            slot = node.get('slot')
+            node_id = node.get('id')
+            node_d['{}{}'.format(appliance_id, slot)] = node_id
+        return node_d
+
+    def get_ip(self):
+        ip_d = {}
+        ip_pool_address = self.rest_call(self.REST_IP_POOL_ADDRESS_URL)
+        for ip_address in ip_pool_address:
+            purposes_list = ip_address.get('purposes')
+            if consts.MGMT_NODE_COREOS not in purposes_list:
+                continue
+            address = ip_address.get('address')
+            appliance_id = ip_address.get('appliance_id')
+            node_id = ip_address.get('node_id')
+            ip_d['{}{}'.format(appliance_id, node_id)] = address
+        return ip_d
 
     def get_fc_ports(self, storage_id):
         list_fc_ports = []
@@ -471,41 +506,54 @@ class RestHandler(RestClient):
             time.localtime()) - time.mktime(time.gmtime())
         return time_difference
 
-    def get_parse_alerts(self, snmp_alert):
+    @staticmethod
+    def get_parse_alerts(snmp_alert):
         try:
             if consts.PARSE_ALERT_DESCRIPTION in snmp_alert.keys():
                 description = snmp_alert.get(consts.PARSE_ALERT_DESCRIPTION)
-                list_alerts = self.rest_call(
-                    RestHandler.REST_SNMP_ALERT_URL.format(description))
-                if list_alerts:
-                    alert = list_alerts[consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
-                    raised_timestamp = alert.get('raised_timestamp')
+                raised_timestamp = snmp_alert.get(consts.PARSE_ALERT_TIME_UTC)
+                timestamp = None
+                if raised_timestamp:
                     time_difference = RestHandler.get_time_difference()
                     timestamp_s = datetime.datetime.strptime(
-                        raised_timestamp, consts.UTC_FORMAT).timestamp()
-                    timestamp = int((timestamp_s + time_difference) * units.k)\
-                        if raised_timestamp else None
-                    alerts_model = self.set_alert_model(
-                        alert, description, timestamp)
-                else:
-                    alert_time = snmp_alert.get(consts.PARSE_ALERT_TIME)
-                    match_key = hashlib.md5(description.encode()).hexdigest()
-                    alerts_model = {
-                        'alert_id': match_key,
-                        'occur_time': int(alert_time) * units.k,
-                        'severity': constants.Severity.NOT_SPECIFIED,
-                        'category': constants.Category.FAULT,
-                        'type': constants.EventType.EQUIPMENT_ALARM,
-                        'resource_type': constants.DEFAULT_RESOURCE_TYPE,
-                        'alert_name': description,
-                        'match_key': match_key,
-                        'description': description
-                    }
+                        raised_timestamp, consts.SYSTEM_TIME_FORMAT).\
+                        timestamp()
+                    timestamp = int((timestamp_s + time_difference) * units.k)
+                resource_type = snmp_alert.get(
+                    consts.PARSE_ALERT_RESOURCE_TYPE)
+                resource_name = snmp_alert.get(
+                    consts.PARSE_ALERT_RESOURCE_NAME)
+                location = '{}:{}'.format(resource_type, resource_name)
+                match_key = hashlib.md5(description.encode()).hexdigest()
+                alerts_model = {
+                    'alert_id': match_key,
+                    'occur_time': timestamp if
+                    timestamp else utils.utcnow_ms(),
+                    'severity': constants.Severity.NOT_SPECIFIED,
+                    'category': constants.Category.FAULT,
+                    'location': location if
+                    resource_type and resource_name else '',
+                    'type': constants.EventType.EQUIPMENT_ALARM,
+                    'resource_type': resource_type if resource_type else
+                    constants.DEFAULT_RESOURCE_TYPE,
+                    'alert_name': description,
+                    'match_key': match_key,
+                    'description': description
+                }
                 return alerts_model
         except Exception as e:
             LOG.error(e)
             msg = (_("Failed to build alert model as some attributes missing"))
             raise exception.InvalidResults(msg)
+
+    def get_alert_sources(self, storage_id):
+        sources_list = []
+        controllers = self.get_controllers(storage_id)
+        for controller in controllers:
+            mgmt_ip = controller.get('mgmt_ip')
+            mgmt_ip_t = {'host': mgmt_ip}
+            sources_list.append(mgmt_ip_t)
+        return sources_list
 
     @staticmethod
     def set_alert_model(alert, description, timestamp):

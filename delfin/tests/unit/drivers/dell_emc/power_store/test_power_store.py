@@ -92,6 +92,92 @@ pools_data = [{'name': 'Powerstore1000T-appliance-1', 'storage_id': '12345',
                'native_storage_pool_id': 'A1', 'status': 'normal',
                'storage_type': 'block', 'total_capacity': 6969013934489,
                'used_capacity': 5990644187, 'free_capacity': 6963023290302}]
+node_info = [
+    {
+        "appliance_id": "A1",
+        "id": "N1",
+        "slot": 0,
+    },
+    {
+        "appliance_id": "A1",
+        "id": "N2",
+        "slot": 1,
+    }
+]
+ip_pool_address = [
+    {
+        "id": "IP1",
+        "name": "Default Management Network (192.168.3.241)",
+        "address": "192.168.3.241",
+        "appliance_id": None,
+        "node_id": None,
+        "purposes": [
+            "Mgmt_Cluster_Floating"
+        ],
+    },
+    {
+        "id": "IP16",
+        "name": "Default Management Network (192.168.3.245)",
+        "address": "192.168.3.245",
+        "appliance_id": None,
+        "node_id": None,
+        "purposes": [
+            "Unused"
+        ],
+    },
+    {
+        "id": "IP17",
+        "name": "Default Management Network (192.168.3.246)",
+        "address": "192.168.3.246",
+        "appliance_id": None,
+        "network_id": "NW1",
+        "node_id": None,
+        "purposes": [
+            "Unused"
+        ],
+    },
+    {
+        "id": "IP2",
+        "name": "Default Management Network (192.168.3.242)",
+        "address": "192.168.3.242",
+        "appliance_id": "A1",
+        "network_id": "NW1",
+        "node_id": None,
+        "purposes": [
+            "Mgmt_Appliance_Floating"
+        ],
+    },
+    {
+        "id": "IP3",
+        "name": "Default Management Network (192.168.3.243)",
+        "address": "192.168.3.243",
+        "appliance_id": "A1",
+        "node_id": "N1",
+        "purposes": [
+            "Mgmt_Node_CoreOS"
+        ],
+    },
+    {
+        "id": "IP4",
+        "name": "Default Management Network (192.168.3.244)",
+        "address": "192.168.3.244",
+        "appliance_id": "A1",
+        "node_id": "N2",
+        "purposes": [
+            "Mgmt_Node_CoreOS"
+        ],
+    },
+    {
+        "id": "IP8",
+        "name": "Default ICM Network (fd4e:c5b3:1db3::201:44f0:49e5:21c3)",
+        "address": "fd4e:c5b3:1db3::201:44f0:49e5:21c3",
+        "appliance_id": "A1",
+        "node_id": "N1",
+        "purposes": [
+            "ICM_Node_CoreOS"
+        ],
+    }
+]
 hardware_info = [
     {
         "appliance_id": "A1",
@@ -331,26 +417,26 @@ alerts_data = [{
     'description': 'Management ports are properly connected to different '
                    'management switches.'}]
 snmp_alert_data = {
-    'alert_id': '0032b92b-e0bc-4259-b572-db562238b4b4',
-    'occur_time': 1667715494446, 'severity': 'Informational',
-    'category': 'Fault', 'location': 'hardware:BaseEnclosure-NodeB',
-    'type': 'EquipmentAlarm', 'resource_type': 'hardware',
-    'alert_name': 'Management ports are properly connected to different '
-                  'management switches.',
-    'match_key': 'be5bca77c99bdf8800b34a9905b84622',
-    'description': 'Management ports are properly connected to different '
-                   'management switches.'}
+    'alert_id': 'ef0e8ababa5a2838c78223af7323c299',
+    'occur_time': 1667708609278, 'severity': 'NotSpecified',
+    'category': 'Fault', 'location': 'appliance:Powerstore1000T-appliance-1',
+    'type': 'EquipmentAlarm', 'resource_type': 'appliance',
+    'alert_name': 'All configured DNS servers are unavailable.',
+    'match_key': 'ef0e8ababa5a2838c78223af7323c299',
+    'description': 'All configured DNS servers are unavailable.'
+}
 controllers_data = [
     {'name': 'NodeA', 'storage_id': '12345',
      'native_controller_id': '3f75d31ca1dc4d8fb95707c7f996a063',
-     'status': 'normal', 'location': 0,
+     'status': 'normal', 'location': 0, 'mgmt_ip': '192.168.3.243',
      'cpu_info': 'Intel(R) Xeon(R) Silver 4108 CPU @ 1.80GHz',
      'cpu_count': 1, 'memory_size': 206158430208},
     {'name': 'NodeB', 'storage_id': '12345',
      'native_controller_id': '5c93d9044ea94afea7d0ac853b89886c',
-     'status': 'normal', 'location': 1,
+     'status': 'normal', 'location': 1, 'mgmt_ip': '192.168.3.244',
      'cpu_info': 'Intel(R) Xeon(R) Silver 4108 CPU @ 1.80GHz',
      'cpu_count': 1, 'memory_size': 206158430208}]
+alert_sources_data = [{'host': '192.168.3.243'}, {'host': '192.168.3.244'}]
 fc_info = [{
     "appliance_id": "A1",
     "current_speed": None,
@@ -381,6 +467,23 @@ fc_info = [{
         "16_Gbps"
     ],
     "wwn": "58:cc:f0:90:4d:20:19:fb",
+    "stale_state": "Not_Stale",
+    "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
+}]
+perf_fc_info = [{
+    "appliance_id": "A1",
+    "current_speed": None,
+    "id": "090d75723f4147808fd5624582708381",
+    "is_link_up": False,
+    "name": "BaseEnclosure-NodeA-IoModule0-FEPort2",
+    "partner_id": "ed8e44cab9484f8c92d488a12e5bc6d8",
+    "port_connector_type": "LC",
+    "supported_speeds": [
+        "Auto",
+        "8_Gbps",
+        "16_Gbps"
+    ],
+    "wwn": "58:cc:f0:90:4d:22:19:fb",
     "stale_state": "Not_Stale",
     "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
 }]
@@ -484,6 +587,26 @@ ports_data = [
      'connection_status': 'disconnected', 'health_status': 'abnormal',
      'type': 'sas', 'speed': None,
      'native_parent_id': '5c93d9044ea94afea7d0ac853b89886c'}]
+alert = {
+    '1.3.6.1.2.1.1.3.0': '1669372584',
+    '1.3.6.1.6.3.1.1.4.1.0': '1.3.6.1.4.1.1139.205.1.2.2',
+    '1.3.6.1.4.1.1139.205.1.1.1': '0x01800103',
+    '1.3.6.1.4.1.1139.205.1.1.2':
+        'All configured DNS servers are unavailable.',
+    '1.3.6.1.4.1.1139.205.1.1.3':
+        'DNS servers availability status. (fully_unavailable)',
+    '1.3.6.1.4.1.1139.205.1.1.4': 'appliance',
+    '1.3.6.1.4.1.1139.205.1.1.5': 'A1',
+    '1.3.6.1.4.1.1139.205.1.1.6': 'Powerstore1000T-appliance-1',
+    '1.3.6.1.4.1.1139.205.1.1.7': 'ACTIVE',
+    '1.3.6.1.4.1.1139.205.1.1.10': '2022-11-06T04:23:29.278Z',
+    '1.3.6.1.4.1.1139.205.1.1.11': '',
+    '1.3.6.1.4.1.1139.205.1.1.8': 'A1',
+    '1.3.6.1.4.1.1139.205.1.1.9': '2022-11-25T10:36:16.822Z',
+    'transport_address': '192.168.3.241',
+    'storage_id': '38825735-0c48-481f-9551-95076950eebf',
+    'controller_name': 'NodeA'
+}
 resource_metrics = {
     constants.ResourceType.STORAGE: consts.STORAGE_CAP,
     constants.ResourceType.STORAGE_POOL: consts.STORAGE_POOL_CAP,
@@ -491,6 +614,455 @@ resource_metrics = {
     constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
     constants.ResourceType.PORT: consts.PORT_CAP
 }
+host_info = [
+    {
+        "id": "52c74385-b5a1-4af0-b9c6-18c47a04e27d",
+        "name": "hg02",
+        "host_initiators": [
+            {
+                "port_name": "11:00:22:a4:24:b5:32:25",
+                "port_type": "FC",
+                "active_sessions": [],
+                "chap_mutual_username": None,
+                "chap_single_username": None
+            }
+        ],
+        "os_type": "HP-UX",
+        "description": "hp",
+        "host_group_id": None,
+        "type": "External",
+        "host_virtual_volume_mappings": [],
+        "mapped_hosts": [
+            {
+                "id": "36cb8bf8-f9c1-4592-a7fd-fed5b0e29885"
+            },
+            {
+                "id": "7ea3ce7d-9d0f-4bc2-a207-b9283dcacb81"
+            },
+            {
+                "id": "db678691-7bfa-49e4-81a1-53dfb2188f8a"
+            }
+        ]
+    },
+    {
+        "id": "aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f",
+        "name": "host01",
+        "host_initiators": [
+            {
+                "port_name": "iqn.2001-05.com.exampld:name2",
+                "port_type": "iSCSI",
+                "active_sessions": [],
+                "chap_mutual_username": None,
+                "chap_single_username": None
+            },
+            {
+                "port_name": "iqn.2001-05.com.exampld:name1",
+                "port_type": "iSCSI",
+                "active_sessions": [],
+                "chap_mutual_username": None,
+                "chap_single_username": None
+            }
+        ],
+        "os_type": "ESXi",
+        "description": "host",
+        "host_group_id": "ea01240f-4692-44f4-817b-924efd2c8519",
+        "type": "External",
+        "mapped_hosts": []
+    }
+]
+initiators_info = [
+    {'port_name': '11:00:22:a4:24:b5:32:25',
+     'id': '11:00:22:a4:24:b5:32:25',
+     'host_id': '52c74385-b5a1-4af0-b9c6-18c47a04e27d',
+     'port_type': 'FC'
+     },
+    {'port_name': 'iqn.2001-05.com.exampld:name2',
+     'id': 'iqn.2001-05.com.exampld:name2',
+     'host_id': 'aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f',
+     'port_type': 'iSCSI'
+     }
+]
+initiators_data = [
+    {'native_storage_host_initiator_id': '11:00:22:a4:24:b5:32:25',
+     'native_storage_host_id': '52c74385-b5a1-4af0-b9c6-18c47a04e27d',
+     'name': '11:00:22:a4:24:b5:32:25', 'type': 'fc', 'status': 'unknown',
+     'wwn': '11:00:22:a4:24:b5:32:25', 'storage_id': '12345'}, {
+        'native_storage_host_initiator_id': 'iqn.2001-05.com.exampld:name2',
+        'native_storage_host_id': 'aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f',
+        'name': 'iqn.2001-05.com.exampld:name2', 'type': 'iscsi',
+        'status': 'unknown', 'wwn': 'iqn.2001-05.com.exampld:name2',
+        'storage_id': '12345'}, {
+        'native_storage_host_initiator_id': 'iqn.2001-05.com.exampld:name1',
+        'native_storage_host_id': 'aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f',
+        'name': 'iqn.2001-05.com.exampld:name1', 'type': 'iscsi',
+        'status': 'unknown', 'wwn': 'iqn.2001-05.com.exampld:name1',
+        'storage_id': '12345'}]
+initiators_upgrade_data = [
+    {'native_storage_host_initiator_id': '11:00:22:a4:24:b5:32:25',
+     'native_storage_host_id': '52c74385-b5a1-4af0-b9c6-18c47a04e27d',
+     'name': '11:00:22:a4:24:b5:32:25', 'type': 'fc', 'status': 'unknown',
+     'wwn': '11:00:22:a4:24:b5:32:25', 'storage_id': '12345'},
+    {'native_storage_host_initiator_id': 'iqn.2001-05.com.exampld:name2',
+     'native_storage_host_id': 'aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f',
+     'name': 'iqn.2001-05.com.exampld:name2', 'type': 'iscsi',
+     'status': 'unknown', 'wwn': 'iqn.2001-05.com.exampld:name2',
+     'storage_id': '12345'}]
+host_data = [{'name': 'hg02', 'storage_id': '12345',
+              'native_storage_host_id': '52c74385-b5a1-4af0-b9c6-18c47a04e27d',
+              'description': 'hp', 'os_type': 'HP-UX', 'status': 'normal'},
+             {'name': 'host01', 'storage_id': '12345',
+              'native_storage_host_id': 'aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f',
+              'description': 'host', 'os_type': 'VMware ESX',
+              'status': 'normal'}]
+host_group_info = [
+    {
+        "id": "ea01240f-4692-44f4-817b-924efd2c8519",
+        "name": "hg01",
+        "description": "hg",
+        "hosts": [
+            {
+                "id": "aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f"
+            }
+        ]
+    }
+]
+host_group_data = {
+    'storage_host_groups': [
+        {
+            'native_storage_host_group_id':
+                'ea01240f-4692-44f4-817b-924efd2c8519',
+            'name': 'hg01', 'description': 'hg', 'storage_id': '12345'
+        }],
+    'storage_host_grp_host_rels': [{
+        'native_storage_host_group_id': 'ea01240f-4692-44f4-817b-924efd2c8519',
+        'storage_id': '12345',
+        'native_storage_host_id': 'aa0793ff-5ee5-4593-8fdd-c28a58f7cf4f'}
+    ]
+}
+volume_groups_info = [
+    {
+        "description": "null_volume_g",
+        "name": "null_vg",
+        "id": "0d434c72-5f1c-43b3-8a63-6a0cb5fd7cd9",
+        "volumes": []
+    },
+    {
+        "description": "vg",
+        "name": "vg02",
+        "id": "2018dec2-bb56-48aa-a2d3-c4402d57faf4",
+        "volumes": [
+            {
+                "id": "1e387f96-ec3a-4bba-8298-ab6764f7d772"
+            },
+            {
+                "id": "c73a7790-cd04-4ac1-b01d-32a7ac5d84d7"
+            },
+            {
+                "id": "286e0694-800e-47e8-b0de-5262c57e9a30"
+            }
+        ]
+    }]
+volume_group_data = {
+    'volume_groups': [
+        {'name': 'null_vg', 'storage_id': '12345',
+         'native_volume_group_id': '0d434c72-5f1c-43b3-8a63-6a0cb5fd7cd9',
+         'description': 'null_volume_g'},
+        {'name': 'vg02', 'storage_id': '12345',
+         'native_volume_group_id': '2018dec2-bb56-48aa-a2d3-c4402d57faf4',
+         'description': 'vg'}],
+    'vol_grp_vol_rels': [
+        {'storage_id': '12345',
+         'native_volume_group_id': '2018dec2-bb56-48aa-a2d3-c4402d57faf4',
+         'native_volume_id': '1e387f96-ec3a-4bba-8298-ab6764f7d772'},
+        {'storage_id': '12345',
+         'native_volume_group_id': '2018dec2-bb56-48aa-a2d3-c4402d57faf4',
+         'native_volume_id': 'c73a7790-cd04-4ac1-b01d-32a7ac5d84d7'},
+        {'storage_id': '12345',
+         'native_volume_group_id': '2018dec2-bb56-48aa-a2d3-c4402d57faf4',
+         'native_volume_id': '286e0694-800e-47e8-b0de-5262c57e9a30'}]}
+masking_info = [
+    {
+        "host_group_id": None,
+        "host_id": "52c74385-b5a1-4af0-b9c6-18c47a04e27d",
+        "id": "36cb8bf8-f9c1-4592-a7fd-fed5b0e29885",
+        "logical_unit_number": 3,
+        "volume_id": "40ce0f3c-d250-4efc-b78a-1b1c768788f4",
+    },
+    {
+        "host_group_id": "ea01240f-4692-44f4-817b-924efd2c8519",
+        "host_id": None,
+        "id": "3d5c3954-853e-481e-b7de-821854697ed2",
+        "logical_unit_number": 2,
+        "volume_id": "40ce0f3c-d250-4efc-b78a-1b1c768788f4",
+    }
+]
+masking_data = [
+    {'native_masking_view_id': '36cb8bf8-f9c1-4592-a7fd-fed5b0e29885',
+     'name': '36cb8bf8-f9c1-4592-a7fd-fed5b0e29885',
+     'native_volume_id': '40ce0f3c-d250-4efc-b78a-1b1c768788f4',
+     'storage_id': '12345',
+     'native_storage_host_id': '52c74385-b5a1-4af0-b9c6-18c47a04e27d'},
+    {'native_masking_view_id': '3d5c3954-853e-481e-b7de-821854697ed2',
+     'name': '3d5c3954-853e-481e-b7de-821854697ed2',
+     'native_volume_id': '40ce0f3c-d250-4efc-b78a-1b1c768788f4',
+     'storage_id': '12345',
+     'native_storage_host_group_id': 'ea01240f-4692-44f4-817b-924efd2c8519'}]
+cluster_perf_info = [
+    {
+        "timestamp": "2022-11-28T02:59:20Z",
+        "cluster_id": "0",
+        "avg_read_latency": 0.0,
+        "avg_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_write_size": 0.0,
+        "avg_io_size": 0.0,
+        "read_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "total_iops": 0.0,
+        "total_bandwidth": 0.0,
+        "write_iops": 0.0,
+        "write_bandwidth": 0.0,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_cluster",
+        "entity": "performance_metrics_by_cluster"
+    },
+    {
+        "timestamp": "2022-11-28T02:59:40Z",
+        "cluster_id": "0",
+        "avg_read_latency": 0.0,
+        "avg_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_write_size": 0.0,
+        "avg_io_size": 0.0,
+        "read_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "total_iops": 0.0,
+        "total_bandwidth": 0.0,
+        "write_iops": 0.0,
+        "write_bandwidth": 0.0,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_cluster",
+        "entity": "performance_metrics_by_cluster"
+    }
+]
+appliance_perf_info = [
+    {
+        "appliance_id": "A1",
+        "timestamp": "2022-11-28T02:59:40Z",
+        "avg_read_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_write_size": 0.0,
+        "avg_io_size": 0.0,
+        "read_iops": 0.0,
+        "write_iops": 0.0,
+        "total_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "write_bandwidth": 0.0,
+        "total_bandwidth": 0.0,
+        "io_workload_cpu_utilization": 9.419034756121814E-4,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_appliance",
+        "entity": "performance_metrics_by_appliance"
+    },
+    {
+        "appliance_id": "A1",
+        "timestamp": "2022-11-28T03:00:00Z",
+        "avg_read_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_write_size": 0.0,
+        "avg_io_size": 0.0,
+        "read_iops": 0.0,
+        "write_iops": 0.0,
+        "total_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "write_bandwidth": 0.0,
+        "total_bandwidth": 0.0,
+        "io_workload_cpu_utilization": 6.913627946170662E-4,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_appliance",
+        "entity": "performance_metrics_by_appliance"
+    }
+]
+perf_volume_info = [{
+    "app_type": "Business_Applications_ERP_SAP",
+    "app_type_l10n": "ERP / SAP",
+    "appliance_id": "A1",
+    "description": "什么 都不是",
+    "state": "Ready",
+    "type": "Primary",
+    "wwn": "naa.68ccf0980048d7ab86ec9f7fdfa9945d",
+    "size": 3221225472,
+    "name": "wu-003",
+    "id": "022ece9c-4921-46ba-ba4f-91c167a90cbe",
+    "appliance": {
+        "id": "A1"
+    }}
+]
+volume_perf_info = [
+    {
+        "volume_id": "022ece9c-4921-46ba-ba4f-91c167a90cbe",
+        "timestamp": "2022-11-28T02:59:40Z",
+        "avg_read_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_write_size": 0.0,
+        "read_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "total_iops": 0.0,
+        "total_bandwidth": 0.0,
+        "write_iops": 0.0,
+        "write_bandwidth": 0.0,
+        "avg_io_size": 0.0,
+        "appliance_id": "A1",
+        "repeat_count": 195,
+        "response_definition": "performance_metrics_by_volume",
+        "entity": "performance_metrics_by_volume"
+    }
+]
+perf_node_info = [
+    {
+        "appliance_id": "A1",
+        "id": "N1",
+        "slot": 0,
+    }
+]
+controllers_perf_info = [
+    {
+        "timestamp": "2022-11-28T03:00:00Z",
+        "node_id": "N1",
+        "appliance_id": "A1",
+        "avg_read_latency": 0.0,
+        "avg_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_write_size": 0.0,
+        "avg_io_size": 0.0,
+        "io_workload_cpu_utilization": 6.839733981557592E-4,
+        "read_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "total_iops": 0.0,
+        "total_bandwidth": 0.0,
+        "write_iops": 0.0,
+        "write_bandwidth": 0.0,
+        "current_logins": 0,
+        "unaligned_write_bandwidth": 0.0,
+        "unaligned_read_bandwidth": 0.0,
+        "unaligned_read_iops": 0.0,
+        "unaligned_write_iops": 0.0,
+        "unaligned_bandwidth": 0.0,
+        "unaligned_iops": 0.0,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_node",
+        "entity": "performance_metrics_by_node"
+    },
+    {
+        "timestamp": "2022-11-28T03:00:20Z",
+        "node_id": "N1",
+        "appliance_id": "A1",
+        "avg_read_latency": 0.0,
+        "avg_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_write_size": 0.0,
+        "avg_io_size": 0.0,
+        "io_workload_cpu_utilization": 9.434143408848538E-4,
+        "read_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "total_iops": 0.0,
+        "total_bandwidth": 0.0,
+        "write_iops": 0.0,
+        "write_bandwidth": 0.0,
+        "current_logins": 0,
+        "unaligned_write_bandwidth": 0.0,
+        "unaligned_read_bandwidth": 0.0,
+        "unaligned_read_iops": 0.0,
+        "unaligned_write_iops": 0.0,
+        "unaligned_bandwidth": 0.0,
+        "unaligned_iops": 0.0,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_node",
+        "entity": "performance_metrics_by_node"
+    }
+]
+fc_perf_info = [
+    {
+        "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
+        "timestamp": "2022-11-28T03:00:00Z",
+        "appliance_id": "A1",
+        "avg_read_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_write_size": 0.0,
+        "read_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "total_iops": 0.0,
+        "total_bandwidth": 0.0,
+        "write_iops": 0.0,
+        "write_bandwidth": 0.0,
+        "current_logins": 0,
+        "unaligned_write_bandwidth": 0.0,
+        "unaligned_read_bandwidth": 0.0,
+        "unaligned_read_iops": 0.0,
+        "unaligned_write_iops": 0.0,
+        "unaligned_bandwidth": 0.0,
+        "unaligned_iops": 0.0,
+        "avg_io_size": 0.0,
+        "fe_port_id": "090d75723f4147808fd5624582708381",
+        "dumped_frames_ps": 0.0,
+        "loss_of_signal_count_ps": 0.0,
+        "invalid_crc_count_ps": 0.0,
+        "loss_of_sync_count_ps": 0.0,
+        "invalid_tx_word_count_ps": 0.0,
+        "prim_seq_prot_err_count_ps": 0.0,
+        "link_failure_count_ps": 0.0,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_fe_fc_port",
+        "entity": "performance_metrics_by_fe_fc_port"
+    },
+    {
+        "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
+        "timestamp": "2022-11-28T03:00:20Z",
+        "appliance_id": "A1",
+        "avg_read_latency": 0.0,
+        "avg_read_size": 0.0,
+        "avg_latency": 0.0,
+        "avg_write_latency": 0.0,
+        "avg_write_size": 0.0,
+        "read_iops": 0.0,
+        "read_bandwidth": 0.0,
+        "total_iops": 0.0,
+        "total_bandwidth": 0.0,
+        "write_iops": 0.0,
+        "write_bandwidth": 0.0,
+        "current_logins": 0,
+        "unaligned_write_bandwidth": 0.0,
+        "unaligned_read_bandwidth": 0.0,
+        "unaligned_read_iops": 0.0,
+        "unaligned_write_iops": 0.0,
+        "unaligned_bandwidth": 0.0,
+        "unaligned_iops": 0.0,
+        "avg_io_size": 0.0,
+        "fe_port_id": "090d75723f4147808fd5624582708381",
+        "dumped_frames_ps": 0.0,
+        "loss_of_signal_count_ps": 0.0,
+        "invalid_crc_count_ps": 0.0,
+        "loss_of_sync_count_ps": 0.0,
+        "invalid_tx_word_count_ps": 0.0,
+        "prim_seq_prot_err_count_ps": 0.0,
+        "link_failure_count_ps": 0.0,
+        "repeat_count": 1,
+        "response_definition": "performance_metrics_by_fe_fc_port",
+        "entity": "performance_metrics_by_fe_fc_port"
+    }
+]
 
 LOG = logging.getLogger(__name__)
 
@@ -552,22 +1124,20 @@ class test_PowerStoreDriver(TestCase):
         self.assertListEqual(alerts, alerts_data)
 
     def test_parse_alerts(self):
-        RestHandler.rest_call = mock.Mock(
-            side_effect=[alerts_info])
-        alert = {
-            consts.PARSE_ALERT_DESCRIPTION:
-                'Management ports are properly connected to'
-                ' different management switches.',
-            consts.PARSE_ALERT_TIME: 1667717925
-        }
         alerts = self.driver.parse_alert(context, alert)
         self.assertDictEqual(alerts, snmp_alert_data)
 
     def test_list_controllers(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[hardware_info])
+            side_effect=[node_info, ip_pool_address, hardware_info])
         controllers = self.driver.list_controllers(context)
         self.assertListEqual(controllers, controllers_data)
+
+    def test_get_alert_sources(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[node_info, ip_pool_address, hardware_info])
+        alert_sources = self.driver.get_alert_sources(context)
+        self.assertListEqual(alert_sources, alert_sources_data)
 
     def test_list_ports(self):
         RestHandler.rest_call = mock.Mock(
@@ -591,3 +1161,55 @@ class test_PowerStoreDriver(TestCase):
     def test_get_access_url(self):
         url = self.driver.get_access_url()
         self.assertEqual(url, url)
+
+    def test_collect_perf_metrics(self):
+
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[clusters, cluster_perf_info,
+                         appliance, appliance_perf_info,
+                         perf_volume_info, volume_perf_info,
+                         hardware_info, perf_node_info, controllers_perf_info,
+                         perf_fc_info, fc_perf_info])
+        collect = self.driver.collect_perf_metrics(context, ACCESS_INFO.get(
+            'storage_id'), resource_metrics, 1669604280000, 1669604580000)
+        self.assertEqual(collect[0].values.get(1669604340000), 0)
+
+    def test_get_capabilities(self):
+        capabilities = self.driver.get_capabilities(context)
+        self.assertDictEqual(capabilities.get('resource_metrics'),
+                             resource_metrics)
+
+    def test_get_latest_perf_timestamp(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[clusters])
+        perf_timestamp = self.driver.get_latest_perf_timestamp(context)
+        self.assertEqual(perf_timestamp, perf_timestamp)
+
+    def test_list_storage_host_initiators(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[[], host_info])
+        initiators = self.driver.list_storage_host_initiators(context)
+        self.assertEqual(initiators, initiators_data)
+
+    def test_list_storage_host_initiators_upgrade(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[initiators_info])
+        initiators = self.driver.list_storage_host_initiators(context)
+        self.assertEqual(initiators, initiators_upgrade_data)
+
+    def test_list_storage_hosts(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[host_info])
+        hosts = self.driver.list_storage_hosts(context)
+        self.assertEqual(hosts, host_data)
+
+    def test_list_storage_host_groups(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[host_group_info])
+        host_groups = self.driver.list_storage_host_groups(context)
+        self.assertEqual(host_groups, host_group_data)
+
+    def test_list_volume_groups(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[volume_groups_info])
+        volume_groups = self.driver.list_volume_groups(context)
+        self.assertEqual(volume_groups, volume_group_data)
+
+    def test_list_masking_views(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[masking_info])
+        masking_views = self.driver.list_masking_views(context)
+        self.assertEqual(masking_views, masking_data)
