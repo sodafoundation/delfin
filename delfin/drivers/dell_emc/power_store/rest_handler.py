@@ -62,7 +62,7 @@ class RestHandler(RestClient):
         '/api/rest/node?select=appliance_id,id,slot&limit=2000&offset={}'
     REST_ALERT_URL = \
         '/api/rest/alert?select=id,description_l10n,severity,resource_name,' \
-        'resource_type,raised_timestamp,state&limit=2000&offset={}'
+        'resource_type,raised_timestamp,state,event_code&limit=2000&offset={}'
     REST_SNMP_ALERT_URL = \
         '/api/rest/alert?select=id,description_l10n,severity,resource_name,' \
         'resource_type,raised_timestamp,state&limit=2000&offset=0' \
@@ -511,25 +511,30 @@ class RestHandler(RestClient):
         try:
             if consts.PARSE_ALERT_DESCRIPTION in snmp_alert.keys():
                 description = snmp_alert.get(consts.PARSE_ALERT_DESCRIPTION)
-                raised_timestamp = snmp_alert.get(consts.PARSE_ALERT_TIME_UTC)
+                raised_time = snmp_alert.get(consts.PARSE_ALERT_TIME_UTC)
                 timestamp = None
-                if raised_timestamp:
+                if raised_time:
                     time_difference = RestHandler.get_time_difference()
                     timestamp_s = datetime.datetime.strptime(
-                        raised_timestamp, consts.SYSTEM_TIME_FORMAT).\
-                        timestamp()
+                        raised_time, consts.SYSTEM_TIME_FORMAT).timestamp()
                     timestamp = int((timestamp_s + time_difference) * units.k)
                 resource_type = snmp_alert.get(
                     consts.PARSE_ALERT_RESOURCE_TYPE)
                 resource_name = snmp_alert.get(
                     consts.PARSE_ALERT_RESOURCE_NAME)
                 location = '{}:{}'.format(resource_type, resource_name)
-                match_key = hashlib.md5(description.encode()).hexdigest()
+                event_code = snmp_alert.get(consts.PARSE_ALERT_CODE)
+                match_key_str = '{}{}{}{}{}'.format(
+                    description, raised_time, resource_type, resource_name,
+                    event_code)
+                match_key = hashlib.md5(match_key_str.encode()).hexdigest()
                 alerts_model = {
                     'alert_id': match_key,
                     'occur_time': timestamp if
                     timestamp else utils.utcnow_ms(),
-                    'severity': constants.Severity.NOT_SPECIFIED,
+                    'severity': consts.SNMP_SEVERITY_MAP.get(
+                        snmp_alert.get(consts.PARSE_ALERT_SEVERITY),
+                        constants.Severity.NOT_SPECIFIED),
                     'category': constants.Category.FAULT,
                     'location': location if
                     resource_type and resource_name else '',

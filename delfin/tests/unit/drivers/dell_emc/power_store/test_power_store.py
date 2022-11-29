@@ -417,12 +417,12 @@ alerts_data = [{
     'description': 'Management ports are properly connected to different '
                    'management switches.'}]
 snmp_alert_data = {
-    'alert_id': 'ef0e8ababa5a2838c78223af7323c299',
-    'occur_time': 1667708609278, 'severity': 'NotSpecified',
+    'alert_id': '917ffb276c638bc60c0769192c948145',
+    'occur_time': 1667708609278, 'severity': 'Major',
     'category': 'Fault', 'location': 'appliance:Powerstore1000T-appliance-1',
     'type': 'EquipmentAlarm', 'resource_type': 'appliance',
     'alert_name': 'All configured DNS servers are unavailable.',
-    'match_key': 'ef0e8ababa5a2838c78223af7323c299',
+    'match_key': '917ffb276c638bc60c0769192c948145',
     'description': 'All configured DNS servers are unavailable.'
 }
 controllers_data = [
