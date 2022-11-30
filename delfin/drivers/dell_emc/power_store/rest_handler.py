@@ -104,7 +104,6 @@ class RestHandler(RestClient):
                 if self.session is None:
                     self.init_http_head()
                 self.session.auth = requests.auth.HTTPBasicAuth(
-                    # self.rest_username, (self.rest_password))
                     self.rest_username, cryptor.decode(self.rest_password))
                 res = self.do_call(RestHandler.REST_LOGIN_SESSION_URL,
                                    None, 'GET')
