@@ -62,7 +62,8 @@ class RestHandler(RestClient):
         '/api/rest/node?select=appliance_id,id,slot&limit=2000&offset={}'
     REST_ALERT_URL = \
         '/api/rest/alert?select=id,description_l10n,severity,resource_name,' \
-        'resource_type,raised_timestamp,state,event_code&limit=2000&offset={}'
+        'resource_type,raised_timestamp,state,event_code,resource_id' \
+        '&limit=2000&offset={}'
     REST_SNMP_ALERT_URL = \
         '/api/rest/alert?select=id,description_l10n,severity,resource_name,' \
         'resource_type,raised_timestamp,state&limit=2000&offset=0' \
@@ -293,7 +294,7 @@ class RestHandler(RestClient):
             if extra_details:
                 firmware = extra_details.get('firmware_version')
                 drive_type = extra_details.get('drive_type')
-                if drive_type in consts.DISK_TYPE.ALL:
+                if drive_type in consts.Disk_Type.ALL:
                     continue
                 physical_type = consts.DISK_PHYSICAL_TYPE.get(
                     drive_type, constants.DiskPhysicalType.UNKNOWN)
@@ -524,9 +525,11 @@ class RestHandler(RestClient):
                     consts.PARSE_ALERT_RESOURCE_NAME)
                 location = '{}:{}'.format(resource_type, resource_name)
                 event_code = snmp_alert.get(consts.PARSE_ALERT_CODE)
-                match_key_str = '{}{}{}{}{}'.format(
-                    description, raised_time, resource_type, resource_name,
-                    event_code)
+                resource_id = snmp_alert.get(consts.PARSE_ALERT_RESOURCE_ID)
+                state = snmp_alert.get(consts.PARSE_ALERT_STATE)
+                match_key_str = '{}{}{}{}{}{}{}'.format(
+                    description, timestamp, resource_type, resource_name,
+                    event_code, resource_id, state)
                 match_key = hashlib.md5(match_key_str.encode()).hexdigest()
                 alerts_model = {
                     'alert_id': match_key,
@@ -564,6 +567,12 @@ class RestHandler(RestClient):
     def set_alert_model(alert, description, timestamp):
         resource_type = alert.get('resource_type')
         resource_name = alert.get('resource_name')
+        resource_id = alert.get('resource_id')
+        event_code = alert.get('event_code')
+        state = alert.get('state')
+        match_key_str = '{}{}{}{}{}{}{}'.format(
+            description, timestamp, resource_type, resource_name,
+            event_code, resource_id, state)
         alerts_model = {
             'alert_id': alert.get('id'),
             'occur_time': timestamp,
@@ -574,7 +583,7 @@ class RestHandler(RestClient):
             'type': constants.EventType.EQUIPMENT_ALARM,
             'resource_type': resource_type,
             'alert_name': description,
-            'match_key': hashlib.md5(alert.get('id').encode()).hexdigest(),
+            'match_key': hashlib.md5(match_key_str.encode()).hexdigest(),
             'description': description
         }
         return alerts_model
