@@ -225,11 +225,15 @@ class HitachiVspDriver(driver.StorageDriver):
 
     def get_volumes_paginated(self, volume_list, head_id):
         try:
+            if head_id > 10000:
+                return True
             volumes_info = self.rest_handler.get_volumes(head_id)
+            if not volumes_info or not volumes_info.get('data'):
+                return True
             volumes = volumes_info.get('data')
             for volume in volumes:
                 if volume.get('emulationType') == 'NOT DEFINED':
-                    return True
+                    continue
                 orig_pool_id = volume.get('poolId')
                 compressed = False
                 deduplicated = False
