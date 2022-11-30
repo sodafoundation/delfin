@@ -453,6 +453,7 @@ fc_info = [{
     "wwn": "58:cc:f0:90:4d:22:19:fb",
     "stale_state": "Not_Stale",
     "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
+    "sfp_id": "343b016544744268b383294867424252",
 }, {
     "appliance_id": "A1",
     "current_speed": None,
@@ -469,6 +470,166 @@ fc_info = [{
     "wwn": "58:cc:f0:90:4d:20:19:fb",
     "stale_state": "Not_Stale",
     "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
+    "sfp_id": "16416450ec514ca089cdf83764b1cfec",
+}]
+hardware_port_info = [{
+    "appliance_id": "A1",
+    "name": "BaseEnclosure-NodeB-IoModule0-SFP2",
+    "parent_id": "ffc6bc05bcd84d7095d380d72c88fc0b",
+    "stale_state": "Not_Stale",
+    "status_led_state": None,
+    "extra_details": {
+        "mode": "Multi_Mode",
+        "supported_protocol": "FC",
+        "connector_type": "LC",
+        "supported_speeds": [
+            "4_Gbps",
+            "8_Gbps",
+            "16_Gbps"
+        ]
+    },
+    "id": "343b016544744268b383294867424252",
+    "is_marked": None,
+    "lifecycle_state": "Healthy",
+    "part_number": "019-078-045",
+    "serial_number": "P66DEY1         ",
+    "slot": 2,
+    "type": "SFP",
+    "appliance": {
+        "id": "A1"
+    },
+    "children": [],
+    "parent": {
+        "id": "ffc6bc05bcd84d7095d380d72c88fc0b"
+    },
+    "hardware_parent_eth_ports": [],
+    "hardware_parent_fc_ports": [],
+    "hardware_parent_sas_ports": [],
+    "io_module_eth_ports": []
+}, {
+    "appliance_id": "A1",
+    "name": "BaseEnclosure-NodeA-IoModule0-SFP0",
+    "parent_id": "2f44d24b4332475d90edab9d316c6d9b",
+    "stale_state": "Not_Stale",
+    "status_led_state": None,
+    "extra_details": {
+        "mode": "Multi_Mode",
+        "supported_protocol": "FC",
+        "connector_type": "LC",
+        "supported_speeds": [
+            "4_Gbps",
+            "8_Gbps",
+            "16_Gbps"
+        ]
+    },
+    "id": "16416450ec514ca089cdf83764b1cfec",
+    "is_marked": None,
+    "lifecycle_state": "Healthy",
+    "part_number": "019-078-045",
+    "serial_number": "P66DD3H         ",
+    "slot": 0,
+    "type": "SFP",
+    "appliance": {
+        "id": "A1"
+    },
+    "children": [],
+    "parent": {
+        "id": "2f44d24b4332475d90edab9d316c6d9b"
+    },
+    "hardware_parent_eth_ports": [],
+    "hardware_parent_fc_ports": [],
+    "hardware_parent_sas_ports": [],
+    "io_module_eth_ports": []
+}, {
+    "appliance_id": "A1",
+    "name": "BaseEnclosure-NodeA-4PortCard-SFP1",
+    "parent_id": "fd5cb1c32a434ecbba63f79060fa605b",
+    "stale_state": "Not_Stale",
+    "status_led_state": None,
+    "extra_details": {
+        "mode": "Unknown",
+        "supported_protocol": "Unknown",
+        "connector_type": "Unknown",
+        "supported_speeds": []
+    },
+    "id": "e387bf548a8b45a1831982857407adb1",
+    "is_marked": None,
+    "lifecycle_state": "Empty",
+    "part_number": None,
+    "serial_number": None,
+    "slot": 1,
+    "type": "SFP",
+    "appliance": {
+        "id": "A1"
+    },
+    "children": [],
+    "parent": {
+        "id": "fd5cb1c32a434ecbba63f79060fa605b"
+    },
+    "hardware_parent_eth_ports": [],
+    "hardware_parent_fc_ports": [],
+    "hardware_parent_sas_ports": [],
+    "io_module_eth_ports": []
+}, {
+    "appliance_id": "A1",
+    "name": "BaseEnclosure-NodeA-EmbeddedModule-SFP0",
+    "parent_id": "9ba194e115454c3db22a7da88164379e",
+    "stale_state": "Not_Stale",
+    "status_led_state": None,
+    "extra_details": {
+        "mode": "Unknown",
+        "supported_protocol": "Unknown",
+        "connector_type": "Unknown",
+        "supported_speeds": []
+    },
+    "id": "66696ff8755b4e8ca8c853021b7e668f",
+    "is_marked": None,
+    "lifecycle_state": "Empty",
+    "part_number": None,
+    "serial_number": None,
+    "slot": 0,
+    "type": "SFP",
+    "appliance": {
+        "id": "A1"
+    },
+    "children": [],
+    "parent": {
+        "id": "9ba194e115454c3db22a7da88164379e"
+    },
+    "hardware_parent_eth_ports": [],
+    "hardware_parent_fc_ports": [],
+    "hardware_parent_sas_ports": [],
+    "io_module_eth_ports": []
+}, {
+    "appliance_id": "A1",
+    "name": "BaseEnclosure-NodeB-EmbeddedModule-SFP0",
+    "parent_id": "0585c10b69de44258bee4a23ec91c601",
+    "stale_state": "Not_Stale",
+    "status_led_state": None,
+    "extra_details": {
+        "mode": "Unknown",
+        "supported_protocol": "Unknown",
+        "connector_type": "Unknown",
+        "supported_speeds": []
+    },
+    "id": "ea2b7ebba6784d35bfd123e255078947",
+    "is_marked": None,
+    "lifecycle_state": "Empty",
+    "part_number": None,
+    "serial_number": None,
+    "slot": 0,
+    "type": "SFP",
+    "appliance": {
+        "id": "A1"
+    },
+    "children": [],
+    "parent": {
+        "id": "0585c10b69de44258bee4a23ec91c601"
+    },
+    "hardware_parent_eth_ports": [],
+    "hardware_parent_fc_ports": [],
+    "hardware_parent_sas_ports": [],
+    "io_module_eth_ports": []
 }]
 perf_fc_info = [{
     "appliance_id": "A1",
@@ -498,6 +659,7 @@ eth_info = [{
     "mac_address": "0c48c6c9d455",
     "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
     "partner_id": "dddae67b03fc49b796bc27cb23932c84",
+    "sfp_id": "e387bf548a8b45a1831982857407adb1",
     "port_connector_type": "Unknown",
     "stale_state": "Not_Stale",
     "supported_speeds": [
@@ -513,6 +675,7 @@ eth_info = [{
     "is_link_up": False,
     "mac_address": "006016d7a783",
     "node_id": "5c93d9044ea94afea7d0ac853b89886c",
+    "sfp_id": None,
     "partner_id": "de32885d015e4922a571db515a1b8659",
     "port_connector_type": "RJ45",
     "port_index": 1,
@@ -532,7 +695,8 @@ sas_info = [
         "name": "BaseEnclosure-NodeA-EmbeddedModule-BEPort0",
         "partner_id": "87f9ddbef894406aa7c43501f3d6a008",
         "speed": None,
-        "node_id": "3f75d31ca1dc4d8fb95707c7f996a063"
+        "node_id": "3f75d31ca1dc4d8fb95707c7f996a063",
+        "sfp_id": "66696ff8755b4e8ca8c853021b7e668f"
     },
     {
         "appliance_id": "A1",
@@ -541,27 +705,28 @@ sas_info = [
         "name": "BaseEnclosure-NodeB-EmbeddedModule-BEPort0",
         "partner_id": "7774e11064704ccc9b90d1d2c3c7da2c",
         "speed": None,
-        "node_id": "5c93d9044ea94afea7d0ac853b89886c"
+        "node_id": "5c93d9044ea94afea7d0ac853b89886c",
+        "sfp_id": "ea2b7ebba6784d35bfd123e255078947"
     }]
 ports_data = [
     {'name': 'BaseEnclosure-NodeA-IoModule0-FEPort2', 'storage_id': '12345',
      'native_port_id': '090d75723f4147808fd5624582708381',
      'location': 'A1:BaseEnclosure-NodeA-IoModule0-FEPort2',
-     'connection_status': 'disconnected', 'health_status': 'abnormal',
+     'connection_status': 'disconnected', 'health_status': 'normal',
      'type': 'fc', 'speed': None, 'max_speed': 16000000000,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063',
      'wwn': '58:cc:f0:90:4d:22:19:fb'},
     {'name': 'BaseEnclosure-NodeA-IoModule0-FEPort0', 'storage_id': '12345',
      'native_port_id': '210d046f161b4c2ebbcfd3090d706370',
      'location': 'A1:BaseEnclosure-NodeA-IoModule0-FEPort0',
-     'connection_status': 'disconnected', 'health_status': 'abnormal',
+     'connection_status': 'disconnected', 'health_status': 'normal',
      'type': 'fc', 'speed': None, 'max_speed': 16000000000,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063',
      'wwn': '58:cc:f0:90:4d:20:19:fb'},
     {'name': 'BaseEnclosure-NodeA-4PortCard-FEPort1', 'storage_id': '12345',
      'native_port_id': '0133e5496e6b4671b37bb2fc94be1a25',
      'location': 'A1:BaseEnclosure-NodeA-4PortCard-FEPort1',
-     'connection_status': 'disconnected', 'health_status': 'abnormal',
+     'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'eth', 'speed': None, 'max_speed': None,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063',
      'mac_address': '0c48c6c9d455'},
@@ -569,7 +734,7 @@ ports_data = [
      'storage_id': '12345',
      'native_port_id': '0235963690ab404c8e6a3485d5a58198',
      'location': 'A1:BaseEnclosure-NodeB-EmbeddedModule-ServicePort',
-     'connection_status': 'disconnected', 'health_status': 'abnormal',
+     'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'eth', 'speed': None, 'max_speed': 1000000000,
      'native_parent_id': '5c93d9044ea94afea7d0ac853b89886c',
      'mac_address': '006016d7a783'},
@@ -577,14 +742,14 @@ ports_data = [
      'storage_id': '12345',
      'native_port_id': '7774e11064704ccc9b90d1d2c3c7da2c',
      'location': 'A1:BaseEnclosure-NodeA-EmbeddedModule-BEPort0',
-     'connection_status': 'disconnected', 'health_status': 'abnormal',
+     'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'sas', 'speed': None,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063'},
     {'name': 'BaseEnclosure-NodeB-EmbeddedModule-BEPort0',
      'storage_id': '12345',
      'native_port_id': '87f9ddbef894406aa7c43501f3d6a008',
      'location': 'A1:BaseEnclosure-NodeB-EmbeddedModule-BEPort0',
-     'connection_status': 'disconnected', 'health_status': 'abnormal',
+     'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'sas', 'speed': None,
      'native_parent_id': '5c93d9044ea94afea7d0ac853b89886c'}]
 alert = {
@@ -1141,7 +1306,7 @@ class test_PowerStoreDriver(TestCase):
 
     def test_list_ports(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[fc_info, eth_info, sas_info])
+            side_effect=[hardware_port_info, fc_info, eth_info, sas_info])
         ports = self.driver.list_ports(context)
         self.assertListEqual(ports, ports_data)
 

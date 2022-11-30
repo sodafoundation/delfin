@@ -106,10 +106,14 @@ PORT_CONNECTION_STATUS_MAP = {
 }
 
 PORT_HEALTH_STATUS_MAP = {
-    'true': constants.PortHealthStatus.NORMAL,
-    True: constants.PortHealthStatus.NORMAL,
-    'false': constants.PortHealthStatus.ABNORMAL,
-    False: constants.PortHealthStatus.ABNORMAL
+    'Uninitialized': constants.PortHealthStatus.NORMAL,
+    'Healthy': constants.PortHealthStatus.NORMAL,
+    'Initializing': constants.PortHealthStatus.NORMAL,
+    'Failed': constants.PortHealthStatus.ABNORMAL,
+    'Disconnected': constants.PortHealthStatus.NORMAL,
+    'Prepare_Failed': constants.PortHealthStatus.NORMAL,
+    'Trigger_Update': constants.PortHealthStatus.NORMAL,
+    'Empty': constants.PortHealthStatus.UNKNOWN
 }
 
 ALERT_SEVERITY_MAP = {

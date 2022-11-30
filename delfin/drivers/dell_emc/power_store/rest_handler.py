@@ -46,14 +46,15 @@ class RestHandler(RestClient):
     REST_GENERATE_URL = '/api/rest/metrics/generate'
     REST_FC_PORT_URL = \
         '/api/rest/fc_port?select=appliance_id,current_speed,id,is_link_up,' \
-        'name,partner_id,supported_speeds,wwn,node_id&limit=2000&offset={}'
+        'name,partner_id,supported_speeds,wwn,node_id,sfp_id' \
+        '&limit=2000&offset={}'
     REST_ETH_PORT_URL = \
         '/api/rest/eth_port?select=appliance_id,current_speed,id,is_link_up,' \
-        'name,partner_id,supported_speeds,mac_address,node_id' \
+        'name,partner_id,supported_speeds,mac_address,node_id,sfp_id' \
         '&limit=2000&offset={}'
     REST_SAS_PORT_URL = \
         '/api/rest/sas_port?select=appliance_id,current_speed,id,' \
-        'is_link_up,name,node_id,speed&limit=2000&offset={}'
+        'is_link_up,name,node_id,speed,sfp_id&limit=2000&offset={}'
     REST_HARDWARE_URL = \
         '/api/rest/hardware?select=name,extra_details,id,lifecycle_state,' \
         'serial_number,slot,type,appliance_id,status_led_state' \
@@ -382,7 +383,14 @@ class RestHandler(RestClient):
             ip_d['{}{}'.format(appliance_id, node_id)] = address
         return ip_d
 
-    def get_fc_ports(self, storage_id):
+    def get_port_hardware(self):
+        hardware_d = {}
+        hardware_list = self.rest_call(self.REST_HARDWARE_URL)
+        for hardware in hardware_list:
+            hardware_d[hardware.get('id')] = hardware
+        return hardware_d
+
+    def get_fc_ports(self, storage_id, hardware_d):
         list_fc_ports = []
         fc_res = self.rest_call(self.REST_FC_PORT_URL)
         for fc in fc_res:
@@ -391,8 +399,10 @@ class RestHandler(RestClient):
             is_link_up = fc.get('is_link_up')
             connection_status = consts.PORT_CONNECTION_STATUS_MAP.get(
                 is_link_up, constants.PortConnectionStatus.UNKNOWN)
+            lifecycle_state = hardware_d.get(
+                fc.get('sfp_id'), {}).get('lifecycle_state')
             health_status = consts.PORT_HEALTH_STATUS_MAP.get(
-                is_link_up, constants.PortHealthStatus.UNKNOWN)
+                lifecycle_state, constants.PortHealthStatus.UNKNOWN)
             fc_port_result = {
                 'name': name,
                 'storage_id': storage_id,
@@ -426,7 +436,7 @@ class RestHandler(RestClient):
                 max_speed = int(supported_speed) * units.k
         return max_speed
 
-    def get_eth_ports(self, storage_id):
+    def get_eth_ports(self, storage_id, hardware_d):
         list_eth_ports = []
         eth_ports = self.rest_call(self.REST_ETH_PORT_URL)
         for eth in eth_ports:
@@ -435,8 +445,10 @@ class RestHandler(RestClient):
             is_link_up = eth.get('is_link_up')
             connection_status = consts.PORT_CONNECTION_STATUS_MAP.get(
                 is_link_up, constants.PortConnectionStatus.UNKNOWN)
+            lifecycle_state = hardware_d.get(
+                eth.get('sfp_id'), {}).get('lifecycle_state')
             health_status = consts.PORT_HEALTH_STATUS_MAP.get(
-                is_link_up, constants.PortHealthStatus.UNKNOWN)
+                lifecycle_state, constants.PortHealthStatus.UNKNOWN)
             eth_port_result = {
                 'name': name,
                 'storage_id': storage_id,
@@ -453,7 +465,7 @@ class RestHandler(RestClient):
             list_eth_ports.append(eth_port_result)
         return list_eth_ports
 
-    def get_sas_ports(self, storage_id):
+    def get_sas_ports(self, storage_id, hardware_d):
         list_sas_ports = []
         sas_ports = self.rest_call(self.REST_SAS_PORT_URL)
         for sas in sas_ports:
@@ -462,8 +474,10 @@ class RestHandler(RestClient):
             is_link_up = sas.get('is_link_up')
             connection_status = consts.PORT_CONNECTION_STATUS_MAP.get(
                 is_link_up, constants.PortConnectionStatus.UNKNOWN)
+            lifecycle_state = hardware_d.get(
+                sas.get('sfp_id'), {}).get('lifecycle_state')
             health_status = consts.PORT_HEALTH_STATUS_MAP.get(
-                is_link_up, constants.PortHealthStatus.UNKNOWN)
+                lifecycle_state, constants.PortHealthStatus.UNKNOWN)
             sas_port_result = {
                 'name': name,
                 'storage_id': storage_id,

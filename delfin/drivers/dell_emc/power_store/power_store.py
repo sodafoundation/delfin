@@ -43,9 +43,12 @@ class PowerStoreDriver(driver.StorageDriver):
         return self.rest_handler.get_disks(self.storage_id)
 
     def list_ports(self, context):
-        fc_ports = self.rest_handler.get_fc_ports(self.storage_id)
-        fc_ports.extend(self.rest_handler.get_eth_ports(self.storage_id))
-        fc_ports.extend(self.rest_handler.get_sas_ports(self.storage_id))
+        hardware_d = self.rest_handler.get_port_hardware()
+        fc_ports = self.rest_handler.get_fc_ports(self.storage_id, hardware_d)
+        fc_ports.extend(
+            self.rest_handler.get_eth_ports(self.storage_id, hardware_d))
+        fc_ports.extend(
+            self.rest_handler.get_sas_ports(self.storage_id, hardware_d))
         return fc_ports
 
     def reset_connection(self, context, **kwargs):
