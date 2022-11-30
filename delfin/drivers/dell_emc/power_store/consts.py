@@ -136,8 +136,8 @@ HOST_OS_TYPES_MAP = {
 INITIATOR_TYPE_MAP = {
     'iSCSI': constants.InitiatorType.ISCSI,
     'FC': constants.InitiatorType.FC,
-    'NVMe': constants.InitiatorType.UNKNOWN,
-    'NVMe_vVol': constants.InitiatorType.UNKNOWN
+    'NVMe': constants.InitiatorType.NVME_OVER_FABRIC,
+    'NVMe_vVol': constants.InitiatorType.NVME_OVER_FABRIC
 }
 
 
