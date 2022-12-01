@@ -413,16 +413,16 @@ alerts_data = [{
     'type': 'EquipmentAlarm', 'resource_type': 'hardware',
     'alert_name': 'Management ports are properly connected to different '
                   'management switches.',
-    'match_key': 'cad04518bc5ecd1b48374765d7522fe3',
+    'match_key': '0042968d19d8788229f78abb4f842121',
     'description': 'Management ports are properly connected to different '
                    'management switches.'}]
 snmp_alert_data = {
-    'alert_id': '2bbee1d19a65c4ca90819513f380f66c',
+    'alert_id': 'b89d0e0a9cec32fc20a21b05071c9d5e',
     'occur_time': 1667708609278, 'severity': 'Major',
     'category': 'Fault', 'location': 'appliance:Powerstore1000T-appliance-1',
     'type': 'EquipmentAlarm', 'resource_type': 'appliance',
     'alert_name': 'All configured DNS servers are unavailable.',
-    'match_key': '2bbee1d19a65c4ca90819513f380f66c',
+    'match_key': 'b89d0e0a9cec32fc20a21b05071c9d5e',
     'description': 'All configured DNS servers are unavailable.'
 }
 controllers_data = [
@@ -439,7 +439,7 @@ controllers_data = [
 alert_sources_data = [{'host': '192.168.3.243'}, {'host': '192.168.3.244'}]
 fc_info = [{
     "appliance_id": "A1",
-    "current_speed": None,
+    "current_speed": "16_Gbps",
     "id": "090d75723f4147808fd5624582708381",
     "is_link_up": False,
     "name": "BaseEnclosure-NodeA-IoModule0-FEPort2",
@@ -713,7 +713,7 @@ ports_data = [
      'native_port_id': '090d75723f4147808fd5624582708381',
      'location': 'A1:BaseEnclosure-NodeA-IoModule0-FEPort2',
      'connection_status': 'disconnected', 'health_status': 'normal',
-     'type': 'fc', 'speed': None, 'max_speed': 16000000000,
+     'type': 'fc', 'speed': 16000000000, 'max_speed': 16000000000,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063',
      'wwn': '58:cc:f0:90:4d:22:19:fb'},
     {'name': 'BaseEnclosure-NodeA-IoModule0-FEPort0', 'storage_id': '12345',

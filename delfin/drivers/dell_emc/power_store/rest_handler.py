@@ -422,8 +422,11 @@ class RestHandler(RestClient):
     def convert_speed(supported_speeds):
         max_speed = None
         if supported_speeds:
-            supported_speed = supported_speeds[
-                consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
+            if isinstance(supported_speeds, list):
+                supported_speed = supported_speeds[
+                    consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
+            else:
+                supported_speed = supported_speeds
             if '_Gbps' in supported_speed:
                 supported_speed = supported_speed.replace('_Gbps', '')
                 max_speed = int(supported_speed) * units.G
@@ -539,10 +542,9 @@ class RestHandler(RestClient):
                 location = '{}:{}'.format(resource_type, resource_name)
                 event_code = snmp_alert.get(consts.PARSE_ALERT_CODE)
                 resource_id = snmp_alert.get(consts.PARSE_ALERT_RESOURCE_ID)
-                state = snmp_alert.get(consts.PARSE_ALERT_STATE)
-                match_key_str = '{}{}{}{}{}{}{}'.format(
+                match_key_str = '{}{}{}{}{}{}'.format(
                     description, timestamp, resource_type, resource_name,
-                    event_code, resource_id, state)
+                    event_code, resource_id)
                 match_key = hashlib.md5(match_key_str.encode()).hexdigest()
                 alerts_model = {
                     'alert_id': match_key,
@@ -582,10 +584,9 @@ class RestHandler(RestClient):
         resource_name = alert.get('resource_name')
         resource_id = alert.get('resource_id')
         event_code = alert.get('event_code')
-        state = alert.get('state')
-        match_key_str = '{}{}{}{}{}{}{}'.format(
+        match_key_str = '{}{}{}{}{}{}'.format(
             description, timestamp, resource_type, resource_name,
-            event_code, resource_id, state)
+            event_code, resource_id)
         alerts_model = {
             'alert_id': alert.get('id'),
             'occur_time': timestamp,
