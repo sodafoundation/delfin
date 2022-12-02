@@ -26,6 +26,7 @@ class PowerStoreDriver(driver.StorageDriver):
     def list_alerts(self, context, query_para=None):
         return self.rest_handler.list_alerts(query_para)
 
+    # PowerStore doesn't support clear alerts through API.
     def clear_alert(self, context, alert):
         pass
 
@@ -44,12 +45,12 @@ class PowerStoreDriver(driver.StorageDriver):
 
     def list_ports(self, context):
         hardware_d = self.rest_handler.get_port_hardware()
-        fc_ports = self.rest_handler.get_fc_ports(self.storage_id, hardware_d)
-        fc_ports.extend(
+        ports = self.rest_handler.get_fc_ports(self.storage_id, hardware_d)
+        ports.extend(
             self.rest_handler.get_eth_ports(self.storage_id, hardware_d))
-        fc_ports.extend(
+        ports.extend(
             self.rest_handler.get_sas_ports(self.storage_id, hardware_d))
-        return fc_ports
+        return ports
 
     def reset_connection(self, context, **kwargs):
         self.rest_handler.logout()
@@ -63,20 +64,19 @@ class PowerStoreDriver(driver.StorageDriver):
 
     @staticmethod
     def get_access_url():
-        return 'https://{ip}'
+        return 'https://{ip}:{port}'
 
     def collect_perf_metrics(self, context, storage_id, resource_metrics,
                              start_time, end_time):
-        LOG.info('The system(storage_id: %s) starts to collect storage and'
-                 ' volume performance, start_time: %s, end_time: %s',
+        LOG.info('The system(storage_id: %s) starts to collect performance,'
+                 ' start_time: %s, end_time: %s',
                  storage_id, start_time, end_time)
         metrics = []
         if resource_metrics.get(constants.ResourceType.STORAGE):
             storage_metrics = self.rest_handler.get_storage_metrics(
                 storage_id,
                 resource_metrics.get(constants.ResourceType.STORAGE),
-                start_time, end_time,
-                constants.ResourceType.STORAGE)
+                start_time, end_time)
             metrics.extend(storage_metrics)
             LOG.info('The system(storage_id: %s) stop to collect storage'
                      ' performance, The length is: %s',
@@ -85,8 +85,7 @@ class PowerStoreDriver(driver.StorageDriver):
             pool_metrics = self.rest_handler.get_pool_metrics(
                 storage_id,
                 resource_metrics.get(constants.ResourceType.STORAGE_POOL),
-                start_time, end_time,
-                constants.ResourceType.STORAGE_POOL)
+                start_time, end_time)
             metrics.extend(pool_metrics)
             LOG.info('The system(storage_id: %s) stop to collect pool'
                      ' performance, The length is: %s',
@@ -95,8 +94,7 @@ class PowerStoreDriver(driver.StorageDriver):
             volume_metrics = self.rest_handler.get_volume_metrics(
                 storage_id,
                 resource_metrics.get(constants.ResourceType.VOLUME),
-                start_time, end_time,
-                constants.ResourceType.VOLUME)
+                start_time, end_time)
             metrics.extend(volume_metrics)
             LOG.info('The system(storage_id: %s) stop to collect volume'
                      ' performance, The length is: %s',
@@ -105,8 +103,7 @@ class PowerStoreDriver(driver.StorageDriver):
             controller_metrics = self.rest_handler.get_controllers_metrics(
                 storage_id,
                 resource_metrics.get(constants.ResourceType.CONTROLLER),
-                start_time, end_time,
-                constants.ResourceType.CONTROLLER)
+                start_time, end_time)
             metrics.extend(controller_metrics)
             LOG.info('The system(storage_id: %s) stop to collect controller'
                      ' performance, The length is: %s',
@@ -115,8 +112,7 @@ class PowerStoreDriver(driver.StorageDriver):
             fc_port_metrics = self.rest_handler.get_fc_port_metrics(
                 storage_id,
                 resource_metrics.get(constants.ResourceType.PORT),
-                start_time, end_time,
-                constants.ResourceType.PORT)
+                start_time, end_time)
             metrics.extend(fc_port_metrics)
             LOG.info('The system(storage_id: %s) stop to collect port'
                      ' performance, The length is: %s',
