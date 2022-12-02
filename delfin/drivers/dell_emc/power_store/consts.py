@@ -15,7 +15,7 @@
 from delfin.common import constants
 
 
-class STATUS_CODE(object):
+class StatusCode(object):
     SUCCESS = 200
     SUCCESS_CREATE_RESPONSE = 201
     SUCCESS_NO_CONTENT = 204
@@ -24,7 +24,7 @@ class STATUS_CODE(object):
     FORBIDDEN = 403
 
 
-class DIGITAL_CONSTANT(object):
+class DigitalConstant(object):
     ZERO_INT = 0
     ONE_INT = 1
     MINUS_ONE_INT = -1
@@ -141,7 +141,7 @@ INITIATOR_TYPE_MAP = {
 }
 
 
-class Disk_Type(object):
+class DiskType(object):
     NVME_NVRAM = 'NVMe_NVRAM'
     NVME_SCM = 'NVMe_SCM'
 

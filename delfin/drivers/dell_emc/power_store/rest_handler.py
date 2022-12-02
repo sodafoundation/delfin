@@ -126,8 +126,8 @@ class RestHandler(RestClient):
 
     def logout(self):
         res = self.do_call(RestHandler.REST_LOGOUT_URL, None, 'POST')
-        if res.status_code != consts.STATUS_CODE.SUCCESS_NO_CONTENT and \
-                res.status_code != consts.STATUS_CODE.SUCCESS_CREATE_RESPONSE:
+        if res.status_code != consts.StatusCode.SUCCESS_NO_CONTENT and \
+                res.status_code != consts.StatusCode.SUCCESS_CREATE_RESPONSE:
             LOG.error("logout error.URL: %s,Reason: %s.",
                       RestHandler.REST_LOGOUT_URL, res.text)
             raise exception.StorageBackendException(six.text_type(res.text))
@@ -140,18 +140,18 @@ class RestHandler(RestClient):
             res = self.do_call(url.format(offset), data, method)
         else:
             res = self.do_call(url, data, method)
-        if res.status_code == consts.STATUS_CODE.SUCCESS:
+        if res.status_code == consts.StatusCode.SUCCESS:
             result.extend(res.json())
-        elif res.status_code == consts.STATUS_CODE.PARTIAL_CONTENT:
+        elif res.status_code == consts.StatusCode.PARTIAL_CONTENT:
             result.extend(res.json())
-            if len(res.json()) == consts.DIGITAL_CONSTANT.TWO_THOUSAND_INT:
-                offset = offset + consts.DIGITAL_CONSTANT.TWO_THOUSAND_INT
+            if len(res.json()) == consts.DigitalConstant.TWO_THOUSAND_INT:
+                offset = offset + consts.DigitalConstant.TWO_THOUSAND_INT
                 self.rest_call(url, data, method, offset, result, count)
-        elif res.status_code == consts.STATUS_CODE.UNAUTHORIZED or \
-                res.status_code == consts.STATUS_CODE.FORBIDDEN:
-            if count < consts.DIGITAL_CONSTANT.THREE_INT:
+        elif res.status_code == consts.StatusCode.UNAUTHORIZED or \
+                res.status_code == consts.StatusCode.FORBIDDEN:
+            if count < consts.DigitalConstant.THREE_INT:
                 self.login()
-                count = count + consts.DIGITAL_CONSTANT.ONE_INT
+                count = count + consts.DigitalConstant.ONE_INT
                 self.rest_call(url, data, method, offset, result, count)
         return result
 
@@ -161,7 +161,7 @@ class RestHandler(RestClient):
             LOG.error('The cluster data is empty')
             raise exception.StorageBackendException(
                 'The cluster data is empty')
-        cluster = clusters[consts.DIGITAL_CONSTANT.ZERO_INT]
+        cluster = clusters[consts.DigitalConstant.ZERO_INT]
         appliance_id = cluster.get('primary_appliance_id')
         appliances = self.rest_call(self.REST_APPLIANCE_URL)
         model = ''
@@ -169,13 +169,13 @@ class RestHandler(RestClient):
             if appliance_id == appliance.get('id'):
                 model = appliance.get('model')
         pools = self.get_storage_pools(storage_id)
-        total_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
-        used_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
+        total_capacity = consts.DigitalConstant.ZERO_INT
+        used_capacity = consts.DigitalConstant.ZERO_INT
         for pool in pools:
             total_capacity += pool.get('total_capacity')
             used_capacity += pool.get('used_capacity')
         disks = self.get_disks(storage_id)
-        raw_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
+        raw_capacity = consts.DigitalConstant.ZERO_INT
         for disk in disks:
             raw_capacity += disk.get('capacity')
         storage_result = {
@@ -220,7 +220,7 @@ class RestHandler(RestClient):
                 raise exception.StorageBackendException(
                     'The pools space data is empty')
             appliance_space = \
-                appliance_spaces[consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
+                appliance_spaces[consts.DigitalConstant.MINUS_ONE_INT]
             total_capacity = appliance_space.get('physical_total')
             used_capacity = appliance_space.get('physical_used')
             pool_result = {
@@ -275,7 +275,7 @@ class RestHandler(RestClient):
         volumes_spaces = self.rest_call(self.REST_GENERATE_URL, data, 'POST')
         if volumes_spaces:
             volumes_space = \
-                volumes_spaces[consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
+                volumes_spaces[consts.DigitalConstant.MINUS_ONE_INT]
             used_capacity = volumes_space.get('logical_used')
         return used_capacity
 
@@ -294,7 +294,7 @@ class RestHandler(RestClient):
             if extra_details:
                 firmware = extra_details.get('firmware_version')
                 drive_type = extra_details.get('drive_type')
-                if drive_type in consts.Disk_Type.ALL:
+                if drive_type in consts.DiskType.ALL:
                     continue
                 physical_type = consts.DISK_PHYSICAL_TYPE.get(
                     drive_type, constants.DiskPhysicalType.UNKNOWN)
@@ -343,7 +343,7 @@ class RestHandler(RestClient):
             name = ''
             if full_name:
                 name = full_name.split('-')[
-                    consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
+                    consts.DigitalConstant.MINUS_ONE_INT]
             controller_result = {
                 'name': name,
                 'storage_id': storage_id,
@@ -352,7 +352,7 @@ class RestHandler(RestClient):
                     lifecycle_state, constants.ControllerStatus.UNKNOWN),
                 'location': slot,
                 'cpu_info': cpu_info,
-                'cpu_count': consts.DIGITAL_CONSTANT.ONE_INT,
+                'cpu_count': consts.DigitalConstant.ONE_INT,
                 'memory_size': memory_size,
                 'mgmt_ip': address
             }
@@ -424,7 +424,7 @@ class RestHandler(RestClient):
         if supported_speeds:
             if isinstance(supported_speeds, list):
                 supported_speed = supported_speeds[
-                    consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
+                    consts.DigitalConstant.MINUS_ONE_INT]
             else:
                 supported_speed = supported_speeds
             if '_Gbps' in supported_speed:
@@ -739,12 +739,12 @@ class RestHandler(RestClient):
         return list_masking_views
 
     def get_storage_metrics(self, storage_id, resource_metrics, start_time,
-                            end_time, resource_type):
+                            end_time):
         storage_metrics = []
         clusters = self.rest_call(self.REST_CLUSTER_URL)
         if not clusters:
             return storage_metrics
-        cluster = clusters[consts.DIGITAL_CONSTANT.ZERO_INT]
+        cluster = clusters[consts.DigitalConstant.ZERO_INT]
         cluster_id = cluster.get('id')
         cluster_name = cluster.get('name')
         if not cluster_id or not cluster_name:
@@ -754,12 +754,13 @@ class RestHandler(RestClient):
                 'interval': consts.PERFORMANCE_METRICS_INTERVAL}
         packaging_data = self.package_data(data, end_time, start_time)
         self.set_metrics_data(cluster_id, cluster_name, packaging_data,
-                              resource_metrics, resource_type, storage_id,
+                              resource_metrics,
+                              constants.ResourceType.STORAGE, storage_id,
                               storage_metrics)
         return storage_metrics
 
     def get_pool_metrics(self, storage_id, resource_metrics, start_time,
-                         end_time, resource_type):
+                         end_time):
         pool_metrics = []
         appliances = self.rest_call(self.REST_APPLIANCE_URL)
         for appliance in appliances:
@@ -772,12 +773,14 @@ class RestHandler(RestClient):
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
             self.set_metrics_data(pool_id, pool_name, packaging_data,
-                                  resource_metrics, resource_type, storage_id,
+                                  resource_metrics,
+                                  constants.ResourceType.STORAGE_POOL,
+                                  storage_id,
                                   pool_metrics)
         return pool_metrics
 
     def get_volume_metrics(self, storage_id, resource_metrics, start_time,
-                           end_time, resource_type):
+                           end_time):
         volume_metrics = []
         volumes = self.rest_call(self.REST_VOLUME_URL)
         for volume in volumes:
@@ -790,12 +793,13 @@ class RestHandler(RestClient):
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
             self.set_metrics_data(volume_id, volume_name, packaging_data,
-                                  resource_metrics, resource_type, storage_id,
+                                  resource_metrics,
+                                  constants.ResourceType.VOLUME, storage_id,
                                   volume_metrics)
         return volume_metrics
 
     def get_controllers_metrics(self, storage_id, resource_metrics, start_time,
-                                end_time, resource_type):
+                                end_time):
         controllers_metrics = []
         controller_d = self.get_node_hardware()
         controllers = self.rest_call(self.REST_NODE_URL)
@@ -813,7 +817,9 @@ class RestHandler(RestClient):
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
             self.set_metrics_data(hardware_id, hardware_name, packaging_data,
-                                  resource_metrics, resource_type, storage_id,
+                                  resource_metrics,
+                                  constants.ResourceType.CONTROLLER,
+                                  storage_id,
                                   controllers_metrics)
         return controllers_metrics
 
@@ -826,7 +832,7 @@ class RestHandler(RestClient):
         full_name = hardware.get('name')
         if full_name:
             hardware_name = full_name.split('-')[
-                consts.DIGITAL_CONSTANT.MINUS_ONE_INT]
+                consts.DigitalConstant.MINUS_ONE_INT]
         else:
             hardware_name = hardware_id
         return hardware_id, hardware_name
@@ -846,7 +852,7 @@ class RestHandler(RestClient):
         return hardware_d
 
     def get_fc_port_metrics(self, storage_id, resource_metrics, start_time,
-                            end_time, resource_type):
+                            end_time):
         fc_port_metrics = []
         fc_ports = self.rest_call(self.REST_FC_PORT_URL)
         for fc_port in fc_ports:
@@ -859,7 +865,8 @@ class RestHandler(RestClient):
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
             self.set_metrics_data(fc_port_id, fc_port_name, packaging_data,
-                                  resource_metrics, resource_type, storage_id,
+                                  resource_metrics,
+                                  constants.ResourceType.PORT, storage_id,
                                   fc_port_metrics)
         return fc_port_metrics
 
@@ -897,20 +904,20 @@ class RestHandler(RestClient):
                 datetime.datetime.strptime(timestamp, consts.PERF_TIME_FORMAT)
                 .timestamp() + time_difference)
             repeat_count = perf.get('repeat_count')
-            if repeat_count > consts.DIGITAL_CONSTANT.ONE_INT:
+            if repeat_count > consts.DigitalConstant.ONE_INT:
                 repeat_timestamp_s =\
-                    (repeat_count - consts.DIGITAL_CONSTANT.ONE_INT)\
+                    (repeat_count - consts.DigitalConstant.ONE_INT)\
                     * consts.PERF_INTERVAL
                 count_timestamp_s = timestamp_s + repeat_timestamp_s
                 count_timestamp_ms = count_timestamp_s * units.k
                 if start_time > count_timestamp_ms:
                     continue
-            for count in range(consts.DIGITAL_CONSTANT.ZERO_INT, repeat_count):
+            for count in range(consts.DigitalConstant.ZERO_INT, repeat_count):
                 count_timestamp_s = timestamp_s + count * consts.PERF_INTERVAL
                 count_timestamp_ms = count_timestamp_s * units.k
                 about_timestamp = \
-                    int(count_timestamp_s / consts.DIGITAL_CONSTANT.SIXTY) \
-                    * consts.DIGITAL_CONSTANT.SIXTY * units.k
+                    int(count_timestamp_s / consts.DigitalConstant.SIXTY) \
+                    * consts.DigitalConstant.SIXTY * units.k
                 if count_timestamp_ms < start_time or \
                         count_timestamp_ms >= end_time \
                         or about_timestamp in duplicate:
@@ -941,7 +948,7 @@ class RestHandler(RestClient):
     def get_system_time(self):
         clusters = self.rest_call(self.REST_CLUSTER_URL)
         if clusters:
-            cluster = clusters[consts.DIGITAL_CONSTANT.ZERO_INT]
+            cluster = clusters[consts.DigitalConstant.ZERO_INT]
             system_time = cluster.get('system_time')
             time_difference = self.get_time_difference()
             timestamp_s = datetime.datetime.strptime(
