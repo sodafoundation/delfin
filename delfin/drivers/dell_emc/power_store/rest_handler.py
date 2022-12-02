@@ -175,13 +175,10 @@ class RestHandler(RestClient):
             total_capacity += pool.get('total_capacity')
             used_capacity += pool.get('used_capacity')
         disks = self.get_disks(storage_id)
-        raw_capacity = consts.DigitalConstant.ZERO_INT
-        for disk in disks:
-            raw_capacity += disk.get('capacity')
         storage_result = {
             'model': model,
             'total_capacity': total_capacity,
-            'raw_capacity': raw_capacity,
+            'raw_capacity': sum(disk.get('capacity') for disk in disks),
             'used_capacity': used_capacity,
             'free_capacity': total_capacity - used_capacity,
             'vendor': 'DELL EMC',
@@ -194,7 +191,6 @@ class RestHandler(RestClient):
         return storage_result
 
     def get_firmware_version(self, appliance_id):
-        firmware_version = ''
         software_s = self.rest_call(RestHandler.REST_SOFTWARE_INSTALLED_URL)
         for software in software_s:
             appliance_d = software.get('appliance')
@@ -202,9 +198,7 @@ class RestHandler(RestClient):
                 continue
             software_appliance_id = appliance_d.get('id')
             if appliance_id == software_appliance_id:
-                firmware_version = software.get('release_version')
-                break
-        return firmware_version
+                return software.get('release_version')
 
     def get_storage_pools(self, storage_id):
         list_pool = []
@@ -288,7 +282,7 @@ class RestHandler(RestClient):
                     lifecycle_state == consts.CHARACTER_EMPTY:
                 continue
             extra_details = hardware.get('extra_details')
-            capacity = ''
+            capacity = None
             firmware = ''
             physical_type = constants.DiskPhysicalType.UNKNOWN
             if extra_details:
@@ -299,8 +293,12 @@ class RestHandler(RestClient):
                 physical_type = consts.DISK_PHYSICAL_TYPE.get(
                     drive_type, constants.DiskPhysicalType.UNKNOWN)
                 capacity = extra_details.get('size')
+            hardware_name = hardware.get('name')
+            if not capacity:
+                LOG.warning("disk capacity is null: %s", hardware_name)
+                continue
             disk_result = {
-                'name': hardware.get('name'),
+                'name': hardware_name,
                 'storage_id': storage_id,
                 'native_disk_id': hardware.get('id'),
                 'serial_number': hardware.get('serial_number'),
@@ -328,10 +326,11 @@ class RestHandler(RestClient):
                 continue
             slot = hardware.get('slot')
             appliance_id = hardware.get('appliance_id')
-            node_id = nodes.get('{}{}'.format(appliance_id, slot), {})
-            address = ips.get('{}{}'.format(appliance_id, node_id))
+            node_id = nodes.get(f'{appliance_id}{slot}')
+            address = ips.get(f'{appliance_id}{node_id}')
             if not address:
-                LOG.error('mgmt_ip is empty, Exceptions may occur in snmptrap')
+                LOG.warning('mgmt_ip is empty,'
+                            ' Exceptions may occur in snmptrap')
             extra_details = hardware.get('extra_details')
             memory_size = ''
             cpu_info = ''
@@ -344,10 +343,11 @@ class RestHandler(RestClient):
             if full_name:
                 name = full_name.split('-')[
                     consts.DigitalConstant.MINUS_ONE_INT]
+            controller_id = hardware.get('id')
             controller_result = {
-                'name': name,
+                'name': name if name else controller_id,
                 'storage_id': storage_id,
-                'native_controller_id': hardware.get('id'),
+                'native_controller_id': controller_id,
                 'status': consts.CONTROLLER_STATUS_MAP.get(
                     lifecycle_state, constants.ControllerStatus.UNKNOWN),
                 'location': slot,
@@ -360,17 +360,17 @@ class RestHandler(RestClient):
         return list_controllers
 
     def get_node(self):
-        node_d = {}
+        node_dict = {}
         nodes = self.rest_call(self.REST_NODE_URL)
         for node in nodes:
             appliance_id = node.get('appliance_id')
             slot = node.get('slot')
             node_id = node.get('id')
-            node_d['{}{}'.format(appliance_id, slot)] = node_id
-        return node_d
+            node_dict[f'{appliance_id}{slot}'] = node_id
+        return node_dict
 
     def get_ip(self):
-        ip_d = {}
+        ip_dict = {}
         ip_pool_address = self.rest_call(self.REST_IP_POOL_ADDRESS_URL)
         for ip_address in ip_pool_address:
             purposes_list = ip_address.get('purposes')
@@ -379,17 +379,17 @@ class RestHandler(RestClient):
             address = ip_address.get('address')
             appliance_id = ip_address.get('appliance_id')
             node_id = ip_address.get('node_id')
-            ip_d['{}{}'.format(appliance_id, node_id)] = address
-        return ip_d
+            ip_dict[f'{appliance_id}{node_id}'] = address
+        return ip_dict
 
     def get_port_hardware(self):
-        hardware_d = {}
+        hardware_dict = {}
         hardware_list = self.rest_call(self.REST_HARDWARE_URL)
         for hardware in hardware_list:
-            hardware_d[hardware.get('id')] = hardware
-        return hardware_d
+            hardware_dict[hardware.get('id')] = hardware
+        return hardware_dict
 
-    def get_fc_ports(self, storage_id, hardware_d):
+    def get_fc_ports(self, storage_id, hardware_dict):
         list_fc_ports = []
         fc_res = self.rest_call(self.REST_FC_PORT_URL)
         for fc in fc_res:
@@ -398,7 +398,7 @@ class RestHandler(RestClient):
             is_link_up = fc.get('is_link_up')
             connection_status = consts.PORT_CONNECTION_STATUS_MAP.get(
                 is_link_up, constants.PortConnectionStatus.UNKNOWN)
-            lifecycle_state = hardware_d.get(
+            lifecycle_state = hardware_dict.get(
                 fc.get('sfp_id'), {}).get('lifecycle_state')
             health_status = consts.PORT_HEALTH_STATUS_MAP.get(
                 lifecycle_state, constants.PortHealthStatus.UNKNOWN)
@@ -406,7 +406,7 @@ class RestHandler(RestClient):
                 'name': name,
                 'storage_id': storage_id,
                 'native_port_id': fc.get('id'),
-                'location': '{}:{}'.format(appliance_id, name),
+                'location': f'{appliance_id}:{name}',
                 'connection_status': connection_status,
                 'health_status': health_status,
                 'type': constants.PortType.FC,
@@ -420,25 +420,22 @@ class RestHandler(RestClient):
 
     @staticmethod
     def convert_speed(supported_speeds):
-        max_speed = None
-        if supported_speeds:
-            if isinstance(supported_speeds, list):
-                supported_speed = supported_speeds[
-                    consts.DigitalConstant.MINUS_ONE_INT]
-            else:
-                supported_speed = supported_speeds
-            if '_Gbps' in supported_speed:
-                supported_speed = supported_speed.replace('_Gbps', '')
-                max_speed = int(supported_speed) * units.G
-            elif '_Mbps' in supported_speed:
-                supported_speed = supported_speed.replace('_Mbps', '')
-                max_speed = int(supported_speed) * units.M
-            elif '_Kbps' in supported_speed:
-                supported_speed = supported_speed.replace('_Kbps', '')
-                max_speed = int(supported_speed) * units.k
-        return max_speed
+        if not supported_speeds:
+            return
+        supported_speed = \
+            supported_speeds[consts.DigitalConstant.MINUS_ONE_INT]\
+            if isinstance(supported_speeds, list) else supported_speeds
+        if '_Gbps' in supported_speed:
+            supported_speed = supported_speed.replace('_Gbps', '')
+            return int(supported_speed) * units.G
+        if '_Mbps' in supported_speed:
+            supported_speed = supported_speed.replace('_Mbps', '')
+            return int(supported_speed) * units.M
+        if '_Kbps' in supported_speed:
+            supported_speed = supported_speed.replace('_Kbps', '')
+            return int(supported_speed) * units.k
 
-    def get_eth_ports(self, storage_id, hardware_d):
+    def get_eth_ports(self, storage_id, hardware_dict):
         list_eth_ports = []
         eth_ports = self.rest_call(self.REST_ETH_PORT_URL)
         for eth in eth_ports:
@@ -447,7 +444,7 @@ class RestHandler(RestClient):
             is_link_up = eth.get('is_link_up')
             connection_status = consts.PORT_CONNECTION_STATUS_MAP.get(
                 is_link_up, constants.PortConnectionStatus.UNKNOWN)
-            lifecycle_state = hardware_d.get(
+            lifecycle_state = hardware_dict.get(
                 eth.get('sfp_id'), {}).get('lifecycle_state')
             health_status = consts.PORT_HEALTH_STATUS_MAP.get(
                 lifecycle_state, constants.PortHealthStatus.UNKNOWN)
@@ -455,7 +452,7 @@ class RestHandler(RestClient):
                 'name': name,
                 'storage_id': storage_id,
                 'native_port_id': eth.get('id'),
-                'location': '{}:{}'.format(appliance_id, name),
+                'location': f'{appliance_id}:{name}',
                 'connection_status': connection_status,
                 'health_status': health_status,
                 'type': constants.PortType.ETH,
@@ -467,7 +464,7 @@ class RestHandler(RestClient):
             list_eth_ports.append(eth_port_result)
         return list_eth_ports
 
-    def get_sas_ports(self, storage_id, hardware_d):
+    def get_sas_ports(self, storage_id, hardware_dict):
         list_sas_ports = []
         sas_ports = self.rest_call(self.REST_SAS_PORT_URL)
         for sas in sas_ports:
@@ -476,7 +473,7 @@ class RestHandler(RestClient):
             is_link_up = sas.get('is_link_up')
             connection_status = consts.PORT_CONNECTION_STATUS_MAP.get(
                 is_link_up, constants.PortConnectionStatus.UNKNOWN)
-            lifecycle_state = hardware_d.get(
+            lifecycle_state = hardware_dict.get(
                 sas.get('sfp_id'), {}).get('lifecycle_state')
             health_status = consts.PORT_HEALTH_STATUS_MAP.get(
                 lifecycle_state, constants.PortHealthStatus.UNKNOWN)
@@ -484,7 +481,7 @@ class RestHandler(RestClient):
                 'name': name,
                 'storage_id': storage_id,
                 'native_port_id': sas.get('id'),
-                'location': '{}:{}'.format(appliance_id, name),
+                'location': f'{appliance_id}:{name}',
                 'connection_status': connection_status,
                 'health_status': health_status,
                 'type': constants.PortType.SAS,
@@ -539,12 +536,11 @@ class RestHandler(RestClient):
                     consts.PARSE_ALERT_RESOURCE_TYPE)
                 resource_name = snmp_alert.get(
                     consts.PARSE_ALERT_RESOURCE_NAME)
-                location = '{}:{}'.format(resource_type, resource_name)
+                location = f'{resource_type}:{resource_name}'
                 event_code = snmp_alert.get(consts.PARSE_ALERT_CODE)
                 resource_id = snmp_alert.get(consts.PARSE_ALERT_RESOURCE_ID)
-                match_key_str = '{}{}{}{}{}{}'.format(
-                    description, timestamp, resource_type, resource_name,
-                    event_code, resource_id)
+                match_key_str = f'{description}{timestamp}{resource_type}' \
+                                f'{resource_name}{event_code}{resource_id}'
                 match_key = hashlib.md5(match_key_str.encode()).hexdigest()
                 alerts_model = {
                     'alert_id': match_key,
@@ -584,16 +580,15 @@ class RestHandler(RestClient):
         resource_name = alert.get('resource_name')
         resource_id = alert.get('resource_id')
         event_code = alert.get('event_code')
-        match_key_str = '{}{}{}{}{}{}'.format(
-            description, timestamp, resource_type, resource_name,
-            event_code, resource_id)
+        match_key_str = f'{description}{timestamp}{resource_type}' \
+                        f'{resource_name}{event_code}{resource_id}'
         alerts_model = {
             'alert_id': alert.get('id'),
             'occur_time': timestamp,
             'severity': consts.ALERT_SEVERITY_MAP.get(
                 alert.get('severity'), constants.Severity.NOT_SPECIFIED),
             'category': constants.Category.FAULT,
-            'location': '{}:{}'.format(resource_type, resource_name),
+            'location': f'{resource_type}:{resource_name}',
             'type': constants.EventType.EQUIPMENT_ALARM,
             'resource_type': resource_type,
             'alert_name': description,
@@ -611,7 +606,7 @@ class RestHandler(RestClient):
             initiators = host.get('host_initiators')
             for initiator in (initiators or []):
                 port_name = initiator.get('port_name')
-                initiator_d = {
+                initiator_dict = {
                     'native_storage_host_initiator_id': port_name,
                     'native_storage_host_id': host.get('id'),
                     'name': port_name,
@@ -622,7 +617,7 @@ class RestHandler(RestClient):
                     'wwn': port_name,
                     'storage_id': storage_id
                 }
-                list_initiators.append(initiator_d)
+                list_initiators.append(initiator_dict)
         return list_initiators
 
     def get_initiators(self, storage_id):
@@ -631,7 +626,7 @@ class RestHandler(RestClient):
             initiators = self.rest_call(self.REST_INITIATOR_URL)
             for initiator in initiators:
                 port_name = initiator.get('port_name')
-                initiator_d = {
+                initiator_dict = {
                     'native_storage_host_initiator_id': initiator.get('id'),
                     'native_storage_host_id': initiator.get('host_id'),
                     'name': port_name,
@@ -642,7 +637,7 @@ class RestHandler(RestClient):
                     'wwn': port_name,
                     'storage_id': storage_id
                 }
-                list_initiators.append(initiator_d)
+                list_initiators.append(initiator_dict)
         except Exception as e:
             LOG.error("get initiators error: %s", six.text_type(e))
         return list_initiators
@@ -801,14 +796,14 @@ class RestHandler(RestClient):
     def get_controllers_metrics(self, storage_id, resource_metrics, start_time,
                                 end_time):
         controllers_metrics = []
-        controller_d = self.get_node_hardware()
+        controller_dict = self.get_node_hardware()
         controllers = self.rest_call(self.REST_NODE_URL)
         for controller in controllers:
             controller_id = controller.get('id')
             if not controller_id:
                 continue
             hardware_id, hardware_name = self.get_resource(controller,
-                                                           controller_d)
+                                                           controller_dict)
             if not hardware_id:
                 LOG.info('controllers performance: Unexpected data')
                 continue
@@ -824,10 +819,10 @@ class RestHandler(RestClient):
         return controllers_metrics
 
     @staticmethod
-    def get_resource(controller, controller_d):
+    def get_resource(controller, controller_dict):
         appliance_id = controller.get('appliance_id')
         slot = controller.get('slot')
-        hardware = controller_d.get('{}{}'.format(appliance_id, slot), {})
+        hardware = controller_dict.get(f'{appliance_id}{slot}', {})
         hardware_id = hardware.get('id')
         full_name = hardware.get('name')
         if full_name:
@@ -838,7 +833,7 @@ class RestHandler(RestClient):
         return hardware_id, hardware_name
 
     def get_node_hardware(self):
-        hardware_d = {}
+        hardware_dict = {}
         hardware_list = self.rest_call(self.REST_HARDWARE_URL)
         for hardware in hardware_list:
             lifecycle_state = hardware.get('lifecycle_state')
@@ -847,9 +842,9 @@ class RestHandler(RestClient):
                 continue
             slot = hardware.get('slot')
             appliance_id = hardware.get('appliance_id')
-            key = '{}{}'.format(appliance_id, slot)
-            hardware_d[key] = hardware
-        return hardware_d
+            key = f'{appliance_id}{slot}'
+            hardware_dict[key] = hardware
+        return hardware_dict
 
     def get_fc_port_metrics(self, storage_id, resource_metrics, start_time,
                             end_time):
