@@ -144,8 +144,8 @@ class RestHandler(RestClient):
             result.extend(res.json())
         elif res.status_code == consts.StatusCode.PARTIAL_CONTENT:
             result.extend(res.json())
-            if len(res.json()) == consts.DigitalConstant.TWO_THOUSAND_INT:
-                offset = offset + consts.DigitalConstant.TWO_THOUSAND_INT
+            if len(res.json()) == 2000:
+                offset = offset + 2000
                 self.rest_call(url, data, method, offset, result, count)
         elif res.status_code == consts.StatusCode.UNAUTHORIZED or \
                 res.status_code == consts.StatusCode.FORBIDDEN:
@@ -339,15 +339,16 @@ class RestHandler(RestClient):
                     'physical_memory_size_gb', 0) * units.Gi
                 cpu_info = extra_details.get('cpu_model')
             full_name = hardware.get('name')
-            name = ''
             if full_name:
                 name = full_name.split('-')[
                     consts.DigitalConstant.MINUS_ONE_INT]
-            controller_id = hardware.get('id')
+            else:
+                LOG.warning('The name of hardware is empty')
+                continue
             controller_result = {
-                'name': name if name else controller_id,
+                'name': name,
                 'storage_id': storage_id,
-                'native_controller_id': controller_id,
+                'native_controller_id': hardware.get('id'),
                 'status': consts.CONTROLLER_STATUS_MAP.get(
                     lifecycle_state, constants.ControllerStatus.UNKNOWN),
                 'location': slot,
@@ -748,15 +749,14 @@ class RestHandler(RestClient):
                 'entity_id': cluster_id,
                 'interval': consts.PERFORMANCE_METRICS_INTERVAL}
         packaging_data = self.package_data(data, end_time, start_time)
-        self.set_metrics_data(cluster_id, cluster_name, packaging_data,
-                              resource_metrics,
-                              constants.ResourceType.STORAGE, storage_id,
-                              storage_metrics)
+        storage_metrics = self.set_metrics_data(
+            cluster_id, cluster_name, packaging_data, resource_metrics,
+            constants.ResourceType.STORAGE, storage_id)
         return storage_metrics
 
     def get_pool_metrics(self, storage_id, resource_metrics, start_time,
                          end_time):
-        pool_metrics = []
+        pool_metrics_list = []
         appliances = self.rest_call(self.REST_APPLIANCE_URL)
         for appliance in appliances:
             pool_id = appliance.get('id')
@@ -767,16 +767,15 @@ class RestHandler(RestClient):
                     'entity_id': pool_id,
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
-            self.set_metrics_data(pool_id, pool_name, packaging_data,
-                                  resource_metrics,
-                                  constants.ResourceType.STORAGE_POOL,
-                                  storage_id,
-                                  pool_metrics)
-        return pool_metrics
+            pool_metrics = self.set_metrics_data(
+                pool_id, pool_name, packaging_data, resource_metrics,
+                constants.ResourceType.STORAGE_POOL, storage_id)
+            pool_metrics_list.extend(pool_metrics)
+        return pool_metrics_list
 
     def get_volume_metrics(self, storage_id, resource_metrics, start_time,
                            end_time):
-        volume_metrics = []
+        volume_metrics_list = []
         volumes = self.rest_call(self.REST_VOLUME_URL)
         for volume in volumes:
             volume_id = volume.get('id')
@@ -787,15 +786,15 @@ class RestHandler(RestClient):
                     'entity_id': volume_id,
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
-            self.set_metrics_data(volume_id, volume_name, packaging_data,
-                                  resource_metrics,
-                                  constants.ResourceType.VOLUME, storage_id,
-                                  volume_metrics)
-        return volume_metrics
+            volume_metrics = self.set_metrics_data(
+                volume_id, volume_name, packaging_data, resource_metrics,
+                constants.ResourceType.VOLUME, storage_id)
+            volume_metrics_list.extend(volume_metrics)
+        return volume_metrics_list
 
     def get_controllers_metrics(self, storage_id, resource_metrics, start_time,
                                 end_time):
-        controllers_metrics = []
+        controllers_metrics_list = []
         controller_dict = self.get_node_hardware()
         controllers = self.rest_call(self.REST_NODE_URL)
         for controller in controllers:
@@ -811,12 +810,11 @@ class RestHandler(RestClient):
                     'entity_id': controller_id,
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
-            self.set_metrics_data(hardware_id, hardware_name, packaging_data,
-                                  resource_metrics,
-                                  constants.ResourceType.CONTROLLER,
-                                  storage_id,
-                                  controllers_metrics)
-        return controllers_metrics
+            controllers_metrics = self.set_metrics_data(
+                hardware_id, hardware_name, packaging_data, resource_metrics,
+                constants.ResourceType.CONTROLLER, storage_id)
+            controllers_metrics_list.extend(controllers_metrics)
+        return controllers_metrics_list
 
     @staticmethod
     def get_resource(controller, controller_dict):
@@ -848,7 +846,7 @@ class RestHandler(RestClient):
 
     def get_fc_port_metrics(self, storage_id, resource_metrics, start_time,
                             end_time):
-        fc_port_metrics = []
+        fc_port_metrics_list = []
         fc_ports = self.rest_call(self.REST_FC_PORT_URL)
         for fc_port in fc_ports:
             fc_port_id = fc_port.get('id')
@@ -859,16 +857,16 @@ class RestHandler(RestClient):
                     'entity_id': fc_port_id,
                     'interval': consts.PERFORMANCE_METRICS_INTERVAL}
             packaging_data = self.package_data(data, end_time, start_time)
-            self.set_metrics_data(fc_port_id, fc_port_name, packaging_data,
-                                  resource_metrics,
-                                  constants.ResourceType.PORT, storage_id,
-                                  fc_port_metrics)
-        return fc_port_metrics
+            fc_port_metrics = self.set_metrics_data(
+                fc_port_id, fc_port_name, packaging_data, resource_metrics,
+                constants.ResourceType.PORT, storage_id)
+            fc_port_metrics_list.extend(fc_port_metrics)
+        return fc_port_metrics_list
 
     @staticmethod
     def set_metrics_data(resource_id, resource_name, packaging_data,
-                         resource_metrics, resource_type, storage_id,
-                         storage_metrics):
+                         resource_metrics, resource_type, storage_id):
+        metrics_list = []
         for resource_key in resource_metrics.keys():
             labels = {
                 'storage_id': storage_id,
@@ -886,7 +884,8 @@ class RestHandler(RestClient):
             if resource_value:
                 metrics_res = constants.metric_struct(
                     name=resource_key, labels=labels, values=resource_value)
-                storage_metrics.append(metrics_res)
+                metrics_list.append(metrics_res)
+        return metrics_list
 
     def package_data(self, data, end_time, start_time):
         perf_data = self.rest_call(self.REST_GENERATE_URL, data, 'POST')

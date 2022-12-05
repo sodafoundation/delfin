@@ -39,8 +39,13 @@ class PowerStoreDriver(driver.StorageDriver):
     def list_alerts(self, context, query_para=None):
         return self.rest_handler.list_alerts(query_para)
 
-    '''PowerStore doesn't support clear alerts through API.'''
     def clear_alert(self, context, alert):
+        """
+        PowerStore doesn't support clear alerts through API.
+        :param context:
+        :param alert:
+        :return:
+        """
         pass
 
     @staticmethod

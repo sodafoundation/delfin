@@ -33,7 +33,6 @@ class DigitalConstant(object):
     FIVE_INT = 5
     SIX_INT = 6
     SIXTY = 60
-    TWO_THOUSAND_INT = 2000
 
 
 STORAGE_STATUS_MAP = {
