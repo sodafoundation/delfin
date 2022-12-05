@@ -25,13 +25,13 @@ class StatusCode(object):
 
 
 class DigitalConstant(object):
-    ZERO_INT = 0
-    ONE_INT = 1
-    MINUS_ONE_INT = -1
-    TWO_INT = 2
-    THREE_INT = 3
-    FIVE_INT = 5
-    SIX_INT = 6
+    ZERO = 0
+    ONE = 1
+    MINUS_ONE = -1
+    TWO = 2
+    THREE = 3
+    FIVE = 5
+    SIX = 6
     SIXTY = 60
 
 
@@ -164,6 +164,7 @@ CHARACTER_NODE = 'Node'
 CHARACTER_SNAPSHOT = 'Snapshot'
 CHARACTER_EMPTY = 'Empty'
 MGMT_NODE_COREOS = 'Mgmt_Node_CoreOS'
+LIMIT_COUNT = 2000
 
 UTC_FORMAT = '%Y-%m-%dT%H:%M:%S.%f+00:00'
 SYSTEM_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
