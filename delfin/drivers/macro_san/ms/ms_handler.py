@@ -67,7 +67,7 @@ class MsHandler(object):
         if not storage_data_map:
             raise exception.SSHException('The command returns empty data')
         device_uuid = storage_data_map.get('DeviceUUID')
-        serial_number = '{}/{}'.format(self.ssh_host, device_uuid)
+        serial_number = '{}:{}'.format(self.ssh_host, device_uuid)
         storage_name = storage_data_map.get('DeviceName')
         firmware_version = self.get_firmware_version()
         pools = self.list_storage_pools(storage_id)
@@ -1048,7 +1048,7 @@ class MsHandler(object):
         device_uuid = storage_data_map.get('DeviceUUID')
         storage_name = storage_data_map.get('DeviceName')
         resource_name = storage_name if storage_name else device_uuid
-        resource_id = '{}/{}'.format(self.ssh_host, device_uuid)
+        resource_id = '{}:{}'.format(self.ssh_host, device_uuid)
         return resource_id, resource_name
 
     def down_perf_file(self, folder, storage_id, pattern):
