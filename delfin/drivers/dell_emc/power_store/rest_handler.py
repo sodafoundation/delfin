@@ -762,8 +762,8 @@ class RestHandler(RestClient):
                 'interval': consts.PERFORMANCE_METRICS_INTERVAL}
         packaging_data = self.package_data(data, end_time, start_time)
         storage_metrics = self.set_metrics_data(
-            cluster_id, cluster_name, packaging_data, resource_metrics,
-            constants.ResourceType.STORAGE, storage_id)
+            cluster.get('global_id'), cluster_name, packaging_data,
+            resource_metrics, constants.ResourceType.STORAGE, storage_id)
         return storage_metrics
 
     def get_pool_metrics(self, storage_id, resource_metrics, start_time,
