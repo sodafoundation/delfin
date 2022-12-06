@@ -105,11 +105,10 @@ class RestHandler(RestClient):
                     self.init_http_head()
                 self.session.auth = requests.auth.HTTPBasicAuth(
                     self.rest_username, cryptor.decode(self.rest_password))
-                res = self.do_call(RestHandler.REST_LOGIN_SESSION_URL,
-                                   None, 'GET')
+                res = self.call_with_token(RestHandler.REST_LOGIN_SESSION_URL)
                 if res.status_code == 200 or res.status_code == 206:
                     self.session.headers[RestHandler.AUTH_KEY] = \
-                        (res.headers[RestHandler.AUTH_KEY])
+                        cryptor.encode(res.headers[RestHandler.AUTH_KEY])
                 else:
                     LOG.error("Login error.URL: %s,Reason: %s.",
                               RestHandler.REST_LOGIN_SESSION_URL, res.text)
@@ -124,8 +123,21 @@ class RestHandler(RestClient):
             LOG.error("Login error: %s", six.text_type(e))
             raise e
 
+    def call_with_token(self, url, data=None, method='GET',
+                        calltimeout=consts.DEFAULT_TIMEOUT):
+        auth_key = None
+        if self.session:
+            auth_key = self.session.headers.get(RestHandler.AUTH_KEY, None)
+            if auth_key:
+                self.session.headers[RestHandler.AUTH_KEY] \
+                    = cryptor.decode(auth_key)
+        res = self.do_call(url, data, method, calltimeout)
+        if auth_key:
+            self.session.headers[RestHandler.AUTH_KEY] = auth_key
+        return res
+
     def logout(self):
-        res = self.do_call(RestHandler.REST_LOGOUT_URL, None, 'POST')
+        res = self.call_with_token(RestHandler.REST_LOGOUT_URL, None, 'POST')
         if res.status_code != consts.StatusCode.SUCCESS_NO_CONTENT and \
                 res.status_code != consts.StatusCode.SUCCESS_CREATE_RESPONSE:
             LOG.error("logout error.URL: %s,Reason: %s.",
@@ -137,9 +149,9 @@ class RestHandler(RestClient):
         if result is None:
             result = []
         if '{}' in url:
-            res = self.do_call(url.format(offset), data, method)
+            res = self.call_with_token(url.format(offset), data, method)
         else:
-            res = self.do_call(url, data, method)
+            res = self.call_with_token(url, data, method)
         if res.status_code == consts.StatusCode.SUCCESS:
             result.extend(res.json())
         elif res.status_code == consts.StatusCode.PARTIAL_CONTENT:
@@ -351,7 +363,7 @@ class RestHandler(RestClient):
                 'native_controller_id': hardware.get('id'),
                 'status': consts.CONTROLLER_STATUS_MAP.get(
                     lifecycle_state, constants.ControllerStatus.UNKNOWN),
-                'location': slot,
+                'location': str(slot),
                 'cpu_info': cpu_info,
                 'cpu_count': consts.DigitalConstant.ONE,
                 'memory_size': memory_size,
