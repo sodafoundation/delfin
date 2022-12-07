@@ -951,7 +951,7 @@ class RestHandler(RestClient):
                         perf.get('avg_read_size') / units.Ki, 2),
                     "writeIoSize": round(
                         perf.get('avg_write_size') / units.Ki, 2),
-                    "cpuUsage": round(cpu_utilization, 3)
+                    "cpuUsage": round(cpu_utilization, 2)
                     if cpu_utilization else '',
                     'time': about_timestamp
                 }
