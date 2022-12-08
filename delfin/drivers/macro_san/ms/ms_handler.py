@@ -186,8 +186,10 @@ class MsHandler(object):
         for pool in pools:
             pool_name = pool.get('Name')
             health_status = self.get_pool_status(pool_name)
-            total_capacity = Tools.get_capacity_size(pool.get('AllCapacity'))
-            used_capacity = Tools.get_capacity_size(pool.get('UsedCapacity'))
+            total_capacity = Tools.get_capacity_size(
+                pool.get('AllCapacity').replace(',', ''))
+            used_capacity = Tools.get_capacity_size(
+                pool.get('UsedCapacity').replace(',', ''))
             pool_model = {
                 'name': pool_name,
                 'storage_id': storage_id,
@@ -254,9 +256,10 @@ class MsHandler(object):
         if consts.FIELDS_ENABLE == thin_provisioning:
             used_capacity_str = volume.get('Thin-LUNUsedCapacity')
             number_b = used_capacity_str.index('B')
-            used_capacity = \
+            used_capacity =\
                 used_capacity_str[:number_b + consts.digital_constant.ONE_INT]
-            used_capacity = Tools.get_capacity_size(used_capacity)
+            used_capacity = Tools.get_capacity_size(
+                used_capacity.replace(',', ''))
         else:
             used_capacity = total_capacity
         return used_capacity
@@ -269,7 +272,7 @@ class MsHandler(object):
             number_b = physical_size.index('B')
             total_size = \
                 physical_size[:number_b + consts.digital_constant.ONE_INT]
-        total_capacity = Tools.get_capacity_size(total_size)
+        total_capacity = Tools.get_capacity_size(total_size.replace(',', ''))
         return total_capacity
 
     def list_controllers(self, storage_id):
