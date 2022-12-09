@@ -86,8 +86,8 @@ class PowerStoreDriver(driver.StorageDriver):
 
     def collect_perf_metrics(self, context, storage_id, resource_metrics,
                              start_time, end_time):
-        LOG.info('The system(storage_id: %s) starts to collect performance,'
-                 ' start_time: %s, end_time: %s',
+        LOG.info('The system(storage_id: %s) starts to collect powerstore '
+                 'performance, start_time: %s, end_time: %s',
                  storage_id, start_time, end_time)
         metrics = []
         if resource_metrics.get(constants.ResourceType.STORAGE):

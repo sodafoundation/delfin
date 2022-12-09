@@ -935,23 +935,23 @@ class RestHandler(RestClient):
                     "readIops": round(perf.get('read_iops')),
                     "writeIops": round(perf.get('write_iops')),
                     "throughput": round(
-                        perf.get('total_bandwidth') / units.Mi, 2),
+                        perf.get('total_bandwidth') / units.Mi, 3),
                     "readThroughput": round(
-                        perf.get('read_bandwidth') / units.Mi, 2),
+                        perf.get('read_bandwidth') / units.Mi, 3),
                     "writeThroughput": round(
-                        perf.get('write_bandwidth') / units.Mi, 2),
+                        perf.get('write_bandwidth') / units.Mi, 3),
                     "responseTime": round(
-                        perf.get('avg_latency') / units.k, 2),
+                        perf.get('avg_latency') / units.k, 3),
                     "readResponseTime": round(
-                        perf.get('avg_read_latency') / units.k, 2),
+                        perf.get('avg_read_latency') / units.k, 3),
                     "writeResponseTime": round(
-                        perf.get('avg_write_latency') / units.k, 2),
-                    "ioSize": round(perf.get('avg_io_size') / units.Ki, 2),
+                        perf.get('avg_write_latency') / units.k, 3),
+                    "ioSize": round(perf.get('avg_io_size') / units.Ki, 3),
                     "readIoSize": round(
-                        perf.get('avg_read_size') / units.Ki, 2),
+                        perf.get('avg_read_size') / units.Ki, 3),
                     "writeIoSize": round(
-                        perf.get('avg_write_size') / units.Ki, 2),
-                    "cpuUsage": round(cpu_utilization, 2)
+                        perf.get('avg_write_size') / units.Ki, 3),
+                    "cpuUsage": round(cpu_utilization, 3)
                     if cpu_utilization else '',
                     'time': about_timestamp
                 }
