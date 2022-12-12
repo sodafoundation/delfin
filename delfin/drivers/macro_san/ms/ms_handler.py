@@ -1137,8 +1137,8 @@ class MsHandler(object):
         if constants.ResourceType.STORAGE == resource_type:
             resource_key = resource_type
         list_dir = os.listdir(local_path)
-        data = {}
         for dir_name in list_dir:
+            data = {}
             dir_name = dir_name.replace(' ', '')
             if consts.CSV not in dir_name:
                 continue
@@ -1184,11 +1184,11 @@ class MsHandler(object):
     def get_perf_data(row, timestamp_s):
         timestamp = int(timestamp_s / consts.SIXTY) * consts.SIXTY * units.k
         throughput = round(
-            (int(row.get('r&w/throughput(B)')) / units.Mi), 3)
+            int(row.get('r&w/throughput(B)')) / units.Mi, 3)
         r_throughput = round(
-            (int(row.get('r/throughput(B)')) / units.Mi), 3)
+            int(row.get('r/throughput(B)')) / units.Mi, 3)
         w_throughput = round(
-            (int(row.get('w/throughput(B)')) / units.Mi), 3)
+            int(row.get('w/throughput(B)')) / units.Mi, 3)
         response = round(
             int(row.get('r&w/avg_rsp_time(us)')) / units.k, 3)
         r_response = round(
@@ -1196,18 +1196,15 @@ class MsHandler(object):
         w_response = round(
             int(row.get('w/avg_rsp_time(us)')) / units.k, 3)
         cache_hit_ratio = round(
-            int(row.get('r&w/cacherate(%*100)')), 3)
+            int(row.get('r&w/cacherate(%*100)')) / 100, 3)
         r_cache_hit_ratio = round(
-            int(row.get('r/cacherate(%*100)')), 3)
+            int(row.get('r/cacherate(%*100)')) / 100, 3)
         w_cache_hit_ratio = round(
-            int(row.get('w/cacherate(%*100)')), 3)
+            int(row.get('w/cacherate(%*100)')) / 100, 3)
         row_data = {
-            constants.StorageMetric.IOPS.name: round(
-                int(row.get('r&w/iops')), 3),
-            constants.StorageMetric.READ_IOPS.name: round(
-                int(row.get('r/iops')), 3),
-            constants.StorageMetric.WRITE_IOPS.name: round(
-                int(row.get('w/iops')), 3),
+            constants.StorageMetric.IOPS.name: int(row.get('r&w/iops')),
+            constants.StorageMetric.READ_IOPS.name: int(row.get('r/iops')),
+            constants.StorageMetric.WRITE_IOPS.name: int(row.get('w/iops')),
             constants.StorageMetric.THROUGHPUT.name: throughput,
             constants.StorageMetric.READ_THROUGHPUT.name: r_throughput,
             constants.StorageMetric.WRITE_THROUGHPUT.name: w_throughput,
