@@ -15,6 +15,7 @@ import datetime
 import hashlib
 import threading
 import time
+from decimal import Decimal
 
 import requests
 import six
@@ -931,9 +932,12 @@ class RestHandler(RestClient):
                 duplicate.add(about_timestamp)
                 cpu_utilization = perf.get('io_workload_cpu_utilization')
                 metrics_d = {
-                    'iops': round(perf.get('total_iops')),
-                    "readIops": round(perf.get('read_iops')),
-                    "writeIops": round(perf.get('write_iops')),
+                    'iops': Decimal(str(perf.get('total_iops'))).quantize(
+                        Decimal('0'), rounding="ROUND_HALF_UP"),
+                    "readIops": Decimal(str(perf.get('read_iops'))).quantize(
+                        Decimal('0'), rounding="ROUND_HALF_UP"),
+                    "writeIops": Decimal(str(perf.get('write_iops'))).quantize(
+                        Decimal('0'), rounding="ROUND_HALF_UP"),
                     "throughput": round(
                         perf.get('total_bandwidth') / units.Mi, 3),
                     "readThroughput": round(
@@ -951,7 +955,8 @@ class RestHandler(RestClient):
                         perf.get('avg_read_size') / units.Ki, 3),
                     "writeIoSize": round(
                         perf.get('avg_write_size') / units.Ki, 3),
-                    "cpuUsage": round(cpu_utilization, 3)
+                    "cpuUsage": Decimal(str(cpu_utilization)).quantize(
+                        Decimal('0.000'), rounding="ROUND_HALF_UP")
                     if cpu_utilization else '',
                     'time': about_timestamp
                 }
