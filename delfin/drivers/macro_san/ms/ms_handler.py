@@ -1057,6 +1057,7 @@ class MsHandler(object):
     def down_perf_file(self, folder, storage_id, pattern):
         sftp = None
         tar = None
+        ssh = None
         local_path = ''
         try:
             ssh = self.ssh_pool.create()
@@ -1083,6 +1084,8 @@ class MsHandler(object):
                       (folder, six.text_type(e)))
         if sftp:
             sftp.close()
+        if ssh:
+            ssh.close()
         if tar:
             tar.close()
         return local_path
