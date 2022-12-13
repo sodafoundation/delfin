@@ -39,6 +39,9 @@ SUCCESS_STATUS_CODE = 200
 # Status code of no permission
 PERMISSION_DENIED_STATUS_CODE = 401
 
+# login notfound
+LOGIN_NOTFOUND = 404
+
 # Custom token of Pure
 CUSTOM_TOKEN = 'x-next-token'
 
