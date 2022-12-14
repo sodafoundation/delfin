@@ -220,17 +220,15 @@ class HitachiVspDriver(driver.StorageDriver):
             volumes = self.rest_handler.get_volumes_with_defined()
             if not volumes:
                 return volume_list
+            volume_list = self.parse_volumes(volumes)
             if len(volumes.get('data')) >= consts.MAX_VOLUME_NUMBER:
-                head_id_map = {'head_id': 0}
+                head_id = volumes.get('data')[-1].get('ldevId') + 1
                 while True:
-                    volumes_info = self.rest_handler.get_volumes(
-                        head_id_map.get('head_id'))
+                    volumes_info = self.rest_handler.get_volumes(head_id)
                     if not volumes_info or not volumes_info.get('data'):
                         break
-                    self.parse_volumes(volume_list, volumes_info, head_id_map)
-                    head_id_map['head_id'] += 1
-            if not volume_list:
-                self.parse_volumes(volume_list, volumes)
+                    volume_list.extend(self.parse_volumes(volumes_info))
+                    head_id = volumes_info.get('data')[-1].get('ldevId') + 1
         except exception.DelfinException as err:
             err_msg = "Failed to get volume from hitachi vsp: %s" % \
                       (six.text_type(err))
@@ -243,12 +241,11 @@ class HitachiVspDriver(driver.StorageDriver):
             raise exception.InvalidResults(err_msg)
         return volume_list
 
-    def parse_volumes(self, volume_list, volumes, head_id_map=None):
+    def parse_volumes(self, volumes):
         try:
+            volume_list = []
             volumes = volumes.get('data')
             for volume in volumes:
-                if head_id_map:
-                    head_id_map['head_id'] = volume.get('ldevId')
                 orig_pool_id = volume.get('poolId')
                 compressed = False
                 deduplicated = False
@@ -298,6 +295,7 @@ class HitachiVspDriver(driver.StorageDriver):
                 }
 
                 volume_list.append(v)
+            return volume_list
         except exception.DelfinException as err:
             err_msg = "Failed to get volumes metrics from hitachi vsp: %s" % \
                       (six.text_type(err))
