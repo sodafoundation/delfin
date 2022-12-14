@@ -215,25 +215,40 @@ class HitachiVspDriver(driver.StorageDriver):
         return result
 
     def list_volumes(self, context):
-        head_id = 0
-        is_end = False
-        volume_list = []
-        while is_end is False:
-            is_end = self.get_volumes_paginated(volume_list, head_id)
-            head_id += consts.LDEV_NUMBER_OF_PER_REQUEST
+        try:
+            volume_list = []
+            volumes = self.rest_handler.get_volumes_with_defined()
+            if not volumes:
+                return volume_list
+            if len(volumes.get('data')) >= consts.MAX_VOLUME_NUMBER:
+                head_id_map = {'head_id': 0}
+                while True:
+                    volumes_info = self.rest_handler.get_volumes(
+                        head_id_map.get('head_id'))
+                    if not volumes_info or not volumes_info.get('data'):
+                        break
+                    self.parse_volumes(volume_list, volumes_info, head_id_map)
+                    head_id_map['head_id'] += 1
+            if not volume_list:
+                self.parse_volumes(volume_list, volumes)
+        except exception.DelfinException as err:
+            err_msg = "Failed to get volume from hitachi vsp: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+        except Exception as e:
+            err_msg = "Failed to get volume from hitachi vsp: %s" % \
+                      (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
         return volume_list
 
-    def get_volumes_paginated(self, volume_list, head_id):
+    def parse_volumes(self, volume_list, volumes, head_id_map=None):
         try:
-            if head_id > 10000:
-                return True
-            volumes_info = self.rest_handler.get_volumes(head_id)
-            if not volumes_info or not volumes_info.get('data'):
-                return True
-            volumes = volumes_info.get('data')
+            volumes = volumes.get('data')
             for volume in volumes:
-                if volume.get('emulationType') == 'NOT DEFINED':
-                    continue
+                if head_id_map:
+                    head_id_map['head_id'] = volume.get('ldevId')
                 orig_pool_id = volume.get('poolId')
                 compressed = False
                 deduplicated = False

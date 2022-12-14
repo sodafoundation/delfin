@@ -221,7 +221,7 @@ class RestHandler(RestClient):
 
     def get_volumes(self, head_id,
                     max_number=consts.LDEV_NUMBER_OF_PER_REQUEST):
-        url = '%s/%s/ldevs?headLdevId=%s&count=%s' % \
+        url = '%s/%s/ldevs?headLdevId=%s&count=%s&ldevOption=defined' % \
               (RestHandler.COMM_URL, self.storage_device_id, head_id,
                max_number)
         result_json = self.get_rest_info(url)
@@ -294,5 +294,12 @@ class RestHandler(RestClient):
               'isBasicLunInformation=true' % \
               (RestHandler.COMM_URL, self.storage_device_id, port_id,
                group_number)
+        result_json = self.get_rest_info(url)
+        return result_json
+
+    def get_volumes_with_defined(self):
+        url = '%s/%s/ldevs?ldevOption=defined&count=%s' % \
+              (RestHandler.COMM_URL, self.storage_device_id,
+               consts.MAX_VOLUME_NUMBER)
         result_json = self.get_rest_info(url)
         return result_json
