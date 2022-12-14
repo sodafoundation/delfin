@@ -298,7 +298,6 @@ class HitachiVspDriver(driver.StorageDriver):
                 }
 
                 volume_list.append(v)
-            return False
         except exception.DelfinException as err:
             err_msg = "Failed to get volumes metrics from hitachi vsp: %s" % \
                       (six.text_type(err))
