@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import threading
+import time
 
 import requests
 import six
@@ -301,5 +302,7 @@ class RestHandler(RestClient):
         url = '%s/%s/ldevs?ldevOption=defined&count=%s' % \
               (RestHandler.COMM_URL, self.storage_device_id,
                consts.MAX_VOLUME_NUMBER)
-        result_json = self.get_rest_info(url)
+        LOG.info('get volume start time:%s' % time.time())
+        result_json = self.get_rest_info(url, timeout=None)
+        LOG.info('get volume end time:%s' % time.time())
         return result_json
