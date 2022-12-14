@@ -67,8 +67,12 @@ class MsHandler(object):
         if not storage_data_map:
             raise exception.SSHException('The command returns empty data')
         device_uuid = storage_data_map.get('DeviceUUID')
-        serial_number = '{}:{}'.format(self.ssh_host, device_uuid)
+        storage_serial_number = storage_data_map.get('DeviceSerialNumber')
+        serial_number = f'{self.ssh_host}:{storage_serial_number}'\
+            if storage_serial_number else f'{self.ssh_host}:{device_uuid}'
         storage_name = storage_data_map.get('DeviceName')
+        storage_model = storage_data_map.get('DeviceModel')
+        storage_vendor = storage_data_map.get('DeviceVender')
         firmware_version = self.get_firmware_version()
         pools = self.list_storage_pools(storage_id)
         total_capacity = digital_constant.ZERO_INT
@@ -81,10 +85,12 @@ class MsHandler(object):
         for disk in disks:
             raw_capacity += disk.get('capacity')
         storage_status = self.get_storage_status(storage_id)
-        model = self.get_storage_model(storage_id)
+        model = storage_model if storage_model else\
+            self.get_storage_model(storage_id)
         storage = {
             'name': storage_name if storage_name else device_uuid,
-            'vendor': consts.STORAGE_VENDOR,
+            'vendor': storage_vendor if storage_vendor else
+            consts.STORAGE_VENDOR,
             'status': storage_status,
             'model': model,
             'serial_number': serial_number,
@@ -186,8 +192,13 @@ class MsHandler(object):
         for pool in pools:
             pool_name = pool.get('Name')
             health_status = self.get_pool_status(pool_name)
-            total_capacity = Tools.get_capacity_size(
-                pool.get('AllCapacity').replace(',', ''))
+            all_capacity_str = pool.get('AllCapacity').replace(',', '')\
+                if pool.get('AllCapacity') else ''
+            total_capacity_str = pool.get('TotalCapacity').replace(',', '')\
+                if pool.get('TotalCapacity') else ''
+            total_capacity = Tools.get_capacity_size(all_capacity_str)\
+                if all_capacity_str else\
+                Tools.get_capacity_size(total_capacity_str)
             used_capacity = Tools.get_capacity_size(
                 pool.get('UsedCapacity').replace(',', ''))
             pool_model = {
@@ -1051,7 +1062,9 @@ class MsHandler(object):
         device_uuid = storage_data_map.get('DeviceUUID')
         storage_name = storage_data_map.get('DeviceName')
         resource_name = storage_name if storage_name else device_uuid
-        resource_id = '{}:{}'.format(self.ssh_host, device_uuid)
+        storage_serial_number = storage_data_map.get('DeviceSerialNumber')
+        resource_id = f'{self.ssh_host}:{storage_serial_number}' \
+            if storage_serial_number else f'{self.ssh_host}:{device_uuid}'
         return resource_id, resource_name
 
     def down_perf_file(self, folder, storage_id, pattern):
