@@ -328,7 +328,7 @@ disk_data = [{'name': 'Drive_0_0_4', 'storage_id': '12345',
               'native_disk_id': '3dd4393290cc4665bb0649cb06fbc8ea',
               'serial_number': 'PHLP040101AK2P0A', 'manufacturer': 'DELL EMC',
               'firmware': 'VPV1ET0K', 'capacity': 1920383410176,
-              'status': 'normal', 'physical_type': 'ssd',
+              'status': 'normal', 'physical_type': 'nvme-ssd',
               'logical_type': 'unknown', 'location': '4'}]
 software_installed = [
     {
