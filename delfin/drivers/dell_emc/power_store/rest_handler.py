@@ -509,6 +509,8 @@ class RestHandler(RestClient):
         alerts = self.rest_call(self.REST_ALERT_URL)
         alerts_list = []
         for alert in alerts:
+            if 'CLEARED' == alert.get('state'):
+                continue
             raised_timestamp = alert.get('raised_timestamp')
             time_difference = self.get_time_difference()
             timestamp_s = datetime.datetime.strptime(
@@ -523,8 +525,7 @@ class RestHandler(RestClient):
                         continue
                 except Exception as e:
                     LOG.error(e)
-            description = alert.get('description_l10n')
-            alerts_model = self.set_alert_model(alert, description, timestamp)
+            alerts_model = self.set_alert_model(alert, timestamp)
             alerts_list.append(alerts_model)
         return alerts_list
 
@@ -589,7 +590,8 @@ class RestHandler(RestClient):
         return sources_list
 
     @staticmethod
-    def set_alert_model(alert, description, timestamp):
+    def set_alert_model(alert, timestamp):
+        description = alert.get('description_l10n')
         resource_type = alert.get('resource_type')
         resource_name = alert.get('resource_name')
         resource_id = alert.get('resource_id')

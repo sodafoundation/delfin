@@ -411,6 +411,23 @@ alerts_info = [
         "generated_timestamp": "2022-11-09T06:58:14.479496+00:00",
         "cleared_timestamp": "2022-11-09T06:58:14.479496+00:00",
         "resource_id": "5c93d9044ea94afea7d0ac853b89886c",
+        "state": "ACTIVE",
+        "raised_timestamp": "2022-11-06T06:18:14.446541+00:00",
+        "email_sent_timestamp": None,
+        "called_home_timestamp": None,
+        "is_acknowledged": False,
+        "snmp_sent_timestamp": None
+    }, {
+        "id": "0032b92b-e0bc-4259-b572-db562238b4b5",
+        "description_l10n": "Management ports are properly connected to"
+                            " different management switches.",
+        "severity": "Info",
+        "resource_name": "BaseEnclosure-NodeA",
+        "resource_type": "hardware",
+        "acknowledged_timestamp": None,
+        "generated_timestamp": "2022-11-09T06:58:14.479496+00:00",
+        "cleared_timestamp": "2022-11-09T06:58:14.479496+00:00",
+        "resource_id": "5c93d9044ea94afea7d0ac853b89886c",
         "state": "CLEARED",
         "raised_timestamp": "2022-11-06T06:18:14.446541+00:00",
         "email_sent_timestamp": None,
