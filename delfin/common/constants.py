@@ -155,11 +155,12 @@ class DiskPhysicalType(object):
     SSD_CARD = 'ssd-card'
     SAS_FLASH_VP = 'sas-flash-vp'
     HDD = 'hdd'
+    NVME_SSD = 'nvme-ssd'
     UNKNOWN = 'unknown'
 
     ALL = (
         SATA, SAS, SSD, NL_SSD, FC, LUN, ATA, FLASH, VMDISK,
-        NL_SAS, SSD_CARD, SAS_FLASH_VP, HDD, UNKNOWN)
+        NL_SAS, SSD_CARD, SAS_FLASH_VP, HDD, NVME_SSD, UNKNOWN)
 
 
 class DiskLogicalType(object):

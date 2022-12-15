@@ -73,7 +73,7 @@ VOLUME_TYPE_MAP = {
 DISK_PHYSICAL_TYPE = {
     'SAS_SSD': constants.DiskPhysicalType.SSD,
     'NVMe_SCM': constants.DiskPhysicalType.UNKNOWN,
-    'NVMe_SSD': constants.DiskPhysicalType.SSD,
+    'NVMe_SSD': constants.DiskPhysicalType.NVME_SSD,
     'Unknown': constants.DiskPhysicalType.UNKNOWN
 }
 
