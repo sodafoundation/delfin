@@ -864,7 +864,7 @@ Command completed successfully.\r
 STORAGE_DATA = {
     'name': '0x00b34202-fea90000-fa41e0d6-ded905a8',
     'vendor': 'MacroSAN', 'status': 'normal',
-    'serial_number': '110.143.133.200/0x00b34202-fea90000-fa41e0d6-ded905a8',
+    'serial_number': '110.143.133.200:0x00b34202-fea90000-fa41e0d6-ded905a8',
     'firmware_version': 'V2.0.14T04',
     'raw_capacity': 1917702897664.0,
     'total_capacity': 7670811590656.0,
@@ -875,7 +875,7 @@ STORAGE_DATA = {
 STORAGE_TWO_DATA = {
     'name': 'Storage-1', 'vendor': 'MacroSAN',
     'status': 'normal',
-    'serial_number': '110.143.133.200/0x50b34200-0b750056-42ab74ff-6265d80e',
+    'serial_number': '110.143.133.200:0x50b34200-0b750056-42ab74ff-6265d80e',
     'firmware_version': 'V2.0.14T04',
     'raw_capacity': 1917702897664.0,
     'total_capacity': 7670811590656.0,
@@ -1117,6 +1117,8 @@ class test_macro_san_driver(TestCase):
         MacroSanSSHPool.do_exec_shell = mock.Mock(
             side_effect=[VERSION_SHOW, GET_FILE_LIST])
         MsHandler.down_perf_file = mock.Mock(return_value='')
+        MacroSanSSHPool.create = mock.Mock(__class__)
+        SSHClient.open_sftp = mock.Mock(__class__)
         localtime = time.mktime(time.localtime()) * units.k
         storage_id = 12345
         start_time = localtime - 1000 * 60 * 5

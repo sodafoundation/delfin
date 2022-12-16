@@ -762,3 +762,8 @@ SPECIAL_VERSION = 'Version:'
 SAS_PORT = 'sasport'
 ISCSI_PORT = 'iscsiport'
 FC_PORT = 'fcport'
+PERF_FILE_TIME = '%Y%m%d%H%M%S'
+
+# system performance getfilelist
+INITIAL_WAITING_TIME = 40
+MAX_WAITING_TIME = 100
