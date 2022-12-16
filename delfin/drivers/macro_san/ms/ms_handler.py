@@ -902,10 +902,13 @@ class MsHandler(object):
         LOG.info('The system(storage_id: %s) starts to collect macro_san'
                  ' performance, start_time: %s, end_time: %s',
                  storage_id, start_time, end_time)
+        sftp, ssh = self.get_sftp()
+        if not sftp:
+            return metrics
         resource_storage = resource_metrics.get(constants.ResourceType.STORAGE)
         if resource_storage:
             storage_metrics = self.get_storage_metrics(
-                end_time, resource_storage, start_time, storage_id)
+                end_time, resource_storage, start_time, storage_id, sftp)
             metrics.extend(storage_metrics)
             LOG.info('The system(storage_id: %s) stop to collect storage'
                      ' performance, The length is: %s',
@@ -915,7 +918,7 @@ class MsHandler(object):
         if resource_volume and file_name_map:
             volume_metrics = self.get_volume_metrics(
                 end_time, resource_volume, start_time, storage_id,
-                file_name_map)
+                file_name_map, sftp)
             metrics.extend(volume_metrics)
             LOG.info('The system(storage_id: %s) stop to collect volume'
                      ' performance, The length is: %s',
@@ -924,7 +927,7 @@ class MsHandler(object):
         if resource_port:
             sas_port_metrics = self.get_port_metrics(
                 end_time, resource_port, start_time, storage_id,
-                consts.SAS_PORT, consts.SASPORT_REGULAR)
+                consts.SAS_PORT, consts.SASPORT_REGULAR, sftp)
             metrics.extend(sas_port_metrics)
             LOG.info('The system(storage_id: %s) stop to collect sas port'
                      ' performance, The length is: %s',
@@ -932,7 +935,7 @@ class MsHandler(object):
             if file_name_map:
                 fc_port_metrics = self.get_fc_port_metrics(
                     end_time, resource_port, start_time, storage_id,
-                    file_name_map)
+                    file_name_map, sftp)
                 metrics.extend(fc_port_metrics)
                 LOG.info('The system(storage_id: %s) stop to collect fc port'
                          ' performance, The length is: %s', storage_id,
@@ -940,17 +943,39 @@ class MsHandler(object):
         resource_disk = resource_metrics.get(constants.ResourceType.DISK)
         if resource_disk and file_name_map:
             disk_metrics = self.get_disk_metrics(
-                end_time, resource_disk, start_time, storage_id, file_name_map)
+                end_time, resource_disk, start_time, storage_id,
+                file_name_map, sftp)
             metrics.extend(disk_metrics)
             LOG.info('The system(storage_id: %s) stop to collect disk'
                      ' performance, The length is: %s',
                      storage_id, len(disk_metrics))
+        self.ssh_close(sftp, ssh)
         return metrics
 
+    def get_sftp(self):
+        sftp = None
+        ssh = None
+        try:
+            ssh = self.ssh_pool.create()
+            sftp = ssh.open_sftp()
+        except Exception as e:
+            LOG.error('Failed to sftp collect_perf_metrics macro_san %s' % (
+                six.text_type(e)))
+            self.ssh_close(sftp, ssh)
+        return sftp, ssh
+
+    @staticmethod
+    def ssh_close(sftp, ssh):
+        if sftp:
+            sftp.close()
+        if ssh:
+            ssh.close()
+
     def get_fc_port_metrics(self, end_time, resource_disk, start_time,
-                            storage_id, file_name_map):
+                            storage_id, file_name_map, sftp):
         local_path = self.down_perf_file(
-            consts.FC_PORT, storage_id, consts.FCPORT_REGULAR, start_time)
+            consts.FC_PORT, storage_id, consts.FCPORT_REGULAR, start_time,
+            sftp)
         disk_metrics = []
         if local_path:
             metrics_data = None
@@ -970,10 +995,10 @@ class MsHandler(object):
         return disk_metrics
 
     def get_disk_metrics(self, end_time, resource_disk, start_time,
-                         storage_id, file_name_map):
+                         storage_id, file_name_map, sftp):
         local_path = self.down_perf_file(
             constants.ResourceType.DISK, storage_id, consts.DISK_REGULAR,
-            start_time)
+            start_time, sftp)
         disk_metrics = []
         if local_path:
             metrics_data = None
@@ -993,9 +1018,9 @@ class MsHandler(object):
         return disk_metrics
 
     def get_port_metrics(self, end_time, resource_port, start_time,
-                         storage_id, folder, pattern):
+                         storage_id, folder, pattern, sftp):
         local_path = self.down_perf_file(
-            folder, storage_id, pattern, start_time)
+            folder, storage_id, pattern, start_time, sftp)
         sas_port_metrics = []
         if local_path:
             metrics_data = None
@@ -1014,15 +1039,14 @@ class MsHandler(object):
         return sas_port_metrics
 
     def get_volume_metrics(self, end_time, resource_volume, start_time,
-                           storage_id, file_name_map):
+                           storage_id, file_name_map, sftp):
         local_path = self.down_perf_file(
             constants.ResourceType.VOLUME, storage_id, consts.LUN_REGULAR,
-            start_time)
+            start_time, sftp)
         volume_metrics = []
         if local_path:
             metrics_data = None
             try:
-                # uuid_map = self.get_volume_uuid()
                 metrics_data = self.analysis_per_file(
                     local_path, start_time, end_time,
                     constants.ResourceType.VOLUME, file_name_map)
@@ -1038,10 +1062,10 @@ class MsHandler(object):
         return volume_metrics
 
     def get_storage_metrics(self, end_time, resource_storage, start_time,
-                            storage_id):
+                            storage_id, sftp):
         local_path = self.down_perf_file(
             constants.ResourceType.STORAGE, storage_id, consts.STRAGE_REGULAR,
-            start_time)
+            start_time, sftp)
         storage_metrics = []
         if local_path:
             metrics_data = None
@@ -1071,14 +1095,10 @@ class MsHandler(object):
             if storage_serial_number else f'{self.ssh_host}:{device_uuid}'
         return resource_id, resource_name
 
-    def down_perf_file(self, folder, storage_id, pattern, start_time):
-        sftp = None
+    def down_perf_file(self, folder, storage_id, pattern, start_time, sftp):
         tar = None
-        ssh = None
         local_path = ''
         try:
-            ssh = self.ssh_pool.create()
-            sftp = ssh.open_sftp()
             file_name_list = sftp.listdir(consts.FTP_PERF_PATH)
             ms_path = os.getcwd()
             localtime = int(round(time.time() * 1000))
@@ -1107,10 +1127,6 @@ class MsHandler(object):
         except Exception as e:
             LOG.error('Failed to down perf file %s macro_san %s' %
                       (folder, six.text_type(e)))
-        if sftp:
-            sftp.close()
-        if ssh:
-            ssh.close()
         if tar:
             tar.close()
         return local_path
@@ -1172,21 +1188,6 @@ class MsHandler(object):
                     controller = res.replace(' ', '').replace(
                         consts.SPECIAL_VERSION, '')
                     return controller
-
-    def get_volume_uuid(self):
-        uuid_map = {}
-        pools = self.get_data_list(consts.POOL_LIST, consts.FIELDS_NAME)
-        for pool in pools:
-            pool_name = pool.get('Name')
-            lun_list = self.get_data_list(
-                consts.LUN_LIST.format(pool_name), consts.FIELDS_NAME)
-            for lun in lun_list:
-                lun_name = lun.get('Name')
-                lun_query = self.get_data_query(
-                    consts.LUN_QUERY.format(lun_name))
-                uuid = lun_query.get('LUNUUID')
-                uuid_map[uuid] = lun_name
-        return uuid_map
 
     def analysis_per_file(self, local_path, start_time, end_time,
                           resource_type, uuid_map=None):
