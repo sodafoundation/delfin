@@ -55,20 +55,28 @@ class MsHandler(object):
                 six.text_type(e)))
         if consts.UNKNOWN_COMMAND_TAG in res:
             try:
-                self.ssh_pool.do_exec_shell([consts.SYSTEM_QUERY])
+                res = self.ssh_pool.do_exec_shell([consts.SYSTEM_QUERY])
                 self.down_lock = False
             except Exception as e:
                 LOG.error('Failed to cli login macro_san %s' % (
                     six.text_type(e)))
-                raise e
+                raise exception.StorageBackendException(six.text_type(e))
+        if consts.CLI_TAG not in str(res):
+            error_msg = f'Login failed, res: {res}'
+            LOG.error(error_msg)
+            raise exception.StorageBackendException(error_msg)
 
     def get_storage(self, storage_id):
         storage_data_map = self.get_data_query(consts.SYSTEM_QUERY)
         if not storage_data_map:
             raise exception.SSHException('The command returns empty data')
         device_uuid = storage_data_map.get('DeviceUUID')
-        serial_number = '{}:{}'.format(self.ssh_host, device_uuid)
+        storage_serial_number = storage_data_map.get('DeviceSerialNumber')
+        serial_number = f'{self.ssh_host}:{storage_serial_number}'\
+            if storage_serial_number else f'{self.ssh_host}:{device_uuid}'
         storage_name = storage_data_map.get('DeviceName')
+        storage_model = storage_data_map.get('DeviceModel')
+        storage_vendor = storage_data_map.get('DeviceVender')
         firmware_version = self.get_firmware_version()
         pools = self.list_storage_pools(storage_id)
         total_capacity = digital_constant.ZERO_INT
@@ -81,10 +89,12 @@ class MsHandler(object):
         for disk in disks:
             raw_capacity += disk.get('capacity')
         storage_status = self.get_storage_status(storage_id)
-        model = self.get_storage_model(storage_id)
+        model = storage_model if storage_model else\
+            self.get_storage_model(storage_id)
         storage = {
             'name': storage_name if storage_name else device_uuid,
-            'vendor': consts.STORAGE_VENDOR,
+            'vendor': storage_vendor if storage_vendor else
+            consts.STORAGE_VENDOR,
             'status': storage_status,
             'model': model,
             'serial_number': serial_number,
@@ -105,6 +115,9 @@ class MsHandler(object):
             try:
                 storage_model = self.analysis_model_file(local_path,
                                                          storage_model)
+            except Exception as e:
+                LOG.error('Failed to storage model analysis per file %s' % (
+                    six.text_type(e)))
             finally:
                 shutil.rmtree(local_path)
         return storage_model
@@ -126,6 +139,7 @@ class MsHandler(object):
 
     def download_model_file(self, storage_id):
         sftp = None
+        ssh = None
         local_path = ''
         try:
             ssh = self.ssh_pool.create()
@@ -149,6 +163,7 @@ class MsHandler(object):
                       (six.text_type(e)))
         if sftp:
             sftp.close()
+            ssh.close()
         return local_path
 
     def get_firmware_version(self):
@@ -186,8 +201,15 @@ class MsHandler(object):
         for pool in pools:
             pool_name = pool.get('Name')
             health_status = self.get_pool_status(pool_name)
-            total_capacity = Tools.get_capacity_size(pool.get('AllCapacity'))
-            used_capacity = Tools.get_capacity_size(pool.get('UsedCapacity'))
+            all_capacity_str = pool.get('AllCapacity').replace(',', '')\
+                if pool.get('AllCapacity') else ''
+            total_capacity_str = pool.get('TotalCapacity').replace(',', '')\
+                if pool.get('TotalCapacity') else ''
+            total_capacity = Tools.get_capacity_size(all_capacity_str)\
+                if all_capacity_str else\
+                Tools.get_capacity_size(total_capacity_str)
+            used_capacity = Tools.get_capacity_size(
+                pool.get('UsedCapacity').replace(',', ''))
             pool_model = {
                 'name': pool_name,
                 'storage_id': storage_id,
@@ -254,9 +276,10 @@ class MsHandler(object):
         if consts.FIELDS_ENABLE == thin_provisioning:
             used_capacity_str = volume.get('Thin-LUNUsedCapacity')
             number_b = used_capacity_str.index('B')
-            used_capacity = \
+            used_capacity =\
                 used_capacity_str[:number_b + consts.digital_constant.ONE_INT]
-            used_capacity = Tools.get_capacity_size(used_capacity)
+            used_capacity = Tools.get_capacity_size(
+                used_capacity.replace(',', ''))
         else:
             used_capacity = total_capacity
         return used_capacity
@@ -269,7 +292,7 @@ class MsHandler(object):
             number_b = physical_size.index('B')
             total_size = \
                 physical_size[:number_b + consts.digital_constant.ONE_INT]
-        total_capacity = Tools.get_capacity_size(total_size)
+        total_capacity = Tools.get_capacity_size(total_size.replace(',', ''))
         return total_capacity
 
     def list_controllers(self, storage_id):
@@ -608,7 +631,7 @@ class MsHandler(object):
             views_list.append(view_d)
         return views_list
 
-    def do_exec(self, command_str, sleep_time=0.5, mix_time=consts.TIME_LIMIT):
+    def do_exec(self, command_str, sleep_time=1, mix_time=consts.TIME_LIMIT):
         if self.down_lock:
             try:
                 res = self.ssh_pool.do_exec_shell(
@@ -679,7 +702,7 @@ class MsHandler(object):
         return sp_map
 
     def get_data_list(self, command, contains_fields, space=' ',
-                      sleep_time=0.5, mix_time=consts.TIME_LIMIT):
+                      sleep_time=1, mix_time=consts.TIME_LIMIT):
         data_list = []
         res = self.do_exec(command, sleep_time, mix_time)
         if res:
@@ -888,54 +911,79 @@ class MsHandler(object):
         LOG.info('The system(storage_id: %s) starts to collect macro_san'
                  ' performance, start_time: %s, end_time: %s',
                  storage_id, start_time, end_time)
+        sftp, ssh = self.get_sftp()
+        if not sftp:
+            return metrics
         resource_storage = resource_metrics.get(constants.ResourceType.STORAGE)
         if resource_storage:
             storage_metrics = self.get_storage_metrics(
-                end_time, resource_storage, start_time, storage_id)
+                end_time, resource_storage, start_time, storage_id, sftp)
             metrics.extend(storage_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect storage'
-                     ' performance, The length is: %s',
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' storage performance, The length is: %s',
                      storage_id, len(storage_metrics))
-        resource_volume = resource_metrics.get(constants.ResourceType.VOLUME)
-        if resource_volume:
-            volume_metrics = self.get_volume_metrics(
-                end_time, resource_volume, start_time, storage_id)
-            metrics.extend(volume_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect volume'
-                     ' performance, The length is: %s',
-                     storage_id, len(volume_metrics))
         file_name_map = self.get_identification()
+        resource_volume = resource_metrics.get(constants.ResourceType.VOLUME)
+        if resource_volume and file_name_map:
+            volume_metrics = self.get_volume_metrics(
+                end_time, resource_volume, start_time, storage_id,
+                file_name_map, sftp)
+            metrics.extend(volume_metrics)
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' volume performance, The length is: %s',
+                     storage_id, len(volume_metrics))
         resource_port = resource_metrics.get(constants.ResourceType.PORT)
         if resource_port:
             sas_port_metrics = self.get_port_metrics(
                 end_time, resource_port, start_time, storage_id,
-                consts.SAS_PORT, consts.SASPORT_REGULAR)
+                consts.SAS_PORT, consts.SASPORT_REGULAR, sftp)
             metrics.extend(sas_port_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect sas port'
-                     ' performance, The length is: %s',
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' sas port performance, The length is: %s',
                      storage_id, len(sas_port_metrics))
             if file_name_map:
                 fc_port_metrics = self.get_fc_port_metrics(
                     end_time, resource_port, start_time, storage_id,
-                    file_name_map)
+                    file_name_map, sftp)
                 metrics.extend(fc_port_metrics)
-                LOG.info('The system(storage_id: %s) stop to collect fc port'
-                         ' performance, The length is: %s', storage_id,
-                         len(fc_port_metrics))
+                LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                         ' fc port performance, The length is: %s',
+                         storage_id, len(fc_port_metrics))
         resource_disk = resource_metrics.get(constants.ResourceType.DISK)
         if resource_disk and file_name_map:
             disk_metrics = self.get_disk_metrics(
-                end_time, resource_disk, start_time, storage_id, file_name_map)
+                end_time, resource_disk, start_time, storage_id,
+                file_name_map, sftp)
             metrics.extend(disk_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect disk'
-                     ' performance, The length is: %s',
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' disk performance, The length is: %s',
                      storage_id, len(disk_metrics))
+        self.ssh_close(sftp, ssh)
         return metrics
 
+    def get_sftp(self):
+        sftp = None
+        ssh = None
+        try:
+            ssh = self.ssh_pool.create()
+            sftp = ssh.open_sftp()
+        except Exception as e:
+            LOG.error('Failed to sftp collect_perf_metrics macro_san %s' % (
+                six.text_type(e)))
+            self.ssh_close(sftp, ssh)
+        return sftp, ssh
+
+    @staticmethod
+    def ssh_close(sftp, ssh):
+        if sftp:
+            sftp.close()
+            ssh.close()
+
     def get_fc_port_metrics(self, end_time, resource_disk, start_time,
-                            storage_id, file_name_map):
-        local_path = self.down_perf_file(consts.FC_PORT, storage_id,
-                                         consts.FCPORT_REGULAR)
+                            storage_id, file_name_map, sftp):
+        local_path = self.down_perf_file(
+            consts.FC_PORT, storage_id, consts.FCPORT_REGULAR, start_time,
+            sftp)
         disk_metrics = []
         if local_path:
             metrics_data = None
@@ -955,10 +1003,10 @@ class MsHandler(object):
         return disk_metrics
 
     def get_disk_metrics(self, end_time, resource_disk, start_time,
-                         storage_id, file_name_map):
+                         storage_id, file_name_map, sftp):
         local_path = self.down_perf_file(
-            constants.ResourceType.DISK, storage_id,
-            consts.DISK_REGULAR)
+            constants.ResourceType.DISK, storage_id, consts.DISK_REGULAR,
+            start_time, sftp)
         disk_metrics = []
         if local_path:
             metrics_data = None
@@ -978,8 +1026,9 @@ class MsHandler(object):
         return disk_metrics
 
     def get_port_metrics(self, end_time, resource_port, start_time,
-                         storage_id, folder, pattern):
-        local_path = self.down_perf_file(folder, storage_id, pattern)
+                         storage_id, folder, pattern, sftp):
+        local_path = self.down_perf_file(
+            folder, storage_id, pattern, start_time, sftp)
         sas_port_metrics = []
         if local_path:
             metrics_data = None
@@ -998,17 +1047,17 @@ class MsHandler(object):
         return sas_port_metrics
 
     def get_volume_metrics(self, end_time, resource_volume, start_time,
-                           storage_id):
+                           storage_id, file_name_map, sftp):
         local_path = self.down_perf_file(
-            constants.ResourceType.VOLUME, storage_id, consts.LUN_REGULAR)
+            constants.ResourceType.VOLUME, storage_id, consts.LUN_REGULAR,
+            start_time, sftp)
         volume_metrics = []
         if local_path:
             metrics_data = None
             try:
-                uuid_map = self.get_volume_uuid()
                 metrics_data = self.analysis_per_file(
                     local_path, start_time, end_time,
-                    constants.ResourceType.VOLUME, uuid_map)
+                    constants.ResourceType.VOLUME, file_name_map)
             except Exception as e:
                 LOG.error('Failed to volume analysis per file %s' % (
                     six.text_type(e)))
@@ -1021,9 +1070,10 @@ class MsHandler(object):
         return volume_metrics
 
     def get_storage_metrics(self, end_time, resource_storage, start_time,
-                            storage_id):
-        local_path = self.down_perf_file(constants.ResourceType.STORAGE,
-                                         storage_id, consts.STRAGE_REGULAR)
+                            storage_id, sftp):
+        local_path = self.down_perf_file(
+            constants.ResourceType.STORAGE, storage_id, consts.STRAGE_REGULAR,
+            start_time, sftp)
         storage_metrics = []
         if local_path:
             metrics_data = None
@@ -1048,41 +1098,76 @@ class MsHandler(object):
         device_uuid = storage_data_map.get('DeviceUUID')
         storage_name = storage_data_map.get('DeviceName')
         resource_name = storage_name if storage_name else device_uuid
-        resource_id = '{}:{}'.format(self.ssh_host, device_uuid)
+        storage_serial_number = storage_data_map.get('DeviceSerialNumber')
+        resource_id = f'{self.ssh_host}:{storage_serial_number}' \
+            if storage_serial_number else f'{self.ssh_host}:{device_uuid}'
         return resource_id, resource_name
 
-    def down_perf_file(self, folder, storage_id, pattern):
-        sftp = None
+    def down_perf_file(self, folder, storage_id, pattern, start_time, sftp):
         tar = None
         local_path = ''
         try:
-            ssh = self.ssh_pool.create()
-            sftp = ssh.open_sftp()
             file_name_list = sftp.listdir(consts.FTP_PERF_PATH)
             ms_path = os.getcwd()
             localtime = int(round(time.time() * 1000))
             local_path = consts.ADD_FOLDER.format(
                 ms_path, folder, storage_id, localtime)
             os.mkdir(local_path)
+            file_time_dict = self.get_file_max_time(
+                file_name_list, pattern, start_time)
             for file_name in file_name_list:
                 title_pattern = re.compile(pattern)
                 title_search_obj = title_pattern.search(file_name)
-                if title_search_obj:
-                    local_path_file = '{}/{}'.format(local_path, file_name)
-                    ftp_path = '{}/{}'.format(consts.FTP_PERF_PATH, file_name)
-                    sftp.get(ftp_path, local_path_file)
-                    if consts.CSV in file_name:
-                        continue
-                    tar = tarfile.open(local_path_file)
-                    tar.extractall(local_path)
+                if not title_search_obj:
+                    continue
+                time_int, time_ms = self.time_cycle(file_name)
+                max_time = file_time_dict.get(file_name.replace(
+                    time_int, '').replace(consts.CSV, '').replace('.tgz', ''))
+                if time_ms < max_time:
+                    continue
+                local_path_file = '{}/{}'.format(local_path, file_name)
+                ftp_path = '{}/{}'.format(consts.FTP_PERF_PATH, file_name)
+                sftp.get(ftp_path, local_path_file)
+                if consts.CSV in file_name:
+                    continue
+                tar = tarfile.open(local_path_file)
+                tar.extractall(local_path)
         except Exception as e:
             LOG.error('Failed to down perf file %s macro_san %s' %
                       (folder, six.text_type(e)))
-        if sftp:
-            sftp.close()
         if tar:
             tar.close()
         return local_path
+
+    @staticmethod
+    def get_file_max_time(file_name_list, pattern, start_time):
+        name_time_dict = {}
+        for file_name_time in file_name_list:
+            title_pattern = re.compile(pattern)
+            title_search_obj = title_pattern.search(file_name_time)
+            if not title_search_obj:
+                continue
+            time_int, time_ms = MsHandler.time_cycle(file_name_time)
+            if time_ms > start_time:
+                continue
+            file_name = file_name_time.replace(
+                time_int, '').replace(consts.CSV, '').replace('.tgz', '')
+            exist_time_ms = name_time_dict.get(file_name)
+            if exist_time_ms:
+                if exist_time_ms > time_ms:
+                    name_time_dict[file_name] = exist_time_ms
+            else:
+                name_time_dict[file_name] = time_ms
+        return name_time_dict
+
+    @staticmethod
+    def time_cycle(file_name_time):
+        time_int = file_name_time.split('_')[
+            consts.digital_constant.MINUS_ONE_INT].replace(
+            consts.CSV, '').replace('.tgz', '')
+        time_ms = Tools().time_str_to_timestamp(
+            time_int, consts.PERF_FILE_TIME)
+        return time_int, time_ms
 
     def get_identification(self):
         identification = {}
@@ -1091,8 +1176,8 @@ class MsHandler(object):
             return identification
         files = self.get_data_list(
             consts.SYSTEM_PERFORMANCE_FILE, consts.FIELDS_NAME,
-            sleep_time=consts.digital_constant.TWELVE_INT,
-            mix_time=consts.digital_constant.SIXTY)
+            sleep_time=consts.INITIAL_WAITING_TIME,
+            mix_time=consts.MAX_WAITING_TIME)
         for file in files:
             sp = file.get('SPName')
             file_name = file.get('FileName')
@@ -1112,21 +1197,6 @@ class MsHandler(object):
                         consts.SPECIAL_VERSION, '')
                     return controller
 
-    def get_volume_uuid(self):
-        uuid_map = {}
-        pools = self.get_data_list(consts.POOL_LIST, consts.FIELDS_NAME)
-        for pool in pools:
-            pool_name = pool.get('Name')
-            lun_list = self.get_data_list(
-                consts.LUN_LIST.format(pool_name), consts.FIELDS_NAME)
-            for lun in lun_list:
-                lun_name = lun.get('Name')
-                lun_query = self.get_data_query(
-                    consts.LUN_QUERY.format(lun_name))
-                uuid = lun_query.get('LUNUUID')
-                uuid_map[uuid] = lun_name
-        return uuid_map
-
     def analysis_per_file(self, local_path, start_time, end_time,
                           resource_type, uuid_map=None):
         resource_key_data = {}
@@ -1134,8 +1204,8 @@ class MsHandler(object):
         if constants.ResourceType.STORAGE == resource_type:
             resource_key = resource_type
         list_dir = os.listdir(local_path)
-        data = {}
         for dir_name in list_dir:
+            data = {}
             dir_name = dir_name.replace(' ', '')
             if consts.CSV not in dir_name:
                 continue
@@ -1160,18 +1230,14 @@ class MsHandler(object):
 
     @staticmethod
     def get_resource_key(dir_name, resource_key, resource_type, uuid_map):
-        if constants.ResourceType.VOLUME == resource_type:
-            uuid_list = dir_name.replace(consts.PERF_LUN, '').split(
-                consts.PERF_SP)
-            uuid = uuid_list[consts.digital_constant.ZERO_INT]
-            resource_key = uuid_map.get(uuid)
         if consts.SAS_PORT == resource_type:
             uuid_list = dir_name.replace(consts.PERF_SAS_PORT, '').split(
                 consts.PERF_SP)
             resource_key = uuid_list[consts.digital_constant.ZERO_INT] \
                 .replace('_', ':')
         if constants.ResourceType.DISK == resource_type or \
-                consts.FC_PORT == resource_type:
+                consts.FC_PORT == resource_type or \
+                constants.ResourceType.VOLUME == resource_type:
             resource_key = uuid_map.get(dir_name) if \
                 uuid_map.get(dir_name) else \
                 uuid_map.get(dir_name.replace('.csv', '.tgz'))
@@ -1181,11 +1247,11 @@ class MsHandler(object):
     def get_perf_data(row, timestamp_s):
         timestamp = int(timestamp_s / consts.SIXTY) * consts.SIXTY * units.k
         throughput = round(
-            (int(row.get('r&w/throughput(B)')) / units.Mi), 3)
+            int(row.get('r&w/throughput(B)')) / units.Mi, 3)
         r_throughput = round(
-            (int(row.get('r/throughput(B)')) / units.Mi), 3)
+            int(row.get('r/throughput(B)')) / units.Mi, 3)
         w_throughput = round(
-            (int(row.get('w/throughput(B)')) / units.Mi), 3)
+            int(row.get('w/throughput(B)')) / units.Mi, 3)
         response = round(
             int(row.get('r&w/avg_rsp_time(us)')) / units.k, 3)
         r_response = round(
@@ -1193,18 +1259,15 @@ class MsHandler(object):
         w_response = round(
             int(row.get('w/avg_rsp_time(us)')) / units.k, 3)
         cache_hit_ratio = round(
-            int(row.get('r&w/cacherate(%*100)')), 3)
+            int(row.get('r&w/cacherate(%*100)')) / 100, 3)
         r_cache_hit_ratio = round(
-            int(row.get('r/cacherate(%*100)')), 3)
+            int(row.get('r/cacherate(%*100)')) / 100, 3)
         w_cache_hit_ratio = round(
-            int(row.get('w/cacherate(%*100)')), 3)
+            int(row.get('w/cacherate(%*100)')) / 100, 3)
         row_data = {
-            constants.StorageMetric.IOPS.name: round(
-                int(row.get('r&w/iops')), 3),
-            constants.StorageMetric.READ_IOPS.name: round(
-                int(row.get('r/iops')), 3),
-            constants.StorageMetric.WRITE_IOPS.name: round(
-                int(row.get('w/iops')), 3),
+            constants.StorageMetric.IOPS.name: int(row.get('r&w/iops')),
+            constants.StorageMetric.READ_IOPS.name: int(row.get('r/iops')),
+            constants.StorageMetric.WRITE_IOPS.name: int(row.get('w/iops')),
             constants.StorageMetric.THROUGHPUT.name: throughput,
             constants.StorageMetric.READ_THROUGHPUT.name: r_throughput,
             constants.StorageMetric.WRITE_THROUGHPUT.name: w_throughput,
