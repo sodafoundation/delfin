@@ -55,12 +55,16 @@ class MsHandler(object):
                 six.text_type(e)))
         if consts.UNKNOWN_COMMAND_TAG in res:
             try:
-                self.ssh_pool.do_exec_shell([consts.SYSTEM_QUERY])
+                res = self.ssh_pool.do_exec_shell([consts.SYSTEM_QUERY])
                 self.down_lock = False
             except Exception as e:
                 LOG.error('Failed to cli login macro_san %s' % (
                     six.text_type(e)))
-                raise e
+                raise exception.StorageBackendException(six.text_type(e))
+        if consts.CLI_TAG not in str(res):
+            error_msg = f'Login failed, res: {res}'
+            LOG.error(error_msg)
+            raise exception.StorageBackendException(error_msg)
 
     def get_storage(self, storage_id):
         storage_data_map = self.get_data_query(consts.SYSTEM_QUERY)
@@ -159,7 +163,6 @@ class MsHandler(object):
                       (six.text_type(e)))
         if sftp:
             sftp.close()
-        if ssh:
             ssh.close()
         return local_path
 
@@ -974,7 +977,6 @@ class MsHandler(object):
     def ssh_close(sftp, ssh):
         if sftp:
             sftp.close()
-        if ssh:
             ssh.close()
 
     def get_fc_port_metrics(self, end_time, resource_disk, start_time,
