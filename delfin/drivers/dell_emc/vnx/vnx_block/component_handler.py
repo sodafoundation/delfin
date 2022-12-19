@@ -306,18 +306,21 @@ class ComponentHandler(object):
             memory_size = int(controller.get('memory_size_for_the_sp',
                                              '0')) * units.Mi
             cpu_info = ''
+            cpu_count = None
             if cpus:
                 cpu_info = cpus.get(
                     controller.get('serial_number_for_the_sp', ''), '')
+            if cpu_info:
+                cpu_count = 1
             controller_model = {
                 'name': controller.get('sp_name'),
                 'storage_id': storage_id,
                 'native_controller_id': controller.get('signature_for_the_sp'),
                 'status': constants.ControllerStatus.NORMAL,
                 'location': None,
-                'soft_version': controller.get(
-                    'revision_number_for_the_sp'),
+                'soft_version': controller.get('revision_number_for_the_sp'),
                 'cpu_info': cpu_info,
+                'cpu_count': cpu_count,
                 'memory_size': str(memory_size)
             }
             controller_list.append(controller_model)

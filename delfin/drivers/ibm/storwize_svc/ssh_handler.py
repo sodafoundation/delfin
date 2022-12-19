@@ -519,6 +519,7 @@ class SSHHandler(object):
                     cpu_info = self.exec_ssh_command(cpu_cmd)
                 self.handle_detail(cpu_info, cpu_map, split=',')
                 cpu_actual = cpu_map.get('cpu_actual')
+                cpu_count = cpu_map.get('cpu_count')
                 status = SSHHandler.CONTRL_STATUS_MAP.get(
                     control_map.get('status'),
                     constants.ControllerStatus.UNKNOWN)
@@ -530,7 +531,8 @@ class SSHHandler(object):
                     'soft_version':
                         control_map.get('code_level', '').split(' ')[0],
                     'location': control_map.get('name'),
-                    'cpu_info': cpu_actual
+                    'cpu_info': cpu_actual,
+                    'cpu_count': int(cpu_count)
                 }
                 controller_list.append(controller_result)
             return controller_list

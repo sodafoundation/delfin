@@ -233,7 +233,9 @@ class ComponentHandler():
                                                  '0')) * units.Mi + int(
                     controller.get('datamem(mb)', '0')) * units.Mi
                 cpu_info = ''
+                cpu_count = None
                 if node_cpu_map and node_cpu_map.get(node_id):
+                    cpu_count = 0
                     cpu_info_map = node_cpu_map.get(node_id)
                     cpu_info_keys = list(cpu_info_map.keys())
                     for cpu_key in cpu_info_keys:
@@ -241,6 +243,7 @@ class ComponentHandler():
                             cpu_info = '%s%s' % (cpu_info, ',')
                         cpu_info = '%s%s * %s MHz' % (
                             cpu_info, cpu_info_map.get(cpu_key), cpu_key)
+                        cpu_count += cpu_info_map.get(cpu_key)
                 soft_version = None
                 if node_version_map:
                     soft_version = node_version_map.get(node_id, '')
@@ -254,6 +257,7 @@ class ComponentHandler():
                     'location': None,
                     'soft_version': soft_version,
                     'cpu_info': cpu_info,
+                    'cpu_count': cpu_count,
                     'memory_size': str(memory_size)
                 }
                 controller_list.append(controller_model)
