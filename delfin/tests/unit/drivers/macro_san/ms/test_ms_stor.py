@@ -1117,6 +1117,8 @@ class test_macro_san_driver(TestCase):
         MacroSanSSHPool.do_exec_shell = mock.Mock(
             side_effect=[VERSION_SHOW, GET_FILE_LIST])
         MsHandler.down_perf_file = mock.Mock(return_value='')
+        MacroSanSSHPool.create = mock.Mock(__class__)
+        SSHClient.open_sftp = mock.Mock(__class__)
         localtime = time.mktime(time.localtime()) * units.k
         storage_id = 12345
         start_time = localtime - 1000 * 60 * 5
