@@ -111,6 +111,9 @@ class MsHandler(object):
             try:
                 storage_model = self.analysis_model_file(local_path,
                                                          storage_model)
+            except Exception as e:
+                LOG.error('Failed to storage model analysis per file %s' % (
+                    six.text_type(e)))
             finally:
                 shutil.rmtree(local_path)
         return storage_model
@@ -132,6 +135,7 @@ class MsHandler(object):
 
     def download_model_file(self, storage_id):
         sftp = None
+        ssh = None
         local_path = ''
         try:
             ssh = self.ssh_pool.create()
@@ -155,6 +159,8 @@ class MsHandler(object):
                       (six.text_type(e)))
         if sftp:
             sftp.close()
+        if ssh:
+            ssh.close()
         return local_path
 
     def get_firmware_version(self):
@@ -910,8 +916,8 @@ class MsHandler(object):
             storage_metrics = self.get_storage_metrics(
                 end_time, resource_storage, start_time, storage_id, sftp)
             metrics.extend(storage_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect storage'
-                     ' performance, The length is: %s',
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' storage performance, The length is: %s',
                      storage_id, len(storage_metrics))
         file_name_map = self.get_identification()
         resource_volume = resource_metrics.get(constants.ResourceType.VOLUME)
@@ -920,8 +926,8 @@ class MsHandler(object):
                 end_time, resource_volume, start_time, storage_id,
                 file_name_map, sftp)
             metrics.extend(volume_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect volume'
-                     ' performance, The length is: %s',
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' volume performance, The length is: %s',
                      storage_id, len(volume_metrics))
         resource_port = resource_metrics.get(constants.ResourceType.PORT)
         if resource_port:
@@ -929,25 +935,25 @@ class MsHandler(object):
                 end_time, resource_port, start_time, storage_id,
                 consts.SAS_PORT, consts.SASPORT_REGULAR, sftp)
             metrics.extend(sas_port_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect sas port'
-                     ' performance, The length is: %s',
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' sas port performance, The length is: %s',
                      storage_id, len(sas_port_metrics))
             if file_name_map:
                 fc_port_metrics = self.get_fc_port_metrics(
                     end_time, resource_port, start_time, storage_id,
                     file_name_map, sftp)
                 metrics.extend(fc_port_metrics)
-                LOG.info('The system(storage_id: %s) stop to collect fc port'
-                         ' performance, The length is: %s', storage_id,
-                         len(fc_port_metrics))
+                LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                         ' fc port performance, The length is: %s',
+                         storage_id, len(fc_port_metrics))
         resource_disk = resource_metrics.get(constants.ResourceType.DISK)
         if resource_disk and file_name_map:
             disk_metrics = self.get_disk_metrics(
                 end_time, resource_disk, start_time, storage_id,
                 file_name_map, sftp)
             metrics.extend(disk_metrics)
-            LOG.info('The system(storage_id: %s) stop to collect disk'
-                     ' performance, The length is: %s',
+            LOG.info('The system(storage_id: %s) stop to collect macro_san'
+                     ' disk performance, The length is: %s',
                      storage_id, len(disk_metrics))
         self.ssh_close(sftp, ssh)
         return metrics

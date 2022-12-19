@@ -71,6 +71,7 @@ class MacroSanSSHPool(SSHPool):
                         utils.check_ssh_injection(command)
                         channel.send(command + '\n')
                         time.sleep(sleep_time)
+                    channel.send("quit" + "\n")
                     channel.send("exit" + "\n")
                     channel.close()
                     while True:
