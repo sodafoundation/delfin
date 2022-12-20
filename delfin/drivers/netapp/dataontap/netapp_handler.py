@@ -390,10 +390,10 @@ class NetAppHandler(object):
             LOG.error(err_msg)
             raise exception.InvalidResults(err_msg)
 
-    def clear_alert(self, alert):
+    def clear_alert(self, alert_id):
         try:
             ssh_command = \
-                constant.CLEAR_ALERT_COMMAND + alert['alert_id']
+                constant.CLEAR_ALERT_COMMAND + alert_id
             self.ssh_pool.do_exec(ssh_command)
         except exception.DelfinException as e:
             err_msg = "Failed to get storage alert from " \
@@ -542,8 +542,13 @@ class NetAppHandler(object):
                             for ip in ip_array:
                                 if ip == controller_map['Node']:
                                     key = ip
-                                if constant.IP_PATTERN.search(ip):
-                                    value = ip
+                                if constant.IP_PATTERN. \
+                                        search(self.ssh_pool.ssh_host):
+                                    if constant.IP_PATTERN.search(ip):
+                                        value = ip
+                                else:
+                                    if constant.IP_V6_PATTERN.search(ip):
+                                        value = ip
                                 ip_map[key] = value
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
