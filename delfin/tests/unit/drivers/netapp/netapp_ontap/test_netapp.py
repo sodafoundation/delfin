@@ -86,7 +86,7 @@ class TestNetAppCmodeDriver(TestCase):
                          'DualPathToDiskShelf_Alert')
 
     def test_clear_alters(self):
-        alert = {'alert_id': '123'}
+        alert = '123'
         SSHPool.do_exec = mock.Mock()
         self.netapp_client.clear_alert(context, alert)
 
