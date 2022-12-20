@@ -99,7 +99,7 @@ class Tools(object):
         for detail in detail_array:
             if detail:
                 string_info = detail.split(split + " ")
-                key = string_info[0].replace(' ', '')
+                key = string_info[0].replace(' ', '').replace('\r', '')
                 value = ''
                 if len(string_info) > 1 or is_mapping:
                     for string in string_info[1:]:
