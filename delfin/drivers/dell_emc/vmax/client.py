@@ -88,7 +88,7 @@ class VMAXClient(object):
                 if not storage_name:
                     msg = "Input storage_name is missing. Supported ids: {}". \
                         format(array['symmetrixId'])
-                    raise exception.InvalidInput(msg)
+                    raise exception.StorageBackendException(msg)
 
                 array_ids = array.get('symmetrixId', list())
                 if storage_name not in array_ids:
