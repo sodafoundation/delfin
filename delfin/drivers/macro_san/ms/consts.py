@@ -765,6 +765,6 @@ ISCSI_PORT = 'iscsiport'
 FC_PORT = 'fcport'
 PERF_FILE_TIME = '%Y%m%d%H%M%S'
 
-# system performance getfilelist
+# The wait time of the 'system performance getfilelist' command is configured
 INITIAL_WAITING_TIME = 60
 MAX_WAITING_TIME = 100
