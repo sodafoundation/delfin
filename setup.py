@@ -45,6 +45,7 @@ setup(
             'dellemc scaleio = delfin.drivers.dell_emc.scaleio.scaleio_stor:ScaleioStorageDriver',
             'dellemc vnx_block = delfin.drivers.dell_emc.vnx.vnx_block.vnx_block:VnxBlockStorDriver',
             'dellemc vplex = delfin.drivers.dell_emc.vplex.vplex_stor:VplexStorageDriver',
+            'dellemc powerstore = delfin.drivers.dell_emc.power_store.power_store:PowerStoreDriver',
             'hitachi vsp = delfin.drivers.hitachi.vsp.vsp_stor:HitachiVspDriver',
             'hpe 3par = delfin.drivers.hpe.hpe_3par.hpe_3parstor:Hpe3parStorDriver',
             'hpe primera = delfin.drivers.hpe.hpe_3par.hpe_3parstor:Hpe3parStorDriver',
