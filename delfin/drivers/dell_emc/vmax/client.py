@@ -61,11 +61,11 @@ class VMAXClient(object):
             msg = ("Failed to connect to VMAX. Host or Port is not correct: "
                    "{}".format(err))
             LOG.error(msg)
-            raise exception.InvalidIpOrPort()
+            raise exception.StorageBackendException(msg)
 
         if not self.uni_version:
             msg = "Invalid input. Failed to get vmax unisphere version"
-            raise exception.InvalidInput(msg)
+            raise exception.StorageBackendException(msg)
 
     def add_storage(self, access_info):
         storage_name = access_info.get('storage_name')
@@ -75,7 +75,7 @@ class VMAXClient(object):
             array = self.rest.get_array_detail(version=self.uni_version)
             if not array:
                 msg = "Failed to get array details"
-                raise exception.InvalidInput(msg)
+                raise exception.StorageBackendException(msg)
 
             if len(array['symmetrixId']) == EMBEDDED_UNISPHERE_ARRAY_COUNT:
                 if not storage_name:
@@ -83,17 +83,17 @@ class VMAXClient(object):
                 elif storage_name != array['symmetrixId'][0]:
                     msg = "Invalid storage_name. Expected: {}". \
                         format(array['symmetrixId'])
-                    raise exception.InvalidInput(msg)
+                    raise exception.StorageBackendException(msg)
             else:
                 if not storage_name:
                     msg = "Input storage_name is missing. Supported ids: {}". \
                         format(array['symmetrixId'])
-                    raise exception.InvalidInput(msg)
+                    raise exception.StorageBackendException(msg)
 
                 array_ids = array.get('symmetrixId', list())
                 if storage_name not in array_ids:
                     msg = "Failed to get VMAX array id from Unisphere"
-                    raise exception.InvalidInput(msg)
+                    raise exception.StorageBackendException(msg)
 
             self.array_id[access_info['storage_id']] = storage_name
 

@@ -171,6 +171,10 @@ class RestHandler(RestClient):
             if self.session is None:
                 self.init_http_head()
             storage_systems = self.get_system_info()
+            if not storage_systems or not storage_systems.get('data'):
+                error_msg = f'Get system info failed :{storage_systems}'
+                LOG.error(error_msg)
+                raise exception.StorageBackendException(error_msg)
             system_info = storage_systems.get('data')
             for system in system_info:
                 self.storage_device_id = system.get('storageDeviceId')

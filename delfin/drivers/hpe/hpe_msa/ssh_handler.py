@@ -78,10 +78,14 @@ class SSHHandler(object):
                     'free_capacity': int(total_capacity - volume_all_size)
                 }
                 return storage_map
-        except Exception as e:
+        except exception.StorageBackendException as e:
             err_msg = "Failed to get system info : %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e
+        except Exception as e:
+            err_msg = "Failed to get system info : %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.StorageBackendException(err_msg)
 
     def list_storage_disks(self, storage_id):
         try:
