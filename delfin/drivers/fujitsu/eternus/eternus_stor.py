@@ -207,6 +207,7 @@ class EternusDriver(driver.StorageDriver):
                 'location': controller.get('name'),
                 'soft_version': controller.get('Hard Revision'),
                 'cpu_info': controller.get('CPU Clock'),
+                'cpu_count': consts.DIGITAL_CONSTANT.ONE_INT,
                 'memory_size': str(int(
                     Tools.get_capacity_size(controller.get('Memory Size'))))
             }

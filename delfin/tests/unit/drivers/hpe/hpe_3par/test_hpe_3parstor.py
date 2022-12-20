@@ -1983,6 +1983,7 @@ CONTROLLER_RESULT = [
         'location': None,
         'soft_version': '3.2.2.204',
         'cpu_info': '4 * 2327 MHz',
+        'cpu_count': 4,
         'memory_size': '10737418240'
     }]
 DISK_RESULT = [
