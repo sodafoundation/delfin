@@ -138,52 +138,57 @@ class EternusDriver(driver.StorageDriver):
         pass
 
     def get_storage(self, context):
-        storage_name_dict = self.cli_handler.common_data_encapsulation(
-            consts.GET_STORAGE_NAME)
-        storage_name = storage_name_dict.get('Name')
-        storage_description = storage_name_dict.get('Description')
-        storage_location = storage_name_dict.get('Installation Site')
+        try:
+            storage_name_dict = self.cli_handler.common_data_encapsulation(
+                consts.GET_STORAGE_NAME)
+            storage_name = storage_name_dict.get('Name')
+            storage_description = storage_name_dict.get('Description')
+            storage_location = storage_name_dict.get('Installation Site')
 
-        enclosure_status = self.cli_handler.common_data_encapsulation(
-            consts.GET_ENCLOSURE_STATUS)
-        storage_model = enclosure_status.get('Model Name')
-        storage_serial_number = enclosure_status.get('Serial Number')
-        storage_firmware_version = enclosure_status.get('Firmware Version')
+            enclosure_status = self.cli_handler.common_data_encapsulation(
+                consts.GET_ENCLOSURE_STATUS)
+            storage_model = enclosure_status.get('Model Name')
+            storage_serial_number = enclosure_status.get('Serial Number')
+            storage_firmware_version = enclosure_status.get('Firmware Version')
 
-        storage_status_dict = self.cli_handler.common_data_encapsulation(
-            consts.GET_STORAGE_STATUS)
-        storage_status = consts.STORAGE_STATUS_MAP.get(
-            storage_status_dict.get('Summary Status'))
+            storage_status_dict = self.cli_handler.common_data_encapsulation(
+                consts.GET_STORAGE_STATUS)
+            storage_status = consts.STORAGE_STATUS_MAP.get(
+                storage_status_dict.get('Summary Status'))
 
-        raw_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
-        list_disks = self.list_disks(context)
-        if list_disks:
-            for disks in list_disks:
-                raw_capacity += disks.get('capacity',
-                                          consts.DIGITAL_CONSTANT.ZERO_INT)
-        total_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
-        used_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
-        free_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
-        list_storage_pools = self.list_storage_pools(context)
-        if list_storage_pools:
-            for pools in list_storage_pools:
-                total_capacity += pools.get('total_capacity')
-                used_capacity += pools.get('used_capacity')
-                free_capacity += pools.get('free_capacity')
-        storage = {
-            'name': storage_name,
-            'vendor': consts.GET_STORAGE_VENDOR,
-            'description': storage_description,
-            'model': storage_model,
-            'status': storage_status,
-            'serial_number': storage_serial_number,
-            'firmware_version': storage_firmware_version,
-            'location': storage_location,
-            'raw_capacity': raw_capacity,
-            'total_capacity': total_capacity,
-            'used_capacity': used_capacity,
-            'free_capacity': free_capacity
-        }
+            raw_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
+            list_disks = self.list_disks(context)
+            if list_disks:
+                for disks in list_disks:
+                    raw_capacity += disks.get('capacity',
+                                              consts.DIGITAL_CONSTANT.ZERO_INT)
+            total_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
+            used_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
+            free_capacity = consts.DIGITAL_CONSTANT.ZERO_INT
+            list_storage_pools = self.list_storage_pools(context)
+            if list_storage_pools:
+                for pools in list_storage_pools:
+                    total_capacity += pools.get('total_capacity')
+                    used_capacity += pools.get('used_capacity')
+                    free_capacity += pools.get('free_capacity')
+            storage = {
+                'name': storage_name,
+                'vendor': consts.GET_STORAGE_VENDOR,
+                'description': storage_description,
+                'model': storage_model,
+                'status': storage_status,
+                'serial_number': storage_serial_number,
+                'firmware_version': storage_firmware_version,
+                'location': storage_location,
+                'raw_capacity': raw_capacity,
+                'total_capacity': total_capacity,
+                'used_capacity': used_capacity,
+                'free_capacity': free_capacity
+            }
+        except Exception as e:
+            error_msg = 'Get storage info failed:%s' % six.text_type(e)
+            LOG.error(error_msg)
+            raise exception.StorageBackendException(error_msg)
         return storage
 
     def list_controllers(self, context):

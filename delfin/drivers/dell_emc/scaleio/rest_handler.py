@@ -54,7 +54,7 @@ class RestHandler(RestClient):
                         six.text_type(res.text))
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
-            raise exception.InvalidResults(e)
+            raise
 
     def logout(self):
         try:
@@ -439,9 +439,10 @@ class RestHandler(RestClient):
                 LOG.error('User authentication failed')
                 raise exception.InvalidUsernameOrPassword
             else:
-                raise exception.BadResponse()
+                raise exception.StorageBackendException(
+                    six.text_type(res.text))
         except Exception as err:
             LOG.exception('Get RestHandler.call failed: %(url)s.'
                           ' Error: %(err)s', {'url': url, 'err': err})
-            raise exception.InvalidResults(err)
+            raise
         return result_json
