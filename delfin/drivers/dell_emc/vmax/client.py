@@ -61,7 +61,7 @@ class VMAXClient(object):
             msg = ("Failed to connect to VMAX. Host or Port is not correct: "
                    "{}".format(err))
             LOG.error(msg)
-            raise exception.StorageBackendException(msg)
+            raise exception.InvalidIpOrPort()
 
         if not self.uni_version:
             msg = "Invalid input. Failed to get vmax unisphere version"
