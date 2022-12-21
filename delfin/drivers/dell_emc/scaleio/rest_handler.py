@@ -444,5 +444,5 @@ class RestHandler(RestClient):
         except Exception as err:
             LOG.exception('Get RestHandler.call failed: %(url)s.'
                           ' Error: %(err)s', {'url': url, 'err': err})
-            raise
+            raise exception.StorageBackendException(six.text_type(err))
         return result_json
