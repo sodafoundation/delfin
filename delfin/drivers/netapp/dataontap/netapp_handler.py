@@ -548,10 +548,10 @@ class NetAppHandler(object):
                                     if constant.IP_PATTERN.search(ip) and key:
                                         value = ip
                                         ip_map[key] = value
-                                else:
-                                    if constant.IP_V6_PATTERN.search(ip) and key:
-                                        value = ip
-                                        ip_map[key] = value
+                                elif constant.IP_V6_PATTERN.search(ip) \
+                                        and key:
+                                    value = ip
+                                    ip_map[key] = value
                     status = constants.ControllerStatus.NORMAL \
                         if controller_map['Health'] == 'true' \
                         else constants.ControllerStatus.OFFLINE
