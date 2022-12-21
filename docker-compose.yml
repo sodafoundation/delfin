@@ -55,7 +55,7 @@ services:
     container_name: ${DELFIN_REDIS_HOSTNAME:-redis}
     command: redis-server
     ports:
-      - 6379:6379
+      - ${DELFIN_REDIS_PORT:-6379}:6379
     restart: always
 
   rabbitmq:
