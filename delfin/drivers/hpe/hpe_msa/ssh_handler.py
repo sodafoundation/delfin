@@ -78,7 +78,7 @@ class SSHHandler(object):
                     'free_capacity': int(total_capacity - volume_all_size)
                 }
                 return storage_map
-        except exception.StorageBackendException as e:
+        except exception.DelfinException as e:
             err_msg = "Failed to get system info : %s" % (six.text_type(e))
             LOG.error(err_msg)
             raise e

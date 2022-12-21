@@ -77,7 +77,7 @@ class RestHandler(RestClient):
                           RestHandler.REST_SESSION_URL)
                 raise exception.StorageBackendException(
                     'Obtaining the session is abnormal.')
-        except exception.StorageBackendException as e:
+        except exception.DelfinException as e:
             LOG.error("Login error: %s", six.text_type(e))
             raise e
         except Exception as e:
