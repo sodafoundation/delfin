@@ -67,7 +67,7 @@ PATTERN = re.compile('^[-]{3,}')
 FLOAT_PATTERN = r"\d\.\d"
 IP_PATTERN = re.compile(r'(([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])\.){3}'
                         r'([01]{0,1}\d{0,1}\d|2[0-4]\d|25[0-5])$')
-IP_V6_PATTERN = ip6_regex = re.compile(
+IP_V6_PATTERN = re.compile(
     r'(^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$)|'
     r'(\A([0-9a-f]{1,4}:){1,1}(:[0-9a-f]{1,4}){1,6}\Z)|'
     r'(\A([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}\Z)|'
@@ -117,7 +117,7 @@ EVENT_TIME_TYPE = '%m/%d/%Y %H:%M:%S'
 ALTER_TIME_TYPE = '%a %b %d %H:%M:%S %Y'
 
 CLEAR_ALERT_COMMAND = \
-    "system health alert delete -alerting-resource * -alert-id"
+    "system health alert delete -alerting-resource * -alert-id "
 
 DISK_SHOW_DETAIL_COMMAND = "disk show -instance"
 DISK_SHOW_PHYSICAL_COMMAND = "disk show -physical"
