@@ -135,10 +135,6 @@ GET_ALL_VOLUMES = {
             "ssid": "0004",
             "resourceGroupId": 0,
             "isAluaEnabled": False
-        },
-        {
-            "ldevId": 0,
-            "emulationType": "NOT DEFINED",
         }
     ]
 }
