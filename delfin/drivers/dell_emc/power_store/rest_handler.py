@@ -396,6 +396,13 @@ class RestHandler(RestClient):
             ip_dict[f'{appliance_id}{node_id}'] = address
         return ip_dict
 
+    def get_appliance_name(self):
+        appliance_name = {}
+        appliances = self.rest_call(self.REST_APPLIANCE_URL)
+        for appliance in appliances:
+            appliance_name[appliance.get('id')] = appliance.get('name')
+        return appliance_name
+
     def get_port_hardware(self):
         hardware_dict = {}
         hardware_list = self.rest_call(self.REST_HARDWARE_URL)
@@ -403,7 +410,7 @@ class RestHandler(RestClient):
             hardware_dict[hardware.get('id')] = hardware
         return hardware_dict
 
-    def get_fc_ports(self, storage_id, hardware_dict):
+    def get_fc_ports(self, storage_id, hardware_dict, appliance_name_dict):
         list_fc_ports = []
         fc_res = self.rest_call(self.REST_FC_PORT_URL)
         for fc in fc_res:
@@ -420,7 +427,7 @@ class RestHandler(RestClient):
                 'name': name,
                 'storage_id': storage_id,
                 'native_port_id': fc.get('id'),
-                'location': f'{appliance_id}:{name}',
+                'location': f'{appliance_name_dict.get(appliance_id)}:{name}',
                 'connection_status': connection_status,
                 'health_status': health_status,
                 'type': constants.PortType.FC,
@@ -449,7 +456,7 @@ class RestHandler(RestClient):
             supported_speed = supported_speed.replace('_Kbps', '')
             return int(supported_speed) * units.k
 
-    def get_eth_ports(self, storage_id, hardware_dict):
+    def get_eth_ports(self, storage_id, hardware_dict, appliance_name_dict):
         list_eth_ports = []
         eth_ports = self.rest_call(self.REST_ETH_PORT_URL)
         for eth in eth_ports:
@@ -466,7 +473,7 @@ class RestHandler(RestClient):
                 'name': name,
                 'storage_id': storage_id,
                 'native_port_id': eth.get('id'),
-                'location': f'{appliance_id}:{name}',
+                'location': f'{appliance_name_dict.get(appliance_id)}:{name}',
                 'connection_status': connection_status,
                 'health_status': health_status,
                 'type': constants.PortType.ETH,
@@ -478,7 +485,7 @@ class RestHandler(RestClient):
             list_eth_ports.append(eth_port_result)
         return list_eth_ports
 
-    def get_sas_ports(self, storage_id, hardware_dict):
+    def get_sas_ports(self, storage_id, hardware_dict, appliance_name_dict):
         list_sas_ports = []
         sas_ports = self.rest_call(self.REST_SAS_PORT_URL)
         for sas in sas_ports:
@@ -495,7 +502,7 @@ class RestHandler(RestClient):
                 'name': name,
                 'storage_id': storage_id,
                 'native_port_id': sas.get('id'),
-                'location': f'{appliance_id}:{name}',
+                'location': f'{appliance_name_dict.get(appliance_id)}:{name}',
                 'connection_status': connection_status,
                 'health_status': health_status,
                 'type': constants.PortType.SAS,

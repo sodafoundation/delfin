@@ -743,21 +743,24 @@ sas_info = [
 ports_data = [
     {'name': 'BaseEnclosure-NodeA-IoModule0-FEPort2', 'storage_id': '12345',
      'native_port_id': '090d75723f4147808fd5624582708381',
-     'location': 'A1:BaseEnclosure-NodeA-IoModule0-FEPort2',
+     'location': 'Powerstore1000T-appliance-1:BaseEnclosure-'
+                 'NodeA-IoModule0-FEPort2',
      'connection_status': 'disconnected', 'health_status': 'normal',
      'type': 'fc', 'speed': 16000000000, 'max_speed': 16000000000,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063',
      'wwn': '58:cc:f0:90:4d:22:19:fb'},
     {'name': 'BaseEnclosure-NodeA-IoModule0-FEPort0', 'storage_id': '12345',
      'native_port_id': '210d046f161b4c2ebbcfd3090d706370',
-     'location': 'A1:BaseEnclosure-NodeA-IoModule0-FEPort0',
+     'location': 'Powerstore1000T-appliance-1:BaseEnclosure-'
+                 'NodeA-IoModule0-FEPort0',
      'connection_status': 'disconnected', 'health_status': 'normal',
      'type': 'fc', 'speed': None, 'max_speed': 16000000000,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063',
      'wwn': '58:cc:f0:90:4d:20:19:fb'},
     {'name': 'BaseEnclosure-NodeA-4PortCard-FEPort1', 'storage_id': '12345',
      'native_port_id': '0133e5496e6b4671b37bb2fc94be1a25',
-     'location': 'A1:BaseEnclosure-NodeA-4PortCard-FEPort1',
+     'location': 'Powerstore1000T-appliance-1:BaseEnclosure-'
+                 'NodeA-4PortCard-FEPort1',
      'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'eth', 'speed': None, 'max_speed': None,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063',
@@ -765,7 +768,8 @@ ports_data = [
     {'name': 'BaseEnclosure-NodeB-EmbeddedModule-ServicePort',
      'storage_id': '12345',
      'native_port_id': '0235963690ab404c8e6a3485d5a58198',
-     'location': 'A1:BaseEnclosure-NodeB-EmbeddedModule-ServicePort',
+     'location': 'Powerstore1000T-appliance-1:BaseEnclosure-NodeB-'
+                 'EmbeddedModule-ServicePort',
      'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'eth', 'speed': None, 'max_speed': 1000000000,
      'native_parent_id': '5c93d9044ea94afea7d0ac853b89886c',
@@ -773,14 +777,16 @@ ports_data = [
     {'name': 'BaseEnclosure-NodeA-EmbeddedModule-BEPort0',
      'storage_id': '12345',
      'native_port_id': '7774e11064704ccc9b90d1d2c3c7da2c',
-     'location': 'A1:BaseEnclosure-NodeA-EmbeddedModule-BEPort0',
+     'location': 'Powerstore1000T-appliance-1:BaseEnclosure-NodeA-'
+                 'EmbeddedModule-BEPort0',
      'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'sas', 'speed': None,
      'native_parent_id': '3f75d31ca1dc4d8fb95707c7f996a063'},
     {'name': 'BaseEnclosure-NodeB-EmbeddedModule-BEPort0',
      'storage_id': '12345',
      'native_port_id': '87f9ddbef894406aa7c43501f3d6a008',
-     'location': 'A1:BaseEnclosure-NodeB-EmbeddedModule-BEPort0',
+     'location': 'Powerstore1000T-appliance-1:BaseEnclosure-NodeB-'
+                 'EmbeddedModule-BEPort0',
      'connection_status': 'disconnected', 'health_status': 'unknown',
      'type': 'sas', 'speed': None,
      'native_parent_id': '5c93d9044ea94afea7d0ac853b89886c'}]
@@ -1338,7 +1344,8 @@ class test_PowerStoreDriver(TestCase):
 
     def test_list_ports(self):
         RestHandler.rest_call = mock.Mock(
-            side_effect=[hardware_port_info, fc_info, eth_info, sas_info])
+            side_effect=[hardware_port_info, appliance, fc_info, eth_info,
+                         sas_info])
         ports = self.driver.list_ports(context)
         self.assertListEqual(ports, ports_data)
 
