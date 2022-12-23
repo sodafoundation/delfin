@@ -458,12 +458,14 @@ snmp_alert_data = {
 controllers_data = [
     {'name': 'NodeA', 'storage_id': '12345',
      'native_controller_id': '3f75d31ca1dc4d8fb95707c7f996a063',
-     'status': 'normal', 'location': '0', 'mgmt_ip': '192.168.3.243',
+     'status': 'normal', 'location': 'NodeA:Slot-0',
+     'mgmt_ip': '192.168.3.243',
      'cpu_info': 'Intel(R) Xeon(R) Silver 4108 CPU @ 1.80GHz',
      'cpu_count': 1, 'memory_size': 206158430208},
     {'name': 'NodeB', 'storage_id': '12345',
      'native_controller_id': '5c93d9044ea94afea7d0ac853b89886c',
-     'status': 'normal', 'location': '1', 'mgmt_ip': '192.168.3.244',
+     'status': 'normal', 'location': 'NodeB:Slot-1',
+     'mgmt_ip': '192.168.3.244',
      'cpu_info': 'Intel(R) Xeon(R) Silver 4108 CPU @ 1.80GHz',
      'cpu_count': 1, 'memory_size': 206158430208}]
 alert_sources_data = [{'host': '192.168.3.243'}, {'host': '192.168.3.244'}]

@@ -364,7 +364,7 @@ class RestHandler(RestClient):
                 'native_controller_id': hardware.get('id'),
                 'status': consts.CONTROLLER_STATUS_MAP.get(
                     lifecycle_state, constants.ControllerStatus.UNKNOWN),
-                'location': str(slot),
+                'location': f'{name}:Slot-{slot}',
                 'cpu_info': cpu_info,
                 'cpu_count': consts.DigitalConstant.ONE,
                 'memory_size': memory_size,
