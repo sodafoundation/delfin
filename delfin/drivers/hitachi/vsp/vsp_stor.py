@@ -215,25 +215,37 @@ class HitachiVspDriver(driver.StorageDriver):
         return result
 
     def list_volumes(self, context):
-        head_id = 0
-        is_end = False
-        volume_list = []
-        while is_end is False:
-            is_end = self.get_volumes_paginated(volume_list, head_id)
-            head_id += consts.LDEV_NUMBER_OF_PER_REQUEST
+        try:
+            volume_list = []
+            volumes = self.rest_handler.get_volumes_with_defined()
+            if not volumes:
+                return volume_list
+            volume_list = self.parse_volumes(volumes)
+            if len(volumes.get('data')) >= consts.MAX_VOLUME_NUMBER:
+                head_id = volumes.get('data')[-1].get('ldevId') + 1
+                while True:
+                    volumes_info = self.rest_handler.get_volumes(head_id)
+                    if not volumes_info or not volumes_info.get('data'):
+                        break
+                    volume_list.extend(self.parse_volumes(volumes_info))
+                    head_id = volumes_info.get('data')[-1].get('ldevId') + 1
+        except exception.DelfinException as err:
+            err_msg = "Failed to get volume from hitachi vsp: %s" % \
+                      (six.text_type(err))
+            LOG.error(err_msg)
+            raise err
+        except Exception as e:
+            err_msg = "Failed to get volume from hitachi vsp: %s" % \
+                      (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
         return volume_list
 
-    def get_volumes_paginated(self, volume_list, head_id):
+    def parse_volumes(self, volumes):
         try:
-            if head_id > 10000:
-                return True
-            volumes_info = self.rest_handler.get_volumes(head_id)
-            if not volumes_info or not volumes_info.get('data'):
-                return True
-            volumes = volumes_info.get('data')
+            volume_list = []
+            volumes = volumes.get('data')
             for volume in volumes:
-                if volume.get('emulationType') == 'NOT DEFINED':
-                    continue
                 orig_pool_id = volume.get('poolId')
                 compressed = False
                 deduplicated = False
@@ -283,7 +295,7 @@ class HitachiVspDriver(driver.StorageDriver):
                 }
 
                 volume_list.append(v)
-            return False
+            return volume_list
         except exception.DelfinException as err:
             err_msg = "Failed to get volumes metrics from hitachi vsp: %s" % \
                       (six.text_type(err))

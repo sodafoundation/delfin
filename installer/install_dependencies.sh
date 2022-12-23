@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Install dependencies
+echo Installing dependencies
+sudo apt-get install -y make curl wget libltdl7 libseccomp2 libffi-dev gawk apt-transport-https ca-certificates curl gnupg gnupg-agent lsb-release software-properties-common sshpass pv
+
 echo Enabling docker repository
 sudo mkdir -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
@@ -11,10 +15,6 @@ echo \
 # Update local repositories
 echo Updating local repositories
 sudo apt-get update
-
-# Install dependencies
-echo Installing dependencies
-sudo apt-get install -y make curl wget libltdl7 libseccomp2 libffi-dev gawk apt-transport-https ca-certificates curl gnupg gnupg-agent lsb-release software-properties-common sshpass pv
 
 # Install python dependencies
 echo Installing Python dependencies
