@@ -385,3 +385,8 @@ class ComponentNotFound(NotFound):
 class IncompleteTrapInformation(DelfinException):
     msg_fmt = _("Incomplete trap information."
                 "Storage {0} alert information needs to be synchronized.")
+
+
+class StorageMaxUserCountException(DelfinException):
+    msg_fmt = _(
+        "Exception from storage of users has reached the upper limit: {0}.")
