@@ -110,10 +110,10 @@ class RestClient(object):
             elif 'Read timed out' in str(err):
                 raise exception.StorageBackendException(six.text_type(err))
             elif 'ConnectionResetError(10054' in str(err):
-                raise exception.StorageMaxUserCountException(six.text_type(err))
+                raise exception.StorageMaxUserCountException(str(err))
             elif 'maximum number of server connections' in str(err):
-                raise exception.StorageMaxUserCountException(six.text_type(err))
+                raise exception.StorageMaxUserCountException(str(err))
             else:
-                raise exception.StorageBackendException(six.text_type(err))
+                raise exception.StorageBackendException(str(err))
 
         return res
