@@ -21,6 +21,7 @@ from oslo_log import log as logging
 
 from delfin import cryptor
 from delfin import exception, utils
+from delfin.drivers.macro_san.ms import consts
 from delfin.drivers.utils.ssh_client import SSHPool
 
 LOG = logging.getLogger(__name__)
@@ -79,6 +80,50 @@ class MacroSanSSHPool(SSHPool):
                         if not resp:
                             break
                         result += resp
+            if 'is not a recognized command' in result:
+                raise exception.InvalidIpOrPort()
+        except paramiko.AuthenticationException as ae:
+            LOG.error('doexec Authentication error:{}'.format(ae))
+            raise exception.InvalidUsernameOrPassword()
+        except Exception as e:
+            err = six.text_type(e)
+            LOG.error(err)
+            if 'timed out' in err \
+                    or 'SSH connect timeout' in err:
+                raise exception.SSHConnectTimeout()
+            elif 'No authentication methods available' in err \
+                    or 'Authentication failed' in err \
+                    or 'Invalid username or password' in err:
+                raise exception.InvalidUsernameOrPassword()
+            elif 'not a valid RSA private key file' in err \
+                    or 'not a valid RSA private key' in err:
+                raise exception.InvalidPrivateKey()
+            elif 'Unable to connect to port' in err \
+                    or 'Invalid ip or port' in err:
+                raise exception.InvalidIpOrPort()
+            else:
+                raise exception.SSHException(err)
+        return result
+
+    def do_exec_cli_shell(self, command_list):
+        result = ''
+        try:
+            with self.item() as ssh:
+                if command_list and ssh:
+                    channel = ssh.invoke_shell()
+                    for command in command_list:
+                        utils.check_ssh_injection(command)
+                        channel.send(command + '\n')
+                    while True:
+                        resp = channel.recv(9999).decode('utf8')
+                        if not resp:
+                            continue
+                        result += resp
+                        if result.count(consts.CLI_TAG) == 2:
+                            break
+                    channel.send("quit" + "\n")
+                    channel.send("exit" + "\n")
+                    channel.close()
             if 'is not a recognized command' in result:
                 raise exception.InvalidIpOrPort()
         except paramiko.AuthenticationException as ae:
