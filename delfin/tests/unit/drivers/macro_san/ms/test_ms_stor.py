@@ -954,7 +954,7 @@ class test_macro_san_driver(TestCase):
 
     def test_get_storage(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[SYSTEM_QUERY, VERSION_INFO,
                          POOLS_INFO, RAID_SYS_POOL, RAID_POOL_1,
                          DSU_INFO, DISKS_INFO, DISK_ONE, DISKS_TWO,
@@ -967,7 +967,7 @@ class test_macro_san_driver(TestCase):
 
     def test_get_storage_new(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[SYSTEM_QUERY_TWO, VERSION_INFO,
                          POOLS_INFO, RAID_SYS_POOL, RAID_POOL_1,
                          DSU_INFO, DISKS_INFO, DISK_ONE, DISKS_TWO,
@@ -980,14 +980,14 @@ class test_macro_san_driver(TestCase):
 
     def test_list_storage_pools(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[POOLS_INFO, RAID_SYS_POOL, RAID_POOL_1])
         pools = self.driver.list_storage_pools(context)
         self.assertListEqual(pools, POOLS_DATA)
 
     def test_list_volumes(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[POOLS_INFO, RAID_SYS_POOL, RAID_POOL_1,
                          VOLUME_INFO, VOLUME_QUERY_ONE, VOLUME_QUERY_TWO,
                          VOLUME_TWO_INFO])
@@ -996,7 +996,7 @@ class test_macro_san_driver(TestCase):
 
     def test_list_volumes_new(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[POOLS_INFO, RAID_SYS_POOL, RAID_POOL_1,
                          VOLUME_INFO, VOLUME_ONE_NEW, VOLUME_TWO_NEW,
                          VOLUME_TWO_INFO])
@@ -1005,21 +1005,21 @@ class test_macro_san_driver(TestCase):
 
     def test_list_controllers(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[VERSION_INFO, CPU_INFO, HA_STATUS])
         controllers = self.driver.list_controllers(context)
         self.assertListEqual(controllers, CONTROLLERS_DATA)
 
     def test_list_disks(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[DSU_INFO, DISKS_INFO, DISK_ONE, DISKS_TWO])
         disks = self.driver.list_disks(context)
         self.assertListEqual(disks, DISKS_DATA)
 
     def test_list_ports(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[FC_INFO, HA_STATUS, DSU_INFO, SAS_INFO, None, None,
                          None])
         ports = self.driver.list_ports(context)
@@ -1032,14 +1032,14 @@ class test_macro_san_driver(TestCase):
 
     def test_list_storage_host_initiators(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[INITIATOR_INFO])
         initiators = self.driver.list_storage_host_initiators(context)
         self.assertListEqual(initiators, INITIATOR_DATA)
 
     def test_list_storage_hosts_old(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[consts.UNKNOWN_COMMAND_TAG,
                          INITIATOR_INFO, HOSTS_INFO])
         hosts = self.driver.list_storage_hosts(context)
@@ -1047,28 +1047,28 @@ class test_macro_san_driver(TestCase):
 
     def test_list_storage_hosts_new(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[HOST_INFO_NEW])
         hosts = self.driver.list_storage_hosts(context)
         self.assertListEqual(hosts, HOST_DATA_NEW)
 
     def test_list_storage_hosts_group(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[HOST_GROUPS_INFO, HOST_GROUPS_H_INFO])
         host_groups = self.driver.list_storage_host_groups(context)
         self.assertDictEqual(host_groups, HOST_GROUPS_DATA)
 
     def test_list_volume_groups(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[VOLUME_GROUPS_INFO, VOLUME_GROUPS_N_INFO])
         volume_groups = self.driver.list_volume_groups(context)
         self.assertDictEqual(volume_groups, VOLUME_GROUP_DATA)
 
     def test_list_masking_views_old(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[consts.UNKNOWN_COMMAND_TAG,
                          HOSTS_INFO, VIEWS_ONE, VIEW_TWO, VIEW_TWO, VIEW_TWO,
                          VIEW_TWO, VIEW_TWO, VIEW_TWO])
@@ -1077,7 +1077,7 @@ class test_macro_san_driver(TestCase):
 
     def test_list_masking_views_new(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
-        MacroSanSSHPool.do_exec_shell = mock.Mock(
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
             side_effect=[VIEW_NEW_INFO])
         views = self.driver.list_masking_views(context)
         self.assertListEqual(views, VIEWS_NEW_DATA)
@@ -1115,7 +1115,9 @@ class test_macro_san_driver(TestCase):
     def test_collect_perf_metrics(self):
         MacroSanSSHPool.get = mock.Mock(return_value={paramiko.SSHClient()})
         MacroSanSSHPool.do_exec_shell = mock.Mock(
-            side_effect=[VERSION_SHOW, GET_FILE_LIST])
+            side_effect=[VERSION_SHOW])
+        MacroSanSSHPool.do_exec_cli_shell = mock.Mock(
+            side_effect=[GET_FILE_LIST])
         MsHandler.down_perf_file = mock.Mock(return_value='')
         MacroSanSSHPool.create = mock.Mock(__class__)
         SSHClient.open_sftp = mock.Mock(__class__)

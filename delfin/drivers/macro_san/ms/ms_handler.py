@@ -634,15 +634,15 @@ class MsHandler(object):
     def do_exec(self, command_str, sleep_time=1, mix_time=consts.TIME_LIMIT):
         if self.down_lock:
             try:
-                res = self.ssh_pool.do_exec_shell(
-                    [consts.ODSP_SH, command_str], sleep_time)
+                res = self.ssh_pool.do_exec_cli_shell(
+                    [consts.ODSP_SH, command_str])
             except Exception as e:
                 LOG.error('ssh Command(%s) execution info: %s' % (
                     command_str, six.text_type(e)))
                 raise e
         else:
             try:
-                res = self.ssh_pool.do_exec_shell([command_str], sleep_time)
+                res = self.ssh_pool.do_exec_cli_shell([command_str])
             except Exception as e:
                 LOG.error('cli Command(%s) execution info: %s' % (
                     command_str, six.text_type(e)))
