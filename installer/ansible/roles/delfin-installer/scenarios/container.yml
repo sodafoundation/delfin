@@ -17,7 +17,7 @@
   shell: "{{ item }}"
   with_items:
     - docker build -t sodafoundation/delfin .
-    - DELFIN_METRICS_DIR={{ delfin_exporter_prometheus_metrics_dir }} DELFIN_HOST_IP={{ host_ip }} DELFIN_RABBITMQ_USER={{ delfin_rabbitmq_user }} DELFIN_RABBITMQ_PASS={{ delfin_rabbitmq_pass }} docker compose up -d
+    - DELFIN_REDIS_HOSTNAME=delfin_redis DELFIN_REDIS_PORT={{ delfin_redis_port }} DELFIN_METRICS_DIR={{ delfin_exporter_prometheus_metrics_dir }} DELFIN_HOST_IP={{ host_ip }} DELFIN_RABBITMQ_USER={{ delfin_rabbitmq_user }} DELFIN_RABBITMQ_PASS={{ delfin_rabbitmq_pass }} docker compose up -d
   become: yes
   args:
     chdir: "{{ delfin_work_dir }}"

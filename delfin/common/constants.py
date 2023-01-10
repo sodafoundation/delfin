@@ -155,11 +155,12 @@ class DiskPhysicalType(object):
     SSD_CARD = 'ssd-card'
     SAS_FLASH_VP = 'sas-flash-vp'
     HDD = 'hdd'
+    NVME_SSD = 'nvme-ssd'
     UNKNOWN = 'unknown'
 
     ALL = (
         SATA, SAS, SSD, NL_SSD, FC, LUN, ATA, FLASH, VMDISK,
-        NL_SAS, SSD_CARD, SAS_FLASH_VP, HDD, UNKNOWN)
+        NL_SAS, SSD_CARD, SAS_FLASH_VP, HDD, NVME_SSD, UNKNOWN)
 
 
 class DiskLogicalType(object):
@@ -495,6 +496,9 @@ class StorageMetric:
     CACHE_HIT_RATIO = Metrics.CACHE_HIT_RATIO
     READ_CACHE_HIT_RATIO = Metrics.READ_CACHE_HIT_RATIO
     WRITE_CACHE_HIT_RATIO = Metrics.WRITE_CACHE_HIT_RATIO
+    IO_SIZE = Metrics.IO_SIZE
+    READ_IO_SIZE = Metrics.READ_IO_SIZE
+    WRITE_IO_SIZE = Metrics.WRITE_IO_SIZE
 
 
 class StoragePoolMetric:
@@ -511,6 +515,9 @@ class StoragePoolMetric:
     CACHE_HIT_RATIO = Metrics.CACHE_HIT_RATIO
     READ_CACHE_HIT_RATIO = Metrics.READ_CACHE_HIT_RATIO
     WRITE_CACHE_HIT_RATIO = Metrics.WRITE_CACHE_HIT_RATIO
+    IO_SIZE = Metrics.IO_SIZE
+    READ_IO_SIZE = Metrics.READ_IO_SIZE
+    WRITE_IO_SIZE = Metrics.WRITE_IO_SIZE
 
 
 class VolumeMetric:
@@ -541,6 +548,14 @@ class ControllerMetric:
     READ_THROUGHPUT = Metrics.READ_THROUGHPUT
     WRITE_THROUGHPUT = Metrics.WRITE_THROUGHPUT
     RESPONSE_TIME = Metrics.RESPONSE_TIME
+    READ_RESPONSE_TIME = Metrics.READ_RESPONSE_TIME
+    WRITE_RESPONSE_TIME = Metrics.WRITE_RESPONSE_TIME
+    CACHE_HIT_RATIO = Metrics.CACHE_HIT_RATIO
+    READ_CACHE_HIT_RATIO = Metrics.READ_CACHE_HIT_RATIO
+    WRITE_CACHE_HIT_RATIO = Metrics.WRITE_CACHE_HIT_RATIO
+    IO_SIZE = Metrics.IO_SIZE
+    READ_IO_SIZE = Metrics.READ_IO_SIZE
+    WRITE_IO_SIZE = Metrics.WRITE_IO_SIZE
     CPU_USAGE = Metrics.CPU_USAGE
 
 
@@ -558,6 +573,9 @@ class PortMetric:
     CACHE_HIT_RATIO = Metrics.CACHE_HIT_RATIO
     READ_CACHE_HIT_RATIO = Metrics.READ_CACHE_HIT_RATIO
     WRITE_CACHE_HIT_RATIO = Metrics.WRITE_CACHE_HIT_RATIO
+    IO_SIZE = Metrics.IO_SIZE
+    READ_IO_SIZE = Metrics.READ_IO_SIZE
+    WRITE_IO_SIZE = Metrics.WRITE_IO_SIZE
 
 
 class DiskMetric:
