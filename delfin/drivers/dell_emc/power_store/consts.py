@@ -506,8 +506,7 @@ FILE_SYSTEM_CAP = {
     }
 }
 FS_TYPE_MAP = {
-    'Primary': constants.FSType.THIN,
-    'Snapshot': constants.FSType.THICK
+    'Primary': constants.FSType.THIN
 }
 FS_SECURITY_MODE_MAP = {
     'Native': constants.NASSecurityMode.NATIVE,

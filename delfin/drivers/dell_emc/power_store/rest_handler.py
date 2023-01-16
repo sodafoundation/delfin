@@ -1026,6 +1026,8 @@ class RestHandler(RestClient):
         file_system_list = self.rest_call(self.REST_FILE_SYSTEM_URL)
         for file_system in file_system_list:
             fs_type = file_system.get('filesystem_type')
+            if 'Snapshot' == fs_type:
+                continue
             total_capacity = int(file_system.get('size_total'))
             used_capacity = int(file_system.get('size_used'))
             file_dict = {
