@@ -155,6 +155,7 @@ PERFORMANCE_METRICS_BY_APPLIANCE = 'performance_metrics_by_appliance'
 PERFORMANCE_METRICS_BY_VOLUME = 'performance_metrics_by_volume'
 PERFORMANCE_METRICS_BY_NODE = 'performance_metrics_by_node'
 PERFORMANCE_METRICS_BY_FE_FC_PORT = 'performance_metrics_by_fe_fc_port'
+PERFORMANCE_METRICS_BY_FILE_SYSTEM = 'performance_metrics_by_file_system'
 PERFORMANCE_METRICS_INTERVAL = 'Twenty_Sec'
 PERF_INTERVAL = 20
 
@@ -451,4 +452,69 @@ PORT_CAP = {
         "unit": constants.PortMetric.WRITE_IO_SIZE.unit,
         "description": constants.PortMetric.WRITE_IO_SIZE.description
     }
+}
+FILE_SYSTEM_CAP = {
+    constants.FileSystemMetric.IOPS.name: {
+        "unit": constants.FileSystemMetric.IOPS.unit,
+        "description": constants.FileSystemMetric.IOPS.description
+    },
+    constants.FileSystemMetric.READ_IOPS.name: {
+        "unit": constants.FileSystemMetric.READ_IOPS.unit,
+        "description": constants.FileSystemMetric.READ_IOPS.description
+    },
+    constants.FileSystemMetric.WRITE_IOPS.name: {
+        "unit": constants.FileSystemMetric.WRITE_IOPS.unit,
+        "description": constants.FileSystemMetric.WRITE_IOPS.description
+    },
+    constants.FileSystemMetric.THROUGHPUT.name: {
+        "unit": constants.FileSystemMetric.THROUGHPUT.unit,
+        "description": constants.FileSystemMetric.THROUGHPUT.description
+    },
+    constants.FileSystemMetric.READ_THROUGHPUT.name: {
+        "unit": constants.FileSystemMetric.READ_THROUGHPUT.unit,
+        "description": constants.FileSystemMetric.READ_THROUGHPUT.description
+    },
+    constants.FileSystemMetric.WRITE_THROUGHPUT.name: {
+        "unit": constants.FileSystemMetric.WRITE_THROUGHPUT.unit,
+        "description": constants.FileSystemMetric.WRITE_THROUGHPUT.description
+    },
+    constants.FileSystemMetric.RESPONSE_TIME.name: {
+        "unit": constants.FileSystemMetric.RESPONSE_TIME.unit,
+        "description": constants.FileSystemMetric.RESPONSE_TIME.description
+    },
+    constants.FileSystemMetric.READ_RESPONSE_TIME.name: {
+        "unit": constants.FileSystemMetric.READ_RESPONSE_TIME.unit,
+        "description":
+            constants.FileSystemMetric.READ_RESPONSE_TIME.description
+    },
+    constants.FileSystemMetric.WRITE_RESPONSE_TIME.name: {
+        "unit": constants.FileSystemMetric.WRITE_RESPONSE_TIME.unit,
+        "description":
+            constants.FileSystemMetric.WRITE_RESPONSE_TIME.description
+    },
+    constants.FileSystemMetric.IO_SIZE.name: {
+        "unit": constants.FileSystemMetric.IO_SIZE.unit,
+        "description": constants.FileSystemMetric.IO_SIZE.description
+    },
+    constants.FileSystemMetric.READ_IO_SIZE.name: {
+        "unit": constants.FileSystemMetric.READ_IO_SIZE.unit,
+        "description": constants.FileSystemMetric.READ_IO_SIZE.description
+    },
+    constants.FileSystemMetric.WRITE_IO_SIZE.name: {
+        "unit": constants.FileSystemMetric.WRITE_IO_SIZE.unit,
+        "description": constants.FileSystemMetric.WRITE_IO_SIZE.description
+    }
+}
+FS_TYPE_MAP = {
+    'Primary': constants.FSType.THIN,
+    'Snapshot': constants.FSType.THICK
+}
+FS_SECURITY_MODE_MAP = {
+    'Native': constants.NASSecurityMode.NATIVE,
+    'UNIX': constants.NASSecurityMode.UNIX,
+    'Windows': constants.NASSecurityMode.NTFS
+}
+POOL_MODE_MAP = {
+    'Unified': constants.StorageType.UNIFIED,
+    'Block optimized': constants.StorageType.BLOCK
 }
