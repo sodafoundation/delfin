@@ -976,8 +976,15 @@ class MsHandler(object):
     @staticmethod
     def ssh_close(sftp, ssh):
         if sftp:
-            sftp.close()
-            ssh.close()
+            try:
+                sftp.close()
+                ssh.close()
+            except Exception as e:
+                LOG.error('The service failed to shut down macro_san %s' % (
+                    six.text_type(e)))
+            finally:
+                sftp.close()
+                ssh.close()
 
     def get_fc_port_metrics(self, end_time, resource_disk, start_time,
                             storage_id, file_name_map, sftp):
