@@ -32,7 +32,7 @@ delfin_installation_type: repository
 delfin_branch: master
 
 # Delfin  projects release versions
-delfin_release_version: v1.6.1
+delfin_release_version: v1.7.0
 
 # delete all source packages
 source_purge: true
