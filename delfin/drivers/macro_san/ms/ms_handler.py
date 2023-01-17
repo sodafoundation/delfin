@@ -377,7 +377,8 @@ class MsHandler(object):
                 'model': disk.get('Model'),
                 'firmware': disk.get('FWVersion'),
                 'location': disk_name,
-                'speed': int(disk.get('RPMs')) if disk.get('RPMs') else '',
+                'speed': int(disk.get('RPMs')) if str(
+                    disk.get('RPMs')).isdigit() else '',
                 'capacity': Tools.get_capacity_size(disk.get('Capacity')),
                 'status': consts.DISK_STATUS_MAP.get(
                     status, constants.DiskStatus.NORMAL),
@@ -962,8 +963,6 @@ class MsHandler(object):
                 LOG.info('The system(storage_id: %s) stop to collect macro_san'
                          ' disk performance, The length is: %s',
                          storage_id, len(disk_metrics))
-        except Exception as e:
-            LOG.error(six.text_type(e))
         finally:
             self.ssh_close(sftp, ssh)
         return metrics
@@ -983,8 +982,10 @@ class MsHandler(object):
     @staticmethod
     def ssh_close(sftp, ssh):
         if sftp:
-            sftp.close()
-            ssh.close()
+            try:
+                sftp.close()
+            finally:
+                ssh.close()
 
     def get_fc_port_metrics(self, end_time, resource_disk, start_time,
                             storage_id, file_name_map, sftp):
