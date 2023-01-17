@@ -45,6 +45,7 @@ SAS_PORT_LIST = 'system sas getportlist -c {}:{}'
 SUCCESSFUL_TAG = 'Command completed successfully.'
 FAILED_TAG = 'Command failed.'
 UNKNOWN_COMMAND_TAG = 'Unknown command.'
+CLI_TAG = 'ODSP CLI>'
 PORT_SUCCESSFUL_TAG = 'Commandcompletedsuccessfully.'
 COLON = ':'
 LEFT_HALF_BRACKET = '['
@@ -762,3 +763,8 @@ SPECIAL_VERSION = 'Version:'
 SAS_PORT = 'sasport'
 ISCSI_PORT = 'iscsiport'
 FC_PORT = 'fcport'
+PERF_FILE_TIME = '%Y%m%d%H%M%S'
+
+# The wait time of the 'system performance getfilelist' command is configured
+INITIAL_WAITING_TIME = 60
+MAX_WAITING_TIME = 100
