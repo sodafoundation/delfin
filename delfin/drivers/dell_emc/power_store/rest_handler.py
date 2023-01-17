@@ -905,6 +905,9 @@ class RestHandler(RestClient):
         file_system_metrics_list = []
         file_systems = self.rest_call(self.REST_FILE_SYSTEM_URL)
         for file_system in file_systems:
+            fs_type = file_system.get('filesystem_type')
+            if 'Snapshot' == fs_type:
+                continue
             file_system_id = file_system.get('id')
             file_system_name = file_system.get('name')
             if not file_system_id or not file_system_name:
@@ -1056,6 +1059,9 @@ class RestHandler(RestClient):
             nas_dict[nas_server_id] = nas_server_name
         file_system_list = self.rest_call(self.REST_FILE_SYSTEM_URL)
         for file_system in file_system_list:
+            fs_type = file_system.get('filesystem_type')
+            if 'Snapshot' == fs_type:
+                continue
             file_system_id = file_system.get('id')
             file_system_name = file_system.get('name')
             nas_server_id = file_system.get('nas_server_id')
