@@ -72,7 +72,7 @@ class MsHandler(object):
             raise exception.SSHException('The command returns empty data')
         device_uuid = storage_data_map.get('DeviceUUID')
         storage_serial_number = storage_data_map.get('DeviceSerialNumber')
-        serial_number = f'{self.ssh_host}:{storage_serial_number}'\
+        serial_number = f'{self.ssh_host}:{storage_serial_number}' \
             if storage_serial_number else f'{self.ssh_host}:{device_uuid}'
         storage_name = storage_data_map.get('DeviceName')
         storage_model = storage_data_map.get('DeviceModel')
@@ -89,7 +89,7 @@ class MsHandler(object):
         for disk in disks:
             raw_capacity += disk.get('capacity')
         storage_status = self.get_storage_status(storage_id)
-        model = storage_model if storage_model else\
+        model = storage_model if storage_model else \
             self.get_storage_model(storage_id)
         storage = {
             'name': storage_name if storage_name else device_uuid,
@@ -161,9 +161,12 @@ class MsHandler(object):
         except Exception as e:
             LOG.error('Failed to down storage model file macro_san %s' %
                       (six.text_type(e)))
-        if sftp:
-            sftp.close()
-            ssh.close()
+        try:
+            if sftp:
+                sftp.close()
+        finally:
+            if ssh:
+                ssh.close()
         return local_path
 
     def get_firmware_version(self):
@@ -201,12 +204,12 @@ class MsHandler(object):
         for pool in pools:
             pool_name = pool.get('Name')
             health_status = self.get_pool_status(pool_name)
-            all_capacity_str = pool.get('AllCapacity').replace(',', '')\
+            all_capacity_str = pool.get('AllCapacity').replace(',', '') \
                 if pool.get('AllCapacity') else ''
-            total_capacity_str = pool.get('TotalCapacity').replace(',', '')\
+            total_capacity_str = pool.get('TotalCapacity').replace(',', '') \
                 if pool.get('TotalCapacity') else ''
-            total_capacity = Tools.get_capacity_size(all_capacity_str)\
-                if all_capacity_str else\
+            total_capacity = Tools.get_capacity_size(all_capacity_str) \
+                if all_capacity_str else \
                 Tools.get_capacity_size(total_capacity_str)
             used_capacity = Tools.get_capacity_size(
                 pool.get('UsedCapacity').replace(',', ''))
@@ -276,7 +279,7 @@ class MsHandler(object):
         if consts.FIELDS_ENABLE == thin_provisioning:
             used_capacity_str = volume.get('Thin-LUNUsedCapacity')
             number_b = used_capacity_str.index('B')
-            used_capacity =\
+            used_capacity = \
                 used_capacity_str[:number_b + consts.digital_constant.ONE_INT]
             used_capacity = Tools.get_capacity_size(
                 used_capacity.replace(',', ''))
@@ -431,7 +434,7 @@ class MsHandler(object):
                 alert_name_c = consts.ALERT_NAME_CONFIG.get(
                     alert_name_e, alert_name)
                 alert_model = dict()
-                description = alert.get(consts.PARSE_ALERT_DESCRIPTION)\
+                description = alert.get(consts.PARSE_ALERT_DESCRIPTION) \
                     .encode('iso-8859-1').decode('gbk')
                 alert_model['alert_id'] = alert.get(
                     consts.PARSE_ALERT_ALERT_ID)
@@ -981,10 +984,11 @@ class MsHandler(object):
 
     @staticmethod
     def ssh_close(sftp, ssh):
-        if sftp:
-            try:
+        try:
+            if sftp:
                 sftp.close()
-            finally:
+        finally:
+            if ssh:
                 ssh.close()
 
     def get_fc_port_metrics(self, end_time, resource_disk, start_time,
