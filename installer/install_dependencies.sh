@@ -44,7 +44,7 @@ install_python() {
 }
 
 # Upgrade Python if version is below than $PYTHON_VERSION
-upgrade_python {
+upgrade_python() {
   PYTHON_VERSION=${1}
   if [ -z $PYTHON_VERSION ] || ! [[ $PYTHON_VERSION =~ $re ]]; then
     return
