@@ -56,7 +56,7 @@ upgrade_python() {
 }
 
 # Install setuptools
-install_setuptools {
+install_setuptools() {
   IFS=' '
   v=`python3 -m pip  list | grep -i setuptools | { read _ v; echo $v; }`
   if $(dpkg --compare-versions $v "gt" $SETUPTOOL_VERSION); then
