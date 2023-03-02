@@ -18,9 +18,15 @@ sudo apt-get update
 
 # Install python dependencies
 echo Installing Python dependencies
-sudo apt-get install -y python3-distutils
-sudo apt-get install -y python3-pip
-python3 -m pip install -U pip setuptools
+sudo apt-get install -y python3-distutils python3-testresources python3-pip
+python3 -m pip install -U pip
+
+# Update setuptool version if it is higher than 65
+ver=$(python3 -m pip show setuptools | awk '/^Version: / {sub("^Version: ", ""); print}' | cut -d. -f1)
+if [ "$ver" -gt 65 ]; then
+    echo Downgrade setuptools version to 65
+    python3 -m pip install setuptools==65.0.0
+fi
 
 # Install ansible if not present
 if [ "`which ansible`" != ""  ]; then
