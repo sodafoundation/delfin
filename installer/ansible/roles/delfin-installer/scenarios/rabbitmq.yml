@@ -21,74 +21,13 @@
   apt:
     autoclean: yes
 
-- name: Import RabbitMQ public key
-  apt_key:
-    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
-    state: present
+- name: Install rabbitmq service
+  shell: "{{ item }}"
+  with_items:
+    - bash ./script/install_rabbitmq.sh "{{ ansible_distribution_release }}"
   become: yes
   when:
-    - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
-
-- name: Add Launchpad Erlang PPA key
-  apt_key:
-    keyserver: keyserver.ubuntu.com 
-    id: F77F1EDA57EBB1CC
-  become: yes
-  when:
-    - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
-
-- name: Add PackageCloud RabbitMQ repository
-  apt_key:
-    url: https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey
-    state: present
-  become: yes
-  when:
-    - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
-
-- name: Add RabbitMQ Erlang official repo
-  apt_repository: 
-    repo: deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu {{ ansible_distribution_release }} main
-    state: present
-    filename: rabbitmq
-  become: yes
-  when:
-    - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
-
-- name: Add RabbitMQ Server official repo
-  apt_repository: 
-    repo: deb https://packagecloud.io/rabbitmq/rabbitmq-server/ubuntu/ {{ ansible_distribution_release }} main
-    state: present
-    filename: rabbitmq
-  become: yes
-  when:
-    - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
-
-- name: Import Erlang public key
-  apt_key:
-    url: https://packages.erlang-solutions.com/debian/erlang_solutions.asc
-    state: present
-  become: yes
-  when:
-    - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
-
-- name: Add Erlang official repo
-  apt_repository:
-    repo: deb https://binaries.erlang-solutions.com/debian {{ ansible_distribution_release }} contrib
-    state: present
-    filename: erlang
-  become: yes
-  when:
-    - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
-
-- name: Install RabbitMQ package
-  apt: 
-    name: rabbitmq-server
-    update_cache: yes
-    install_recommends: yes
-    allow_unauthenticated: yes
-    state: present
-  become: yes
-  when:
+    - ansible_distribution == 'Ubuntu'
     - rabbitmqservice.stat.exists is undefined or rabbitmqservice.stat.exists == false
 
 - name: Start the RabbitMQ server
