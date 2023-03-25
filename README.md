@@ -8,9 +8,10 @@
 
 ## Introduction
 
-delfin (Dolphin in spanish!) , the SODA Infrastructure Manager project is an an open source project to provide unified, intelligent and scalable resource management, alert and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment. It will also provide the alert management and metric data(performance/health) for monitoring and further analysis. It will provide a scalable framework where more and more backends as well as client exporters can be added. This will enable to add more storage and infrastructure backends and also support different management clients for monitoring and health prediction.
+delfin (Dolphin in Spanish!), the SODA Infrastructure Manager project is an open source project to provide unified, intelligent and scalable resource management, alerting and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment.
+It will also provide alert management and metric data(performance/health) for monitoring and further analysis. It will provide a scalable framework where more and more backends as well as client exporters can be added. This will make it possible to add more storage and infrastructure backends and also support different management clients for monitoring and health prediction. It will perform automated remediation which allows the process of problem solving with alerts to quicken and increases efficiency.
 
-It provides unified APIs to access, export and connect with clients as well as a set of interfaces for various driver addition.
+It provides unified APIs to access, export and connect with clients as well as a set of interfaces for addition of various drivers.
 
 This is one of the SODA Core Projects and is maintained by SODA Foundation directly.
 
@@ -24,7 +25,8 @@ This is one of the SODA Core Projects and is maintained by SODA Foundation direc
 
 ## Quick Start - To Develop
 
-[https://docs.sodafoundation.io/guides/developer-guides/delfin](https://docs.sodafoundation.io/guides/developer-guides/delfin/)
+Delfin Developer Guide: [https://docs.sodafoundation.io/guides/developer-guides/delfin](https://docs.sodafoundation.io/guides/developer-guides/delfin/)
+Delfin Driver Developer Guide: [https://docs.sodafoundation.io/guides/developer-guides/delfin/driver-developer-guide/](https://docs.sodafoundation.io/guides/developer-guides/delfin/driver-developer-guide/)
 
 ## Latest Releases
 
@@ -46,16 +48,16 @@ Checkout [https://github.com/sodafoundation/delfin/issues](https://github.com/so
 
 ## Project Roadmap
 
-We want to build a unified intelligent and scalable infrastructure management framework for resource management (config, add, remove, update), alert management and performance metrics management.
+We want to build a unified, intelligent and scalable infrastructure management framework for resource management (config, add, remove, update), alert management and performance metrics management.
   
 [https://docs.sodafoundation.io](https://docs.sodafoundation.io/)
 
 ## Join SODA Foundation
 
-Website : [https://sodafoundation.io](https://sodafoundation.io/)
+Website: [https://sodafoundation.io](https://sodafoundation.io/)
 
-Slack  : [https://sodafoundation.io/slack/](https://sodafoundation.io/slack/)
+Slack: [https://sodafoundation.io/slack/](https://sodafoundation.io/slack/)
 
-Twitter  : [@sodafoundation](https://twitter.com/sodafoundation)
+Twitter: [@sodafoundation](https://twitter.com/sodafoundation)
 
-Mailinglist  : [https://lists.sodafoundation.io](https://lists.sodafoundation.io/)
+Mailing list : [https://lists.sodafoundation.io](https://lists.sodafoundation.io/)
