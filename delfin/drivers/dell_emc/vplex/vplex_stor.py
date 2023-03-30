@@ -327,7 +327,7 @@ class VplexStorageDriver(driver.StorageDriver):
             find_capacity = re.findall(r"capacity\s+is\s+(("
                                        r"[0-9]*(\.[0-9]{1,3})"
                                        r"[a-zA-Z])|([0-9]+)[a-zA-Z])",
-                custom_data)
+                                       custom_data)
             find_capacity_str = find_capacity[-1][0]
             capacity = self.get_capacity_by_unit(find_capacity_str)
         except Exception as e:
