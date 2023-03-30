@@ -349,9 +349,12 @@ class VplexStorageDriver(driver.StorageDriver):
             find_capacity_float = float(
                 find_capacity_str[:find_capacity_str.index('M')])
             capacity = int(find_capacity_float * units.Mi)
+        elif 'K' in find_capacity_str:
+            find_capacity_float = float(
+                find_capacity_str[:find_capacity_str.index('K')])
+            capacity = int(find_capacity_float * units.Ki)
         else:
-            find_capacity_float = float(find_capacity_str)
-            capacity = int(find_capacity_float * units.Mi)
+            capacity = int(find_capacity_str)
         return capacity
 
     def list_controllers(self, context):
