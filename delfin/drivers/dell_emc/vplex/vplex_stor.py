@@ -324,16 +324,37 @@ class VplexStorageDriver(driver.StorageDriver):
             get_virtual_volume_summary_resp(cluster_name)
         try:
             custom_data = resposne_summary.get("custom-data")
-            find_capacity = re.findall(
-                r"capacity\s+is\s+(([0-9]*(\.[0-9]{1,3}))|([0-9]+))",
-                custom_data)
+            find_capacity = re.findall(r"capacity\s+is\s+(("
+                                       r"[0-9]*(\.[0-9]{1,3})"
+                                       r"[a-zA-Z])|([0-9]+)[a-zA-Z])",
+                                       custom_data)
             find_capacity_str = find_capacity[-1][0]
-            find_capacity_float = float(find_capacity_str)
-            capacity = int(find_capacity_float * units.Ti)
+            capacity = self.get_capacity_by_unit(find_capacity_str)
         except Exception as e:
             LOG.error("Storage used capacity, cluster %s analyse error %s" %
                       cluster_name, six.text_type(e))
             raise e
+        return capacity
+
+    def get_capacity_by_unit(self, find_capacity_str):
+        if 'G' in find_capacity_str:
+            find_capacity_float = float(
+                find_capacity_str[:find_capacity_str.index('G')])
+            capacity = int(find_capacity_float * units.Gi)
+        elif 'T' in find_capacity_str:
+            find_capacity_float = float(
+                find_capacity_str[:find_capacity_str.index('T')])
+            capacity = int(find_capacity_float * units.Ti)
+        elif 'M' in find_capacity_str:
+            find_capacity_float = float(
+                find_capacity_str[:find_capacity_str.index('M')])
+            capacity = int(find_capacity_float * units.Mi)
+        elif 'K' in find_capacity_str:
+            find_capacity_float = float(
+                find_capacity_str[:find_capacity_str.index('K')])
+            capacity = int(find_capacity_float * units.Ki)
+        else:
+            capacity = int(find_capacity_str)
         return capacity
 
     def list_controllers(self, context):
