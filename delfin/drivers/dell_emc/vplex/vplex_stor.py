@@ -732,16 +732,3 @@ class VplexStorageDriver(driver.StorageDriver):
                     child_map[name] = value
                 attributes_list.append(child_map)
         return attributes_list
-
-
-@staticmethod
-def handle_detail_list(detail_info, detail_map, split):
-    detail_arr = detail_info.split('\n')
-    for detail in detail_arr:
-        if detail is not None and detail != '':
-            strinfo = detail.split(split, 1)
-            key = strinfo[0]
-            value = ''
-            if len(strinfo) > 1:
-                value = strinfo[1]
-            detail_map[key] = value
