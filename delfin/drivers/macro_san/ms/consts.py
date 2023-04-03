@@ -537,7 +537,6 @@ PARSE_ALERT_SEVERITY_MAP = {
     '4': constants.Severity.INFORMATIONAL,
 }
 
-
 STORAGE_CAP = {
     constants.StorageMetric.IOPS.name: {
         "unit": constants.StorageMetric.IOPS.unit,
@@ -752,6 +751,8 @@ DISK_REGULAR = '^perf_disk'
 SYSTEM_PERFORMANCE_FILE = 'system performance getfilelist'
 VERSION_SHOW = 'versionshow'
 CSV = '.csv'
+FILE_SIZE = 32 * 1024 ** 2
+INVALID_PATH = '/'
 SIXTY = 60
 ADD_FOLDER = '{}/delfin/drivers/utils/performance_file/macro_san/{}{}{}'
 PERF_LUN = 'perf_lun_'
