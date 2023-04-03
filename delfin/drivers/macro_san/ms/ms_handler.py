@@ -161,12 +161,8 @@ class MsHandler(object):
         except Exception as e:
             LOG.error('Failed to down storage model file macro_san %s' %
                       (six.text_type(e)))
-        try:
-            if sftp:
-                sftp.close()
         finally:
-            if ssh:
-                ssh.close()
+            self.ssh_close(sftp, ssh)
         return local_path
 
     def get_firmware_version(self):
@@ -1143,12 +1139,31 @@ class MsHandler(object):
                 if consts.CSV in file_name:
                     continue
                 tar = tarfile.open(local_path_file)
+                all_child_names = tar.getnames()
+                is_invalid = False
+                for name in all_child_names:
+                    if consts.INVALID_PATH in name:
+                        LOG.error('The name of the file too be '
+                                  'decompressed is invalid:%s', name)
+                        is_invalid = True
+                        break
+                if is_invalid:
+                    continue
+                file_member = tar.getmember(local_path_file)
+                if consts.FILE_SIZE < file_member.size:
+                    LOG.error('File size is too large:%s', local_path_file)
+                    continue
                 tar.extractall(local_path)
         except Exception as e:
             LOG.error('Failed to down perf file %s macro_san %s' %
                       (folder, six.text_type(e)))
-        if tar:
-            tar.close()
+        finally:
+            try:
+                if tar:
+                    tar.close()
+            except Exception as exp:
+                LOG.error('Failed to close tarfile connect, the reason is %s.',
+                          six.text_type(exp))
         return local_path
 
     @staticmethod
