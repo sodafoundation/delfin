@@ -192,7 +192,8 @@ class NasHandler(object):
                 self.format_data_to_map(disk_info, 'Capacity')
             disks_list = []
             for disk_map in disk_map_list:
-                if 'Status' in disk_map and "HDSdevname" in disk_map and "Capacity" in disk_map:
+                if 'Status' in disk_map and "HDSdevname" in disk_map and\
+                        "Capacity" in disk_map:
                     size = disk_map.get('Capacity').split('GiB')[0] + "GB"
                     status = constants.DiskStatus.NORMAL \
                         if disk_map.get('Status') == 'OK' \
@@ -266,7 +267,7 @@ class NasHandler(object):
                 if len(value_array) == constant.POOL_INDEX.get('pool_len'):
                     total_capacity = \
                         Tools.get_capacity_size(
-                            value_array[constant.POOL_INDEX.get('total_index')] +
+                            value_array[constant.POOL_INDEX['total_index']] +
                             'GB')
                     free_capacity = \
                         size_map.get(
@@ -274,10 +275,10 @@ class NasHandler(object):
                             total_capacity)
                     status = constants.StoragePoolStatus.NORMAL \
                         if value_array[
-                               constant.POOL_INDEX.get('status_index')] == 'Yes' \
+                               constant.POOL_INDEX['status_index']] == 'Yes'\
                         else constants.StoragePoolStatus.ABNORMAL
                     pool_model = {
-                        'name': value_array[constant.POOL_INDEX.get('name_index')],
+                        'name': value_array[constant.POOL_INDEX['name_index']],
                         'storage_id': storage_id,
                         'native_storage_pool_id': value_array[
                             constant.POOL_INDEX.get('name_index')],
@@ -391,7 +392,7 @@ class NasHandler(object):
         try:
             command = constant.ALERT_INFO_COMMAND
             if query_para and 'begin_time' in query_para:
-                timeArray = time.gmtime(int(query_para.get('begin_time')) / 1000)
+                timeArray = time.gmtime(int(query_para['begin_time']) / 1000)
                 begin_time = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
                 command += constant.ALERT_TIME % begin_time
             alert_info = self.ssh_do_exec([command])
@@ -529,7 +530,7 @@ class NasHandler(object):
             for status in status_array:
                 status_info = status.split()
                 if len(status_info) > constant.FS_INDEX.get('status_len'):
-                    status_map[status_info[constant.FS_INDEX.get('id_index')]] = \
+                    status_map[status_info[constant.FS_INDEX['id_index']]] = \
                         [status_info[constant.FS_INDEX.get('pool_index')],
                          status_info[constant.FS_INDEX.get('status_index')]]
             for fs in fs_array:
@@ -548,7 +549,7 @@ class NasHandler(object):
                     used_capacity = Tools.get_capacity_size(used_capacity)
                     free_capacity = Tools.get_capacity_size(free_capacity)
                     volume_type = constants.VolumeType.THICK \
-                        if fs_info[constant.FS_INDEX.get('type_index')] == 'No' \
+                        if fs_info[constant.FS_INDEX['type_index']] == 'No' \
                         else constants.VolumeType.THIN
                     pool_id = status_map.get(fs_info[0])[0] \
                         if status_map.get(fs_info[0]) else None
