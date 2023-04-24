@@ -1777,7 +1777,6 @@ class test_PureFlashArrayDriver(TestCase):
     def test_collect_perf_metrics(self):
         RestHandler.rest_call = mock.Mock(
             side_effect=[storage_id_info, drive_metrics])
-        localtime = time.mktime(time.localtime()) * units.k
         storage_id = 12345
         metrics = self.driver.collect_perf_metrics(
             context, storage_id, storage_resource_metrics, 1619257043000,
