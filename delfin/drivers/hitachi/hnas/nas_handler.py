@@ -130,22 +130,22 @@ class NasHandler(object):
             used_capacity = \
             free_capacity = 0
         for disk in disk_list:
-            raw_capacity += disk['capacity']
+            raw_capacity += disk.get('capacity')
         status = \
-            constant.CLUSTER_STATUS.get(storage_map['ClusterHealth'])
+            constant.CLUSTER_STATUS.get(storage_map.get('ClusterHealth'))
         pool_list = self.get_pool(None)
         for pool in pool_list:
-            total_capacity += pool['total_capacity']
-            used_capacity += pool['used_capacity']
-            free_capacity += pool['free_capacity']
+            total_capacity += pool.get('total_capacity')
+            used_capacity += pool.get('used_capacity')
+            free_capacity += pool.get('free_capacity')
         storage_model = {
-            "name": storage_map['ClusterName'],
+            "name": storage_map.get('ClusterName'),
             "vendor": constant.STORAGE_VENDOR,
             "model": model,
             "status": status,
             "serial_number": serial_number.replace(')', ''),
             "firmware_version": version[0],
-            "location": location_map['Location'],
+            "location": location_map.get('Location'),
             "total_capacity": total_capacity,
             "raw_capacity": raw_capacity,
             "used_capacity": used_capacity,
@@ -192,15 +192,15 @@ class NasHandler(object):
                 self.format_data_to_map(disk_info, 'Capacity')
             disks_list = []
             for disk_map in disk_map_list:
-                if 'Status' in disk_map:
-                    size = disk_map['Capacity'].split('GiB')[0] + "GB"
+                if 'Status' in disk_map and "HDSdevname" in disk_map and "Capacity" in disk_map:
+                    size = disk_map.get('Capacity').split('GiB')[0] + "GB"
                     status = constants.DiskStatus.NORMAL \
-                        if disk_map['Status'] == 'OK' \
+                        if disk_map.get('Status') == 'OK' \
                         else constants.DiskStatus.ABNORMAL
-                    disk_type = disk_map['Type']
+                    disk_type = disk_map.get('Type')
                     type_array = disk_type.split(';')
                     model = vendor = version = None
-                    if len(type_array) > constant.DISK_INDEX['type_len']:
+                    if len(type_array) > constant.DISK_INDEX.get('type_len'):
                         model = \
                             type_array[constant.DISK_INDEX[
                                 'model_index']].replace('Model', '')
@@ -211,13 +211,13 @@ class NasHandler(object):
                             type_array[constant.DISK_INDEX[
                                 'version_index']].replace('Revision', '')
                     pool_id = disk_map.get('Usedinspan')
-                    serial_number = disk_map['Luid'].split(']')[-1]
+                    serial_number = disk_map.get('Luid').split(')')[-1]
                     if pool_id:
                         pool_id = pool_id.split('(')[0]
                     disk_model = {
-                        'name': disk_map['HDSdevname'],
+                        'name': disk_map.get('HDSdevname'),
                         'storage_id': storage_id,
-                        'native_disk_id': disk_map['DeviceID'],
+                        'native_disk_id': disk_map.get('DeviceID'),
                         'serial_number': serial_number,
                         'manufacturer': vendor,
                         'model': model,
@@ -263,24 +263,24 @@ class NasHandler(object):
             size_map = self.get_pool_size()
             for pool in pool_array:
                 value_array = pool.split()
-                if len(value_array) == constant.POOL_INDEX['pool_len']:
+                if len(value_array) == constant.POOL_INDEX.get('pool_len'):
                     total_capacity = \
                         Tools.get_capacity_size(
-                            value_array[constant.POOL_INDEX['total_index']] +
+                            value_array[constant.POOL_INDEX.get('total_index')] +
                             'GB')
                     free_capacity = \
                         size_map.get(
-                            value_array[constant.POOL_INDEX['free_index']],
+                            value_array[constant.POOL_INDEX.get('free_index')],
                             total_capacity)
                     status = constants.StoragePoolStatus.NORMAL \
                         if value_array[
-                            constant.POOL_INDEX['status_index']] == 'Yes' \
+                               constant.POOL_INDEX.get('status_index')] == 'Yes' \
                         else constants.StoragePoolStatus.ABNORMAL
                     pool_model = {
-                        'name': value_array[constant.POOL_INDEX['name_index']],
+                        'name': value_array[constant.POOL_INDEX.get('name_index')],
                         'storage_id': storage_id,
                         'native_storage_pool_id': value_array[
-                            constant.POOL_INDEX['name_index']],
+                            constant.POOL_INDEX.get('name_index')],
                         'status': status,
                         'storage_type': constants.StorageType.FILE,
                         'total_capacity': total_capacity,
@@ -307,17 +307,17 @@ class NasHandler(object):
             nodes_array = self.get_table_data(node_info)
             for nodes in nodes_array:
                 node = nodes.split()
-                if len(node) > constant.NODE_INDEX['node_len']:
+                if len(node) > constant.NODE_INDEX.get('node_len'):
                     status = constants.ControllerStatus.NORMAL \
                         if node[
                             constant.NODE_INDEX[
                                 'status_index']] == 'ONLINE' \
                         else constants.ControllerStatus.OFFLINE
                     controller_model = {
-                        'name': node[constant.NODE_INDEX['name_index']],
+                        'name': node[constant.NODE_INDEX.get('name_index')],
                         'storage_id': storage_id,
                         'native_controller_id': node[
-                            constant.NODE_INDEX['id_index']],
+                            constant.NODE_INDEX.get('id_index')],
                         'status': status
                     }
                     controller_list.append(controller_model)
@@ -340,9 +340,9 @@ class NasHandler(object):
         for alert in alert_array:
             if alert and 'CAUSE' not in alert:
                 alert_data = alert.split()
-                if len(alert_data) > constant.ALERT_INDEX['alert_len'] \
+                if len(alert_data) > constant.ALERT_INDEX.get('alert_len') \
                         and alert_data[
-                    constant.ALERT_INDEX['severity_index']] \
+                    constant.ALERT_INDEX.get('severity_index')] \
                         in constant.SEVERITY_MAP:
                     occur_time = \
                         alert_data[constant.ALERT_INDEX['year_index']] + \
@@ -352,9 +352,9 @@ class NasHandler(object):
                         int(time.mktime(time.strptime(
                             occur_time, constant.TIME_TYPE))) * 1000
                     if not query_para or \
-                            (int(query_para['begin_time'])
+                            (int(query_para.get('begin_time'))
                              <= occur_time
-                             <= int(query_para['end_time'])):
+                             <= int(query_para.get('end_time'))):
                         description = ''
                         for i in range(4, len(alert_data)):
                             description += alert_data[i] + ' '
@@ -391,7 +391,7 @@ class NasHandler(object):
         try:
             command = constant.ALERT_INFO_COMMAND
             if query_para and 'begin_time' in query_para:
-                timeArray = time.gmtime(int(query_para['begin_time']) / 1000)
+                timeArray = time.gmtime(int(query_para.get('begin_time')) / 1000)
                 begin_time = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
                 command += constant.ALERT_TIME % begin_time
             alert_info = self.ssh_do_exec([command])
@@ -399,7 +399,7 @@ class NasHandler(object):
             alert_list = self.format_alert_list(alert_array, query_para)
             alert_list = \
                 sorted(alert_list,
-                       key=lambda x: x['occur_time'], reverse=True)
+                       key=lambda x: x.get('occur_time'), reverse=True)
             return alert_list
         except exception.DelfinException as e:
             err_msg = "Failed to get alerts from " \
@@ -528,27 +528,27 @@ class NasHandler(object):
             status_map = {}
             for status in status_array:
                 status_info = status.split()
-                if len(status_info) > constant.FS_INDEX['status_len']:
-                    status_map[status_info[constant.FS_INDEX['id_index']]] = \
-                        [status_info[constant.FS_INDEX['pool_index']],
-                         status_info[constant.FS_INDEX['status_index']]]
+                if len(status_info) > constant.FS_INDEX.get('status_len'):
+                    status_map[status_info[constant.FS_INDEX.get('id_index')]] = \
+                        [status_info[constant.FS_INDEX.get('pool_index')],
+                         status_info[constant.FS_INDEX.get('status_index')]]
             for fs in fs_array:
                 fs_info = list(filter(None, fs.split('  ')))
-                if len(fs_info) > constant.FS_INDEX['detail_len']:
+                if len(fs_info) > constant.FS_INDEX.get('detail_len'):
                     total_capacity = \
-                        fs_info[constant.FS_INDEX['total_index']].replace(
+                        fs_info[constant.FS_INDEX.get('total_index')].replace(
                             ' ', '')
                     used_capacity = \
-                        fs_info[constant.FS_INDEX['used_index']].replace(
+                        fs_info[constant.FS_INDEX.get('used_index')].replace(
                             ' ', '').split('(')[0]
                     free_capacity = \
-                        fs_info[constant.FS_INDEX['free_index']].replace(
+                        fs_info[constant.FS_INDEX.get('free_index')].replace(
                             ' ', '').split('(')[0]
                     total_capacity = Tools.get_capacity_size(total_capacity)
                     used_capacity = Tools.get_capacity_size(used_capacity)
                     free_capacity = Tools.get_capacity_size(free_capacity)
                     volume_type = constants.VolumeType.THICK \
-                        if fs_info[constant.FS_INDEX['type_index']] == 'No' \
+                        if fs_info[constant.FS_INDEX.get('type_index')] == 'No' \
                         else constants.VolumeType.THIN
                     pool_id = status_map.get(fs_info[0])[0] \
                         if status_map.get(fs_info[0]) else None
@@ -757,10 +757,10 @@ class NasHandler(object):
             for nfs in nfs_map_list:
                 qtree_id = None
                 for qtree in qtree_list:
-                    if nfs.get('Exportpath') == qtree['path'] \
-                            and qtree['native_filesystem_id'] \
+                    if nfs.get('Exportpath') == qtree.get('path') \
+                            and qtree.get('native_filesystem_id') \
                             == nfs.get('Filesystemlabel'):
-                        qtree_id = qtree['native_qtree_id']
+                        qtree_id = qtree.get('native_qtree_id')
                 if nfs.get('Filesystemlabel'):
                     native_share_id = \
                         nfs.get('Filesystemlabel') \
