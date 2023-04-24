@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import time
 from unittest import TestCase, mock
 
 import six
 from oslo_log import log
-from oslo_utils import units
 
 from delfin.common import constants
 from delfin.drivers.pure.flasharray import consts
