@@ -275,7 +275,7 @@ class NasHandler(object):
                             total_capacity)
                     status = constants.StoragePoolStatus.NORMAL \
                         if value_array[
-                               constant.POOL_INDEX['status_index']] == 'Yes'\
+                            constant.POOL_INDEX['status_index']] == 'Yes' \
                         else constants.StoragePoolStatus.ABNORMAL
                     pool_model = {
                         'name': value_array[constant.POOL_INDEX['name_index']],
