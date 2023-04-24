@@ -395,7 +395,7 @@ GET_ALL_ETHPORTS = {
     "entries": [
         {
             "content": {
-                "id": "spa_eth0",
+                "id": "spa_srm",
                 "speed": 10000,
                 "connectorType": 1,
                 "requestedSpeed": 0,
@@ -616,7 +616,7 @@ GET_ALL_IP = {
                 "ipAddress": "192.168.3.111",
                 "ipProtocolVersion": 4,
                 "ipPort": {
-                    "id": "spa_eth1"
+                    "id": "spa_mgmt"
                 }
             }
         }
@@ -662,12 +662,12 @@ port_result = [
     {
         'name': 'SP A Ethernet Port 0',
         'storage_id': '12345',
-        'native_port_id': 'spa_eth0',
+        'native_port_id': 'spa_srm',
         'location': 'SP A Ethernet Port 0',
         'connection_status': 'connected',
         'health_status': 'normal',
         'type': 'eth',
-        'logical_type': '',
+        'logical_type': 'management',
         'speed': 10000000000,
         'max_speed': 10000000000,
         'native_parent_id': 'spa',
@@ -691,8 +691,8 @@ port_result = [
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E8:4B',
-        'ipv4': '192.168.3.111',
-        'ipv4_mask': '255.255.255.0',
+        'ipv4': None,
+        'ipv4_mask': None,
         'ipv6': None,
         'ipv6_mask': None
     }, {
@@ -739,14 +739,14 @@ port_result = [
         'connection_status': 'connected',
         'health_status': 'normal',
         'type': 'eth',
-        'logical_type': '',
+        'logical_type': 'management',
         'speed': 10000000000,
         'max_speed': 10000000000,
         'native_parent_id': 'spa',
         'wwn': '',
         'mac_address': '00:50:56:81:E5:05',
-        'ipv4': None,
-        'ipv4_mask': None,
+        'ipv4': '192.168.3.111',
+        'ipv4_mask': '255.255.255.0',
         'ipv6': None,
         'ipv6_mask': None
     }, {

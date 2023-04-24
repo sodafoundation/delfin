@@ -383,6 +383,9 @@ class UnityStorDriver(driver.StorageDriver):
                                     ipv6, ip_content.get('ipAddress'))
                                 ipv6_mask = UnityStorDriver.handle_port_ip(
                                     ipv6_mask, ip_content.get('netmask'))
+                logical_type = ''
+                if '_mgmt' in content.get('id') or '_srm' in content.get('id'):
+                    logical_type = constants.PortLogicalType.MANAGEMENT
                 port_result = {
                     'name': content.get('name'),
                     'storage_id': self.storage_id,
@@ -391,7 +394,7 @@ class UnityStorDriver(driver.StorageDriver):
                     'connection_status': conn_status,
                     'health_status': status,
                     'type': constants.PortType.ETH,
-                    'logical_type': '',
+                    'logical_type': logical_type,
                     'speed': int(content.get('speed')) * units.M
                     if content.get('speed') is not None else None,
                     'max_speed': int(content.get('speed')) * units.M
@@ -1025,10 +1028,12 @@ class UnityStorDriver(driver.StorageDriver):
                 'type': 'RAW',
                 'unit': unit
             }
-            if 'THROUGHPUT' in metric.get('type').upper() or \
-                    'RESPONSETIME' in metric.get('type').upper():
+            if 'RESPONSETIME' in metric.get('type').upper():
                 for tm in metric.get('values'):
                     metric['values'][tm] = metric['values'][tm] / units.k
+            if 'THROUGHPUT' in metric.get('type').upper():
+                for tm in metric.get('values'):
+                    metric['values'][tm] = metric['values'][tm] / units.Ki
             value = constants.metric_struct(name=metric.get('type'),
                                             labels=labels,
                                             values=metric.get('values'))
