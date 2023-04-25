@@ -307,7 +307,7 @@ class NasHandler(object):
             nodes_array = self.get_table_data(node_info)
             for nodes in nodes_array:
                 node = nodes.split()
-                if not nods or len(node) < constant.NODE_INDEX['node_len']:
+                if not nodes or len(node) < constant.NODE_INDEX['node_len']:
                     break
                 if len(node) > constant.NODE_INDEX['node_len']:
                     status = constants.ControllerStatus.NORMAL \
