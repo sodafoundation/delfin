@@ -123,7 +123,7 @@ ALERT_INDEX = {
 }
 
 NODE_INDEX = {
-    'node_len': 6,
+    'node_len': 7,
     'status_index': 2,
     'name_index': 1,
     'id_index': 0
