@@ -309,20 +309,19 @@ class NasHandler(object):
                 node = nodes.split()
                 if not nodes or len(node) < constant.NODE_INDEX['node_len']:
                     break
-                if len(node) > constant.NODE_INDEX['node_len']:
-                    status = constants.ControllerStatus.NORMAL \
-                        if node[
-                            constant.NODE_INDEX[
-                                'status_index']] == 'ONLINE' \
-                        else constants.ControllerStatus.OFFLINE
-                    controller_model = {
-                        'name': node[constant.NODE_INDEX['name_index']],
-                        'storage_id': storage_id,
-                        'native_controller_id': node[
-                            constant.NODE_INDEX['id_index']],
-                        'status': status
-                    }
-                    controller_list.append(controller_model)
+                status = constants.ControllerStatus.NORMAL \
+                    if node[
+                           constant.NODE_INDEX[
+                               'status_index']] == 'ONLINE' \
+                    else constants.ControllerStatus.OFFLINE
+                controller_model = {
+                    'name': node[constant.NODE_INDEX['name_index']],
+                    'storage_id': storage_id,
+                    'native_controller_id': node[
+                        constant.NODE_INDEX['id_index']],
+                    'status': status
+                }
+                controller_list.append(controller_model)
             return controller_list
         except exception.DelfinException as e:
             err_msg = "Failed to get controllers from " \
