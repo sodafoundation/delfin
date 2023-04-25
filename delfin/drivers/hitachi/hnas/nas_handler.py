@@ -192,7 +192,7 @@ class NasHandler(object):
                 self.format_data_to_map(disk_info, 'Capacity')
             disks_list = []
             for disk_map in disk_map_list:
-                if 'Status' in disk_map:
+                if 'Status' in disk_map and 'HDSdevname' in disk_map:
                     size = disk_map['Capacity'].split('GiB')[0] + "GB"
                     status = constants.DiskStatus.NORMAL \
                         if disk_map['Status'] == 'OK' \
@@ -307,6 +307,8 @@ class NasHandler(object):
             nodes_array = self.get_table_data(node_info)
             for nodes in nodes_array:
                 node = nodes.split()
+                if not nods or len(node) < constant.NODE_INDEX['node_len']:
+                    break
                 if len(node) > constant.NODE_INDEX['node_len']:
                     status = constants.ControllerStatus.NORMAL \
                         if node[
