@@ -500,6 +500,18 @@ pba-hnas-1-1:$ cluster-show -y\r
 ID  Node Name        Status    FS Access   Aggs        Netwrk  FC   EVS IDs\r
 --  ---------------  --------  ----------  ----------  ------  ---  -------\r
 1   pba-hnas-1-1     ONLINE    OK          Degraded    OK      OK   [0,1,2]\r
+\r
+Cluster Communications Status:\r
+\r
+Cluster Interconnect\r
+From  To=> Node 1  Node 2  \r
+Node 1       --      OK   \r
+Node 2       OK      --   \r
+\r
+Management Network\r
+From  To=> Node 1  Node 2  \r
+Node 1       --      OK   \r
+Node 2       OK      --   \r
 pba-hnas-1-1:$ """
 
 FC_PORT_INFO = """\r
