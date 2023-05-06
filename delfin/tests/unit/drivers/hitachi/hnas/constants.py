@@ -500,6 +500,7 @@ pba-hnas-1-1:$ cluster-show -y\r
 ID  Node Name        Status    FS Access   Aggs        Netwrk  FC   EVS IDs\r
 --  ---------------  --------  ----------  ----------  ------  ---  -------\r
 1   pba-hnas-1-1     ONLINE    OK          Degraded    OK      OK   [0,1,2]\r
+2   pba-hnas-1-2     ONLINE    OK          OK          OK      OK   [0,2]\r
 \r
 Cluster Communications Status:\r
 \r
