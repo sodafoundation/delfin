@@ -310,9 +310,8 @@ class NasHandler(object):
                 if not nodes or len(node) < constant.NODE_INDEX['node_len']:
                     break
                 status = constants.ControllerStatus.NORMAL \
-                    if node[
-                           constant.NODE_INDEX[
-                               'status_index']] == 'ONLINE' \
+                    if node[constant.NODE_INDEX[
+                        'status_index']] == 'ONLINE' \
                     else constants.ControllerStatus.OFFLINE
                 controller_model = {
                     'name': node[constant.NODE_INDEX['name_index']],
