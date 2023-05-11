@@ -819,7 +819,7 @@ class SSHHandler(object):
         elif 'IOSIZE' in metric_type.upper():
             value = value / units.Ki
         elif 'IOPS' in metric_type.upper():
-            value = int(value / interval)
+            value = value / interval
         elif 'RESPONSETIME' in metric_type.upper():
             value = value / interval
         value = round(value, 3)
