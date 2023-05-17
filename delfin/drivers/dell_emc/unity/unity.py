@@ -523,9 +523,9 @@ class UnityStorDriver(driver.StorageDriver):
                 fs_entries = files.get('entries')
                 for file in fs_entries:
                     content = file.get('content')
-                    if not content:
-                        continue
-                    if content.get('type') == consts.FILESYSTEM_TYPE_VMWARE:
+#                   exclude the type is vmware
+                    if not content or content.get('type') == \
+                            consts.FILESYSTEM_TYPE_VMWARE:
                         continue
                     health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
