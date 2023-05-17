@@ -954,7 +954,7 @@ GET_ALL_FILESYSTEMS = {
         {
             "content": {
                 "id": "fs_22",
-                "type": 1,
+                "type": 2,
                 "flrVersion": 0,
                 "supportedProtocols": 2,
                 "health": {
@@ -1048,18 +1048,6 @@ filesystem_result = [
         'total_capacity': 5368709120,
         'used_capacity': 1622450176,
         'free_capacity': 3746258944,
-        'worm': 'non_worm',
-        'security_mode': 'native'
-    }, {
-        'name': 'FS_MULTI1',
-        'storage_id': '12345',
-        'native_filesystem_id': 'fs_22',
-        'native_pool_id': 'pool_1',
-        'status': 'normal',
-        'type': 'thin',
-        'total_capacity': 107374182400,
-        'used_capacity': 1620303872,
-        'free_capacity': 105753878528,
         'worm': 'non_worm',
         'security_mode': 'native'
     }

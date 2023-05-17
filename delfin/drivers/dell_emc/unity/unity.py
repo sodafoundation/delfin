@@ -525,6 +525,8 @@ class UnityStorDriver(driver.StorageDriver):
                     content = file.get('content')
                     if not content:
                         continue
+                    if content.get('type') == consts.FILESYSTEM_TYPE_VMWARE:
+                        continue
                     health_value = content.get('health', {}).get('value')
                     if health_value in UnityStorDriver.HEALTH_OK:
                         status = constants.FilesystemStatus.NORMAL
