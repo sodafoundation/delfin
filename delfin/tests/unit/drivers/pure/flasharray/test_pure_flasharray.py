@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-import time
 from unittest import TestCase, mock
 
 import six
 from oslo_log import log
-from oslo_utils import units
 
 from delfin.common import constants
 from delfin.drivers.pure.flasharray import consts
@@ -1777,13 +1775,10 @@ class test_PureFlashArrayDriver(TestCase):
     def test_collect_perf_metrics(self):
         RestHandler.rest_call = mock.Mock(
             side_effect=[storage_id_info, drive_metrics])
-        localtime = time.mktime(time.localtime()) * units.k
         storage_id = 12345
-        start_time = localtime - 1000 * 60 * 60 * 24 * 364
-        end_time = localtime
         metrics = self.driver.collect_perf_metrics(
-            context, storage_id, storage_resource_metrics, start_time,
-            end_time)
+            context, storage_id, storage_resource_metrics, 1619257043000,
+            1653385043000)
         storage_metrics = [
             constants.metric_struct(
                 name='iops',
@@ -1968,8 +1963,8 @@ class test_PureFlashArrayDriver(TestCase):
         RestHandler.rest_call = mock.Mock(
             side_effect=[volume_metrics_info])
         metrics = self.driver.collect_perf_metrics(
-            context, storage_id, volume_resource_metrics, start_time,
-            end_time)
+            context, storage_id, volume_resource_metrics, 1619257043000,
+            1653385043000)
         self.assertListEqual(metrics, volume_metrics)
 
     def test_get_capabilities(self):
