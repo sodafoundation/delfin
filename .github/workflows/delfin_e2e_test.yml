@@ -7,8 +7,8 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        platform: [ubuntu-18.04, ubuntu-20.04]
-        python-version: [ 3.6 ]
+        platform: [ubuntu-20.04]
+        python-version: [ 3.8 ]
 
     steps:
       - name: Checkout delfin code
