@@ -2969,7 +2969,7 @@ def process_sort_params(sort_keys, sort_dirs, default_keys=None,
                 raise exception.InvalidInput(msg)
             result_dirs.append(sort_dir)
     else:
-        result_dirs = [default_dir_value for _sort_key in result_keys]
+        result_dirs = [default_dir_value for _ in result_keys]
 
     # Ensure that the key and direction length match
     while len(result_dirs) < len(result_keys):
