@@ -24,7 +24,7 @@ class StorageHostInitiatorController(wsgi.Controller):
     def __init__(self):
         super(StorageHostInitiatorController, self).__init__()
         self.search_options = ['name', 'status', 'wwn', 'id', 'storage_id',
-                               'native_storage_host_id',
+                               'type', 'native_storage_host_id',
                                'native_storage_host_initiator_id']
 
     def _get_storage_host_initiator_search_options(self):
