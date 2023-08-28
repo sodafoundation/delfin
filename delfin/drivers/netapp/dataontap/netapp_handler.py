@@ -137,7 +137,7 @@ class NetAppHandler(object):
                     or 'command not found' in result:
                 raise exception.InvalidIpOrPort()
             version = self.get_storage_version()
-            if version >= 9.6:
+            if version >= 96:
                 self.rest_client.do_call(
                     constant.CLUSTER_PERF_URL, None, 'GET')
         except Exception as e:
@@ -1211,23 +1211,23 @@ class NetAppHandler(object):
                 version_list = \
                     re.findall(constant.FLOAT_PATTERN, storage_version[0])
                 for ver_info in version_list:
-                    if float(ver_info) >= 9.0:
-                        return float(ver_info)
-        return 9.0
+                    if int(ver_info.replace(".", "")) >= 90:
+                        return int(ver_info.replace(".", ""))
+        return 90
 
     @staticmethod
     def get_cap_by_version(version, capabilities):
-        if version >= 9.6:
+        if version >= 96:
             capabilities['resource_metrics']['storage'] = \
                 constant.STORAGE_CAPABILITIES
-            if version >= 9.7:
+            if version >= 97:
                 capabilities['resource_metrics']['storagePool'] = \
                     constant.POOL_CAPABILITIES
                 capabilities['resource_metrics']['port'] = \
                     constant.PORT_CAPABILITIES
                 capabilities['resource_metrics']['filesystem'] = \
                     constant.FS_CAPABILITIES
-            if version >= 9.8:
+            if version >= 98:
                 capabilities['resource_metrics']['volume'] = \
                     constant.VOLUME_CAPABILITIES
         return capabilities
@@ -1242,20 +1242,20 @@ class NetAppHandler(object):
             version_List = \
                 re.findall(
                     constant.FLOAT_PATTERN, filters.get('firmware_version'))
-            version = 9.0
+            version = 90
             for ver_info in version_List:
-                if float(ver_info) >= 9.0:
-                    version = float(ver_info)
+                if int(ver_info.replace(".", "")) >= 90:
+                    version = int(ver_info.replace(".", ""))
                     break
             NetAppHandler.get_cap_by_version(version, capabilities)
             return capabilities
         cap_map = {}
-        for i in range(0, 10):
+        for i in range(0, 11):
             capabilities = {
                 'is_historic': True,
                 'resource_metrics': {}
             }
-            version = float('9.' + str(i))
+            version = int('9' + str(i))
             NetAppHandler.get_cap_by_version(version, capabilities)
             cap_map[version] = capabilities
         return cap_map
