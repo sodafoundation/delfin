@@ -901,3 +901,21 @@ class ComponentHandler(object):
                 latest_time = file_latest_time
                 time.sleep(consts.CHECK_WAITE_TIME_SECONDS)
         return latest_time, file_latest_time
+
+    def get_alert_sources(self):
+        try:
+            ip_list = []
+            domains = self.navi_handler.get_domain()
+            if domains:
+                for domain in domains:
+                    host_ip = domain.get('ip_address')
+                    ip_list.append({'host': host_ip})
+            return ip_list
+        except exception.DelfinException as e:
+            err_msg = "Get alerts sources failed: %s" % (e.msg)
+            LOG.error(err_msg)
+            raise e
+        except Exception as e:
+            err_msg = "Get alert sources failed: %s" % (six.text_type(e))
+            LOG.error(err_msg)
+            raise exception.InvalidResults(err_msg)
