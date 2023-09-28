@@ -86,7 +86,7 @@ class TestNetAppCmodeDriver(TestCase):
                          'DualPathToDiskShelf_Alert')
 
     def test_clear_alters(self):
-        alert = {'alert_id': '123'}
+        alert = '123'
         SSHPool.do_exec = mock.Mock()
         self.netapp_client.clear_alert(context, alert)
 
@@ -154,7 +154,7 @@ class TestNetAppCmodeDriver(TestCase):
                          test_constans.CONTROLLER_INFO,
                          test_constans.CONTROLLER_IP_INFO])
         data = self.netapp_client.get_alert_sources(context)
-        self.assertEqual(data[0]['host'], '8.44.162.245')
+        self.assertEqual(data[0]['host'], '8.44.162.246')
 
     def test_get_storage_performance(self):
         SSHPool.do_exec = mock.Mock(

@@ -1577,7 +1577,9 @@ cl      cluster_mgmt 192.168.159.131"""
 
 CONTROLLER_IP_INFO = """vserver   lif     curr-node address\r
 --------- --------------- --------- ------------\r
-NetappFSA Netapp-01_mgmt1 cl-01 8.44.162.245"""
+NetappFSA Netapp-01_mgmt1 cl-01 8.44.162.245\r
+NetappFSA Netapp-01_mgmt1 cl-01 8.44.162.246\r
+NetappFSA Netapp-01_mgmt1 cl-01 20001::3"""
 
 RESOURCE_METRICS = {
     'storage':
