@@ -8,7 +8,7 @@
 
 ## Introduction
 
-delfin (Dolphin in spanish!) , the SODA Infrastructure Manager project is an an open source project to provide unified, intelligent and scalable resource management, alert and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment. It will also provide the alert management and metric data(performance/health) for monitoring and further analysis. It will provide a scalable framework where more and more backends as well as client exporters can be added. This will enable to add more storage and infrastructure backends and also support different management clients for monitoring and health prediction.
+delfin (Dolphin in spanish!) , the SODA Infrastructure Manager project is an an open source project to provide unified, intellect and scalable resource management with alert and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment and also provides the alert management and metric data(performance/health) for monitoring and further analysis. It also provides a scalable framework where multiple backends and client exporters can be added. This will enable to add more storage and infrastructure backends and also support different management clients for monitoring and health prediction.
 
 It provides unified APIs to access, export and connect with clients as well as a set of interfaces for various driver addition.
 
