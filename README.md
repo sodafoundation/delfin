@@ -26,6 +26,11 @@ This is one of the SODA Core Projects and is maintained by SODA Foundation direc
 
 [https://docs.sodafoundation.io/guides/developer-guides/delfin](https://docs.sodafoundation.io/guides/developer-guides/delfin/)
 
+## Demo videos - To get to know the capabilities better
+
+[https://www.youtube.com/watch?v=WtlxF7SHID4](https://www.youtube.com/watch?v=WtlxF7SHID4)
+
+
 ## Latest Releases
 
 [https://github.com/sodafoundation/delfin/releases](https://github.com/sodafoundation/delfin/releases)
