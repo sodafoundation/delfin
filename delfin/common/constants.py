@@ -469,6 +469,9 @@ class Metrics:
                              unit=MetricUnit.PERCENTAGE,
                              description='Percentage of ops that are cache '
                                          'hits')
+    CPU_USAGE = Metric(name='cpu',
+                             unit=MetricUnit.PERCENTAGE,
+                             description='Percentage of CPU USAGE')
     READ_CACHE_HIT_RATIO = Metric(name='readCacheHitRatio',
                                   unit=MetricUnit.PERCENTAGE,
                                   description='Percentage of read ops that '
