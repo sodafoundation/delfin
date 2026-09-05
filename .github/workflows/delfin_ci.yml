@@ -21,18 +21,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r test-requirements.txt
-          # Ensure the runner uses the exact versions our tests expect
-          python -m pip install pysnmp==4.4.12 jsonschema==3.2.0 flake8==6.1.0 codecov
-      - name: Install flake8 (pinned)
-        run: |
-          python -m pip install flake8==6.1.0
-      - name: Lint with flake8 (ignore E231)
-        run: |
-          flake8 --extend-ignore=E231 delfin
-      - name: Run unit tests (coverage)
-        run: |
-          coverage erase
-          coverage run -m unittest discover delfin/tests/unit
-          coverage html -d htmlcov
-      - name: Test coverage with codecov
+          pip install tox codecov
+      - name: Unit test with tox
+        run: tox
+      - name: Test coverage with  codecov
         run: codecov
