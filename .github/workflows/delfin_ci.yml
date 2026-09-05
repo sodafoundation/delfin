@@ -7,13 +7,13 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        platform: [ubuntu-20.04]
+        platform: [ubuntu-22.04]
         python-version: [ 3.8 ]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install Python version ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -21,6 +21,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r test-requirements.txt
+          # Pin pyasn1 to 0.4.x to retain compatibility with code importing
+          # pyasn1.compat.octets (pyasn1 0.5 removed the compat submodule).
+          python -m pip install 'pyasn1<0.5'
           pip install tox codecov
       - name: Unit test with tox
         run: tox
