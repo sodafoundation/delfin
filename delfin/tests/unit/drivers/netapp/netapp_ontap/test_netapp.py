@@ -193,7 +193,7 @@ class TestNetAppCmodeDriver(TestCase):
 
     def test_get_capabilities_is_None(self):
         data = self.netapp_client.get_capabilities(context, None)
-        self.assertEqual(data[9.8]['resource_metrics']['storage']
+        self.assertEqual(data[98]['resource_metrics']['storage']
                          ['throughput']['unit'], 'MB/s')
 
     def test_get_capabilities(self):
