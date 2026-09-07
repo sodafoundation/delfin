@@ -1154,10 +1154,17 @@ class VMaxRest(object):
             if vmax_key:
                 rdfdirector_metrics.append(vmax_key)
 
-        keys = self.get_resource_keys(array, 'RDFDirector')
+        try:
+            keys = self.get_resource_keys(array, 'RDFDirector')
+        except exception.StorageBackendException:
+            return []
+
         keys_dict = None
         if keys:
             keys_dict = keys.get('rdfDirectorInfo', None)
+
+        if not keys_dict:
+            return []
 
         metrics_list = []
         for key_dict in keys_dict:

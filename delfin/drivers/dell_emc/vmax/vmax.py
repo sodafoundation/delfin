@@ -52,7 +52,7 @@ class VMAXStorageDriver(driver.StorageDriver):
         display_name = array_details['display_name']
 
         # Get Storage details for capacity info
-        total_capacity, used_capacity, free_capacity,\
+        total_capacity, used_capacity, free_capacity, \
             raw_capacity, subscribed_capacity = \
             self.client.get_storage_capacity(storage_id)
 

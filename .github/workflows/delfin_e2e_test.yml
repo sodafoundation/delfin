@@ -7,14 +7,23 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        platform: [ubuntu-20.04]
+        platform: [ubuntu-22.04]
         python-version: [ 3.8 ]
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: delfin
+          MYSQL_DATABASE: delfin
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout delfin code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install Python version ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -23,6 +32,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r test-requirements.txt
           pip install tox codecov
+          pip install pymysql
       - name: E2E Testing - Add Test Driver to Delfin
         run: |
           str="\ \ \ \ \ \ \ \ \ \ \ \ 'test_vendor test_model = delfin.tests.e2e.testdriver:TestDriver',"
@@ -36,7 +46,7 @@ jobs:
           rabbitmq user: 'guest'
           rabbitmq password: 'guest'
       - name: E2E Testing - Install Redis
-        uses: supercharge/redis-github-action@1.2.0
+        uses: supercharge/redis-github-action@1.7.0
         with:
           redis-version: 6
       - name: E2E Testing - Build and Deploy Delfin with Test driver
@@ -46,6 +56,7 @@ jobs:
           sudo mkdir -p /etc/delfin
           sudo chmod 0777 /etc/delfin
           python3 setup.py install
+          sed -i 's|sqlite:////var/lib/delfin/delfin.sqlite.*|mysql+pymysql://root:delfin@127.0.0.1/delfin|' ./etc/delfin/delfin.conf
           cp ./etc/delfin/api-paste.ini /etc/delfin/
           python3 ./script/create_db.py --config-file ./etc/delfin/delfin.conf
           sleep 1
@@ -55,7 +66,8 @@ jobs:
         shell: bash
       - name: E2E Testing - Run RobotFramework
         run: |
-          sleep 3
+          for i in $(seq 1 30); do curl -s http://localhost:8190/v1/storages > /dev/null 2>&1 && break; sleep 2; done
+          cat /tmp/api.log 2>/dev/null || true
           pip install robotframework
           pip install robotframework-requests
           pip install robotframework-jsonlibrary
@@ -67,3 +79,9 @@ jobs:
           sleep 1
           robot delfin/tests/e2e
         shell: bash
+      - name: E2E Testing - Print logs on failure
+        if: failure()
+        run: |
+            cat /tmp/api.log 2>/dev/null || true
+            cat /tmp/task.log 2>/dev/null || true
+            cat /tmp/alert.log 2>/dev/null || true

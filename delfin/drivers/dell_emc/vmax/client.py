@@ -150,7 +150,7 @@ class VMAXClient(object):
                 raw_capacity = int(total_raw * units.Gi)
                 subscribed_capacity = int(subscribed_cap * units.Ti)
 
-            return total_capacity, used_capacity, free_capacity,\
+            return total_capacity, used_capacity, free_capacity, \
                 raw_capacity, subscribed_capacity
 
         except Exception:
