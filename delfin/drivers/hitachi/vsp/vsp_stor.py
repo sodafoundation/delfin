@@ -668,7 +668,11 @@ class HitachiVspDriver(driver.StorageDriver):
             host_group_list = []
             host_grp_relation_list = []
             if not host_groups:
-                return host_group_list
+                result = {
+                    'storage_host_groups': host_group_list,
+                    'storage_host_grp_host_rels': host_grp_relation_list
+                }
+                return result
             group_with_port = HitachiVspDriver.handle_group_with_port(
                 host_groups)
             for port in group_with_port:
