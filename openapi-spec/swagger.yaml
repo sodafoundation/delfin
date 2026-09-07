@@ -2430,6 +2430,21 @@ paths:
           explode: true
           schema:
             type: string
+        - name: type
+          in: query
+          description: The storage host initiator type
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum:
+                - fc
+                - iscsi
+                - roce
+                - nvm-of
+                - sas
+                - unknown
         - name: status
           in: query
           description: The storage host initiator status
@@ -4233,6 +4248,17 @@ components:
               type: string
               readOnly: true
               example: "storage host initiator"
+            type:
+              type: string
+              readOnly: true
+              enum:
+                - fc
+                - iscsi
+                - roce
+                - nvm-of
+                - sas
+                - unknown
+              example: fc
             wwn:
               type: string
               readOnly: true
@@ -4435,11 +4461,6 @@ components:
               readOnly: true
               description: Actual ID of the volume in the storage backend.
               example: volume_0
-            native_port_id:
-              type: string
-              readOnly: true
-              description: Actual ID of the port in the storage backend.
-              example: port_0
     StorageBackendAlertSync:
       type: object
       properties:
