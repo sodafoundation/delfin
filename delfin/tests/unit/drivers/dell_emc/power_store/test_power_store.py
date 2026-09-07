@@ -815,7 +815,8 @@ resource_metrics = {
     constants.ResourceType.STORAGE_POOL: consts.STORAGE_POOL_CAP,
     constants.ResourceType.VOLUME: consts.VOLUME_CAP,
     constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
-    constants.ResourceType.PORT: consts.PORT_CAP
+    constants.ResourceType.PORT: consts.PORT_CAP,
+    constants.ResourceType.FILESYSTEM: consts.FILE_SYSTEM_CAP
 }
 host_info = [
     {
@@ -1010,6 +1011,261 @@ masking_data = [
      'native_volume_id': '40ce0f3c-d250-4efc-b78a-1b1c768788f4',
      'storage_id': '12345',
      'native_storage_host_group_id': 'ea01240f-4692-44f4-817b-924efd2c8519'}]
+filesystems_info = [{
+    "id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee",
+    "access_policy": "Native",
+    "default_hard_limit": 1048576,
+    "default_soft_limit": 1048576,
+    "filesystem_type": "Primary",
+    "locking_policy": "Advisory",
+    "name": "test-f",
+    "nas_server_id": "63996302-335c-69d7-f8cf-9e521753d873",
+    "size_total": 5497558138880,
+    "size_used": 1623195648,
+}]
+filesystems_data = [
+    {'native_filesystem_id': '6399654a-36d7-2ed5-2e1e-86754c57b7ee',
+     'name': 'test-f', 'type': 'thin', 'status': 'normal',
+     'storage_id': '12345', 'total_capacity': 5497558138880,
+     'used_capacity': 1623195648, 'free_capacity': 5495934943232,
+     'security_mode': 'native'}]
+nas_service_info = [{
+    "id": "63996302-335c-69d7-f8cf-9e521753d873",
+    "name": "test"
+}]
+quotas_tree_info = [{
+    "id": "00000003-0066-0000-0100-000000000000",
+    "file_system_id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee",
+    "path": "/ques",
+    "description": "",
+    "is_user_quotas_enforced": True,
+    "state": "Ok",
+    "hard_limit": 1048576,
+    "soft_limit": 1048576,
+    "remaining_grace_period": -1,
+    "size_used": 0,
+    "grace_period": 604800
+}]
+user_quotas = [{
+    "id": "00000003-0066-0000-0000-000001000000",
+    "uid": 1,
+    "hard_limit": 1048576,
+    "remaining_grace_period": -1,
+    "size_used": 0,
+    "soft_limit": 1048576,
+    "state": "Ok",
+    "tree_quota_id": None,
+    "unix_name": None,
+    "windows_name": None,
+    "windows_sid": None,
+    "file_system_id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee",
+    "file_system": {
+        "id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee"
+    },
+    "tree_quota": None
+}]
+nfs_info = [
+    {
+        "id": "6399654d-dd66-0173-9886-86754c57b7ee",
+        "name": "nfx-test",
+        "description": None,
+        "path": "/test-f",
+        "is_no_SUID": False,
+        "file_system": {
+            "id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee"
+        }
+    },
+    {
+        "id": "639969bf-cd76-c446-5b99-86754c57b7ee",
+        "name": "test200",
+        "description": None,
+        "path": "/f_tdjc",
+        "is_no_SUID": False,
+        "file_system": {
+            "id": "63996981-1381-2c75-2797-86754c57b7ee"
+        }
+    },
+    {
+        "id": "63a2a88f-4ac8-6d08-0b89-86754c57b7ee",
+        "name": "nfs",
+        "description": None,
+        "path": "/fs-01",
+        "is_no_SUID": False,
+        "file_system": {
+            "id": "63a2a7ee-a6c5-b413-eb0a-86754c57b7ee"
+        }
+    },
+    {
+        "id": "63a3c04f-6529-5e00-ea38-86754c57b7ee",
+        "name": "nfs-02",
+        "description": None,
+        "path": "/test-f01",
+        "is_no_SUID": False,
+        "file_system": {
+            "id": "63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee"
+        }
+    },
+    {
+        "id": "63aea932-ec10-1ea4-c191-86754c57b7ee",
+        "name": "1230-nfs",
+        "description": None,
+        "path": "/1230-fs",
+        "is_no_SUID": False,
+        "file_system": {
+            "id": "63aea92f-5c8d-2661-c162-86754c57b7ee"
+        }
+    }
+]
+smb_info = [
+    {
+        "id": "6399654d-a337-9c17-8cb5-86754c57b7ee",
+        "file_system_id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee",
+        "description": None,
+        "is_ABE_enabled": True,
+        "is_branch_cache_enabled": True,
+        "is_continuous_availability_enabled": True,
+        "is_encryption_enabled": True,
+        "name": "smb-test",
+        "offline_availability": "Manual",
+        "path": "/test-f",
+        "umask": "022",
+        "file_system": {
+            "id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee"
+        }
+    },
+    {
+        "id": "639969d4-742b-cdda-5593-86754c57b7ee",
+        "file_system_id": "63996981-1381-2c75-2797-86754c57b7ee",
+        "description": None,
+        "is_ABE_enabled": False,
+        "is_branch_cache_enabled": False,
+        "is_continuous_availability_enabled": False,
+        "is_encryption_enabled": False,
+        "name": "smb200",
+        "offline_availability": "None",
+        "path": "/f_tdjc",
+        "umask": "022",
+        "file_system": {
+            "id": "63996981-1381-2c75-2797-86754c57b7ee"
+        }
+    },
+    {
+        "id": "63a3c04f-fea3-92e2-a73a-86754c57b7ee",
+        "file_system_id": "63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee",
+        "description": None,
+        "is_ABE_enabled": False,
+        "is_branch_cache_enabled": False,
+        "is_continuous_availability_enabled": False,
+        "is_encryption_enabled": False,
+        "name": "smb-02",
+        "offline_availability": "Documents",
+        "path": "/test-f01",
+        "umask": "022",
+        "file_system": {
+            "id": "63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee"
+        }
+    },
+    {
+        "id": "63aea653-7579-e0ac-b818-86754c57b7ee",
+        "file_system_id": "63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee",
+        "description": None,
+        "is_ABE_enabled": False,
+        "is_branch_cache_enabled": False,
+        "is_continuous_availability_enabled": False,
+        "is_encryption_enabled": False,
+        "name": "1230-snm",
+        "offline_availability": "Programs",
+        "path": "/test-f01",
+        "umask": "022",
+        "file_system": {
+            "id": "63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee"
+        }
+    },
+    {
+        "id": "63aea932-5ced-a5dc-1862-86754c57b7ee",
+        "file_system_id": "63aea92f-5c8d-2661-c162-86754c57b7ee",
+        "description": None,
+        "is_ABE_enabled": False,
+        "is_branch_cache_enabled": False,
+        "is_continuous_availability_enabled": False,
+        "is_encryption_enabled": False,
+        "name": "1230-smb",
+        "offline_availability": "None",
+        "path": "/1230-fs",
+        "umask": "022",
+        "file_system": {
+            "id": "63aea92f-5c8d-2661-c162-86754c57b7ee"
+        }
+    }
+]
+shares_data = [
+    {'native_share_id': '6399654d-dd66-0173-9886-86754c57b7ee',
+     'name': 'nfx-test', 'storage_id': '12345',
+     'native_filesystem_id': '6399654a-36d7-2ed5-2e1e-86754c57b7ee',
+     'native_qtree_id': '48452a5a7a620559759631caf7d34398',
+     'protocol': 'nfs', 'path': '/test-f'},
+    {'native_share_id': '639969bf-cd76-c446-5b99-86754c57b7ee',
+     'name': 'test200', 'storage_id': '12345',
+     'native_filesystem_id': '63996981-1381-2c75-2797-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'nfs', 'path': '/f_tdjc'},
+    {'native_share_id': '63a2a88f-4ac8-6d08-0b89-86754c57b7ee',
+     'name': 'nfs', 'storage_id': '12345',
+     'native_filesystem_id': '63a2a7ee-a6c5-b413-eb0a-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'nfs', 'path': '/fs-01'},
+    {'native_share_id': '63a3c04f-6529-5e00-ea38-86754c57b7ee',
+     'name': 'nfs-02', 'storage_id': '12345',
+     'native_filesystem_id': '63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'nfs',
+     'path': '/test-f01'},
+    {'native_share_id': '63aea932-ec10-1ea4-c191-86754c57b7ee',
+     'name': '1230-nfs', 'storage_id': '12345',
+     'native_filesystem_id': '63aea92f-5c8d-2661-c162-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'nfs',
+     'path': '/1230-fs'},
+    {'native_share_id': '6399654d-a337-9c17-8cb5-86754c57b7ee',
+     'name': 'smb-test', 'storage_id': '12345',
+     'native_filesystem_id': '6399654a-36d7-2ed5-2e1e-86754c57b7ee',
+     'native_qtree_id': '48452a5a7a620559759631caf7d34398',
+     'protocol': 'cifs', 'path': '/test-f'},
+    {'native_share_id': '639969d4-742b-cdda-5593-86754c57b7ee',
+     'name': 'smb200', 'storage_id': '12345',
+     'native_filesystem_id': '63996981-1381-2c75-2797-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'cifs',
+     'path': '/f_tdjc'},
+    {'native_share_id': '63a3c04f-fea3-92e2-a73a-86754c57b7ee',
+     'name': 'smb-02', 'storage_id': '12345',
+     'native_filesystem_id': '63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'cifs',
+     'path': '/test-f01'},
+    {'native_share_id': '63aea653-7579-e0ac-b818-86754c57b7ee',
+     'name': '1230-snm', 'storage_id': '12345',
+     'native_filesystem_id': '63a3c04c-bcf0-9ae9-8fd2-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'cifs',
+     'path': '/test-f01'},
+    {'native_share_id': '63aea932-5ced-a5dc-1862-86754c57b7ee',
+     'name': '1230-smb', 'storage_id': '12345',
+     'native_filesystem_id': '63aea92f-5c8d-2661-c162-86754c57b7ee',
+     'native_qtree_id': None, 'protocol': 'cifs',
+     'path': '/1230-fs'}]
+quotas_data = [
+    {'native_quota_id': '00000003-0066-0000-0100-000000000000', 'type': 'tree',
+     'storage_id': '12345',
+     'native_filesystem_id': '6399654a-36d7-2ed5-2e1e-86754c57b7ee',
+     'native_qtree_id': '48452a5a7a620559759631caf7d34398',
+     'capacity_hard_limit': 1048576, 'capacity_soft_limit': 1048576,
+     'used_capacity': 0},
+    {'native_quota_id': '00000003-0066-0000-0000-000001000000', 'type': 'user',
+     'storage_id': '12345',
+     'native_filesystem_id': '6399654a-36d7-2ed5-2e1e-86754c57b7ee',
+     'native_qtree_id': '48452a5a7a620559759631caf7d34398',
+     'capacity_hard_limit': 1048576, 'capacity_soft_limit': 1048576,
+     'used_capacity': 0, 'user_group_name': 1}]
+qtress_data = [{'native_qtree_id': '48452a5a7a620559759631caf7d34398',
+                'name': 'NAS Servers Name:test@File Systems Name:test-f',
+                'storage_id': '12345',
+                'native_filesystem_id': '6399654a-36d7-2ed5-2e1e-86754c57b7ee',
+                'path': 'NAS Servers Name:test@File Systems Name:test-f',
+                'security_mode': 'native'}]
 cluster_perf_info = [
     {
         "timestamp": "2022-11-28T02:59:20Z",
@@ -1266,6 +1522,43 @@ fc_perf_info = [
         "entity": "performance_metrics_by_fe_fc_port"
     }
 ]
+filesystems_perf_info = [{
+    "file_system_id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee",
+    "timestamp": "2022-11-28T03:00:00Z",
+    "read_iops": 0.0,
+    "write_iops": 0.0,
+    "total_iops": 2,
+    "read_bandwidth": 0.0,
+    "write_bandwidth": 0.0,
+    "total_bandwidth": 0.0,
+    "avg_read_latency": 1024,
+    "avg_write_latency": 0,
+    "avg_latency": 0.0,
+    "avg_read_size": 0,
+    "avg_write_size": 0,
+    "avg_size": 156.3,
+    "repeat_count": 1,
+    "response_definition": "performance_metrics_by_file_system",
+    "entity": "performance_metrics_by_file_system"
+}, {
+    "file_system_id": "6399654a-36d7-2ed5-2e1e-86754c57b7ee",
+    "timestamp": "2022-11-28T03:00:20Z",
+    "read_iops": 0.0,
+    "write_iops": 0.0,
+    "total_iops": 0.0,
+    "read_bandwidth": 0.0,
+    "write_bandwidth": 0.0,
+    "total_bandwidth": 0.0,
+    "avg_read_latency": 0,
+    "avg_write_latency": 0,
+    "avg_latency": 0.0,
+    "avg_read_size": 0,
+    "avg_write_size": 0,
+    "avg_size": 0.0,
+    "repeat_count": 1,
+    "response_definition": "performance_metrics_by_file_system",
+    "entity": "performance_metrics_by_file_system"
+}]
 
 LOG = logging.getLogger(__name__)
 
@@ -1367,13 +1660,13 @@ class test_PowerStoreDriver(TestCase):
         self.assertEqual(url, url)
 
     def test_collect_perf_metrics(self):
-
         RestHandler.rest_call = mock.Mock(
             side_effect=[clusters, cluster_perf_info,
                          appliance, appliance_perf_info,
                          perf_volume_info, volume_perf_info,
                          hardware_info, perf_node_info, controllers_perf_info,
-                         perf_fc_info, fc_perf_info])
+                         perf_fc_info, fc_perf_info,
+                         filesystems_info, filesystems_perf_info])
         collect = self.driver.collect_perf_metrics(context, ACCESS_INFO.get(
             'storage_id'), resource_metrics, 1669604280000, 1669604580000)
         self.assertEqual(collect[0].values.get(1669604340000), 0)
@@ -1417,3 +1710,28 @@ class test_PowerStoreDriver(TestCase):
         RestHandler.rest_call = mock.Mock(side_effect=[masking_info])
         masking_views = self.driver.list_masking_views(context)
         self.assertEqual(masking_views, masking_data)
+
+    def test_list_filesystems(self):
+        RestHandler.rest_call = mock.Mock(side_effect=[filesystems_info])
+        filesystems = self.driver.list_filesystems(context)
+        self.assertListEqual(filesystems, filesystems_data)
+
+    def test_list_quotas(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[nas_service_info, filesystems_info,
+                         quotas_tree_info, user_quotas])
+        quotas = self.driver.list_quotas(context)
+        self.assertListEqual(quotas, quotas_data)
+
+    def test_list_qtrees(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[nas_service_info, filesystems_info])
+        qtrees = self.driver.list_qtrees(context)
+        self.assertListEqual(qtrees, qtress_data)
+
+    def test_list_shares(self):
+        RestHandler.rest_call = mock.Mock(
+            side_effect=[nas_service_info, filesystems_info,
+                         nfs_info, smb_info])
+        shares = self.driver.list_shares(context)
+        self.assertListEqual(shares, shares_data)

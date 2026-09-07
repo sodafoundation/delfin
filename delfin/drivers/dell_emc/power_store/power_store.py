@@ -139,6 +139,15 @@ class PowerStoreDriver(driver.StorageDriver):
             LOG.info('The system(storage_id: %s) stop to collect port'
                      ' performance, The length is: %s',
                      storage_id, len(fc_port_metrics))
+        if resource_metrics.get(constants.ResourceType.FILESYSTEM):
+            file_system_metrics = self.rest_handler.get_file_system_metrics(
+                storage_id,
+                resource_metrics.get(constants.ResourceType.FILESYSTEM),
+                start_time, end_time)
+            metrics.extend(file_system_metrics)
+            LOG.info('The system(storage_id: %s) stop to collect file_system '
+                     'performance, The length is: %s',
+                     storage_id, len(file_system_metrics))
         return metrics
 
     @staticmethod
@@ -150,7 +159,8 @@ class PowerStoreDriver(driver.StorageDriver):
                 constants.ResourceType.STORAGE_POOL: consts.STORAGE_POOL_CAP,
                 constants.ResourceType.VOLUME: consts.VOLUME_CAP,
                 constants.ResourceType.CONTROLLER: consts.CONTROLLER_CAP,
-                constants.ResourceType.PORT: consts.PORT_CAP
+                constants.ResourceType.PORT: consts.PORT_CAP,
+                constants.ResourceType.FILESYSTEM: consts.FILE_SYSTEM_CAP
             }
         }
 
@@ -171,3 +181,15 @@ class PowerStoreDriver(driver.StorageDriver):
 
     def list_masking_views(self, context):
         return self.rest_handler.list_masking_views(self.storage_id)
+
+    def list_filesystems(self, context):
+        return self.rest_handler.list_filesystems(self.storage_id)
+
+    def list_quotas(self, context):
+        return self.rest_handler.list_quotas(self.storage_id)
+
+    def list_qtrees(self, context):
+        return self.rest_handler.list_qtrees(self.storage_id)
+
+    def list_shares(self, context):
+        return self.rest_handler.list_shares(self.storage_id)
