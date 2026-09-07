@@ -14,6 +14,8 @@ It provides unified APIs to access, export and connect with clients as well as a
 
 This is one of the SODA Core Projects and is maintained by SODA Foundation directly.
 
+SODA Infrastructure Manager project is an open source project to provide unified, intelligent and scalable resource management, alert and performance monitoring. It will cover the resource management of all the storage backends & other infrastructures under SODA deployment.
+
 ## Documentation
 
 [https://docs.sodafoundation.io](https://docs.sodafoundation.io/)
