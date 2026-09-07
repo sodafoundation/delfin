@@ -1,17 +1,17 @@
 # Delfin Installation Guide
 
-The SODA Delfin supports two types of installation
+The SODA Delfin supports two types of installation:
 * Installation using Ansible
 * Installation using Bash scripts
 
-## Installation using Ansible
+## Installation using Ansible-
 
 * Supported OS: **Ubuntu 20.04, Ubuntu 18.04**
 * Prerequisite: **Python 3.6 or above** should be installed
 
 ### Install steps
 
-Ensure no ansible & docker installed, OR Lastest ansible and docker tools are installed with versions listed below or later. If ansible & docker is not installed in the OS, script `install_dependencies.sh` will install it.
+Ensure ansible & docker are not installed, OR latest ansible and docker tools are installed with versions listed below or later. If ansible & docker is not installed in the OS, script `install_dependencies.sh` will install it.
 
 ```bash
 sudo apt-get update && sudo apt-get install -y git
@@ -24,7 +24,7 @@ export PATH=$PATH:/home/$USER/.local/bin
 sudo -E env "PATH=$PATH" ansible-playbook site.yml -i local.hosts -v
 ```
 
-**NOTE:** *Tools version used for verification of Delfin under Ubuntu 20.04*
+**NOTE:** *Tools' version used for verification of Delfin under Ubuntu 20.04*
 * ansible version: 5.10.0
 * docker version: 20.10.21
 * docker compose version: 2.12.2
@@ -87,7 +87,7 @@ Refer below for installer options
 
      2. cd prometheus-*
      3. Edit the prometheus.yml and set the appropriate target, interval and metrics_api path. 
-        Below is sample example of prometheus.yml
+        Below is a sample example of prometheus.yml
         ###### prometheus.yml
         ```
         global:
@@ -106,10 +106,10 @@ Refer below for installer options
          root@root:/prometheus/prometheus-2.20.0.linux-amd64$ ./prometheus
         ```
 ### Structure of the installer
-This installer comes with options of pre-check, install and uninstall
-pre-check: This script checks for the components required by delfin to function. If they are not present, precheck will install them.
+This installer comes with options of pre-check, install and uninstall-
+Pre-check: This script checks for the components required by delfin to function. If they are not present, precheck will install them.
 Install: Installs and starts the delfin process
-Uninstall: Uninstalls the delfin. Doesn't uninstall the required components. You may need to uninstall it explicitly using the native approach.
+Uninstall: Uninstalls delfin. Doesn't uninstall the required components. You may need to uninstall it explicitly using the native approach.
 
 ### How to install
 To get help, execute 'install -h'. It will show help information
@@ -134,7 +134,7 @@ Install script can be executed with three different switches to:
  Flags:
      -h, --help Print the usage of install
      -p, --precheck Only perform system software requirements for installation
-     -s, --skip_precheck If precheck is not required and directly install
+     -s, --skip_precheck If precheck is not required and install directly
 ```
 
 #### For Pre-check, run below command
@@ -166,8 +166,7 @@ root@root1:~/delfin-demo/delfin$ installer/install
 ```
 
 #### Configure multiple instances of delfin components
-Respective environment variable required to set for running multiple instances 
-of delfin component before executing install command
+Respective environment variable required to set for running multiple instances of delfin component before executing install command
 
 ```sh
 $ export DELFIN_<<delfin component name>>_INSTANCES=<<number of instances>>
