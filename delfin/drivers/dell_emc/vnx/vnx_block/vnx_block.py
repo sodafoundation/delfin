@@ -110,3 +110,6 @@ class VnxBlockStorDriver(driver.StorageDriver):
 
     def get_latest_perf_timestamp(self, context):
         return self.com_handler.get_latest_perf_timestamp(self.storage_id)
+
+    def get_alert_sources(self, context):
+        return self.com_handler.get_alert_sources()
