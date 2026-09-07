@@ -158,6 +158,8 @@ class RestHandler(object):
                               {"url": url, "reason": res.text})
                     if 'invalid username or password' in res.text:
                         raise exception.InvalidUsernameOrPassword()
+                    elif 'maximum number of server connections' in res.text:
+                        raise exception.StorageMaxUserCountException(res.text)
                     else:
                         raise exception.StorageBackendException(
                             six.text_type(res.text))
@@ -165,9 +167,13 @@ class RestHandler(object):
                 LOG.error('Login Parameter error')
 
             return access_session
+        except exception.DelfinException as e:
+            err_msg = "Login error: %s" % (e.msg)
+            LOG.error(err_msg)
+            raise e
         except Exception as e:
             LOG.error("Login error: %s", six.text_type(e))
-            raise e
+            raise exception.StorageBackendException(six.text_type(e))
         finally:
             self.session_lock.release()
 
