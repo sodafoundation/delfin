@@ -103,7 +103,7 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
 
     # Ensure a per-column sort direction
     if sort_dirs is None:
-        sort_dirs = [sort_dir for _sort_key in sort_keys]
+        sort_dirs = [sort_dir for _ in sort_keys]
 
     if len(sort_dirs) != len(sort_keys):
         raise AssertionError(
