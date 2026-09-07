@@ -45,6 +45,7 @@ SAS_PORT_LIST = 'system sas getportlist -c {}:{}'
 SUCCESSFUL_TAG = 'Command completed successfully.'
 FAILED_TAG = 'Command failed.'
 UNKNOWN_COMMAND_TAG = 'Unknown command.'
+CLI_TAG = 'ODSP CLI>'
 PORT_SUCCESSFUL_TAG = 'Commandcompletedsuccessfully.'
 COLON = ':'
 LEFT_HALF_BRACKET = '['
@@ -536,7 +537,6 @@ PARSE_ALERT_SEVERITY_MAP = {
     '4': constants.Severity.INFORMATIONAL,
 }
 
-
 STORAGE_CAP = {
     constants.StorageMetric.IOPS.name: {
         "unit": constants.StorageMetric.IOPS.unit,
@@ -751,6 +751,8 @@ DISK_REGULAR = '^perf_disk'
 SYSTEM_PERFORMANCE_FILE = 'system performance getfilelist'
 VERSION_SHOW = 'versionshow'
 CSV = '.csv'
+FILE_SIZE = 32 * 1024 ** 2
+INVALID_PATH = '/'
 SIXTY = 60
 ADD_FOLDER = '{}/delfin/drivers/utils/performance_file/macro_san/{}{}{}'
 PERF_LUN = 'perf_lun_'
@@ -762,3 +764,8 @@ SPECIAL_VERSION = 'Version:'
 SAS_PORT = 'sasport'
 ISCSI_PORT = 'iscsiport'
 FC_PORT = 'fcport'
+PERF_FILE_TIME = '%Y%m%d%H%M%S'
+
+# The wait time of the 'system performance getfilelist' command is configured
+INITIAL_WAITING_TIME = 60
+MAX_WAITING_TIME = 100
